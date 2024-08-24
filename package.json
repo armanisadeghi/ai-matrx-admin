@@ -1,0 +1,69 @@
+{
+  "name": "app-matrx",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@auth0/nextjs-auth0": "latest",
+    "@hookform/resolvers": "latest",
+    "@radix-ui/react-accordion": "latest",
+    "@radix-ui/react-avatar": "latest",
+    "@radix-ui/react-collapsible": "latest",
+    "@radix-ui/react-context-menu": "latest",
+    "@radix-ui/react-dropdown-menu": "latest",
+    "@radix-ui/react-icons": "latest",
+    "@radix-ui/react-label": "latest",
+    "@radix-ui/react-menubar": "latest",
+    "@radix-ui/react-navigation-menu": "latest",
+    "@radix-ui/react-scroll-area": "latest",
+    "@radix-ui/react-slot": "latest",
+    "@radix-ui/react-tabs": "latest",
+    "@radix-ui/react-toast": "latest",
+    "@radix-ui/react-tooltip": "latest",
+    "@reduxjs/toolkit": "latest",
+    "@tanstack/react-table": "latest",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "embla-carousel-react": "latest",
+    "google-fonts": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "next-themes": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-hook-form": "latest",
+    "react-redux": "latest",
+    "recharts": "latest",
+    "recoil": "latest",
+    "redux": "latest",
+    "redux-orm": "latest",
+    "tailwind-merge": "latest",
+    "tailwindcss-animate": "latest",
+    "usehooks-ts": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest"
+  },
+  "pnpm": {
+    "overrides": {
+      "@humanwhocodes/config-array@<0.11.14": "^0.11.14",
+      "@humanwhocodes/object-schema@<2.0.3": "^2.0.3",
+      "glob@<7.2.3": "^7.2.3",
+      "inflight@<1.0.6": "^1.0.6",
+      "rimraf@<3.0.2": "^3.0.2"
+    }
+  }
+}
