@@ -1,8 +1,8 @@
 // File location: @/features/registered-function/hooks/useRegisteredFunctionCRUD.ts
 
-import {useCallback} from 'react';
-import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
-import {RegisteredFunctionType} from '@/types/registeredFunctionTypes';
+import { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { RegisteredFunctionType, FormData } from '@/types/registeredFunctionTypes';
 import {
     fetchRegisteredFunctions,
     createRegisteredFunctionThunk,
@@ -15,72 +15,74 @@ import {
     fetchFilteredRegisteredFunctions,
     fetchRegisteredFunctionWithChildren,
     fetchAllRegisteredFunctionsWithChildren,
-    fetchRegisteredFunctionById
+    fetchRegisteredFunctionById, saveRegisteredFunction, prepareFormData
 } from '../Thunks';
-import {selectRegisteredFunctions, selectRegisteredFunctionLoading, selectRegisteredFunctionError} from '../Selectors';
+import {
+    selectRegisteredFunctions,
+    selectRegisteredFunctionById,
+    selectRegisteredFunctionLoading,
+    selectRegisteredFunctionError,
+    selectRegisteredFunctionPagination
+} from '../Selectors';
 
 export const useRegisteredFunctionCRUD = () => {
     const dispatch = useAppDispatch();
-    const registeredFunctions: RegisteredFunctionType[] = useAppSelector(selectRegisteredFunctions);
+    const registeredFunctions = useAppSelector(selectRegisteredFunctions);
     const loading = useAppSelector(selectRegisteredFunctionLoading);
     const error = useAppSelector(selectRegisteredFunctionError);
+    const pagination = useAppSelector(selectRegisteredFunctionPagination);
 
-    const fetchAll = useCallback(() => {
-        dispatch(fetchRegisteredFunctions());
-    }, [dispatch]);
+    const fetchAll = useCallback(() => dispatch(fetchRegisteredFunctions()), [dispatch]);
 
-    const create = useCallback((registeredFunction: Omit<RegisteredFunctionType, 'id'>) => {
-        dispatch(createRegisteredFunctionThunk(registeredFunction));
-    }, [dispatch]);
+    const create = useCallback((data: Omit<RegisteredFunctionType, 'id'>) =>
+        dispatch(createRegisteredFunctionThunk(data)), [dispatch]);
 
-    const update = useCallback((registeredFunction: RegisteredFunctionType) => {
-        dispatch(updateRegisteredFunctionThunk(registeredFunction));
-    }, [dispatch]);
+    const update = useCallback((data: RegisteredFunctionType) =>
+        dispatch(updateRegisteredFunctionThunk(data)), [dispatch]);
 
-    const remove = useCallback((id: string) => {
-        dispatch(deleteRegisteredFunctionThunk(id));
-    }, [dispatch]);
+    const remove = useCallback((id: string) =>
+        dispatch(deleteRegisteredFunctionThunk(id)), [dispatch]);
 
-    const fetchPaginated = useCallback((page: number, pageSize: number) => {
-        return dispatch(fetchPaginatedRegisteredFunctions({page, pageSize}));
-    }, [dispatch]);
+    const fetchById = useCallback((id: string) =>
+        dispatch(fetchRegisteredFunctionById(id)), [dispatch]);
 
-    const createRPC = useCallback((registeredFunction: Omit<RegisteredFunctionType, 'id'>) => {
-        return dispatch(createRegisteredFunctionRPC(registeredFunction));
-    }, [dispatch]);
+    const fetchPaginated = useCallback((page: number, pageSize: number) =>
+        dispatch(fetchPaginatedRegisteredFunctions({page, pageSize})), [dispatch]);
 
-    const updateRPC = useCallback((registeredFunction: RegisteredFunctionType) => {
-        return dispatch(updateRegisteredFunctionRPC(registeredFunction));
-    }, [dispatch]);
+    const createRPC = useCallback((registeredFunction: Omit<RegisteredFunctionType, 'id'>) =>
+        dispatch(createRegisteredFunctionRPC(registeredFunction)), [dispatch]);
 
-    const deleteRPC = useCallback((id: string) => {
-        return dispatch(deleteRegisteredFunctionRPC(id));
-    }, [dispatch]);
+    const updateRPC = useCallback((registeredFunction: RegisteredFunctionType) =>
+        dispatch(updateRegisteredFunctionRPC(registeredFunction)), [dispatch]);
 
-    const fetchFiltered = useCallback((filterCriteria: Record<string, any>) => {
-        return dispatch(fetchFilteredRegisteredFunctions(filterCriteria));
-    }, [dispatch]);
+    const deleteRPC = useCallback((id: string) =>
+        dispatch(deleteRegisteredFunctionRPC(id)), [dispatch]);
 
-    const fetchWithChildren = useCallback((id: string) => {
-        return dispatch(fetchRegisteredFunctionWithChildren(id));
-    }, [dispatch]);
+    const fetchFiltered = useCallback((filterCriteria: Record<string, any>) =>
+        dispatch(fetchFilteredRegisteredFunctions(filterCriteria)), [dispatch]);
 
-    const fetchAllWithChildren = useCallback(() => {
-        return dispatch(fetchAllRegisteredFunctionsWithChildren());
-    }, [dispatch]);
+    const fetchWithChildren = useCallback((id: string) =>
+        dispatch(fetchRegisteredFunctionWithChildren(id)), [dispatch]);
 
-    const fetchById = useCallback((id: string) => {
-        return dispatch(fetchRegisteredFunctionById(id));
-    }, [dispatch]);
+    const fetchAllWithChildren = useCallback(() =>
+        dispatch(fetchAllRegisteredFunctionsWithChildren()), [dispatch]);
+
+    const prepareForm = useCallback((functionId?: string) =>
+        dispatch(prepareFormData(functionId)), [dispatch]);
+
+    const save = useCallback((data: FormData, functionId?: string) =>
+        dispatch(saveRegisteredFunction({ data, functionId })), [dispatch]);
 
     return {
         registeredFunctions,
         loading,
         error,
+        pagination,
         fetchAll,
         create,
         update,
         remove,
+        fetchById,
         fetchPaginated,
         createRPC,
         updateRPC,
@@ -88,6 +90,8 @@ export const useRegisteredFunctionCRUD = () => {
         fetchFiltered,
         fetchWithChildren,
         fetchAllWithChildren,
-        fetchById
+        prepareForm,
+        save,
+
     };
 };

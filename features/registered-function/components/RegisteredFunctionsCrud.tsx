@@ -1,35 +1,22 @@
-// File Location: features/registered-function/components/RegisteredFunctionsCrudTwo.tsx
+// File Location: features/registered-function/components/RegisteredFunctionsCrud.tsx
 
 'use client';
 
-import React, {useEffect, useState} from 'react';
-import {useRegisteredFunctionCRUD} from '../hooks/useRegisteredFunctionCRUD';
-import {RegisteredFunctionType} from '@/types/registeredFunctionTypes';
-import {PlusCircle, Edit, Trash2, Save, X, Loader2, ChevronLeft, ChevronRight} from 'lucide-react';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Textarea} from '@/components/ui/textarea';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {Form, FormField, FormItem, FormLabel, FormControl, FormMessage} from '@/components/ui/form';
-import {useForm} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
-import {extractArgIds} from "@/features/registered-function/utils/argConverter";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
-
-const formSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    modulePath: z.string().min(1, "Module path is required"),
-    className: z.string().optional(),
-    description: z.string().optional(),
-    returnBroker: z.string().optional(),
-    arg: z.string().optional(),
-    systemFunction: z.union([z.string(), z.array(z.string())]).optional(),
-    recipeFunction: z.union([z.string(), z.array(z.string())]).optional(),
-});
+import React, { useEffect, useState } from 'react';
+import { useRegisteredFunctionCRUD } from '../hooks/useRegisteredFunctionCRUD';
+import { RegisteredFunctionType, FormData, formSchema } from '@/types/registeredFunctionTypes';
+import { PlusCircle, Edit, Trash2, Save, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const FunctionManagement: React.FC = () => {
     const {
@@ -37,11 +24,11 @@ const FunctionManagement: React.FC = () => {
         loading,
         error,
         fetchPaginated,
-        create,
-        update,
         remove,
         fetchFiltered,
-        fetchWithChildren
+        fetchWithChildren,
+        prepareForm,
+        save
     } = useRegisteredFunctionCRUD();
     const [editingId, setEditingId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
@@ -49,7 +36,7 @@ const FunctionManagement: React.FC = () => {
     const [filter, setFilter] = useState<{ field: keyof RegisteredFunctionType, value: string } | null>(null);
     const [selectedFunction, setSelectedFunction] = useState<RegisteredFunctionType | null>(null);
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
@@ -71,28 +58,18 @@ const FunctionManagement: React.FC = () => {
         }
     }, [fetchPaginated, fetchFiltered, page, pageSize, filter]);
 
-    const onSubmit = (data: z.infer<typeof formSchema>) => {
-        if (editingId) {
-            update({...data, id: editingId} as RegisteredFunctionType);
-        } else {
-            create(data as Omit<RegisteredFunctionType, 'id'>);
-        }
+    const onSubmit = async (data: FormData) => {
+        await save(data, editingId || undefined);
         form.reset();
         setEditingId(null);
     };
 
-    const handleEdit = (rf: RegisteredFunctionType) => {
-        const normalizedArgIds = extractArgIds(rf.arg);
-
-        const formCompatibleData = {
-            ...rf,
-            arg: normalizedArgIds.join(', '),
-            systemFunction: Array.isArray(rf.systemFunction) ? rf.systemFunction.join(', ') : rf.systemFunction || '',
-            recipeFunction: Array.isArray(rf.recipeFunction) ? rf.recipeFunction.join(', ') : rf.recipeFunction || '',
-        };
-
-        setEditingId(rf.id);
-        form.reset(formCompatibleData);
+    const handleEdit = async (rf: RegisteredFunctionType) => {
+        const result = await prepareForm(rf.id);
+        if (result.meta.requestStatus === 'fulfilled' && result.payload) {
+            setEditingId(rf.id);
+            form.reset(result.payload as FormData);
+        }
     };
 
     const handleDelete = (id: string) => {
@@ -104,14 +81,7 @@ const FunctionManagement: React.FC = () => {
         if (action.meta.requestStatus === 'fulfilled' && 'payload' in action) {
             setSelectedFunction(action.payload as RegisteredFunctionType);
         } else {
-            // Handle error case
             console.error('Failed to fetch function details');
-            // Optionally show an error toast
-            // toast({
-            //     title: "Error",
-            //     description: "Failed to fetch function details",
-            //     variant: "destructive",
-            // });
         }
     };
 
@@ -243,8 +213,7 @@ const FunctionManagement: React.FC = () => {
                             />
                             <div className="flex space-x-2">
                                 <Button type="submit">
-                                    {editingId ? <><Save className="mr-2 h-4 w-4"/> Update</> : <><PlusCircle
-                                        className="mr-2 h-4 w-4"/> Add</>}
+                                    {editingId ? <><Save className="mr-2 h-4 w-4"/> Update</> : <><PlusCircle className="mr-2 h-4 w-4"/> Add</>}
                                 </Button>
                                 {editingId && (
                                     <Button type="button" variant="outline" onClick={() => {
@@ -318,8 +287,7 @@ const FunctionManagement: React.FC = () => {
                         <Button onClick={() => setPage(prev => Math.max(1, prev - 1))} disabled={page === 1}>
                             <ChevronLeft className="h-4 w-4 mr-2"/> Previous
                         </Button>
-                        <Button onClick={() => setPage(prev => prev + 1)}
-                                disabled={registeredFunctions.length < pageSize}>
+                        <Button onClick={() => setPage(prev => prev + 1)} disabled={registeredFunctions.length < pageSize}>
                             Next <ChevronRight className="h-4 w-4 ml-2"/>
                         </Button>
                     </div>

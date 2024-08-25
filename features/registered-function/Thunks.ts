@@ -2,14 +2,13 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '@/lib/supabaseClient';
-import { RegisteredFunctionType } from '@/types/registeredFunctionTypes';
+import { RegisteredFunctionType, FormData } from '@/types/registeredFunctionTypes';
 import { fetchRegisteredFunctionsSuccess, createRegisteredFunction, updateRegisteredFunction, deleteRegisteredFunction } from './Actions';
-import {dbToUi, dbToUiArray, uiToDb, uiToRpc} from "@/features/registered-function/utils/objectConverter";
+import { dbToUi, dbToUiArray, uiToDb, uiToRpc } from "@/features/registered-function/utils/objectConverter";
 
 export const fetchRegisteredFunctions = createAsyncThunk(
     'registeredFunction/fetch',
     async (_, { dispatch }) => {
-
         const { data, error } = await supabase
             .from('registered_function')
             .select('*');
@@ -17,6 +16,7 @@ export const fetchRegisteredFunctions = createAsyncThunk(
         if (error) throw error;
         const frontData = dbToUiArray(data);
         dispatch(fetchRegisteredFunctionsSuccess(frontData));
+        return frontData;
     }
 );
 
@@ -31,7 +31,9 @@ export const createRegisteredFunctionThunk = createAsyncThunk(
             .single();
 
         if (error) throw error;
-        dispatch(createRegisteredFunction(data as RegisteredFunctionType));
+        const frontData = dbToUi(data);
+        dispatch(createRegisteredFunction(frontData));
+        return frontData;
     }
 );
 
@@ -47,14 +49,15 @@ export const updateRegisteredFunctionThunk = createAsyncThunk(
             .single();
 
         if (error) throw error;
-        dispatch(updateRegisteredFunction(data as RegisteredFunctionType));
+        const frontData = dbToUi(data);
+        dispatch(updateRegisteredFunction(frontData));
+        return frontData;
     }
 );
 
 export const deleteRegisteredFunctionThunk = createAsyncThunk(
     'registeredFunction/delete',
     async (id: string, { dispatch }) => {
-
         const { error } = await supabase
             .from('registered_function')
             .delete()
@@ -62,6 +65,7 @@ export const deleteRegisteredFunctionThunk = createAsyncThunk(
 
         if (error) throw error;
         dispatch(deleteRegisteredFunction(id));
+        return id;
     }
 );
 
@@ -190,3 +194,73 @@ export const fetchRegisteredFunctionById = createAsyncThunk(
         return dbToUi(data);
     }
 );
+
+
+export const prepareFormData = createAsyncThunk(
+    'registeredFunction/prepareFormData',
+    async (functionId: string | undefined, { dispatch }) => {
+        if (functionId) {
+            const result = await dispatch(fetchRegisteredFunctionById(functionId));
+            if (fetchRegisteredFunctionById.fulfilled.match(result)) {
+                const fetchedFunction = result.payload;
+                return {
+                    name: fetchedFunction.name,
+                    modulePath: fetchedFunction.modulePath,
+                    className: fetchedFunction.className,
+                    description: fetchedFunction.description,
+                    returnBroker: fetchedFunction.returnBroker,
+                    arg: Array.isArray(fetchedFunction.arg) ? fetchedFunction.arg.join(', ') : fetchedFunction.arg,
+                    systemFunction: Array.isArray(fetchedFunction.systemFunction) ? fetchedFunction.systemFunction.join(', ') : fetchedFunction.systemFunction,
+                    recipeFunction: Array.isArray(fetchedFunction.recipeFunction) ? fetchedFunction.recipeFunction.join(', ') : fetchedFunction.recipeFunction,
+                };
+            }
+        }
+        return {
+            name: '',
+            modulePath: '',
+            className: '',
+            description: '',
+            returnBroker: '',
+            arg: '',
+            systemFunction: '',
+            recipeFunction: '',
+        };
+    }
+);
+
+function isString(value: unknown): value is string {
+    return typeof value === 'string';
+}
+
+function isStringArray(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every(item => typeof item === 'string');
+}
+
+function convertToStringArray(value: unknown): string[] | undefined {
+    if (isStringArray(value)) {
+        return value;
+    }
+    if (isString(value)) {
+        return value.split(',').map(s => s.trim());
+    }
+    return undefined;
+}
+
+export const saveRegisteredFunction = createAsyncThunk(
+    'registeredFunction/save',
+    async ({ data, functionId }: { data: FormData, functionId?: string }, { dispatch }) => {
+        const convertedData: Partial<RegisteredFunctionType> = {
+            ...data,
+            arg: convertToStringArray(data.arg),
+            systemFunction: convertToStringArray(data.systemFunction),
+            recipeFunction: convertToStringArray(data.recipeFunction),
+        };
+
+        if (functionId) {
+            return dispatch(updateRegisteredFunctionThunk({ ...convertedData, id: functionId } as RegisteredFunctionType));
+        } else {
+            return dispatch(createRegisteredFunctionThunk(convertedData as Omit<RegisteredFunctionType, 'id'>));
+        }
+    }
+);
+
