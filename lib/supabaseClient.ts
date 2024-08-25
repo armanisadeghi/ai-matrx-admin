@@ -9,6 +9,5 @@ export function getSupabaseClientWithAuth(jwt?: string): SupabaseClient<Database
     return createClient<Database>(supabaseUrl, supabaseAnonKey, options);
 }
 
-const supabase = getSupabaseClientWithAuth();
+export const supabase = getSupabaseClientWithAuth();
 
-export default supabase;

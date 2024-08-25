@@ -4,25 +4,30 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '@/lib/supabaseClient';
 import { RegisteredFunctionType } from '@/types/registeredFunctionTypes';
 import { fetchRegisteredFunctionsSuccess, createRegisteredFunction, updateRegisteredFunction, deleteRegisteredFunction } from './Actions';
+import {dbToUiArray, uiToDb} from "@/features/registered-function/objectConverter";
 
 export const fetchRegisteredFunctions = createAsyncThunk(
     'registeredFunction/fetch',
     async (_, { dispatch }) => {
+
         const { data, error } = await supabase
-            .from('registered_functions')
+            .from('registered_function')
             .select('*');
 
         if (error) throw error;
-        dispatch(fetchRegisteredFunctionsSuccess(data as RegisteredFunctionType[]));
+        const frontData = dbToUiArray(data);
+        dispatch(fetchRegisteredFunctionsSuccess(frontData));
     }
 );
 
 export const createRegisteredFunctionThunk = createAsyncThunk(
     'registeredFunction/create',
     async (registeredFunction: Omit<RegisteredFunctionType, 'id'>, { dispatch }) => {
+        const registered_function = uiToDb(registeredFunction);
+
         const { data, error } = await supabase
-            .from('registered_functions')
-            .insert(registeredFunction)
+            .from('registered_function')
+            .insert(registered_function)
             .single();
 
         if (error) throw error;
@@ -33,9 +38,11 @@ export const createRegisteredFunctionThunk = createAsyncThunk(
 export const updateRegisteredFunctionThunk = createAsyncThunk(
     'registeredFunction/update',
     async (registeredFunction: RegisteredFunctionType, { dispatch }) => {
+        const registered_function = uiToDb(registeredFunction);
+
         const { data, error } = await supabase
-            .from('registered_functions')
-            .update(registeredFunction)
+            .from('registered_function')
+            .update(registered_function)
             .eq('id', registeredFunction.id)
             .single();
 
@@ -47,8 +54,9 @@ export const updateRegisteredFunctionThunk = createAsyncThunk(
 export const deleteRegisteredFunctionThunk = createAsyncThunk(
     'registeredFunction/delete',
     async (id: string, { dispatch }) => {
+
         const { error } = await supabase
-            .from('registered_functions')
+            .from('registered_function')
             .delete()
             .eq('id', id);
 

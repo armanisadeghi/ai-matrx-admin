@@ -3,7 +3,7 @@
 import { Model, attr } from 'redux-orm';
 import { RegisteredFunctionType } from '@/types/registeredFunctionTypes';
 
-class RegisteredFunction extends Model<typeof RegisteredFunction> {
+class RegisteredFunction extends Model {
     static modelName = 'RegisteredFunction' as const;
 
     static fields = {
