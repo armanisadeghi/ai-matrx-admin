@@ -49,6 +49,7 @@ cmake-build-*/
 
 # Exclude project-specific folders
 armani/
+-armani/
 _dev/
 temp/
 data/

@@ -1,7 +1,11 @@
+// File Location: @/app/layout.tsx
+
 import "@/styles/globals.css"
-import { Metadata, Viewport } from "next"
+import {Metadata, Viewport} from "next"
 import {siteConfig} from "@/config/extras/site";
 import {ThemeProvider} from "@/components/layout/ThemeProvider";
+import {Providers} from '@/lib/redux/providers'
+
 import {Toaster} from "@/components/ui/toaster";
 import {cn} from "@/lib/utils";
 import {inter, montserrat} from "@/lib/fonts";
@@ -76,8 +80,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
     themeColor: [
-        { media: "(prefers-color-scheme: light)", color: "white" },
-        { media: "(prefers-color-scheme: dark)", color: "black" },
+        {media: "(prefers-color-scheme: light)", color: "white"},
+        {media: "(prefers-color-scheme: dark)", color: "black"},
     ],
 }
 
@@ -85,7 +89,7 @@ interface RootLayoutProps {
     children: React.ReactNode
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default function RootLayout({children}: RootLayoutProps) {
     return (
         <html lang="en" suppressHydrationWarning className={`${inter.variable} ${montserrat.variable}`}>
         <body
@@ -93,10 +97,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 "min-h-screen bg-background font-sans antialiased",
             )}
         >
-        <ThemeProvider>
-            {children}
-            <Toaster />
-        </ThemeProvider>
+        <Providers>
+            <ThemeProvider>
+                {children}
+                <Toaster/>
+            </ThemeProvider>
+        </Providers>
         </body>
         </html>
     )
