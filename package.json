@@ -15,12 +15,14 @@
     "@radix-ui/react-avatar": "latest",
     "@radix-ui/react-collapsible": "latest",
     "@radix-ui/react-context-menu": "latest",
+    "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "latest",
     "@radix-ui/react-icons": "latest",
     "@radix-ui/react-label": "latest",
     "@radix-ui/react-menubar": "latest",
     "@radix-ui/react-navigation-menu": "latest",
     "@radix-ui/react-scroll-area": "latest",
+    "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-slot": "latest",
     "@radix-ui/react-tabs": "latest",
     "@radix-ui/react-toast": "latest",
@@ -47,6 +49,7 @@
     "tailwind-merge": "latest",
     "tailwindcss-animate": "latest",
     "usehooks-ts": "latest",
+    "vaul": "^0.9.1",
     "zod": "latest"
   },
   "devDependencies": {

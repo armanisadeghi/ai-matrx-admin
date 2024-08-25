@@ -32,7 +32,7 @@ export function uiToDb(data: Partial<RegisteredFunctionType>): any {
     };
 }
 
-function uiToRpc(data: Partial<RegisteredFunctionType>): any {
+export function uiToRpc(data: Partial<RegisteredFunctionType>): any {
     return {
         ...data,
         p_id: data.id || '',

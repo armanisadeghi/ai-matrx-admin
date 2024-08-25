@@ -3,10 +3,20 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Home, Users, ShoppingCart, BarChart, Settings } from 'lucide-react';
+import {usePathname} from 'next/navigation';
+import {cn} from '@/lib/utils';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {
+    Home,
+    Users,
+    ShoppingCart,
+    BarChart,
+    Settings,
+    PlusSquare,
+    SquareFunction,
+    FlaskConical,
+    PanelBottomOpen
+} from 'lucide-react';
 
 interface LeftSidebarProps {
     available: boolean;
@@ -14,14 +24,18 @@ interface LeftSidebarProps {
 }
 
 const sidebarNavItems = [
-    { title: "Home", href: "/dashboard", icon: Home },
-    { title: "Users", href: "/dashboard/users", icon: Users },
-    { title: "Products", href: "/dashboard/products", icon: ShoppingCart },
-    { title: "Analytics", href: "/dashboard/analytics", icon: BarChart },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings },
+    {title: "Home", href: "/dashboard", icon: Home},
+    {title: "Users", href: "/dashboard/users", icon: Users},
+    {title: "Products", href: "/dashboard/products", icon: ShoppingCart},
+    {title: "Analytics", href: "/dashboard/analytics", icon: BarChart},
+    {title: "Settings", href: "/dashboard/settings", icon: Settings},
+    {title: "Counter App", href: "/counter", icon: PlusSquare},
+    {title: "Manage Functions", href: "/registered-functions", icon: SquareFunction},
+    {title: "Test Page", href: "/tests", icon: FlaskConical},
+    {title: "Drawer Test", href: "/tests/crud-drawer", icon: PanelBottomOpen},
 ];
 
-const LeftSidebar: React.FC<LeftSidebarProps> = ({ available, state }) => {
+const LeftSidebar: React.FC<LeftSidebarProps> = ({available, state}) => {
     const pathname = usePathname();
 
     if (!available || state === 'closed') return null;
@@ -42,7 +56,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ available, state }) => {
                   pathname === item.href ? "bg-gray-200 dark:bg-gray-800" : "transparent",
                   "my-1"
               )}>
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4"/>
                   {!isIconOnly && <span className="ml-2">{item.title}</span>}
               </span>
                         </Link>
