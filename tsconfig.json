@@ -25,7 +25,7 @@
         "name": "next"
       }
     ],
-    // Added options to relax TypeScript checks
+    // Relaxed TypeScript options
     "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false,

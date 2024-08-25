@@ -26,6 +26,8 @@
     "@radix-ui/react-toast": "latest",
     "@radix-ui/react-tooltip": "latest",
     "@reduxjs/toolkit": "latest",
+    "@supabase/ssr": "^0.5.0",
+    "@supabase/supabase-js": "^2.45.2",
     "@tanstack/react-table": "latest",
     "class-variance-authority": "latest",
     "clsx": "latest",
