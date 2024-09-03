@@ -86,82 +86,62 @@ const HomePage: React.FC = () => {
             <TopMenu />
             <main className="container mx-auto px-4 py-16 text-center">
                 <h1 className="text-6xl font-bold mb-4">AI Matrx</h1>
-                <h2 className="text-4xl font-semibold mb-4">Revolutionizing Business AI Integration</h2>
-                <p className="text-xl mb-8 max-w-3xl mx-auto">
-                    Bridge the gap between AI capabilities and real-world business needs. Orchestrate, automate, and elevate your AI-driven processes without coding.
+                <h2 className="text-4xl font-semibold mb-6">Redefining Enterprise AI Integration</h2>
+                <p className="text-xl mb-10 max-w-3xl mx-auto">
+                    Empower your business with a no-code AI platform that orchestrates, automates, and elevates your processes. Bridge the gap between AI potential and real-world business needs.
                 </p>
-                <div className="flex justify-center gap-4 mb-12">
-                    <Button size="lg">Get Started</Button>
-                    <Button size="lg" variant="outline">Schedule Demo</Button>
+                <div className="flex justify-center gap-4 mb-16">
+                    <Button size="lg">Start Free Trial</Button>
+                    <Button size="lg" variant="outline">Request Demo</Button>
                 </div>
 
-                <div className="flex justify-center flex-wrap gap-8 my-16">
-                    <p className="font-semibold">Transforming Businesses With:</p>
-                    {[
-                        'AI Orchestration',
-                        'No-Code Development',
-                        'Enterprise Scalability',
-                        'Workflow Automation'
-                    ].map((feature, index) => (
-                        <div key={index} className="text-muted-foreground font-medium">{feature}</div>
-                    ))}
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-8 text-left">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left mb-16">
                     <FeatureCard
                         Icon={Wand2}
-                        title="Unmatched AI Orchestration"
-                        description="Combine and customize outputs from multiple AI models for superior quality and relevance."
-                        features={['Multi-model Integration', 'Customizable Solutions', 'Elevated AI Outputs']}
-                    />
-                    <FeatureCard
-                        Icon={Code}
-                        title="No-Code AI Development"
-                        description="Build sophisticated AI applications effortlessly with our user-friendly, no-code platform."
-                        features={['Intuitive Interface', 'Advanced Functionality', 'Rapid Deployment']}
+                        title="AI Orchestration"
+                        description="Seamlessly integrate multiple AI models for superior outcomes."
+                        features={['Multi-model Integration', 'Customizable Solutions']}
                     />
                     <FeatureCard
                         Icon={ArrowUpCircle}
-                        title="Enterprise-Grade Scalability"
-                        description="Handle intense demands and scale seamlessly to foster business growth across your organization."
-                        features={['High Performance', 'Flexible Scaling', 'Enterprise-Ready']}
+                        title="Enterprise Scalability"
+                        description="Handle intense demands with a system that grows with your business."
+                        features={['High Performance', 'Flexible Scaling']}
                     />
                     <FeatureCard
                         Icon={Brain}
-                        title="Self-Improving AI System"
-                        description="Our AI continuously learns from each task, refining models and improving accuracy over time."
-                        features={['Continuous Learning', 'Increased Efficiency', 'Adaptive Intelligence']}
+                        title="Self-Improving AI"
+                        description="Our AI continuously learns, refining models for increased accuracy."
+                        features={['Continuous Learning', 'Adaptive Intelligence']}
                     />
                     <FeatureCard
                         Icon={Workflow}
-                        title="Seamless Workflow Integration"
-                        description="Connect with over 1,000 APIs for streamlined operations and enhanced productivity."
-                        features={['1000+ API Integrations', 'Streamlined Processes', 'Enhanced Productivity']}
+                        title="Workflow Integration"
+                        description="Streamline operations with over 1,000 API integrations."
+                        features={['1000+ API Integrations', 'Enhanced Productivity']}
                     />
-                    <FeatureCard
-                        Icon={Rocket}
-                        title="Rapid Application Development"
-                        description="Create powerful AI applications in hours, not months, with full database integration and state management."
-                        features={['Accelerated Development', 'Full Database Integration', 'Complete Control']}
-                    />
-                    <FeatureCard
-                        Icon={Zap}
-                        title="AI-Powered Task Handling"
-                        description="Streamline communication and employ cutting-edge AI for effective task management across your business."
-                        features={['Smart Task Allocation', 'Efficient Processing', 'Automated Workflows']}
-                    />
-                    <FeatureCard
-                        Icon={Shield}
-                        title="Robust Security & Compliance"
-                        description="Ensure data protection and maintain compliance with enterprise-grade security measures."
-                        features={['Data Encryption', 'Compliance Ready', 'Secure Integrations']}
-                    />
-                    <FeatureCard
-                        Icon={ChartBar}
-                        title="Real-Time Analytics & Insights"
-                        description="Gain valuable insights with instant analytics and ML-driven trend forecasting for strategic decision-making."
-                        features={['Instant Analytics', 'Trend Forecasting', 'Data-Driven Decisions']}
-                    />
+                </div>
+
+                <div className="text-left max-w-3xl mx-auto">
+                    <h3 className="text-2xl font-semibold mb-4">Why Enterprise Leaders Choose AI Matrx</h3>
+                    <ul className="space-y-2">
+                        <li className="flex items-start">
+                            <span className="text-primary mr-2 mt-1">✓</span>
+                            <span><strong>Rapid ROI:</strong> Deploy AI solutions in hours, not months, accelerating time-to-value.</span>
+                        </li>
+                        <li className="flex items-start">
+                            <span className="text-primary mr-2 mt-1">✓</span>
+                            <span><strong>No-Code Simplicity:</strong> Empower your team to build sophisticated AI applications without extensive technical knowledge.</span>
+                        </li>
+                        <li className="flex items-start">
+                            <span className="text-primary mr-2 mt-1">✓</span>
+                            <span><strong>Enterprise-Grade Security:</strong> Ensure data protection and compliance with robust security measures.</span>
+                        </li>
+                        <li className="flex items-start">
+                            <span className="text-primary mr-2 mt-1">✓</span>
+                            <span><strong>Scalable Performance:</strong> Seamlessly handle growing demands as your AI initiatives expand.</span>
+                        </li>
+                    </ul>
                 </div>
             </main>
         </div>
