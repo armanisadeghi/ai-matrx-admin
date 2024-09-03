@@ -25,6 +25,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const fetchUserSettings = async () => {
             try {
+
+                // console.log('fetching user settings not implemented yet');
+/*
                 const response = await fetch('/api/user-settings');
                 const settings = await response.json();
 
@@ -34,6 +37,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
                 if (settings.contrastColor) {
                     setContrastColor(settings.contrastColor);
                 }
+*/
             } catch (error) {
                 console.error('Failed to fetch user settings:', error);
             }
@@ -68,7 +72,7 @@ export const useTheme = () => {
 //
 // // components/ThemeProvider.tsx
 // import { ReactNode, useEffect } from 'react';
-// import { useSelector, useDispatch } from 'react-redux';
+// import { useSelector, useDispatch } from 'react-redux-old';
 // import { setTheme, setContrastColor } from '../store/slices/userSettingsSlice';
 // import { RootState } from '../store'; // Assuming you have a store configured
 //

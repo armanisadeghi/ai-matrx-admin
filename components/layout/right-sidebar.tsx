@@ -16,8 +16,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ available, state }) => {
         <aside className="w-64 border-l bg-background">
             <ScrollArea className="h-full">
                 <div className="p-4">
-                    <h2 className="text-lg font-semibold mb-4">Assistant</h2>
-                    <p>This is where your AI assistant or helpful information can go.</p>
+                    <h2 className="text-lg font-semibold mb-4">AI Matrx</h2>
+                    <p>Hi. I'm here to assist you whatever you need. As you work, I'll watch and try to help, if I can but if it's too much, just click the button above and I'll go take a nap.</p>
                 </div>
             </ScrollArea>
         </aside>

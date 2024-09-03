@@ -4,11 +4,13 @@ import "@/styles/globals.css"
 import {Metadata, Viewport} from "next"
 import {siteConfig} from "@/config/extras/site";
 import {ThemeProvider} from "@/components/layout/ThemeProvider";
-import {Providers} from '@/lib/redux/providers'
 
 import {Toaster} from "@/components/ui/toaster";
 import {cn} from "@/lib/utils";
 import {inter, montserrat} from "@/lib/fonts";
+import {NextUIProvider} from "@nextui-org/react";
+
+
 
 export const metadata: Metadata = {
     title: {
@@ -50,7 +52,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         locale: "en_US",
-        url: siteConfig.url,
+        // url: siteConfig.url,
         title: "App Matrx",
         description: "App Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with App Matrx.",
         siteName: "App Matrx",
@@ -75,7 +77,7 @@ export const metadata: Metadata = {
         shortcut: "/favicon-16x16.png",
         apple: "/apple-touch-icon.png",
     },
-    manifest: `${siteConfig.url}/site.webmanifest`,
+    // manifest: `${siteConfig.url}/site.webmanifest`,
 }
 
 export const viewport: Viewport = {
@@ -97,12 +99,12 @@ export default function RootLayout({children}: RootLayoutProps) {
                 "min-h-screen bg-background font-sans antialiased",
             )}
         >
-        <Providers>
-            <ThemeProvider>
+        <ThemeProvider>
+            <NextUIProvider>
                 {children}
                 <Toaster/>
-            </ThemeProvider>
-        </Providers>
+            </NextUIProvider>
+        </ThemeProvider>
         </body>
         </html>
     )

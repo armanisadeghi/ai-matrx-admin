@@ -1,0 +1,76 @@
+[
+  {
+    "result": {
+      "data": {
+        "id": "939c968e-52ce-4f13-872f-3eeed02baf91",
+        "name": "Samplename4702",
+        "class_name": "some_class",
+        "arg_inverse": [
+          {
+            "id": "93402ece-b561-4191-be4f-33d989b551cc",
+            "name": "some_arg",
+            "ready": false,
+            "default": "hi",
+            "required": true,
+            "data_type": "str",
+            "registered_function": "939c968e-52ce-4f13-872f-3eeed02baf91"
+          },
+          {
+            "id": "1e844218-6f89-42e1-9978-8d33d41e207e",
+            "name": "Samplename5704",
+            "ready": null,
+            "default": null,
+            "required": null,
+            "data_type": null,
+            "registered_function": "939c968e-52ce-4f13-872f-3eeed02baf91"
+          }
+        ],
+        "description": "This is my description.",
+        "module_path": "Samplemodule_path4702",
+        "return_broker": "df4a44d9-8a1c-4e91-9709-8e665be8dc9e",
+        "return_broker_object": {
+          "id": "df4a44d9-8a1c-4e91-9709-8e665be8dc9e",
+          "name": "Samplename5340",
+          "tags": null,
+          "ready": null,
+          "value": null,
+          "tooltip": null,
+          "data_type": "bool",
+          "description": null,
+          "display_name": null,
+          "default_source": null,
+          "sample_entries": null,
+          "output_component": null,
+          "validation_rules": null,
+          "additional_params": null,
+          "default_destination": null,
+          "other_source_params": null,
+          "custom_source_component": null
+        },
+        "system_function_inverse": [
+          {
+            "id": "663b8d82-bb87-44ac-a18b-7313b69453e5",
+            "name": "Cute Little Function",
+            "rf_id": "939c968e-52ce-4f13-872f-3eeed02baf91",
+            "sample": "sorry. Don't have a sample. I'm too cute for that.",
+            "description": "I'm a cute little function that does cool stuff",
+            "input_params": {
+              "some_field": "some_value",
+              "some_other_field": "some_other_value"
+            },
+            "output_options": {
+              "some_result": "some_value",
+              "some_other_thing": "some_other_value",
+              "some_other_result": "some_other_value"
+            }
+          }
+        ]
+      },
+      "tables": [
+        "broker",
+        "arg",
+        "systemFunction"
+      ]
+    }
+  }
+]

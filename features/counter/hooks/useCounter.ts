@@ -1,7 +1,7 @@
 // File: @/features/counter/hooks/useCounter.ts
 
 import { useCallback } from 'react';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/redux-old/hooks';
 import {
     increment,
     decrement,

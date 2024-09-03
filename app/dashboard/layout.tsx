@@ -1,5 +1,6 @@
 import React from 'react';
 import BaseLayout from '@/components/layout/base-layout';
+import {Providers} from "@/lib/redux-old/providers";
 
 export default function DashboardLayout(
     {
@@ -8,11 +9,13 @@ export default function DashboardLayout(
         children: React.ReactNode
     }) {
     return (
-        <BaseLayout
-            leftSidebarProps={{available: true, state: 'full'}}
-            rightSidebarProps={{available: true, state: 'full'}}
-        >
-            {children}
-        </BaseLayout>
+        <Providers>
+            <BaseLayout
+                leftSidebarProps={{available: true, state: 'full'}}
+                rightSidebarProps={{available: true, state: 'full'}}
+            >
+                {children}
+            </BaseLayout>
+        </Providers>
     );
 }

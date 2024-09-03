@@ -1,7 +1,7 @@
 // File Location: @/features/counter/Selectors.ts
 
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '@/lib/redux/store';
+import { RootState } from '@/lib/redux-old/store';
 
 const counterState = (state: RootState) => state.counter;
 

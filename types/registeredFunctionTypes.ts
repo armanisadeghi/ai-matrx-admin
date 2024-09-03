@@ -1,30 +1,51 @@
-// File location: @/types/registeredFunctionTypes.ts
-
 import { ArgType } from '@/types/argTypes';
-import { FlexRef } from "@/types/FlexRef";
+import { SystemFunctionType } from '@/types/systemFunctionTypes';
+import { RecipeFunctionType } from '@/types/recipeFunctionTypes';
+import { BrokerType } from "@/types/brokerTypes";
 import * as z from 'zod';
 
-export type RegisteredFunctionType = {
-    id: string;
-    name: string;
-    modulePath: string;
-    className?: string;
-    description?: string;
-    returnBroker?: string;
-    arg?: FlexRef<ArgType[]>;
-    systemFunction?: any[];
-    recipeFunction?: any[];
-};
+export enum RegisteredFunctionTypeEnum {
+    Base = 'base',
+    Full = 'full'
+}
 
-export const formSchema = z.object({
+export const RegisteredFunctionBaseSchema = z.object({
+    id: z.string(),
     name: z.string().min(1, "Name is required"),
     modulePath: z.string().min(1, "Module path is required"),
-    className: z.string().optional(),
-    description: z.string().optional(),
-    returnBroker: z.string().optional(),
-    arg: z.string().optional(),
-    systemFunction: z.string().optional(),
-    recipeFunction: z.string().optional(),
+    className: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    returnBroker: z.string().nullable().optional(),
 });
 
-export type FormData = z.infer<typeof formSchema>;
+export const RegisteredFunctionFullSchema = RegisteredFunctionBaseSchema.extend({
+    type: z.literal(RegisteredFunctionTypeEnum.Full),
+    returnBrokerObject: z.custom<BrokerType>().nullable().optional(),
+    args: z.array(z.custom<ArgType>()).nullable().optional(),
+    systemFunction: z.custom<SystemFunctionType>().nullable().optional(),
+    recipeFunctions: z.array(z.custom<RecipeFunctionType>()).nullable().optional(),
+});
+
+export const RegisteredFunctionUnionSchema = z.discriminatedUnion('type', [
+    RegisteredFunctionBaseSchema.extend({
+        type: z.literal(RegisteredFunctionTypeEnum.Base),
+    }),
+    RegisteredFunctionFullSchema,
+]);
+
+export type RegisteredFunctionBase = z.infer<typeof RegisteredFunctionBaseSchema>;
+export type RegisteredFunctionFull = z.infer<typeof RegisteredFunctionFullSchema>;
+export type RegisteredFunctionUnion = z.infer<typeof RegisteredFunctionUnionSchema>;
+
+export const FormDataSchema = RegisteredFunctionBaseSchema.omit({ id: true });
+
+export type FormData = z.infer<typeof FormDataSchema>;
+
+// Optional: If we need to support partial updates (i.e., patch operations):
+export const PartialRegisteredFunctionBaseSchema = RegisteredFunctionBaseSchema.partial();
+export const PartialRegisteredFunctionFullSchema = RegisteredFunctionFullSchema.partial();
+export type PartialRegisteredFunctionBase = z.infer<typeof PartialRegisteredFunctionBaseSchema>;
+export type PartialRegisteredFunctionFull = z.infer<typeof PartialRegisteredFunctionFullSchema>;
+
+
+export type RegisteredFunctionType = RegisteredFunctionBase | RegisteredFunctionFull;

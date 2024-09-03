@@ -2,8 +2,7 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import Link from 'next/link';
-import {Bell, Search, PanelLeft, PanelRight, Menu} from 'lucide-react';
+import {Bell, Search, PanelRight, Menu} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {UserNav} from '@/components/user-nav';
@@ -37,31 +36,28 @@ const TopMenu: React.FC<TopMenuProps> = (
     return (
         <header
             className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 max-w-screen-2xl items-center">
-                <div className="flex items-center space-x-4 md:space-x-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="md:hidden"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        <Menu className="h-5 w-5"/>
-                        <span className="sr-only">Toggle mobile menu</span>
-                    </Button>
+            <div className="container flex h-14 max-w-screen-2xl items-center" style={{ paddingLeft: '0.85rem', margin: '0', padding: '0' }}> {/* Remove all margin and padding */}
+                <div className="flex items-center space-x-1">
                     {leftSidebarAvailable && (
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={toggleLeftSidebar}
-                            className="hidden md:inline-flex"
+                            className="hidden md:inline-flex ml-1"
                         >
-                            <PanelLeft className="h-5 w-5"/>
+                            <Menu className="h-5 w-5"/>
                             <span className="sr-only">Toggle left sidebar</span>
                         </Button>
                     )}
-                    <Link href="/dashboard" className="flex items-center space-x-2">
-                        <span className="font-bold inline-block">Dashboard</span>
-                    </Link>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden ml-1"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        <Menu className="h-5 w-5"/>
+                        <span className="sr-only">Toggle mobile menu</span>
+                    </Button>
                 </div>
                 <div className="flex flex-1 items-center justify-end space-x-2">
                     <Input

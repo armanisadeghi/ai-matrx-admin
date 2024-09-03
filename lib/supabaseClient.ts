@@ -9,5 +9,14 @@ export function getSupabaseClientWithAuth(jwt?: string): SupabaseClient<Database
     return createClient<Database>(supabaseUrl, supabaseAnonKey, options);
 }
 
+export type Json =
+    | string
+    | number
+    | boolean
+    | null
+    | { [key: string]: Json | undefined }
+    | Json[]
+
+
 export const supabase = getSupabaseClientWithAuth();
 

@@ -1,4 +1,5 @@
-'use client';
+ 'use client';
+
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import Camera from "@/components/ui/added-ui/camera/camera";

@@ -1,7 +1,7 @@
 // File Location: @/features/counter/Thunks.ts
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '@/lib/redux/store';
+import { RootState } from '@/lib/redux-old/store';
 import { database } from '@/features/counter/Database';
 import { optimisticUpdateInputValue, removeOptimisticUpdate } from './Slice';
 

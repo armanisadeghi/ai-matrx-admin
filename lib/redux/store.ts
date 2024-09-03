@@ -1,25 +1,29 @@
-// File: @/lib/redux/store.ts
-
+import createSagaMiddleware from 'redux-saga';
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from '@/features/counter/Slice';
-import registeredFunctionReducer from '@/features/registered-function/Slice';
-import { middleware as counterMiddleware } from '@/features/counter/Middleware';
-import orm from './orm';
-import { createReducer } from 'redux-orm';
+import { featureSchemas } from './featureSchema';
+import { createFeatureSlice } from './sliceCreator';
+import { createFeatureSagas } from './sagas'; // Import the new saga
 
-const rootReducer = {
-    counter: counterReducer,
-    registeredFunction: registeredFunctionReducer,
-    orm: createReducer(orm),
+const sagaMiddleware = createSagaMiddleware();
+
+const reducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
+    const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
+    const featureSlice = createFeatureSlice(featureName as any, featureSchema);
+    acc[featureName] = featureSlice.reducer;
+    return acc;
+}, {} as Record<string, any>);
+
+export const makeStore = () => {
+    const store = configureStore({
+        reducer: reducers,
+        middleware: getDefaultMiddleware => getDefaultMiddleware().concat(sagaMiddleware),
+    });
+
+    // sagaMiddleware.run(createFeatureSagas); // Run the new saga
+
+    return store;
 };
 
-export const store = configureStore({
-    reducer: rootReducer,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-            serializableCheck: false, // Disable serializable check for ORM
-        }).concat(counterMiddleware),
-});
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type AppStore = ReturnType<typeof makeStore>;
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];

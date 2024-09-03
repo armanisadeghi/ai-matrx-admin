@@ -29,10 +29,13 @@ const sidebarNavItems = [
     {title: "Products", href: "/dashboard/products", icon: ShoppingCart},
     {title: "Analytics", href: "/dashboard/analytics", icon: BarChart},
     {title: "Settings", href: "/dashboard/settings", icon: Settings},
+    {title: "Manage Admin Functions", href: "/admin/registered-functions", icon: SquareFunction},
     {title: "Counter App", href: "/counter", icon: PlusSquare},
-    {title: "Manage Functions", href: "/registered-functions", icon: SquareFunction},
     {title: "Test Page", href: "/tests", icon: FlaskConical},
     {title: "Drawer Test", href: "/tests/crud-drawer", icon: PanelBottomOpen},
+    {title: "AI Playground", href: "/playground", icon: SquareFunction},
+    {title: "Simple Manage Functions", href: "/tests/reg-func-simple", icon: SquareFunction},
+    {title: "Original Functions", href: "/registered-functions", icon: SquareFunction},
 ];
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({available, state}) => {

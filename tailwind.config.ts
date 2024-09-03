@@ -1,4 +1,5 @@
 import type {Config} from "tailwindcss";
+import {nextui} from "@nextui-org/react";
 
 const {fontFamily} = require("tailwindcss/defaultTheme");
 
@@ -9,8 +10,8 @@ const config: Config = {
         "./components/**/*.{ts,tsx}",
         "./app/**/*.{ts,tsx}",
         "./src/**/*.{ts,tsx}",
+        "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     ],
-    prefix: "",
     theme: {
         container: {
             center: true,
@@ -80,7 +81,10 @@ const config: Config = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [
+        require("tailwindcss-animate"),
+        nextui(),
+    ],
     pnpm: {
         overrides: {
             "@humanwhocodes/config-array@<0.11.14": "^0.11.14",
