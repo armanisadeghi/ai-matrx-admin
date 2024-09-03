@@ -2,6 +2,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
 type Theme = 'light' | 'dark';
 type ContrastColor = 'standard' | 'red' | 'blue' | 'green' | 'violet' | 'yellow';
@@ -14,12 +15,24 @@ interface ThemeContextProps {
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const [theme, setTheme] = useState<Theme>('light');
+interface ThemeProviderProps {
+    children: ReactNode;
+    defaultTheme?: Theme;
+    enableSystem?: boolean;
+            }
+
+export const ThemeProvider = ({ children, defaultTheme = 'dark', enableSystem = false }: ThemeProviderProps) => {
+    const [theme, setTheme] = useState<Theme>(defaultTheme);
     const [contrastColor, setContrastColor] = useState<ContrastColor>('standard');
 
     const toggleTheme = () => {
-        setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+        setTheme((prevTheme) => {
+            const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+            if (typeof window !== 'undefined') {
+            localStorage.setItem('theme', newTheme);
+            }
+            return newTheme;
+        });
     };
 
     useEffect(() => {
@@ -47,13 +60,22 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     useEffect(() => {
+        if (typeof window !== 'undefined') {
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.setAttribute('data-contrast', contrastColor);
-    }, [theme, contrastColor]);
+            document.documentElement.style.colorScheme = theme;
+        }
+    }, [theme]);
 
     return (
         <ThemeContext.Provider value={{ theme, contrastColor, toggleTheme }}>
+            <NextThemesProvider
+                attribute="class"
+                defaultTheme={defaultTheme}
+                enableSystem={enableSystem}
+                value={{ light: 'light', dark: 'dark' }}
+            >
             {children}
+            </NextThemesProvider>
         </ThemeContext.Provider>
     );
 };

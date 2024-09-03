@@ -9,7 +9,7 @@ import {Toaster} from "@/components/ui/toaster";
 import {cn} from "@/lib/utils";
 import {inter, montserrat} from "@/lib/fonts";
 import {NextUIProvider} from "@nextui-org/react";
-
+import Script from 'next/script';
 
 
 export const metadata: Metadata = {
@@ -93,13 +93,34 @@ interface RootLayoutProps {
 
 export default function RootLayout({children}: RootLayoutProps) {
     return (
-        <html lang="en" suppressHydrationWarning className={`${inter.variable} ${montserrat.variable}`}>
+        <html lang="en" suppressHydrationWarning className={`dark ${inter.variable} ${montserrat.variable}`}>
+        <head>
+            <Script id="theme-script" strategy="beforeInteractive">
+                {`
+                    (function() {
+                        function getInitialTheme() {
+                            if (typeof window !== 'undefined') {
+                                const storedTheme = localStorage.getItem('theme');
+                                if (storedTheme === 'light') {
+                                    return 'light';
+                                }
+                            }
+                            return 'dark'; // Default to dark
+                        }
+                        
+                        const theme = getInitialTheme();
+                        document.documentElement.classList.toggle('dark', theme === 'dark');
+                        document.documentElement.style.colorScheme = theme;
+                    })();
+                    `}
+            </Script>
+        </head>
         <body
             className={cn(
                 "min-h-screen bg-background font-sans antialiased",
             )}
         >
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="dark" enableSystem={false}>
             <NextUIProvider>
                 {children}
                 <Toaster/>

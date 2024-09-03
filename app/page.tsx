@@ -43,7 +43,7 @@ const TopMenu: React.FC<TopMenuProps> = () => {
                 <div className="flex items-center space-x-3">
                     <ModeToggle/>
                     <Link href="/dashboard" className="flex items-center">
-                        <Button variant="secondary">Dashboard</Button>
+                        <Button variant="outline">Dashboard</Button>
                     </Link>
                     <Button>Start your project</Button>
                 </div>
