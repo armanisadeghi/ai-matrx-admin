@@ -1,8 +1,6 @@
-// File Location: features/registered-function/components/FunctionManagement.tsx
-
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CrudComponent } from '@/components/crud/CrudComponent';
 import {
     RegisteredFunctionBase,
@@ -21,26 +19,24 @@ const FunctionManagement: React.FC = () => {
         fetchOne,
         fetchPaginated,
         deleteOne,
+        deleteMany,
         update,
         create,
     } = useRegisteredFunction();
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
     useEffect(() => {
-        fetchPaginated({ featureName: 'registeredFunction', page: 1, pageSize: 10 });
-    }, [fetchPaginated]);
+        fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
+    }, [fetchPaginated, currentPage, itemsPerPage]);
 
     const handleItemSelect = (id: string) => {
         fetchOne({ featureName: 'registeredFunction', id });
     };
 
     const handleSearch = (query: string, searchAll: boolean) => {
-        if (searchAll) {
-            console.log('Searching all with query:', query);
-            // Placeholder: implement the search logic that queries all records
-        } else {
-            console.log('Search specific fields with query:', query);
-            // Placeholder: implement the search logic that queries specific fields
-        }
+        // Implement search logic here
     };
 
     const handleSubmit = (data: RegisteredFunctionBase) => {
@@ -49,12 +45,25 @@ const FunctionManagement: React.FC = () => {
         } else {
             create({ featureName: 'registeredFunction', payload: data });
         }
-        fetchPaginated({ featureName: 'registeredFunction', page: 1, pageSize: 10 });
+        fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
     };
 
     const handleDelete = (id: string) => {
         deleteOne({ featureName: 'registeredFunction', id });
-        fetchPaginated({ featureName: 'registeredFunction', page: 1, pageSize: 10 });
+        fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
+    };
+
+    const handleDeleteMany = (ids: string[]) => {
+        deleteMany({ featureName: 'registeredFunction', ids });
+        fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (pageSize: number) => {
+        setItemsPerPage(pageSize);
     };
 
     const fields = {
@@ -76,6 +85,7 @@ const FunctionManagement: React.FC = () => {
     return (
         <CrudComponent
             schema={RegisteredFunctionUnionSchema}
+            allIdAndNames={allIdAndNames}
             items={Object.values(items)}
             fields={fields}
             getItemId={(item) => item.id}
@@ -84,9 +94,14 @@ const FunctionManagement: React.FC = () => {
             onSearch={handleSearch}
             onSubmit={handleSubmit}
             onDelete={handleDelete}
+            onDeleteMany={handleDeleteMany}
             loading={loading}
             error={error}
-            title="Function Management"
+            totalCount={totalCount}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
         />
     );
 };

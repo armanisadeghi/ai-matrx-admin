@@ -25,13 +25,6 @@ const RegisteredFunctionsList: React.FC = () => {
             pageSize: rowsPerPage,
             includeAllIdsNames: true
         });
-        console.log('RegisteredFunctionsList useEffect fetching page', page);
-        console.log('Page size:', rowsPerPage);
-        console.log('Included all ids and names:', true);
-
-        console.log('Loading status:', loading);
-        console.log('Error status:', error);
-        console.log('RegisteredFunctionsList useEffect fetching items', items);
 
 
     }, [fetchPaginated, page]);

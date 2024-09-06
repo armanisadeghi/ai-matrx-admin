@@ -39,18 +39,8 @@ export const ThemeProvider = ({ children, defaultTheme = 'dark', enableSystem = 
         const fetchUserSettings = async () => {
             try {
 
-                // console.log('fetching user settings not implemented yet');
-/*
-                const response = await fetch('/api/user-settings');
-                const settings = await response.json();
+                // TODO: Fetch user settings from the database here.
 
-                if (settings.theme) {
-                    setTheme(settings.theme);
-                }
-                if (settings.contrastColor) {
-                    setContrastColor(settings.contrastColor);
-                }
-*/
             } catch (error) {
                 console.error('Failed to fetch user settings:', error);
             }

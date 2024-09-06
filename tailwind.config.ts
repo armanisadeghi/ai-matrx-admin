@@ -1,15 +1,16 @@
-import type {Config} from "tailwindcss";
-import {nextui} from "@nextui-org/react";
+import type { Config } from "tailwindcss";
+import { nextui } from "@nextui-org/react";
 
-const {fontFamily} = require("tailwindcss/defaultTheme");
+const { fontFamily } = require("tailwindcss/defaultTheme");
+const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
 
 const config: Config = {
     darkMode: ["class"],
     content: [
-        "./pages/**/*.{ts,tsx}",
-        "./components/**/*.{ts,tsx}",
-        "./app/**/*.{ts,tsx}",
-        "./src/**/*.{ts,tsx}",
+        "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+        "./components/**/*.{js,ts,jsx,tsx,mdx}",
+        "./app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./features/**/*.{js,ts,jsx,tsx,mdx}",
         "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
@@ -67,12 +68,12 @@ const config: Config = {
             },
             keyframes: {
                 "accordion-down": {
-                    from: {height: "0"},
-                    to: {height: "var(--radix-accordion-content-height)"},
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
                 },
                 "accordion-up": {
-                    from: {height: "var(--radix-accordion-content-height)"},
-                    to: {height: "0"},
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
                 },
             },
             animation: {
@@ -84,16 +85,20 @@ const config: Config = {
     plugins: [
         require("tailwindcss-animate"),
         nextui(),
+        addVariablesForColors,
     ],
-    pnpm: {
-        overrides: {
-            "@humanwhocodes/config-array@<0.11.14": "^0.11.14",
-            "@humanwhocodes/object-schema@<2.0.3": "^2.0.3",
-            "glob@<7.2.3": "^7.2.3",
-            "inflight@<1.0.6": "^1.0.6",
-            "rimraf@<3.0.2": "^3.0.2",
-        },
-    },
 };
+
+
+function addVariablesForColors({ addBase, theme }: any) {
+    let allColors = flattenColorPalette(theme("colors"));
+    let newVars = Object.fromEntries(
+        Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+    );
+
+    addBase({
+        ":root": newVars,
+    });
+}
 
 export default config;

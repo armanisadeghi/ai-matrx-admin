@@ -1,4 +1,3 @@
-/*
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -42,10 +41,6 @@ export function RegisteredFunctionForm(
             description: '',
             returnBroker: '',
             type: RegisteredFunctionTypeEnum.Base,
-            returnBrokerObject: undefined,
-            args: [],
-            systemFunction: undefined,
-            recipeFunctions: [],
         },
     });
 
@@ -198,4 +193,3 @@ export function RegisteredFunctionForm(
         </Form>
     );
 }
-*/

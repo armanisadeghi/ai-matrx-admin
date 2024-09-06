@@ -1,0 +1,192 @@
+<div class="flex-grow flex flex-col overflow-hidden">
+    <div class="flex-grow overflow-auto p-4">
+        <div class="mb-4">
+            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="lucide lucide-circle-plus mr-2 h-4 w-4">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 12h8"></path>
+                    <path d="M12 8v8"></path>
+                </svg>
+                Add New
+            </button>
+            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="lucide lucide-circle-plus mr-2 h-4 w-4">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 12h8"></path>
+                    <path d="M12 8v8"></path>
+                </svg>
+                Delete Selected
+            </button>
+        </div>
+        <div class="w-full">
+            <div class="overflow-x-auto">
+                <div class="relative w-full overflow-auto">
+                    <table class="w-full caption-bottom text-sm">
+                        <thead class="[&amp;_tr]:border-b">
+                        <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                            <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] whitespace-nowrap cursor-pointer">
+                                Name
+                            </th>
+                            <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] whitespace-nowrap cursor-pointer">
+                                Module Path
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="[&amp;_tr:last-child]:border-0">
+                        <tr class="border-b transition-colors data-[state=selected]:bg-muted cursor-pointer hover:bg-accent hover:text-accent-foreground">
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate" title="Jatin_function_new">Jatin_function_new</div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate" title="upserted_module_path">upserted_module_path</div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate"></div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] whitespace-nowrap">
+                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
+                                        type="button" id="radix-:r4:" aria-haspopup="menu" aria-expanded="false"
+                                        data-state="closed"><span class="sr-only">Open menu</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round" class="lucide lucide-ellipsis h-4 w-4">
+                                        <circle cx="12" cy="12" r="1"></circle>
+                                        <circle cx="19" cy="12" r="1"></circle>
+                                        <circle cx="5" cy="12" r="1"></circle>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="border-b transition-colors data-[state=selected]:bg-muted cursor-pointer hover:bg-accent hover:text-accent-foreground">
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate" title="updated_function">updated_function</div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate"></div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] whitespace-nowrap">
+                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
+                                        type="button" id="radix-:r6:" aria-haspopup="menu" aria-expanded="false"
+                                        data-state="closed"><span class="sr-only">Open menu</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round" class="lucide lucide-ellipsis h-4 w-4">
+                                        <circle cx="12" cy="12" r="1"></circle>
+                                        <circle cx="19" cy="12" r="1"></circle>
+                                        <circle cx="5" cy="12" r="1"></circle>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="border-b transition-colors data-[state=selected]:bg-muted cursor-pointer hover:bg-accent hover:text-accent-foreground">
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate" title="audreys_favorite_function">audreys_favorite_function</div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div class="truncate"></div>
+                            </td>
+                            <td class="p-2 align-middle [&amp;:has([role=checkbox])]:pr-0 [&amp;>[role=checkbox]]:translate-y-[2px] whitespace-nowrap">
+                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0"
+                                        type="button" id="radix-:r8:" aria-haspopup="menu" aria-expanded="false"
+                                        data-state="closed"><span class="sr-only">Open menu</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round" class="lucide lucide-ellipsis h-4 w-4">
+                                        <circle cx="12" cy="12" r="1"></circle>
+                                        <circle cx="19" cy="12" r="1"></circle>
+                                        <circle cx="5" cy="12" r="1"></circle>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex-shrink-0 p-4 border-t">
+        <form class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":rp:-form-item">Name</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":rp:-form-item" aria-describedby=":rp:-form-item-description"
+                        aria-invalid="false" name="name"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":rq:-form-item">Module Path</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":rq:-form-item" aria-describedby=":rq:-form-item-description"
+                        aria-invalid="false" name="modulePath"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":rr:-form-item">Class Name</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":rr:-form-item" aria-describedby=":rr:-form-item-description"
+                        aria-invalid="false" name="className"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":rs:-form-item">Description</label><textarea
+                        class="flex min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input resize-none"
+                        name="description" disabled="" id=":rs:-form-item" aria-describedby=":rs:-form-item-description"
+                        aria-invalid="false"></textarea></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":rt:-form-item">Return Broker</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":rt:-form-item" aria-describedby=":rt:-form-item-description"
+                        aria-invalid="false" name="returnBroker"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":ru:-form-item">Arguments</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":ru:-form-item" aria-describedby=":ru:-form-item-description"
+                        aria-invalid="false" name="args"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":rv:-form-item">System Function</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":rv:-form-item" aria-describedby=":rv:-form-item-description"
+                        aria-invalid="false" name="systemFunction"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":r10:-form-item">Recipe Functions</label><input
+                        class="flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 bg-background text-foreground border-input"
+                        disabled="" id=":r10:-form-item" aria-describedby=":r10:-form-item-description"
+                        aria-invalid="false" name="recipeFunctions"></div>
+                <div class="space-y-2 mb-4"><label
+                        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+                        for=":r11:-form-item">Type</label>
+                    <button type="button" role="combobox" aria-controls="radix-:r12:" aria-expanded="false"
+                            aria-autocomplete="none" dir="ltr" data-state="closed" disabled="" data-disabled=""
+                            data-placeholder=""
+                            class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1 bg-background text-foreground border-input">
+                        <span style="pointer-events: none;">Select an option</span>
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"
+                             class="h-4 w-4 opacity-50" aria-hidden="true">
+                            <path d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.73379 3.0974 7.61933 3.04999 7.49999 3.04999C7.38064 3.04999 7.26618 3.0974 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.35753 11.9939 7.64245 11.9939 7.81819 11.8182L10.0682 9.56819Z"
+                                  fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    <select aria-hidden="true" tabindex="-1" disabled=""
+                            style="position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; overflow-wrap: normal;">
+                        <option value=""></option>
+                        <option value="base">Base</option>
+                        <option value="full">Full</option>
+                    </select></div>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <button class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 shadow h-9 px-4 py-2 rounded-md transition-colors duration-200 bg-primary text-primary-foreground hover:bg-primary/90">
+                    Edit
+                </button>
+                <button class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 shadow h-9 px-4 py-2 rounded-md transition-colors duration-200 bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
