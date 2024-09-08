@@ -20,11 +20,13 @@ export type RpcFetchPaginatedType = Database["public"]['Functions']['fetch_pagin
 export type RpcDeleteType = Database["public"]['Functions']['delete_by_id'];
 export type RpcUpdateType = Database["public"]['Functions']['update_by_id'];
 export type RpcCreateType = Database["public"]['Functions']['add_one_entry'];
+export type RpcFetchCustomRelsType = Database["public"]['Functions']['fetch_custom_rels'];
 
 // Thunk argument interfaces
 export interface FetchOneThunkArgs {
     featureName: FeatureName;
     id: Id;
+    tableList?: string[];
 }
 
 export interface FetchPaginatedThunkArgs {
@@ -82,3 +84,9 @@ export interface DeleteResponse {
     deletedIds: string[];
 }
 
+
+export interface FetchCustomRelsThunkArgs {
+    featureName: FeatureName;
+    id: Id;
+    tableList: string[];
+}

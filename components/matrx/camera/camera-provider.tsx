@@ -2,7 +2,7 @@
 
 "use client";
 import { createContext, useContext, useRef, useState } from "react";
-import { defaultErrorMessages } from "@/components/ui/added-ui/camera/camera-types";
+import { defaultErrorMessages } from "@/components/matrx/camera/camera-types";
 
 interface CameraProviderProps {
     children: React.ReactNode;

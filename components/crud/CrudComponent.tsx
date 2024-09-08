@@ -1,12 +1,12 @@
-import React, {useState, useEffect} from 'react';
-import {z} from 'zod';
-import {CrudTable} from "./CrudTable";
-import {CrudForm} from "./CrudForm";
-import {CrudSidebar} from "./CrudSidebar";
-import {MatrixDeleteDialog} from "@/components/matrx/delete-dialog";
-import {Button} from '@/components/ui/button';
-import {PlusCircle, Loader2} from 'lucide-react';
-import {Alert, AlertDescription} from '@/components/ui/alert';
+import React, {useEffect, useState} from 'react';
+import { z } from 'zod';
+import { CrudTable } from "./CrudTable";
+import { CrudForm } from "./CrudForm";
+import { CrudSidebar } from "./CrudSidebar";
+import { MatrixDeleteDialog } from "@/components/matrx/delete-dialog";
+import { Button } from '@/components/ui/button';
+import { PlusCircle, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CrudComponentProps<T extends z.ZodType<any, any>> {
     schema: T;
@@ -19,6 +19,12 @@ interface CrudComponentProps<T extends z.ZodType<any, any>> {
     }>;
     getItemId: (item: z.infer<T>) => string;
     getItemName: (item: z.infer<T>) => string;
+    selectedItemId: string | null;
+    isEditing: boolean;
+    isDeleteDialogOpen: boolean;
+    setIsEditing: (isEditing: boolean) => void;
+    setSelectedItemId: (id: string | null) => void;
+    setIsDeleteDialogOpen: (isOpen: boolean) => void;
     onItemSelect: (id: string) => void;
     onSearch: (query: string, searchAll: boolean) => void;
     onSubmit: (data: z.infer<T>) => void;
@@ -41,11 +47,17 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
         fields,
         getItemId,
         getItemName,
+        selectedItemId,
+        isEditing,
+        isDeleteDialogOpen,
+        setIsEditing,
+        setSelectedItemId,
+        setIsDeleteDialogOpen,
         onItemSelect,
         onSearch,
         onSubmit,
         onDelete,
-        onDeleteMany,  // Use deleteMany prop
+        onDeleteMany,
         loading,
         error,
         totalCount,
@@ -53,45 +65,20 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
         itemsPerPage,
         onPageChange,
         onItemsPerPageChange,
-    }: CrudComponentProps<T>) {
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    }: CrudComponentProps<T>
+) {
+    const selectedItem = items.find(item => getItemId(item) === selectedItemId);
+
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        handleResize();
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        handleResize();  // Set initial value
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
-    const handleItemSelect = (id: string) => {
-        setSelectedItemId(id);
-        setIsEditing(false);
-        onItemSelect(id);
-    };
-
-    const handleSubmit = async (data: any) => {
-        await onSubmit(data);
-        setIsEditing(false);
-    };
-
-    const handleDelete = () => {
-        if (selectedItemId) {
-            onDelete(selectedItemId);
-            setSelectedItemId(null);
-            setIsDeleteDialogOpen(false);
-        }
-    };
-
-    const handleDeleteManyItems = (ids: string[]) => {
-        onDeleteMany(ids);
-        setSelectedItemId(null);
-        setIsDeleteDialogOpen(false);
-    };
-
-    const selectedItem = items.find(item => getItemId(item) === selectedItemId);
 
     if (loading) {
         return (
@@ -113,7 +100,7 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
         <div className="flex h-full overflow-hidden">
             <CrudSidebar
                 allIdAndNames={allIdAndNames}
-                onItemSelect={handleItemSelect}
+                onItemSelect={onItemSelect}
                 onSearch={onSearch}
                 isMobile={isMobile}
             />
@@ -126,16 +113,21 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
                         }}>
                             <PlusCircle className="mr-2 h-4 w-4"/> Add New
                         </Button>
-                        <Button onClick={() => handleDeleteManyItems(selectedItemId ? [selectedItemId] : [])}>
+                        <Button onClick={() => {
+                            if (selectedItemId) {
+                                onDeleteMany([selectedItemId]);
+                            }
+                        }}>
                             <PlusCircle className="mr-2 h-4 w-4"/> Delete Selected
                         </Button>
                     </div>
                     <div className="overflow-auto">
+
                         <CrudTable
                             items={items}
                             fields={fields}
                             getItemId={getItemId}
-                            onItemSelect={handleItemSelect}
+                            onItemSelect={onItemSelect}
                             totalCount={totalCount}
                             currentPage={currentPage}
                             itemsPerPage={itemsPerPage}
@@ -145,31 +137,33 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
                     </div>
                 </div>
                 <div className="flex-shrink-0 p-4 border-t">
-                    <CrudForm
+                <CrudForm
                         schema={schema}
                         initialData={selectedItem}
-                        onSubmit={handleSubmit}
+                        onSubmit={onSubmit}
                         isEditing={isEditing}
-                        onEdit={() => setIsEditing(true)}
+                        onEdit={setIsEditing}
                         onDelete={() => setIsDeleteDialogOpen(true)}
                         onCancel={() => {
                             setIsEditing(false);
-                            if (!selectedItemId) {
-                                setSelectedItemId(null);
-                            }
+                            setSelectedItemId(null);
                         }}
                         fields={fields}
                     />
                 </div>
             </div>
+
             <MatrixDeleteDialog
-                isOpen={isDeleteDialogOpen}
+                    isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
-                onConfirm={handleDelete}
+                onConfirm={() => {
+                    if (selectedItemId) {
+                        onDelete(selectedItemId);
+                    }
+                }}
                 item={selectedItem}
                 fields={fields}
             />
         </div>
-
     );
 }

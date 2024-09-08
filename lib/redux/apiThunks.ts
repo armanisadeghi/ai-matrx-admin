@@ -1,7 +1,7 @@
 // File Location: lib/redux/apiThunks.ts
 
 import {createAsyncThunk} from '@reduxjs/toolkit';
-import {supabase} from '@/lib/supabaseClient';
+import {supabase} from '@/lib/supabase/supabaseClient';
 import {
     FeatureName,
     FetchOneThunkArgs,
@@ -14,16 +14,29 @@ import {
     RpcFetchPaginatedType,
     RpcDeleteType,
     RpcUpdateType,
-    RpcCreateType, PaginatedResponse
+    RpcCreateType, PaginatedResponse, FetchCustomRelsThunkArgs, RpcFetchCustomRelsType,
 } from '@/types/reduxTypes';
 import {createFeatureNormalizer} from '@/lib/redux/normalizers';
 import * as z from 'zod';
 
 
 const mapFetchOneArgs = (args: FetchOneThunkArgs): RpcFetchOneType['Args'] => ({
+    p_id: args.id,
     p_table_name: args.featureName,
+});
+
+const mapFetchWithIfkArgs = (args: FetchOneThunkArgs): RpcFetchOneType['Args'] => ({
+    p_table_name: "registered_function",
     p_id: args.id,
 });
+
+
+const mapFetchCustomRelsArgs = (args: FetchCustomRelsThunkArgs): RpcFetchCustomRelsType['Args'] => ({
+    p_table_name: args.featureName,
+    p_id: args.id,
+    p_table_list: args.tableList,
+});
+
 
 const mapFetchPaginatedArgs = (args: FetchPaginatedThunkArgs): RpcFetchPaginatedType['Args'] => ({
     p_table_name: args.featureName,
@@ -111,32 +124,81 @@ export const createApiThunks = <T extends z.ZodTypeAny>(featureName: FeatureName
         }
     );
 
-
     const fetchOne = createAsyncThunk(
         `${featureName}/fetchOne`,
         async (args: FetchOneThunkArgs, {getState, rejectWithValue}) => {
             const state = getState()[featureName];
             const lastFetched = state.lastFetched[args.id] || 0;
+
+            console.log('apiThunks.ts: fetchOne');
+            console.log('Current Stale Time: ', state.staleTime);
+            console.log('Current Time: ', Date.now());
+            console.log('Last Fetched Time: ', lastFetched);
+            console.log('Difference: ', Date.now() - lastFetched);
+
+
             if (Date.now() - lastFetched < state.staleTime) {
-                console.log('Current Stale Time: ', state.staleTime);
-                console.log('Current Time: ', Date.now());
-                console.log('Last Fetched Time: ', lastFetched);
-                console.log('Difference: ', Date.now() - lastFetched);
                 const timeSinceLastFetched = Date.now() - lastFetched;
                 console.log('Time Since Last Fetched: ', timeSinceLastFetched);
-
-                return state.items[args.id]; // Return cached data if not stale
+                return state.items[args.id];
             }
+            console.log('Fetching from API with Args:', mapFetchWithIfkArgs(args));
             try {
-                const {data, error} = await supabase.rpc('fetch_all_fk_ifk', mapFetchOneArgs(args));
+                const {data, error} = await supabase.rpc('find_fk_entries', mapFetchWithIfkArgs(args));
                 if (error) throw error;
+
+                console.log('Raw Supabase Response:', { data, error });
                 const validatedData = featureSchema.parse(data);
-                return normalizer.normalizeOne(validatedData).entities[featureName];
+
+                // TODO: For now, returning only validated Data because normalized data will probably require changing to a Saga.
+                const normalizedData = normalizer.normalizeOne(validatedData).entities[featureName];
+
+                console.log('Returning validated data:', validatedData);
+                return validatedData;
+
             } catch (error) {
                 return rejectWithValue(error.message || 'An error occurred');
             }
         }
     );
+
+    // const fetchOne = createAsyncThunk(
+    //     `${featureName}/fetchOne`,
+    //     async (args: FetchOneThunkArgs, {getState, rejectWithValue}) => {
+    //         const state = getState()[featureName];
+    //         const lastFetched = state.lastFetched[args.id] || 0;
+    //
+    //         console.log('apiThunks.ts: fetchOne');
+    //         console.log('Current Stale Time: ', state.staleTime);
+    //         console.log('Current Time: ', Date.now());
+    //         console.log('Last Fetched Time: ', lastFetched);
+    //         console.log('Difference: ', Date.now() - lastFetched);
+    //
+    //
+    //         if (Date.now() - lastFetched < state.staleTime) {
+    //             const timeSinceLastFetched = Date.now() - lastFetched;
+    //             console.log('Time Since Last Fetched: ', timeSinceLastFetched);
+    //             return state.items[args.id];
+    //         }
+    //         console.log('Fetching from API with Args:', mapFetchCustomRelsArgs(args));
+    //         try {
+    //             const {data, error} = await supabase.rpc('fetch_custom_rels', mapFetchCustomRelsArgs(args));
+    //             if (error) throw error;
+    //
+    //             console.log('Raw Supabase Response:', { data, error });
+    //             const validatedData = featureSchema.parse(data);
+    //
+    //             // TODO: For now, returning only validated Data because normalized data will probably require changing to a Saga.
+    //             const normalizedData = normalizer.normalizeOne(validatedData).entities[featureName];
+    //
+    //             console.log('Returning validated data:', validatedData);
+    //             return validatedData;
+    //
+    //         } catch (error) {
+    //             return rejectWithValue(error.message || 'An error occurred');
+    //         }
+    //     }
+    // );
 
 
     const deleteOne = createAsyncThunk(

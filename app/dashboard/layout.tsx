@@ -1,6 +1,7 @@
 import React from 'react';
 import BaseLayout from '@/components/layout/base-layout';
 import {Providers} from "@/lib/redux-old/providers";
+import {MatrixFloatingMenu} from "@/components/layout/floating-dock";
 
 export default function DashboardLayout(
     {
@@ -15,6 +16,7 @@ export default function DashboardLayout(
                 rightSidebarProps={{available: true, state: 'full'}}
             >
                 {children}
+
             </BaseLayout>
         </Providers>
     );

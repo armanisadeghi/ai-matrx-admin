@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase/supabaseClient';
 
 export const fetchWithFk = async (args: any): Promise<any> => {
     try {
@@ -51,3 +51,42 @@ export const fetchCustomRels = async (args: any): Promise<any> => {
         return null;
     }
 };
+
+
+interface RelatedItem {
+    id: string;
+    name: string;
+}
+
+interface RegisteredFunctionWithRelsType {
+    id: string;
+    class_name: string | null;
+    description: string | null;
+    module_path: string;
+    name: string;
+    return_broker: RelatedItem | null;
+    args: RelatedItem[];
+    system_functions: RelatedItem[];
+}
+
+export const getRegisteredFunctionView = async (
+    startIndex: number,
+    endIndex: number
+): Promise<any> => {
+    try {
+        const { data, error } = await supabase
+            .from('view_registered_function')
+            .select('*')
+            .order('id', { ascending: true })
+            .range(startIndex, endIndex);
+        if (error) {
+            throw error;
+        }
+        return data;
+    } catch (error: any) {
+        console.error('Error in getRegisteredFunctionView:', error);
+        return null;
+    }
+};
+
+

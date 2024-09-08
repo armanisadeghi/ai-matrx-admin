@@ -3,7 +3,7 @@
 'use client';
 
 import React, { createContext, useContext } from 'react';
-import { SchemaRegistry, registerSchema, TableSchema } from '@/lib/schemaRegistry';
+import { SchemaRegistry, registerSchema, TableSchema } from '@/lib/supabase/schemaRegistry';
 
 const SchemaContext = createContext<SchemaRegistry>({});
 

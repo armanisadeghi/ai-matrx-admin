@@ -1,9 +1,9 @@
 // components/layout/base-layout.tsx
 'use client';
 
-import React, {ReactNode, useState, useEffect} from 'react';
+import React, { ReactNode } from 'react';
 import TopMenu from '@/components/layout/top-menu';
-import LeftSidebar from '@/components/layout/left-sidebar';
+import LeftSidebar from '@/components/layout/left-sidebar-annimated';
 import RightSidebar from '@/components/layout/right-sidebar';
 
 interface BaseLayoutProps {
@@ -18,44 +18,30 @@ interface BaseLayoutProps {
     };
 }
 
-const BaseLayout: React.FC<BaseLayoutProps> = (
-    {
-        children,
-        leftSidebarProps = {available: false, state: 'closed'},
-        rightSidebarProps = {available: false, state: 'closed'}
-    }) => {
-    const [leftSidebarState, setLeftSidebarState] = useState<'closed' | 'icon' | 'full'>('closed');
-    const [rightSidebarState, setRightSidebarState] = useState<'closed' | 'full'>('closed');
-
-    useEffect(() => {
-        setLeftSidebarState(leftSidebarProps.state);
-        setRightSidebarState(rightSidebarProps.state);
-    }, [leftSidebarProps.state, rightSidebarProps.state]);
-
-    const toggleLeftSidebar = () => {
-        setLeftSidebarState(current => {
-            if (current === 'closed') return 'icon';
-            if (current === 'icon') return 'full';
-            return 'closed';
-        });
-    };
-
-    const toggleRightSidebar = () => {
-        setRightSidebarState(current => current === 'closed' ? 'full' : 'closed');
-    };
-
+const BaseLayout: React.FC<BaseLayoutProps> = ({
+                                                   children,
+                                                   leftSidebarProps = { available: false, state: 'closed' },
+                                                   rightSidebarProps = { available: false, state: 'closed' },
+                                               }) => {
     return (
         <div className="flex flex-col min-h-screen">
             <TopMenu
                 leftSidebarAvailable={leftSidebarProps.available}
                 rightSidebarAvailable={rightSidebarProps.available}
-                toggleLeftSidebar={toggleLeftSidebar}
-                toggleRightSidebar={toggleRightSidebar}
+                toggleRightSidebar={() => {}} // Placeholder function, modify if needed
             />
             <div className="flex flex-1">
-                <LeftSidebar available={leftSidebarProps.available} state={leftSidebarState}/>
+                {leftSidebarProps.available && (
+                    <LeftSidebar
+                        available={true}
+                        state={leftSidebarProps.state}
+                    />
+                )}
                 <main className="flex-1">{children}</main>
-                <RightSidebar available={rightSidebarProps.available} state={rightSidebarState}/>
+                <RightSidebar
+                    available={rightSidebarProps.available}
+                    state={rightSidebarProps.state}
+                />
             </div>
         </div>
     );

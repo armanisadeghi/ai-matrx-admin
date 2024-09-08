@@ -50,7 +50,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({available, state}) => {
                         <Link key={index} href={item.href}>
               <span className={cn(
                   "flex items-center rounded-lg px-3 py-2 text-gray-900 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-                  pathname === item.href ? "bg-gray-200 dark:bg-gray-800" : "transparent",
+                  pathname === item.href ? "bg-gray-200 dark:bg-blue-800" : "transparent",
                   "my-1"
               )}>
                 <item.icon className="h-4 w-4"/>

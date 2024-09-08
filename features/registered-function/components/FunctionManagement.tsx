@@ -26,13 +26,19 @@ const FunctionManagement: React.FC = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const tableList = ['arg'];
 
     useEffect(() => {
         fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
     }, [fetchPaginated, currentPage, itemsPerPage]);
 
     const handleItemSelect = (id: string) => {
-        fetchOne({ featureName: 'registeredFunction', id });
+        setSelectedItemId(id);
+        setIsEditing(false); // TODO: Fix this because this just turns off editing mode, instead of stopping the update to inform that they will lose their changes. We need to compare the current data with the form data first and take appropriate action.
+        fetchOne({ featureName: 'registeredFunction', id , tableList});
     };
 
     const handleSearch = (query: string, searchAll: boolean) => {
@@ -45,16 +51,21 @@ const FunctionManagement: React.FC = () => {
         } else {
             create({ featureName: 'registeredFunction', payload: data });
         }
+        setIsEditing(false); // End editing mode after submission
         fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
     };
 
     const handleDelete = (id: string) => {
         deleteOne({ featureName: 'registeredFunction', id });
+        setSelectedItemId(null); // Clear the selected item after deletion
+        setIsDeleteDialogOpen(false); // Close the delete dialog
         fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
     };
 
     const handleDeleteMany = (ids: string[]) => {
         deleteMany({ featureName: 'registeredFunction', ids });
+        setSelectedItemId(null); // Clear the selected items after deletion
+        setIsDeleteDialogOpen(false); // Close the delete dialog
         fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
     };
 
@@ -90,6 +101,12 @@ const FunctionManagement: React.FC = () => {
             fields={fields}
             getItemId={(item) => item.id}
             getItemName={(item) => item.name}
+            selectedItemId={selectedItemId}
+            isEditing={isEditing}
+            isDeleteDialogOpen={isDeleteDialogOpen}
+            setIsEditing={setIsEditing}
+            setSelectedItemId={setSelectedItemId}
+            setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             onItemSelect={handleItemSelect}
             onSearch={handleSearch}
             onSubmit={handleSubmit}

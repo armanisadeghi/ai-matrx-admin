@@ -13,9 +13,11 @@ import {
     ChartBar
 } from 'lucide-react';
 import {Button} from "@/components/ui/button";
-import {Card, CardHeader, CardTitle, CardDescription, CardContent} from "@/components/ui/card";
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import {ModeToggle} from "@/components/layout/mode-toggle";
 import Link from 'next/link';
+import {Cover} from "@/components/ui/cover";
+import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 
 interface TopMenuProps {
     // Add any props you might need
@@ -59,25 +61,38 @@ interface FeatureCardProps {
     features?: string[];
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({Icon, title, description, features}) => (
-    <Card className="transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1">
-        <CardHeader>
-            <Icon className="text-primary w-8 h-8 mb-4"/>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        {features && (
-            <CardContent>
-                <ul className="space-y-2">
-                    {features.map((feature, index) => (
-                        <li key={index} className="flex items-center">
-                            <span className="text-primary mr-2">✓</span> {feature}
-                        </li>
-                    ))}
-                </ul>
-            </CardContent>
-        )}
-    </Card>
+const FeatureCard: React.FC<FeatureCardProps> = ({ Icon, title, description, features }) => (
+    <CardContainer className="inter-var">
+        <CardBody className="bg-background relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] border-border w-full h-full rounded-xl p-6 border">
+            <CardItem translateZ="50" className="text-primary w-12 h-12 mb-4">
+                <Icon className="w-full h-full" />
+            </CardItem>
+            <CardItem
+                translateZ="60"
+                className="text-xl font-bold text-foreground"
+            >
+                {title}
+            </CardItem>
+            <CardItem
+                as="p"
+                translateZ="70"
+                className="text-muted-foreground text-sm mt-2"
+            >
+                {description}
+            </CardItem>
+            {features && (
+                <CardItem translateZ="80" className="mt-4">
+                    <ul className="space-y-2">
+                        {features.map((feature, index) => (
+                            <li key={index} className="flex items-center">
+                                <span className="text-primary mr-2">✓</span> {feature}
+                            </li>
+                        ))}
+                    </ul>
+                </CardItem>
+            )}
+        </CardBody>
+    </CardContainer>
 );
 
 const HomePage: React.FC = () => {
@@ -85,14 +100,33 @@ const HomePage: React.FC = () => {
         <div className="min-h-screen bg-background text-foreground">
             <TopMenu />
             <main className="container mx-auto px-4 py-16 text-center">
-                <h1 className="text-6xl font-bold mb-4">AI Matrx</h1>
-                <h2 className="text-4xl font-semibold mb-6">Redefining Enterprise AI Integration</h2>
+                {/*<h1 className="text-6xl font-bold mb-4">AI Matrx</h1>*/}
+                <div>
+                    <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
+                        Redefining Enterprise AI
+                        <span className="block mb-4"></span>
+                        with <Cover>NO CODE</Cover>
+                    </h1>
+                </div>
+
+                {/*<h2 className="text-4xl font-semibold mb-6">Redefining Enterprise AI Integration</h2>*/}
                 <p className="text-xl mb-10 max-w-3xl mx-auto">
-                    Empower your business with a no-code AI platform that orchestrates, automates, and elevates your processes. Bridge the gap between AI potential and real-world business needs.
+                    Empower your business with a no-code AI platform that orchestrates, automates, and elevates your
+                    processes. Bridge the gap between AI potential and real-world business needs.
                 </p>
                 <div className="flex justify-center gap-4 mb-16">
-                    <Button size="lg">Start Free Trial</Button>
-                    <Button size="lg" variant="outline">Request Demo</Button>
+                    <button className="p-[3px] relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg"/>
+                        <div
+                            className="px-8 py-2 bg-black rounded-[6px]  relative group transition duration-200 text-white hover:bg-transparent">
+                            Start Free Trial
+                        </div>
+                    </button>
+                    <button
+                        className="shadow-[0_0_0_3px_#000000_inset] px-6 py-2 bg-transparent border border-black dark:border-white dark:text-white text-black rounded-lg font-bold transform hover:-translate-y-1 transition duration-400">
+                        Request Demo
+                    </button>
+
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left mb-16">
@@ -121,28 +155,40 @@ const HomePage: React.FC = () => {
                         features={['1000+ API Integrations', 'Enhanced Productivity']}
                     />
                 </div>
+                <BackgroundBeamsWithCollision>
+                    <div className="w-full py-20 relative z-20">
+                        <h2 className="text-3xl md:text-5xl lg:text-7xl font-bold text-center text-black dark:text-white font-sans tracking-tight mb-12">
+                            Why Enterprise Leaders Choose{" "}
+                            <div className="relative mx-auto inline-block w-max [filter:drop-shadow(0px_1px_3px_rgba(27,_37,_80,_0.14))]">
+                                <div className="absolute left-0 top-[1px] bg-clip-text bg-no-repeat text-transparent bg-gradient-to-r py-4 from-purple-500 via-violet-500 to-pink-500 [text-shadow:0_0_rgba(0,0,0,0.1)]">
+                                    <span className="">AI Matrx</span>
+                                </div>
+                                <div className="relative bg-clip-text text-transparent bg-no-repeat bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 py-4">
+                                    <span className="">AI Matrx</span>
+                                </div>
+                            </div>
+                        </h2>
+                        <ul className="space-y-6 max-w-4xl mx-auto text-left px-4">
+                            <li className="flex items-start">
+                                <span className="text-primary text-2xl mr-4 mt-1">✓</span>
+                                <span className="text-xl"><strong className="font-semibold">Rapid ROI:</strong> Deploy AI solutions in hours, not months, accelerating time-to-value.</span>
+                            </li>
+                            <li className="flex items-start">
+                                <span className="text-primary text-2xl mr-4 mt-1">✓</span>
+                                <span className="text-xl"><strong className="font-semibold">No-Code Simplicity:</strong> Empower your team to build sophisticated AI applications without extensive technical knowledge.</span>
+                            </li>
+                            <li className="flex items-start">
+                                <span className="text-primary text-2xl mr-4 mt-1">✓</span>
+                                <span className="text-xl"><strong className="font-semibold">Enterprise-Grade Security:</strong> Ensure data protection and compliance with robust security measures.</span>
+                            </li>
+                            <li className="flex items-start">
+                                <span className="text-primary text-2xl mr-4 mt-1">✓</span>
+                                <span className="text-xl"><strong className="font-semibold">Scalable Performance:</strong> Seamlessly handle growing demands as your AI initiatives expand.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </BackgroundBeamsWithCollision>
 
-                <div className="text-left max-w-3xl mx-auto">
-                    <h3 className="text-2xl font-semibold mb-4">Why Enterprise Leaders Choose AI Matrx</h3>
-                    <ul className="space-y-2">
-                        <li className="flex items-start">
-                            <span className="text-primary mr-2 mt-1">✓</span>
-                            <span><strong>Rapid ROI:</strong> Deploy AI solutions in hours, not months, accelerating time-to-value.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-primary mr-2 mt-1">✓</span>
-                            <span><strong>No-Code Simplicity:</strong> Empower your team to build sophisticated AI applications without extensive technical knowledge.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-primary mr-2 mt-1">✓</span>
-                            <span><strong>Enterprise-Grade Security:</strong> Ensure data protection and compliance with robust security measures.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="text-primary mr-2 mt-1">✓</span>
-                            <span><strong>Scalable Performance:</strong> Seamlessly handle growing demands as your AI initiatives expand.</span>
-                        </li>
-                    </ul>
-                </div>
             </main>
         </div>
     );

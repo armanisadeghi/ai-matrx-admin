@@ -5,8 +5,8 @@ import { ArrowLeftRight, Check, GalleryVerticalEnd, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CameraView } from "./camera-view";
 import { FC, useRef } from "react";
-import { CameraType } from "@/components/ui/added-ui/camera/camera-types";
-import { useCamera } from "@/components/ui/added-ui/camera/camera-provider";
+import { CameraType } from "@/components/matrx/camera/camera-types";
+import { useCamera } from "@/components/matrx/camera/camera-provider";
 import { cn } from "@/lib/utils";
 import {
     Dialog,

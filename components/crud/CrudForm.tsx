@@ -21,7 +21,7 @@ interface CrudFormProps<T extends z.ZodType<any, any>> {
     initialData?: z.infer<T>;
     onSubmit: (data: z.infer<T>) => void;
     isEditing: boolean;
-    onEdit: () => void;
+    onEdit: (isEditing: boolean) => void;  // Updated to accept a boolean
     onDelete: () => void;
     onCancel: () => void;
     fields: Record<string, FieldConfig>;
@@ -45,13 +45,13 @@ export function CrudForm<T extends z.ZodType<any, any>>(
 
     const renderField = (name: string, config: FieldConfig) => {
         return (
-            <FormField key={name} control={form.control} name={name as any} render={({field}) => (
+            <FormField key={name} control={form.control} name={name as any} render={({ field }) => (
                 <FormItem className="mb-4">
                     <FormLabel className="text-foreground">{config.label}</FormLabel>
                     <FormControl>
                         {config.type === 'textarea' ? (
                             <Textarea {...field} disabled={!isEditing}
-                                      className="bg-background text-foreground border-input resize-none"/>
+                                className="bg-background text-foreground border-input resize-none"/>
                         ) : config.type === 'select' ? (
                             <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!isEditing}>
                                 <SelectTrigger className="bg-background text-foreground border-input">
@@ -67,12 +67,12 @@ export function CrudForm<T extends z.ZodType<any, any>>(
                             </Select>
                         ) : (
                             <Input {...field} disabled={!isEditing}
-                                   className="bg-background text-foreground border-input"/>
+                                className="bg-background text-foreground border-input"/>
                         )}
                     </FormControl>
                     <FormMessage className="text-destructive"/>
                 </FormItem>
-            )}/>
+            )} />
         );
     };
 
@@ -90,7 +90,9 @@ export function CrudForm<T extends z.ZodType<any, any>>(
                         </>
                     ) : (
                         <>
-                            <MatrxEditButton onClick={onEdit}>Edit</MatrxEditButton>
+                            <MatrxEditButton onClick={() => onEdit(true)}>  {/* Pass true to enable editing */}
+                                Edit
+                            </MatrxEditButton>
                             <MatrxDeleteButton onClick={onDelete}>Delete</MatrxDeleteButton>
                         </>
                     )}

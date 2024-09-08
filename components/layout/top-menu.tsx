@@ -1,27 +1,24 @@
 // components/layout/top-menu.tsx
 'use client';
 
-import React, {useState, useEffect} from 'react';
-import {Bell, Search, PanelRight, Menu} from 'lucide-react';
-import {Input} from '@/components/ui/input';
-import {Button} from '@/components/ui/button';
-import {UserNav} from '@/components/user-nav';
-import {ModeToggle} from '@/components/layout/mode-toggle';
+import React, { useState, useEffect } from 'react';
+import { Bell, PanelRight, Menu } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { UserNav } from '@/components/user-nav';
+import { ModeToggle } from '@/components/layout/mode-toggle';
 
 interface TopMenuProps {
     leftSidebarAvailable: boolean;
     rightSidebarAvailable: boolean;
-    toggleLeftSidebar: () => void;
     toggleRightSidebar: () => void;
 }
 
-const TopMenu: React.FC<TopMenuProps> = (
-    {
-        leftSidebarAvailable,
-        rightSidebarAvailable,
-        toggleLeftSidebar,
-        toggleRightSidebar
-    }) => {
+const TopMenu: React.FC<TopMenuProps> = ({
+                                             leftSidebarAvailable,
+                                             rightSidebarAvailable,
+                                             toggleRightSidebar
+                                         }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
@@ -30,23 +27,21 @@ const TopMenu: React.FC<TopMenuProps> = (
     }, []);
 
     if (!isMounted) {
-        return null; // or a loading spinner
+        return null;
     }
 
     return (
-        <header
-            className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 max-w-screen-2xl items-center" style={{ paddingLeft: '0.85rem', margin: '0', padding: '0' }}> {/* Remove all margin and padding */}
+        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container flex h-14 max-w-screen-2xl items-center" style={{ paddingLeft: '0.85rem', margin: '0', padding: '0' }}>
                 <div className="flex items-center space-x-1">
                     {leftSidebarAvailable && (
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={toggleLeftSidebar}
                             className="hidden md:inline-flex ml-1"
                         >
                             <Menu className="h-5 w-5"/>
-                            <span className="sr-only">Toggle left sidebar</span>
+                            <span className="sr-only">Left sidebar</span>
                         </Button>
                     )}
                     <Button
