@@ -35,13 +35,13 @@
   }
 
   .dark {
-    --background: 210 100% 50%; /* Dark Blue for logo */
+    --background: 0 0% 15.7%; /* Changed to neutral-800 */
     --foreground: 0 0% 100%; /* White text */
     --border: 30 100% 50%; /* Orange */
     --primary: 210 100% 50%; /* Dark Blue for logo */
     --secondary: 120 100% 25%; /* Green for sidebar */
     --accent: 270 100% 60%; /* Purple for theme switcher and user icon */
-    --background-secondary:
+    --background-secondary: 180 10% 3.9%;
 
     /* Keeping other variables as they were */
     --card: 180 100% 30%;
