@@ -1,8 +1,8 @@
-import type {Config} from "tailwindcss";
-import {nextui} from "@nextui-org/react";
+import type { Config } from "tailwindcss";
+// import { nextui } from "@nextui-org/react";
 
-const {fontFamily} = require("tailwindcss/defaultTheme");
-const {default: flattenColorPalette} = require("tailwindcss/lib/util/flattenColorPalette");
+const { fontFamily } = require("tailwindcss/defaultTheme");
+const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
 
 const config: Config = {
     darkMode: ["class"],
@@ -11,7 +11,7 @@ const config: Config = {
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./features/**/*.{js,ts,jsx,tsx,mdx}",
-        "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+        // "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
         container: {
@@ -68,12 +68,12 @@ const config: Config = {
             },
             keyframes: {
                 "accordion-down": {
-                    from: {height: "0"},
-                    to: {height: "var(--radix-accordion-content-height)"},
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
                 },
                 "accordion-up": {
-                    from: {height: "var(--radix-accordion-content-height)"},
-                    to: {height: "0"},
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
                 },
                 shimmer: {
                     from: {
@@ -83,25 +83,36 @@ const config: Config = {
                         backgroundPosition: "-200% 0",
                     },
                 }
-
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
                 shimmer: "shimmer 2s linear infinite",
             },
-
         },
     },
     plugins: [
         require("tailwindcss-animate"),
-        nextui(),
+        //nextui({
+        //    prefix: "next-", // add the "next-" prefix to all NextUI classes
+        //    addCommonColors: false, // disable adding common colors
+        //    defaultTheme: "light", // set default theme to light
+        //    defaultExtendTheme: "light", // set default extend theme to light
+        //    layout: {}, // empty layout object to avoid conflicts
+        //    themes: {
+        //       light: {
+        //            colors: {},
+        //        },
+        //        dark: {
+        //            colors: {},
+        //        },
+        //    },
+        //}),
         addVariablesForColors,
     ],
 };
 
-
-function addVariablesForColors({addBase, theme}: any) {
+function addVariablesForColors({ addBase, theme }: any) {
     let allColors = flattenColorPalette(theme("colors"));
     let newVars = Object.fromEntries(
         Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
