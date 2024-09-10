@@ -70,14 +70,17 @@ export const metadata: Metadata = {
         title: "App Matrx",
         description: "A large-scale application built with Next.js and Shadcn UI",
         images: [siteConfig.ogImage],
-        creator: "@your_twitter_handle", // Replace with your actual Twitter handle
+        creator: "@your_twitter_handle",
     },
     icons: {
-        icon: "/favicon.ico",
-        shortcut: "/favicon-16x16.png",
+        icon: [
+            { url: "/favicon.ico", sizes: "any" },
+            { url: "/favicon.svg", type: "image/svg+xml" },
+        ],
         apple: "/apple-touch-icon.png",
+        shortcut: "/favicon.ico",
     },
-    // manifest: `${siteConfig.url}/site.webmanifest`,
+    manifest: "/site.webmanifest",
 }
 
 export const viewport: Viewport = {

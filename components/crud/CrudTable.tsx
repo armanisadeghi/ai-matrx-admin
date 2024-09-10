@@ -37,9 +37,9 @@ export function CrudTable<T>(
     const [page, setPage] = useState(currentPage);
 
     const getMenuItems = (item: T) => [
-        { text: 'View', onClick: (id: string) => onItemSelect(id) },
-        { text: 'Edit', onClick: (id: string) => onItemSelect(id) },
-        { text: 'Delete', onClick: (id: string) => onItemSelect(id) },
+        {text: 'View', onClick: (id: string) => onItemSelect(id)},
+        {text: 'Edit', onClick: (id: string) => onItemSelect(id)},
+        {text: 'Delete', onClick: (id: string) => onItemSelect(id)},
     ];
 
     useEffect(() => {
@@ -67,7 +67,7 @@ export function CrudTable<T>(
     const paginatedItems = sortedItems.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
     return (
-        <div className="w-full">
+        <div className="w-full h-full flex flex-col">
             <div className="overflow-x-auto">
                 <Table className="w-full">
                     <TableHeader>
@@ -80,9 +80,13 @@ export function CrudTable<T>(
                                         <ChevronUp className="inline ml-1"/> : <ChevronDown className="inline ml-1"/>)}
                                 </TableHead>
                             ))}
-                            {/*<TableHead className="whitespace-nowrap">Actions</TableHead>*/}
+                            <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
+                </Table>
+            </div>
+            <div className="overflow-y-auto flex-grow">
+                <Table className="w-full">
                     <TableBody>
                         {paginatedItems.map(item => (
                             <TableRow

@@ -10,46 +10,55 @@ import StoreProvider from "@/app/StoreProvider";
 import Link from "next/link";
 import {IconMenu2, IconX} from "@tabler/icons-react";
 
-function BaseLayout({children, links}) {
+function BaseLayout({children, links, showSidebar = true, extendBottom = false}) {
     const [open, setOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-black p-4"> {/* Adjust for light/dark mode */}
+        <div className={cn(
+            "min-h-screen bg-white dark:bg-black",
+            extendBottom ? "overflow-hidden" : "p-2"
+        )}>
             <div className={cn(
-                "flex h-[calc(100vh-2rem)]", // Subtracting padding from height
-                "bg-gray-100 dark:bg-neutral-700 w-full max-w-7xl", // Light gray for light mode, dark gray for dark mode
-                "mx-auto rounded-xl overflow-hidden", // Rounded corners
-                "border border-gray-300 dark:border-neutral-600" // Border color for light/dark mode
+                "flex",
+                extendBottom ? "h-[calc(100vh+0.5rem)]" : "h-[calc(100vh-1rem)]",
+                "bg-gray-300 dark:bg-neutral-700 w-full max-w-7xl",
+                "mx-auto overflow-hidden",
+                extendBottom ? "rounded-t-xl" : "rounded-xl",
+                "border-t border-x border-gray-300 dark:border-neutral-600",
+                {"border-b": !extendBottom}
             )}>
-                <Sidebar open={open} setOpen={setOpen}>
-                    <SidebarBody className="flex flex-col h-full justify-between">
-                        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                            {open ? <Logo/> : <LogoIcon/>}
-                            <div className="mt-8 flex flex-col gap-2">
-                                {links.map((link, idx) => (
-                                    <SidebarLink key={idx} link={link}/>
-                                ))}
+                {showSidebar && (
+                    <Sidebar open={open} setOpen={setOpen}>
+                        <SidebarBody className="flex flex-col h-full justify-between">
+                            <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+                                {open ? <Logo/> : <LogoIcon/>}
+                                <div className="mt-8 flex flex-col gap-2">
+                                    {links.map((link, idx) => (
+                                        <SidebarLink key={idx} link={link}/>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                        <div className="mt-auto pt-4 flex flex-col gap-4">
-                            <ThemeSwitcher className="h-6 w-6 text-foreground"/>
-                            <SidebarLink
-                                link={{
-                                    label: "Armani Sadeghi",
-                                    href: "#",
-                                    icon: (
-                                        <User className="h-6 w-6 text-foreground"/>
-                                    ),
-                                }}
-                            />
-                        </div>
-                    </SidebarBody>
-                </Sidebar>
-                <div className="flex flex-1 flex-col">
+                            <div className="mt-auto pt-4 flex flex-col gap-4">
+                                <ThemeSwitcher className="h-6 w-6 text-foreground"/>
+                                <SidebarLink
+                                    link={{
+                                        label: "Armani Sadeghi",
+                                        href: "#",
+                                        icon: (
+                                            <User className="h-6 w-6 text-foreground"/>
+                                        ),
+                                    }}
+                                />
+                            </div>
+                        </SidebarBody>
+                    </Sidebar>
+                )}
+                <div className="flex-1 overflow-hidden flex flex-col">
                     <div className={cn(
-                        "flex-1 p-6 rounded-tl-2xl",
-                        "bg-neutral-400 dark:bg-neutral-900 text-black dark:text-white", // Light background for light mode, dark for dark mode
-                        "flex flex-col gap-2"
+                        "flex-1",
+                        {"rounded-tl-2xl": showSidebar},
+                        "bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white",
+                        "overflow-y-auto" // Allow vertical scrolling for main content
                     )}>
                         <StoreProvider>
                             {children}
@@ -60,7 +69,6 @@ function BaseLayout({children, links}) {
         </div>
     );
 }
-
 
 export const Sidebar = (
     {
@@ -102,7 +110,7 @@ export const DesktopSidebar = (
             <motion.div
                 className={cn(
                     "h-full px-4 py-4 hidden md:flex md:flex-col",
-                    "bg-gray-50 dark:bg-neutral-700 w-[300px] flex-shrink-0", // Matches main container background
+                    "bg-gray-300 dark:bg-neutral-700 w-[300px] flex-shrink-0",
                     className
                 )}
                 animate={{
@@ -118,7 +126,6 @@ export const DesktopSidebar = (
     );
 };
 
-
 export const MobileSidebar = (
     {
         className,
@@ -130,7 +137,7 @@ export const MobileSidebar = (
         <>
             <div
                 className={cn(
-                    "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+                    "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
                 )}
                 {...props}
             >

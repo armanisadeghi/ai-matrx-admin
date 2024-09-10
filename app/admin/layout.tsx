@@ -11,7 +11,7 @@ export default function AuthenticatedLayout(
         children: React.ReactNode
     }) {
     return (
-            <BaseLayout links={coreAppLinks}>
+            <BaseLayout links={coreAppLinks} showSidebar={true} extendBottom={true}>
                 {children}
             </BaseLayout>
     );

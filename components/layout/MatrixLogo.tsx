@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'lucide-react';
 import React from 'react';
 
-const InfinitySymbol = ({ width = 24, height = 12, className = '' }) => (
+export const InfinitySymbol = ({width = 28, height = 16, className = ''}) => (
     <svg
         width={width}
         height={height}
@@ -27,11 +27,11 @@ export const Logo = () => {
             href="#"
             className="font-normal flex space-x-2 items-center text-sm text-black dark:text-white py-1 relative z-20"
         >
-            <InfinitySymbol className="text-black dark:text-white" />
+            <InfinitySymbol className="text-primary"/>
             <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-medium whitespace-pre"
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                className="font-large whitespace-pre text-primary"
             >
                 AI Matrx
             </motion.span>
@@ -45,9 +45,9 @@ export const LogoIcon = () => {
             href="#"
             className="font-normal flex space-x-2 items-center text-sm text-black dark:text-white py-1 relative z-20"
         >
-            <InfinitySymbol className="text-black dark:text-white" />
+            <InfinitySymbol className="text-primary"/>
         </Link>
     );
 };
 
-export default InfinitySymbol;
+

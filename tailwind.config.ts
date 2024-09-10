@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-// import { nextui } from "@nextui-org/react";
+import { nextui } from "@nextui-org/react";
 
 const { fontFamily } = require("tailwindcss/defaultTheme");
 const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
@@ -11,7 +11,7 @@ const config: Config = {
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./features/**/*.{js,ts,jsx,tsx,mdx}",
-        // "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+        "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
         container: {
@@ -93,21 +93,21 @@ const config: Config = {
     },
     plugins: [
         require("tailwindcss-animate"),
-        //nextui({
-        //    prefix: "next-", // add the "next-" prefix to all NextUI classes
-        //    addCommonColors: false, // disable adding common colors
-        //    defaultTheme: "light", // set default theme to light
-        //    defaultExtendTheme: "light", // set default extend theme to light
-        //    layout: {}, // empty layout object to avoid conflicts
-        //    themes: {
-        //       light: {
-        //            colors: {},
-        //        },
-        //        dark: {
-        //            colors: {},
-        //        },
-        //    },
-        //}),
+        nextui({
+           prefix: "next-", // add the "next-" prefix to all NextUI classes
+           addCommonColors: false, // disable adding common colors
+           defaultTheme: "light", // set default theme to light
+           defaultExtendTheme: "light", // set default extend theme to light
+           layout: {}, // empty layout object to avoid conflicts
+           themes: {
+              light: {
+                   colors: {},
+               },
+               dark: {
+                   colors: {},
+               },
+           },
+        }),
         addVariablesForColors,
     ],
 };
