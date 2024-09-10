@@ -97,22 +97,30 @@ export default function RootLayout({children}: RootLayoutProps) {
         <head>
             <Script id="theme-script" strategy="beforeInteractive">
                 {`
-                    (function() {
-                        function getInitialTheme() {
-                            if (typeof window !== 'undefined') {
-                                const storedTheme = localStorage.getItem('theme');
-                                if (storedTheme === 'light') {
-                                    return 'light';
-                                }
+                (function() {
+                    function getInitialTheme() {
+                        if (typeof window !== 'undefined') {
+                            const storedTheme = localStorage.getItem('theme');
+                            if (storedTheme === 'light') {
+                                return 'light';
                             }
-                            return 'dark'; // Default to dark
                         }
-                        
-                        const theme = getInitialTheme();
-                        document.documentElement.classList.toggle('dark', theme === 'dark');
-                        document.documentElement.style.colorScheme = theme;
-                    })();
-                    `}
+                        return 'dark'; // Default to dark
+                    }
+                    
+                    const theme = getInitialTheme();
+                    const root = document.documentElement;
+                    root.classList.toggle('dark', theme === 'dark');
+                    root.style.colorScheme = theme;
+                    
+                    // Apply the background color CSS variable
+                    if (theme === 'dark') {
+                        root.style.setProperty('--background', '0 0% 15.7%');
+                    } else {
+                        root.style.setProperty('--background', '0 0% 100%');
+                    }
+                })();
+                `}
             </Script>
         </head>
         <body

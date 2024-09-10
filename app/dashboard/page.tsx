@@ -6,12 +6,10 @@ import { MatrixFloatingMenu } from "@/components/layout/floating-dock";
 const DashboardPage = () => {
     return (
         <>
-            {/* Add a wrapper for the floating menu that uses sticky positioning */}
             <div className="sticky top-0 z-50 ">
                 <MatrixFloatingMenu />
             </div>
             <div className="container mx-auto p-6">
-                {/* Content below the floating menu */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Card>
                         <CardHeader>

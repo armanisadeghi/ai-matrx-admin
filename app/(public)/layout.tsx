@@ -1,17 +1,18 @@
+// File Location: @app/(public)/layout.tsx
+
 import React from 'react';
 import BaseLayout from '@/components/layout/base-layout';
+import {coreAppLinks} from "@/components/layout/core-links";
 
-export default function AuthenticatedLayout({
-                                                children,
-                                            }: {
-    children: React.ReactNode
-}) {
+export default function AuthenticatedLayout(
+    {
+        children,
+    }: {
+        children: React.ReactNode
+    }) {
     return (
-        <BaseLayout
-            leftSidebarProps={{ available: true, state: 'full' }}
-            rightSidebarProps={{ available: true, state: 'full' }}
-        >
-            {children}
-        </BaseLayout>
+            <BaseLayout links={coreAppLinks}>
+                {children}
+            </BaseLayout>
     );
 }

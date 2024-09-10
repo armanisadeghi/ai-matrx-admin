@@ -2,23 +2,32 @@
 'use client';
 
 import React from 'react';
-import { useTheme } from '@/components/layout/ThemeProvider';
 import { Moon, Sun } from 'lucide-react';
+import { Button } from '@/components/ui/button'; // Assuming this is a reusable button component
+import { useTheme } from '@/components/layout/ThemeProvider';
+import clsx from 'clsx';
 
-export const ThemeSwitcher: React.FC = () => {
+interface ThemeSwitcherProps {
+    className?: string; // Allow additional className for customization
+}
+
+export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ className }) => {
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <button
+        <Button
+            variant="ghost"
+            size="icon"
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-primary text-primary-foreground"
-            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            className={clsx("h-8 w-8 px-0", className)}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
+            {theme === 'dark' ? (
+                <Sun className="h-4 w-4 text-[--foreground]" />
+            ) : (
+                <Moon className="h-4 w-4 text-[--foreground]" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+        </Button>
     );
 };
-
-
-
-

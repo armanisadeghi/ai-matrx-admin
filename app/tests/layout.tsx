@@ -1,4 +1,4 @@
-// File Location: @app/playground/layout.tsx
+// File Location: @app/tests/layout.tsx
 
 import React from 'react';
 import BaseLayout from '@/components/layout/base-layout';
@@ -11,8 +11,8 @@ export default function AuthenticatedLayout(
         children: React.ReactNode
     }) {
     return (
-            <BaseLayout links={coreAppLinks}>
-                {children}
-            </BaseLayout>
+        <BaseLayout links={coreAppLinks}>
+            {children}
+        </BaseLayout>
     );
 }

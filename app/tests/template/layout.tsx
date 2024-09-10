@@ -2,22 +2,17 @@
 
 import React from 'react';
 import BaseLayout from '@/components/layout/base-layout';
-import {Providers} from "@/lib/redux-old/providers";
+import {coreAppLinks} from "@/components/layout/core-links";
 
-export default function BasicLayout(
+export default function AuthenticatedLayout(
     {
         children,
     }: {
         children: React.ReactNode
     }) {
     return (
-        <Providers>
-            <BaseLayout
-                leftSidebarProps={{available: true, state: 'full'}}
-                rightSidebarProps={{available: true, state: 'full'}}
-            >
-                {children}
-            </BaseLayout>
-        </Providers>
+        <BaseLayout links={coreAppLinks}>
+            {children}
+        </BaseLayout>
     );
 }

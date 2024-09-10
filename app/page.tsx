@@ -14,10 +14,10 @@ import {
 } from 'lucide-react';
 import {Button} from "@/components/ui/button";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import {ModeToggle} from "@/components/layout/mode-toggle";
 import Link from 'next/link';
 import {Cover} from "@/components/ui/cover";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
+import {ThemeSwitcher} from "@/components/layout/ThemeSwitcher";
 
 interface TopMenuProps {
     // Add any props you might need
@@ -43,7 +43,7 @@ const TopMenu: React.FC<TopMenuProps> = () => {
                 </div>
 
                 <div className="flex items-center space-x-3">
-                    <ModeToggle/>
+                    <ThemeSwitcher/>
                     <Link href="/dashboard" className="flex items-center">
                         <Button variant="outline">Dashboard</Button>
                     </Link>
