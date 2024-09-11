@@ -1,5 +1,4 @@
 // File Location: @/app/layout.tsx
-
 import "@/styles/globals.css"
 import {Metadata, Viewport} from "next"
 import {siteConfig} from "@/config/extras/site";
@@ -10,6 +9,9 @@ import {cn} from "@/lib/utils";
 import {inter, montserrat} from "@/lib/fonts";
 import {NextUIProvider} from "@nextui-org/react";
 import Script from 'next/script';
+import {Provider} from "react-redux";
+import {makeStore} from "@/lib/redux/store";
+import StoreProvider from "@/app/StoreProvider";
 
 
 export const metadata: Metadata = {
@@ -95,6 +97,8 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({children}: RootLayoutProps) {
+    const store = makeStore();
+
     return (
         <html lang="en" suppressHydrationWarning className={`dark ${inter.variable} ${montserrat.variable}`}>
         <head>
@@ -126,17 +130,15 @@ export default function RootLayout({children}: RootLayoutProps) {
                 `}
             </Script>
         </head>
-        <body
-            className={cn(
-                "min-h-screen bg-background font-sans antialiased",
-            )}
-        >
-        <ThemeProvider defaultTheme="dark" enableSystem={false}>
-            <NextUIProvider>
-                {children}
-                <Toaster/>
-            </NextUIProvider>
-        </ThemeProvider>
+        <body className={cn("min-h-screen bg-background font-sans antialiased")}>
+        <StoreProvider>
+            <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                <NextUIProvider>
+                    {children}
+                    <Toaster/>
+                </NextUIProvider>
+            </ThemeProvider>
+        </StoreProvider>
         </body>
         </html>
     )

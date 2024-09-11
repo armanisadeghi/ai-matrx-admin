@@ -1,21 +1,27 @@
 import createSagaMiddleware from 'redux-saga';
-import { configureStore } from '@reduxjs/toolkit';
+import {combineReducers, configureStore} from '@reduxjs/toolkit';
 import { featureSchemas } from './featureSchema';
 import { createFeatureSlice } from './sliceCreator';
-import { createFeatureSagas } from './sagas'; // Import the new saga
+import { createFeatureSagas } from './sagas';
+import layoutReducer from './slices/layoutSlice';
 
 const sagaMiddleware = createSagaMiddleware();
 
-const reducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
+const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
     const featureSlice = createFeatureSlice(featureName as any, featureSchema);
     acc[featureName] = featureSlice.reducer;
     return acc;
 }, {} as Record<string, any>);
 
+const rootReducer = combineReducers({
+    ...featureReducers,
+    layout: layoutReducer,
+});
+
 export const makeStore = () => {
     const store = configureStore({
-        reducer: reducers,
+        reducer: rootReducer,
         middleware: getDefaultMiddleware => getDefaultMiddleware().concat(sagaMiddleware),
     });
 

@@ -6,7 +6,7 @@ import { useRef } from 'react';
 import { Provider } from 'react-redux';
 import { makeStore, AppStore } from '@/lib/redux/store';
 import { SchemaProvider } from './SchemaProvider';
-import { initialSchemas } from '@/lib/supabase/initialSchemas'; // You'll create this file
+import { initialSchemas } from '@/lib/supabase/initialSchemas';
 
 export default function StoreProvider({ children }: { children: React.ReactNode }) {
     const storeRef = useRef<AppStore>();

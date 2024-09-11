@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
-import { Link } from 'lucide-react';
-import React from 'react';
+import Link from "next/link";
+import {motion} from "framer-motion";
+import React from "react";
 
-export const InfinitySymbol = ({width = 28, height = 16, className = ''}) => (
+const InfinitySymbol = ({width = 28, height = 16, className = ''}) => (
     <svg
         width={width}
         height={height}
@@ -49,5 +49,3 @@ export const LogoIcon = () => {
         </Link>
     );
 };
-
-
