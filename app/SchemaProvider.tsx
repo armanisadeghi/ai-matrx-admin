@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { SchemaRegistry, registerSchema, TableSchema } from '@/lib/supabase/schemaRegistry';
 
 const SchemaContext = createContext<SchemaRegistry>({});
@@ -18,6 +18,12 @@ export function SchemaProvider({ children, initialSchemas }: { children: React.R
         registerSchema(frontendName, schema);
         schemaRegistry[frontendName] = schema;
     }
+
+    useEffect(() => {
+        import('flowbite').then((flowbite) => {
+            flowbite.initFlowbite();
+        });
+    }, []);
 
     return (
         <SchemaContext.Provider value={schemaRegistry}>

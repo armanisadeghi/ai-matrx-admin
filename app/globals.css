@@ -4,16 +4,17 @@
 
 @layer base {
   :root {
-    --background: 0 0% 96%; /* Neutral 50 */
-    --card: 0 0% 96%; /* Neutral 100 */
-    --border: 0 0% 90%; /* Neutral 200 */
+    --background: 0 0% 96%;
+    --card: 0 0% 96%;
+    --border: 0 0% 90%;
+    --matrx-border: 245 245 245;
     --foreground: 0 0% 0%;
     --card-foreground: 0 0% 0%;
     --popover: 180 5% 96%;
     --popover-foreground: 0 0% 0%;
-    --primary: 217.2 91.2% 59.8%; /* Blue, matching dark mode */
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 263.4 70% 50.4%; /* Purple, matching dark mode */
+    --secondary: 263.4 70% 50.4%;
     --secondary-foreground: 0 0% 100%;
     --muted: 120 10% 90%;
     --muted-foreground: 0 0% 45.1%;
@@ -32,12 +33,13 @@
   }
 
   .dark {
-    --background: 0 0% 1%; /* Neutral 900 */
-    --card: 0 0% 15%; /* Neutral 800 */
-    --border: 120 100% 25%; /* Neutral 700 */
-    --foreground: 0 0% 100%; /* White text */
-    --primary: 217.2 91.2% 59.8%; /* Blue */
-    --secondary: 263.4 70% 50.4%; /* Purple */
+    --background: 0 0% 1%;
+    --card: 0 0% 15%;
+    --border: 0 0% 25.1%;
+    --matrx-border: 64 64 64;
+    --foreground: 0 0% 100%;
+    --primary: 217.2 91.2% 59.8%;
+    --secondary: 263.4 70% 50.4%;
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
     --card-foreground: 0 0% 100%;
@@ -132,4 +134,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.bg-matrxBorder {
+  background-color: rgb(var(--matrx-border));
 }

@@ -35,7 +35,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "tests/**/*"
+    "tests/**/*",
+    "node_modules/flowbite-react/lib/esm/index.d.ts"
   ],
   "exclude": [
     "node_modules",
