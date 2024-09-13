@@ -1,20 +1,28 @@
-import {Row} from "react-table";
+import { Row } from "react-table";
 import React from "react";
-import {TableBody} from "@/components/ui/table";
-import {AnimatePresence, motion} from "framer-motion";
+import { TableBody } from "@/components/ui/table";
+import { AnimatePresence, motion } from "framer-motion";
 import CustomTableCell from "@/app/tests/table-test/CustomTableCell";
-import {TableData} from "@/app/tests/table-test/ModernTable";
-import {ActionDefinition} from "@/app/tests/table-test/TableActionIcon";
+import { TableData } from "@/app/tests/table-test/ModernTable";
+import { ActionDefinition } from "@/app/tests/table-test/TableActionIcon";
 
 interface CustomTableBodyProps {
     page: Row<TableData>[];
     prepareRow: (row: Row<TableData>) => void;
     truncateText: (text: unknown, maxLength?: number) => string;
     actions: ActionDefinition[];
-    onRowClick: (rowData: TableData) => void;
+    onAction: (actionName: string, rowData: TableData) => void;
+    visibleColumns: string[];
 }
 
-const CustomTableBody: React.FC<CustomTableBodyProps> = ({ page, prepareRow, truncateText, actions, onRowClick }) => {
+const CustomTableBody: React.FC<CustomTableBodyProps> = ({
+                                                             page,
+                                                             prepareRow,
+                                                             truncateText,
+                                                             actions,
+                                                             onAction,
+                                                             visibleColumns
+                                                         }) => {
     return (
         <TableBody>
             <AnimatePresence>
@@ -41,7 +49,6 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = ({ page, prepareRow, tru
                                 transition: { duration: 0.2 },
                             }}
                             className="bg-card hover:bg-accent/50 cursor-pointer"
-                            onClick={() => onRowClick(row.original)}
                         >
                             {row.cells.map((cell) => (
                                 <CustomTableCell
@@ -50,6 +57,7 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = ({ page, prepareRow, tru
                                     truncateText={truncateText}
                                     actions={actions}
                                     rowData={row.original}
+                                    onAction={onAction}
                                 />
                             ))}
                         </motion.tr>

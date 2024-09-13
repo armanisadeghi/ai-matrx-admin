@@ -34,7 +34,7 @@ const columns: MatrixColumn<TableData>[] = [
     {
         Header: 'Occupation',
         accessor: 'occupation',
-        actions: [{name: 'expand', position: 'after'}]
+        actions: [{name: 'expand', position: 'before'}]
     },
     {Header: 'Salary', accessor: 'salary'},
     {Header: 'Start Date', accessor: 'start_date'},

@@ -101,6 +101,8 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
         }
     }
 
+
+
     const truncateText = (text: unknown, maxLength: number = 100): string => {
         if (typeof text !== 'string') {
             return String(text);
@@ -136,6 +138,27 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
 
     const columnNames = useMemo(() => allColumns.map((col) => col.Header as string), [allColumns]);
 
+    const handleAction = useCallback((actionName: string, rowData: TableData) => {
+        switch(actionName) {
+            case 'view':
+                openModal('view', rowData);
+                break;
+            case 'edit':
+                openModal('edit', rowData);
+                break;
+            case 'delete':
+                openModal('delete', rowData);
+                break;
+            case 'expand':
+                console.log('Expanding', rowData);
+                // Implement expand logic here
+                break;
+            default:
+                console.warn(`Unknown action: ${actionName}`);
+        }
+    }, [openModal]);
+
+
     const bodyProps = {
         page,
         prepareRow,
@@ -146,9 +169,10 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
             { ...editAction, name: 'edit' },
             { ...deleteAction, name: 'delete' }
         ],
-        onRowClick: (rowData: TableData) => openModal('view', rowData),
+        onAction: handleAction,
         visibleColumns,
     };
+
 
     return (
         <div className={cn("p-3 space-y-4", className)}>
