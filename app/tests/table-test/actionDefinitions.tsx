@@ -6,7 +6,7 @@ import React from "react";
 export const editAction = {
     name: 'edit',
     label: "Edit this item",
-    icon: <Edit className="h-4 w-4"/>,
+    icon: <Edit className="h-3 w-3"/>,
     className: "text-primary hover:bg-primary hover:text-primary-foreground",
 };
 

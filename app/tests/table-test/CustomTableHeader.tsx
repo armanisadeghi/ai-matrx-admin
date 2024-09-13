@@ -16,7 +16,7 @@ const CustomTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
                 <TableRow
                     key={headerGroup.getHeaderGroupProps().key}
                     {...headerGroup.getHeaderGroupProps()}
-                    className="bg-neutral-100 dark:bg-neutral-700"
+                    className="bg-neutral-100 dark:bg-neutral-700 mr-8"
                 >
                     {headerGroup.headers.map((column) => (
                         <TableHead
@@ -34,7 +34,6 @@ const CustomTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
                             </motion.div>
                         </TableHead>
                     ))}
-                    <TableHead className="text-muted-foreground">Actions</TableHead>
                 </TableRow>
             ))}
         </TableHeader>

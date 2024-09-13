@@ -25,6 +25,18 @@ type MatrixColumn<T extends object> = Column<T> & {
     actions?: Action[];
 };
 
+const defaultVisibleColumns = [
+    'name',
+    'age',
+    'email',
+    'country',
+    'occupation',
+    'salary',
+    'start_date',
+    'actions',
+];
+
+
 const columns: MatrixColumn<TableData>[] = [
     {Header: 'ID', accessor: 'id'},
     {Header: 'Name', accessor: 'name'},
@@ -43,9 +55,9 @@ const columns: MatrixColumn<TableData>[] = [
         accessor: 'actions',
         Cell: () => null,
         actions: [
-            { name: 'view', position: 'after' },
-            { name: 'edit', position: 'after' },
-            { name: 'delete', position: 'after' },
+            {name: 'view', position: 'after'},
+            {name: 'edit', position: 'after'},
+            {name: 'delete', position: 'after'},
         ],
     },
 ];
@@ -232,9 +244,12 @@ export default function TablePage() {
             <ModernTable
                 columns={columns}
                 data={data}
-                defaultVisibleColumns={['name', 'age', 'email', 'country', 'occupation', 'salary', 'start_date', 'actions']}
+                defaultVisibleColumns={defaultVisibleColumns}
                 className="pb-4 rounded-3xl bg-neutral-100 dark:bg-neutral-800"
             />
         </div>
     );
 }
+
+
+// https://claude.ai/chat/a18ee206-4dfb-454c-a46a-8b182fba00f8

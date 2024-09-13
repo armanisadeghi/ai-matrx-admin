@@ -1,10 +1,10 @@
 // CustomTableCell.tsx
 import React from 'react';
-import { TableCell } from '@/components/ui/table';
-import { motion } from 'framer-motion';
-import { Cell } from "react-table";
-import { TableData } from "@/app/tests/table-test/ModernTable";
-import TableActionIcon, { ActionDefinition } from "@/app/tests/table-test/TableActionIcon";
+import {TableCell} from '@/components/ui/table';
+import {motion} from 'framer-motion';
+import {Cell} from "react-table";
+import {TableData} from "@/app/tests/table-test/ModernTable";
+import TableActionIcon, {ActionDefinition} from "@/app/tests/table-test/TableActionIcon";
 
 interface CustomTableCellProps {
     cell: Cell<TableData>;
@@ -14,19 +14,20 @@ interface CustomTableCellProps {
     onAction: (actionName: string, rowData: TableData) => void;
 }
 
-const CustomTableCell: React.FC<CustomTableCellProps> = ({
-                                                             cell,
-                                                             truncateText,
-                                                             actions,
-                                                             rowData,
-                                                             onAction,
-                                                         }) => {
+const CustomTableCell: React.FC<CustomTableCellProps> = (
+    {
+        cell,
+        truncateText,
+        actions,
+        rowData,
+        onAction,
+    }) => {
     const renderContent = () => (
         <motion.div
             initial={false}
             animate={{
                 scale: 1,
-                transition: { type: "spring", stiffness: 300, damping: 10 },
+                transition: {type: "spring", stiffness: 300, damping: 10},
             }}
         >
             {cell.render('Cell')}
@@ -53,7 +54,7 @@ const CustomTableCell: React.FC<CustomTableCellProps> = ({
 
     return (
         <TableCell {...cell.getCellProps()} className="text-card-foreground">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
                 {renderActions('before')}
                 {renderContent()}
                 {renderActions('after')}

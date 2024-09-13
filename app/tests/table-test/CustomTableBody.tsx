@@ -1,10 +1,10 @@
-import { Row } from "react-table";
+import {Row} from "react-table";
 import React from "react";
-import { TableBody } from "@/components/ui/table";
-import { AnimatePresence, motion } from "framer-motion";
+import {TableBody} from "@/components/ui/table";
+import {AnimatePresence, motion} from "framer-motion";
 import CustomTableCell from "@/app/tests/table-test/CustomTableCell";
-import { TableData } from "@/app/tests/table-test/ModernTable";
-import { ActionDefinition } from "@/app/tests/table-test/TableActionIcon";
+import {TableData} from "@/app/tests/table-test/ModernTable";
+import {ActionDefinition} from "@/app/tests/table-test/TableActionIcon";
 
 interface CustomTableBodyProps {
     page: Row<TableData>[];
@@ -15,14 +15,15 @@ interface CustomTableBodyProps {
     visibleColumns: string[];
 }
 
-const CustomTableBody: React.FC<CustomTableBodyProps> = ({
-                                                             page,
-                                                             prepareRow,
-                                                             truncateText,
-                                                             actions,
-                                                             onAction,
-                                                             visibleColumns
-                                                         }) => {
+const CustomTableBody: React.FC<CustomTableBodyProps> = (
+    {
+        page,
+        prepareRow,
+        truncateText,
+        actions,
+        onAction,
+        visibleColumns
+    }) => {
     return (
         <TableBody>
             <AnimatePresence>
@@ -32,7 +33,7 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = ({
                         <motion.tr
                             key={row.id}
                             {...row.getRowProps()}
-                            initial={{ opacity: 0, y: -10 }}
+                            initial={{opacity: 0, y: -10}}
                             animate={{
                                 opacity: 1,
                                 y: 0,
@@ -43,12 +44,13 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = ({
                                     delay: i * 0.05,
                                 },
                             }}
-                            exit={{ opacity: 0, y: 10 }}
+                            exit={{opacity: 0, y: 10}}
                             whileHover={{
                                 scale: 1.02,
-                                transition: { duration: 0.2 },
+                                transition: {duration: 0.2},
                             }}
                             className="bg-card hover:bg-accent/50 cursor-pointer"
+                            onClick={() => onAction('view', row.original)}
                         >
                             {row.cells.map((cell) => (
                                 <CustomTableCell
@@ -67,5 +69,4 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = ({
         </TableBody>
     );
 };
-
 export default CustomTableBody;

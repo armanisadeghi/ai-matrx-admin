@@ -28,14 +28,15 @@ const TableActionIcon = <T,>({ action, data, onAction }: TableActionIconProps<T>
         <MatrxTooltip content={label} placement="left">
             <Button
                 onClick={handleClick}
-                size="sm"
-                variant="outline"
-                className={className || "transition-all duration-300 hover:scale-105"}
+                size="xs"
+                variant="ghost"
+                className={`p-1 ${className || "transition-all duration-300 hover:scale-105"}`}
             >
-                {icon}
+                {React.cloneElement(icon as React.ReactElement, { className: 'w-3 h-3' })}
             </Button>
         </MatrxTooltip>
     );
 };
+
 
 export default TableActionIcon;
