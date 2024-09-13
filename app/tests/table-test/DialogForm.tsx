@@ -1,6 +1,5 @@
-// DialogForm.tsx
-import React from 'react';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import React, {useState, useEffect} from 'react';
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Column} from 'react-table';
@@ -9,63 +8,128 @@ import {TableData} from "@/app/tests/table-test/ModernTable";
 interface DialogFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    modalMode: 'add' | 'edit';
+    mode: 'add' | 'edit' | 'delete' | 'view';
     columns: Column<TableData>[];
-    editingRow: TableData | null;
-    onSubmit: (formData: Record<string, string>) => void;
+    data: TableData | null;
+    onAction: (action: string, formData?: Record<string, string>) => void;
 }
 
 const DialogForm: React.FC<DialogFormProps> = (
     {
         open,
         onOpenChange,
-        modalMode,
+        mode,
         columns,
-        editingRow,
-        onSubmit,
+        data,
+        onAction,
     }) => {
+    const [formData, setFormData] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (data && mode !== 'add') {
+            const initialData: Record<string, string> = {};
+            columns.forEach(column => {
+                const key = column.accessor as string;
+                initialData[key] = data[key]?.toString() || '';
+            });
+            setFormData(initialData);
+        } else {
+            setFormData({});
+        }
+        console.log("Mode: ", mode);
+        console.log("Data: ", data);
+        console.log("Columns: ", columns);
+    }, [data, columns, mode]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        onAction(mode, formData);
+        onOpenChange(false);
+    };
+
+    const renderContent = () => {
+        switch (mode) {
+            case 'add':
+            case 'edit':
+                return (
+                    <form onSubmit={handleSubmit}>
+                        {columns.map((column) => (
+                            <div key={column.accessor as string} className="mb-4">
+                                <label htmlFor={column.accessor as string} className="block text-sm font-medium">
+                                    {column.Header?.toString()}
+                                </label>
+                                <Input
+                                    id={column.accessor as string}
+                                    name={column.accessor as string}
+                                    value={formData[column.accessor as string] || ''}
+                                    onChange={handleInputChange}
+                                    className="mt-1 bg-input text-foreground border-border"
+                                    disabled={column.accessor === 'id'}
+                                />
+                            </div>
+                        ))}
+                        <DialogFooter>
+                            <Button type="button" onClick={() => onOpenChange(false)} variant="outline"
+                                    className="bg-secondary text-secondary-foreground">
+                                Cancel
+                            </Button>
+                            <Button type="submit"
+                                    className="bg-primary text-primary-foreground">
+                                {mode === 'add' ? 'Add' : 'Save'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                );
+            case 'delete':
+                return (
+                    <>
+                        <p className="text-foreground">Are you sure you want to delete this item?</p>
+                        <DialogFooter>
+                            <Button onClick={() => onOpenChange(false)} variant="outline"
+                                    className="bg-secondary text-secondary-foreground">
+                                Cancel
+                            </Button>
+                            <Button onClick={() => onAction('delete')} variant="destructive"
+                                    className="bg-destructive text-destructive-foreground">
+                                Delete
+                            </Button>
+                        </DialogFooter>
+                    </>
+                );
+            case 'view':
+                return (
+                    <>
+                        {columns.map((column) => (
+                            <div key={column.accessor as string} className="mb-4">
+                                <label className="block text-sm font-medium text-foreground">
+                                    {column.Header?.toString()}
+                                </label>
+                                <p className="mt-1 text-foreground">{formData[column.accessor as string] || ''}</p>
+                            </div>
+                        ))}
+                        <DialogFooter>
+                            <Button onClick={() => onOpenChange(false)}
+                                    className="bg-primary text-primary-foreground">
+                                Close
+                            </Button>
+                        </DialogFooter>
+                    </>
+                );
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-card text-card-foreground">
+            <DialogContent className="bg-card text-card-foreground border-border">
                 <DialogHeader>
-                    <DialogTitle>{modalMode === 'add' ? 'Add New Item' : 'Edit Item'}</DialogTitle>
+                    <DialogTitle
+                        className="text-foreground">{mode.charAt(0).toUpperCase() + mode.slice(1)} Item</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                    e.preventDefault();
-                    const formElement = e.currentTarget;
-                    const formData: Record<string, string> = {};
-                    columns.forEach(column => {
-                        const input = formElement.elements.namedItem(column.id as string) as HTMLInputElement;
-                        if (input) {
-                            formData[column.id as string] = input.value;
-                        }
-                    });
-                    onSubmit(formData);
-                }}>
-                    {columns.map(column => (
-                        <div key={column.id as string} className="mb-4">
-                            <label htmlFor={column.id as string}
-                                   className="block text-sm font-medium text-card-foreground">
-                                {column.Header?.toString()}
-                            </label>
-                            <Input
-                                id={column.id as string}
-                                name={column.id as string}
-                                defaultValue={editingRow ? editingRow[column.id as string] : ''}
-                                className="bg-card text-card-foreground border-input"
-                            />
-                        </div>
-                    ))}
-                    <div className="flex justify-end space-x-2">
-                        <Button type="button" onClick={() => onOpenChange(false)} variant="outline"
-                                className="bg-primary text-primary-foreground hover:bg-primary/80">
-                            Cancel
-                        </Button>
-                        <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                            {modalMode === 'add' ? 'Add' : 'Save'}
-                        </Button>
-                    </div>
-                </form>
+                {renderContent()}
             </DialogContent>
         </Dialog>
     );

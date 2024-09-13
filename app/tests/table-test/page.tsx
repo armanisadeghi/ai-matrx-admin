@@ -1,11 +1,11 @@
 'use client';
 
 import ModernTable from "@/app/tests/table-test/ModernTable";
-import { Column } from 'react-table';
-import { v4 as uuidv4 } from 'uuid'; // Import uuid for generating unique ids
+import {Column} from 'react-table';
+import {v4 as uuidv4} from 'uuid';
 
 interface TableData {
-    id: string; // UUID as a string
+    id: string;
     name: string;
     age: number;
     email: string;
@@ -13,16 +13,41 @@ interface TableData {
     occupation: string;
     salary: number;
     start_date: string;
+    actions?: string;
 }
 
-const columns: Column<TableData>[] = [
-    { Header: 'Name', accessor: 'name' },
-    { Header: 'Age', accessor: 'age' },
-    { Header: 'Email', accessor: 'email' },
-    { Header: 'Country', accessor: 'country' },
-    { Header: 'Occupation', accessor: 'occupation' },
-    { Header: 'Salary', accessor: 'salary' },
-    { Header: 'Start Date', accessor: 'start_date' },
+interface Action {
+    name: string;
+    position?: 'above' | 'before' | 'below' | 'after' | 'behind' | 'over';
+}
+
+type MatrixColumn<T extends object> = Column<T> & {
+    actions?: Action[];
+};
+
+const columns: MatrixColumn<TableData>[] = [
+    {Header: 'ID', accessor: 'id'},
+    {Header: 'Name', accessor: 'name'},
+    {Header: 'Age', accessor: 'age'},
+    {Header: 'Email', accessor: 'email'},
+    {Header: 'Country', accessor: 'country'},
+    {
+        Header: 'Occupation',
+        accessor: 'occupation',
+        actions: [{name: 'expand', position: 'after'}]
+    },
+    {Header: 'Salary', accessor: 'salary'},
+    {Header: 'Start Date', accessor: 'start_date'},
+    {
+        Header: 'Actions',
+        accessor: 'actions',
+        Cell: () => null,
+        actions: [
+            { name: 'view', position: 'after' },
+            { name: 'edit', position: 'after' },
+            { name: 'delete', position: 'after' },
+        ],
+    },
 ];
 
 // Add UUIDs to each data item
@@ -180,26 +205,36 @@ const data: TableData[] = [
 ];
 
 export default function TablePage() {
-    const handleAdd = (newItem: Omit<TableData, 'id'>) => {
-        const newItemWithId: TableData = { id: uuidv4(), ...newItem }; // Add UUID to new item
-        // Logic to add new item
+    // Define handlers using the handleActionName convention
+    (window as any).handleAdd = (newItem: Omit<TableData, 'id'>) => {
+        const newItemWithId: TableData = {id: uuidv4(), ...newItem};
+        console.log('Adding new item:', newItemWithId);
+        // Implement the actual add logic here
     };
 
-    const handleEdit = (id: string, updatedItem: Omit<TableData, 'id'>) => {
-        // Logic to edit item by id
+    (window as any).handleEdit = (item: TableData) => {
+        console.log('Editing item:', item);
+        // Implement the actual edit logic here
     };
 
-    const handleDelete = (item: TableData) => {
-        // Logic to delete item
+    (window as any).handleDelete = (item: TableData) => {
+        console.log('Deleting item:', item);
+        // Implement the actual delete logic here
+    };
+
+    (window as any).handleExpand = (item: TableData) => {
+        console.log('Expanding item:', item);
+        // Implement the expand logic here
     };
 
     return (
-        <ModernTable
-            columns={columns}
-            data={data}
-            onAdd={handleAdd}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-        />
+        <div className="p-2">
+            <ModernTable
+                columns={columns}
+                data={data}
+                defaultVisibleColumns={['name', 'age', 'email', 'country', 'occupation', 'salary', 'start_date', 'actions']}
+                className="pb-4 rounded-3xl bg-neutral-100 dark:bg-neutral-800"
+            />
+        </div>
     );
 }

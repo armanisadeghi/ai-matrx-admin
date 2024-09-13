@@ -4,6 +4,7 @@ import { featureSchemas } from './featureSchema';
 import { createFeatureSlice } from './sliceCreator';
 import { createFeatureSagas } from './sagas';
 import layoutReducer from './slices/layoutSlice';
+import {themeReducer} from "@/styles/themes";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -17,6 +18,7 @@ const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) =>
 const rootReducer = combineReducers({
     ...featureReducers,
     layout: layoutReducer,
+    theme: themeReducer,
 });
 
 export const makeStore = () => {
