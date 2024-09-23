@@ -1,18 +1,14 @@
 // File Location: @app/(public)/layout.tsx
 
 import React from 'react';
-import BaseLayout from '@/components/layout/base-layout';
-import {coreAppLinks} from "@/components/layout/core-links";
+import { PublicProviders } from './PublicProviders';
+import PublicTopMenu from "@/components/matrx/PublicTopMenu";
 
-export default function AuthenticatedLayout(
-    {
-        children,
-    }: {
-        children: React.ReactNode
-    }) {
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
     return (
-            <BaseLayout links={coreAppLinks}>
-                {children}
-            </BaseLayout>
+        <PublicProviders>
+            <PublicTopMenu />
+            {children}
+        </PublicProviders>
     );
 }

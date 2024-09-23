@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/styles/themes/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
@@ -10,7 +10,8 @@ export const HoverEffect = ({
     items: {
         title: string;
         description: string;
-        link: string;
+    link?: string;
+    onClick?: () => void; // Added support for `onClick`
     }[];
     className?: string;
 }) => {
@@ -24,9 +25,8 @@ export const HoverEffect = ({
             )}
         >
             {items.map((item, idx) => (
-                <Link
-                    href={item?.link}
-                    key={item?.link}
+        <div
+          key={item?.title} // Changed `key` to `title` since `link` may not exist
                     className="relative group  block p-2 h-full w-full"
                     onMouseEnter={() => setHoveredIndex(idx)}
                     onMouseLeave={() => setHoveredIndex(null)}
@@ -48,11 +48,24 @@ export const HoverEffect = ({
                             />
                         )}
                     </AnimatePresence>
+
+          {/* Conditionally render Link or div with onClick */}
+          {item.link ? (
+            <Link href={item.link} className="block">
                     <Card>
                         <CardTitle>{item.title}</CardTitle>
                         <CardDescription>{item.description}</CardDescription>
                     </Card>
                 </Link>
+          ) : (
+            <div className="block cursor-pointer" onClick={item.onClick}>
+              <Card>
+                <CardTitle>{item.title}</CardTitle>
+                <CardDescription>{item.description}</CardDescription>
+              </Card>
+            </div>
+          )}
+        </div>
             ))}
         </div>
     );

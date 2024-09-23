@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/styles/themes/utils";
 
 export const Card = React.memo(
     ({

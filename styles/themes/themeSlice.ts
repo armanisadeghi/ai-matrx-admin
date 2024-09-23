@@ -1,24 +1,20 @@
+// File: styles/themes/themeSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ThemeMode } from './types';
-import { themes } from './themeColors';
+
+export type ThemeMode = 'light' | 'dark';
 
 interface ThemeState {
-    currentTheme: string;
     mode: ThemeMode;
 }
 
 const initialState: ThemeState = {
-    currentTheme: themes[0].name,
-    mode: 'light',
+    mode: 'dark',
 };
 
 const themeSlice = createSlice({
     name: 'theme',
     initialState,
     reducers: {
-        setTheme: (state, action: PayloadAction<string>) => {
-            state.currentTheme = action.payload;
-        },
         toggleMode: (state) => {
             state.mode = state.mode === 'light' ? 'dark' : 'light';
         },
@@ -28,5 +24,5 @@ const themeSlice = createSlice({
     },
 });
 
-export const { setTheme, toggleMode, setMode } = themeSlice.actions;
+export const { toggleMode, setMode } = themeSlice.actions;
 export default themeSlice.reducer;

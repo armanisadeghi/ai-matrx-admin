@@ -15,7 +15,7 @@ import { Table } from '@/components/ui/table';
 import DialogForm from "./DialogForm";
 import ColumnSettingsModal from "@/app/tests/table-test/ColumnSettingsModal";
 import TableBottomSection from "@/app/tests/table-test/TableBottomSection";
-import { cn } from "@/lib/utils"
+import { cn } from "@/styles/themes/utils"
 import TableTopOptions from "@/app/tests/table-test/TableTopOptions";
 import {deleteAction, editAction, expandAction, viewAction} from "@/app/tests/table-test/actionDefinitions";
 import CustomTableHeader from "@/app/tests/table-test/CustomTableHeader";

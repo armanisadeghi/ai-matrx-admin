@@ -1,3 +1,5 @@
+// File: styles/themes/types.ts
+
 export type ThemeColor = {
     light: string;
     dark: string;
@@ -31,9 +33,35 @@ export type ThemeColors = {
     chart5: ThemeColor;
 };
 
+export type Typography = {
+    fontFamily: {
+        sans: string;
+        heading: string;
+    };
+    fontSize: {
+        xs: string;
+        sm: string;
+        base: string;
+        lg: string;
+        xl: string;
+        '2xl': string;
+        '3xl': string;
+        '4xl': string;
+        '5xl': string;
+    };
+    fontWeight: {
+        light: string;
+        normal: string;
+        medium: string;
+        semibold: string;
+        bold: string;
+    };
+};
+
 export type Theme = {
     name: string;
     colors: ThemeColors;
+    typography: Typography;
 };
 
 export type ThemeMode = 'light' | 'dark';

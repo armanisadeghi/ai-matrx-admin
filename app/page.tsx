@@ -13,14 +13,14 @@ import {
     ChartBar
 } from 'lucide-react';
 import {Button} from "@/components/ui/button";
-import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
+import {CardBody, CardContainer, CardItem} from "@/components/ui/3d-card";
 import Link from 'next/link';
 import {Cover} from "@/components/ui/cover";
-import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
-import {ThemeSwitcher} from "@/components/layout/ThemeSwitcher";
+import {BackgroundBeamsWithCollision} from "@/components/ui/background-beams-with-collision";
+import {StandaloneThemeSwitcher} from "@/components/StandaloneThemeSwitcher";
+import {SimplePricingWithFourTiers, SimplePricingWithThreeTiers} from "@/components/packs/PricingSection";
 
 interface TopMenuProps {
-    // Add any props you might need
 }
 
 const TopMenu: React.FC<TopMenuProps> = () => {
@@ -43,7 +43,7 @@ const TopMenu: React.FC<TopMenuProps> = () => {
                 </div>
 
                 <div className="flex items-center space-x-3">
-                    <ThemeSwitcher/>
+                    <StandaloneThemeSwitcher initialTheme={'dark'}/>
                     <Link href="/dashboard" className="flex items-center">
                         <Button variant="outline">Dashboard</Button>
                     </Link>
@@ -61,11 +61,12 @@ interface FeatureCardProps {
     features?: string[];
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ Icon, title, description, features }) => (
+const FeatureCard: React.FC<FeatureCardProps> = ({Icon, title, description, features}) => (
     <CardContainer className="inter-var">
-        <CardBody className="bg-background relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] border-border w-full h-full rounded-xl p-6 border">
+        <CardBody
+            className="bg-background relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] border-border w-full h-full rounded-xl p-6 border">
             <CardItem translateZ="50" className="text-primary w-12 h-12 mb-4">
-                <Icon className="w-full h-full" />
+                <Icon className="w-full h-full"/>
             </CardItem>
             <CardItem
                 translateZ="60"
@@ -98,7 +99,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ Icon, title, description, fea
 const HomePage: React.FC = () => {
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <TopMenu />
+            <TopMenu/>
             <main className="container mx-auto px-4 py-16 text-center">
                 {/*<h1 className="text-6xl font-bold mb-4">AI Matrx</h1>*/}
                 <div>
@@ -159,11 +160,14 @@ const HomePage: React.FC = () => {
                     <div className="w-full py-20 relative z-20">
                         <h2 className="text-3xl md:text-5xl lg:text-7xl font-bold text-center text-black dark:text-white font-sans tracking-tight mb-12">
                             Why Enterprise Leaders Choose{" "}
-                            <div className="relative mx-auto inline-block w-max [filter:drop-shadow(0px_1px_3px_rgba(27,_37,_80,_0.14))]">
-                                <div className="absolute left-0 top-[1px] bg-clip-text bg-no-repeat text-transparent bg-gradient-to-r py-4 from-purple-500 via-violet-500 to-pink-500 [text-shadow:0_0_rgba(0,0,0,0.1)]">
+                            <div
+                                className="relative mx-auto inline-block w-max [filter:drop-shadow(0px_1px_3px_rgba(27,_37,_80,_0.14))]">
+                                <div
+                                    className="absolute left-0 top-[1px] bg-clip-text bg-no-repeat text-transparent bg-gradient-to-r py-4 from-purple-500 via-violet-500 to-pink-500 [text-shadow:0_0_rgba(0,0,0,0.1)]">
                                     <span className="">AI Matrx</span>
                                 </div>
-                                <div className="relative bg-clip-text text-transparent bg-no-repeat bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 py-4">
+                                <div
+                                    className="relative bg-clip-text text-transparent bg-no-repeat bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 py-4">
                                     <span className="">AI Matrx</span>
                                 </div>
                             </div>
@@ -179,15 +183,19 @@ const HomePage: React.FC = () => {
                             </li>
                             <li className="flex items-start">
                                 <span className="text-primary text-2xl mr-4 mt-1">✓</span>
-                                <span className="text-xl"><strong className="font-semibold">Enterprise-Grade Security:</strong> Ensure data protection and compliance with robust security measures.</span>
+                                <span className="text-xl"><strong
+                                    className="font-semibold">Enterprise-Grade Security:</strong> Ensure data protection and compliance with robust security measures.</span>
                             </li>
                             <li className="flex items-start">
                                 <span className="text-primary text-2xl mr-4 mt-1">✓</span>
-                                <span className="text-xl"><strong className="font-semibold">Scalable Performance:</strong> Seamlessly handle growing demands as your AI initiatives expand.</span>
+                                <span className="text-xl"><strong
+                                    className="font-semibold">Scalable Performance:</strong> Seamlessly handle growing demands as your AI initiatives expand.</span>
                             </li>
                         </ul>
                     </div>
                 </BackgroundBeamsWithCollision>
+
+                <SimplePricingWithFourTiers/>
 
             </main>
         </div>

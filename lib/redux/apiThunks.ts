@@ -1,7 +1,7 @@
 // File Location: lib/redux/apiThunks.ts
 
 import {createAsyncThunk} from '@reduxjs/toolkit';
-import {supabase} from '@/lib/supabase/supabaseClient';
+import {supabase} from '@/lib/supabase/client';
 import {
     FeatureName,
     FetchOneThunkArgs,

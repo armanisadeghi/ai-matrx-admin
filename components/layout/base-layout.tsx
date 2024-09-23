@@ -4,16 +4,16 @@
 
 import React, {useState} from "react";
 import {Sidebar, SidebarBody, SidebarLink} from "../ui/sidebar";
-import {cn} from "@/lib/utils";
+import {cn} from "@/styles/themes/utils";
 import {User} from "lucide-react";
-import {ThemeSwitcher} from "@/components/layout/ThemeSwitcher";
-import StoreProvider from "@/app/StoreProvider";
+import {ThemeSwitcher} from "@/styles/themes/ThemeSwitcher";
+import StoreProvider from "@/lib/StoreProvider";
 import {Logo, LogoIcon} from "@/components/layout/MatrixLogo";
 import {useSelector} from "react-redux";
 import {RootState} from "@/lib/redux/store";
 
 // Normal layout component
-const NormalLayout = ({ links, open, setOpen, children }: any) => (
+export const NormalLayout = ({ links, open, setOpen, children }: any) => (
     <div className={cn("min-h-screen bg-white dark:bg-black p-2")}>
         <div className={cn(
             "flex bg-gray-300 dark:bg-neutral-700 w-full max-w-7xl mx-auto overflow-hidden",
@@ -58,7 +58,7 @@ const NormalLayout = ({ links, open, setOpen, children }: any) => (
 );
 
 // Extended bottom layout component
-const ExtendedBottomLayout = ({ links, open, setOpen, children }: any) => (
+export const ExtendedBottomLayout = ({ links, open, setOpen, children }: any) => (
     <div className={cn("min-h-screen bg-white dark:bg-black overflow-hidden")}>
         <div className={cn(
             "flex bg-gray-300 dark:bg-neutral-700 w-full max-w-7xl mx-auto overflow-hidden",
@@ -103,7 +103,7 @@ const ExtendedBottomLayout = ({ links, open, setOpen, children }: any) => (
 );
 
 // Window layout component (without sidebar)
-const WindowLayout = ({ children }: any) => (
+export const WindowLayout = ({ children }: any) => (
     <div className={cn("min-h-screen bg-white dark:bg-black p-2")}>
         <div className={cn(
             "bg-gray-300 dark:bg-neutral-700 w-full max-w-7xl mx-auto overflow-hidden",
@@ -122,32 +122,3 @@ const WindowLayout = ({ children }: any) => (
     </div>
 );
 
-function BaseLayout({ children, links }: any) {
-    const [open, setOpen] = useState(false);
-    const isInWindow = useSelector((state: RootState) => state.layout.isInWindow);
-    const layoutStyle = useSelector((state: RootState) => state.layout.layoutStyle);
-
-    const LayoutComponent = (() => {
-        if (isInWindow) return WindowLayout;
-        switch (layoutStyle) {
-            case 'extendedBottom':
-                return ExtendedBottomLayout;
-            case 'window':
-                return WindowLayout;
-            default:
-                return NormalLayout;
-        }
-    })();
-
-    const layoutProps = isInWindow
-        ? {}
-        : { links, open, setOpen };
-
-    return (
-        <LayoutComponent {...layoutProps}>
-            {children}
-        </LayoutComponent>
-    );
-}
-
-export default BaseLayout;

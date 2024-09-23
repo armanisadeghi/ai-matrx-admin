@@ -1,27 +1,79 @@
+// File: styles/themes/ThemeProvider.tsx
 'use client';
-
-import React, { useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { RootState } from "@/lib/redux/store";
+import { setMode } from './themeSlice';
 
-import { themes } from './themeColors';
-import { ThemeMode } from './types';
-import {RootState} from "@/lib/redux/store";
+export type ThemeMode = 'light' | 'dark';
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface ThemeContextProps {
+    mode: ThemeMode;
+    toggleMode: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
+
+export const ThemeProvider: React.FC<{
+    children: React.ReactNode,
+    defaultTheme?: ThemeMode,
+    enableSystem?: boolean
+}> = ({
+          children,
+          defaultTheme = 'dark',
+          enableSystem = false
+      }) => {
     const dispatch = useDispatch();
-    const { currentTheme, mode } = useSelector((state: RootState) => state.theme);
+    const { mode } = useSelector((state: RootState) => state.theme);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const theme = themes.find(t => t.name === currentTheme) || themes[0];
-        const root = document.documentElement;
+        setMounted(true);
+        const savedTheme = document.cookie.split('; ').find(row => row.startsWith('theme='))?.split('=')[1] as ThemeMode | undefined;
+        if (savedTheme) {
+            dispatch(setMode(savedTheme));
+        } else {
+            dispatch(setMode(defaultTheme));
+        }
+    }, [dispatch, defaultTheme]);
 
-        Object.entries(theme.colors).forEach(([key, value]) => {
-            root.style.setProperty(`--${key}`, value[mode]);
-        });
+    useEffect(() => {
+        if (mounted) {
+            document.cookie = `theme=${mode};path=/`;
+            document.documentElement.setAttribute('data-theme', mode);
+            document.documentElement.classList.toggle('dark', mode === 'dark');
+        }
+    }, [mode, mounted]);
 
-        root.classList.remove('light', 'dark');
-        root.classList.add(mode);
-    }, [currentTheme, mode]);
+    const toggleMode = () => {
+        const newMode = mode === 'light' ? 'dark' : 'light';
+        dispatch(setMode(newMode));
+    };
 
-    return <>{children}</>;
+    const contextValue: ThemeContextProps = {
+        mode,
+        toggleMode
+    };
+
+    return (
+        <ThemeContext.Provider value={contextValue}>
+            <NextThemesProvider
+                attribute="class"
+                defaultTheme={mode}
+                enableSystem={enableSystem}
+                value={{light: 'light', dark: 'dark'}}
+            >
+                {children}
+            </NextThemesProvider>
+        </ThemeContext.Provider>
+    );
+};
+
+export const useTheme = () => {
+    const context = useContext(ThemeContext);
+    if (!context) {
+        throw new Error('useTheme must be used within a ThemeProvider');
+    }
+    return context;
 };

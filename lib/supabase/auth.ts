@@ -1,4 +1,4 @@
-import {supabase} from "@/lib/supabase/supabaseClient";
+import {supabase} from "@/lib/supabase/client";
 
 
 export const signInWithIdToken = async (provider: string, token: string) => {

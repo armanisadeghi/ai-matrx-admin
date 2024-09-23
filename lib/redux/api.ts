@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/supabaseClient';
+import { supabase } from '@/lib/supabase/client';
 
 export const fetchWithFk = async (args: any): Promise<any> => {
     try {

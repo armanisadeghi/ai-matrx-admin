@@ -1,10 +1,13 @@
+// lib/redux/store.ts
+
 import createSagaMiddleware from 'redux-saga';
-import {combineReducers, configureStore} from '@reduxjs/toolkit';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { featureSchemas } from './featureSchema';
 import { createFeatureSlice } from './sliceCreator';
 import { createFeatureSagas } from './sagas';
 import layoutReducer from './slices/layoutSlice';
-import {themeReducer} from "@/styles/themes";
+import formReducer from './slices/formSlice';
+import { themeReducer } from "@/styles/themes";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -19,19 +22,22 @@ const rootReducer = combineReducers({
     ...featureReducers,
     layout: layoutReducer,
     theme: themeReducer,
+    form: formReducer,
 });
 
 export const makeStore = () => {
-    const store = configureStore({
+    return configureStore({
         reducer: rootReducer,
-        middleware: getDefaultMiddleware => getDefaultMiddleware().concat(sagaMiddleware),
+        middleware: (getDefaultMiddleware) =>
+            getDefaultMiddleware().concat(sagaMiddleware),
+        devTools: process.env.NODE_ENV !== 'production',
     });
 
-    // sagaMiddleware.run(createFeatureSagas); // Run the new saga
+    // sagaMiddleware.run(createFeatureSagas); Soon to be implemented
 
-    return store;
 };
 
 export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];
+

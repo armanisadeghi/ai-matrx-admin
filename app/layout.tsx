@@ -1,145 +1,32 @@
-// File Location: @/app/layout.tsx
-import "@/styles/globals.css"
-import {Metadata, Viewport} from "next"
-import {siteConfig} from "@/config/extras/site";
-import {ThemeProvider} from "@/components/layout/ThemeProvider";
+import "@/styles/globals.css";
+import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
+import { NextUIProvider } from "@nextui-org/react";
+import { cookies } from 'next/headers';
+import { metadata } from './config/metadata';
+import { viewport } from './config/viewport';
+import { inter, montserrat } from "@/styles/themes";
 
-import {Toaster} from "@/components/ui/toaster";
-import {cn} from "@/lib/utils";
-import {inter, montserrat} from "@/lib/fonts";
-import {NextUIProvider} from "@nextui-org/react";
-import Script from 'next/script';
-import {Provider} from "react-redux";
-import {makeStore} from "@/lib/redux/store";
-import StoreProvider from "@/app/StoreProvider";
-
-
-export const metadata: Metadata = {
-    title: {
-        default: "App Matrx",
-        template: `%s - App Matrx`,
-    },
-    description: "App Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with App Matrx.",
-    keywords: [
-        "App Matrx",
-        "AI",
-        "Artificial Intelligence",
-        "No-Code",
-        "Low-Code",
-        "Automation",
-        "Workflow Automation",
-        "Business Automation",
-        "AI Platform",
-        "AI Tools",
-        "AI Applications",
-        "Drag-and-Drop",
-        "Machine Learning",
-        "Deep Learning",
-        "Natural Language Processing",
-        "Computer Vision",
-        "Data Science",
-        "AI for Business",
-        "AI Solutions",
-        "AI Innovation",
-        "Future of Work",
-        "Digital Transformation"
-    ],
-    authors: [
-        {
-            name: "Armani Sadeghi",
-            url: "https://appmatrix.com",
-        },
-    ],
-    creator: "Armani Sadeghi",
-    openGraph: {
-        type: "website",
-        locale: "en_US",
-        // url: siteConfig.url,
-        title: "App Matrx",
-        description: "App Matrx is a revolutionary no-code AI platform that empowers businesses to build sophisticated AI applications without writing a single line of code. Unleash the power of AI with our intuitive drag-and-drop interface and pre-built components, streamlining your workflows and automating complex tasks. Experience the future of business automation with App Matrx.",
-        siteName: "App Matrx",
-        images: [
-            {
-                url: siteConfig.ogImage,
-                width: 1200,
-                height: 630,
-                alt: "App Matrx",
-            },
-        ],
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "App Matrx",
-        description: "A large-scale application built with Next.js and Shadcn UI",
-        images: [siteConfig.ogImage],
-        creator: "@your_twitter_handle",
-    },
-    icons: {
-        icon: [
-            { url: "/favicon.ico", sizes: "any" },
-            { url: "/favicon.svg", type: "image/svg+xml" },
-        ],
-        apple: "/apple-touch-icon.png",
-        shortcut: "/favicon.ico",
-    },
-    manifest: "/site.webmanifest",
-}
-
-export const viewport: Viewport = {
-    themeColor: [
-        {media: "(prefers-color-scheme: light)", color: "white"},
-        {media: "(prefers-color-scheme: dark)", color: "black"},
-    ],
-}
+export { metadata, viewport };
 
 interface RootLayoutProps {
-    children: React.ReactNode
+    children: React.ReactNode;
 }
 
-export default function RootLayout({children}: RootLayoutProps) {
-    const store = makeStore();
+export default function RootLayout({ children }: RootLayoutProps) {
+    const cookieStore = cookies();
+    const theme = cookieStore.get('theme')?.value || 'dark';
 
     return (
-        <html lang="en" suppressHydrationWarning className={`dark ${inter.variable} ${montserrat.variable}`}>
+        <html lang="en" data-theme={theme} className={cn("dark", inter.variable, montserrat.variable)} suppressHydrationWarning>
         <head>
-            <Script id="theme-script" strategy="beforeInteractive">
-                {`
-                (function() {
-                    function getInitialTheme() {
-                        if (typeof window !== 'undefined') {
-                            const storedTheme = localStorage.getItem('theme');
-                            if (storedTheme === 'light') {
-                                return 'light';
-                            }
-                        }
-                        return 'dark'; // Default to dark
-                    }
-                    
-                    const theme = getInitialTheme();
-                    const root = document.documentElement;
-                    root.classList.toggle('dark', theme === 'dark');
-                    root.style.colorScheme = theme;
-                    
-                    // Apply the background color CSS variable
-                    if (theme === 'dark') {
-                        root.style.setProperty('--background', '0 0% 15.7%');
-                    } else {
-                        root.style.setProperty('--background', '0 0% 100%');
-                    }
-                })();
-                `}
-            </Script>
         </head>
         <body className={cn("min-h-screen bg-background font-sans antialiased")}>
-        <StoreProvider>
-            <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                <NextUIProvider>
-                    {children}
-                    <Toaster/>
-                </NextUIProvider>
-            </ThemeProvider>
-        </StoreProvider>
+        <NextUIProvider>
+            {children}
+            <Toaster />
+        </NextUIProvider>
         </body>
         </html>
-    )
+    );
 }

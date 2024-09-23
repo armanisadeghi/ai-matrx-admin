@@ -2,11 +2,11 @@
 
 import React, {useState} from "react";
 import {Sidebar, SidebarBody, SidebarLink} from "../ui/sidebar";
-import {cn} from "@/lib/utils";
+import {cn} from "@/styles/themes/utils";
 import {Infinity, User} from "lucide-react";
 import {motion} from "framer-motion";
-import {ThemeSwitcher} from "@/components/layout/ThemeSwitcher";
-import StoreProvider from "@/app/StoreProvider";
+import {ThemeSwitcher} from "@/styles/themes/ThemeSwitcher";
+import {StoreProvider} from "@/lib/StoreProvider";
 
 function BaseLayout({children, links}) {
     const [open, setOpen] = useState(false);
