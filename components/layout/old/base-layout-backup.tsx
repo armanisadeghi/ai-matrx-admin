@@ -6,7 +6,7 @@ import {cn} from "@/styles/themes/utils";
 import {Infinity, User} from "lucide-react";
 import {motion} from "framer-motion";
 import {ThemeSwitcher} from "@/styles/themes/ThemeSwitcher";
-import StoreProvider from "@/lib/StoreProvider";
+import StoreProvider from "@/providers/StoreProvider";
 
 function BaseLayout({children, links}) {
     const [open, setOpen] = useState(false);

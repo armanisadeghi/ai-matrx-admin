@@ -3,31 +3,16 @@
 'use client';
 
 import React from "react";
-import {useSelector} from "react-redux";
-import {RootState} from "@/lib/redux/store";
 import {ExtendedBottomLayout, NormalLayout, WindowLayout} from "@/components/layout/base-layout";
+import {coreAppLinks} from "@/components/layout/core-links";
 
-function DashboardLayout({children, links}: any) {
-
+function Layout({children, links}: any) {
     const [open, setOpen] = React.useState(false);
-    const isInWindow = useSelector((state: RootState) => state.layout.isInWindow);
-    const layoutStyle = useSelector((state: RootState) => state.layout.layoutStyle);
 
-    const LayoutComponent = (() => {
-        if (isInWindow) return WindowLayout;
-        switch (layoutStyle) {
-            case 'extendedBottom':
-                return ExtendedBottomLayout;
-            case 'window':
-                return WindowLayout;
-            default:
-                return NormalLayout;
-        }
-    })();
+    if (!links) links = coreAppLinks;
+    const LayoutComponent = WindowLayout;
 
-    const layoutProps = isInWindow
-        ? {}
-        : {links, open, setOpen};
+    const layoutProps = {links, open, setOpen};
 
     return (
         <LayoutComponent {...layoutProps}>
@@ -35,3 +20,5 @@ function DashboardLayout({children, links}: any) {
         </LayoutComponent>
     );
 }
+
+export default Layout;

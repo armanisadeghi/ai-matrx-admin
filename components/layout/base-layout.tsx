@@ -7,7 +7,7 @@ import {Sidebar, SidebarBody, SidebarLink} from "../ui/sidebar";
 import {cn} from "@/styles/themes/utils";
 import {User} from "lucide-react";
 import {ThemeSwitcher} from "@/styles/themes/ThemeSwitcher";
-import StoreProvider from "@/lib/StoreProvider";
+import StoreProvider from "@/providers/StoreProvider";
 import {Logo, LogoIcon} from "@/components/layout/MatrixLogo";
 import {useSelector} from "react-redux";
 import {RootState} from "@/lib/redux/store";
