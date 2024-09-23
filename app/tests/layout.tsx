@@ -2,30 +2,31 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
-import BaseLayout from '@/components/layout/base-layout';
-import { coreAppLinks } from "@/components/layout/core-links";
-import { useDispatch } from 'react-redux';
-import { setLayoutStyle } from '@/lib/redux/slices/layoutSlice';
-import { useWindowAware } from '@/hooks/useWindowAware';
+import React from "react";
+import {ExtendedBottomLayout, NormalLayout, WindowLayout} from "@/components/layout/base-layout";
+import {coreAppLinks} from "@/components/layout/core-links";
+import {AuthProvider} from "@/lib/AuthProvider";
+import {Providers} from "@/app/Providers";
 
-export default function TestsLayout({
-                                        children,
-                                    }: {
-    children: React.ReactNode
-}) {
-    const dispatch = useDispatch();
-    const { isInWindow, layoutStyle } = useWindowAware();
+function Layout({children, links}: any) {
+    const [open, setOpen] = React.useState(false);
 
-    useEffect(() => {
-        if (!isInWindow) {
-            dispatch(setLayoutStyle('normal'));
-        }
-    }, [isInWindow, dispatch]);
+    if (!links) links = coreAppLinks;
+    const LayoutComponent = NormalLayout;
+
+    const layoutProps = {links, open, setOpen};
 
     return (
-        <BaseLayout links={coreAppLinks}>
-            {children}
-        </BaseLayout>
+        <AuthProvider>
+            <Providers>
+                <LayoutComponent {...layoutProps}>
+                    {children}
+                </LayoutComponent>
+            </Providers>
+        </AuthProvider>
+
+
     );
 }
+
+export default Layout;

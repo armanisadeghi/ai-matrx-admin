@@ -1,0 +1,12 @@
+node_modules
+.pnp
+.pnp.js
+.next
+Dockerfile
+docker-compose.yml
+.git
+*.md
+.env
+armani
+_dev
+_armani
