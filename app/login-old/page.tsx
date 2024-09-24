@@ -1,6 +1,6 @@
-// app/login/page.tsx
+// app/login-old/page.tsx
 
-// app/login/page.tsx
+// app/login-old/page.tsx
 
 import { login, signup } from './actions'
 

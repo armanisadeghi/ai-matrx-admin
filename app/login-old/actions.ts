@@ -1,4 +1,4 @@
-// app/login/actions.ts
+// app/login-old/actions.ts
 
 'use server'
 
@@ -36,7 +36,7 @@ export async function login(formData: FormData) {
             break
 
         default:
-            error = new Error('Invalid login method')
+            error = new Error('Invalid login-old method')
     }
 
     if (error) {

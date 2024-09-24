@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server' // Import NextResponse
-import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession } from "@/utils/supabase/middleware";
+
 
 export default async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname;
@@ -27,7 +28,6 @@ function shouldApplyMiddleware(path: string): boolean {
         '/dash',
         '/blog',
         '/pricing',
-        '/login',
     ];
 
     for (const excludedPath of excludedPaths) {

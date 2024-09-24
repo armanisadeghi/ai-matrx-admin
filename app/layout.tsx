@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { NextUIProvider } from "@nextui-org/react";

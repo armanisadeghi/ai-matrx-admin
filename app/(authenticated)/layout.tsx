@@ -9,7 +9,7 @@ export default async function AuthenticatedLayout({children}: { children: React.
     const {data, error} = await supabase.auth.getUser()
 
     if (error || !data?.user) {
-        redirect('/login')
+        redirect('/sign-in')
     }
 
     return (
