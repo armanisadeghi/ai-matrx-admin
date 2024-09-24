@@ -1,3 +1,5 @@
+// File: app/(auth-pages)/sign-in/page.tsx
+
 import { signInAction, signInWithGoogleAction, signInWithGithubAction } from "@/app/actions";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
@@ -5,13 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
-export default function Login({ searchParams }: { searchParams: Message }) {
+export default function Login({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+    console.log("Received searchParams:", searchParams); // Debug log
+    const redirectTo = searchParams.redirectTo as string || '/dashboard';
+    console.log("RedirectTo value:", redirectTo); // Debug log
+
     return (
         <div className="flex-1 flex flex-col min-w-64">
             <h1 className="text-2xl font-medium">Sign in</h1>
             <p className="text-sm text-foreground">
                 Don't have an account?{" "}
-                <Link className="text-foreground font-medium underline" href="/sign-up">
+                <Link className="text-foreground font-medium underline" href={`/sign-up?redirectTo=${encodeURIComponent(redirectTo)}`}>
                     Sign up
                 </Link>
             </p>
@@ -34,23 +40,26 @@ export default function Login({ searchParams }: { searchParams: Message }) {
                         placeholder="Your password"
                         required
                     />
+                    <input type="hidden" name="redirectTo" value={redirectTo} />
                     <SubmitButton pendingText="Signing In...">
                         Sign in with Email
                     </SubmitButton>
                 </form>
                 <div className="flex flex-col gap-2 mt-4">
                     <form action={signInWithGoogleAction}>
+                        <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton pendingText="Connecting...">
                             Sign in with Google
                         </SubmitButton>
                     </form>
                     <form action={signInWithGithubAction}>
+                        <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton pendingText="Connecting...">
                             Sign in with GitHub
                         </SubmitButton>
                     </form>
                 </div>
-                <FormMessage message={searchParams} />
+                <FormMessage message={searchParams as Message} />
             </div>
         </div>
     );

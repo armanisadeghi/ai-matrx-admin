@@ -1,3 +1,5 @@
+// File: app/actions.ts
+
 "use server";
 
 import { encodedRedirect } from "@/utils/utils";
@@ -10,6 +12,7 @@ export const signUpAction = async (formData: FormData) => {
   const password = formData.get("password")?.toString();
   const supabase = createClient();
   const origin = headers().get("origin");
+  const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
   if (!email || !password) {
     return { error: "Email and password are required" };
@@ -19,7 +22,7 @@ export const signUpAction = async (formData: FormData) => {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
     },
   });
 
@@ -38,6 +41,8 @@ export const signUpAction = async (formData: FormData) => {
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const redirectTo = formData.get("redirectTo") as string || "/dashboard";
+  console.log("SignInAction - RedirectTo:", redirectTo); // Debug log
   const supabase = createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -49,39 +54,56 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  return redirect(redirectTo);
 };
 
-export const signInWithGoogleAction = async () => {
+export const signInWithGoogleAction = async (formData: FormData) => {
   const supabase = createClient();
   const origin = headers().get("origin");
+  const redirectTo = formData.get("redirectTo") as string || "/dashboard";
+  console.log("SignInWithGoogleAction - RedirectTo:", redirectTo); // Debug log
+
+  const callbackUrl = new URL("/auth/callback", origin);
+  callbackUrl.searchParams.set("\n Sign In Action: redirectTo", encodeURIComponent(redirectTo));
+
+  console.log("Callback URL:", callbackUrl.toString()); // Debug log
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 
   if (error) {
+    console.error("Error in signInWithGoogleAction:", error); // Debug log
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
   if (data?.url) {
+    console.log("Redirecting to OAuth URL:", data.url); // Debug log
     return redirect(data.url);
   }
 
+  console.error("Failed to initiate Google sign-in"); // Debug log
   return encodedRedirect("error", "/sign-in", "Failed to initiate Google sign-in");
 };
 
-export const signInWithGithubAction = async () => {
+
+
+export const signInWithGithubAction = async (formData: FormData) => {
   const supabase = createClient();
   const origin = headers().get("origin");
+  const redirectTo = formData.get("redirectTo") as string || "/dashboard";
+  console.log("SignInWithGithubAction - RedirectTo:", redirectTo); // Debug log
+
+  const callbackUrl = new URL("/auth/callback", origin);
+  callbackUrl.searchParams.set("redirectTo", encodeURIComponent(redirectTo));
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 
@@ -90,6 +112,7 @@ export const signInWithGithubAction = async () => {
   }
 
   if (data?.url) {
+    console.log("Redirecting to OAuth URL:", data.url); // Debug log
     return redirect(data.url);
   }
 
@@ -109,7 +132,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?redirect_to=/protected/reset-password`,
+    redirectTo: `${origin}/auth/callback?redirect_to=/reset-password`,
   });
 
   if (error) {
@@ -141,7 +164,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (!password || !confirmPassword) {
     encodedRedirect(
         "error",
-        "/protected/reset-password",
+        "/reset-password",
         "Password and confirm password are required",
     );
   }
@@ -149,7 +172,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (password !== confirmPassword) {
     encodedRedirect(
         "error",
-        "/protected/reset-password",
+        "/reset-password",
         "Passwords do not match",
     );
   }
@@ -161,12 +184,12 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (error) {
     encodedRedirect(
         "error",
-        "/protected/reset-password",
+        "/reset-password",
         "Password update failed",
     );
   }
 
-  encodedRedirect("success", "/protected/reset-password", "Password updated");
+  encodedRedirect("success", "/reset-password", "Password updated");
 };
 
 export const signOutAction = async () => {

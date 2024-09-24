@@ -2,10 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const updateSession = async (request: NextRequest) => {
-  // This `try/catch` block is only here for the interactive tutorial.
-  // Feel free to remove once you have Supabase connected.
   try {
-    // Create an unmodified response
+    console.log("Supabase Middleware - Current path:", request.nextUrl.pathname); // Debug log
+
     let response = NextResponse.next({
       request: {
         headers: request.headers,
@@ -13,46 +12,58 @@ export const updateSession = async (request: NextRequest) => {
     });
 
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value }) =>
+                  request.cookies.set(name, value)
+              );
+              response = NextResponse.next({
+                request,
+              });
+              cookiesToSet.forEach(({ name, value, options }) =>
+                  response.cookies.set(name, value, options)
+              );
+            },
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
-            response = NextResponse.next({
-              request,
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            );
-          },
-        },
-      },
+        }
     );
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+    console.log("Current path:", request.nextUrl.pathname); // Debug log
+
+    // Function to create a new URL while preserving all original parameters
+    const createUrlWithParams = (newPath: string) => {
+      const newUrl = new URL(newPath, request.url);
+      request.nextUrl.searchParams.forEach((value, key) => {
+        newUrl.searchParams.set(key, value);
+      });
+      return newUrl;
+    };
+
+    // Check if the user is authenticated and trying to access a protected route
+    if (!user && !request.nextUrl.pathname.startsWith('/auth') && request.nextUrl.pathname !== '/sign-in') {
+      const signInUrl = createUrlWithParams("/sign-in");
+      const fullPath = request.nextUrl.pathname + request.nextUrl.search;
+      signInUrl.searchParams.set("redirectTo", fullPath);
+      console.log("Redirecting to sign-in with redirectTo:", fullPath); // Debug log
+      return NextResponse.redirect(signInUrl);
     }
 
-    if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/protected", request.url));
+    if (request.nextUrl.pathname === "/" && user) {
+      return NextResponse.redirect(createUrlWithParams("/protected"));
     }
 
+    console.log("Returning response for path:", request.nextUrl.pathname); // Debug log
     return response;
   } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
+    console.error("Error in updateSession:", e); // Debug log
     return NextResponse.next({
       request: {
         headers: request.headers,
