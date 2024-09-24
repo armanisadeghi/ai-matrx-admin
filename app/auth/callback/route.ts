@@ -1,41 +1,26 @@
 // app/auth/callback/route.ts
 
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/utils/supabase/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-    console.log('Auth callback route initiated')
-    const { searchParams, origin } = new URL(request.url)
-    const code = searchParams.get('code')
-    const next = searchParams.get('next') ?? '/'
-
-    console.log(`Auth callback params - code: ${code ? '[REDACTED]' : 'null'}, next: ${next}`)
+    // The `/auth/callback` route is required for the server-side auth flow implemented
+    // by the SSR package. It exchanges an auth code for the user's session.
+    // https://supabase.com/docs/guides/auth/server-side/nextjs
+    const requestUrl = new URL(request.url);
+    const code = requestUrl.searchParams.get("code");
+    const origin = requestUrl.origin;
+    const redirectTo = requestUrl.searchParams.get("redirect_to")?.toString();
 
     if (code) {
-        const supabase = createClient()
-        console.log('Exchanging code for session')
-        const { error, data } = await supabase.auth.exchangeCodeForSession(code)
-        console.log('Code exchange result:', error ? 'Error' : 'Success', data)
-
-        if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host')
-            const isLocalEnv = process.env.NODE_ENV === 'development'
-            console.log(`Environment: ${isLocalEnv ? 'Development' : 'Production'}`)
-            console.log(`Forwarded host: ${forwardedHost || 'Not set'}`)
-
-            let redirectUrl
-            if (isLocalEnv) {
-                redirectUrl = `${origin}${next}`
-            } else if (forwardedHost) {
-                redirectUrl = `https://${forwardedHost}${next}`
-            } else {
-                redirectUrl = `${origin}${next}`
-            }
-            console.log(`Redirecting to: ${redirectUrl}`)
-            return NextResponse.redirect(redirectUrl)
-        }
+        const supabase = createClient();
+        await supabase.auth.exchangeCodeForSession(code);
     }
 
-    console.log('Auth callback failed, redirecting to error page')
-    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+    if (redirectTo) {
+        return NextResponse.redirect(`${origin}${redirectTo}`);
+    }
+
+    // URL to redirect to after sign up process completes
+    return NextResponse.redirect(`${origin}/protected`);
 }
