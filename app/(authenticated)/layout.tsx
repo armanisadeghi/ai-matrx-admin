@@ -1,15 +1,20 @@
 // app/(authenticated)/layout.tsx
 
-import React from 'react';
-import {AuthProvider} from "@/providers/AuthProvider";
-import {Providers} from "@/app/Providers";
+import {redirect} from 'next/navigation'
+import {createClient} from '@/lib/supabase/server'
+import {Providers} from "@/app/Providers"
 
-function AuthenticatedLayout({children, links}: any) {
+export default async function AuthenticatedLayout({children}: { children: React.ReactNode }) {
+    const supabase = createClient()
+    const {data, error} = await supabase.auth.getUser()
+
+    if (error || !data?.user) {
+        redirect('/login')
+    }
+
     return (
-        <AuthProvider>
-            <Providers>{children}</Providers>
-        </AuthProvider>
-    );
+        <Providers>
+            {children}
+        </Providers>
+    )
 }
-
-export default AuthenticatedLayout;

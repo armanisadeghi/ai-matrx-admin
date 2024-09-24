@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 
+
+
 interface AuthContextType {
     user: User | null;
     signIn: (email: string, password: string) => Promise<void>;

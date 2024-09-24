@@ -1,25 +1,50 @@
-// middleware.ts
+import { type NextRequest, NextResponse } from 'next/server' // Import NextResponse
+import { updateSession } from '@/lib/supabase/middleware'
 
-import { NextResponse, type NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/middleware'
-import {routeProtectionMiddleware} from "@/lib/supabase/routeProtection";
+export default async function middleware(request: NextRequest) {
+    const path = request.nextUrl.pathname;
 
-export async function middleware(request: NextRequest) {
-    // First, apply the Supabase middleware
-    const supabaseResponse = createClient(request)
+    const shouldUpdateSession = shouldApplyMiddleware(path);
 
-    // Then, apply the route protection middleware
-    const routeProtectionResponse = await routeProtectionMiddleware(request)
+    if (shouldUpdateSession) {
+        return await updateSession(request);
+    } else {
+        return NextResponse.next();
+    }
+}
 
-    // If the route protection middleware returned a response (e.g., a redirect),
-    // use that response. Otherwise, use the Supabase response.
-    return routeProtectionResponse instanceof NextResponse
-        ? routeProtectionResponse
-        : supabaseResponse
+function shouldApplyMiddleware(path: string): boolean {
+    const excludedPaths = [
+        '/',
+        '/_next/static',
+        '/_next/image',
+        '/favicon.ico',
+        '/test',
+        '/tests',
+        '/testing',
+        '/about',
+        '/contact',
+        '/dash',
+        '/blog',
+        '/pricing',
+        '/login',
+    ];
+
+    for (const excludedPath of excludedPaths) {
+        if (path === excludedPath) {
+            return false;
+        }
+    }
+
+    if (path.match(/\.(svg|png|jpg|jpeg|gif|webp)$/)) {
+        return false;
+    }
+
+    return true;
 }
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico).*)',
+        '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
     ],
 }

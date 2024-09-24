@@ -1,15 +1,12 @@
 // lib/supabase/middleware.ts
 
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export const createClient = (request: NextRequest) => {
-    // Create an unmodified response
+export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
-        request: {
-            headers: request.headers,
-        },
-    });
+        request,
+    })
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,9 +26,22 @@ export const createClient = (request: NextRequest) => {
                     )
                 },
             },
-        },
-    );
+        }
+    )
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (
+        !user &&
+        !request.nextUrl.pathname.startsWith('/login') &&
+        !request.nextUrl.pathname.startsWith('/auth')
+    ) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        return NextResponse.redirect(url)
+    }
 
     return supabaseResponse
-};
-
+}
