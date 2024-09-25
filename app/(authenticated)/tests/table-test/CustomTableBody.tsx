@@ -2,9 +2,9 @@ import {Row} from "react-table";
 import React from "react";
 import {TableBody} from "@/components/ui/table";
 import {AnimatePresence, motion} from "framer-motion";
-import CustomTableCell from "@/app/tests/table-test/CustomTableCell";
-import {TableData} from "@/app/tests/table-test/ModernTable";
-import {ActionDefinition} from "@/app/tests/table-test/TableActionIcon";
+import CustomTableCell from "@/app/(authenticated)/tests/table-test/CustomTableCell";
+import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
+import {ActionDefinition} from "@/app/(authenticated)/tests/table-test/TableActionIcon";
 
 interface CustomTableBodyProps {
     page: Row<TableData>[];

@@ -1,8 +1,8 @@
 'use client';
 
-import ModernTable from "@/app/tests/table-test/ModernTable";
 import {Column} from 'react-table';
 import {v4 as uuidv4} from 'uuid';
+import ModernTable from "@/app/(authenticated)/tests/table-test/ModernTable";
 
 interface TableData {
     id: string;

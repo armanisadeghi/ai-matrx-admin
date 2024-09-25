@@ -2,7 +2,7 @@ import {Column} from "react-table";
 import React from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import MatrxCheckbox from "@/components/matrx/MatrxCheckbox";
-import {TableData} from "@/app/tests/table-test/ModernTable";
+import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
 
 interface ColumnSettingsModalProps {
     open: boolean;

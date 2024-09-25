@@ -3,8 +3,8 @@ import React from 'react';
 import {TableCell} from '@/components/ui/table';
 import {motion} from 'framer-motion';
 import {Cell} from "react-table";
-import {TableData} from "@/app/tests/table-test/ModernTable";
-import TableActionIcon, {ActionDefinition} from "@/app/tests/table-test/TableActionIcon";
+import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
+import TableActionIcon, {ActionDefinition} from "@/app/(authenticated)/tests/table-test/TableActionIcon";
 
 interface CustomTableCellProps {
     cell: Cell<TableData>;

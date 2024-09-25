@@ -3,7 +3,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Column} from 'react-table';
-import {TableData} from "@/app/tests/table-test/ModernTable";
+import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
 
 interface DialogFormProps {
     open: boolean;

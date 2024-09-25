@@ -1,25 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
-import { getUser } from '@/utils/supabase/auth';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/lib/redux/store';
 
 export const useGetCalls = () => {
   const client = useStreamVideoClient();
   const [calls, setCalls] = useState<Call[]>();
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getUser();
-      setUserId(user?.id || null);
-    };
-
-    fetchUser();
-  }, []);
+  const user = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     const loadCalls = async () => {
-      if (!client || !userId) return;
+      if (!client || !user?.id) return;
 
       setIsLoading(true);
 
@@ -30,8 +22,8 @@ export const useGetCalls = () => {
           filter_conditions: {
             starts_at: { $exists: true },
             $or: [
-              { created_by_user_id: userId },
-              { members: { $in: [userId] } },
+              { created_by_user_id: user.id },
+              { members: { $in: [user.id] } },
             ],
           },
         });
@@ -45,7 +37,7 @@ export const useGetCalls = () => {
     };
 
     loadCalls();
-  }, [client, userId]);
+  }, [client, user?.id]);
 
   const now = new Date();
 

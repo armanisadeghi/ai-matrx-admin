@@ -13,13 +13,13 @@ import {
 } from 'react-table';
 import { Table } from '@/components/ui/table';
 import DialogForm from "./DialogForm";
-import ColumnSettingsModal from "@/app/tests/table-test/ColumnSettingsModal";
-import TableBottomSection from "@/app/tests/table-test/TableBottomSection";
 import { cn } from "@/styles/themes/utils"
-import TableTopOptions from "@/app/tests/table-test/TableTopOptions";
-import {deleteAction, editAction, expandAction, viewAction} from "@/app/tests/table-test/actionDefinitions";
-import CustomTableHeader from "@/app/tests/table-test/CustomTableHeader";
-import CustomTableBody from "@/app/tests/table-test/CustomTableBody";
+import {deleteAction, editAction, expandAction, viewAction} from "@/app/(authenticated)/tests/table-test/actionDefinitions";
+import CustomTableHeader from "@/app/(authenticated)/tests/table-test/CustomTableHeader";
+import CustomTableBody from "@/app/(authenticated)/tests/table-test/CustomTableBody";
+import TableTopOptions from "@/app/(authenticated)/tests/table-test/TableTopOptions";
+import TableBottomSection from "@/app/(authenticated)/tests/table-test/TableBottomSection";
+import ColumnSettingsModal from "@/app/(authenticated)/tests/table-test/ColumnSettingsModal";
 
 export interface TableData {
     id: number | string;
