@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "ts-node -P tsconfig.json tests/setup.ts",
+    "clean": "rimraf .next node_modules/.cache",
     "types": "npx supabase gen types typescript --project-id txzxabzwovsujtloxrus --schema public > types/matrixDb.types.ts"
   },
   "dependencies": {

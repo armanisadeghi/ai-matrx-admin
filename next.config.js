@@ -53,6 +53,9 @@ const nextConfig = {
                 os: require.resolve('os-browserify/browser'),
                 url: require.resolve('url/'),
             };
+
+            // Add specific handling for node:url
+            config.resolve.alias['node:url'] = 'url/';
         }
 
         // Add ProvidePlugin to polyfill global modules like Buffer and process
