@@ -1,4 +1,4 @@
-import {FeatureIconContainer} from "@/components/annimated/contact-us/contact-parts";
+import {FeatureIconContainer} from "@/components/animated/contact-us/contact-parts";
 import {IconMailFilled} from "@tabler/icons-react";
 import {Grid, Pin} from "lucide-react";
 import Image from "next/image";

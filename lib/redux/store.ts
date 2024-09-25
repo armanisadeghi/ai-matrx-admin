@@ -8,6 +8,7 @@ import { createFeatureSagas } from './sagas';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
+import testRoutesReducer from './slices/testRoutesSlice';
 import { themeReducer } from "@/styles/themes";
 
 const sagaMiddleware = createSagaMiddleware();
@@ -24,7 +25,8 @@ const rootReducer = combineReducers({
     layout: layoutReducer,
     theme: themeReducer,
     form: formReducer,
-    user: userReducer, // Add this line
+    user: userReducer,
+    testRoutes: testRoutesReducer,
 });
 
 export const makeStore = (initialState?: any) => {

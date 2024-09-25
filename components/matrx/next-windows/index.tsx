@@ -1,16 +1,16 @@
 'use client';
 
-import React, {useState, useEffect, useRef} from 'react';
-import {motion, AnimatePresence, useMotionValue, useTransform} from 'framer-motion';
-import {X, Minus, Maximize2, Minimize2, Command} from 'lucide-react';
-import {useRouter, usePathname} from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { X, Minus, Maximize2, Minimize2, Command } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import CommandPalette from "@/components/matrx/next-windows/CommandPallet";
 
 const DEFAULT_IMAGE = '/images/dashboard.jpg';
 
-const Window = ({id, title, content, images, onClose, onMinimize, onMaximize, onClick, isFullScreen, href}) => {
+const Window = ({ id, title, content, images, onClose, onMinimize, onMaximize, onClick, isFullScreen, isMinimized, href, windowSize }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [validImages, setValidImages] = useState([]);
     const scale = useMotionValue(1);
@@ -28,7 +28,7 @@ const Window = ({id, title, content, images, onClose, onMinimize, onMaximize, on
             const checkedImages = await Promise.all(
                 images.map(async (src) => {
                     try {
-                        const res = await fetch(src, {method: 'HEAD'});
+                        const res = await fetch(src, { method: 'HEAD' });
                         return res.ok ? src : null;
                     } catch {
                         return null;
@@ -64,27 +64,29 @@ const Window = ({id, title, content, images, onClose, onMinimize, onMaximize, on
         <motion.div
             className={`bg-card/80 backdrop-blur-md rounded-lg overflow-hidden ${
                 isFullScreen ? 'fixed inset-0 z-40' : ''
-            } border-2 border-primary`}
+            } ${isMinimized ? 'h-8' : ''} border-2 border-primary`}
             style={{
                 boxShadow,
                 scale,
+                width: isFullScreen ? '100%' : windowSize.width,
+                height: isMinimized ? 32 : (isFullScreen ? '100%' : windowSize.height),
             }}
             onClick={handleClick}
-            initial={isFullScreen ? {scale: 0.5, opacity: 0, rotateY: 180} : {scale: 1, opacity: 1, rotateY: 0}}
-            animate={isFullScreen ? {scale: 1, opacity: 1, rotateY: 0} : {scale: 1, opacity: 1, rotateY: 0}}
-            exit={isFullScreen ? {scale: 0.5, opacity: 0, rotateY: 180} : {scale: 1, opacity: 0, rotateY: 0}}
-            transition={{type: 'spring', stiffness: 100, damping: 20, duration: 0.5}}
-            drag={!isFullScreen}
-            dragConstraints={{left: 0, top: 0, right: 0, bottom: 0}}
+            initial={isFullScreen ? { scale: 0.5, opacity: 0, rotateY: 180 } : { scale: 1, opacity: 1, rotateY: 0 }}
+            animate={isFullScreen ? { scale: 1, opacity: 1, rotateY: 0 } : { scale: 1, opacity: 1, rotateY: 0 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20, duration: 0.5 }}
+            drag={!isFullScreen && !isMinimized}
+            dragConstraints={{ left: 0, top: 0, right: 0, bottom: 0 }}
             dragElastic={0.1}
-            whileHover={isFullScreen ? {} : {scale: 1.05}}
-            whileTap={isFullScreen ? {} : {scale: 0.95}}
+            whileHover={isFullScreen || isMinimized ? {} : { scale: 1.05 }}
+            whileTap={isFullScreen || isMinimized ? {} : { scale: 0.95 }}
             layout
         >
             <motion.div
-                className={`bg-primary text-primary-foreground p-1 flex justify-between items-center ${isFullScreen ? '' : 'cursor-move'}`}
+                className={`bg-primary text-primary-foreground p-1 flex justify-between items-center ${isFullScreen || isMinimized ? '' : 'cursor-move'}`}
                 onPanEnd={(e, info) => {
-                    if (!isFullScreen && Math.abs(info.offset.y) > 100) {
+                    if (!isFullScreen && !isMinimized && Math.abs(info.offset.y) > 100) {
                         onMinimize(id);
                     }
                 }}
@@ -105,37 +107,37 @@ const Window = ({id, title, content, images, onClose, onMinimize, onMaximize, on
                     }} className="text-primary-foreground"><X size={12}/></button>
                 </div>
             </motion.div>
-            <div className={`${isFullScreen ? 'h-[calc(100%-24px)]' : 'h-[calc(100%-24px)]'} overflow-auto`}>
-                {isFullScreen ? (
-                    <iframe src={href} className="w-full h-full border-none"/>
-                ) : (
-                    <div className="relative h-full">
-                        <Image
-                            src={currentImage}
-                            alt={title}
-                            layout="fill"
-                            objectFit="cover"
-                            quality={100}
-                        />
-                        <div
-                            className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
-                            <p className="text-white text-sm">{content}</p>
+            {!isMinimized && (
+                <div className={`${isFullScreen ? 'h-[calc(100%-24px)]' : 'h-[calc(100%-24px)]'} overflow-auto`}>
+                    {isFullScreen ? (
+                        <iframe src={href} className="w-full h-full border-none"/>
+                    ) : (
+                        <div className="relative h-full">
+                            <Image
+                                src={currentImage}
+                                alt={title}
+                                layout="fill"
+                                objectFit="cover"
+                                quality={100}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
+                                {/*<p className="text-white text-sm">{content}</p>*/} {/*Not needed here*/}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
         </motion.div>
     );
 };
 
-
-const NextWindowManager = ({windows: initialWindows}) => {
+const NextWindowManager = ({ windows: initialWindows }) => {
     const [windows, setWindows] = useState(initialWindows);
     const [fullScreenWindow, setFullScreenWindow] = useState(null);
     const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-    const [backgroundPosition, setBackgroundPosition] = useState({x: 0, y: 0});
+    const [backgroundPosition, setBackgroundPosition] = useState({ x: 0, y: 0 });
     const containerRef = useRef(null);
-    const [windowSize, setWindowSize] = useState({width: 0, height: 0});
+    const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
     const router = useRouter();
 
@@ -143,15 +145,16 @@ const NextWindowManager = ({windows: initialWindows}) => {
         const handleResize = () => {
             if (containerRef.current) {
                 const containerWidth = containerRef.current.offsetWidth;
-                const maxWindowWidth = Math.min(300, containerWidth / 3 - 16); // 3 windows per row, 16px for gaps
-                const windowHeight = maxWindowWidth * (3 / 2); // 2:3 aspect ratio
-                setWindowSize({width: maxWindowWidth, height: windowHeight});
+                const maxWindowWidth = Math.min(250, (containerWidth - 60) / 4); // 4 windows per row, 60px for gaps
+                const windowHeight = maxWindowWidth * (2 / 3); // 2:3 aspect ratio (not 3/2)
+                setWindowSize({ width: maxWindowWidth, height: windowHeight });
             }
         };
 
         handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
     }, []);
 
     useEffect(() => {
@@ -172,7 +175,7 @@ const NextWindowManager = ({windows: initialWindows}) => {
 
     const minimizeWindow = (id) => {
         setWindows(windows.map(window =>
-            window.id === id ? {...window, minimized: !window.minimized} : window
+            window.id === id ? { ...window, minimized: !window.minimized } : window
         ));
         if (fullScreenWindow === id) setFullScreenWindow(null);
     };
@@ -195,12 +198,12 @@ const NextWindowManager = ({windows: initialWindows}) => {
             ref={containerRef}
             className="relative w-full h-screen overflow-hidden bg-background p-8"
             onMouseMove={(e) => {
-                setBackgroundPosition({x: e.clientX / 100, y: e.clientY / 100});
+                setBackgroundPosition({ x: e.clientX / 100, y: e.clientY / 100 });
             }}
             animate={{
                 backgroundPosition: `${backgroundPosition.x}px ${backgroundPosition.y}px`,
             }}
-            transition={{type: 'spring', stiffness: 50, damping: 20}}
+            transition={{ type: 'spring', stiffness: 50, damping: 20 }}
         >
             <CommandPalette
                 isOpen={isCommandPaletteOpen}
@@ -210,29 +213,16 @@ const NextWindowManager = ({windows: initialWindows}) => {
             <div className="flex flex-wrap gap-4">
                 <AnimatePresence>
                     {windows.map((window) => (
-                        <motion.div
+                        <Window
                             key={window.id}
-                            className={`${fullScreenWindow === window.id ? 'fixed inset-0 z-40' : ''}`}
-                            style={{
-                                width: fullScreenWindow === window.id ? '100%' : windowSize.width,
-                                height: fullScreenWindow === window.id ? '100%' : windowSize.height,
-                                flexGrow: 0,
-                                flexShrink: 0,
-                            }}
-                            initial={fullScreenWindow === window.id ? {scale: 0.5, opacity: 0} : {scale: 1, opacity: 1}}
-                            animate={fullScreenWindow === window.id ? {scale: 1, opacity: 1} : {scale: 1, opacity: 1}}
-                            exit={{scale: 0.5, opacity: 0}}
-                            transition={{duration: 0.5}}
-                        >
-                            <Window
-                                {...window}
-                                onClose={closeWindow}
-                                onMinimize={minimizeWindow}
-                                onMaximize={maximizeWindow}
-                                onClick={handleWindowClick}
-                                isFullScreen={fullScreenWindow === window.id}
-                            />
-                        </motion.div>
+                            {...window}
+                            onClose={closeWindow}
+                            onMinimize={minimizeWindow}
+                            onMaximize={maximizeWindow}
+                            onClick={handleWindowClick}
+                            isFullScreen={fullScreenWindow === window.id}
+                            windowSize={windowSize}
+                        />
                     ))}
                 </AnimatePresence>
             </div>
@@ -240,11 +230,11 @@ const NextWindowManager = ({windows: initialWindows}) => {
                 <motion.div
                     className="fixed bottom-4 right-4 bg-popover text-popover-foreground p-2 rounded-full shadow-lg cursor-pointer z-50"
                     onClick={() => setFullScreenWindow(null)}
-                    initial={{scale: 0, opacity: 0}}
-                    animate={{scale: 1, opacity: 1}}
-                    exit={{scale: 0, opacity: 0}}
-                    whileHover={{scale: 1.1}}
-                    whileTap={{scale: 0.9}}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                 >
                     <Minimize2 size={24}/>
                 </motion.div>
@@ -252,8 +242,8 @@ const NextWindowManager = ({windows: initialWindows}) => {
             <motion.button
                 className="fixed bottom-4 left-4 bg-popover text-popover-foreground p-2 rounded-full shadow-lg cursor-pointer z-50"
                 onClick={() => setIsCommandPaletteOpen(prev => !prev)}
-                whileHover={{scale: 1.1}}
-                whileTap={{scale: 0.9}}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
             >
                 <Command size={24}/>
             </motion.button>

@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 
 import { cn } from "@/lib/utils";
-import {HoveredLink, Menu, MenuItem, ProductItem} from "@/components/annimated/navbar-menu";
+import {HoveredLink, Menu, MenuItem, ProductItem} from "@/components/animated/navbar-menu";
 
 function Navbar({ className }: { className?: string }) {
     const [active, setActive] = useState<string | null>(null);

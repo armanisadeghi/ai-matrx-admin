@@ -1,7 +1,7 @@
 // app/(public)/contact/page.tsx
 
 import React from "react";
-import ContactFormGridWithDetails from "@/components/annimated/contact-us/ContactFormGridWithDetails";
+import ContactFormGridWithDetails from "@/components/animated/contact-us/ContactFormGridWithDetails";
 
 
 const ContactPage = () => {

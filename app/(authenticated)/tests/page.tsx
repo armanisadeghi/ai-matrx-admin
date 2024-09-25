@@ -1,34 +1,35 @@
+'use client';
+
 import React from 'react';
-import fs from 'fs';
-import path from 'path';
+import { useSelector } from 'react-redux';
 import NextWindowManager from "@/components/matrx/next-windows";
+import { RootState } from '@/lib/redux/store';
 
-function getTestPages() {
-    const testsDir = path.join(process.cwd(), 'app', 'tests');
-    const entries = fs.readdirSync(testsDir, {withFileTypes: true});
-
-    return entries
-        .filter(entry => entry.isDirectory() && fs.existsSync(path.join(testsDir, entry.name, 'page.tsx')))
-        .map((entry, index) => ({
-            id: index + 1,
-            title: entry.name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-            content: `Test page for ${entry.name}`,
-            href: `/tests/${entry.name}`,
-            images: [
-                `/images/${entry.name}-1.jpg`,
-                `/images/${entry.name}-2.jpg`,
-                `/images/${entry.name}-3.jpg`,
-            ],
-        }));
+function formatTitle(route: string): string {
+    return route
+        .split('/')
+        .pop()!
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
 
 export default function TesterTwo() {
-    const testPages = getTestPages();
+    const testRoutes = useSelector((state: RootState) => state.testRoutes);
+
+    const testPages = testRoutes.map((route, index) => ({
+        id: index + 1,
+        title: formatTitle(route),
+        content: `Test page for ${route.split('/').pop()}`,
+        href: route,
+        images: [
+            `/images/${route.split('/').pop()}-1.jpg`,
+            `/images/${route.split('/').pop()}-2.jpg`,
+            `/images/${route.split('/').pop()}-3.jpg`,
+        ],
+    }));
 
     return (
-        <div className="container mx-auto py-8">
-            <h1 className="text-3xl font-bold mb-6">Test Pages</h1>
             <NextWindowManager windows={testPages} />
-        </div>
     );
 }
