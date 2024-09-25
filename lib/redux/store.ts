@@ -7,6 +7,7 @@ import { createFeatureSlice } from './sliceCreator';
 import { createFeatureSagas } from './sagas';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
+import userReducer from './slices/userSlice';
 import { themeReducer } from "@/styles/themes";
 
 const sagaMiddleware = createSagaMiddleware();
@@ -23,11 +24,13 @@ const rootReducer = combineReducers({
     layout: layoutReducer,
     theme: themeReducer,
     form: formReducer,
+    user: userReducer, // Add this line
 });
 
-export const makeStore = () => {
+export const makeStore = (initialState?: any) => {
     return configureStore({
         reducer: rootReducer,
+        preloadedState: initialState,
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware().concat(sagaMiddleware),
         devTools: process.env.NODE_ENV !== 'production',

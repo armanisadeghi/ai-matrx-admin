@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
 import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
+import { getUser } from '@/utils/supabase/auth';
 
 export const useGetCalls = () => {
-  const { user } = useUser();
   const client = useStreamVideoClient();
   const [calls, setCalls] = useState<Call[]>();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUser();
+      setUserId(user?.id || null);
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const loadCalls = async () => {
-      if (!client || !user?.id) return;
-      
+      if (!client || !userId) return;
+
       setIsLoading(true);
 
       try {
@@ -21,8 +30,8 @@ export const useGetCalls = () => {
           filter_conditions: {
             starts_at: { $exists: true },
             $or: [
-              { created_by_user_id: user.id },
-              { members: { $in: [user.id] } },
+              { created_by_user_id: userId },
+              { members: { $in: [userId] } },
             ],
           },
         });
@@ -36,17 +45,17 @@ export const useGetCalls = () => {
     };
 
     loadCalls();
-  }, [client, user?.id]);
+  }, [client, userId]);
 
   const now = new Date();
 
   const endedCalls = calls?.filter(({ state: { startsAt, endedAt } }: Call) => {
     return (startsAt && new Date(startsAt) < now) || !!endedAt
-  })
+  });
 
   const upcomingCalls = calls?.filter(({ state: { startsAt } }: Call) => {
     return startsAt && new Date(startsAt) > now
-  })
+  });
 
-  return { endedCalls, upcomingCalls, callRecordings: calls, isLoading }
+  return { endedCalls, upcomingCalls, callRecordings: calls, isLoading };
 };

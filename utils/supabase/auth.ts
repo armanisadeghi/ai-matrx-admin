@@ -1,4 +1,5 @@
 import {supabase} from "@/utils/supabase/client";
+import {createClient} from "@/utils/supabase/server";
 
 export type Provider = 'github' | 'google';
 
@@ -32,18 +33,15 @@ export const getSession = async () => {
     }
 }
 
-export const getUser = async () => {
-    try {
-        const {data, error} = await supabase.auth.getUser();
-        if (error) {
-            throw error;
-        }
-        console.log('data:', data);
-    } catch (error: any) {
-        console.error('Error in getUser:', error);
+export async function getUser() {
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
         return null;
     }
+    return data.user;
 }
+
 
 export const updateUser = async (email: string, data: any) => {
     try {
