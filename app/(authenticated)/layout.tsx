@@ -1,15 +1,18 @@
 // app/(authenticated)/layout.tsx
 
 import {redirect} from 'next/navigation'
-import {createClient} from '@/lib/supabase/server'
+import {createClient} from "@/utils/supabase/server";
 import {Providers} from "@/app/Providers"
 
 export default async function AuthenticatedLayout({children}: { children: React.ReactNode }) {
-    const supabase = createClient()
-    const {data, error} = await supabase.auth.getUser()
+    const supabase = createClient();
 
-    if (error || !data?.user) {
-        redirect('/sign-in')
+    const {
+        data: {user},
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return redirect("/sign-in");
     }
 
     return (

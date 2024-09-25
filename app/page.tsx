@@ -19,6 +19,7 @@ import {Cover} from "@/components/ui/cover";
 import {BackgroundBeamsWithCollision} from "@/components/ui/background-beams-with-collision";
 import {StandaloneThemeSwitcher} from "@/components/StandaloneThemeSwitcher";
 import {SimplePricingWithFourTiers, SimplePricingWithThreeTiers} from "@/components/packs/PricingSection";
+import { LogoHorizontal } from '@/public/MatrixLogo';
 
 interface TopMenuProps {
 }
@@ -29,10 +30,7 @@ const TopMenu: React.FC<TopMenuProps> = () => {
             className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
                 <div className="flex items-center space-x-4">
-                    <span className="text-primary text-2xl font-bold flex items-center">
-                        <Infinity className="w-8 h-8 mr-2"/>
-                        AI Matrix
-                    </span>
+                    <LogoHorizontal size="lg" />
                     <nav className="hidden md:flex space-x-4">
                         <a href="#" className="text-foreground/60 hover:text-foreground">Solution</a>
                         <a href="#" className="text-foreground/60 hover:text-foreground">Developers</a>

@@ -21,7 +21,7 @@ const nextConfig = {
         config.plugins.push(
             new webpack.IgnorePlugin({
                 checkResource: (resource) => {
-                    const excludeDirs = ['/armani/', '/_dev/'];
+                    const excludeDirs = ['/_armani/', '/_dev/'];
                     return excludeDirs.some((dir) => resource.includes(dir));
                 },
             })

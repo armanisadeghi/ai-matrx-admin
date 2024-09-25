@@ -1,4 +1,4 @@
-// File: app/actions.ts
+// File: actions/auth.actions.ts
 
 "use server";
 
@@ -196,4 +196,59 @@ export const signOutAction = async () => {
   const supabase = createClient();
   await supabase.auth.signOut();
   return redirect("/sign-in");
+};
+
+
+export const signUpWithGoogleAction = async (formData: FormData) => {
+  const supabase = createClient();
+  const origin = headers().get("origin");
+  const redirectTo = formData.get("redirectTo") as string || "/dashboard";
+
+  const callbackUrl = new URL("/auth/callback", origin);
+  callbackUrl.searchParams.set("\n Sign In Action: redirectTo", encodeURIComponent(redirectTo));
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: callbackUrl.toString(),
+    },
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-up", error.message);
+  }
+
+  if (data?.url) {
+    return redirect(data.url);
+  }
+
+  return encodedRedirect("error", "/sign-up", "Failed to initiate Google sign-up");
+};
+
+
+
+export const signUpWithGithubAction = async (formData: FormData) => {
+  const supabase = createClient();
+  const origin = headers().get("origin");
+  const redirectTo = formData.get("redirectTo") as string || "/dashboard";
+
+  const callbackUrl = new URL("/auth/callback", origin);
+  callbackUrl.searchParams.set("redirectTo", encodeURIComponent(redirectTo));
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: callbackUrl.toString(),
+    },
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-up", error.message);
+  }
+
+  if (data?.url) {
+    return redirect(data.url);
+  }
+
+  return encodedRedirect("error", "/sign-up", "Failed to initiate GitHub sign-up");
 };

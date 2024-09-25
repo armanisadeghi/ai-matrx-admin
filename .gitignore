@@ -48,7 +48,7 @@ __pycache__/
 cmake-build-*/
 
 # Exclude project-specific folders
-armani/
+_armani/
 -armani/
 _dev/
 temp/

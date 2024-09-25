@@ -1,85 +1,6 @@
-import {supabase} from "@/lib/supabase/client";
+import {supabase} from "@/utils/supabase/client";
 
-
-export const signInWithIdToken = async (provider: string, token: string) => {
-    try {
-        const {data, error} = await supabase.auth.signInWithIdToken({provider, token});
-        if (error) {
-            throw error;
-        }
-
-        const accessToken = data?.session?.access_token;
-        console.log('accessToken:', accessToken);
-
-        return data;
-    } catch (error: any) {
-        console.error('Error in signInUser:', error);
-        return null;
-    }
-
-}
-
-export const signInWithPassword = async (email: string, password: string) => {
-    try {
-        const {data, error} = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
-        if (error) {
-            throw error;
-        }
-
-        const accessToken = data?.session?.access_token;
-        console.log('accessToken:', accessToken);
-
-        return data;
-    } catch (error: any) {
-        console.error('Error in signInUser:', error);
-        return null;
-    }
-}
-
-export const signInWithOtp = async (email: string, emailRedirectTo: string) => {
-    try {
-        const {data, error} = await supabase.auth.signInWithOtp({
-            email: 'example@email.com',
-            options: {
-                emailRedirectTo: 'https://matrxadmin.com/dashboard',
-            }
-        });
-        if (error) {
-            throw error;
-        }
-        console.log('data:', data);
-    } catch (error: any) {
-        console.error('Error in signInWithOtp:', error);
-        return null;
-    }
-}
-
-export type Provider =
-    | 'apple'
-    | 'azure'
-    | 'bitbucket'
-    | 'discord'
-    | 'facebook'
-    | 'figma'
-    | 'github'
-    | 'gitlab'
-    | 'google'
-    | 'kakao'
-    | 'keycloak'
-    | 'linkedin'
-    | 'linkedin_oidc'
-    | 'notion'
-    | 'slack'
-    | 'slack_oidc'
-    | 'spotify'
-    | 'twitch'
-    | 'twitter'
-    | 'workos'
-    | 'zoom'
-    | 'fly';
+export type Provider = 'github' | 'google';
 
 export const signInWithOAuth = async (provider: Provider) => {
     try {
@@ -97,32 +18,6 @@ export const signInWithOAuth = async (provider: Provider) => {
     }
 }
 
-export const signOut = async () => {
-    try {
-        const {error} = await supabase.auth.signOut();
-        if (error) {
-            throw error;
-        }
-    } catch (error: any) {
-        console.error('Error in signOut:', error);
-        return null;
-    }
-}
-
-export const resetPasswordForEmail = async (email: string) => {
-    try {
-        const {data, error} = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://matrxadmin.com/update-password',
-        });
-        if (error) {
-            throw error;
-        }
-        console.log('data:', data);
-    } catch (error: any) {
-        console.error('Error in resetPasswordForEmail:', error);
-        return null;
-    }
-}
 
 export const getSession = async () => {
     try {

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "latest",
+    "@clerk/nextjs": "^5.6.1",
     "@hookform/resolvers": "latest",
     "@nextui-org/react": "latest",
     "@nextui-org/theme": "latest",

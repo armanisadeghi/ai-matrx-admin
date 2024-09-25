@@ -2,7 +2,7 @@
 
 
 /*
-// File Location: features/registered-function/redux/actions.ts
+// File Location: features/registered-function/redux/auth.actions.ts
 
 import { createFeatureActions } from '@/lib/redux/actions';
 import { RegisteredFunctionBaseSchema } from '@/types/registeredFunctionTypes';
