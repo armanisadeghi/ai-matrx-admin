@@ -14,6 +14,12 @@ const nextConfig = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: '**.aceternity.com',
+                port: '',
+                pathname: '/**',
+            },
         ],
     },
     webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {

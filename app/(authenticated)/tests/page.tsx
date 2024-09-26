@@ -30,6 +30,10 @@ export default function TesterTwo() {
     }));
 
     return (
-            <NextWindowManager windows={testPages} />
+        <NextWindowManager
+            windows={testPages}
+            initialLayout={{ ratio: '2/3', columns: 4 }}
+            allowLayoutChange={true}
+        />
     );
 }
