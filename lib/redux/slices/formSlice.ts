@@ -14,9 +14,11 @@ const formSlice = createSlice({
             const { name, value } = action.payload;
             state[name] = value;
         },
-        submitForm: (state) => {
+        submitForm: (state, action: PayloadAction<FormState>) => {
             // You can add any logic here for form submission
-            console.log('Form submitted:', state);
+            console.log('Form submitted:', action.payload);
+            // Optionally, you can reset the state after submission
+            return initialState;
         },
     },
 });

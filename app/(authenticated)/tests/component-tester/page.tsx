@@ -2,7 +2,6 @@
 
 import React from 'react'
 import MatrxTooltip from '@/components/matrx/MatrxTooltip'
-import { FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from 'react-icons/fa'
 
 export default function TooltipTestPage() {
     return (

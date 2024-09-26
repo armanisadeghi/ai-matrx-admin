@@ -63,8 +63,6 @@ const LayoutControl = ({currentLayout, onLayoutChange}) => {
 };
 
 
-
-
 const Window = (
     {
         id,
@@ -197,14 +195,24 @@ const Window = (
     );
 };
 
+interface NextWindowManagerProps {
+    windows?: any[]; // Keep for backward compatibility
+    initialWindows?: any[]; // New prop
+    initialLayout?: { ratio: string; columns: number };
+    allowLayoutChange?: boolean;
+    onOpenWindow?: (window: any) => void; // New prop
+}
 
-const NextWindowManager = (
+
+const NextWindowManager: React.FC<NextWindowManagerProps> = (
     {
-        windows: initialWindows,
+        windows: propWindows,
+        initialWindows = [],
         initialLayout = {ratio: '2/3', columns: 4},
-        allowLayoutChange = true
+        allowLayoutChange = true,
+        onOpenWindow
     }) => {
-    const [windows, setWindows] = useState(initialWindows);
+    const [windows, setWindows] = useState(propWindows || initialWindows);
     const [fullScreenWindow, setFullScreenWindow] = useState(null);
     const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
     const [backgroundPosition, setBackgroundPosition] = useState({x: 0, y: 0});
@@ -270,8 +278,11 @@ const NextWindowManager = (
     };
 
     const handleCommand = (command) => {
-        // Implement command handling logic here
         console.log('Executing command:', command);
+        if (onOpenWindow && command.type === 'open-window') {
+            onOpenWindow(command.window);
+        }
+        // Implement other command handling logic here
     };
 
     const handleLayoutChange = (newLayout) => {

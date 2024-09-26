@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { ExtendedBottomLayout, NormalLayout, WindowLayout } from "@/components/layout/base-layout";
+import {supabase} from "@/utils/supabase/client";
 
 function AuthenticatedLayout({ children, links }: any) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
-    const supabase = createClient();
 
     useEffect(() => {
         const checkUser = async () => {

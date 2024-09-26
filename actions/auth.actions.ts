@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const signUpAction = async (formData: FormData) => {
+export const signUpAction = async (formData: FormData): Promise<void> => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const supabase = createClient();
@@ -15,7 +15,7 @@ export const signUpAction = async (formData: FormData) => {
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
   if (!email || !password) {
-    return { error: "Email and password are required" };
+    throw new Error("Email and password are required");
   }
 
   const { error } = await supabase.auth.signUp({
@@ -37,6 +37,7 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 };
+
 
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;

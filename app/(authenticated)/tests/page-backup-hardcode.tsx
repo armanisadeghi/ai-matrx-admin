@@ -67,7 +67,12 @@ export default function TesterTwo() {
                     </button>
                 ))}
             </div>
-            <NextWindowManager initialWindows={openWindows} onOpenWindow={handleOpenWindow} />
+            <NextWindowManager
+                initialWindows={openWindows}
+                onOpenWindow={handleOpenWindow}
+                initialLayout={{ ratio: '2/3', columns: 4 }}
+                allowLayoutChange={true}
+            />
         </div>
     );
 }

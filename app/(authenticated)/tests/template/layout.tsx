@@ -1,18 +1,24 @@
 // File Location: @/app/tests/template/layout.tsx
 
-import React from 'react';
-import BaseLayout from '@/components/layout/base-layout';
+'use client';
+
+import React from "react";
+import {ExtendedBottomLayout, NormalLayout, WindowLayout} from "@/components/layout/base-layout";
 import {coreAppLinks} from "@/components/layout/core-links";
 
-export default function AuthenticatedLayout(
-    {
-        children,
-    }: {
-        children: React.ReactNode
-    }) {
+function Layout({children, links}: any) {
+    const [open, setOpen] = React.useState(false);
+
+    if (!links) links = coreAppLinks;
+    const LayoutComponent = WindowLayout;
+
+    const layoutProps = {links, open, setOpen};
+
     return (
-        <BaseLayout links={coreAppLinks}>
+        <LayoutComponent {...layoutProps}>
             {children}
-        </BaseLayout>
+        </LayoutComponent>
     );
 }
+
+export default Layout;

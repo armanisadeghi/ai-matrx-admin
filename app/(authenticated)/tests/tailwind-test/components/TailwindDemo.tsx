@@ -1,4 +1,5 @@
 import React from 'react';
+import ButtonTest from "@/app/(authenticated)/tests/tailwind-test/components/ButtonTest";
 
 const TailwindDemo = () => {
     return (
@@ -76,6 +77,8 @@ const TailwindDemo = () => {
                     className="border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-md p-2"
                 />
             </div>
+            <ButtonTest />
+
         </div>
     );
 };
