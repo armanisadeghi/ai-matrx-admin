@@ -1,7 +1,7 @@
 // File location: app\(authenticated)\tests\flash-cards\types.ts
 
 export type FlashcardData = {
-    id?: string;
+    id: string;
     order: number;
     topic?: string;
     lesson?: string;
@@ -10,7 +10,7 @@ export type FlashcardData = {
     back: string;
     example?: string;
     detailedExplanation?: string;
-    images?: string[];
+    images?: string;
     personalNotes?: string;
     isDeleted?: boolean;
 }

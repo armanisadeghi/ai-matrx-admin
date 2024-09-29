@@ -1,6 +1,10 @@
+// File location: app\(authenticated)\tests\flash-cards\components\PerformanceChart.tsx
+
+'use client'
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Sector, Label } from 'recharts';
+import { PieChart, Pie, Cell, Label } from 'recharts';
 import { ChartConfig, ChartContainer, ChartStyle, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from "@/lib/utils";
@@ -24,7 +28,6 @@ const chartConfig = {
 const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, totalIncorrect }) => {
     const [prevTotal, setPrevTotal] = useState(totalCorrect + totalIncorrect);
     const [shouldAnimate, setShouldAnimate] = useState(false);
-    const [activeIndex, setActiveIndex] = useState(0);
 
     useEffect(() => {
         const newTotal = totalCorrect + totalIncorrect;
@@ -41,33 +44,6 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, total
         { name: 'correct', value: totalCorrect, fill: chartConfig.correct.color },
         { name: 'incorrect', value: totalIncorrect, fill: chartConfig.incorrect.color },
     ];
-
-    const renderActiveShape = (props: any) => {
-        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
-      
-        return (
-          <g>
-            <Sector
-              cx={cx}
-              cy={cy}
-              innerRadius={innerRadius}
-              outerRadius={outerRadius + 10}
-              startAngle={startAngle}
-              endAngle={endAngle}
-              fill={fill}
-            />
-            <Sector
-              cx={cx}
-              cy={cy}
-              startAngle={startAngle}
-              endAngle={endAngle}
-              innerRadius={outerRadius + 12}
-              outerRadius={outerRadius + 25}
-              fill={fill}
-            />
-          </g>
-        );
-    };
 
     return (
         <Card className="w-full h-full flex flex-col hover:scale-105 transition-transform shadow-lg">
@@ -95,19 +71,18 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, total
                         <p className={cn("text-2xl font-bold", chartConfig.incorrect.color)}>{totalIncorrect}</p>
                     </div>
                 </motion.div>
-                <ChartContainer id="flashcard-pie" config={chartConfig} className="mx-auto aspect-square w-full max-w-[300px]">
-                    <PieChart>
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <ChartContainer id="flashcard-pie" config={chartConfig} className="w-full flex-grow">
+                    <PieChart width={300} height={300}>
+                        <ChartTooltip content={<ChartTooltipContent />} />
                         <Pie
                             data={pieData}
                             dataKey="value"
                             nameKey="name"
-                            innerRadius={60}
+                            innerRadius="50%"
                             outerRadius="80%"
                             paddingAngle={5}
-                            activeIndex={activeIndex}
-                            activeShape={renderActiveShape}
-                            onMouseEnter={(_, index) => setActiveIndex(index)}
+                            animationBegin={0}
+                            animationDuration={1500}
                         >
                             {pieData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -116,28 +91,41 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, total
                                 content={({ viewBox }) => {
                                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                                         return (
-                                            <text
-                                                x={viewBox.cx}
-                                                y={viewBox.cy}
-                                                textAnchor="middle"
-                                                dominantBaseline="middle"
-                                            >
-                                                <tspan
-                                                    x={viewBox.cx}
-                                                    y={viewBox.cy}
-                                                    className="fill-foreground text-3xl font-bold"
+                                            <AnimatePresence>
+                                            {shouldAnimate && (
+                                                <motion.g
+                                                    key={correctPercentage}
+                                                    initial={{ opacity: 0, scale: 0.5 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.5 }}
+                                                    transition={{ duration: 0.5 }}
+                                                    onAnimationComplete={() => setShouldAnimate(false)}
                                                 >
-                                                    {correctPercentage}%
-                                                </tspan>
-                                                <tspan
-                                                    x={viewBox.cx}
-                                                    y={(viewBox.cy || 0) + 24}
-                                                    className="fill-muted-foreground"
-                                                >
-                                                    Correct
-                                                </tspan>
-                                            </text>
-                                        )
+                                                    <text
+                                                        x={viewBox.cx}
+                                                        y={viewBox.cy}
+                                                        textAnchor="middle"
+                                                        dominantBaseline="middle"
+                                                    >
+                                                        <tspan
+                                                            x={viewBox.cx}
+                                                            y={viewBox.cy}
+                                                            className="fill-card-foreground text-3xl font-bold"
+                                                        >
+                                                            {correctPercentage}%
+                                                        </tspan>
+                                                        <tspan
+                                                            x={viewBox.cx}
+                                                            y={(viewBox.cy || 0) + 24}
+                                                            className="fill-card-foreground text-sm"
+                                                        >
+                                                            Correct
+                                                        </tspan>
+                                                    </text>
+                                                </motion.g>
+                                            )}
+                                        </AnimatePresence>                        
+                                        );
                                     }
                                 }}
                             />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Sector, Label } from 'recharts';
+import { PieChart, Pie, Cell, Sector } from 'recharts';
 import { ChartConfig, ChartContainer, ChartStyle, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from "@/lib/utils";
@@ -95,16 +95,18 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, total
                         <p className={cn("text-2xl font-bold", chartConfig.incorrect.color)}>{totalIncorrect}</p>
                     </div>
                 </motion.div>
-                <ChartContainer id="flashcard-pie" config={chartConfig} className="mx-auto aspect-square w-full max-w-[300px]">
-                    <PieChart>
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <ChartContainer id="flashcard-pie" config={chartConfig} className="w-full flex-grow">
+                    <PieChart width={300} height={300}>
+                        <ChartTooltip content={<ChartTooltipContent />} />
                         <Pie
                             data={pieData}
                             dataKey="value"
                             nameKey="name"
-                            innerRadius={60}
+                            innerRadius="50%"
                             outerRadius="80%"
                             paddingAngle={5}
+                            animationBegin={0}
+                            animationDuration={1500}
                             activeIndex={activeIndex}
                             activeShape={renderActiveShape}
                             onMouseEnter={(_, index) => setActiveIndex(index)}
@@ -112,36 +114,41 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, total
                             {pieData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                             ))}
-                            <Label
-                                content={({ viewBox }) => {
-                                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                        return (
-                                            <text
-                                                x={viewBox.cx}
-                                                y={viewBox.cy}
-                                                textAnchor="middle"
-                                                dominantBaseline="middle"
-                                            >
-                                                <tspan
-                                                    x={viewBox.cx}
-                                                    y={viewBox.cy}
-                                                    className="fill-foreground text-3xl font-bold"
-                                                >
-                                                    {correctPercentage}%
-                                                </tspan>
-                                                <tspan
-                                                    x={viewBox.cx}
-                                                    y={(viewBox.cy || 0) + 24}
-                                                    className="fill-muted-foreground"
-                                                >
-                                                    Correct
-                                                </tspan>
-                                            </text>
-                                        )
-                                    }
-                                }}
-                            />
                         </Pie>
+                        <AnimatePresence>
+                            {shouldAnimate && (
+                                <motion.g
+                                    key={correctPercentage}
+                                    initial={{ opacity: 0, scale: 0.5 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.5 }}
+                                    transition={{ duration: 0.5 }}
+                                    onAnimationComplete={() => setShouldAnimate(false)}
+                                >
+                                    <text
+                                        x={150}
+                                        y={150}
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                    >
+                                        <tspan
+                                            x={150}
+                                            y={150}
+                                            className="fill-foreground text-3xl font-bold"
+                                        >
+                                            {correctPercentage}%
+                                        </tspan>
+                                        <tspan
+                                            x={150}
+                                            y={174}
+                                            className="fill-foreground text-sm"
+                                        >
+                                            Correct
+                                        </tspan>
+                                    </text>
+                                </motion.g>
+                            )}
+                        </AnimatePresence>
                     </PieChart>
                 </ChartContainer>
             </CardContent>
