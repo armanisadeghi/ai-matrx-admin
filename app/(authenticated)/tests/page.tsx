@@ -32,7 +32,7 @@ export default function TesterTwo() {
     return (
         <NextWindowManager
             windows={testPages}
-            initialLayout={{ ratio: '2/3', columns: 4 }}
+            initialLayout={{ ratio: '3/2', columns: 4 }}
             allowLayoutChange={true}
         />
     );
