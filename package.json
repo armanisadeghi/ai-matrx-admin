@@ -107,6 +107,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/react-table": "latest",
+    "@xpd/tailwind-3dtransforms": "^1.0.3",
     "assert": "^2.1.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",

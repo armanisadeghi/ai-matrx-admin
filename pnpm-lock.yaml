@@ -295,6 +295,9 @@ importers:
       '@types/react-table':
         specifier: latest
         version: 7.7.20
+      '@xpd/tailwind-3dtransforms':
+        specifier: ^1.0.3
+        version: 1.0.3
       assert:
         specifier: ^2.1.0
         version: 2.1.0
@@ -3234,6 +3237,9 @@ packages:
   '@typescript-eslint/visitor-keys@8.7.0':
     resolution: {integrity: sha512-b1tx0orFCCh/THWPQa2ZwWzvOeyzzp36vkJYOpVg0u8UVOIsfVrnuC9FqAw9gRKn+rG2VmWQ/zDJZzkxUnj/XQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@xpd/tailwind-3dtransforms@1.0.3':
+    resolution: {integrity: sha512-LEKfNj57djZAucQ1itu/zinRkYnkhzNjAMhz8DkbguTyBcTDHF1R6CuXO536BFE/YGyHDCYd7tDF5ghSrViUgQ==}
 
   a11y-status@2.0.2:
     resolution: {integrity: sha512-aFT18wXwGG6QHe/HsFJeQqknZ+TVi7A/3xfYMIQI5EEHIJ9ak+fa7T9uuDSpFPzNCF/4oAZyG9d/nKJMOfKgPQ==}
@@ -10532,6 +10538,8 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.7.0
       eslint-visitor-keys: 3.4.3
+
+  '@xpd/tailwind-3dtransforms@1.0.3': {}
 
   a11y-status@2.0.2:
     dependencies:

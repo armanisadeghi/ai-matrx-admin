@@ -101,7 +101,7 @@ const config: Config = {
     },
     plugins: [
         require("tailwindcss-animate"),
-        require("@xpd/tailwind-3dtransforms"),
+        require("@xpd/tailwind-3dtransforms")],
         require("flowbite/plugin"),
         nextui({
             prefix: "next-",

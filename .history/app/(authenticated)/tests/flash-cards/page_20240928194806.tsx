@@ -1,7 +1,9 @@
+// app\(authenticated)\tests\flash-cards\page.tsx
+
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
@@ -11,8 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { InitialFalshcardsWithExample } from './lesson-data';
-import { PieChart, Pie, Sector, Label } from 'recharts';
-import { ChartConfig, ChartContainer, ChartStyle, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { PieChart } from '@/components/PieChart'; // Assuming you have this component
 
 export interface Flashcard {
     id: number;
@@ -23,17 +24,6 @@ export interface Flashcard {
     correctCount: number;
     incorrectCount: number;
 }
-
-const chartConfig = {
-    correct: {
-        label: "Correct",
-        color: "hsl(var(--chart-1))",
-    },
-    incorrect: {
-        label: "Incorrect",
-        color: "hsl(var(--chart-2))",
-    },
-} satisfies ChartConfig;
 
 const FlashcardComponent: React.FC = () => {
     const [cards, setCards] = useState<Flashcard[]>(
@@ -50,14 +40,6 @@ const FlashcardComponent: React.FC = () => {
     const [fontSize, setFontSize] = useState(16);
     const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
     const { theme } = useTheme();
-
-    const totalCorrect = useMemo(() => cards.reduce((sum, card) => sum + card.correctCount, 0), [cards]);
-    const totalIncorrect = useMemo(() => cards.reduce((sum, card) => sum + card.incorrectCount, 0), [cards]);
-
-    const pieData = [
-        { name: 'correct', value: totalCorrect, fill: chartConfig.correct.color },
-        { name: 'incorrect', value: totalIncorrect, fill: chartConfig.incorrect.color },
-    ];
 
     useEffect(() => {
         setProgress((currentIndex / (cards.length - 1)) * 100);
@@ -133,64 +115,22 @@ const FlashcardComponent: React.FC = () => {
         alert(message);
     };
 
+    const totalCorrect = cards.reduce((sum, card) => sum + card.correctCount, 0);
+    const totalIncorrect = cards.reduce((sum, card) => sum + card.incorrectCount, 0);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
             <h1 className="text-3xl font-bold mb-6 text-primary">Flashcard Learning</h1>
             <div className="w-full max-w-4xl flex justify-between items-start mb-4">
-                <Card className="w-1/3 mr-4">
-                    <ChartStyle id="flashcard-pie" config={chartConfig} />
-                    <CardHeader>
-                        <CardTitle>Performance Overview</CardTitle>
-                        <CardDescription>Correct vs Incorrect Answers</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ChartContainer id="flashcard-pie" config={chartConfig} className="w-full aspect-square">
-                            <PieChart>
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Pie
-                                    data={pieData}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                >
-                                    <Label
-                                        content={({ viewBox }) => {
-                                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                                const total = totalCorrect + totalIncorrect;
-                                                return (
-                                                    <text
-                                                        x={viewBox.cx}
-                                                        y={viewBox.cy}
-                                                        textAnchor="middle"
-                                                        dominantBaseline="middle"
-                                                    >
-                                                        <tspan
-                                                            x={viewBox.cx}
-                                                            y={viewBox.cy}
-                                                            className="fill-foreground text-3xl font-bold"
-                                                        >
-                                                            {total}
-                                                        </tspan>
-                                                        <tspan
-                                                            x={viewBox.cx}
-                                                            y={(viewBox.cy || 0) + 24}
-                                                            className="fill-muted-foreground"
-                                                        >
-                                                            Total
-                                                        </tspan>
-                                                    </text>
-                                                );
-                                            }
-                                        }}
-                                    />
-                                </Pie>
-                            </PieChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
-                <div className="w-2/3">
+                <div className="w-1/4">
+                    <PieChart
+                        data={[
+                            { name: 'Correct', value: totalCorrect, color: 'green' },
+                            { name: 'Incorrect', value: totalIncorrect, color: 'red' }
+                        ]}
+                    />
+                </div>
+                <div className="w-3/4 pl-4">
                     <Select onValueChange={handleSelectChange} value={currentIndex.toString()}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a flashcard" />
@@ -252,6 +192,7 @@ const FlashcardComponent: React.FC = () => {
                     </div>
                 </div>
             </div>
+
             <div className="mt-6 flex items-center space-x-4">
                 <Button onClick={handlePrevious} variant="outline">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Previous
@@ -353,4 +294,19 @@ const FlashcardComponent: React.FC = () => {
     );
 };
 
-export default FlashcardComponent;
+export default FlashcardComponent;                <Textarea
+                  value={editingCard.back}
+                  onChange={(e) => setEditingCard({ ...editingCard, back: e.target.value })}
+                  placeholder="Back of card"
+                />
+                <Button onClick={handleSaveEdit}>Save Changes</Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  };
+  
+  export default FlashcardComponent;
+  
