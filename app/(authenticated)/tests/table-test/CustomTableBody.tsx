@@ -1,19 +1,8 @@
-import {Row} from "react-table";
 import React from "react";
 import {TableBody} from "@/components/ui/table";
 import {AnimatePresence, motion} from "framer-motion";
 import CustomTableCell from "@/app/(authenticated)/tests/table-test/CustomTableCell";
-import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
-import {ActionDefinition} from "@/app/(authenticated)/tests/table-test/TableActionIcon";
-
-interface CustomTableBodyProps {
-    page: Row<TableData>[];
-    prepareRow: (row: Row<TableData>) => void;
-    truncateText: (text: unknown, maxLength?: number) => string;
-    actions: ActionDefinition[];
-    onAction: (actionName: string, rowData: TableData) => void;
-    visibleColumns: string[];
-}
+import {CustomTableBodyProps} from "@/app/(authenticated)/tests/table-test/table.types";
 
 const CustomTableBody: React.FC<CustomTableBodyProps> = (
     {

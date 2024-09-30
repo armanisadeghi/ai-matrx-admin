@@ -2,17 +2,8 @@
 import React from 'react';
 import {TableCell} from '@/components/ui/table';
 import {motion} from 'framer-motion';
-import {Cell} from "react-table";
-import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
-import TableActionIcon, {ActionDefinition} from "@/app/(authenticated)/tests/table-test/TableActionIcon";
-
-interface CustomTableCellProps {
-    cell: Cell<TableData>;
-    truncateText: (text: unknown, maxLength?: number) => string;
-    actions: ActionDefinition[];
-    rowData: TableData;
-    onAction: (actionName: string, rowData: TableData) => void;
-}
+import TableActionIcon from "@/app/(authenticated)/tests/table-test/TableActionIcon";
+import {CustomTableCellProps} from "@/app/(authenticated)/tests/table-test/table.types";
 
 const CustomTableCell: React.FC<CustomTableCellProps> = (
     {

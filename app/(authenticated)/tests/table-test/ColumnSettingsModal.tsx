@@ -1,16 +1,7 @@
-import {Column} from "react-table";
 import React from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import MatrxCheckbox from "@/components/matrx/MatrxCheckbox";
-import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
-
-interface ColumnSettingsModalProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    columns: Column<TableData>[];
-    visibleColumns: string[];
-    setVisibleColumns: React.Dispatch<React.SetStateAction<string[]>>;
-}
+import {ColumnSettingsModalProps} from "@/app/(authenticated)/tests/table-test/table.types";
 
 const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = (
     {

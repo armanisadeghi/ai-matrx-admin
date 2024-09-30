@@ -1,13 +1,9 @@
-import {HeaderGroup, UseSortByColumnProps} from "react-table";
+import {UseSortByColumnProps} from "react-table";
 import React from "react";
 import {TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {motion} from "framer-motion";
 import {ArrowUpDown} from "lucide-react";
-import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
-
-interface TableHeaderProps {
-    headerGroups: HeaderGroup<TableData>[];
-}
+import {TableHeaderProps, TableData} from "@/app/(authenticated)/tests/table-test/table.types";
 
 const CustomTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
     return (

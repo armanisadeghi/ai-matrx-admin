@@ -1,50 +1,37 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import {
-    useTable,
-    useSortBy,
-    useGlobalFilter,
-    usePagination,
-    Column,
-    UseGlobalFiltersInstanceProps,
-    UsePaginationInstanceProps,
-    UseSortByInstanceProps,
-    UseTableInstanceProps,
-    TableState
-} from 'react-table';
-import { Table } from '@/components/ui/table';
+import React, {useState, useMemo, useCallback} from 'react';
+import {useTable, useSortBy, useGlobalFilter, usePagination,} from 'react-table';
+import {Table} from '@/components/ui/table';
 import DialogForm from "./DialogForm";
-import { cn } from "@/styles/themes/utils"
-import {deleteAction, editAction, expandAction, viewAction} from "@/app/(authenticated)/tests/table-test/actionDefinitions";
+import {cn} from "@/styles/themes/utils"
+import {
+    deleteAction,
+    editAction,
+    expandAction,
+    viewAction
+} from "@/app/(authenticated)/tests/table-test/actionDefinitions";
 import CustomTableHeader from "@/app/(authenticated)/tests/table-test/CustomTableHeader";
 import CustomTableBody from "@/app/(authenticated)/tests/table-test/CustomTableBody";
 import TableTopOptions from "@/app/(authenticated)/tests/table-test/TableTopOptions";
 import TableBottomSection from "@/app/(authenticated)/tests/table-test/TableBottomSection";
 import ColumnSettingsModal from "@/app/(authenticated)/tests/table-test/ColumnSettingsModal";
+import {
+    ExtendedTableState,
+    TableInstance,
+    ModernTableProps,
+    TableData
+} from "@/app/(authenticated)/tests/table-test/table.types";
 
-export interface TableData {
-    id: number | string;
-    [key: string]: any;
-}
-
-interface ModernTableProps {
-    columns: Column<TableData>[];
-    data: TableData[];
-    defaultVisibleColumns?: string[];
-    className?: string;
-}
-
-type TableInstance = UseTableInstanceProps<TableData> &
-    UseGlobalFiltersInstanceProps<TableData> &
-    UsePaginationInstanceProps<TableData> &
-    UseSortByInstanceProps<TableData>;
-
-interface ExtendedTableState extends TableState<TableData> {
-    globalFilter: any;
-    pageIndex: number;
-    pageSize: number;
-}
-
-const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisibleColumns, className }) => {
+const ModernTable: React.FC<ModernTableProps> = (
+    {
+        columns,
+        data,
+        defaultVisibleColumns,
+        className,
+        onAdd,
+        onEdit,
+        onDelete,
+        onExpand
+    }) => {
     const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultVisibleColumns || columns.map(col => col.accessor as string));
     const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
 
@@ -70,7 +57,7 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
         pageCount,
         gotoPage,
         setPageSize,
-    } =  useTable(
+    } = useTable(
         {
             columns: visibleColumnsData,
             data,
@@ -81,7 +68,7 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
         usePagination
     ) as unknown as TableInstance;
 
-    const { globalFilter, pageIndex, pageSize } = state as ExtendedTableState;
+    const {globalFilter, pageIndex, pageSize} = state as ExtendedTableState;
 
     const pageNumbers = [];
     const totalPages = pageCount;
@@ -101,8 +88,6 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
         }
     }
 
-
-
     const truncateText = (text: unknown, maxLength: number = 100): string => {
         if (typeof text !== 'string') {
             return String(text);
@@ -116,15 +101,31 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
     const [selectedItem, setSelectedItem] = useState<TableData | null>(null);
 
     const handleDialogAction = useCallback((action: string, formData?: Record<string, string>) => {
-        const handler = (window as any)[`handle${action.charAt(0).toUpperCase() + action.slice(1)}`];
-        if (typeof handler === 'function') {
-            handler(selectedItem, formData);
-        } else {
-            console.warn(`Handler for action "${action}" not found`);
+        switch (action) {
+            case 'add':
+                onAdd(formData as Omit<TableData, 'id'>);
+                break;
+            case 'edit':
+                if (selectedItem) {
+                    onEdit(selectedItem);
+                }
+                break;
+            case 'delete':
+                if (selectedItem) {
+                    onDelete(selectedItem);
+                }
+                break;
+            case 'expand':
+                if (selectedItem) {
+                    onExpand(selectedItem);
+                }
+                break;
+            default:
+                console.warn(`Handler for action "${action}" not found`);
         }
         setModalOpen(false);
         setSelectedItem(null);
-    }, [selectedItem]);
+    }, [selectedItem, onAdd, onEdit, onDelete, onExpand]);
 
     const openModal = useCallback((mode: 'add' | 'edit' | 'delete' | 'view', item: TableData | null = null) => {
         setDialogMode(mode);
@@ -139,7 +140,7 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
     const columnNames = useMemo(() => allColumns.map((col) => col.Header as string), [allColumns]);
 
     const handleAction = useCallback((actionName: string, rowData: TableData) => {
-        switch(actionName) {
+        switch (actionName) {
             case 'view':
                 openModal('view', rowData);
                 break;
@@ -150,29 +151,26 @@ const ModernTable: React.FC<ModernTableProps> = ({ columns, data, defaultVisible
                 openModal('delete', rowData);
                 break;
             case 'expand':
-                console.log('Expanding', rowData);
-                // Implement expand logic here
+                onExpand(rowData);
                 break;
             default:
                 console.warn(`Unknown action: ${actionName}`);
         }
-    }, [openModal]);
-
+    }, [openModal, onExpand]);
 
     const bodyProps = {
         page,
         prepareRow,
         truncateText,
         actions: [
-            { ...expandAction, name: 'expand' },
-            { ...viewAction, name: 'view' },
-            { ...editAction, name: 'edit' },
-            { ...deleteAction, name: 'delete' }
+            {...expandAction, name: 'expand'},
+            {...viewAction, name: 'view'},
+            {...editAction, name: 'edit'},
+            {...deleteAction, name: 'delete'}
         ],
         onAction: handleAction,
         visibleColumns,
     };
-
 
     return (
         <div className={cn("p-3 space-y-4", className)}>

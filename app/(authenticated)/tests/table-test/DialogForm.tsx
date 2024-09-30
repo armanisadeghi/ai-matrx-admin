@@ -2,17 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {Column} from 'react-table';
-import {TableData} from "@/app/(authenticated)/tests/table-test/ModernTable";
-
-interface DialogFormProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    mode: 'add' | 'edit' | 'delete' | 'view';
-    columns: Column<TableData>[];
-    data: TableData | null;
-    onAction: (action: string, formData?: Record<string, string>) => void;
-}
+import {DialogFormProps} from '@/app/(authenticated)/tests/table-test/table.types';
 
 const DialogForm: React.FC<DialogFormProps> = (
     {

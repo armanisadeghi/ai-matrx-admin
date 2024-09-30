@@ -21,7 +21,7 @@ export const viewAction = {
     name: 'view',
     label: "View this item",
     icon: <Eye className="h-4 w-4" />,
-    className: "text-secondary hover:bg-secondary hover:text-secondary-foreground",
+    className: "text-primary hover:bg-secondary hover:text-secondary-foreground",
 };
 
 export const expandAction = {
