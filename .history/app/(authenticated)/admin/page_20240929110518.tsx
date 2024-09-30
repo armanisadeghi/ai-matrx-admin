@@ -1,7 +1,6 @@
 // File location: @/app/admin/page.tsx
 
 // Claude: https://claude.ai/chat/65014a2f-15f6-498a-8617-1e1cd94882fa
-// Claude: https://claude.ai/chat/e142e093-5177-4faa-aa06-b534db104cf5
 
 import {
     IconAdjustmentsBolt,

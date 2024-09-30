@@ -1,9 +1,6 @@
 'use client';
 import { useState } from 'react';
 
-
-// ChatGPT: https://chatgpt.com/c/66f4a3ad-b920-8012-a214-16ce35644391
-
 export default function FullScreenComponent() {
     const [isFullScreen, setIsFullScreen] = useState(false);
 
