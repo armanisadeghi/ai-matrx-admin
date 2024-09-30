@@ -60,3 +60,5 @@ data/
 .env.test
 .env.production
 .env*
+ .history*
+ .history/
