@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 
 import {Column} from 'react-table';
 import {v4 as uuidv4} from 'uuid';
@@ -216,28 +217,26 @@ const data: TableData[] = [
     }
 ];
 
+
 export default function TablePage() {
-    // Define handlers using the handleActionName convention
-    (window as any).handleAdd = (newItem: Omit<TableData, 'id'>) => {
-        const newItemWithId: TableData = {id: uuidv4(), ...newItem};
-        console.log('Adding new item:', newItemWithId);
-        // Implement the actual add logic here
-    };
+    useEffect(() => {
+        // Define handlers using the handleActionName convention
+        (window as any).handleAdd = (newItem: Omit<TableData, 'id'>) => {
+            // Implement the actual add logic here
+        };
 
-    (window as any).handleEdit = (item: TableData) => {
-        console.log('Editing item:', item);
-        // Implement the actual edit logic here
-    };
+        (window as any).handleEdit = (item: TableData) => {
+            // Implement the actual edit logic here
+        };
 
-    (window as any).handleDelete = (item: TableData) => {
-        console.log('Deleting item:', item);
-        // Implement the actual delete logic here
-    };
+        (window as any).handleDelete = (item: TableData) => {
+            // Implement the actual delete logic here
+        };
 
-    (window as any).handleExpand = (item: TableData) => {
-        console.log('Expanding item:', item);
-        // Implement the expand logic here
-    };
+        (window as any).handleExpand = (item: TableData) => {
+            // Implement the expand logic here
+        };
+    }, []); // Empty dependency array ensures this runs once after mount
 
     return (
         <div className="p-2">

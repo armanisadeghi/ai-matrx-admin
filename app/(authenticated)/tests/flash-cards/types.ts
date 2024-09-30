@@ -10,7 +10,7 @@ export type FlashcardData = {
     back: string;
     example?: string;
     detailedExplanation?: string;
-    images?: string[];
+    relatedImages?: string[];
     personalNotes?: string;
     isDeleted?: boolean;
 }
