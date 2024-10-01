@@ -8,8 +8,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A rock is matter because it has weight and takes up space.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Matter refers to any substance that has mass and takes up space by having volume.\nEverything around us, including air, water, and solids, is considered matter.",
-        audioExplanation: `### Matter\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Matter is anything that has mass and takes up space.\nThis means if you can weigh it and it occupies space, it’s matter.\nLook around you—everything you see, touch, and even breathe is made of matter.\nFor example, a rock is matter because it has weight and takes up space.\nEven the air you breathe is matter, though you can't see it easily.`
+        detailedExplanation: "Matter refers to any substance that has mass and takes up space by having volume. Everything around us, including air, water, and solids, is considered matter.",
+        audioExplanation: "Sure! Matter is anything that has mass and takes up space. This means if you can weigh it and it occupies space, it’s matter. Look around you—everything you see, touch, and even breathe is made of matter. For example, a rock is matter because it has weight and takes up space. Even the air you breathe is matter, though you can't see it easily."
     },
     {
         order: 2,
@@ -18,8 +18,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A bag of apples has a mass of 2 kilograms.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Mass is a measure of the amount of matter in an object.\nIt is typically measured in units such as grams (g) or kilograms (kg).\nMass is not affected by gravity.",
-        audioExplanation: `### Mass\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Mass is simply the amount of matter that something contains.\nThink of it as the 'stuff' inside an object.\nFor instance, if you have a bag of apples that has a mass of 2 kilograms, it means the apples together have that much 'stuff' or matter.\nUnlike weight, which can change based on gravity, mass stays the same no matter where you are—even on the moon!`
+        detailedExplanation: "Mass is a measure of the amount of matter in an object. It is typically measured in units such as grams (g) or kilograms (kg). Mass is not affected by gravity.",
+        audioExplanation: "Sure! Mass is simply the amount of matter that something contains. Think of it as the 'stuff' inside an object. For instance, if you have a bag of apples that has a mass of 2 kilograms, it means the apples together have that much 'stuff' or matter. Unlike weight, which can change based on gravity, mass stays the same no matter where you are—even on the moon!"
     },
     {
         order: 3,
@@ -28,8 +28,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A 1-kilogram object weighs about 9.8 newtons on Earth.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Weight is the measure of the force exerted on an object's mass by gravity.\nIt is different from mass and is measured in newtons (N).",
-        audioExplanation: `### Weight\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Weight can be a bit tricky because people often confuse it with mass.\nLet's clear that up first.\nMass is how much stuff (matter) is in an object, and it's always the same no matter where you are.\nWeight, on the other hand, is how much gravity pulls on that mass.\nImagine you're holding a heavy book.\nOn Earth, gravity pulls on it strongly, so it feels heavy.\nThis pull of gravity is what we call weight.\nIf you were on the Moon, the book would feel lighter because there’s less gravity pulling on it, but the book itself hasn’t changed—its mass is the same.\nWeight is measured in newtons (N), which is a unit of force.\nA practical example is: if you have a mass of 1 kilogram, gravity on Earth pulls on it with a force of about 9.8 newtons.\nSo, a 1-kilogram object weighs about 9.8 newtons on Earth.\nTo summarize:\n- **Mass** is how much matter is in an object (measured in kilograms or grams).\n- **Weight** is how strong gravity pulls on that mass (measured in newtons).\nI hope this makes things clearer!`
+        detailedExplanation: "Weight is the measure of the force exerted on an object's mass by gravity. It is different from mass and is measured in newtons (N).",
+        audioExplanation: "Sure! Weight can be a bit tricky because people often confuse it with mass. Let's clear that up first. Mass is how much stuff (matter) is in an object, and it's always the same no matter where you are. Weight, on the other hand, is how much gravity pulls on that mass. Imagine you're holding a heavy book. On Earth, gravity pulls on it strongly, so it feels heavy. This pull of gravity is what we call weight. If you were on the Moon, the book would feel lighter because there’s less gravity pulling on it, but the book itself hasn’t changed—its mass is the same. Weight is measured in newtons (N), which is a unit of force. A practical example is: if you have a mass of 1 kilogram, gravity on Earth pulls on it with a force of about 9.8 newtons. So, a 1-kilogram object weighs about 9.8 newtons on Earth. To summarize: Mass is how much matter is in an object (measured in kilograms or grams). Weight is how strong gravity pulls on that mass (measured in newtons). I hope this makes things clearer!"
     },
     {
         order: 4,
@@ -38,8 +38,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A bottle can hold 1 liter of water, which is its volume.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Volume is the measure of space occupied by an object.\nIt's commonly measured in liters (L) for liquids and cubic meters (m³) for solids.",
-        audioExplanation: `### Volume\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Volume is the amount of space that something takes up.\nImagine you have a bottle filled with water.\nThe amount of water that fits inside the bottle is its volume.\nVolume is measured in liters or cubic meters.\nFor example, if a bottle can hold 1 liter of water, that’s its volume.\nJust like how a balloon expands and takes up more space as you blow air into it—that's its volume increasing!`
+        detailedExplanation: "Volume is the measure of space occupied by an object. It's commonly measured in liters (L) for liquids and cubic meters (m³) for solids.",
+        audioExplanation: "Sure! Volume is the amount of space that something takes up. Imagine you have a bottle filled with water. The amount of water that fits inside the bottle is its volume. Volume is measured in liters or cubic meters. For example, if a bottle can hold 1 liter of water, that’s its volume. Just like how a balloon expands and takes up more space as you blow air into it—that's its volume increasing!"
     },
     {
         order: 5,
@@ -48,8 +48,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "If a 2-kilogram block of wood has a volume of 1 liter, its density is 2 kg/L.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Density is a measurement of how much mass is contained in a given volume.\nIt's calculated using the formula Density = Mass / Volume.",
-        audioExplanation: `### Density\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! Density is a way to understand how much mass is packed into a given volume.\nThink of it like this: if you have two blocks of the same size, but one feels heavier than the other, the heavier one is denser because it has more mass in the same amount of space.\nWe calculate density using the formula Density = Mass / Volume (D = m/v).\nFor instance, if you have a block of wood weighing 2 kilograms and it occupies a volume of 1 liter, its density would be 2 kilograms per liter (2 kg/L).\nIt helps us understand how tightly matter is packed together in a substance.`
+        detailedExplanation: "Density is a measurement of how much mass is contained in a given volume. It's calculated using the formula Density = Mass / Volume.",
+        audioExplanation: "Of course! Density is a way to understand how much mass is packed into a given volume. Think of it like this: if you have two blocks of the same size, but one feels heavier than the other, the heavier one is denser because it has more mass in the same amount of space. We calculate density using the formula Density = Mass / Volume (D = m/v). For instance, if you have a block of wood weighing 2 kilograms and it occupies a volume of 1 liter, its density would be 2 kilograms per liter (2 kg/L). It helps us understand how tightly matter is packed together in a substance."
     },
     {
         order: 6,
@@ -59,7 +59,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Matter can exist in different states — solid, liquid, gas, and plasma — based on the arrangement and movement of its particles.",
-        audioExplanation: `### States of Matter\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Matter can exist in different forms called states.\nThe three most common states are solid, liquid, and gas.\nThere's also a fourth state called plasma.\n- **Solid:** In a solid, the particles are tightly packed together and don't move much.\nThis makes solids hold their shape.\nFor example, ice is solid water.\n- **Liquid:** In a liquid, the particles are close but can move around more freely.\nThis allows liquids to flow and take the shape of their container.\nWater is the liquid form of H₂O.\n- **Gas:** In a gas, the particles move around a lot and are spread out.\nGases can expand to fill any container.\nSteam is a gaseous form of water.\nImagine water, for example: it can be ice (solid), liquid water, or steam (gas).\nIt’s the same substance, just in different states!`
+        audioExplanation: "Sure! Matter can exist in different forms called states. The three most common states are solid, liquid, and gas. There's also a fourth state called plasma. In a solid, the particles are tightly packed together and don't move much. This makes solids hold their shape. For example, ice is solid water. In a liquid, the particles are close but can move around more freely. This allows liquids to flow and take the shape of their container. Water is the liquid form of H₂O. In a gas, the particles move around a lot and are spread out. Gases can expand to fill any container. Steam is a gaseous form of water. Imagine water, for example: it can be ice (solid), liquid water, or steam (gas). It’s the same substance, just in different states!"
     },
     {
         order: 7,
@@ -68,8 +68,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The color and melting point of ice are physical properties.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Physical properties are characteristics that can be observed or measured without changing the substance itself.\nExamples include color, melting point, and density.",
-        audioExplanation: `### Physical Properties\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Physical properties are characteristics you can observe or measure about a substance without changing what the substance actually is.\nThese include things like color, shape, size, and melting point.\nFor example, think about ice.\nYou can see it's solid and white, and you can measure its melting point (0°C or 32°F).\nThese are physical properties of ice because observing or measuring these properties doesn’t change the ice into something else.\nIt remains H₂O whether it's solid (ice), liquid (water), or gas (steam).`
+        detailedExplanation: "Physical properties are characteristics that can be observed or measured without changing the substance itself. Examples include color, melting point, and density.",
+        audioExplanation: "Sure! Physical properties are characteristics you can observe or measure about a substance without changing what the substance actually is. These include things like color, shape, size, and melting point. For example, think about ice. You can see it's solid and white, and you can measure its melting point (0°C or 32°F). These are physical properties of ice because observing or measuring these properties doesn’t change the ice into something else. It remains H₂O whether it's solid (ice), liquid (water), or gas (steam)."
     },
     {
         order: 8,
@@ -78,8 +78,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Flammability is a chemical property; wood burns and turns into ash.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Chemical properties describe the potential of a substance to undergo chemical reactions and transform into different substances.\nExamples include flammability and reactivity.",
-        audioExplanation: `### Chemical Properties\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOkay, let's simplify this.\nChemical properties are qualities of a substance that can only be observed when the substance changes into a different substance through a chemical reaction.\nThink of it as the potential a substance has to transform into something else.\nFor example, imagine you have a piece of wood.\nOne of its chemical properties is flammability, which means it can catch fire and burn.\nWhen the wood burns, it changes into ash and smoke.\nThis transformation from wood to ash and smoke is what we observe when we talk about chemical properties.\nSo, chemical properties tell us about the different ways a substance can change or react with other substances.`
+        detailedExplanation: "Chemical properties describe the potential of a substance to undergo chemical reactions and transform into different substances. Examples include flammability and reactivity.",
+        audioExplanation: "Okay, let's simplify this. Chemical properties are qualities of a substance that can only be observed when the substance changes into a different substance through a chemical reaction. Think of it as the potential a substance has to transform into something else. For example, imagine you have a piece of wood. One of its chemical properties is flammability, which means it can catch fire and burn. When the wood burns, it changes into ash and smoke. This transformation from wood to ash and smoke is what we observe when we talk about chemical properties. So, chemical properties tell us about the different ways a substance can change or react with other substances."
     },
     {
         order: 9,
@@ -88,8 +88,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Oxygen (O) is an element made up of only oxygen atoms.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Elements are pure substances that cannot be broken down into simpler substances by chemical means.\nEach element is made up of just one type of atom.",
-        audioExplanation: `### Elements\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Elements are the simplest pure substances and consist of only one type of atom.\nAn element cannot be broken down into simpler substances by chemical reactions.\nThink of elements as the building blocks of all materials.\nFor example, the element oxygen (O) is made up entirely of oxygen atoms, and the element hydrogen (H) is made up only of hydrogen atoms.\nWhen these elements combine, they form compounds, like water (H₂O), which is made of hydrogen and oxygen.\nThere are over 100 different elements, and they are all organized in the Periodic Table.`
+        detailedExplanation: "Elements are pure substances that cannot be broken down into simpler substances by chemical means. Each element is made up of just one type of atom.",
+        audioExplanation: "Sure! Elements are the simplest pure substances and consist of only one type of atom. An element cannot be broken down into simpler substances by chemical reactions. Think of elements as the building blocks of all materials. For example, the element oxygen (O) is made up entirely of oxygen atoms, and the element hydrogen (H) is made up only of hydrogen atoms. When these elements combine, they form compounds, like water (H₂O), which is made of hydrogen and oxygen. There are over 100 different elements, and they are all organized in the Periodic Table."
     },
     {
         order: 10,
@@ -98,8 +98,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A single hydrogen atom is the smallest part of hydrogen.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Atoms are the basic building blocks of matter.\nThey are the smallest units of an element that retain the chemical properties of that element.",
-        audioExplanation: `### Atoms\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course!\nAtoms are the basic building blocks of everything around us.\nAn atom is the smallest part of an element that still has the properties of that element.\nImagine you have a piece of gold.\nIf you keep cutting it down until you can't cut anymore without it no longer being gold, you would reach a single gold atom.\nThis atom is the basic unit that makes up the element gold.\nAtoms combine to form molecules, which are the building blocks for more complex substances.\nFor example, a single hydrogen atom is the smallest part of hydrogen, and when it bonds with oxygen atoms, it can form water (H₂O).`
+        detailedExplanation: "Atoms are the basic building blocks of matter. They are the smallest units of an element that retain the chemical properties of that element.",
+        audioExplanation: "Of course! Atoms are the basic building blocks of everything around us. An atom is the smallest part of an element that still has the properties of that element. Imagine you have a piece of gold. If you keep cutting it down until you can't cut anymore without it no longer being gold, you would reach a single gold atom. This atom is the basic unit that makes up the element gold. Atoms combine to form molecules, which are the building blocks for more complex substances. For example, a single hydrogen atom is the smallest part of hydrogen, and when it bonds with oxygen atoms, it can form water (H₂O)."
     },
     {
         order: 11,
@@ -108,8 +108,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The periodic table shows elements like hydrogen (H) and carbon (C).",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "The periodic table organizes all known chemical elements by their atomic number, electron configuration, and recurring chemical properties.\nIt provides a useful framework for analyzing chemical behavior.",
-        audioExplanation: `### Periodic Table\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! The periodic table is a systematic arrangement of all known elements organized by atomic number.\nEach element is represented by a unique symbol and has a specific place in the table based on its properties.\nFor example, hydrogen (H) is the first element and has the atomic number 1, while carbon (C) has the atomic number 6.\nThe periodic table helps us understand relationships between different elements and predict their chemical behavior.`
+        detailedExplanation: "The periodic table organizes all known chemical elements by their atomic number, electron configuration, and recurring chemical properties. It provides a useful framework for analyzing chemical behavior.",
+        audioExplanation: "Sure! The periodic table is a systematic arrangement of all known elements organized by atomic number. Each element is represented by a unique symbol and has a specific place in the table based on its properties. For example, hydrogen (H) is the first element and has the atomic number 1, while carbon (C) has the atomic number 6. The periodic table helps us understand relationships between different elements and predict their chemical behavior."
     },
     {
         order: 12,
@@ -118,8 +118,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Carbon has an atomic number of 6 because it has 6 protons.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "The atomic number of an element is a fundamental property that defines what element it is.\nIt determines the number of protons in the nucleus of an atom, and it also equals the number of electrons in a neutral atom.",
-        audioExplanation: `### Atomic Number\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nDefinitely! The atomic number is a unique number assigned to each chemical element that tells you how many protons are in the nucleus of an atom.\nFor instance, carbon’s atomic number is 6, which means it has 6 protons.\nThis number is crucial because it defines the identity of the element.\nIn a neutral atom, the number of electrons will also match the atomic number, ensuring the overall charge is balanced.`
+        detailedExplanation: "The atomic number of an element is a fundamental property that defines what element it is. It determines the number of protons in the nucleus of an atom, and it also equals the number of electrons in a neutral atom.",
+        audioExplanation: "Definitely! The atomic number is a unique number assigned to each chemical element that tells you how many protons are in the nucleus of an atom. For instance, carbon’s atomic number is 6, which means it has 6 protons. This number is crucial because it defines the identity of the element. In a neutral atom, the number of electrons will also match the atomic number, ensuring the overall charge is balanced."
     },
     {
         order: 13,
@@ -128,8 +128,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The symbol for gold is Au.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Chemical symbols are shorthand notations for elements, typically consisting of one or two letters.\nThe first letter is always capitalized, while the second (if present) is lowercase.",
-        audioExplanation: `### Symbol\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! A chemical symbol is a one- or two-letter abbreviation used to represent a chemical element.\nFor example, the symbol for gold is Au, and the symbol for oxygen is O.\nThe first letter is always uppercase, while the second letter (if there is one) is lowercase.\nThese symbols are important because they provide a quick way to identify elements in chemical formulas.`
+        detailedExplanation: "Chemical symbols are shorthand notations for elements, typically consisting of one or two letters. The first letter is always capitalized, while the second (if present) is lowercase.",
+        audioExplanation: "Sure! A chemical symbol is a one- or two-letter abbreviation used to represent a chemical element. For example, the symbol for gold is Au, and the symbol for oxygen is O. The first letter is always uppercase, while the second letter (if there is one) is lowercase. These symbols are important because they provide a quick way to identify elements in chemical formulas."
     },
     {
         order: 14,
@@ -138,8 +138,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The atomic mass of carbon is about 12.01 amu (atomic mass units).",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Atomic mass is an important concept because it reflects the mass of isotopes of an element, weighted by their natural abundance.\nIt is usually expressed in atomic mass units (amu).",
-        audioExplanation: `### Atomic Mass\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nAbsolutely! Atomic mass is the average mass of the atoms of an element, measured in atomic mass units (amu).\nThis average takes into account the different isotopes of the element and their relative abundances in nature.\nFor example, carbon has an atomic mass of about 12.01 amu because we consider both Carbon-12 and Carbon-13.\nThis value helps scientists understand the mass and energy relationships in chemical reactions.`
+        detailedExplanation: "Atomic mass is an important concept because it reflects the mass of isotopes of an element, weighted by their natural abundance. It is usually expressed in atomic mass units (amu).",
+        audioExplanation: "Absolutely! Atomic mass is the average mass of the atoms of an element, measured in atomic mass units (amu). This average takes into account the different isotopes of the element and their relative abundances in nature. For example, carbon has an atomic mass of about 12.01 amu because we consider both Carbon-12 and Carbon-13. This value helps scientists understand the mass and energy relationships in chemical reactions."
     },
     {
         order: 15,
@@ -148,8 +148,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Group 1 elements, like sodium and potassium, are all metals that react with water.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Groups in the periodic table refer to the vertical columns where elements share similar chemical properties and electron configurations.\nElements in the same group often exhibit similar reactivity.",
-        audioExplanation: `### Groups\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! In the periodic table, elements are organized into vertical columns known as groups.\nElements in the same group share similar chemical properties because they have the same number of valence electrons.\nFor example, Group 1 consists of alkali metals like sodium and potassium, which are known to react vigorously with water.\nUnderstanding groups helps predict how different elements will react in chemical reactions.`
+        detailedExplanation: "Groups in the periodic table refer to the vertical columns where elements share similar chemical properties and electron configurations. Elements in the same group often exhibit similar reactivity.",
+        audioExplanation: "Sure! In the periodic table, elements are organized into vertical columns known as groups. Elements in the same group share similar chemical properties because they have the same number of valence electrons. For example, Group 1 consists of alkali metals like sodium and potassium, which are known to react vigorously with water. Understanding groups helps predict how different elements will react in chemical reactions."
     },
     {
         order: 16,
@@ -158,8 +158,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Iron is a metal (shiny and conducts electricity), while sulfur is a nonmetal (dull and does not conduct).",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Metals and nonmetals are two distinct categories of elements with differing physical and chemical properties.\nMetals usually exhibit luster, malleability, and electrical conductivity, while nonmetals tend to be dull and poor conductors.",
-        audioExplanation: `### Metal vs. Nonmetal\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nDefinitely! Metals and nonmetals are two types of elements with different properties.\nMetals are typically shiny (like iron), malleable (can be shaped), and good conductors of heat and electricity.\nIn contrast, nonmetals lack these properties and tend to be dull and brittle.\nFor instance, sulfur is a nonmetal that does not conduct electricity, while iron is a metal that does!\nThis classification helps understand how elements behave chemically.`
+        detailedExplanation: "Metals and nonmetals are two distinct categories of elements with differing physical and chemical properties. Metals usually exhibit luster, malleability, and electrical conductivity, while nonmetals tend to be dull and poor conductors.",
+        audioExplanation: "Definitely! Metals and nonmetals are two types of elements with different properties. Metals are typically shiny (like iron), malleable (can be shaped), and good conductors of heat and electricity. In contrast, nonmetals lack these properties and tend to be dull and brittle. For instance, sulfur is a nonmetal that does not conduct electricity, while iron is a metal that does! This classification helps understand how elements behave chemically."
     },
     {
         order: 17,
@@ -168,8 +168,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Distilled water is a pure substance because it contains only H2O molecules.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Pure substances consist of only one type of particle, either as elements or compounds, maintaining consistent properties throughout. \nExamples include distilled water and pure gold.",
-        audioExplanation: `### Pure Substances\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Pure substances are materials made up of only one type of particle.\nThis means that the substance has consistent properties and composition all throughout.\nFor example, distilled water is a pure substance because it consists only of H₂O molecules.\nThere are two types of pure substances: elements (like gold) and compounds (like water).\nUnderstanding pure substances is important because they behave predictably in chemical reactions!`
+        detailedExplanation: "Pure substances consist of only one type of particle, either as elements or compounds, maintaining consistent properties throughout. Examples include distilled water and pure gold.",
+        audioExplanation: "Sure! Pure substances are materials made up of only one type of particle. This means that the substance has consistent properties and composition all throughout. For example, distilled water is a pure substance because it consists only of H₂O molecules. There are two types of pure substances: elements (like gold) and compounds (like water). Understanding pure substances is important because they behave predictably in chemical reactions!"
     },
     {
         order: 18,
@@ -178,8 +178,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A water molecule (H2O) has two hydrogen atoms and one oxygen atom.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Molecules are formed when two or more atoms chemically bond together. \nThey can consist of the same or different types of atoms, constituting the building blocks of compounds.",
-        audioExplanation: `### Molecules\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! Molecules are groups of two or more atoms bonded together.\nFor instance, a water molecule (H₂O) consists of two hydrogen atoms and one oxygen atom.\nMolecules can be either made up of the same type of atoms (like O₂, which is oxygen gas) or different types of atoms (like H₂O, which is water).\nThese molecules are crucial in chemistry as they are the substances that undergo chemical reactions.`
+        detailedExplanation: "Molecules are formed when two or more atoms chemically bond together. They can consist of the same or different types of atoms, constituting the building blocks of compounds.",
+        audioExplanation: "Of course! Molecules are groups of two or more atoms bonded together. For instance, a water molecule (H₂O) consists of two hydrogen atoms and one oxygen atom. Molecules can be either made up of the same type of atoms (like O₂, which is oxygen gas) or different types of atoms (like H₂O, which is water). These molecules are crucial in chemistry as they are the substances that undergo chemical reactions."
     },
     {
         order: 19,
@@ -188,8 +188,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The bond between hydrogen and oxygen in water is a chemical bond.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Chemical bonds are the connections formed between atoms when they share or transfer electrons. \nThe main types of chemical bonds are ionic, covalent, and metallic bonds.",
-        audioExplanation: `### Chemical Bonds\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Chemical bonds are the forces that hold atoms together in a molecule.\nThere are a few different kinds of bonds, but the two most common are ionic bonds and covalent bonds.\nIn a covalent bond, atoms share electrons, while in an ionic bond, one atom donates electrons to another.\nFor example, in a water molecule (H₂O), hydrogen and oxygen are held together by covalent bonds, allowing them to exist as one single molecule!`
+        detailedExplanation: "Chemical bonds are the connections formed between atoms when they share or transfer electrons. The main types of chemical bonds are ionic, covalent, and metallic bonds.",
+        audioExplanation: "Sure! Chemical bonds are the forces that hold atoms together in a molecule. There are a few different kinds of bonds, but the two most common are ionic bonds and covalent bonds. In a covalent bond, atoms share electrons, while in an ionic bond, one atom donates electrons to another. For example, in a water molecule (H₂O), hydrogen and oxygen are held together by covalent bonds, allowing them to exist as one single molecule!"
     },
     {
         order: 20,
@@ -199,7 +199,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Compounds are substances composed of two or more different elements that are chemically bonded together in specific ratios, resulting in unique properties that are different from those of the individual elements.",
-        audioExplanation: `### Compounds\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nAbsolutely! Compounds are substances formed when two or more different elements bond together chemically.\nThis bond creates a new substance with its own unique properties.\nFor example, sodium chloride (NaCl), commonly known as table salt, is a compound made of sodium (Na) and chlorine (Cl).\nWhen these elements combine, they create sodium chloride, which is very different from either sodium or chlorine on their own.`
+        audioExplanation: "Absolutely! Compounds are substances formed when two or more different elements bond together chemically. This bond creates a new substance with its own unique properties. For example, sodium chloride (NaCl), commonly known as table salt, is a compound made of sodium (Na) and chlorine (Cl). When these elements combine, they create sodium chloride, which is very different from either sodium or chlorine on their own."
     },
     {
         order: 21,
@@ -208,8 +208,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "In water (H2O), the atomic ratio of hydrogen to oxygen is 2:1.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Atomic ratios describe the proportion of different types of atoms present in a chemical compound. \nThese ratios are essential for understanding molecular composition and formulas.",
-        audioExplanation: `### Atomic Ratios\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Atomic ratios tell us how many of each type of atom are present in a molecule.\nFor example, in water (H₂O), there are two hydrogen atoms for every one oxygen atom, so we say the atomic ratio of hydrogen to oxygen is 2:1.\nUnderstanding these ratios is important because they help chemists know how elements combine and react with one another.`
+        detailedExplanation: "Atomic ratios describe the proportion of different types of atoms present in a chemical compound. These ratios are essential for understanding molecular composition and formulas.",
+        audioExplanation: "Sure! Atomic ratios tell us how many of each type of atom are present in a molecule. For example, in water (H₂O), there are two hydrogen atoms for every one oxygen atom, so we say the atomic ratio of hydrogen to oxygen is 2:1. Understanding these ratios is important because they help chemists know how elements combine and react with one another."
     },
     {
         order: 22,
@@ -218,8 +218,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A ball-and-stick model can show how atoms are connected in a molecule.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Models of molecules are visual tools used to represent the structures of molecules, showing how atoms are arranged and connected. \nCommon models include ball-and-stick and space-filling models.",
-        audioExplanation: `### Models of Molecules\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! Models of molecules are visual representations that help us understand how atoms are arranged and bonded in a molecule.\nFor example, a ball-and-stick model uses balls to represent atoms and sticks to show the bonds between them.\nThese models are useful for visualizing the spatial arrangement of atoms in complex molecules, enhancing our understanding of their structure and behavior.\nThey can help chemists predict how molecules will interact in reactions!`
+        detailedExplanation: "Models of molecules are visual tools used to represent the structures of molecules, showing how atoms are arranged and connected. Common models include ball-and-stick and space-filling models.",
+        audioExplanation: "Of course! Models of molecules are visual representations that help us understand how atoms are arranged and bonded in a molecule. For example, a ball-and-stick model uses balls to represent atoms and sticks to show the bonds between them. These models are useful for visualizing the spatial arrangement of atoms in complex molecules, enhancing our understanding of their structure and behavior. They can help chemists predict how molecules will interact in reactions!"
     },
     {
         order: 23,
@@ -228,8 +228,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Plastic is a complex molecule made of long chains of repeating units.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Complex molecules are large structures formed from many atoms that are intricately bonded together. \nTheir properties are determined by both their atomic composition and the arrangement of those atoms.",
-        audioExplanation: `### Complex Molecules\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Complex molecules are large compounds composed of long chains of smaller repeating units.\nFor example, plastic is a complex polymer made up of long chains of monomers that are chemically bonded together.\nThese molecules have unique properties because their size and structure affect how they behave, making them different from simple molecules.\nUnderstanding complex molecules is important in materials science and chemistry because it helps us design new materials!`
+        detailedExplanation: "Complex molecules are large structures formed from many atoms that are intricately bonded together. Their properties are determined by both their atomic composition and the arrangement of those atoms.",
+        audioExplanation: "Sure! Complex molecules are large compounds composed of long chains of smaller repeating units. For example, plastic is a complex polymer made up of long chains of monomers that are chemically bonded together. These molecules have unique properties because their size and structure affect how they behave, making them different from simple molecules. Understanding complex molecules is important in materials science and chemistry because it helps us design new materials!"
     },
     {
         order: 24,
@@ -238,8 +238,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Rubber is a polymer made of many small units linked together.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Polymers are a type of complex molecule consisting of long chains formed by the chemical bonding of smaller molecules called monomers.\nThey have diverse properties and uses, ranging from plastics to natural substances like proteins.",
-        audioExplanation: `### Polymers\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nDefinitely! Polymers are large molecules made up of repeating units called monomers.\nYou can think of them like a train, where the train cars are the monomers linked together to form a long chain. \nFor instance, rubber is a polymer that consists of many small units linked together to create a flexible and durable material.\nPolymers are present in many everyday items, and their properties can vary widely based on their structure!`
+        detailedExplanation: "Polymers are a type of complex molecule consisting of long chains formed by the chemical bonding of smaller molecules called monomers. They have diverse properties and uses, ranging from plastics to natural substances like proteins.",
+        audioExplanation: "Definitely! Polymers are large molecules made up of repeating units called monomers. You can think of them like a train, where the train cars are the monomers linked together to form a long chain. For instance, rubber is a polymer that consists of many small units linked together to create a flexible and durable material. Polymers are present in many everyday items, and their properties can vary widely based on their structure!"
     },
     {
         order: 25,
@@ -248,8 +248,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Salt crystals form a regular pattern when salt is dissolved and then evaporates.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Crystals are solid materials where the atoms are organized in a regularly repeating arrangement, leading to unique geometric shapes. \nThis ordered arrangement gives crystals their distinct physical properties.",
-        audioExplanation: `### Crystals\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Crystals are solid substances where the atoms are arranged in a highly ordered, repeating pattern.\nThis regular arrangement results in specific shapes and structures.\nFor example, when salt (sodium chloride) is dissolved in water and the water evaporates, the salt crystallizes back into a regular geometric shape. \nCrystals often have nice smooth surfaces and unique colors, and they play important roles in chemistry and materials science.`
+        detailedExplanation: "Crystals are solid materials where the atoms are organized in a regularly repeating arrangement, leading to unique geometric shapes. This ordered arrangement gives crystals their distinct physical properties.",
+        audioExplanation: "Sure! Crystals are solid substances where the atoms are arranged in a highly ordered, repeating pattern. This regular arrangement results in specific shapes and structures. For example, when salt (sodium chloride) is dissolved in water and the water evaporates, the salt crystallizes back into a regular geometric shape. Crystals often have nice smooth surfaces and unique colors, and they play important roles in chemistry and materials science."
     },
     {
         order: 26,
@@ -258,8 +258,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Copper is a metal used in electrical wires because it conducts electricity well.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Metals are elements characterized by their hard texture, luster, and ability to conduct heat and electricity.\nThey typically lose electrons in chemical reactions.",
-        audioExplanation: `### Metals\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Metals are a group of elements known for their shiny appearance, hardness, and excellent conduction of heat and electricity.\nFor instance, copper is a common metal that is often used in electrical wires because it conducts electricity very well.\nIn general, metals tend to lose electrons during chemical reactions, which makes them reactive.`
+        detailedExplanation: "Metals are elements characterized by their hard texture, luster, and ability to conduct heat and electricity. They typically lose electrons in chemical reactions.",
+        audioExplanation: "Sure! Metals are a group of elements known for their shiny appearance, hardness, and excellent conduction of heat and electricity. For instance, copper is a common metal that is often used in electrical wires because it conducts electricity very well. In general, metals tend to lose electrons during chemical reactions, which makes them reactive."
     },
     {
         order: 27,
@@ -268,8 +268,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The arrangement of atoms in steel makes it strong and durable.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "The properties of materials depend on their atomic composition (the types and amounts of atoms) and the structural arrangement of these atoms.\nFor example, the tightly packed atoms in steel give it strength.",
-        audioExplanation: `### How a material’s properties are influenced by both its atomic composition and structure\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nAbsolutely! The properties of materials are significantly influenced by both their atomic composition and how those atoms are arranged.\nFor example, in steel, the specific arrangement of iron and carbon atoms gives it strength and durability. \nConversely, if you change the structure or composition, like in glass, it results in a completely different set of properties!`
+        detailedExplanation: "The properties of materials depend on their atomic composition (the types and amounts of atoms) and the structural arrangement of these atoms. For example, the tightly packed atoms in steel give it strength.",
+        audioExplanation: "Absolutely! The properties of materials are significantly influenced by both their atomic composition and how those atoms are arranged. For example, in steel, the specific arrangement of iron and carbon atoms gives it strength and durability. Conversely, if you change the structure or composition, like in glass, it results in a completely different set of properties!"
     },
     {
         order: 28,
@@ -278,8 +278,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "You can use a scale to measure the mass of a book.",
         topic: "Chemistry",
         lesson: "Measurement Techniques",
-        detailedExplanation: "To measure different properties:\n- Mass is measured using a balance scale, which provides the amount of substance in grams or kilograms.\n- Weight is measured using a spring scale, indicating the force of gravity on an object.\n- Volume can be measured using a graduated cylinder for liquids or the displacement method for solids, and density is calculated by dividing mass by volume.",
-        audioExplanation: `### How could you measure mass, weight, volume, or density?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! There are different tools to measure various properties of materials:\n- **Mass** is measured with a balance scale to find out how much matter an object contains.\n- **Weight** is measured using a spring scale that measures the gravitational pull on an object.\n- **Volume** can be measured with a graduated cylinder to gauge liquids, or you can use the displacement method for solids.\n- Finally, you can calculate **Density** using the formula D = m/v, where m is mass, and v is volume.`
+        detailedExplanation: "To measure different properties: Mass is measured using a balance scale, which provides the amount of substance in grams or kilograms. Weight is measured using a spring scale, indicating the force of gravity on an object. Volume can be measured using a graduated cylinder for liquids or the displacement method for solids, and density is calculated by dividing mass by volume.",
+        audioExplanation: "Sure! There are different tools to measure various properties of materials: Mass is measured with a balance scale to find out how much matter an object contains. Weight is measured using a spring scale that measures the gravitational pull on an object. Volume can be measured with a graduated cylinder to gauge liquids, or you can use the displacement method for solids. Finally, you can calculate Density using the formula D = m/v, where m is mass, and v is volume."
     },
     {
         order: 29,
@@ -288,17 +288,19 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "The melting point of ice is a physical property; burning wood is a chemical property.",
         topic: "Chemistry",
         lesson: "Properties of Matter",
-        detailedExplanation: "Physical properties can be observed or measured without changing the substance's chemical composition, like color, melting point, or boiling point.\nChemical properties describe how a substance reacts or changes when in contact with other substances, such as flammability or acidity.",
-        audioExplanation: `### What are examples of physical / chemical properties, how are they different?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! There are two main types of properties we look at: physical and chemical.\n- **Physical properties** are characteristics that you can observe without altering the substance itself, like color or melting point.\n- **Chemical properties**, on the other hand, relate to how a substance interacts with other substances, leading to a change in its composition, like burning.\nFor example, the melting point of ice is a physical property since it can melt without becoming something else.\nIn contrast, burning wood results in ash, a completely different substance, showing a chemical change!`
-    },    {
+        detailedExplanation: "Physical properties can be observed or measured without changing the substance's chemical composition, like color, melting point, or boiling point. Chemical properties describe how a substance reacts or changes when in contact with other substances, such as flammability or acidity.",
+        audioExplanation: "Of course! There are two main types of properties we look at: physical and chemical. Physical properties are characteristics that you can observe without altering the substance itself, like color or melting point. Chemical properties, on the other hand, relate to how a substance interacts with other substances, leading to a change in its composition, like burning. For example, the melting point of ice is a physical property since it can melt without becoming something else. In contrast, burning wood results in ash, a completely different substance, showing a chemical change!"
+    },
+    {
         order: 30,
         front: "Given a periodic table, identify an element’s properties.",
         back: "Use the atomic number, symbol, and atomic mass to determine the element’s identity and properties.",
         example: "Looking at the periodic table, you can see that oxygen has the symbol O and an atomic number of 8.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "The periodic table provides a wealth of information about each element, including:\n- Atomic number: indicates the number of protons.\n- Symbol: represents the element.\n- Atomic mass: gives the average mass of the atoms.\nUsing this information helps pinpoint the specific properties of each element.",
-        audioExplanation: `### Given a periodic table, identify an element’s properties.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! The periodic table is a useful tool that gives us important information about each element!\nYou can identify an element's properties by looking up its atomic number, symbol, and atomic mass.\nFor example, oxygen has the chemical symbol O and an atomic number of 8, meaning it has 8 protons in its nucleus.\nThis information can help you understand the element's behavior and its role in chemical reactions!`    },
+        detailedExplanation: "The periodic table provides a wealth of information about each element, including: Atomic number: indicates the number of protons. Symbol: represents the element. Atomic mass: gives the average mass of the atoms. Using this information helps pinpoint the specific properties of each element.",
+        audioExplanation: "Of course! The periodic table is a useful tool that gives us important information about each element! You can identify an element's properties by looking up its atomic number, symbol, and atomic mass. For example, oxygen has the chemical symbol O and an atomic number of 8, meaning it has 8 protons in its nucleus. This information can help you understand the element's behavior and its role in chemical reactions!"
+    },
     {
         order: 31,
         front: "What are the similarities and differences of atoms, molecules, and compounds?",
@@ -307,7 +309,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Basic Units of Matter",
         detailedExplanation: "Atoms are the smallest units of elements that maintain their chemical identity. Molecules consist of two or more atoms bonded together, which can be of the same or different elements. Compounds specifically refer to molecules made of two or more different elements.",
-        audioExplanation: `### What are the similarities and differences of atoms, molecules, and compounds?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Let's break it down:\n- **Atoms** are the smallest units of an element and cannot be broken down further. They represent the basic building blocks of matter.\n- **Molecules** are formed when two or more atoms bond together. They can be made up of the same type of atom, like O₂ (molecular oxygen), or different types of atoms, like H₂O (water).\n- **Compounds** are special types of molecules that consist of at least two different elements bonded together, like water.\nSo, for example, an oxygen atom is just an atom, while O₂ is a molecule of oxygen, and H₂O is a compound made of hydrogen and oxygen.`    },
+        audioExplanation: "Sure! Let's break it down: Atoms are the smallest units of an element and cannot be broken down further. They represent the basic building blocks of matter. Molecules are formed when two or more atoms bond together. They can be made up of the same type of atom, like O₂ (molecular oxygen), or different types of atoms, like H₂O (water). Compounds are special types of molecules that consist of at least two different elements bonded together, like water. So, for example, an oxygen atom is just an atom, while O₂ is a molecule of oxygen, and H₂O is a compound made of hydrogen and oxygen."
+    },
     {
         order: 32,
         front: "Be able to draw a molecular model for a given molecule, or vice versa.",
@@ -316,7 +319,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Molecular Structures",
         detailedExplanation: "Drawing molecular models helps visualize the arrangement of atoms and the bonds between them. For example, for a water molecule (H₂O), you would represent the oxygen atom at the center with two hydrogen atoms connected to it.",
-        audioExplanation: "```Think of molecules as little models or structures made up of atoms (which are the basic building blocks of everything). When we talk about drawing a molecular model, we're basically trying to show how these atoms are connected to each other in a molecule.\n\nFor instance, imagine playing with building blocks. Each block represents an atom, and the way you connect them represents the bonds between atoms. If someone asks you to draw a water molecule, you need to show how two hydrogen atoms are attached to one oxygen atom.\n\nIn the actual molecular model, we use single lines to show where the atoms are connected. So for water (H₂O):\n- You start with one oxygen (O) atom.\n- Then you attach two hydrogen (H) atoms to it.\n\nHere's a simple drawing:\n```\n   H\n   |\n O\n   |\n   H\n```\nThis visual helps us understand how the atoms fit together. And if you're given a model and need to identify it, look at the arrangement of the atoms and ask yourself which molecule fits that arrangement.\n```",
+        audioExplanation: "Think of molecules as little models or structures made up of atoms (which are the basic building blocks of everything). When we talk about drawing a molecular model, we're basically trying to show how these atoms are connected to each other in a molecule. For instance, imagine playing with building blocks. Each block represents an atom, and the way you connect them represents the bonds between atoms. If someone asks you to draw a water molecule, you need to show how two hydrogen atoms are attached to one oxygen atom. In the actual molecular model, we use single lines to show where the atoms are connected. So for water (H₂O): You start with one oxygen (O) atom. Then you attach two hydrogen (H) atoms to it. Here's a simple drawing: H O H. This visual helps us understand how the atoms fit together. And if you're given a model and need to identify it, look at the arrangement of the atoms and ask yourself which molecule fits that arrangement."
     },
     {
         order: 33,
@@ -326,7 +329,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Experimental Procedures",
         detailedExplanation: "To identify an unknown substance, measure its physical properties (such as melting point and boiling point) and chemical properties (like reactivity with acids or bases). Then, compare these measurements with known substances to narrow down the possibilities.",
-        audioExplanation: `### Describe an experimental procedure to identify an unknown substance by comparing to known substances and their properties.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nAbsolutely! Identifying an unknown substance involves comparing its properties to those of known substances.\nStart by measuring the physical properties, like melting point or density.\nThen, check its chemical properties by observing how it reacts with acids or bases, which can give a lot of clues.\nFor example, if you have an unknown powder, you can compare its melting point to that of known substances and see if they match!\nThis step-by-step approach helps confirm your findings and identify the substance accurately.`
+        audioExplanation: "Absolutely! Identifying an unknown substance involves comparing its properties to those of known substances. Start by measuring the physical properties, like melting point or density. Then, check its chemical properties by observing how it reacts with acids or bases, which can give a lot of clues. For example, if you have an unknown powder, you can compare its melting point to that of known substances and see if they match! This step-by-step approach helps confirm your findings and identify the substance accurately."
     },
     {
         order: 34,
@@ -335,8 +338,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "Rubber (polymer) can stretch, while salt (crystal) is hard and breaks easily.",
         topic: "Chemistry",
         lesson: "Properties of Structures",
-        detailedExplanation: "Different types of extended structures exhibit unique properties:\n- **Polymers** are large molecules that are often flexible and durable due to their long-chain structures.\n- **Crystals** have a highly ordered arrangement of atoms, making them hard and often brittle.\n- **Metals** display characteristics such as conductivity and malleability, allowing them to be shaped easily.",
-        audioExplanation: `### Compare and contrast the properties that different extended structures molecules could have.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nCertainly! Different types of extended structures, like polymers, crystals, and metals, have distinct properties based on how their atoms are arranged:\n- **Polymers** are flexible and durable because they consist of long chains of repeating units.\nFor example, rubber can stretch without breaking.\n- **Crystals** are hard and brittle due to the orderly arrangement of their atoms; for instance, salt crystals have a structured pattern that makes them easy to break.\n- **Metals** are conductive and malleable, meaning they can be shaped without breaking while still allowing electricity to flow through them.\nUnderstanding these differences helps in choosing materials for specific applications!`
+        detailedExplanation: "Different types of extended structures exhibit unique properties: Polymers are large molecules that are often flexible and durable due to their long-chain structures. Crystals have a highly ordered arrangement of atoms, making them hard and often brittle. Metals display characteristics such as conductivity and malleability, allowing them to be shaped easily.",
+        audioExplanation: "Certainly! Different types of extended structures, like polymers, crystals, and metals, have distinct properties based on how their atoms are arranged: Polymers are flexible and durable because they consist of long chains of repeating units. For example, rubber can stretch without breaking. Crystals are hard and brittle due to the orderly arrangement of their atoms; for instance, salt crystals have a structured pattern that makes them easy to break. Metals are conductive and malleable, meaning they can be shaped without breaking while still allowing electricity to flow through them. Understanding these differences helps in choosing materials for specific applications!"
     },
     {
         order: 35,
@@ -346,7 +349,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Density Concepts",
         detailedExplanation: "Density is defined as mass divided by volume (D = m/v). If two objects have the same mass but different volumes, the object with the smaller volume will have a higher density, because the mass is concentrated more closely together in a smaller space.",
-        audioExplanation: `### If different objects have the same mass, the most dense one has which volume?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Density measures how much mass is contained in a given volume, calculated with the formula D = m/v.\nIf two objects have the same mass but different volumes, the one with a smaller volume is denser because it has the same mass packed into a smaller space.\nFor instance, if you compare a small rock and a big sponge, both weigh the same, but the rock is much denser because it takes up less space!`
+        audioExplanation: "Sure! Density measures how much mass is contained in a given volume, calculated with the formula D = m/v. If two objects have the same mass but different volumes, the one with a smaller volume is denser because it has the same mass packed into a smaller space. For instance, if you compare a small rock and a big sponge, both weigh the same, but the rock is much denser because it takes up less space!"
     },
     {
         order: 36,
@@ -356,7 +359,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Properties of Matter",
         detailedExplanation: "Melting point is considered a physical property because it describes the temperature at which a substance changes from solid to liquid without altering its chemical identity.",
-        audioExplanation: `### Which of the following is not a chemical property?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! The melting point of a substance is a physical property, not a chemical one.\nPhysical properties describe characteristics that can be observed or measured without changing the substance itself.\nIn contrast, chemical properties relate to how a substance reacts or behaves in a chemical reaction, leading to a change in composition. For example, burning wood involves a chemical change, creating ash and smoke, while ice melting simply transforms into water without changing its chemical identity!`
+        audioExplanation: "Sure! The melting point of a substance is a physical property, not a chemical one. Physical properties describe characteristics that can be observed or measured without changing the substance itself. In contrast, chemical properties relate to how a substance reacts or behaves in a chemical reaction, leading to a change in composition. For example, burning wood involves a chemical change, creating ash and smoke, while ice melting simply transforms into water without changing its chemical identity!"
     },
     {
         order: 37,
@@ -366,7 +369,8 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Gold is represented by the symbol Au in the periodic table, derived from its Latin name 'aurum'. It is a highly valued metal known for its beauty and resistance to corrosion.",
-        audioExplanation: `### What is the symbol for gold?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! The symbol for gold is Au, which comes from the Latin word 'aurum.'\nIn the periodic table, each element has a unique symbol made up of one or two letters.\nSo, when you see Au, you know it represents gold, which is a valuable metal often used in jewelry and electronics!`    },
+        audioExplanation: "Of course! The symbol for gold is Au, which comes from the Latin word 'aurum.' In the periodic table, each element has a unique symbol made up of one or two letters. So, when you see Au, you know it represents gold, which is a valuable metal often used in jewelry and electronics!"
+    },
     {
         order: 38,
         front: "The symbol Sb is for what element?",
@@ -375,7 +379,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Antimony is represented by the symbol Sb in the periodic table. This symbol is derived from its Latin name 'stibium', a term used in ancient times.",
-        audioExplanation: `### The symbol Sb is for what element?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! The symbol Sb represents the element antimony.\nThis symbol comes from its Latin name 'stibium'.\nIn the periodic table, many elements have symbols rooted in Latin or Greek, relating to their historical discovery or usage. So next time you see Sb, just remember it stands for antimony!`
+        audioExplanation: "Sure! The symbol Sb represents the element antimony. This symbol comes from its Latin name 'stibium'. In the periodic table, many elements have symbols rooted in Latin or Greek, relating to their historical discovery or usage. So next time you see Sb, just remember it stands for antimony!"
     },
     {
         order: 39,
@@ -385,7 +389,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Boron, with the atomic number of 5, has 5 protons in its nucleus and is placed in group 13 of the periodic table.",
-        audioExplanation: `### Which element has an atomic number of 5?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nAbsolutely! The element with an atomic number of 5 is boron.\nThe atomic number indicates how many protons are in the nucleus of an atom.\nBoron is found in group 13 of the periodic table and plays a significant role in various chemical reactions and compounds!`
+        audioExplanation: "Absolutely! The element with an atomic number of 5 is boron. The atomic number indicates how many protons are in the nucleus of an atom. Boron is found in group 13 of the periodic table and plays a significant role in various chemical reactions and compounds!"
     },
     {
         order: 40,
@@ -395,7 +399,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Noble gases are located in Group 18 of the periodic table and are known for their low reactivity due to having a full valence electron shell. Examples include helium (He) and neon (Ne).",
-        audioExplanation: `### Which group is known as the noble gases?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nOf course! Noble gases are classified in Group 18 on the periodic table.\nThey are known for their unique properties, such as being colorless, odorless, and highly unreactive because they have a complete set of electrons in their outer shell. \nExamples of noble gases include helium (He) and neon (Ne), which are often used in lighting and signs!`
+        audioExplanation: "Of course! Noble gases are classified in Group 18 on the periodic table. They are known for their unique properties, such as being colorless, odorless, and highly unreactive because they have a complete set of electrons in their outer shell. Examples of noble gases include helium (He) and neon (Ne), which are often used in lighting and signs!"
     },
     {
         order: 41,
@@ -405,7 +409,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Potassium is classified as a metal, specifically an alkali metal, and is known for its shiny appearance and reactivity with water, producing hydrogen gas.",
-        audioExplanation: `### The element of potassium is a metal.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nYes, that statement is true! Potassium is indeed a metal.\nAs an alkali metal, it is soft and shiny and reacts vigorously with water, often producing hydrogen gas in the process. \nIts metallic properties are typical of alkali metals, making it interesting in chemical reactions!`
+        audioExplanation: "Yes, that statement is true! Potassium is indeed a metal. As an alkali metal, it is soft and shiny and reacts vigorously with water, often producing hydrogen gas in the process. Its metallic properties are typical of alkali metals, making it interesting in chemical reactions!"
     },
     {
         order: 42,
@@ -415,7 +419,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Mixtures vs. Pure Substances",
         detailedExplanation: "English breakfast tea is a mixture because it contains various compounds such as tannins, caffeine, and flavors, rather than a single type of particle.",
-        audioExplanation: `### English breakfast tea is an example of a pure substance.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nThat's false! English breakfast tea is actually a mixture, not a pure substance.\nA pure substance consists of only one type of particle, whereas tea contains various components such as water, caffeine, and flavors, making it a complex mixture of compounds. Remember, mixtures can have varying proportions of different substances!`
+        audioExplanation: "That's false! English breakfast tea is actually a mixture, not a pure substance. A pure substance consists of only one type of particle, whereas tea contains various components such as water, caffeine, and flavors, making it a complex mixture of compounds. Remember, mixtures can have varying proportions of different substances!"
     },
     {
         order: 43,
@@ -425,7 +429,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Molecules",
         detailedExplanation: "Chlorine gas (Cl₂) is indeed a molecule, consisting of two chlorine atoms covalently bonded together to form a diatomic molecule.",
-        audioExplanation: `### Chlorine gas, Cl2, is a molecule.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nThat's true! Chlorine gas (Cl₂) is a molecule made up of two chlorine atoms covalently bonded together.\nMolecules can consist of two or more atoms of the same or different elements, and in this case, the two chlorine atoms share electrons, making Cl₂ a diatomic molecule. Good to remember that many gases exist as diatomic molecules!`
+        audioExplanation: "That's true! Chlorine gas (Cl₂) is a molecule made up of two chlorine atoms covalently bonded together. Molecules can consist of two or more atoms of the same or different elements, and in this case, the two chlorine atoms share electrons, making Cl₂ a diatomic molecule. Good to remember that many gases exist as diatomic molecules!"
     },
     {
         order: 44,
@@ -435,7 +439,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Compounds",
         detailedExplanation: "Water (H₂O) is classified as a compound because it consists of two different elements, hydrogen and oxygen, chemically bonded together in a fixed ratio.",
-        audioExplanation: `### Which of the following is an example of a compound?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nAbsolutely! Water (H₂O) is a prime example of a compound.\nCompounds are formed when two or more different elements bond chemically in fixed proportions.\nIn the case of water, two hydrogen atoms bond with one oxygen atom, resulting in a unique substance that differs from either hydrogen or oxygen alone!`
+        audioExplanation: "Absolutely! Water (H₂O) is a prime example of a compound. Compounds are formed when two or more different elements bond chemically in fixed proportions. In the case of water, two hydrogen atoms bond with one oxygen atom, resulting in a unique substance that differs from either hydrogen or oxygen alone!"
     },
     {
         order: 45,
@@ -445,7 +449,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Molecular Structures",
         detailedExplanation: "In carbon dioxide (CO₂), the carbon atom is positioned in the center, bonded to two oxygen atoms, which creates a linear molecular structure.",
-        audioExplanation: `### Carbon dioxide is a molecule with which atom in the center?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nGreat question! In carbon dioxide (CO₂), the center atom is carbon.\nThis molecule consists of one carbon atom bonded to two oxygen atoms on either side, creating a linear shape. \nUnderstanding the arrangement of atoms in CO₂ helps clarify its behavior and interaction with other substances in the environment!`
+        audioExplanation: "Great question! In carbon dioxide (CO₂), the center atom is carbon. This molecule consists of one carbon atom bonded to two oxygen atoms on either side, creating a linear shape. Understanding the arrangement of atoms in CO₂ helps clarify its behavior and interaction with other substances in the environment!"
     },
     {
         order: 46,
@@ -455,7 +459,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Atomic Structure",
         detailedExplanation: "The atomic number is a unique identifier for each element, representing the number of protons found in the nucleus of its atoms. It determines the element's identity.",
-        audioExplanation: `### What is the atomic number defined by?\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nCertainly! The atomic number is defined by the number of protons present in an atom’s nucleus.\nThis number is crucial because it determines the identity of the element, like hydrogen has an atomic number of 1, while oxygen has an atomic number of 8.\nSo, whenever you see an atomic number, you can easily identify which element it corresponds to!`
+        audioExplanation: "Certainly! The atomic number is defined by the number of protons present in an atom’s nucleus. This number is crucial because it determines the identity of the element, like hydrogen has an atomic number of 1, while oxygen has an atomic number of 8. So, whenever you see an atomic number, you can easily identify which element it corresponds to!"
     },
     {
         order: 47,
@@ -465,7 +469,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Historical Chemistry",
         detailedExplanation: "Alchemy is an ancient practice that combined elements of chemistry, philosophy, and mysticism. One of its primary goals was the transmutation of base metals, such as lead, into noble metals like gold.",
-        audioExplanation: `### Alchemy was the study of attempting to turn lead into...\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nCorrect! Alchemy was an early form of chemistry where practitioners aimed to transform common metals like lead into precious metals like gold.\nThey also sought the philosopher's stone, which they believed could grant eternal life or turn base metals into gold.\nThough modern chemistry has evolved significantly, alchemy laid down the groundwork for scientific exploration in materials and transformation!`
+        audioExplanation: "Correct! Alchemy was an early form of chemistry where practitioners aimed to transform common metals like lead into precious metals like gold. They also sought the philosopher's stone, which they believed could grant eternal life or turn base metals into gold. Though modern chemistry has evolved significantly, alchemy laid down the groundwork for scientific exploration in materials and transformation!"
     },
     {
         order: 48,
@@ -475,7 +479,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Chemical Bonds",
         detailedExplanation: "Molecules consist of atoms that are held together by chemical bonds, which involve the sharing or transferring of electrons between atoms, resulting in a stable association.",
-        audioExplanation: `### Molecules contain atoms held together by...\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nThat's right! Molecules contain atoms that are held together by chemical bonds, like covalent or ionic bonds.\nIn water (H₂O), the hydrogen and oxygen atoms are bonded through covalent bonds, where they share electrons, resulting in a stable molecule. Understanding these bonds is essential because they define how molecules interact and participate in chemical reactions!`
+        audioExplanation: "That's right! Molecules contain atoms that are held together by chemical bonds, like covalent or ionic bonds. In water (H₂O), the hydrogen and oxygen atoms are bonded through covalent bonds, where they share electrons, resulting in a stable molecule. Understanding these bonds is essential because they define how molecules interact and participate in chemical reactions!"
     },
     {
         order: 49,
@@ -485,7 +489,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Compounds",
         detailedExplanation: "Sodium chloride (NaCl), commonly known as table salt, is a compound formed from the chemical combination of sodium (Na) and chlorine (Cl) in a fixed ratio of 1:1.",
-        audioExplanation: `### Sodium chloride, or table salt, is an example of a...\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nYes! Sodium chloride, or table salt, is indeed a compound.\nA compound is created when two or more different elements bond together chemically. In this case, sodium and chlorine bond in a 1:1 ratio to form NaCl, which we commonly use in cooking!`
+        audioExplanation: "Yes! Sodium chloride, or table salt, is indeed a compound. A compound is created when two or more different elements bond together chemically. In this case, sodium and chlorine bond in a 1:1 ratio to form NaCl, which we commonly use in cooking!"
     },
     {
         order: 50,
@@ -495,7 +499,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Elements in the same period (row) of the periodic table may have different properties because they represent a series of elements with varying atomic numbers and electron configurations.",
-        audioExplanation: `### Elements in the same row in the periodic table are likely to have similar properties.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nThat's false! Elements in the same row (known as periods) do not necessarily have similar properties.\nFor example, in the second period, lithium (a metal) and fluorine (a nonmetal) are both in the same row, yet they have different characteristics. In contrast, elements in the same column (group) tend to share similar properties!`
+        audioExplanation: "That's false! Elements in the same row (known as periods) do not necessarily have similar properties. For example, in the second period, lithium (a metal) and fluorine (a nonmetal) are both in the same row, yet they have different characteristics. In contrast, elements in the same column (group) tend to share similar properties!"
     },
     {
         order: 51,
@@ -505,7 +509,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Periodic Table",
         detailedExplanation: "Elements in the same group of the periodic table have similar chemical properties due to their having the same number of valence electrons, influencing their reactivity.",
-        audioExplanation: `### Elements in the same column (or group) in the periodic table are likely to have similar properties.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nYes, that is true! Elements in the same column, or group, in the periodic table typically exhibit similar properties.\nThey share the same number of valence electrons, which dictates how they react with other elements. For instance, sodium (Na) and potassium (K) are both in Group 1 and demonstrate similar reactivity when they react with water!`
+        audioExplanation: "Yes, that is true! Elements in the same column, or group, in the periodic table typically exhibit similar properties. They share the same number of valence electrons, which dictates how they react with other elements. For instance, sodium (Na) and potassium (K) are both in Group 1 and demonstrate similar reactivity when they react with water!"
     },
     {
         order: 52,
@@ -515,7 +519,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Measurement",
         detailedExplanation: "Volume quantifies the amount of three-dimensional space an object occupies, typically measured in liters or cubic meters.",
-        audioExplanation: `### Volume is a measure of...\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nSure! Volume is a measure of the space that an object takes up.\nFor example, when you look at a box, its volume tells you how much space is inside it, which can be measured in liters or cubic meters.\nDifferent methods exist to measure volume, like using graduated cylinders for liquids or measuring dimensions for solid objects. Understanding volume helps with everything from cooking to constructing!`
+        audioExplanation: "Sure! Volume is a measure of the space that an object takes up. For example, when you look at a box, its volume tells you how much space is inside it, which can be measured in liters or cubic meters. Different methods exist to measure volume, like using graduated cylinders for liquids or measuring dimensions for solid objects. Understanding volume helps with everything from cooking to constructing!"
     },
     {
         order: 53,
@@ -525,7 +529,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Weight and Mass",
         detailedExplanation: "Mass is the amount of matter in an object and remains constant regardless of gravity. Weight, however, depends on gravitational force and will change in different gravitational fields.",
-        audioExplanation: `### Mass changes depending on the amount of gravity something experiences.\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nThat statement is false! Mass does not change based on gravity; it is simply the amount of matter in an object.\nFor instance, an astronaut's mass remains the same whether they are on Earth or the Moon. However, their weight—how much gravity pulls on that mass—changes. On the Moon, they weigh less due to weaker gravity!`
+        audioExplanation: "That statement is false! Mass does not change based on gravity; it is simply the amount of matter in an object. For instance, an astronaut's mass remains the same whether they are on Earth or the Moon. However, their weight—how much gravity pulls on that mass—changes. On the Moon, they weigh less due to weaker gravity!"
     },
     {
         order: 54,
@@ -535,5 +539,6 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Air Composition",
         detailedExplanation: "Nitrogen gas (N₂) constitutes the majority of Earth's atmosphere, making up approximately 78% of the air we breathe. It is a diatomic molecule consisting of two nitrogen atoms bonded together.",
-        audioExplanation: `### The most common molecule in the air is...\n**Question: "I'm really confused. I don't understand it. Can you please explain it to me in a way that helps me understand it better?"**\n\n**Answer:**\nYes! The most common molecule in the air is nitrogen, specifically in the form of nitrogen gas (N₂).\nAbout 78% of the atmosphere is made up of nitrogen, which is a diatomic molecule composed of two nitrogen atoms bonded together. \nThis high concentration explains why nitrogen is so important in chemistry and biology, even though it is relatively inert and does not readily react under normal conditions!`    }
+        audioExplanation: "Yes! The most common molecule in the air is nitrogen, specifically in the form of nitrogen gas (N₂). About 78% of the atmosphere is made up of nitrogen, which is a diatomic molecule composed of two nitrogen atoms bonded together. This high concentration explains why nitrogen is so important in chemistry and biology, even though it is relatively inert and does not readily react under normal conditions!"
+    }
 ];

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "latest",
+    "@cartesia/cartesia-js": "^1.0.3",
     "@deepgram/sdk": "^3.7.0",
     "@hookform/resolvers": "latest",
     "@nextui-org/react": "^2.4.8",

@@ -1,8 +1,9 @@
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Shuffle } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Flashcard, AiAssistModalTab } from '../types';
+import React, { useState, useCallback } from 'react';
+import {Button} from "@/components/ui/button";
+import {ArrowLeft, ArrowRight, Shuffle} from 'lucide-react';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Flashcard, AiAssistModalTab} from '../types';
+import AudioModal from './AudioModal';
 
 interface FlashcardControlsProps {
     onPrevious: () => void;
@@ -14,30 +15,39 @@ interface FlashcardControlsProps {
     cards: Flashcard[];
 }
 
-const FlashcardControls: React.FC<FlashcardControlsProps> = ({
-    onPrevious,
-    onNext,
-    onShuffle,
-    onShowModal,
-    onSelectChange,
-    currentIndex,
-    cards
-}) => {
+const FlashcardControls: React.FC<FlashcardControlsProps> = (
+    {
+        onPrevious,
+        onNext,
+        onShuffle,
+        onShowModal,
+        onSelectChange,
+        currentIndex,
+        cards
+    }) => {
+    const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+    const currentCard = cards[currentIndex];
+
+    const handleConfusedClick = useCallback(() => {
+        console.log('Confused button clicked');
+        setIsAudioModalOpen(true);
+    }, []);
+
     return (
         <div className="w-full flex flex-col space-y-4">
             <div className="flex items-center space-x-4">
                 <Button onClick={onPrevious} variant="outline" className="flex-1 hover:scale-105 transition-transform">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                    <ArrowLeft className="mr-2 h-4 w-4"/> Previous
                 </Button>
                 <Button onClick={onNext} variant="outline" className="flex-1 hover:scale-105 transition-transform">
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                    Next <ArrowRight className="ml-2 h-4 w-4"/>
                 </Button>
                 <Button onClick={onShuffle} variant="outline" className="flex-1 hover:scale-105 transition-transform">
-                    <Shuffle className="mr-2 h-4 w-4" /> Shuffle
+                    <Shuffle className="mr-2 h-4 w-4"/> Shuffle
                 </Button>
                 <Select onValueChange={onSelectChange} value={currentIndex.toString()}>
                     <SelectTrigger className="flex-1 hover:scale-105 transition-transform">
-                        <SelectValue placeholder="Select a flashcard" />
+                        <SelectValue placeholder="Select a flashcard"/>
                     </SelectTrigger>
                     <SelectContent>
                         {cards.map((card, index) => (
@@ -50,13 +60,30 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = ({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                <Button onClick={() => onShowModal('confused')} variant="outline" className="w-full hover:scale-105 transition-transform">I'm confused</Button>
-                <Button onClick={() => onShowModal('example')} variant="outline" className="w-full hover:scale-105 transition-transform">Give me an example</Button>
-                <Button onClick={() => onShowModal('question')} variant="outline" className="w-full hover:scale-105 transition-transform">I have a question</Button>
-                <Button onClick={() => onShowModal('split')} variant="outline" className="w-full hover:scale-105 transition-transform">Split into two cards</Button>
-                <Button onClick={() => onShowModal('combine')} variant="outline" className="w-full hover:scale-105 transition-transform">Combine cards</Button>
-                <Button onClick={() => onShowModal('compare')} variant="outline" className="w-full hover:scale-105 transition-transform">Compare Cards</Button>
+                <Button
+                    onClick={handleConfusedClick}
+                    variant="outline"
+                    className="w-full hover:scale-105 transition-transform"
+                >
+                    I'm confused
+                </Button>
+                <Button onClick={() => onShowModal('example')} variant="outline"
+                        className="w-full hover:scale-105 transition-transform">Give me an example</Button>
+                <Button onClick={() => onShowModal('question')} variant="outline"
+                        className="w-full hover:scale-105 transition-transform">I have a question</Button>
+                <Button onClick={() => onShowModal('split')} variant="outline"
+                        className="w-full hover:scale-105 transition-transform">Split into two cards</Button>
+                <Button onClick={() => onShowModal('combine')} variant="outline"
+                        className="w-full hover:scale-105 transition-transform">Combine cards</Button>
+                <Button onClick={() => onShowModal('compare')} variant="outline"
+                        className="w-full hover:scale-105 transition-transform">Compare Cards</Button>
             </div>
+
+            <AudioModal
+                isOpen={isAudioModalOpen}
+                onClose={() => setIsAudioModalOpen(false)}
+                text={currentCard.audioExplanation || ''}
+                    />
         </div>
     );
 };
