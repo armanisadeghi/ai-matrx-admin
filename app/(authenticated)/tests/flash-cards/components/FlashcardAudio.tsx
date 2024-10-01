@@ -17,7 +17,7 @@ function TextToSpeech() {
             model_id: "sonic-english",
             voice: {
                 mode: "id",
-                id: "a0e99841-438c-4a64-b679-ae501e7d6091",
+                id: "bd9120b6-7761-47a6-a446-77ca49132781",
             },
             transcript: text,
         });

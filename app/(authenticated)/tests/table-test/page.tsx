@@ -1,3 +1,5 @@
+// app/(authenticated)/tests/table-test/page.tsx
+
 'use client';
 
 import React from 'react';
@@ -23,9 +25,7 @@ const columns: MatrixColumn<CurrentTableData>[] = [
     {Header: 'Salary', accessor: 'salary'},
     {Header: 'Start Date', accessor: 'start_date'},
     {
-        Header: 'Actions',
-        accessor: 'actions',
-        Cell: () => null,
+        Header: 'Actions', accessor: 'actions', Cell: () => null,
         actions: [
             {name: 'view', position: 'after'},
             {name: 'edit', position: 'after'},

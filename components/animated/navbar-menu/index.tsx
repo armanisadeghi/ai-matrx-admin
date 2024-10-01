@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
+import {motion} from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -13,29 +13,30 @@ const transition = {
     restSpeed: 0.001,
 };
 
-export const MenuItem = ({
-                             setActive,
-                             active,
-                             item,
-                             children,
-                         }: {
-    setActive: (item: string) => void;
-    active: string | null;
-    item: string;
-    children?: React.ReactNode;
-}) => {
+export const MenuItem = (
+    {
+        setActive,
+        active,
+        item,
+        children,
+    }: {
+        setActive: (item: string) => void;
+        active: string | null;
+        item: string;
+        children?: React.ReactNode;
+    }) => {
     return (
         <div onMouseEnter={() => setActive(item)} className="relative ">
             <motion.p
-                transition={{ duration: 0.3 }}
+                transition={{duration: 0.3}}
                 className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white"
             >
                 {item}
             </motion.p>
             {active !== null && (
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.85, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    initial={{opacity: 0, scale: 0.85, y: 10}}
+                    animate={{opacity: 1, scale: 1, y: 0}}
                     transition={transition}
                 >
                     {active === item && (
@@ -109,7 +110,7 @@ export const ProductItem = ({
     );
 };
 
-export const HoveredLink = ({ children, ...rest }: any) => {
+export const HoveredLink = ({children, ...rest}: any) => {
     return (
         <Link
             {...rest}

@@ -1,3 +1,5 @@
+'use client';
+
 import React, {useState, useMemo, useCallback} from 'react';
 import {useTable, useSortBy, useGlobalFilter, usePagination,} from 'react-table';
 import {Table} from '@/components/ui/table';

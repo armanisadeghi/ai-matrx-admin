@@ -1,13 +1,14 @@
 // lib/redux/store.ts
 
+import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './featureSchema';
 import { createFeatureSlice } from './sliceCreator';
-import { createFeatureSagas } from './sagas';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
+import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import { themeReducer } from "@/styles/themes";
 
@@ -26,10 +27,11 @@ const rootReducer = combineReducers({
     theme: themeReducer,
     form: formReducer,
     user: userReducer,
+    userPreferences: userPreferencesReducer,
     testRoutes: testRoutesReducer,
 });
 
-export const makeStore = (initialState?: any) => {
+export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {
     return configureStore({
         reducer: rootReducer,
         preloadedState: initialState,
@@ -37,12 +39,14 @@ export const makeStore = (initialState?: any) => {
             getDefaultMiddleware().concat(sagaMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
-
-    // sagaMiddleware.run(createFeatureSagas); Soon to be implemented
-
 };
 
 export type AppStore = ReturnType<typeof makeStore>;
-export type RootState = ReturnType<AppStore['getState']>;
+export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = AppStore['dispatch'];
-
+export type AppThunk<ReturnType = void> = ThunkAction<
+    ReturnType,
+    RootState,
+    unknown,
+    Action<string>
+>;
