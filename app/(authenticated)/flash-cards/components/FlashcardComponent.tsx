@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from 'next-themes';
-import { InitialFlashcardsWithExample } from '../lesson-data';
+import {HistoryFlashcardData, InitialFlashcardsWithExample} from '../lesson-data';
 import { Flashcard, FlashcardData } from '../types';
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
@@ -13,7 +13,7 @@ import AiAssistModal from './AiAssistModal';
 
 const FlashcardComponent: React.FC = () => {
     const [cards, setCards] = useState<Flashcard[]>(
-        InitialFlashcardsWithExample.map(card => ({
+        HistoryFlashcardData.map(card => ({
             ...card,
             reviewCount: 0,
             correctCount: 0,
