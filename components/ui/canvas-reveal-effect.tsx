@@ -58,14 +58,15 @@ interface DotMatrixProps {
     center?: ("x" | "y")[];
 }
 
-const DotMatrix: React.FC<DotMatrixProps> = ({
-                                                 colors = [[0, 0, 0]],
-                                                 opacities = [0.04, 0.04, 0.04, 0.04, 0.04, 0.08, 0.08, 0.08, 0.08, 0.14],
-                                                 totalSize = 4,
-                                                 dotSize = 2,
-                                                 shader = "",
-                                                 center = ["x", "y"],
-                                             }) => {
+const DotMatrix: React.FC<DotMatrixProps> = (
+    {
+        colors = [[0, 0, 0]],
+        opacities = [0.04, 0.04, 0.04, 0.04, 0.04, 0.08, 0.08, 0.08, 0.08, 0.14],
+        totalSize = 4,
+        dotSize = 2,
+        shader = "",
+        center = ["x", "y"],
+    }) => {
     const uniforms = React.useMemo(() => {
         let colorsArray = [
             colors[0],

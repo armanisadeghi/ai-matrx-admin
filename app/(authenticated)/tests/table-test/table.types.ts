@@ -27,6 +27,7 @@ export interface ModernTableProps {
     onDelete: (item: TableData) => void;
     onExpand: (item: TableData) => void;
 }
+
 export type TableInstance = UseTableInstanceProps<TableData> &
     UseGlobalFiltersInstanceProps<TableData> &
     UsePaginationInstanceProps<TableData> &

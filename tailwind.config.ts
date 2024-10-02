@@ -107,6 +107,9 @@ const config: Config = {
         require("tailwindcss-animate"),
         require("@xpd/tailwind-3dtransforms"),
         require("flowbite/plugin"),
+        require('tailwind-scrollbar'),
+        require('tailwind-scrollbar-hide'),
+        require('tailwindcss-3d'),
         nextui({
             prefix: "next-",
             addCommonColors: false,

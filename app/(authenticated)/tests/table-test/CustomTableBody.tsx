@@ -58,4 +58,5 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
         </TableBody>
     );
 };
+
 export default CustomTableBody;

@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import AnimatedForm, { FormField, FormState } from "@/components/matrx/AnimatedForm";
+import {AnimatedForm, FormField} from "@/components/matrx/AnimatedForm";
 import { AppDispatch, RootState } from "@/lib/redux/store";
 import { submitForm, updateFormField } from "@/lib/redux/slices/formSlice";
 
@@ -48,6 +48,7 @@ export default function FormPage() {
           currentStep={currentStep}
           onNextStep={handleNextStep}
           onPrevStep={handlePrevStep}
+          isSinglePage={true}
       />
   );
 }
