@@ -135,7 +135,11 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                             initial={{opacity: 0, scale: 0.8}}
                             animate={{opacity: 1, scale: 1}}
                             exit={{opacity: 0, scale: 0.8}}
-                            className={cn("bg-background p-6 rounded-lg shadow-xl max-w-md w-full relative z-10", className)}
+                    className={cn(
+                        "bg-background p-6 rounded-lg shadow-xl max-w-md w-full relative z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary",
+                        className
+                    )} // Added overflow-y-auto and scrollbar styling for scrolling
+                    style={{ maxHeight: "90vh" }} // Ensures modal doesn't exceed 90% of viewport height
                             {...props}
                         >
                             <button

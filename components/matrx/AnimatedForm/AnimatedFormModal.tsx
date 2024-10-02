@@ -19,7 +19,7 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
         onNextStep = () => {},
         onPrevStep = () => {},
         isSinglePage = false,
-        className, // Add className prop for modal styling
+        className,
         ...props
     }) => {
 
@@ -82,8 +82,12 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
-                            className={cn("bg-background p-6 rounded-lg shadow-xl max-w-md w-full relative z-10", className)} // Use cn for modal container
-                            {...props} // Spread any additional props
+                            className={cn(
+                                "bg-background p-6 rounded-lg shadow-xl max-w-md w-full relative z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary",
+                                className
+                            )} // Added overflow-y-auto and scrollbar styles for scrollable content
+                            style={{ maxHeight: "90vh" }} // Set max height to 90% of the viewport height to ensure modal is contained within the viewport
+                            {...props}
                         >
                             <button
                                 onClick={closeModal}
@@ -91,16 +95,18 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
                             >
                                 &times;
                             </button>
-                            <AnimatedForm
-                                fields={fields}
-                                formState={internalFormState}
-                                onUpdateField={handleUpdateField}
-                                onSubmit={handleSubmit}
-                                currentStep={currentStep}
-                                onNextStep={onNextStep}
-                                onPrevStep={onPrevStep}
-                                isSinglePage={isSinglePage}
-                            />
+                            <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary max-h-[70vh]"> {/* Ensure form content can scroll */}
+                                <AnimatedForm
+                                    fields={fields}
+                                    formState={internalFormState}
+                                    onUpdateField={handleUpdateField}
+                                    onSubmit={handleSubmit}
+                                    currentStep={currentStep}
+                                    onNextStep={onNextStep}
+                                    onPrevStep={onPrevStep}
+                                    isSinglePage={isSinglePage}
+                                />
+                            </div>
                         </motion.div>
                         <motion.div
                             initial={{ opacity: 0 }}

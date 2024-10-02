@@ -1,14 +1,15 @@
 "use client";
-import {cn} from "@/styles/themes/utils";
-import Link, {LinkProps} from "next/link";
-import React, {useState, createContext, useContext} from "react";
-import {AnimatePresence, motion} from "framer-motion";
-import {IconMenu2, IconX} from "@tabler/icons-react";
+
+import { cn } from "@/styles/themes/utils";
+import Link, { LinkProps } from "next/link";
+import React, { useState, createContext, useContext } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 
 interface Links {
     label: string;
     href: string;
-    icon: React.JSX.Element | React.ReactNode;
+    icon: React.ReactNode;
 }
 
 interface SidebarContextProps {
@@ -17,9 +18,7 @@ interface SidebarContextProps {
     animate: boolean;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-    undefined
-);
+const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const useSidebar = () => {
     const context = useContext(SidebarContext);
@@ -29,42 +28,39 @@ export const useSidebar = () => {
     return context;
 };
 
-export const SidebarProvider = (
-    {
-        children,
-        open: openProp,
-        setOpen: setOpenProp,
-        animate = true,
-    }: {
-        children: React.ReactNode;
-        open?: boolean;
-        setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-        animate?: boolean;
-    }) => {
+interface SidebarProviderProps {
+    children: React.ReactNode;
+    open?: boolean;
+    setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+    animate?: boolean;
+}
+
+export const SidebarProvider: React.FC<SidebarProviderProps> = ({
+                                                                    children,
+                                                                    open: openProp,
+                                                                    setOpen: setOpenProp,
+                                                                    animate = true,
+                                                                }) => {
     const [openState, setOpenState] = useState(false);
 
     const open = openProp !== undefined ? openProp : openState;
-    const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
+    const setOpen = setOpenProp || setOpenState;
 
     return (
-        <SidebarContext.Provider value={{open, setOpen, animate: animate}}>
+        <SidebarContext.Provider value={{ open, setOpen, animate }}>
             {children}
         </SidebarContext.Provider>
     );
 };
 
-export const Sidebar = (
-    {
-        children,
-        open,
-        setOpen,
-        animate,
-    }: {
-        children: React.ReactNode;
-        open?: boolean;
-        setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-        animate?: boolean;
-    }) => {
+interface SidebarProps extends SidebarProviderProps {}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+                                                    children,
+                                                    open,
+                                                    setOpen,
+                                                    animate,
+                                                }) => {
     return (
         <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
             {children}
@@ -72,50 +68,62 @@ export const Sidebar = (
     );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+interface SidebarBodyProps extends React.HTMLAttributes<HTMLDivElement> {
+    children: React.ReactNode;
+}
+
+export const SidebarBody: React.FC<SidebarBodyProps> = ({ children, ...props }) => {
     return (
         <>
-            <DesktopSidebar {...props} />
-            <MobileSidebar {...(props as unknown as React.ComponentProps<"div">)} />
+            <DesktopSidebar {...props}>{children}</DesktopSidebar>
+            <MobileSidebar {...props}>{children}</MobileSidebar>
         </>
     );
 };
 
-export const DesktopSidebar = (
-    {
-        className,
-        children,
-        ...props
-    }: React.ComponentProps<typeof motion.div>) => {
-    const {open, setOpen, animate} = useSidebar();
+interface DesktopSidebarProps extends Omit<React.ComponentProps<typeof motion.div>, 'children'> {
+    children: React.ReactNode;
+}
+
+export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
+                                                                  className,
+                                                                  children,
+                                                                  ...props
+                                                              }) => {
+    const { open, setOpen, animate } = useSidebar();
+
     return (
-        <>
-            <motion.div
-                className={cn(
-                    "h-full px-4 py-4 hidden md:flex md:flex-col",
-                    "bg-gray-300 dark:bg-neutral-700 w-[300px] flex-shrink-0",
-                    className
-                )}
-                animate={{
-                    width: animate ? (open ? "300px" : "60px") : "300px",
-                }}
-                onMouseEnter={() => setOpen(true)}
-                onMouseLeave={() => setOpen(false)}
-                {...props}
-            >
+        <motion.div
+            className={cn(
+                "h-full px-4 py-4 hidden md:flex md:flex-col",
+                "bg-gray-300 dark:bg-neutral-700 flex-shrink-0",
+                open ? "overflow-y-auto" : "overflow-hidden",
+                className
+            )}
+            animate={{
+                width: animate ? (open ? "300px" : "60px") : "300px",
+            }}
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+            {...props}
+        >
+            <div className={cn("flex flex-col", open ? "" : "items-center")}>
                 {children}
-            </motion.div>
-        </>
+            </div>
+        </motion.div>
     );
 };
 
-export const MobileSidebar = (
-    {
-        className,
-        children,
-        ...props
-    }: React.ComponentProps<"div">) => {
-    const {open, setOpen} = useSidebar();
+interface MobileSidebarProps extends React.ComponentProps<"div"> {
+    children: React.ReactNode;
+}
+
+export const MobileSidebar: React.FC<MobileSidebarProps> = ({
+                                                                className,
+                                                                children,
+                                                                ...props
+                                                            }) => {
+    const { open, setOpen } = useSidebar();
     return (
         <>
             <div
@@ -133,9 +141,9 @@ export const MobileSidebar = (
                 <AnimatePresence>
                     {open && (
                         <motion.div
-                            initial={{x: "-100%", opacity: 0}}
-                            animate={{x: 0, opacity: 1}}
-                            exit={{x: "-100%", opacity: 0}}
+                            initial={{ x: "-100%", opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: "-100%", opacity: 0 }}
                             transition={{
                                 duration: 0.3,
                                 ease: "easeInOut",
@@ -149,7 +157,7 @@ export const MobileSidebar = (
                                 className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
                                 onClick={() => setOpen(!open)}
                             >
-                                <IconX/>
+                                <IconX />
                             </div>
                             {children}
                         </motion.div>
@@ -160,17 +168,17 @@ export const MobileSidebar = (
     );
 };
 
-export const SidebarLink = (
-    {
-        link,
-        className,
-        ...props
-    }: {
-        link: Links;
-        className?: string;
-        props?: LinkProps;
-    }) => {
-    const {open, animate} = useSidebar();
+interface SidebarLinkProps extends Omit<LinkProps, 'href'> {
+    link: Links;
+    className?: string;
+}
+
+export const SidebarLink: React.FC<SidebarLinkProps> = ({
+                                                            link,
+                                                            className,
+                                                            ...props
+                                                        }) => {
+    const { open, animate } = useSidebar();
     return (
         <Link
             href={link.href}
@@ -181,7 +189,6 @@ export const SidebarLink = (
             {...props}
         >
             {link.icon}
-
             <motion.span
                 animate={{
                     display: animate ? (open ? "inline-block" : "none") : "inline-block",

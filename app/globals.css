@@ -109,11 +109,71 @@
         @apply absolute -inset-4 shadow-xl rounded-xl border;
     }
 
+    /* ATTEMPT AT GLOBAL THIN SCROLLBAR */
+    * {
+        scrollbar-width: thin; /* For Firefox */
+    }
+    *::-webkit-scrollbar {
+        width: 4px; /* Thin scrollbar width globally */
+    }
+    *::-webkit-scrollbar-track {
+        background: var(--background); /* Global scrollbar track background */
+    }
+    *::-webkit-scrollbar-thumb {
+        background-color: var(--primary); /* Global scrollbar thumb color */
+        border-radius: 10px; /* Round the edges of the scrollbar thumb */
+        border: 1px solid var(--background); /* Add some padding inside the scrollbar thumb */
+    }
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary-foreground); /* Darken the scrollbar thumb on hover globally */
+    }
+    *::-webkit-scrollbar-thumb:active {
+        background-color: var(--secondary); /* Change color when the thumb is active globally */
+    }
+    /* ATTEMPT AT GLOBAL THIN SCROLLBAR */
+
+
+
     /* Custom checkerboard utility class */
     .bg-checkerboard {
         background-image: var(--checkerboard);
         background-size: 20px 20px;
     }
+
+    /* Custom Scrollbar Styles */
+    .scrollbar-thin {
+        scrollbar-width: thin; /* For Firefox */
+    }
+
+    .scrollbar-thumb-primary {
+        scrollbar-color: var(--primary) var(--background); /* Primary color for scrollbar thumb */
+    }
+
+    /* WebKit-based browsers (Chrome, Safari, etc.) */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 4px; /* Reduced scrollbar width */
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: var(--background); /* Scrollbar track background */
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: var(--primary); /* Scrollbar thumb color */
+        border-radius: 10px; /* Round the edges of the scrollbar thumb */
+        border: 1px solid var(--background); /* Thin border inside the scrollbar thumb */
+    }
+
+    /* Additional optional hover effect for scrollbar thumb */
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary-foreground); /* Darken the scrollbar thumb on hover */
+    }
+
+    /* Optional active effect for the scrollbar thumb */
+    .scrollbar-thin::-webkit-scrollbar-thumb:active {
+        background-color: var(--secondary); /* Different color when the thumb is active */
+    }
+
 }
 
 @media (max-width: 640px) {

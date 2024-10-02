@@ -1,5 +1,3 @@
-// File: components/layout/base-layout.tsx
-
 "use client";
 
 import React from "react";
@@ -24,7 +22,7 @@ export const NormalLayout = ({ links, open, setOpen, children }: any) => {
                         "flex-1",
                         "rounded-tl-2xl",
                         "bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white",
-                        "overflow-y-auto"
+                        "overflow-y-auto overflow-x-hidden"
                     )}>
                         {children}
                     </div>
@@ -50,7 +48,7 @@ export const ExtendedBottomLayout = ({ links, open, setOpen, children }: any) =>
                         "flex-1",
                         "rounded-tl-2xl",
                         "bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white",
-                        "overflow-y-auto"
+                        "overflow-y-auto overflow-x-hidden"
                     )}>
                         {children}
                     </div>
@@ -74,7 +72,7 @@ export const WindowLayout = ({ children }: any) => {
                     <div className={cn(
                         "flex-1",
                         "bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white",
-                        "overflow-y-auto"
+                        "overflow-y-auto overflow-x-hidden"
                     )}>
                         {children}
                     </div>
