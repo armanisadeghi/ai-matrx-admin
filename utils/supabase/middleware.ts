@@ -57,7 +57,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     if (request.nextUrl.pathname === "/" && user) {
-      return NextResponse.redirect(createUrlWithParams("/protected"));
+      return NextResponse.redirect(createUrlWithParams("/dashboard"));
     }
 
     console.log("Returning response for path:", request.nextUrl.pathname); // Debug log
