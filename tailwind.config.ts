@@ -1,9 +1,9 @@
-// File: tailwind.config.ts
-import type {Config} from "tailwindcss";
-import {nextui} from "@nextui-org/react";
+import type { Config } from "tailwindcss";
+import { nextui } from "@nextui-org/react";
 
-const {fontFamily} = require("tailwindcss/defaultTheme");
-const {default: flattenColorPalette} = require("tailwindcss/lib/util/flattenColorPalette");
+const { fontFamily } = require("tailwindcss/defaultTheme");
+const colors = require("tailwindcss/colors");
+const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
 
 const config: Config = {
     darkMode: ["class"],
@@ -13,6 +13,7 @@ const config: Config = {
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./features/**/*.{js,ts,jsx,tsx,mdx}",
         "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/**/*.{ts,tsx}", // Added this line for the animation UI kit
     ],
     theme: {
         container: {
@@ -75,16 +76,16 @@ const config: Config = {
             },
             keyframes: {
                 "accordion-down": {
-                    from: {height: "0"},
-                    to: {height: "var(--radix-accordion-content-height)"},
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
                 },
                 "accordion-up": {
-                    from: {height: "var(--radix-accordion-content-height)"},
-                    to: {height: "0"},
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
                 },
                 "caret-blink": {
-                    "0%,70%,100%": {opacity: "1"},
-                    "20%,50%": {opacity: "0"},
+                    "0%,70%,100%": { opacity: "1" },
+                    "20%,50%": { opacity: "0" },
                 },
                 shimmer: {
                     from: {
@@ -100,6 +101,9 @@ const config: Config = {
                 "accordion-up": "accordion-up 0.2s ease-out",
                 "caret-blink": "caret-blink 1.25s ease-out infinite",
                 shimmer: "shimmer 2s linear infinite",
+            },
+            boxShadow: {
+                input: `0px 2px 3px -1px rgba(0,0,0,0.1), 0px 1px 0px 0px rgba(25,28,33,0.02), 0px 0px 0px 1px rgba(25,28,33,0.08)`,
             },
         },
     },
@@ -121,7 +125,7 @@ const config: Config = {
     ],
 };
 
-function addVariablesForColors({addBase, theme}: any) {
+function addVariablesForColors({ addBase, theme }: any) {
     let allColors = flattenColorPalette(theme("colors"));
     let newVars = Object.fromEntries(
         Object.entries(allColors).map(([key, val]) => [`--${key}`, val])

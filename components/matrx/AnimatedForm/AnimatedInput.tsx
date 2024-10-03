@@ -1,48 +1,65 @@
-// components/matrx/AnimatedForm/AnimatedInput.tsx
-
 'use client';
-import React from "react";
-import { motion } from "framer-motion";
-import { cn } from "@/styles/themes/utils"; // Import the cn utility
-import { FormField } from "./types";
 
-const AnimatedInput: React.FC<{
+import React from "react";
+import {motion} from "framer-motion";
+import {cn} from "@/styles/themes/utils";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {FormField} from "./types";
+
+interface AnimatedInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
     field: FormField;
     value: string;
     onChange: (value: string) => void;
     className?: string;
-    disabled?: boolean; // Add disabled prop
-}> = ({ field, value, onChange, className, disabled = false, ...props }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-        className={cn("mb-4", className)} // Use cn for class names
-        {...props}
-    >
-        <label
-            className={cn(
-                "block text-sm font-medium mb-1",
-                disabled ? "text-muted" : "text-foreground" // Adjust label style when disabled
-            )}
+}
+
+const AnimatedInput: React.FC<AnimatedInputProps> = (
+    {
+        field,
+        value,
+        onChange,
+        className,
+        disabled = false,
+        ...props
+    }) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(e.target.value);
+    };
+
+    return (
+        <motion.div
+            initial={{opacity: 0, y: 20}}
+            animate={{opacity: 1, y: 0}}
+            exit={{opacity: 0, y: -20}}
+            transition={{duration: 0.3}}
+            className={cn("mb-4", className)}
         >
-            {field.label}
-        </label>
-        <motion.input
-            type={field.type}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={field.placeholder}
-            required={field.required}
-            whileFocus={disabled ? undefined : { scale: 1.02 }} // Disable focus effect when disabled
-            disabled={disabled} // Add disabled prop
-            className={cn(
-                "w-full p-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary bg-input text-foreground",
-                disabled ? "bg-muted cursor-not-allowed opacity-50" : ""
-            )} // Adjust styles when disabled
-        />
-    </motion.div>
-);
+            <Label
+                htmlFor={field.name}
+                className={cn(
+                    "block text-sm font-medium mb-1",
+                    disabled ? "text-muted-foreground" : "text-foreground"
+                )}
+            >
+                {field.label}
+            </Label>
+            <Input
+                id={field.name}
+                type={field.type}
+                value={value}
+                onChange={handleChange}
+                placeholder={field.placeholder}
+                required={field.required}
+                disabled={disabled}
+                className={cn(
+                    "text-md",
+                    disabled ? "bg-muted cursor-not-allowed opacity-50" : ""
+                )}
+                {...props}
+            />
+        </motion.div>
+    );
+};
 
 export default AnimatedInput;

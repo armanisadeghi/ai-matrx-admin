@@ -1,49 +1,15 @@
 // app/(authenticated)/tests/matrx-table/components/MatrxTableBody.tsx
+'use client';
 
 import React, {useState, useMemo} from "react";
 import {AnimatePresence, motion} from "framer-motion";
-import {TableBody, TableCell} from "@/components/ui/table";
-import MatrxTooltip from "@/components/matrx/MatrxTooltip";
-import {Button} from "@/components/ui/button";
-import {Cell, Row, useTable} from "react-table";
-import {Edit, Eye, Maximize2, Trash} from "lucide-react";
-import {AnimatedTabModal, FormField, TabData, FormFieldType, FormState} from "@/components/matrx/AnimatedForm";
+import {TableBody} from "@/components/ui/table";
+import {useTable} from "react-table";
+import {AnimatedTabModal, TabData, FormState} from "@/components/matrx/AnimatedForm";
+import {TableData} from "./table.types";
+import {generateStandardTabData} from "./StandardTabUtil";
+import MatrxTableCell from "./MatrxTableCell";
 
-type TableData = Record<string, any>;
-
-interface ActionDefinition {
-    name: string;
-    label: string;
-    icon: React.ReactNode;
-    className?: string;
-}
-
-const actionDefinitions: Record<string, ActionDefinition> = {
-    edit: {
-        name: 'edit',
-        label: "Edit this item",
-        icon: <Edit className="h-3 w-3"/>,
-        className: "text-primary hover:bg-primary hover:text-primary-foreground",
-    },
-    delete: {
-        name: 'delete',
-        label: "Delete this item",
-        icon: <Trash className="h-4 w-4"/>,
-        className: "text-destructive hover:bg-destructive hover:text-destructive-foreground",
-    },
-    view: {
-        name: 'view',
-        label: "View this item",
-        icon: <Eye className="h-4 w-4"/>,
-        className: "text-primary hover:bg-secondary hover:text-secondary-foreground",
-    },
-    expand: {
-        name: 'expand',
-        label: "Expand view",
-        icon: <Maximize2 className="h-4 w-4"/>,
-        className: "text-secondary hover:bg-secondary hover:text-secondary-foreground",
-    },
-};
 
 interface CustomTableBodyProps {
     data: TableData[];
@@ -52,85 +18,9 @@ interface CustomTableBodyProps {
     visibleColumns?: string[];
     truncateAt?: number;
     customModalContent?: (rowData: TableData) => React.ReactNode;
+    getTableBodyProps?: () => any;
 }
 
-const truncateText = (text: unknown, maxLength: number = 100): string => {
-    if (typeof text !== 'string') {
-        return String(text);
-    }
-    if (maxLength === 0 || text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + '...';
-};
-
-const TableActionIcon: React.FC<{
-    actionName: string;
-    data: TableData;
-    onAction: (actionName: string, data: TableData) => void;
-}> = ({actionName, data, onAction}) => {
-    const action = actionDefinitions[actionName];
-    if (!action) return null;
-
-    const {name, label, icon, className} = action;
-
-    return (
-        <MatrxTooltip content={label} placement="left">
-            <Button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onAction(name, data);
-                }}
-                size="xs"
-                variant="ghost"
-                className={`p-1 ${className || "transition-all duration-300 hover:scale-105"}`}
-            >
-                {React.cloneElement(icon as React.ReactElement, {className: 'w-3 h-3'})}
-            </Button>
-        </MatrxTooltip>
-    );
-};
-
-const CustomTableCell: React.FC<{
-    cell: Cell<TableData>;
-    actions: string[];
-    rowData: TableData;
-    onAction: (actionName: string, rowData: TableData) => void;
-    truncateAt: number;
-}> = ({cell, actions, rowData, onAction, truncateAt}) => {
-    if (cell.column.id === 'actions') {
-        return (
-            <TableCell className="text-card-foreground">
-                <div className="flex items-center space-x-1">
-                    {actions.map((actionName, index) => (
-                        <TableActionIcon
-                            key={index}
-                            actionName={actionName}
-                            data={rowData}
-                            onAction={onAction}
-                        />
-                    ))}
-                </div>
-            </TableCell>
-        );
-    }
-
-    const cellContent = truncateText(cell.value, truncateAt);
-
-    return (
-        <TableCell {...cell.getCellProps()} className="text-card-foreground">
-            <MatrxTooltip content={cell.value} placement="top">
-                <motion.div
-                    initial={false}
-                    animate={{
-                        scale: 1,
-                        transition: {type: "spring", stiffness: 300, damping: 10},
-                    }}
-                >
-                    {cellContent}
-                </motion.div>
-            </MatrxTooltip>
-        </TableCell>
-    );
-};
 
 const CustomTableBody: React.FC<CustomTableBodyProps> = (
     {
@@ -139,7 +29,7 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
         onAction,
         visibleColumns,
         truncateAt = 100,
-        customModalContent
+        customModalContent,
     }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("view");
@@ -152,12 +42,12 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
         if (data.length === 0) return [];
         const dataColumns = Object.keys(data[0]).map(key => ({
             Header: key.charAt(0).toUpperCase() + key.slice(1),
-            accessor: key,
+            // accessor: key,
         }));
         return [
             ...dataColumns,
             {
-                id: 'actions',
+                // id: 'actions',
                 Header: 'Actions',
                 Cell: () => null // We'll render this separately
             }
@@ -165,7 +55,7 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
     }, [data]);
 
     const columns = visibleColumns
-        ? createColumns.filter(col => visibleColumns.includes(col.accessor as string) || col.id === 'actions')
+        ? createColumns.filter(col => visibleColumns.includes(col.Header))
         : createColumns;
 
     const {
@@ -192,75 +82,12 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
         }
     };
 
-    const generateFormFields = (rowData: TableData): FormField[] => {
-        return Object.entries(rowData).map(([key, value]): FormField => {
-            let type: FormFieldType = 'text';
-            if (typeof value === 'number') type = 'number';
-            if (typeof value === 'boolean') type = 'checkbox';
-            if (typeof value === 'string' && value.length > 100) type = 'textarea';
-            if (key.toLowerCase().includes('email')) type = 'email';
-            if (key.toLowerCase().includes('password')) type = 'password';
-            if (key.toLowerCase().includes('date')) type = 'date';
-            if (key.toLowerCase().includes('time')) type = 'time';
-            if (key.toLowerCase().includes('color')) type = 'color';
-            if (key.toLowerCase().includes('url')) type = 'url';
-            if (key.toLowerCase().includes('tel')) type = 'tel';
-
-            return {
-                name: key,
-                label: key.charAt(0).toUpperCase() + key.slice(1),
-                type,
-                required: false,
-                disabled: false,
-            };
-        });
-    };
-
     const handleUpdateField = (name: string, value: any) => {
         setFormState(prev => ({...prev, [name]: value}));
     };
 
-    const tabs: TabData[] = selectedRow ? [
-        {
-            value: "view",
-            label: "View",
-            fields: generateFormFields(selectedRow).map(field => ({...field, disabled: true})),
-            buttons: [
-                {label: 'Edit', onClick: () => setActiveTab('edit'), className: 'bg-primary text-primary-foreground'},
-            ]
-        },
-        {
-            value: "edit",
-            label: "Edit",
-            fields: generateFormFields(selectedRow),
-            buttons: [
-                {
-                    label: 'Cancel',
-                    onClick: () => setActiveTab('view'),
-                    className: 'bg-secondary text-secondary-foreground'
-                },
-                {
-                    label: 'Save', onClick: () => {
-                        if (onAction) onAction('save', formState);
-                        setIsModalOpen(false);
-                    }, className: 'bg-primary text-primary-foreground'
-                },
-            ]
-        },
-        {
-            value: "delete",
-            label: "Delete",
-            fields: generateFormFields(selectedRow).map(field => ({...field, disabled: true})),
-            buttons: [
-                {
-                    label: 'Confirm Delete', onClick: () => {
-                        if (onAction) onAction('delete', selectedRow);
-                        setIsModalOpen(false);
-                    }, className: 'bg-destructive text-destructive-foreground'
-                },
-            ]
-        }
-    ] : [];
+    // Refactored to use the function to generate tabs
+    const tabs: TabData[] = generateStandardTabData(selectedRow, setActiveTab, setIsModalOpen, formState, onAction);
 
     return (
         <>
@@ -292,7 +119,7 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
                                 onClick={() => handleAction('view', row.original)}
                             >
                                 {row.cells.map((cell) => (
-                                    <CustomTableCell
+                                    <MatrxTableCell
                                         key={cell.getCellProps().key}
                                         cell={cell}
                                         actions={actions}
@@ -310,8 +137,7 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
                 <AnimatedTabModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    onSubmit={() => {
-                    }}
+                    onSubmit={() => {}}
                     onUpdateField={handleUpdateField}
                     formState={formState}
                     title={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Item`}

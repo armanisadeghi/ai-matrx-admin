@@ -1,12 +1,12 @@
 'use client';
 
-import React, {useEffect, useRef} from 'react';
-import {Tooltip} from 'flowbite';
-import type {TooltipOptions, TooltipInterface} from 'flowbite';
-
-interface CustomTooltipOptions extends TooltipOptions {
-    offset?: number;
-}
+import React from 'react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TooltipProps {
     content: React.ReactNode;
@@ -23,45 +23,36 @@ const MatrxTooltip: React.FC<TooltipProps> = (
         children,
         placement = 'top',
         style = 'dark',
-        trigger = 'hover',
-        offset = 8
+        trigger = 'hover', // Although trigger is not used in this implementation
+        offset = 8 // sideOffset equivalent
     }) => {
-    const triggerRef = useRef<HTMLDivElement>(null);
-    const tooltipRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (triggerRef.current && tooltipRef.current) {
-            const options: CustomTooltipOptions = {
-                placement: placement,
-                triggerType: trigger,
-                offset: offset
-            };
+    // Mapping `placement` to `side` for the new tooltip.
+    const sideMapping: Record<string, 'top' | 'bottom' | 'left' | 'right'> = {
+        top: 'top',
+        bottom: 'bottom',
+        left: 'left',
+        right: 'right'
+    };
 
-            const tooltip: TooltipInterface = new Tooltip(tooltipRef.current, triggerRef.current, options);
+    const side = sideMapping[placement] || 'top';
 
-            return () => {
-                tooltip.destroy();
-            };
-        }
-    }, [placement, trigger, offset]);
-
-    const tooltipClasses = `absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium transition-opacity duration-300 rounded-lg shadow-sm opacity-0 tooltip ${
-        style === 'light'
-            ? 'text-gray-900 bg-white border border-gray-200'
-            : 'text-white bg-gray-900 dark:bg-gray-700'
-    }`;
+    // Apply styling based on `style` prop.
+    const tooltipClass = style === 'light'
+        ? 'text-gray-900 bg-white border border-gray-200'
+        : 'text-white bg-gray-900 dark:bg-gray-700';
 
     return (
-        <>
-            <div ref={triggerRef}>
-                {children}
-            </div>
-            <div id={`tooltip-${Math.random().toString(36).substr(2, 9)}`} role="tooltip" className={tooltipClasses}
-                 ref={tooltipRef}>
-                {content}
-                <div className="tooltip-arrow" data-popper-arrow></div>
-            </div>
-        </>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {children}
+                </TooltipTrigger>
+                <TooltipContent side={side} sideOffset={offset} className={tooltipClass}>
+                    {content}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 };
 

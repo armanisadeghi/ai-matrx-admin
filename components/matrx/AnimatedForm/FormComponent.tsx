@@ -1,7 +1,7 @@
 // components/matrx/AnimatedForm/FormComponent.tsx
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/styles/themes/utils";
 import AnimatedInput from "./AnimatedInput";
@@ -29,6 +29,8 @@ const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
     // If external currentStep isn't provided, manage it internally
     const [internalCurrentStep, setInternalCurrentStep] = useState(0);
     const currentStep = externalCurrentStep !== undefined ? externalCurrentStep : internalCurrentStep;
+  const formRef = useRef<HTMLDivElement>(null);
+  const [isScrollable, setIsScrollable] = useState(false);
 
     // Internal step management functions
     const internalOnNextStep = () => {
@@ -42,6 +44,21 @@ const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
     // Use external step management functions if provided, otherwise fallback to internal
     const onNextStep = externalOnNextStep ? externalOnNextStep : internalOnNextStep;
     const onPrevStep = externalOnPrevStep ? externalOnPrevStep : internalOnPrevStep;
+
+  useEffect(() => {
+    const checkScrollable = () => {
+      if (formRef.current) {
+        setIsScrollable(formRef.current.scrollHeight > formRef.current.clientHeight);
+      }
+    };
+
+    checkScrollable();
+    window.addEventListener('resize', checkScrollable);
+
+    return () => {
+      window.removeEventListener('resize', checkScrollable);
+    };
+  }, [currentStep, fields]);
 
     const renderField = (field: FormField) => {
         const commonProps = {
@@ -85,7 +102,12 @@ const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
 
     return (
         <motion.div
-            className={cn("max-w-md mx-auto mt-10 p-6 bg-card rounded-lg shadow-xl", className)}
+      ref={formRef}
+      className={cn(
+        "max-w-md mx-auto mt-4 p-4 bg-card rounded-lg shadow-xl",
+        isScrollable && "max-h-[65vh] overflow-y-auto",
+        className
+      )}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
@@ -145,7 +167,7 @@ const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
                                 if (currentStep > 0) onPrevStep(); // Use internal or external onPrevStep
                             }}
                             disabled={currentStep === 0}
-                            className="bg-secondary text-secondary-foreground"
+                            className="space-y-6 bg-secondary text-secondary-foreground"
                         >
                             Previous
                         </AnimatedButton>

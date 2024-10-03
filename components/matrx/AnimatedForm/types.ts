@@ -80,4 +80,5 @@ export interface AnimatedTabModalProps extends Partial<Omit<AnimatedFormProps, '
     onTabChange?: (tab: string) => void;
     footer?: React.ReactNode;
     tabs?: TabData[];
+    children?: React.ReactNode;
 }

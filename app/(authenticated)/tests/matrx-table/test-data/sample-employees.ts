@@ -1,7 +1,23 @@
 import {v4 as uuidv4} from 'uuid';
 
-
 export const EmployeeData = [
+    {
+        id: uuidv4(),
+        name: 'John Doe',
+        age: 30,
+        email: 'johndoe@example.com',
+        country: 'USA',
+    },
+    {
+        id: uuidv4(),
+        name: 'Jane Smith',
+        age: 25,
+        email: 'janesmith@example.com',
+        country: 'Canada',
+    }
+];
+
+export const EmployeeDataTwo = [
     {
         id: uuidv4(),
         name: 'John Doe',
