@@ -1,4 +1,4 @@
-// File: styles/themes/types.ts
+// File: styles/themes/flashcards.types.ts
 
 export type ThemeColor = {
     light: string;

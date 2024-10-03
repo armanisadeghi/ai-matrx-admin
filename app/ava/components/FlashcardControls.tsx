@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Shuffle} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Flashcard, AiAssistModalTab} from '../types';
+import {Flashcard, AiAssistModalTab} from "@/types/flashcards.types";
 import AudioModal from './AudioModal';
 
 interface FlashcardControlsProps {

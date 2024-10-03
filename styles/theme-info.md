@@ -16,7 +16,7 @@
     ├── globals.css
     └── /themes
         ├── index.ts
-        ├── types.ts
+        ├── flashcards.types.ts
         ├── themeDefinitions.ts
         ├── ThemeProvider.tsx
         ├── themeSlice.ts
@@ -29,7 +29,7 @@ File Descriptions:
 1. `/styles/globals.css`: Global styles and Tailwind directives
 2. `/tailwind.config.ts`: Tailwind configuration (in root directory)
 3. `/styles/themes/index.ts`: Central export point for all theme-related modules
-4. `/styles/themes/types.ts`: TypeScript types for themes
+4. `/styles/themes/flashcards.types.ts`: TypeScript types for themes
 5. `/styles/themes/themeDefinitions.ts`: Define all themes and their properties (colors, typography, etc.)
 6. `/styles/themes/ThemeProvider.tsx`: React context provider for themes
 7. `/styles/themes/themeSlice.ts`: Redux slice for theme state management

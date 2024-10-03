@@ -68,6 +68,8 @@ const presets: Preset[] = [
 
 const DEFAULT_MODELS = [
     "gpt-4",
+    "gpt-4o",
+    "gpt-4o-mini",
     "gpt-3.5-turbo",
     "gpt-3.5-turbo-16k",
     "babbage-002",
@@ -85,7 +87,7 @@ const fineTuneModels = [
 
 export default function Playground() {
     const [selectedPreset, setSelectedPreset] = React.useState<Preset | null>(null);
-    const [selectedModel, setSelectedModel] = React.useState<React.Key | null>("gpt-4");
+    const [selectedModel, setSelectedModel] = React.useState<React.Key | null>("gpt-4o-mini");
     const [systemMessage, setSystemMessage] = React.useState<string>("");
     const [temperature, setTemperature] = React.useState<number>(0.5);
     const [maxLength, setMaxLength] = React.useState<number>(1024);

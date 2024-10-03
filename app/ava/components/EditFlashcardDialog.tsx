@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Flashcard } from '../types';
+import {Flashcard} from "@/types/flashcards.types";
 
 interface EditFlashcardDialogProps {
     editingCard: Flashcard | null;

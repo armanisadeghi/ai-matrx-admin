@@ -1,39 +1,106 @@
-// lib/redux/slices/flashcardChatSlice.ts
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Flashcard, ChatMessage } from "@/types/flashcards.types";
 
-interface ChatMessage {
-    role: 'user' | 'assistant';
-    content: string;
+export interface FlashcardState extends Flashcard {
+    chat: ChatMessage[];
 }
 
-interface FlashcardChatState {
-    [flashcardId: string]: ChatMessage[];
+export interface FlashcardChatState {
+    flashcards: { [flashcardId: string]: FlashcardState };
+    currentIndex: number;
 }
 
-const initialState: FlashcardChatState = {};
+const initialState: FlashcardChatState = {
+    flashcards: {},
+    currentIndex: 0,
+};
 
 const flashcardChatSlice = createSlice({
     name: 'flashcardChat',
     initialState,
     reducers: {
+        initializeFlashcards: (state, action: PayloadAction<Flashcard[]>) => {
+            state.flashcards = {}; // Clear existing flashcards
+            action.payload.forEach(flashcard => {
+                state.flashcards[flashcard.id] = { ...flashcard, chat: [] };
+            });
+        },
+
+        initializeFlashcard: (state, action: PayloadAction<Flashcard>) => {
+            const { id } = action.payload;
+            if (!state.flashcards[id]) {
+                state.flashcards[id] = { ...action.payload, chat: [] };
+            }
+        },
         addMessage: (
             state,
             action: PayloadAction<{ flashcardId: string; message: ChatMessage }>
         ) => {
             const { flashcardId, message } = action.payload;
-            if (!state[flashcardId]) {
-                state[flashcardId] = [];
+            if (state.flashcards[flashcardId]) {
+                state.flashcards[flashcardId].chat.push(message);
             }
-            state[flashcardId].push(message);
+        },
+        updateFlashcardStats: (
+            state,
+            action: PayloadAction<{ flashcardId: string; isCorrect: boolean }>
+        ) => {
+            const { flashcardId, isCorrect } = action.payload;
+            if (state.flashcards[flashcardId]) {
+                state.flashcards[flashcardId].reviewCount += 1;
+                if (isCorrect) {
+                    state.flashcards[flashcardId].correctCount += 1;
+                } else {
+                    state.flashcards[flashcardId].incorrectCount += 1;
+                }
+            }
         },
         clearChat: (state, action: PayloadAction<string>) => {
             const flashcardId = action.payload;
-            state[flashcardId] = [];
+            if (state.flashcards[flashcardId]) {
+                state.flashcards[flashcardId].chat = [];
+            }
         },
-        resetAllChats: () => initialState,
+        resetAllChats: (state) => {
+            Object.keys(state.flashcards).forEach(id => {
+                state.flashcards[id].chat = [];
+            });
+        },
+        setCurrentIndex: (state, action: PayloadAction<number>) => {
+            state.currentIndex = action.payload;
+        },
+        deleteFlashcard: (state, action: PayloadAction<string>) => {
+            delete state.flashcards[action.payload];
+            // Recalculate currentIndex if necessary
+            if (state.currentIndex >= Object.keys(state.flashcards).length) {
+                state.currentIndex = Math.max(0, Object.keys(state.flashcards).length - 1);
+            }
+        },
+        addFlashcard: (state, action: PayloadAction<Flashcard>) => {
+            state.flashcards[action.payload.id] = { ...action.payload, chat: [] };
+        },
+        updateFlashcard: (state, action: PayloadAction<Flashcard>) => {
+            if (state.flashcards[action.payload.id]) {
+                state.flashcards[action.payload.id] = {
+                    ...state.flashcards[action.payload.id],
+                    ...action.payload,
+                };
+            }
+        },
     },
 });
 
-export const { addMessage, clearChat, resetAllChats } = flashcardChatSlice.actions;
+export const {
+    initializeFlashcards,
+    initializeFlashcard,
+    addMessage,
+    updateFlashcardStats,
+    clearChat,
+    resetAllChats,
+    setCurrentIndex,
+    deleteFlashcard,
+    addFlashcard,
+    updateFlashcard,
+} = flashcardChatSlice.actions;
+
 export default flashcardChatSlice.reducer;

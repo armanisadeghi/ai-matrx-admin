@@ -1,4 +1,4 @@
-// components/matrx/AnimatedForm/types.ts
+// components/matrx/AnimatedForm/flashcards.types.ts
 
 import React from "react";
 

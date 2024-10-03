@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import FlashcardDisplay from './FlashcardDisplay';
 import AIChatInterface from './AIChatInterface';
-import { Flashcard } from '../types';
+import {Flashcard, FlashcardData, AiAssistModalTab} from '@/types/flashcards.types';
 
 interface FlashcardWithAIChatProps {
     card: Flashcard;

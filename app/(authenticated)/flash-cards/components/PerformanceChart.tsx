@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Sector, Label } from 'recharts';
 import { ChartConfig, ChartContainer, ChartStyle, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from "@/lib/utils";
+import { selectPerformanceCounts } from '@/lib/redux/selectors/flashcardSelectors';
 
-interface PerformanceChartProps {
-    totalCorrect: number;
-    totalIncorrect: number;
-}
 
 const chartConfig = {
     correct: {
@@ -21,21 +20,13 @@ const chartConfig = {
     },
 } satisfies ChartConfig;
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, totalIncorrect }) => {
-    const [prevTotal, setPrevTotal] = useState(totalCorrect + totalIncorrect);
+const PerformanceChart: React.FC = () => {
     const [shouldAnimate, setShouldAnimate] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
 
-    useEffect(() => {
-        const newTotal = totalCorrect + totalIncorrect;
-        if (newTotal !== prevTotal) {
-            setShouldAnimate(true);
-            setPrevTotal(newTotal);
-        }
-    }, [totalCorrect, totalIncorrect, prevTotal]);
 
-    const total = totalCorrect + totalIncorrect;
-    const correctPercentage = total > 0 ? Math.round((totalCorrect / total) * 100) : 0;
+    const { totalCount, totalCorrect, totalIncorrect } = useSelector(selectPerformanceCounts);
+    const correctPercentage = totalCount > 0 ? Math.round((totalCorrect / totalCount) * 100) : 0;
 
     const pieData = [
         { name: 'correct', value: totalCorrect, fill: chartConfig.correct.color },
@@ -84,7 +75,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ totalCorrect, total
                 >
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Total</p>
-                        <p className="text-2xl font-bold">{total}</p>
+                        <p className="text-2xl font-bold">{totalCount}</p>
                     </div>
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Correct</p>

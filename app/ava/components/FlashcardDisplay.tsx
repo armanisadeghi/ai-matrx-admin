@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from 'lucide-react';
-import { Flashcard } from '../types';
+import { Flashcard } from "@/types/flashcards.types";
 
 interface FlashcardDisplayProps {
     card: Flashcard;

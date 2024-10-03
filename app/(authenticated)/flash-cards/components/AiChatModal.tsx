@@ -1,84 +1,137 @@
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Flashcard } from '../types';
-import OpenAI from 'openai';
+// flash-cards/components/AiChatModal.tsx
 
-interface AIChatModalProps {
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Flashcard, FlashcardData, ChatMessage } from "@/types/flashcards.types";
+import { useAiChat } from '../hooks/useAiChat';
+import { RootState, AppDispatch } from '@/lib/redux/store';
+import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
+
+interface AiChatModalProps {
     isOpen: boolean;
     onClose: () => void;
-    card: Flashcard;
+    flashcard: FlashcardData;
+    firstName: string;
 }
 
-const AIChatModal: React.FC<AIChatModalProps> = ({ isOpen, onClose, card }) => {
-    const [chatInput, setChatInput] = useState('');
-    const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
+const AiChatModal: React.FC<AiChatModalProps> = ({ isOpen, onClose, flashcard, firstName }) => {
+    const [message, setMessage] = useState('');
+    const [activeTab, setActiveTab] = useState('current');
+    const dispatch = useDispatch<AppDispatch>();
 
-    const handleSendMessage = async () => {
-        if (!chatInput.trim()) return;
+    const currentChat = useSelector((state: RootState) =>
+        state.flashcardChat[flashcard.id]?.chat || []
+    );
+    const allChats = useSelector((state: RootState) => state.flashcardChat);
 
-        const newMessages = [...chatMessages, { role: 'user', content: chatInput }];
-        setChatMessages(newMessages);
-        setChatInput('');
+    const { isLoading, streamingMessage, sendInitialMessage, sendMessage } = useAiChat();
 
-        const openai = new OpenAI({
-            apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-            dangerouslyAllowBrowser: true
-        });
-
-        try {
-            const stream = await openai.chat.completions.create({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    { role: "system", content: `You are a helpful assistant. The current flashcard question is: "${card.front}" and the answer is: "${card.back}". Help the user understand this concept.` },
-                    ...newMessages
-                ],
-                stream: true,
+    useEffect(() => {
+        if (isOpen && flashcard && currentChat.length === 0) {
+            const fullFlashcard: Flashcard = {
+                ...flashcard,
+                reviewCount: 0,
+                correctCount: 0,
+                incorrectCount: 0
+            };
+            sendInitialMessage(fullFlashcard, firstName, (content: string) => {
+                dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'assistant', content } }));
             });
+        }
+    }, [isOpen, flashcard, firstName, sendInitialMessage, currentChat.length, dispatch]);
 
-            let assistantMessage = '';
-            for await (const chunk of stream) {
-                const content = chunk.choices[0]?.delta?.content || '';
-                assistantMessage += content;
-                setChatMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
-            }
-        } catch (error) {
-            console.error('Error:', error);
+    const handleSubmit = () => {
+        if (message.trim() && !isLoading) {
+            dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'user', content: message } }));
+            sendMessage(message, flashcard.id, (content: string) => {
+                dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'assistant', content } }));
+            });
+            setMessage('');
         }
     };
 
+    const renderMessage = (content: string, role: string) => (
+        <div className={`mb-4 ${role === 'user' ? 'text-right' : 'text-left'}`}>
+            <div className={`inline-block p-3 rounded-lg ${role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
+                        li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                        a: ({node, ...props}) => <a className="text-blue-500 underline" {...props} />,
+                    }}
+                >
+                    {content}
+                </ReactMarkdown>
+            </div>
+        </div>
+    );
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>Ask AI Assistant</DialogTitle>
+                    <DialogTitle className="text-xl">Ask the AI</DialogTitle>
+                    <div className="flex space-x-2">
+                        <Button
+                            onClick={() => setActiveTab('current')}
+                            variant={activeTab === 'current' ? 'default' : 'outline'}
+                        >
+                            Current Flashcard
+                        </Button>
+                        <Button
+                            onClick={() => setActiveTab('all')}
+                            variant={activeTab === 'all' ? 'default' : 'outline'}
+                        >
+                            All History
+                        </Button>
+                    </div>
                 </DialogHeader>
-                <div className="flex flex-col h-[400px]">
-                    <div className="flex-grow overflow-auto p-4">
-                        {chatMessages.map((msg, index) => (
-                            <div key={index} className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                                <span className={`inline-block p-2 rounded ${msg.role === 'user' ? 'bg-blue-600' : 'bg-zinc-700'}`}>
-                                    {msg.content}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="p-4 border-t border-zinc-700">
-                        <div className="flex">
-                            <input
-                                type="text"
-                                value={chatInput}
-                                onChange={(e) => setChatInput(e.target.value)}
-                                className="flex-grow p-2 rounded-l bg-zinc-800 text-white"
-                                placeholder="Ask a question..."
-                            />
-                            <Button onClick={handleSendMessage} className="rounded-l-none">Send</Button>
-                        </div>
-                    </div>
+
+                <div className="flex-grow overflow-y-auto p-4 bg-background rounded-lg mb-4">
+                    {activeTab === 'current' ? (
+                        <>
+                            {currentChat.map((msg: ChatMessage, idx: number) => (
+                                <React.Fragment key={idx}>
+                                    {renderMessage(msg.content, msg.role)}
+                                </React.Fragment>
+                            ))}
+                            {streamingMessage && renderMessage(streamingMessage, 'assistant')}
+                        </>
+                    ) : (
+                        Object.entries(allChats).flatMap(([cardId, flashcardState]) =>
+                            flashcardState.chat.map((msg: ChatMessage, idx: number) => (
+                                <React.Fragment key={`${cardId}-${idx}`}>
+                                    {renderMessage(`[Card ${cardId}] ${msg.content}`, msg.role)}
+                                </React.Fragment>
+                            ))
+                        )
+                    )}
+                    {isLoading && <div className="text-center">AI is thinking...</div>}
+                </div>
+
+                <div className="flex items-start space-x-2">
+                    <Textarea
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Type your question..."
+                        className="flex-grow"
+                        rows={3}
+                    />
+                    <Button onClick={handleSubmit} disabled={isLoading}>
+                        Send
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>
     );
 };
 
-export default AIChatModal;
+export default AiChatModal;

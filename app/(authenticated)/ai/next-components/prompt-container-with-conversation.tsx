@@ -3,10 +3,10 @@
 import React from "react";
 import {ScrollShadow, Tab, Tabs} from "@nextui-org/react";
 
-import {cn} from "./cn";
 
 import PromptInputWithBottomActions from "./prompt-input-with-bottom-actions";
 import Conversation from "./conversation";
+import {cn} from "@/utils/cn";
 
 export default function Component(
     {

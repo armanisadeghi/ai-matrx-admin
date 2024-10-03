@@ -1,14 +1,14 @@
 'use client';
 
 import React, {useState, useCallback} from 'react';
+import {useSelector} from 'react-redux';
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Shuffle} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {useSelector} from 'react-redux';
-import {Flashcard, AiAssistModalTab} from '../types';
+import {AiAssistModalTab} from '@/types/flashcards.types';
 import AudioModal from './AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/components/AiChatModal";
-import {RootState} from "@/lib/redux/store"; // Assuming this is your store setup
+import {selectAllFlashcards, selectCurrentIndex, selectActiveFlashcard} from '@/lib/redux/selectors/flashcardSelectors';
 
 interface FlashcardControlsProps {
     onPrevious: () => void;
@@ -16,8 +16,7 @@ interface FlashcardControlsProps {
     onShuffle: () => void;
     onShowModal: (message: AiAssistModalTab) => void;
     onSelectChange: (value: string) => void;
-    currentIndex: number;
-    cards: Flashcard[];
+    firstName: string;
 }
 
 const FlashcardControls: React.FC<FlashcardControlsProps> = (
@@ -27,17 +26,14 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
         onShuffle,
         onShowModal,
         onSelectChange,
-        currentIndex,
-        cards,
+        firstName,
     }) => {
     const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
-    const [isAiModalOpen, setIsAiModalOpen] = useState(false); // For AI Chat modal
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-    const currentCard = cards[currentIndex];
-
-    // Fetching username from Redux store
-    const fullName = useSelector((state: RootState) => state.user.userMetadata.fullName);
-    const firstName = fullName ? fullName.split(' ')[0] : null; // "John"
+    const allFlashcards = useSelector(selectAllFlashcards);
+    const currentIndex = useSelector(selectCurrentIndex);
+    const currentCard = useSelector(selectActiveFlashcard);
 
     const handleConfusedClick = useCallback(() => {
         console.log('Confused button clicked');
@@ -61,7 +57,7 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
                         <SelectValue placeholder="Select a flashcard"/>
                     </SelectTrigger>
                     <SelectContent>
-                        {cards.map((card, index) => (
+                        {allFlashcards.map((card, index) => (
                             <SelectItem key={card.order} value={index.toString()}>
                                 {`${card.order}: ${card.front.length > 50 ? card.front.substring(0, 50) + '...' : card.front}`}
                             </SelectItem>
@@ -83,7 +79,7 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
                     Give me an example
                 </Button>
                 <Button
-                    onClick={() => setIsAiModalOpen(true)} // Open AI Chat modal
+                    onClick={() => setIsAiModalOpen(true)}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform"
                 >
@@ -103,19 +99,22 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
                 </Button>
             </div>
 
-            <AudioModal
-                isOpen={isAudioModalOpen}
-                onClose={() => setIsAudioModalOpen(false)}
-                text={currentCard.audioExplanation || ''}
-            />
+            {currentCard && (
+                <>
+                    <AudioModal
+                        isOpen={isAudioModalOpen}
+                        onClose={() => setIsAudioModalOpen(false)}
+                        text={currentCard.audioExplanation || ''}
+                    />
 
-            {/* AI Chat Modal */}
-            <AiChatModal
-                isOpen={isAiModalOpen}
-                onClose={() => setIsAiModalOpen(false)}
-                flashcard={currentCard}
-                username={firstName} // Pass the username from Redux store
-            />
+                    <AiChatModal
+                        isOpen={isAiModalOpen}
+                        onClose={() => setIsAiModalOpen(false)}
+                        flashcard={currentCard}
+                        firstName={firstName}
+                    />
+                </>
+            )}
         </div>
     );
 };

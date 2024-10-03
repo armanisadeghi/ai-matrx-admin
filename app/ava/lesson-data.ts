@@ -1,4 +1,4 @@
-import {FlashcardData} from "./types";
+import {FlashcardData} from "@/types/flashcards.types";
 
 export const HistoryFlashcardData: FlashcardData[] = [
     {

@@ -1,4 +1,4 @@
-// File location: app\(authenticated)\tests\flash-cards\types.ts
+// File location: types/flashcards.types.ts
 
 export type FlashcardData = {
     id?: string;
@@ -23,3 +23,9 @@ export type Flashcard = FlashcardData & {
 }
 
 export type AiAssistModalTab = 'confused' | 'example' | 'question' | 'split' | 'combine' | 'compare';
+
+export type ChatMessage = {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+};
+

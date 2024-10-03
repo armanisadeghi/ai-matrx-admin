@@ -6,7 +6,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit } from 'lucide-react';
-import { Flashcard } from '../types';
+import { Flashcard } from "@/types/flashcards.types";
 
 interface FlashcardTableProps {
     cards: Flashcard[];

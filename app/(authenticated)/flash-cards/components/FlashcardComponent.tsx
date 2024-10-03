@@ -1,85 +1,94 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useTheme } from 'next-themes';
-import { InitialFlashcardsWithExample } from '../lesson-data';
-import { Flashcard, FlashcardData } from '../types';
+import React, {useState} from 'react';
+import {useTheme} from 'next-themes';
+import {useSelector, useDispatch} from 'react-redux';
+import {flashcardDataSet} from '../lesson-data';
+import {Flashcard} from "@/types/flashcards.types";
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
+import ExpandedFlashcardWithChat from './ExpandedFlashcardWithChat';
 import PerformanceChart from './PerformanceChart';
 import FlashcardTable from './FlashcardTable';
 import EditFlashcardDialog from './EditFlashcardDialog';
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import {Button} from "@/components/ui/button";
+import {Progress} from "@/components/ui/progress";
 import AiAssistModal from './AiAssistModal';
-import AIChatModal from './AIChatModal';
+import {RootState, AppDispatch} from '@/lib/redux/store';
+import {
+    initializeFlashcards,
+    setCurrentIndex,
+    updateFlashcard,
+    updateFlashcardStats
+} from '@/lib/redux/slices/flashcardChatSlice';
+
+import {
+    selectAllFlashcards,
+    selectActiveFlashcard,
+    selectCurrentIndex,
+} from '@/lib/redux/selectors/flashcardSelectors';
 
 const FlashcardComponent: React.FC = () => {
-    const [cards, setCards] = useState<Flashcard[]>(
-        InitialFlashcardsWithExample.map(card => ({
-            ...card,
-            reviewCount: 0,
-            correctCount: 0,
-            incorrectCount: 0
-        }))
-    );
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const dispatch = useDispatch<AppDispatch>();
+    const allFlashcards = useSelector(selectAllFlashcards);
+    const currentIndex = useSelector(selectCurrentIndex);
+    const activeFlashcard = useSelector(selectActiveFlashcard);
+    const firstName = useSelector((state: RootState) => state.user.userMetadata.fullName?.split(' ')[0] || null);
+
     const [isFlipped, setIsFlipped] = useState(false);
-    const [progress, setProgress] = useState(0);
     const [fontSize, setFontSize] = useState(16);
     const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [modalDefaultTab, setModalDefaultTab] = useState('confused');
-    const [isAIChatOpen, setIsAIChatOpen] = useState(false);
-    const { theme } = useTheme();
+    const {theme} = useTheme();
+    const [isExpandedChatOpen, setIsExpandedChatOpen] = useState(false);
 
-    const totalCorrect = useMemo(() => cards.reduce((sum, card) => sum + card.correctCount, 0), [cards]);
-    const totalIncorrect = useMemo(() => cards.reduce((sum, card) => sum + card.incorrectCount, 0), [cards]);
+    React.useEffect(() => {
+        const flashcardsToInitialize = flashcardDataSet.map((card, index) => ({
+            ...card,
+            id: `flashcard-${index}`,
+            reviewCount: 0,
+            correctCount: 0,
+            incorrectCount: 0
+        }));
+        dispatch(initializeFlashcards(flashcardsToInitialize));
+    }, [dispatch]);
 
-    useEffect(() => {
-        setProgress((currentIndex / (cards.length - 1)) * 100);
-    }, [currentIndex, cards.length]);
+    React.useEffect(() => {
+        const progress = ((currentIndex + 1) / allFlashcards.length) * 100;
+    }, [currentIndex, allFlashcards.length]);
 
     const handleFlip = () => setIsFlipped(!isFlipped);
 
     const handleNext = () => {
-        if (currentIndex < cards.length - 1) {
-            setCurrentIndex(currentIndex + 1);
+        if (currentIndex < allFlashcards.length - 1) {
+            dispatch(setCurrentIndex(currentIndex + 1));
             setIsFlipped(false);
         }
     };
 
     const handlePrevious = () => {
         if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 1);
+            dispatch(setCurrentIndex(currentIndex - 1));
             setIsFlipped(false);
         }
     };
 
     const handleSelectChange = (value: string) => {
-        setCurrentIndex(parseInt(value));
+        dispatch(setCurrentIndex(parseInt(value)));
         setIsFlipped(false);
     };
 
     const shuffleCards = () => {
-        setCards([...cards].sort(() => Math.random() - 0.5));
-        setCurrentIndex(0);
+        const newIndex = Math.floor(Math.random() * allFlashcards.length);
+        dispatch(setCurrentIndex(newIndex));
         setIsFlipped(false);
     };
 
     const handleAnswer = (isCorrect: boolean) => {
-        setCards(prevCards =>
-            prevCards.map((card, index) =>
-                index === currentIndex
-                    ? {
-                        ...card,
-                        reviewCount: card.reviewCount + 1,
-                        correctCount: isCorrect ? card.correctCount + 1 : card.correctCount,
-                        incorrectCount: isCorrect ? card.incorrectCount : card.incorrectCount + 1
-                    }
-                    : card
-            )
-        );
-        handleNext();
+        if (activeFlashcard) {
+            dispatch(updateFlashcardStats({flashcardId: activeFlashcard.id, isCorrect}));
+            handleNext();
+        }
     };
 
     const handleEditCard = (card: Flashcard) => {
@@ -88,11 +97,7 @@ const FlashcardComponent: React.FC = () => {
 
     const handleSaveEdit = () => {
         if (editingCard) {
-            setCards(prevCards =>
-                prevCards.map(card =>
-                    card.order === editingCard.order ? editingCard : card
-                )
-            );
+            dispatch(updateFlashcard(editingCard));
             setEditingCard(null);
         }
     };
@@ -104,7 +109,7 @@ const FlashcardComponent: React.FC = () => {
     };
 
     const handleAskQuestion = () => {
-        setIsAIChatOpen(true);
+        setIsExpandedChatOpen(true);
     };
 
     return (
@@ -112,7 +117,6 @@ const FlashcardComponent: React.FC = () => {
             <div className="flex justify-between items-stretch mb-4 gap-4">
                 <div className="w-2/3">
                     <FlashcardDisplay
-                        card={cards[currentIndex]}
                         isFlipped={isFlipped}
                         fontSize={fontSize}
                         onFlip={handleFlip}
@@ -121,10 +125,7 @@ const FlashcardComponent: React.FC = () => {
                     />
                 </div>
                 <div className="w-1/3">
-                    <PerformanceChart
-                        totalCorrect={totalCorrect}
-                        totalIncorrect={totalIncorrect}
-                    />
+                    <PerformanceChart/>
                 </div>
             </div>
 
@@ -134,12 +135,11 @@ const FlashcardComponent: React.FC = () => {
                 onShuffle={shuffleCards}
                 onShowModal={showModal}
                 onSelectChange={handleSelectChange}
-                currentIndex={currentIndex}
-                cards={cards}
+                firstName={firstName}
             />
 
             <div className="mt-4">
-                <Progress value={progress} className="w-full" />
+                <Progress value={((currentIndex + 1) / allFlashcards.length) * 100} className="w-full"/>
             </div>
 
             <div className="mt-4 flex items-center space-x-2">
@@ -150,9 +150,7 @@ const FlashcardComponent: React.FC = () => {
             </div>
 
             <FlashcardTable
-                cards={cards}
                 onEditCard={handleEditCard}
-                onSelectCard={(index) => { setCurrentIndex(index); setIsFlipped(false); }}
             />
 
             <EditFlashcardDialog
@@ -167,12 +165,15 @@ const FlashcardComponent: React.FC = () => {
                 defaultTab={modalDefaultTab}
                 message={modalMessage}
             />
-
-            <AIChatModal
-                isOpen={isAIChatOpen}
-                onClose={() => setIsAIChatOpen(false)}
-                card={cards[currentIndex]}
-            />
+            {activeFlashcard && (
+                <ExpandedFlashcardWithChat
+                    isOpen={isExpandedChatOpen}
+                    onClose={() => setIsExpandedChatOpen(false)}
+                    cardId={activeFlashcard.id}
+                    firstName={firstName}
+                    fontSize={fontSize}
+                />
+            )}
         </div>
     );
 };

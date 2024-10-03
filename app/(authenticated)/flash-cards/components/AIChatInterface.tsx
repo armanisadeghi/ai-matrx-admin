@@ -1,38 +1,36 @@
+// app/(authenticated)/flash-cards/components/AIChatInterface.tsx
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Flashcard } from '../types';
-import OpenAI from 'openai';
+import { Flashcard, FlashcardData, ChatMessage } from "@/types/flashcards.types";
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/lib/redux/store';
 import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
+import {defaultAiModel} from "@/app/(authenticated)/flash-cards/utils/chatSettings";
+import {openai} from "@/lib/openai/browserClient";
 
 interface AIChatInterfaceProps {
     isOpen: boolean;
     onClose: () => void;
-    card: Flashcard;
+    card: FlashcardData;
 }
 
 const AIChatInterface: React.FC<AIChatInterfaceProps> = ({ isOpen, onClose, card }) => {
     const dispatch = useDispatch();
-    const chatMessages = useSelector((state: RootState) => state.flashcardChat[card.id] || []);
+    const chatMessages = useSelector((state: RootState) => state.flashcardChat[card.id]?.chat || []);
     const [chatInput, setChatInput] = useState('');
 
     const handleSendMessage = async () => {
         if (!chatInput.trim()) return;
 
-        const newMessage = { role: 'user' as const, content: chatInput };
+        const newMessage: ChatMessage = { role: 'user', content: chatInput };
         dispatch(addMessage({ flashcardId: card.id, message: newMessage }));
         setChatInput('');
 
-        const openai = new OpenAI({
-            apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-            dangerouslyAllowBrowser: true
-        });
-
         try {
             const stream = await openai.chat.completions.create({
-                model: "gpt-3.5-turbo",
+                model: defaultAiModel,
                 messages: [
                     { role: "system", content: `You are a helpful assistant. The current flashcard question is: "${card.front}" and the answer is: "${card.back}". Help the user understand this concept.` },
                     ...chatMessages,

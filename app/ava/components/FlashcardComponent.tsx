@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from 'next-themes';
 import { HistoryFlashcardData } from '../lesson-data';
-import { Flashcard, FlashcardData } from '../types';
+import { Flashcard, FlashcardData } from "@/types/flashcards.types";
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
 import PerformanceChart from './PerformanceChart';

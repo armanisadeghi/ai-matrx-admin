@@ -1,4 +1,4 @@
-import {FlashcardData} from "./types";
+import {FlashcardData} from "@/types/flashcards.types";
 
 export const InitialFlashcardsWithExample: FlashcardData[] = [
     {
@@ -543,7 +543,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
     }
 ];
 
-export const HistoryFlashcardData: FlashcardData[] = [
+export const flashcardDataSet: FlashcardData[] = [
     {
         topic: "History",
         lesson: "Revolutionary Era",

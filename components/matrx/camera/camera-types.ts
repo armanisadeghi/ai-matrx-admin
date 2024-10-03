@@ -1,4 +1,4 @@
-// File Location: @/components/ui/added-ui/camera/camera-types.ts
+// File Location: @/components/ui/added-ui/camera/camera-flashcards.types.ts
 
 export type FacingMode = 'user' | 'environment';
 export type Stream = MediaStream | null;
