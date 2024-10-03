@@ -12,6 +12,8 @@ const DynamicMatrxTable = dynamic(() => import('./components/MatrxTable'), { ssr
 const tableDataOne = EmployeeData;
 const tableDataTwo = FlashcardData;
 
+
+
 const MatrxTableTestPage: React.FC = () => {
     const handleAction = (actionName: string, rowData: any) => {
         console.log(`Action: ${actionName}`, rowData);

@@ -1,9 +1,14 @@
-import React, { useState, useCallback } from 'react';
+'use client';
+
+import React, {useState, useCallback} from 'react';
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Shuffle} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {useSelector} from 'react-redux';
 import {Flashcard, AiAssistModalTab} from '../types';
 import AudioModal from './AudioModal';
+import AiChatModal from "@/app/(authenticated)/flash-cards/components/AiChatModal";
+import {RootState} from "@/lib/redux/store"; // Assuming this is your store setup
 
 interface FlashcardControlsProps {
     onPrevious: () => void;
@@ -23,10 +28,16 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
         onShowModal,
         onSelectChange,
         currentIndex,
-        cards
+        cards,
     }) => {
     const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false); // For AI Chat modal
+
     const currentCard = cards[currentIndex];
+
+    // Fetching username from Redux store
+    const fullName = useSelector((state: RootState) => state.user.userMetadata.fullName);
+    const firstName = fullName ? fullName.split(' ')[0] : null; // "John"
 
     const handleConfusedClick = useCallback(() => {
         console.log('Confused button clicked');
@@ -68,22 +79,43 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
                     I'm confused
                 </Button>
                 <Button onClick={() => onShowModal('example')} variant="outline"
-                        className="w-full hover:scale-105 transition-transform">Give me an example</Button>
-                <Button onClick={() => onShowModal('question')} variant="outline"
-                        className="w-full hover:scale-105 transition-transform">I have a question</Button>
+                        className="w-full hover:scale-105 transition-transform">
+                    Give me an example
+                </Button>
+                <Button
+                    onClick={() => setIsAiModalOpen(true)} // Open AI Chat modal
+                    variant="outline"
+                    className="w-full hover:scale-105 transition-transform"
+                >
+                    I have a question
+                </Button>
                 <Button onClick={() => onShowModal('split')} variant="outline"
-                        className="w-full hover:scale-105 transition-transform">Split into two cards</Button>
+                        className="w-full hover:scale-105 transition-transform">
+                    Split into two cards
+                </Button>
                 <Button onClick={() => onShowModal('combine')} variant="outline"
-                        className="w-full hover:scale-105 transition-transform">Combine cards</Button>
+                        className="w-full hover:scale-105 transition-transform">
+                    Combine cards
+                </Button>
                 <Button onClick={() => onShowModal('compare')} variant="outline"
-                        className="w-full hover:scale-105 transition-transform">Compare Cards</Button>
+                        className="w-full hover:scale-105 transition-transform">
+                    Compare Cards
+                </Button>
             </div>
 
             <AudioModal
                 isOpen={isAudioModalOpen}
                 onClose={() => setIsAudioModalOpen(false)}
                 text={currentCard.audioExplanation || ''}
-                    />
+            />
+
+            {/* AI Chat Modal */}
+            <AiChatModal
+                isOpen={isAiModalOpen}
+                onClose={() => setIsAiModalOpen(false)}
+                flashcard={currentCard}
+                username={firstName} // Pass the username from Redux store
+            />
         </div>
     );
 };

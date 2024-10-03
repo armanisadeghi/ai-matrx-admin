@@ -10,6 +10,7 @@ import EditFlashcardDialog from './EditFlashcardDialog';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AiAssistModal from './AiAssistModal';
+import AIChatModal from './AIChatModal';
 
 const FlashcardComponent: React.FC = () => {
     const [cards, setCards] = useState<Flashcard[]>(
@@ -28,6 +29,7 @@ const FlashcardComponent: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [modalDefaultTab, setModalDefaultTab] = useState('confused');
+    const [isAIChatOpen, setIsAIChatOpen] = useState(false);
     const { theme } = useTheme();
 
     const totalCorrect = useMemo(() => cards.reduce((sum, card) => sum + card.correctCount, 0), [cards]);
@@ -101,6 +103,10 @@ const FlashcardComponent: React.FC = () => {
         setIsModalOpen(true);
     };
 
+    const handleAskQuestion = () => {
+        setIsAIChatOpen(true);
+    };
+
     return (
         <div className="w-full max-w-7xl mx-auto px-4">
             <div className="flex justify-between items-stretch mb-4 gap-4">
@@ -111,16 +117,17 @@ const FlashcardComponent: React.FC = () => {
                         fontSize={fontSize}
                         onFlip={handleFlip}
                         onAnswer={handleAnswer}
+                        onAskQuestion={handleAskQuestion}
                     />
                 </div>
                 <div className="w-1/3">
-                    <PerformanceChart 
-                        totalCorrect={totalCorrect} 
-                        totalIncorrect={totalIncorrect} 
+                    <PerformanceChart
+                        totalCorrect={totalCorrect}
+                        totalIncorrect={totalIncorrect}
                     />
                 </div>
             </div>
-            
+
             <FlashcardControls
                 onPrevious={handlePrevious}
                 onNext={handleNext}
@@ -134,7 +141,7 @@ const FlashcardComponent: React.FC = () => {
             <div className="mt-4">
                 <Progress value={progress} className="w-full" />
             </div>
-            
+
             <div className="mt-4 flex items-center space-x-2">
                 <span>Font Size:</span>
                 <Button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} variant="outline">-</Button>
@@ -154,11 +161,17 @@ const FlashcardComponent: React.FC = () => {
                 onClose={() => setEditingCard(null)}
             />
 
-            <AiAssistModal 
-                isOpen={isModalOpen} 
+            <AiAssistModal
+                isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 defaultTab={modalDefaultTab}
                 message={modalMessage}
+            />
+
+            <AIChatModal
+                isOpen={isAIChatOpen}
+                onClose={() => setIsAIChatOpen(false)}
+                card={cards[currentIndex]}
             />
         </div>
     );

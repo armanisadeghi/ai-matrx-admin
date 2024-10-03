@@ -10,6 +10,7 @@ import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
 import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
+import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from "@/styles/themes";
 
 const sagaMiddleware = createSagaMiddleware();
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
     user: userReducer,
     userPreferences: userPreferencesReducer,
     testRoutes: testRoutesReducer,
+    flashcardChat: flashcardChatReducer,
 });
 
 export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {
