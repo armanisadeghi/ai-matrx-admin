@@ -1,11 +1,16 @@
-import React from 'react';
+// app/private/page.tsx
 
-export default function Home() {
-    return (
-        <div>
-            <header>
-                <h1>Sample Private Page</h1>
-            </header>
-        </div>
-    );
+import { redirect } from 'next/navigation'
+
+import { createClient } from '@/utils/supabase/server'
+
+export default async function PrivatePage() {
+    const supabase = createClient()
+
+    const { data, error } = await supabase.auth.getUser()
+    if (error || !data?.user) {
+        redirect('/login')
+    }
+
+    return <p>Hello {data.user.email}</p>
 }

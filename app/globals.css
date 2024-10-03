@@ -1,13 +1,16 @@
 /* globals.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+
 @layer base {
     :root {
+        /* Light mode colors with increased contrast and vibrancy */
         --background: 0 0% 100%;
         --foreground: 240 10% 3.9%;
-        --card: 0 0% 100%;
+        --card: 0 0% 98%;
         --card-foreground: 240 10% 3.9%;
         --popover: 0 0% 100%;
         --popover-foreground: 240 10% 3.9%;
@@ -17,9 +20,9 @@
         --secondary-foreground: 240 5.9% 10%;
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
+        --accent: 262 83% 58%;  /* More vibrant accent */
         --accent-foreground: 240 5.9% 10%;
-        --destructive: 0 72.22% 50.59%;
+        --destructive: 0 84% 60%;  /* Brighter destructive */
         --destructive-foreground: 0 0% 98%;
         --border: 240 5.9% 90%;
         --input: 240 5.9% 90%;
@@ -31,6 +34,36 @@
         --chart-3: 197 37% 24%;
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
+
+        /* Enhanced accent colors */
+        --accent-2: 280 70% 50%;  /* More saturated */
+        --accent-3: 200 95% 40%;  /* Brighter */
+        --warning: 38 92% 50%;
+        --info: 200 98% 39%;
+
+        /* Adjusted hover state colors for more contrast */
+        --primary-hover: 240 5.9% 15%;
+        --secondary-hover: 240 4.8% 90%;
+        --accent-hover: 262 83% 48%;
+
+        /* Adjusted active state colors */
+        --primary-active: 240 5.9% 20%;
+        --secondary-active: 240 4.8% 85%;
+        --accent-active: 262 83% 38%;
+
+        /* Elevation colors with slight tint */
+        --elevation-1: 262 20% 98%;
+        --elevation-2: 262 20% 96%;
+        --elevation-3: 262 20% 94%;
+
+        /* Enhanced gradients */
+        --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
+        --gradient-2: linear-gradient(to right, hsl(var(--chart-1)), hsl(var(--chart-2)));
+        --gradient-3: linear-gradient(to bottom right, hsl(var(--accent-2)), hsl(var(--accent-3)));
+
+        /* Animation specific */
+        --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        --animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
 
         /* Custom checkerboard pattern for light mode */
         --checkerboard: linear-gradient(45deg, hsl(0, 0%, 94%) 25%, transparent 25%),
@@ -54,17 +87,48 @@
         --muted-foreground: 240 5% 64.9%;
         --accent: 240 3.7% 15.9%;
         --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
+        --destructive: 0 72% 60%;
         --destructive-foreground: 0 85.7% 97.3%;
         --border: 240 3.7% 15.9%;
         --input: 240 3.7% 15.9%;
         --ring: 240 4.9% 83.9%;
+        --radius: 0.5rem;
         --success: 142 69% 58%;
         --chart-1: 220 70% 50%;
         --chart-2: 160 60% 45%;
         --chart-3: 30 80% 55%;
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
+
+        /* New colors */
+        --accent-2: 280 65% 60%;
+        --accent-3: 200 95% 40%;
+        --warning: 38 92% 60%;
+        --info: 200 98% 50%;
+
+        /* Hover state colors */
+        --primary-hover: 0 0% 85%;
+        --secondary-hover: 240 3.7% 25%;
+        --accent-hover: 240 3.7% 25%;
+
+        /* Active state colors */
+        --primary-active: 0 0% 75%;
+        --secondary-active: 240 3.7% 35%;
+        --accent-active: 240 3.7% 35%;
+
+        /* Elevation colors */
+        --elevation-1: 0 0% 15%;
+        --elevation-2: 0 0% 25%;
+        --elevation-3: 0 0% 35%;
+
+        /* Gradients */
+        --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
+        --gradient-2: linear-gradient(to right, hsl(var(--chart-1)), hsl(var(--chart-2)));
+        --gradient-3: linear-gradient(to bottom right, hsl(var(--accent-2)), hsl(var(--accent-3)));
+
+        /* Animation specific */
+        --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        --animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
 
         /* Custom checkerboard pattern for dark mode */
         --checkerboard: linear-gradient(45deg, hsl(0, 0%, 31%) 25%, transparent 25%),
@@ -74,22 +138,51 @@
     }
 }
 
+
+
 @layer base {
     * {
         @apply border-border;
     }
     html {
         @apply scroll-smooth;
+        font-size: 16px; /* Base font size */
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-texture-light dark:bg-texture-dark text-foreground;
+
         /* font-feature-settings: "rlig" 1, "calt" 1; */
         font-synthesis-weight: none;
         text-rendering: optimizeLegibility;
+        font-size: 1.0625rem; /* Slightly larger than default, equivalent to 17px */
+
+    }
+    input, textarea, select {
+        font-size: 1.0625rem; /* Match body font size for form elements */
     }
 }
 
+@layer components {
+    .card {
+        @apply bg-texture-light dark:bg-texture-dark;
+    }
+}
+
+
 @layer utilities {
+
+    .light-mode-shadow {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .light-mode-border {
+        border: 1px solid hsl(var(--border));
+    }
+
+    .light-mode-bg-gradient {
+        background-image: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--elevation-3)));
+    }
+
     .step {
         counter-increment: step;
     }

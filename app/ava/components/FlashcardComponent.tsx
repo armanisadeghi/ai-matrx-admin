@@ -139,7 +139,7 @@ const FlashcardComponent: React.FC = () => {
                 <span>Font Size:</span>
                 <Button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} variant="outline">-</Button>
                 <span>{fontSize}px</span>
-                <Button onClick={() => setFontSize(prev => Math.min(24, prev + 2))} variant="outline">+</Button>
+                <Button onClick={() => setFontSize(prev => Math.min(36, prev + 2))} variant="outline">+</Button>
             </div>
 
             <FlashcardTable
