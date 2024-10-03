@@ -39,7 +39,7 @@ const PlaygroundControls: React.FC<PlaygroundControlsProps> = (
         setPresencePenalty,
     }) => {
     return (
-        <>
+        <div className="flex flex-col gap-4">
             <Textarea
                 fullWidth
                 label="System"
@@ -63,59 +63,57 @@ const PlaygroundControls: React.FC<PlaygroundControlsProps> = (
                     ))}
                 </SelectSection>
             </Select>
-            <div className="mt-2 flex w-full flex-col gap-6 px-1">
-                <Slider
-                    aria-label="Temperature"
-                    label="Temperature"
-                    maxValue={1}
-                    minValue={0}
-                    size="sm"
-                    step={0.01}
-                    value={temperature}
-                    onChange={(value) => setTemperature(value as number)}
-                />
-                <Slider
-                    aria-label="Max Length"
-                    label="Max Length"
-                    maxValue={2048}
-                    minValue={0}
-                    size="sm"
-                    step={1}
-                    value={maxLength}
-                    onChange={(value) => setMaxLength(value as number)}
-                />
-                <Slider
-                    aria-label="Top P"
-                    label="Top P"
-                    maxValue={1}
-                    minValue={0}
-                    size="sm"
-                    step={0.01}
-                    value={topP}
-                    onChange={(value) => setTopP(value as number)}
-                />
-                <Slider
-                    aria-label="Frequency Penalty"
-                    label="Frequency Penalty"
-                    maxValue={2}
-                    minValue={0}
-                    size="sm"
-                    step={0.01}
-                    value={frequencyPenalty}
-                    onChange={(value) => setFrequencyPenalty(value as number)}
-                />
-                <Slider
-                    aria-label="Presence Penalty"
-                    label="Presence Penalty"
-                    maxValue={2}
-                    minValue={0}
-                    size="sm"
-                    step={0.01}
-                    value={presencePenalty}
-                    onChange={(value) => setPresencePenalty(value as number)}
-                />
-            </div>
-        </>
+            <Slider
+                aria-label="Temperature"
+                label="Temperature"
+                maxValue={1}
+                minValue={0}
+                size="sm"
+                step={0.01}
+                value={temperature}
+                onChange={(value) => setTemperature(value as number)}
+            />
+            <Slider
+                aria-label="Max Length"
+                label="Max Length"
+                maxValue={2048}
+                minValue={0}
+                size="sm"
+                step={1}
+                value={maxLength}
+                onChange={(value) => setMaxLength(value as number)}
+            />
+            <Slider
+                aria-label="Top P"
+                label="Top P"
+                maxValue={1}
+                minValue={0}
+                size="sm"
+                step={0.01}
+                value={topP}
+                onChange={(value) => setTopP(value as number)}
+            />
+            <Slider
+                aria-label="Frequency Penalty"
+                label="Frequency Penalty"
+                maxValue={2}
+                minValue={0}
+                size="sm"
+                step={0.01}
+                value={frequencyPenalty}
+                onChange={(value) => setFrequencyPenalty(value as number)}
+            />
+            <Slider
+                aria-label="Presence Penalty"
+                label="Presence Penalty"
+                maxValue={2}
+                minValue={0}
+                size="sm"
+                step={0.01}
+                value={presencePenalty}
+                onChange={(value) => setPresencePenalty(value as number)}
+            />
+        </div>
     );
 };
 

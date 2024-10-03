@@ -13,9 +13,9 @@ import {
     Selection,
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
-import { presets, Preset } from "./constants/playground-constants";
-import PlaygroundControls from "./PlaygroundControls";
-import PromptContainerWithConversation from "./prompt-container-with-conversation";
+import { presets, Preset } from "../next-components/constants/playground-constants";
+import PlaygroundControls from "../next-components/PlaygroundControls";
+import PromptContainerWithConversation from "../next-components/prompt-container-with-conversation";
 
 const PlaygroundCollapsable: React.FC = () => {
     const [selectedPreset, setSelectedPreset] = React.useState<Preset | null>(null);
@@ -67,21 +67,20 @@ const PlaygroundCollapsable: React.FC = () => {
 
     return (
         <section className="h-full w-full">
-            <header className="flex w-full flex-col items-center gap-4 pb-6 lg:flex-row lg:justify-between">
+            <header className="flex w-full flex-col items-start gap-4 pb-6 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-2">
+                    <Button
+                        isIconOnly
+                        size="sm"
+                        variant="flat"
+                        onClick={toggleSidebar}
+                        className="hidden lg:flex"
+                    >
+                        <Icon icon={isSidebarCollapsed ? "mdi:chevron-right" : "mdi:chevron-left"} width={18} />
+                    </Button>
                     <h1 className="text-large font-medium">Playground</h1>
-                    <Popover>
-                        <PopoverTrigger>
-                            <Button isIconOnly className="flex lg:hidden" radius="full" size="sm" variant="flat">
-                                <Icon icon="solar:menu-dots-bold" width={24} />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="flex flex-col max-h-[40vh] w-[300px] justify-start gap-3 overflow-scroll p-4">
-                            {controlsContent}
-                        </PopoverContent>
-                    </Popover>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <Select
                         aria-label="Saved presets"
                         className="w-[200px] max-w-[120px] lg:max-w-[230px]"
@@ -108,26 +107,29 @@ const PlaygroundCollapsable: React.FC = () => {
                     <Button color="danger" size="sm" variant="flat">
                         Delete
                     </Button>
+                    <Popover placement="bottom-end">
+                        <PopoverTrigger>
+                            <Button isIconOnly size="sm" variant="flat" className="lg:hidden">
+                                <Icon icon="solar:menu-dots-bold" width={18} />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="flex flex-col max-h-[80vh] w-[300px] justify-start gap-3 overflow-auto p-4">
+                            {controlsContent}
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </header>
-            <main className="flex">
+            <main className="flex flex-col lg:flex-row">
                 {/* Collapsible Sidebar */}
-                <div className={`transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-16' : 'w-1/4'}`}>
-                    <Button
-                        isIconOnly
-                        className="mb-4"
-                        onClick={toggleSidebar}
-                    >
-                        <Icon icon={isSidebarCollapsed ? "mdi:chevron-right" : "mdi:chevron-left"} width={24} />
-                    </Button>
+                <div className={`hidden lg:block transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-1/4'}`}>
                     {!isSidebarCollapsed && (
-                        <div className="hidden w-full flex-none flex-col gap-4 lg:flex">
+                        <div className="w-full flex-none flex-col gap-4">
                             {controlsContent}
                         </div>
                     )}
                 </div>
                 {/* Chat */}
-                <div className={`relative flex flex-col gap-2 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-[calc(100%-4rem)]' : 'w-3/4'}`}>
+                <div className={`relative flex flex-col gap-2 transition-all duration-300 ease-in-out w-full ${isSidebarCollapsed ? 'lg:w-full' : 'lg:w-3/4'}`}>
                     <PromptContainerWithConversation
                         className="max-w-full px-0 lg:pl-10"
                         scrollShadowClassname="h-[40vh] lg:h-[50vh]"
