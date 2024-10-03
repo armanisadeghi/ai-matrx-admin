@@ -35,7 +35,7 @@ export const selectPerformanceCounts = createSelector(
     (flashcards) => ({
         totalCorrect: flashcards.reduce((sum, card) => sum + card.correctCount, 0),
         totalIncorrect: flashcards.reduce((sum, card) => sum + card.incorrectCount, 0),
-        totalCount: flashcards.length, // Added total count of flashcards
+        totalCount: flashcards.length,
     })
 );
 
