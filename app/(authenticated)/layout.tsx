@@ -6,7 +6,6 @@ import { Providers } from "@/app/Providers";
 import { mapUserData } from '@/utils/userDataMapper';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { loadPreferences } from '@/lib/redux/middleware/preferencesMiddleware';
 
 async function getTestDirectories(): Promise<string[]> {
     const currentDir = path.dirname(new URL(import.meta.url).pathname.slice(1));
