@@ -1,3 +1,5 @@
+'use client';
+
 import React, {useState} from 'react';
 import {useTheme} from 'next-themes';
 import {useSelector, useDispatch} from 'react-redux';

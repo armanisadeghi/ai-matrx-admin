@@ -1,132 +1,136 @@
 // flash-cards/components/AiChatModal.tsx
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Flashcard, FlashcardData, ChatMessage } from "@/types/flashcards.types";
-import { useAiChat } from '../hooks/useAiChat';
-import { RootState, AppDispatch } from '@/lib/redux/store';
-import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
+import React, {useState, useEffect, useMemo} from 'react';
+import {useAppSelector, useAppDispatch} from '@/lib/redux/hooks';
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import {Button} from '@/components/ui/button';
+import {Textarea} from '@/components/ui/textarea';
+import {ArrowUp} from 'lucide-react';
+import {useAiChat} from '../hooks/useAiChat';
+import {addMessage} from '@/lib/redux/slices/flashcardChatSlice';
+import {selectActiveFlashcard, selectActiveFlashcardChat} from '@/lib/redux/selectors/flashcardSelectors';
+import MarkdownMessageRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownMessageRenderer";
 
 interface AiChatModalProps {
     isOpen: boolean;
     onClose: () => void;
-    flashcard: FlashcardData;
     firstName: string;
 }
 
-const AiChatModal: React.FC<AiChatModalProps> = ({ isOpen, onClose, flashcard, firstName }) => {
+const AiChatModal: React.FC<AiChatModalProps> = ({isOpen, onClose, firstName}) => {
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('current');
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const currentChat = useSelector((state: RootState) =>
-        state.flashcardChat[flashcard.id]?.chat || []
-    );
-    const allChats = useSelector((state: RootState) => state.flashcardChat);
+    const currentFlashcard = useAppSelector(selectActiveFlashcard);
+    const currentChat = useAppSelector(selectActiveFlashcardChat);
+    const allChats = useAppSelector((state) => state.flashcardChat.flashcards);
 
-    const { isLoading, streamingMessage, sendInitialMessage, sendMessage } = useAiChat();
+    const {isLoading, streamingMessage, sendInitialMessage, sendMessage} = useAiChat();
+
+    const allChatHistory = useMemo(() => {
+        return Object.values(allChats).flatMap(flashcard =>
+            flashcard.chat.map(msg => ({
+                ...msg,
+                content: `[Card ${flashcard.id}] ${msg.content}`
+            }))
+        );
+    }, [allChats]);
 
     useEffect(() => {
-        if (isOpen && flashcard && currentChat.length === 0) {
-            const fullFlashcard: Flashcard = {
-                ...flashcard,
-                reviewCount: 0,
-                correctCount: 0,
-                incorrectCount: 0
-            };
-            sendInitialMessage(fullFlashcard, firstName, (content: string) => {
-                dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'assistant', content } }));
-            });
+        if (isOpen) {
+            setActiveTab('current');
         }
-    }, [isOpen, flashcard, firstName, sendInitialMessage, currentChat.length, dispatch]);
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen && currentFlashcard && currentChat.length === 0) {
+            sendInitialMessage(currentFlashcard, firstName);
+        }
+    }, [isOpen, currentFlashcard, firstName, sendInitialMessage, currentChat.length]);
 
     const handleSubmit = () => {
-        if (message.trim() && !isLoading) {
-            dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'user', content: message } }));
-            sendMessage(message, flashcard.id, (content: string) => {
-                dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'assistant', content } }));
-            });
+        if (message.trim() && !isLoading && currentFlashcard) {
+            dispatch(addMessage({flashcardId: currentFlashcard.id, message: {role: 'user', content: message}}));
+            const chatHistory = activeTab === 'current' ? currentChat : allChatHistory;
+            sendMessage(message, currentFlashcard.id, chatHistory);
             setMessage('');
         }
     };
 
-    const renderMessage = (content: string, role: string) => (
-        <div className={`mb-4 ${role === 'user' ? 'text-right' : 'text-left'}`}>
-            <div className={`inline-block p-3 rounded-lg ${role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-                <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                        p: ({node, ...props}) => <p className="mb-2" {...props} />,
-                        ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
-                        ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
-                        li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                        a: ({node, ...props}) => <a className="text-blue-500 underline" {...props} />,
-                    }}
-                >
-                    {content}
-                </ReactMarkdown>
-            </div>
-        </div>
+    const renderMessage = (content: string, role: any) => (
+        <MarkdownMessageRenderer content={content} role={role} />
     );
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle className="text-xl">Ask the AI</DialogTitle>
-                    <div className="flex space-x-2">
-                        <Button
-                            onClick={() => setActiveTab('current')}
-                            variant={activeTab === 'current' ? 'default' : 'outline'}
-                        >
-                            Current Flashcard
-                        </Button>
-                        <Button
-                            onClick={() => setActiveTab('all')}
-                            variant={activeTab === 'all' ? 'default' : 'outline'}
-                        >
-                            All History
-                        </Button>
+            <DialogContent className="bg-neutral-100 dark:bg-neutral-800 w-full max-w-[70vw] h-[90vh] flex flex-col">
+                <DialogHeader className="mb-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={() => setActiveTab('current')}
+                                variant="outline"
+                                className={`${activeTab === 'current' ? 'bg-primary text-primary-foreground' : ''}`}
+                            >
+                                Current Flashcard
+                            </Button>
+                            <Button
+                                onClick={() => setActiveTab('all')}
+                                variant="outline"
+                                className={`${activeTab === 'all' ? 'bg-primary text-primary-foreground' : ''}`}
+                            >
+                                All History
+                            </Button>
+                        </div>
+                        <DialogTitle className="text-md">
+                            {currentFlashcard.front}
+                        </DialogTitle>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-grow overflow-y-auto p-4 bg-background rounded-lg mb-4">
+                <div className="flex-grow overflow-y-auto w-full space-y-4">
                     {activeTab === 'current' ? (
                         <>
-                            {currentChat.map((msg: ChatMessage, idx: number) => (
+                            {currentChat.map((msg, idx) => (
                                 <React.Fragment key={idx}>
                                     {renderMessage(msg.content, msg.role)}
                                 </React.Fragment>
                             ))}
-                            {streamingMessage && renderMessage(streamingMessage, 'assistant')}
+                            {streamingMessage ? (
+                                renderMessage(streamingMessage, 'assistant')
+                            ) : (
+                                isLoading && (
+                                    <div className="text-center w-full py-2 bg-secondary dark:bg-gray-700 rounded">AI is
+                                        thinking...</div>
+                                )
+                            )}
                         </>
                     ) : (
-                        Object.entries(allChats).flatMap(([cardId, flashcardState]) =>
-                            flashcardState.chat.map((msg: ChatMessage, idx: number) => (
-                                <React.Fragment key={`${cardId}-${idx}`}>
-                                    {renderMessage(`[Card ${cardId}] ${msg.content}`, msg.role)}
-                                </React.Fragment>
-                            ))
-                        )
+                        allChatHistory.map((msg, idx) => (
+                            <React.Fragment key={idx}>
+                                {renderMessage(msg.content, msg.role)}
+                            </React.Fragment>
+                        ))
                     )}
-                    {isLoading && <div className="text-center">AI is thinking...</div>}
                 </div>
 
-                <div className="flex items-start space-x-2">
+                <div className="relative w-full mt-4">
                     <Textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type your question..."
-                        className="flex-grow"
+                        className="w-full pr-12"
                         rows={3}
                     />
-                    <Button onClick={handleSubmit} disabled={isLoading}>
-                        Send
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isLoading}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full p-2"
+                        size="icon"
+                    >
+                        <ArrowUp className="h-4 w-4"/>
                     </Button>
                 </div>
             </DialogContent>

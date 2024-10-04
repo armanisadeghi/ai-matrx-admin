@@ -109,7 +109,6 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
                     <AiChatModal
                         isOpen={isAiModalOpen}
                         onClose={() => setIsAiModalOpen(false)}
-                        flashcard={currentCard}
                         firstName={firstName}
                     />
                 </>

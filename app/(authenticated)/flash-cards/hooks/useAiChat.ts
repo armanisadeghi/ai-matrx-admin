@@ -1,19 +1,28 @@
+// hooks/useAiChat.ts
+
 import { useState, useCallback } from 'react';
-import { Flashcard, FlashcardData, AiAssistModalTab, ChatMessage } from '@/types/flashcards.types';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { Flashcard, ChatMessage } from "@/types/flashcards.types";
 import { flashcardQuestionOne, systemContentOne } from "../utils/messageTemplates";
 import { ChatCompletionMessageParam } from "ai/prompts";
 import { defaultAiModel } from "../utils/chatSettings";
-import {openai} from "@/lib/ai/openAiBrowserClient";
+import { openai } from "@/lib/ai/openAiBrowserClient";
+import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
+import { selectActiveFlashcardChat } from '@/lib/redux/selectors/flashcardSelectors';
 
 export const useAiChat = () => {
+    const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const [streamingMessage, setStreamingMessage] = useState('');
 
+    const currentChat = useAppSelector(selectActiveFlashcardChat);
+
     const sendInitialMessage = useCallback(async (
         flashcard: Flashcard,
-        firstName: string,
-        onMessageReceived: (content: string) => void
+        firstName: string
     ) => {
+        if (isLoading || currentChat.length > 0) return;
+
         setIsLoading(true);
         setStreamingMessage('');
 
@@ -47,30 +56,34 @@ export const useAiChat = () => {
                 setStreamingMessage(aiResponse);
             }
 
-            onMessageReceived(aiResponse);
+            dispatch(addMessage({ flashcardId: flashcard.id, message: { role: 'assistant', content: aiResponse } }));
         } catch (error) {
             console.error('Error fetching AI response:', error);
         } finally {
             setIsLoading(false);
             setStreamingMessage('');
         }
-    }, []);
+    }, [dispatch, isLoading, currentChat]);
 
     const sendMessage = useCallback(async (
         message: string,
         flashcardId: string,
-        onMessageReceived: (content: string) => void
+        chatHistory: ChatMessage[]
     ) => {
+        if (isLoading) return;
         setIsLoading(true);
         setStreamingMessage('');
 
         try {
+            const messages: ChatCompletionMessageParam[] = [
+                { role: 'system', content: systemContentOne },
+                ...chatHistory.map(msg => ({ role: msg.role, content: msg.content } as ChatCompletionMessageParam)),
+                { role: 'user', content: message }
+            ];
+
             const stream = await openai.chat.completions.create({
                 model: defaultAiModel,
-                messages: [
-                    { role: 'system', content: systemContentOne },
-                    { role: 'user', content: message }
-                ],
+                messages: messages,
                 stream: true,
             });
 
@@ -81,14 +94,14 @@ export const useAiChat = () => {
                 setStreamingMessage(aiResponse);
             }
 
-            onMessageReceived(aiResponse);
+            dispatch(addMessage({ flashcardId, message: { role: 'assistant', content: aiResponse } }));
         } catch (error) {
             console.error('Error fetching AI response:', error);
         } finally {
             setIsLoading(false);
             setStreamingMessage('');
         }
-    }, []);
+    }, [dispatch, isLoading]);
 
     return {
         isLoading,
