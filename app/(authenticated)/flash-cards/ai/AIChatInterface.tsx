@@ -7,8 +7,7 @@ import { Flashcard, FlashcardData, ChatMessage } from "@/types/flashcards.types"
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/lib/redux/store';
 import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
-import {defaultAiModel} from "@/app/(authenticated)/flash-cards/utils/chatSettings";
-import {openai} from "@/lib/openai/browserClient";
+import {openai, defaultOpenAiModel} from "@/lib/ai/openAiBrowserClient";
 
 interface AIChatInterfaceProps {
     isOpen: boolean;
@@ -30,7 +29,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({ isOpen, onClose, card
 
         try {
             const stream = await openai.chat.completions.create({
-                model: defaultAiModel,
+                model: defaultOpenAiModel,
                 messages: [
                     { role: "system", content: `You are a helpful assistant. The current flashcard question is: "${card.front}" and the answer is: "${card.back}". Help the user understand this concept.` },
                     ...chatMessages,

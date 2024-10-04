@@ -1,7 +1,7 @@
 "use client";
 
 import React, {useState} from "react";
-import {Sidebar, SidebarBody, SidebarLink} from "../ui/sidebar";
+import {Sidebar, SidebarBody, SidebarLink} from "../../ui/sidebar";
 import {cn} from "@/styles/themes/utils";
 import {Infinity, User} from "lucide-react";
 import {motion} from "framer-motion";

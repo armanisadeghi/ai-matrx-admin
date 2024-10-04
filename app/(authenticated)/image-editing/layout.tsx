@@ -3,13 +3,14 @@
 'use client';
 
 import React from "react";
-import {ExtendedBottomLayout, NormalLayout, WindowLayout} from "@/components/layout/base-layout";
-import {coreAppLinks} from "@/components/layout/core-links";
+import {ExtendedBottomLayout, NormalLayout, WindowLayout} from "@/components/layout/baseLayout";
+import {appSidebarLinks} from "@/constants";
+
 
 function DashboardLayout({children, links}: any) {
     const [open, setOpen] = React.useState(false);
 
-    if (!links) links = coreAppLinks;
+    if (!links) links = appSidebarLinks;
 
     // For testing, we'll use NormalLayout
     const LayoutComponent = NormalLayout;

@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { ExtendedBottomLayout, NormalLayout, WindowLayout } from "@/components/layout/base-layout";
+import { ExtendedBottomLayout, NormalLayout, WindowLayout } from "@/components/layout/baseLayout";
 import {supabase} from "@/utils/supabase/client";
 
 function AuthenticatedLayout({ children, links }: any) {

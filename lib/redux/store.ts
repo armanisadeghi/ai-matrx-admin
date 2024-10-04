@@ -8,6 +8,7 @@ import { createFeatureSlice } from './sliceCreator';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
+import aiChatReducer from './slices/aiChatSlice';
 import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
@@ -31,6 +32,8 @@ const rootReducer = combineReducers({
     userPreferences: userPreferencesReducer,
     testRoutes: testRoutesReducer,
     flashcardChat: flashcardChatReducer,
+    aiChat: aiChatReducer,
+
 });
 
 export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {

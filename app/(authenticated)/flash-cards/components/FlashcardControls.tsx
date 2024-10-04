@@ -6,8 +6,8 @@ import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Shuffle} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {AiAssistModalTab} from '@/types/flashcards.types';
-import AudioModal from './AudioModal';
-import AiChatModal from "@/app/(authenticated)/flash-cards/components/AiChatModal";
+import AudioModal from '../audio/AudioModal';
+import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
 import {selectAllFlashcards, selectCurrentIndex, selectActiveFlashcard} from '@/lib/redux/selectors/flashcardSelectors';
 
 interface FlashcardControlsProps {
@@ -36,7 +36,6 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = (
     const currentCard = useSelector(selectActiveFlashcard);
 
     const handleConfusedClick = useCallback(() => {
-        console.log('Confused button clicked');
         setIsAudioModalOpen(true);
     }, []);
 

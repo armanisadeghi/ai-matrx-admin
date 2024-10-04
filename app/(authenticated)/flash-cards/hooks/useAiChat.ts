@@ -3,7 +3,7 @@ import { Flashcard, FlashcardData, AiAssistModalTab, ChatMessage } from '@/types
 import { flashcardQuestionOne, systemContentOne } from "../utils/messageTemplates";
 import { ChatCompletionMessageParam } from "ai/prompts";
 import { defaultAiModel } from "../utils/chatSettings";
-import {openai} from "@/lib/openai/browserClient";
+import {openai} from "@/lib/ai/openAiBrowserClient";
 
 export const useAiChat = () => {
     const [isLoading, setIsLoading] = useState(false);

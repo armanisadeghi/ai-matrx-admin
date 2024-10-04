@@ -3,13 +3,14 @@
 'use client';
 
 import React from "react";
-import {WindowLayout, NormalLayout} from "@/components/layout/base-layout";
-import {coreAppLinks} from "@/components/layout/core-links";
+import {WindowLayout, NormalLayout} from "@/components/layout/baseLayout";
+import {appSidebarLinks} from "@/constants";
+
 
 function Layout({children, links}: any) {
     const [open, setOpen] = React.useState(false);
 
-    if (!links) links = coreAppLinks;
+    if (!links) links = appSidebarLinks;
     const LayoutComponent = NormalLayout;
 
     const layoutProps = {links, open, setOpen};

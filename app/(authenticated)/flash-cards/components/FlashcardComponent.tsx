@@ -5,13 +5,13 @@ import {flashcardDataSet} from '../lesson-data';
 import {Flashcard} from "@/types/flashcards.types";
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
-import ExpandedFlashcardWithChat from './ExpandedFlashcardWithChat';
+import ExpandedFlashcardWithChat from '../ai/ExpandedFlashcardWithChat';
 import PerformanceChart from './PerformanceChart';
 import FlashcardTable from './FlashcardTable';
 import EditFlashcardDialog from './EditFlashcardDialog';
 import {Button} from "@/components/ui/button";
 import {Progress} from "@/components/ui/progress";
-import AiAssistModal from './AiAssistModal';
+import AiAssistModal from '../ai/AiAssistModal';
 import {RootState, AppDispatch} from '@/lib/redux/store';
 import {
     initializeFlashcards,

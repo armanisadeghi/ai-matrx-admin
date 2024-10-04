@@ -17,8 +17,8 @@ import {
     Edit3
   } from "lucide-react";
   import React from "react";
-  
-  export const coreAppLinks = [
+
+  export const appSidebarLinks = [
       {
           label: 'Home',
           href: '/dashboard',
@@ -63,7 +63,7 @@ import {
       },
       {
           label: 'Flash Cards',
-          href: '/tests/flash-cards',
+          href: '/flash-cards',
           icon: (
               <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
           ),
