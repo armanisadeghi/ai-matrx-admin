@@ -9,7 +9,7 @@ export interface ContentPart {
 
 export interface Message {
     id: string;
-    role: 'system' | 'user' | 'assistant' | 'function';
+    role: 'system' | 'user' | 'assistant' | 'function' | 'tool';
     content: ContentPart[];
     isVisibleToUser: boolean;
     createdAt: string;

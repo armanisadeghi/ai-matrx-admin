@@ -1,5 +1,3 @@
-// File: hooks/ai/useOpenAIChat.ts
-
 import { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
@@ -83,18 +81,32 @@ export const useOpenAIChat = () => {
         try {
             const params: ChatCompletionCreateParams = {
                 messages: chats[chatId].messages.map(msg => {
-                    const baseMessage: ChatCompletionMessageParam = {
-                        role: msg.role as ChatCompletionMessageParam['role'],
-                        content: msg.content.map(part =>
-                            part.type === 'text' ? part.content as string : JSON.stringify(part.content)
-                        ).join('\n')
-                    };
+                    const content = msg.content.map(part =>
+                        part.type === 'text' ? part.content as string : JSON.stringify(part.content)
+                    ).join('\n');
 
-                    if (msg.role === 'function') {
-                        (baseMessage as OpenAI.ChatCompletionFunctionMessageParam).name = 'default_function';
+                    switch (msg.role) {
+                        case 'function':
+                            return {
+                                role: 'function',
+                                name: 'default_function',
+                                content
+                            } as OpenAI.ChatCompletionFunctionMessageParam;
+                        case 'system':
+                            return { role: 'system', content } as OpenAI.ChatCompletionSystemMessageParam;
+                        case 'user':
+                            return { role: 'user', content } as OpenAI.ChatCompletionUserMessageParam;
+                        case 'assistant':
+                            return { role: 'assistant', content } as OpenAI.ChatCompletionAssistantMessageParam;
+                        case 'tool':
+                            return {
+                                role: 'tool',
+                                content,
+                                tool_call_id: msg.id || 'default_tool_call_id'
+                            } as OpenAI.ChatCompletionToolMessageParam;
+                        default:
+                            throw new Error(`Unsupported message role: ${msg.role}`);
                     }
-
-                    return baseMessage;
                 }),
                 model,
                 temperature,
