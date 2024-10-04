@@ -50,7 +50,7 @@ export async function loginWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: 'https://txzxabzwovsujtloxrus.supabase.co/auth/v1/callback/dashboard',
+            redirectTo: 'http://aimatrx.com/auth/callback',
         },
     })
 
@@ -70,7 +70,7 @@ export async function loginWithGithub() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-            redirectTo: 'https://txzxabzwovsujtloxrus.supabase.co/auth/v1/callback',
+            redirectTo: 'http://aimatrx.com/auth/callback',
         },
     })
 
