@@ -1,6 +1,6 @@
-// File: app/(auth-pages)/sign-in/page.tsx
+// app/login/page.tsx
 
-import { signInAction, signInWithGoogleAction, signInWithGithubAction } from "@/actions/auth.actions";
+import { login, signup, loginWithGoogle, loginWithGithub } from './actions'
 import { Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
@@ -9,23 +9,20 @@ import Link from "next/link";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
-export default function SignIn({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-    const redirectTo = searchParams.redirectTo as string || '/dashboard';
-
+export default function SignIn() {
     return (
         <AuthPageContainer
             title="Sign in to your account"
             subtitle={
                 <>
                     Don't have an account?{" "}
-                    <Link className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" href={`/sign-up?redirectTo=${encodeURIComponent(redirectTo)}`}>
+                    <Link className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" href={`/sign-up?`}>
                         Sign up
                     </Link>
                 </>
             }
-            message={searchParams as Message}
         >
-            <form action={signInAction} className="space-y-6">
+            <form action={login} className="space-y-6">
                 <div>
                     <Label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email address
@@ -68,7 +65,6 @@ export default function SignIn({ searchParams }: { searchParams: { [key: string]
                 </div>
 
                 <div>
-                    <input type="hidden" name="redirectTo" value={redirectTo} />
                     <SubmitButton pendingText="Signing In..." className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         Sign in
                     </SubmitButton>
@@ -88,16 +84,14 @@ export default function SignIn({ searchParams }: { searchParams: { [key: string]
                 </div>
 
                 <div className="mt-6 grid grid-cols-2 gap-3">
-                    <form action={signInWithGoogleAction}>
-                        <input type="hidden" name="redirectTo" value={redirectTo} />
+                    <form action={loginWithGoogle}>
                         <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200">
                             <IconBrandGoogle className="h-5 w-5 mr-2" />
                             <span>Google</span>
                         </SubmitButton>
                     </form>
 
-                    <form action={signInWithGithubAction}>
-                        <input type="hidden" name="redirectTo" value={redirectTo} />
+                    <form action={loginWithGithub}>
                         <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200">
                             <IconBrandGithub className="h-5 w-5 mr-2" />
                             <span>GitHub</span>

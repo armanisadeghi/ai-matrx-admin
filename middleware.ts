@@ -11,13 +11,22 @@ export const config = {
     matcher: [
         /*
          * Match all request paths except for the ones starting with:
-         * - The homepage '/'
-         * - /flash-cards
-         * - /tests
+         * - api (API routes)
          * - _next/static (static files)
          * - _next/image (image optimization files)
+         * - Homepage '/'
+         * - public (static folder)
+         * - /flash-cards
+         * - /tests
+         * - /ava
+         * - /dash
+         * - /contact
+         * - /about
+         * - /privacy-policy
          * - favicon.ico (favicon file)
+         * - sitemap.xml (sitemap file)
+         * - robots.txt (robots metadata)
          */
-        '/((?!^$|flash-cards|tests|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!api|_next/static|_next/image|$|public|sign-up|forgot-password|reset-password|flash-cards|tests|ava|dash|contact|about|privacy-policy|favicon.ico|sitemap.xml|robots.txt).*)',
     ],
 }
