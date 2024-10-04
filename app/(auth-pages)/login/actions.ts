@@ -1,10 +1,12 @@
-// app/login/actions.ts
-
 'use server'
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+
+const baseUrl = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : 'http://aimatrx.com'
 
 export async function login(formData: FormData) {
     const supabase = createClient()
@@ -24,7 +26,6 @@ export async function login(formData: FormData) {
     redirect('/dashboard')
 }
 
-
 export async function signup(formData: FormData) {
     const supabase = createClient()
 
@@ -43,14 +44,13 @@ export async function signup(formData: FormData) {
     redirect('/dashboard')
 }
 
-
 export async function loginWithGoogle() {
     const supabase = createClient()
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: 'http://aimatrx.com/auth/callback',
+            redirectTo: `${baseUrl}/auth/callback`,
         },
     })
 
@@ -63,14 +63,13 @@ export async function loginWithGoogle() {
     }
 }
 
-
 export async function loginWithGithub() {
     const supabase = createClient()
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-            redirectTo: 'http://aimatrx.com/auth/callback',
+            redirectTo: `${baseUrl}/auth/callback`,
         },
     })
 
