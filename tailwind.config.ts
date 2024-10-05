@@ -10,6 +10,7 @@ const config: Config = {
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
+        "./constants/**/*.{js,ts,jsx,tsx}",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./features/**/*.{js,ts,jsx,tsx,mdx}",
         "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx,mdx}",
@@ -162,6 +163,9 @@ const config: Config = {
                 'gradient-2': 'var(--gradient-2)',
                 'gradient-3': 'var(--gradient-3)',
                 'checkerboard': 'var(--checkerboard)',
+                'matrx-background': 'var(--matrx-background)',
+                'matrix-card-background': 'var(--matrix-card-background)',
+
             },
             // New animation curves
             transitionTimingFunction: {
@@ -187,6 +191,15 @@ const config: Config = {
         addVariablesForColors,
         function ({addUtilities, variants, theme}) {
             const newUtilities = {
+
+                '.bg-matrx-back': {
+                    backgroundImage: `${theme('backgroundImage.matrx-texture')}`,
+                    backgroundColor: 'hsl(var(--background))',
+                },
+                '.bg-matrix-card-back': {
+                    backgroundImage: `${theme('backgroundImage.matrix-card-texture')}`,
+                    backgroundColor: 'hsl(var(--background))',
+                },
 
                 '.bg-texture-light': {
                     backgroundImage: `

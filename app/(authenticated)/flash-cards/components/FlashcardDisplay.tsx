@@ -73,7 +73,7 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
                         <Button onClick={(e) => {
                             e.stopPropagation();
                             onAnswer(true);
-                        }} variant="default" className="bg-green-600 hover:bg-green-700">
+                        }} variant="default" className="bg-primary hover:bg-green-700">
                             <CheckCircle className="mr-2 h-4 w-4"/> Correct
                         </Button>
                     </CardFooter>

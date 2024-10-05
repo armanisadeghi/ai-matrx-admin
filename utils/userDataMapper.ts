@@ -1,4 +1,4 @@
-// File: utils/userDataMapper.ts
+// File: color-utils/userDataMapper.ts
 
 export function mapUserData(user: any) {
     return {

@@ -53,7 +53,7 @@ export { default as themeReducer } from './themeSlice';
 export * from "./ThemeSwitcher";
 export { setTheme, toggleMode, setMode } from './themeSlice';
 export * from './fonts';
-export { cn } from './utils';
+export { cn } from './color-utils';
 ```
 
 2. `styles/themes/themeDefinitions.ts`:

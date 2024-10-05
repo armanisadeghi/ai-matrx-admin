@@ -1,4 +1,4 @@
-// components/matrx/next-windows/parts/utils.ts
+// components/matrx/next-windows/parts/color-utils.ts
 
 import { useState, useEffect, RefObject } from 'react';
 

@@ -1,4 +1,4 @@
-// File: lib/utils.ts
+// File: lib/color-utils.ts
 
 // NOTE: This is a duplicate just to help with the importing, since that's the library's default.
 

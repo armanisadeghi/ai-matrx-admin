@@ -211,7 +211,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
 
 if (typeof(eventjs) === "undefined") var eventjs = {};
 
-(function(root) { 
+(function(root) {
 // Add custom *EventListener commands to HTMLElements (set false to prevent funkiness).
 root.modifyEventListener = false;
 
@@ -5236,7 +5236,7 @@ fabric.CommonMethods = {
 (function() {
   /**
    * Copies all enumerable properties of one js object to another
-   * this does not and cannot compete with generic utils.
+   * this does not and cannot compete with generic color-utils.
    * Does not clone or extend fabric.Object subclasses.
    * This is mostly for internal use and has extra handling for fabricJS objects
    * it skips the canvas and group properties in deep cloning.
@@ -5289,7 +5289,7 @@ fabric.CommonMethods = {
 
   /**
    * Creates an empty object and copies all enumerable properties of another object to it
-   * This method is mostly for internal use, and not intended for duplicating shapes in canvas. 
+   * This method is mostly for internal use, and not intended for duplicating shapes in canvas.
    * @memberOf fabric.util.object
    * @param {Object} object Object to clone
    * @param {Boolean} [deep] Whether to clone nested objects
@@ -10311,7 +10311,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
 })(typeof exports !== 'undefined' ? exports : this);
 (function() {
 
-  
+
 
   var clone = fabric.util.object.clone;
 
@@ -10453,7 +10453,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
       return object;
     },
 
-    
+
 
     /**
      * Returns an instance of CanvasGradient
@@ -10493,7 +10493,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
 
   fabric.util.object.extend(fabric.Gradient, {
 
-    
+
   });
 
   /**
@@ -10639,7 +10639,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
       return object;
     },
 
-    
+
 
     setOptions: function(options) {
       for (var prop in options) {
@@ -10787,7 +10787,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
       return [this.offsetX, this.offsetY, this.blur, this.color].join('px ');
     },
 
-    
+
 
     /**
      * Returns object representation of a shadow
@@ -11866,7 +11866,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
 
     /**
      * Returns coordinates of a center of canvas.
-     * @return {fabric.Point} 
+     * @return {fabric.Point}
      */
     getCenterPoint: function () {
       return new fabric.Point(this.width / 2, this.height / 2);
@@ -12072,7 +12072,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
       return data;
     },
 
-    
+
 
     /**
      * Moves an object or the objects of a multiple selection
@@ -20143,10 +20143,10 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       };
     },
 
-    
+
   });
 
-  
+
 
   /**
    * Returns fabric.Line instance from an object representation
@@ -20268,7 +20268,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       return this.callSuper('toObject', ['radius', 'startAngle', 'endAngle'].concat(propertiesToInclude));
     },
 
-    
+
 
     /**
      * @private
@@ -20313,7 +20313,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     },
   });
 
-  
+
 
   /**
    * Returns {@link fabric.Circle} instance from an object representation
@@ -20386,7 +20386,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       this._renderPaintInOrder(ctx);
     },
 
-    
+
   });
 
   /**
@@ -20505,7 +20505,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       return this.callSuper('toObject', ['rx', 'ry'].concat(propertiesToInclude));
     },
 
-    
+
 
     /**
      * @private
@@ -20527,7 +20527,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     },
   });
 
-  
+
 
   /**
    * Returns {@link fabric.Ellipse} instance from an object representation
@@ -20664,10 +20664,10 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       return this.callSuper('toObject', ['rx', 'ry'].concat(propertiesToInclude));
     },
 
-    
+
   });
 
-  
+
 
   /**
    * Returns {@link fabric.Rect} instance from an object representation
@@ -20834,7 +20834,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       });
     },
 
-    
+
 
 
     /**
@@ -20880,7 +20880,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     }
   });
 
-  
+
 
   /**
    * Returns fabric.Polyline instance from an object representation
@@ -20942,7 +20942,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
   });
 
-  
+
 
   /**
    * Returns fabric.Polygon instance from an object representation
@@ -21143,7 +21143,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       return o;
     },
 
-    
+
 
     /**
      * Returns number representation of an instance complexity
@@ -21264,7 +21264,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     }
   };
 
-  
+
 
 })(typeof exports !== 'undefined' ? exports : this);
 (function(global) {
@@ -21775,7 +21775,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       }
     },
 
-    
+
   });
 
   /**
@@ -22251,7 +22251,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       return this.cropX || this.cropY || this.width < this._element.width || this.height < this._element.height;
     },
 
-    
+
 
     /**
      * Returns source of an image
@@ -22645,7 +22645,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     }, null, imgOptions && imgOptions.crossOrigin);
   };
 
-  
+
 
 })(typeof exports !== 'undefined' ? exports : this);
 fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prototype */ {
@@ -26118,7 +26118,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
      * Saturation value, from -1 to 1.
      * Increases/decreases the color saturation.
      * A value of 0 has no effect.
-     * 
+     *
      * @param {Number} saturation
      * @default
      */
@@ -28282,7 +28282,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     }
   });
 
-  
+
 
   /**
    * Returns fabric.Text instance from an object representation
@@ -31725,7 +31725,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
       return object;
     },
 
-    
+
   });
 
   var __restoreObjectsState = fabric.Group.prototype._restoreObjectsState;
@@ -31835,7 +31835,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
       //  noop
     },
 
-    
+
   });
 
   /**

@@ -1,9 +1,38 @@
 import React from 'react';
+import TextDivider from "@/components/matrx/TextDivider";
 
 export default function TexturedExamplePage() {
     return (
         <div className="pt-8">
             <div className="flex flex-wrap w-full">
+
+                <TextDivider text="Matrix Background Test"/>
+
+                <div className="w-1/2 bg-matrx-back p-8 rounded-lg">
+                    <h2 className="text-2xl font-semibold mb-4">Matrix Background</h2>
+                    <p>This div uses the Matrix Background utility directly.</p>
+                </div>
+
+                <div className="w-1/2 hover:bg-matrx-back p-8 rounded-lg transition duration-300">
+                    <h2 className="text-2xl font-semibold mb-4">Hover Matrix Background</h2>
+                    <p>Hover over this div to see the Matrix Background appear.</p>
+                </div>
+
+                <TextDivider text="Matrix Card Background Test"/>
+
+                <div className="w-1/2 bg-matrix-card-back p-8 rounded-lg">
+                    <h2 className="text-2xl font-semibold mb-4">Matrix Card Background</h2>
+                    <p>This div uses the Matrix Card Background utility directly.</p>
+                </div>
+
+                <div className="w-1/2 hover:bg-matrix-card-back p-8 rounded-lg transition duration-300">
+                    <h2 className="text-2xl font-semibold mb-4">Hover Matrix Card Background</h2>
+                    <p>Hover over this div to see the Matrix Card Background appear.</p>
+                </div>
+
+                <TextDivider text="Options for testing"/>
+
+
                 <div className="w-1/2 texture-noise-1 bg-background p-8 rounded-lg">
                     <h2 className="text-2xl font-semibold mb-4">Noise Texture 1</h2>
                     <p>This div uses the noise texture 1 utility directly.</p>

@@ -20,10 +20,10 @@ import {
 
   export const appSidebarLinks = [
       {
-          label: 'Home',
-          href: '/dashboard',
+          label: 'Color Converter',
+          href: '/tests/color-converter',
           icon: (
-              <Home className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+              <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
           ),
       },
       {

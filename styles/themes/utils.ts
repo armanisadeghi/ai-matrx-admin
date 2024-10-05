@@ -1,4 +1,4 @@
-// File: styles/themes/utils.ts
+// File: styles/themes/color-utils.ts
 
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"

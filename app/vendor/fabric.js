@@ -5236,7 +5236,7 @@ fabric.CommonMethods = {
 (function() {
     /**
      * Copies all enumerable properties of one js object to another
-     * this does not and cannot compete with generic utils.
+     * this does not and cannot compete with generic color-utils.
      * Does not clone or extend fabric.Object subclasses.
      * This is mostly for internal use and has extra handling for fabricJS objects
      * it skips the canvas and group properties in deep cloning.
