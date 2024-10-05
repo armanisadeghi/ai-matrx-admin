@@ -1,4 +1,7 @@
 import * as React from "react"
+import {useSelector, useDispatch} from 'react-redux';
+import {motion, AnimatePresence} from 'framer-motion';
+
 import { Button } from "@/components/ui/button"
 import {
     Credenza,
@@ -15,12 +18,33 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CreditCard, Mail, MessageSquare, PlusCircle, Settings, User } from "lucide-react"
+import {
+    selectAllFlashcards,
+    selectCurrentIndex,
+    selectActiveFlashcard,
+    selectAllFlashcardData,
+    selectActiveFlashcardChat,
+    selectPerformanceCounts,
+    selectFlashcardById,
+} from "@/lib/redux/selectors/flashcardSelectors";
 
 function AiAssistModal({ isOpen, onClose, defaultTab, message }) {
+    const dispatch = useDispatch();
+    const allFlashcards = useSelector(selectAllFlashcards);
+    const currentIndex = useSelector(selectCurrentIndex);
+    const activeFlashcard = useSelector(selectActiveFlashcard);
+    const allFlashcardData = useSelector(selectAllFlashcardData);
+    const activeFlashcardChat = useSelector(selectActiveFlashcardChat);
+    const performanceCounts = useSelector(selectPerformanceCounts);
+    const flashcardById = useSelector(selectFlashcardById);
+
+
+
+
+
     return (
         <Credenza open={isOpen} onOpenChange={onClose}>
-            <CredenzaContent className="sm:max-w-[425px]">
+            <CredenzaContent className="sm:max-w-[1250px]">
                 <CredenzaHeader>
                     <CredenzaTitle className="text-2xl font-bold">Account Settings</CredenzaTitle>
                     <CredenzaDescription>
@@ -28,7 +52,7 @@ function AiAssistModal({ isOpen, onClose, defaultTab, message }) {
                     </CredenzaDescription>
                 </CredenzaHeader>
                 <Tabs defaultValue={defaultTab || "confused"} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-6">
                         <TabsTrigger value="confused">I'm confused</TabsTrigger>
                         <TabsTrigger value="example">Give me an example</TabsTrigger>
                         <TabsTrigger value="question">I have a question</TabsTrigger>
@@ -39,18 +63,15 @@ function AiAssistModal({ isOpen, onClose, defaultTab, message }) {
                     <TabsContent value="confused">
                         <CredenzaBody>
                             <div className="space-y-4 py-2 pb-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name-confused">Name</Label>
-                                    <Input id="name-confused" placeholder="Enter your name" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email-confused">Email</Label>
-                                    <Input id="email-confused" placeholder="Enter your email" type="email" />
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Switch id="marketing-confused" />
-                                    <Label htmlFor="marketing-confused">Receive marketing emails</Label>
-                                </div>
+                                <CredenzaHeader>
+                                    <CredenzaTitle className="text-2xl font-bold">Account Settings</CredenzaTitle>
+                                    <CredenzaDescription>
+                                        Manage your account settings and set email preferences.
+                                    </CredenzaDescription>
+                                </CredenzaHeader>
+
+
+
                             </div>
                         </CredenzaBody>
                     </TabsContent>

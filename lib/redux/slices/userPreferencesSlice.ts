@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {AIProvider} from "@/lib/ai/aiChat.types";
 
 // Define types for each module's preferences
 interface DisplayPreferences {
@@ -27,6 +28,9 @@ interface AssistantPreferences {
     name: string;
     isPersonal: boolean;
     memoryLevel: number;
+    preferredProvider: AIProvider;
+    preferredModel: string;
+
 }
 
 // Suggested preferences for email management (you can adjust or remove as needed)
@@ -60,7 +64,7 @@ interface PhotoEditingPreferences {
     watermarkEnabled: boolean;
 }
 
-// Suggested preferences for image generation (add or adjust as needed)
+
 interface ImageGenerationPreferences {
     defaultModel: string;
     resolution: string;
@@ -69,7 +73,7 @@ interface ImageGenerationPreferences {
     colorPalette: string;
 }
 
-// Suggested preferences for text generation (add or adjust as needed)
+
 interface TextGenerationPreferences {
     defaultModel: string;
     tone: string;
@@ -91,6 +95,20 @@ interface CodingPreferences {
     voiceAssistance: boolean;
 }
 
+interface FlashcardPreferences {
+    fontSize: number;
+    educationLevel: string;
+    flashcardDifficultyAdjustment: number;
+    aiDifficultyAdjustment: number;
+    language: string;
+    defaultFlashcardMode: string;
+    targetScore: number;
+    primaryAudioVoice: string;
+    primaryTutorPersona: string;
+}
+
+
+
 // Combine all module preferences into one interface
 interface UserPreferences {
     display: DisplayPreferences;
@@ -102,6 +120,7 @@ interface UserPreferences {
     imageGeneration: ImageGenerationPreferences;
     textGeneration: TextGenerationPreferences;
     coding: CodingPreferences;
+    flashcard: FlashcardPreferences;
 }
 
 // Define the initial state
@@ -123,6 +142,17 @@ const initialState: UserPreferences = {
         speaker: false,
         wakeWord: 'Hey Matrix',
     },
+    flashcard: {
+        fontSize: 16,
+        educationLevel: 'highSchool',
+        flashcardDifficultyAdjustment: 5,
+        aiDifficultyAdjustment: 5,
+        language: 'en',
+        defaultFlashcardMode: `selfStudy`,
+        targetScore: 80,
+        primaryAudioVoice: 'default',
+        primaryTutorPersona: 'default',
+    },
     assistant: {
         alwaysActive: false,
         alwaysWatching: false,
@@ -130,6 +160,8 @@ const initialState: UserPreferences = {
         name: 'Assistant',
         isPersonal: false,
         memoryLevel: 0,
+        preferredProvider: 'default',
+        preferredModel: 'default',
     },
     email: {
         primaryEmail: '',

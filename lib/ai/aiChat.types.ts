@@ -1,6 +1,6 @@
 // File: lib/ai/aiChat.types.ts
 
-export type AIProvider = 'openai' | 'anthropic' | 'google' | 'cohere' | 'groq' | 'matrx' | 'other';
+export type AIProvider = 'default' | 'openai' | 'anthropic' | 'google' | 'cohere' | 'groq' | 'matrx' | 'other';
 
 export interface ContentPart {
     type: 'text' | 'image_url' | 'function_call' | 'function_response';

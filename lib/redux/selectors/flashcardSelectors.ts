@@ -3,11 +3,10 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/lib/redux/store';
 
+const selectAllFlashcards = (state: RootState) => Object.values(state.flashcardChat.flashcards);
+const selectCurrentIndex = (state: RootState) => state.flashcardChat.currentIndex;
 
-export const selectAllFlashcards = (state: RootState) => Object.values(state.flashcardChat.flashcards);
-export const selectCurrentIndex = (state: RootState) => state.flashcardChat.currentIndex;
-
-export const selectActiveFlashcard = createSelector(
+const selectActiveFlashcard = createSelector(
     [selectAllFlashcards, selectCurrentIndex],
     (flashcards, currentIndex) => {
         if (currentIndex >= 0 && currentIndex < flashcards.length) {
@@ -18,19 +17,19 @@ export const selectActiveFlashcard = createSelector(
 );
 
 // Select all flashcard data (without chat history)
-export const selectAllFlashcardData = createSelector(
+const selectAllFlashcardData = createSelector(
     [selectAllFlashcards],
     (flashcards) => flashcards.map(({ chat, ...rest }) => rest)
 );
 
 // Select chat history for the active flashcard
-export const selectActiveFlashcardChat = createSelector(
+const selectActiveFlashcardChat = createSelector(
     [selectActiveFlashcard],
     (activeFlashcard) => activeFlashcard ? activeFlashcard.chat : []
 );
 
 // Select total correct and incorrect counts
-export const selectPerformanceCounts = createSelector(
+const selectPerformanceCounts = createSelector(
     [selectAllFlashcards],
     (flashcards) => ({
         totalCorrect: flashcards.reduce((sum, card) => sum + card.correctCount, 0),
@@ -40,5 +39,15 @@ export const selectPerformanceCounts = createSelector(
 );
 
 // Select a specific flashcard by ID
-export const selectFlashcardById = (id: string) =>
+const selectFlashcardById = (id: string) =>
     (state: RootState) => state.flashcardChat.flashcards[id] || null;
+
+export {
+    selectAllFlashcards,
+    selectCurrentIndex,
+    selectActiveFlashcard,
+    selectAllFlashcardData,
+    selectActiveFlashcardChat,
+    selectPerformanceCounts,
+    selectFlashcardById,
+};

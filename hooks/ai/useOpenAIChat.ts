@@ -1,19 +1,13 @@
-import { useCallback, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
+import {useCallback, useRef} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {v4 as uuidv4} from 'uuid';
 import OpenAI from 'openai';
-import {
-    openai,
-    defaultOpenAiModel,
-    defaultTemperature,
-    default4oMiniMaxTokens,
-} from "@/lib/ai/openAiBrowserClient";
-import { RootState } from '@/lib/redux/store';
-import { AIProvider, ContentPart, Message } from "@/lib/ai/aiChat.types";
-import { addMessage, completeChat, createChat, setError } from "@/lib/redux/slices/aiChatSlice";
+import {openai, defaultOpenAiModel, defaultTemperature, default4oMiniMaxTokens,} from "@/lib/ai/openAiBrowserClient";
+import {RootState} from '@/lib/redux/store';
+import {AIProvider, ContentPart, Message} from "@/lib/ai/aiChat.types";
+import {addMessage, completeChat, createChat, setError} from "@/lib/redux/slices/aiChatSlice";
 
 type ChatCompletionCreateParams = OpenAI.ChatCompletionCreateParams;
-type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
 type ChatCompletionChunk = OpenAI.ChatCompletionChunk;
 
 interface UseOpenAIChatOptions extends Omit<ChatCompletionCreateParams, 'messages'> {
@@ -93,11 +87,11 @@ export const useOpenAIChat = () => {
                                 content
                             } as OpenAI.ChatCompletionFunctionMessageParam;
                         case 'system':
-                            return { role: 'system', content } as OpenAI.ChatCompletionSystemMessageParam;
+                            return {role: 'system', content} as OpenAI.ChatCompletionSystemMessageParam;
                         case 'user':
-                            return { role: 'user', content } as OpenAI.ChatCompletionUserMessageParam;
+                            return {role: 'user', content} as OpenAI.ChatCompletionUserMessageParam;
                         case 'assistant':
-                            return { role: 'assistant', content } as OpenAI.ChatCompletionAssistantMessageParam;
+                            return {role: 'assistant', content} as OpenAI.ChatCompletionAssistantMessageParam;
                         case 'tool':
                             return {
                                 role: 'tool',
@@ -124,20 +118,20 @@ export const useOpenAIChat = () => {
                     fullResponse += content;
                     if (onChunk) onChunk(content);
                 }
-                dispatch(completeChat({ chatId, fullResponse }));
+                dispatch(completeChat({chatId, fullResponse}));
                 dispatch(addMessage({
                     chatId,
                     role: 'assistant',
-                    content: [{ type: 'text', content: fullResponse }],
+                    content: [{type: 'text', content: fullResponse}],
                     isVisibleToUser: true,
                 }));
             } else {
                 const content = (response as OpenAI.ChatCompletion).choices[0]?.message?.content || '';
-                dispatch(completeChat({ chatId, fullResponse: content }));
+                dispatch(completeChat({chatId, fullResponse: content}));
                 dispatch(addMessage({
                     chatId,
                     role: 'assistant',
-                    content: [{ type: 'text', content }],
+                    content: [{type: 'text', content}],
                     isVisibleToUser: true,
                 }));
             }
@@ -145,9 +139,9 @@ export const useOpenAIChat = () => {
             return chatId;
         } catch (error) {
             if (error instanceof Error) {
-                dispatch(setError({ chatId, error: error.message }));
+                dispatch(setError({chatId, error: error.message}));
             } else {
-                dispatch(setError({ chatId, error: 'An unknown error occurred' }));
+                dispatch(setError({chatId, error: 'An unknown error occurred'}));
             }
             return null;
         } finally {
@@ -155,5 +149,5 @@ export const useOpenAIChat = () => {
         }
     }, [dispatch, chats]);
 
-    return { sendMessage };
+    return {sendMessage};
 };
