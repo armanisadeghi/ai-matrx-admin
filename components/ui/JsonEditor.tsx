@@ -1,6 +1,4 @@
-// components/ui/JsonEditor.tsx
-
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
@@ -10,8 +8,8 @@ import {Textarea} from '@/components/ui/textarea';
 import {Alert, AlertDescription} from '@/components/ui/alert';
 import {motion, AnimatePresence} from 'framer-motion';
 import {cn} from '@/lib/utils';
+import {Loader2} from 'lucide-react';
 
-// JSON validation schema
 const jsonSchema = z.any().refine((data) => {
     try {
         JSON.parse(JSON.stringify(data));
@@ -30,17 +28,20 @@ type FormData = {
 interface BaseJsonEditorProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     initialData?: object;
     onJsonChange?: (data: object) => void;
+    validateDelay?: number;
 }
 
-// Base JSON Editor (just the textarea)
 export const BaseJsonEditor: React.FC<BaseJsonEditorProps> = (
     {
         initialData = {},
         onJsonChange,
         className,
+        validateDelay = 500,
         ...props
     }) => {
-    const {control} = useForm<FormData>({
+    const [isValidating, setIsValidating] = useState(false);
+
+    const {control, formState: {errors}} = useForm<FormData>({
         defaultValues: {
             jsonInput: JSON.stringify(initialData, null, 2),
         },
@@ -50,81 +51,96 @@ export const BaseJsonEditor: React.FC<BaseJsonEditorProps> = (
     });
 
     const handleChange = (value: string) => {
-        try {
-            const parsedData = JSON.parse(value);
-            onJsonChange?.(parsedData);
-        } catch (error) {
-            // Optionally handle parsing errors
-        }
+        setIsValidating(true);
+        const timer = setTimeout(() => {
+            try {
+                const parsedData = JSON.parse(value);
+                onJsonChange?.(parsedData);
+            } catch (error) {
+                // Validation error will be handled by zod
+            } finally {
+                setIsValidating(false);
+            }
+        }, validateDelay);
+
+        return () => clearTimeout(timer);
     };
 
     return (
-        <Controller
-            name="jsonInput"
-            control={control}
-            render={({field}) => (
-                <Textarea
-                    {...field}
-                    {...props}
-                    className={cn("font-mono", className)}
-                    onChange={(e) => {
-                        field.onChange(e);
-                        handleChange(e.target.value);
-                    }}
-                />
-            )}
-        />
-    );
-};
-
-interface JsonEditorWithValidationProps extends BaseJsonEditorProps {
-    showValidation?: boolean;
-}
-
-// JSON Editor with validation
-export const JsonEditorWithValidation: React.FC<JsonEditorWithValidationProps> = (
-    {
-        showValidation = true,
-        ...props
-    }) => {
-    const [error, setError] = useState<string | null>(null);
-
-    const handleChange = (data: object) => {
-        setError(null);
-        props.onJsonChange?.(data);
-    };
-
-    return (
-        <div className="space-y-2">
-            <BaseJsonEditor {...props} onJsonChange={handleChange}/>
-            {showValidation && (
-                <AnimatePresence>
-                    {error && (
-                        <motion.div
-                            initial={{opacity: 0, y: -10}}
-                            animate={{opacity: 1, y: 0}}
-                            exit={{opacity: 0, y: -10}}
-                        >
-                            <Alert variant="destructive">
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            )}
+        <div className="relative">
+            <Controller
+                name="jsonInput"
+                control={control}
+                render={({field}) => (
+                    <Textarea
+                        {...field}
+                        {...props}
+                        className={cn("font-mono", className)}
+                        onChange={(e) => {
+                            field.onChange(e);
+                            handleChange(e.target.value);
+                        }}
+                    />
+                )}
+            />
+            <AnimatePresence>
+                {isValidating && (
+                    <motion.div
+                        initial={{opacity: 0}}
+                        animate={{opacity: 1}}
+                        exit={{opacity: 0}}
+                        className="absolute top-2 right-2"
+                    >
+                        <Loader2 className="h-4 w-4 animate-spin"/>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <AnimatePresence>
+                {errors.jsonInput && (
+                    <motion.div
+                        initial={{opacity: 0, y: -10}}
+                        animate={{opacity: 1, y: 0}}
+                        exit={{opacity: 0, y: -10}}
+                        className="mt-2"
+                    >
+                        <Alert variant="destructive">
+                            <AlertDescription>{errors.jsonInput.message}</AlertDescription>
+                        </Alert>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
 
-interface FullJsonEditorProps extends JsonEditorWithValidationProps {
-    onSave?: (data: object) => void;
+interface JsonEditorWithFormattingProps extends BaseJsonEditorProps {
+    onFormat?: () => void;
 }
 
-// Full-featured JSON Editor
+export const JsonEditorWithFormatting: React.FC<JsonEditorWithFormattingProps> = (
+    {
+        onFormat,
+        ...props
+    }) => {
+    return (
+        <div className="space-y-2">
+            <BaseJsonEditor {...props} />
+            <Button onClick={onFormat} variant="outline">Format JSON</Button>
+        </div>
+    );
+};
+
+interface FullJsonEditorProps extends JsonEditorWithFormattingProps {
+    onSave?: (data: object) => void;
+    title?: string;
+}
+
 export const FullJsonEditor: React.FC<FullJsonEditorProps> = (
     {
         initialData = {},
         onSave,
+        onFormat,
+        title = "JSON Editor",
         className,
         ...props
     }) => {
@@ -134,22 +150,28 @@ export const FullJsonEditor: React.FC<FullJsonEditorProps> = (
         onSave?.(jsonData);
     };
 
+    const handleFormat = () => {
+        try {
+            const formatted = JSON.stringify(JSON.parse(JSON.stringify(jsonData)), null, 2);
+            setJsonData(JSON.parse(formatted));
+            onFormat?.();
+        } catch (error) {
+            console.error('Error formatting JSON:', error);
+        }
+    };
+
     return (
         <Card className={cn("p-6 space-y-4", className)}>
-            <h2 className="text-2xl font-bold">JSON Editor</h2>
-            <JsonEditorWithValidation
-                initialData={initialData}
+            <h2 className="text-2xl font-bold">{title}</h2>
+            <JsonEditorWithFormatting
+                initialData={jsonData}
                 onJsonChange={setJsonData}
+                onFormat={handleFormat}
                 {...props}
             />
-            <Button onClick={handleSubmit}>Update JSON</Button>
-            <div className="mt-4">
-                <h3 className="text-lg font-semibold mb-2">Current JSON Data:</h3>
-                <pre className="bg-secondary p-4 rounded-md overflow-auto max-h-64">
-          {JSON.stringify(jsonData, null, 2)}
-        </pre>
-            </div>
+            <Button onClick={handleSubmit}>Save Changes</Button>
         </Card>
     );
 };
 
+export default FullJsonEditor;

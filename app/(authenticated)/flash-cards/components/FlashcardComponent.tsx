@@ -7,7 +7,7 @@ import {flashcardDataSet} from '../lesson-data';
 import {Flashcard} from "@/types/flashcards.types";
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
-import ExpandedFlashcardWithChat from '../ai/ExpandedFlashcardWithChat';
+// import ExpandedFlashcardWithChat from '../ai/ExpandedFlashcardWithChat';
 import PerformanceChart from './PerformanceChart';
 import FlashcardTable from './FlashcardTable';
 import EditFlashcardDialog from './EditFlashcardDialog';
@@ -167,15 +167,15 @@ const FlashcardComponent: React.FC = () => {
                 defaultTab={modalDefaultTab}
                 message={modalMessage}
             />
-            {activeFlashcard && (
-                <ExpandedFlashcardWithChat
-                    isOpen={isExpandedChatOpen}
-                    onClose={() => setIsExpandedChatOpen(false)}
-                    cardId={activeFlashcard.id}
-                    firstName={firstName}
-                    fontSize={fontSize}
-                />
-            )}
+            {/*{activeFlashcard && (*/}
+            {/*    <ExpandedFlashcardWithChat*/}
+            {/*        isOpen={isExpandedChatOpen}*/}
+            {/*        onClose={() => setIsExpandedChatOpen(false)}*/}
+            {/*        cardId={activeFlashcard.id}*/}
+            {/*        firstName={firstName}*/}
+            {/*        fontSize={fontSize}*/}
+            {/*    />*/}
+            {/*)}*/}
         </div>
     );
 };
