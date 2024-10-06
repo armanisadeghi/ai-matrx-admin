@@ -23,21 +23,25 @@ const VoicesList: React.FC = () => {
 
     const [selectedVoice, setSelectedVoice] = useState<AiVoice | null>(null);
 
-    const availableVoices = getOneData('availableVoices') as AiVoice[];
+    const availableVoices = getOneData('availableVoices') as AiVoice[] | undefined;
+    console.log("VoicesList: Available voices:", availableVoices);
 
     const loadVoices = useCallback(async () => {
+        console.log("loadVoices function called");
         setLoading(true);
         try {
             const voicesData = await listVoices();
+            console.log("Fetched voices data:", voicesData);
             const filteredVoices = voicesData.map(({ id, name, description }) => ({
                 id,
                 name,
                 description,
             }));
+            console.log("Filtered voices:", filteredVoices);
             setOneData('availableVoices', filteredVoices);
         } catch (err) {
+            console.error("Error in loadVoices:", err);
             setError('Failed to fetch voices.');
-            console.error('Error fetching voices:', err);
             toast({
                 title: "Error",
                 description: "Failed to fetch voices. Please try again.",
@@ -49,13 +53,14 @@ const VoicesList: React.FC = () => {
     }, [setLoading, setOneData, setError]);
 
     useEffect(() => {
-        if (availableVoices.length < 3) {
-            console.log("Only default voices. Fetching available voices.");
+        console.log("VoicesList useEffect triggered. availableVoices:", availableVoices);
+        if (!availableVoices || availableVoices.length < 3) {
+            console.log("Fetching available voices");
             loadVoices();
         } else {
-            console.log("Voices already loaded.");
+            console.log("Voices already loaded");
         }
-    }, [availableVoices.length, loadVoices]);
+    }, [availableVoices, loadVoices]);
 
     const handleCopyId = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -67,16 +72,20 @@ const VoicesList: React.FC = () => {
     }, []);
 
     if (loading) {
+        console.log("VoicesList is loading");
         return <div className="flex justify-center items-center h-full">
             <p className="text-primary">Loading voices...</p>
         </div>;
     }
 
     if (error) {
+        console.log("VoicesList encountered an error:", error);
         return <div className="flex justify-center items-center h-full">
             <p className="text-red-500">{error}</p>
         </div>;
     }
+
+    console.log("VoicesList rendering with availableVoices:", availableVoices);
 
     return (
         <TooltipProvider>
@@ -91,14 +100,14 @@ const VoicesList: React.FC = () => {
                 <div className="flex justify-center mb-4">
                     <button
                         onClick={loadVoices}
-                        className="bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark"
+                        className="py-2 px-4 rounded-md hover:bg-blend-color-burn"
                     >
                         Refresh Voices
                     </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {availableVoices.map((voice: AiVoice) => (
+                    {availableVoices && availableVoices.map((voice: AiVoice) => (
                         <VoiceCard
                             key={voice.id}
                             voice={voice}

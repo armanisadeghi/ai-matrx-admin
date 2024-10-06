@@ -3,7 +3,7 @@
 import {moduleSystemDefaults} from '@/lib/redux/moduleSchema';
 import {AiAudioConfig, AiAudioData, AiAudioSchema, AiAudioUserPreferences} from "@/types/aiAudioTypes";
 
-const aiAudioConfig: AiAudioConfig = {
+export const aiAudioConfig: AiAudioConfig = {
     model_id: "sonic-english",
     voice: {
         mode: "id",
@@ -31,7 +31,7 @@ const aiAudioConfig: AiAudioConfig = {
     ],
 };
 
-const aiAudioUserPreferences: AiAudioUserPreferences = {
+export const aiAudioUserPreferences: AiAudioUserPreferences = {
     audio: {
         voiceId: '156fb8d2-335b-4950-9cb3-a2d33befec77',
         language: 'en',
@@ -44,8 +44,8 @@ const aiAudioUserPreferences: AiAudioUserPreferences = {
     customVocab: {}
 };
 
-const aiAudioInitialData: AiAudioData = {
-    availableVoices: [],
+export const aiAudioInitialData: AiAudioData = {
+    availableVoices: aiAudioConfig.defaultVoices,
     customVoices: [],
     voiceClones: [],
     transcripts: [],
@@ -56,11 +56,11 @@ const aiAudioInitialData: AiAudioData = {
 
 export const aiAudioInitialState: AiAudioSchema = {
     moduleName: "aiAudio",
-    initiated: moduleSystemDefaults.initiated,
+    initiated: false,
     configs: aiAudioConfig,
     userPreferences: aiAudioUserPreferences,
     data: aiAudioInitialData,
-    loading: moduleSystemDefaults.loading,
-    error: moduleSystemDefaults.error,
-    staleTime: moduleSystemDefaults.staleTime,
+    loading: false,
+    error: null,
+    staleTime: 600000,
 };

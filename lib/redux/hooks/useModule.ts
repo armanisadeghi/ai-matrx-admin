@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { createModuleSelectors } from '@/lib/redux/selectors/moduleSelectors';
 import { ModuleName, ModuleSchema } from '@/lib/redux/moduleSchema';
@@ -14,7 +14,16 @@ export const createUseModuleHook = <T extends ModuleSchema>(
     return () => {
         const dispatch = useAppDispatch();
 
-        // State selectors
+        const moduleState = useAppSelector(state => state[moduleName as keyof typeof state]) as T | undefined;
+
+        useEffect(() => {
+            if (!moduleState || !moduleState.initiated) {
+                console.log(`Initializing module: ${moduleName}`);
+                dispatch(actions.initializeModule(moduleInitialState));
+                dispatch(actions.setInitiated(true));
+            }
+        }, [dispatch, moduleState]);
+
         const initiated = useAppSelector(selectors.getInitiated);
         const data = useAppSelector(selectors.getData);
         const configs = useAppSelector(selectors.getConfigs);
@@ -23,7 +32,6 @@ export const createUseModuleHook = <T extends ModuleSchema>(
         const error = useAppSelector(selectors.getError);
         const staleTime = useAppSelector(selectors.getStaleTime);
 
-        // Action creators
         const setInitiated = useCallback((value: boolean) => dispatch(actions.setInitiated(value)), [dispatch]);
         const setLoading = useCallback((value: boolean) => dispatch(actions.setLoading(value)), [dispatch]);
         const setError = useCallback((value: string | null) => dispatch(actions.setError(value)), [dispatch]);
@@ -123,11 +131,13 @@ export const createUseModuleHook = <T extends ModuleSchema>(
             getOneConfig,
             setOneConfig,
             addOneConfig,
+            updateConfigs,
 
             // Utilities for userPreferences
             getOneUserPreference,
             setOneUserPreference,
             addOneUserPreference,
+            updateUserPreferences,
 
         };
     };

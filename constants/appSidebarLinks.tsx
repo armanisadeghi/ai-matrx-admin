@@ -14,23 +14,23 @@ import {
     Image,
     Sliders,
     Video,
-    Edit3
-  } from "lucide-react";
+    Edit3, AudioLines
+} from "lucide-react";
   import React from "react";
 
   export const appSidebarLinks = [
       {
           label: 'Color Converter',
-          href: '/tests/color-converter',
+          href: '/tests/tailwind-test/color-converter',
           icon: (
               <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
           ),
       },
       {
-          label: 'Users',
-          href: '/dashboard/users',
+          label: 'AI Audio',
+          href: '/demo/aiAudio',
           icon: (
-              <Users className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+              <AudioLines className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
           ),
       },
       {
@@ -76,8 +76,8 @@ import {
           ),
       },
       {
-          label: 'Color Swatches',
-          href: '/tests/color-swatches',
+          label: 'Tailwind Test',
+          href: '/tests/tailwind-test',
           icon: (
               <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
           ),

@@ -9,6 +9,9 @@ export const createModuleSlice = <T extends ModuleSchema>(
         name: moduleName,
         initialState,
         reducers: {
+            initializeModule: (state, action: PayloadAction<T>) => {
+                return { ...initialState, ...action.payload };
+            },
             setInitiated: (state, action: PayloadAction<boolean>) => {
                 state.initiated = action.payload;
             },
@@ -27,7 +30,9 @@ export const createModuleSlice = <T extends ModuleSchema>(
             setUserPreferences: (state, action: PayloadAction<T['userPreferences']>) => {
                 state.userPreferences = action.payload;
             },
-            resetState: () => initialState,
+            resetState: (state) => {
+                Object.assign(state, initialState);
+            },
             markDataStale: (state) => {
                 state.staleTime = Date.now();
             },

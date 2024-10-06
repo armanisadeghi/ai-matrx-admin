@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VoicesList from './VoicesList';
 import VoiceActions from './VoiceActions';
 import { createUseModuleHook } from "@/lib/redux/hooks/useModule";
-import {AiAudioSchema} from "@/types/aiAudioTypes";
+import { AiAudioSchema } from "@/types/aiAudioTypes";
 
 export const useAiAudio = createUseModuleHook<AiAudioSchema>('aiAudio', aiAudioInitialState);
 
@@ -24,11 +24,17 @@ const AiVoicePage: React.FC = () => {
         setData,
         setConfigs,
         setUserPreferences,
+        updateData,
+        updateConfigs,
+        updateUserPreferences,
     } = useAiAudio();
+
+    console.log("AiVoicePage initial render - initiated:", initiated, "data:", data, "configs", configs, "user Preferences:", userPreferences)
 
     useEffect(() => {
         const initializeModule = async () => {
             if (!initiated) {
+                console.log("Initializing module");
                 setLoading(true);
                 try {
                     const savedData = localStorage.getItem('aiAudioData');
@@ -36,17 +42,24 @@ const AiVoicePage: React.FC = () => {
                     const savedPreferences = localStorage.getItem('aiAudioPreferences');
 
                     if (savedData) {
-                        setData(JSON.parse(savedData));
+                        const parsedData = JSON.parse(savedData);
+                        console.log("Merging saved data with initial state:", parsedData);
+                        updateData(parsedData);
                     }
                     if (savedConfigs) {
-                        setConfigs(JSON.parse(savedConfigs));
+                        const parsedConfigs = JSON.parse(savedConfigs);
+                        console.log("Merging saved configs with initial state:", parsedConfigs);
+                        updateConfigs(parsedConfigs);
                     }
                     if (savedPreferences) {
-                        setUserPreferences(JSON.parse(savedPreferences));
+                        const parsedPreferences = JSON.parse(savedPreferences);
+                        console.log("Merging saved preferences with initial state:", parsedPreferences);
+                        updateUserPreferences(parsedPreferences);
                     }
 
                     setInitiated(true);
                 } catch (err) {
+                    console.error("Error during initialization:", err);
                     setError(err instanceof Error ? err.message : 'An error occurred during initialization');
                 } finally {
                     setLoading(false);
@@ -55,10 +68,11 @@ const AiVoicePage: React.FC = () => {
         };
 
         initializeModule();
-    }, [initiated, setInitiated, setLoading, setError, setData, setConfigs, setUserPreferences]);
+    }, [initiated, setInitiated, setLoading, setError, updateData, updateConfigs, updateUserPreferences]);
 
     useEffect(() => {
         if (initiated) {
+            console.log("Module initiated, current data:", data);
             localStorage.setItem('aiAudioData', JSON.stringify(data));
             localStorage.setItem('aiAudioConfigs', JSON.stringify(configs));
             localStorage.setItem('aiAudioPreferences', JSON.stringify(userPreferences));
@@ -66,11 +80,15 @@ const AiVoicePage: React.FC = () => {
     }, [initiated, data, configs, userPreferences]);
 
     if (loading) {
+        console.log("AiVoicePage is loading");
         return <div>Loading...</div>;
     }
     if (error) {
+        console.log("AiVoicePage encountered an error:", error);
         return <div>Error: {error}</div>;
     }
+
+    console.log("AiVoicePage rendering with data:", data);
 
     return (
         <div className="container mx-auto py-8 bg-background text-foreground">
