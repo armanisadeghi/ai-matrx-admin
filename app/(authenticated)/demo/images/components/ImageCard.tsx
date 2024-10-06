@@ -7,8 +7,8 @@ import { Card, CardContent } from "@/components/ui/card"
 interface ImageCardProps {
     photo: any
     onClick: () => void
-    onMouseEnter: () => void
-    onMouseLeave: () => void
+    onMouseEnter?: () => void
+    onMouseLeave?: () => void
 }
 
 export function ImageCard({ photo, onClick, onMouseEnter, onMouseLeave }: ImageCardProps) {

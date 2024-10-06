@@ -1,12 +1,33 @@
-import React, { useRef, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { useUnsplashGallery } from '../hooks/useUnsplashGallery';
-import { ImageCard } from './ImageCard';
-import { ImageViewer } from './ImageViewer';
-import { SearchBar } from './SearchBar';
-import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
-import { Photo } from 'unsplash-js';
+import React, {useRef, useCallback} from 'react';
+import {AnimatePresence} from 'framer-motion';
+import {useUnsplashGallery} from '../hooks/useUnsplashGallery';
+import {ImageCard} from './ImageCard';
+import {ImageViewer} from './ImageViewer';
+import {SearchBar} from './SearchBar';
+import {useToast} from '@/components/ui/use-toast';
+import {Loader2} from 'lucide-react';
+
+export interface Photo {
+    id: string;
+    alt_description?: string;
+    links: {
+        html: string;
+    };
+    user: {
+        name: string;
+    };
+    exif?: {
+        make?: string;
+        model?: string;
+        aperture?: string;
+        exposure_time?: string;
+        iso?: number;
+    };
+}
+
+function hasClipboard(nav: Navigator): nav is Navigator & { clipboard: Clipboard } {
+    return !!(nav.clipboard && typeof nav.clipboard.writeText === 'function');
+}
 
 export function UnsplashGallery() {
     const {
@@ -24,7 +45,7 @@ export function UnsplashGallery() {
         downloadImage,
     } = useUnsplashGallery();
 
-    const { toast } = useToast();
+    const {toast} = useToast();
     const observer = useRef<IntersectionObserver | null>(null);
 
     const lastPhotoElementRef = useCallback(
@@ -41,21 +62,33 @@ export function UnsplashGallery() {
         [loading, hasMore, loadMore]
     );
 
-    const handleShare = (photo: Photo) => {
-        if ('share' in navigator) {
-            (navigator as any).share({
-                title: photo.alt_description || 'Shared image from Unsplash',
-                text: `Check out this image by ${photo.user.name} on Unsplash!`,
-                url: photo.links.html,
-            });
-        } else {
-            navigator.clipboard.writeText(photo.links.html);
+    const handleShare = async (photo: Photo) => {
+        try {
+            if ('share' in navigator) {
+                await navigator.share({
+                    title: photo.alt_description || 'Shared image from Unsplash',
+                    text: `Check out this image by ${photo.user.name} on Unsplash!`,
+                    url: photo.links.html,
+                });
+            } else if ('clipboard' in navigator) {
+                await (navigator as any).clipboard.writeText(photo.links.html);
+                toast({
+                    title: 'Link copied',
+                    description: 'The image link has been copied to your clipboard.',
+                });
+            } else {
+                throw new Error('Sharing or clipboard not supported');
+            }
+        } catch (err) {
+            console.error('Failed to share or copy: ', err);
             toast({
-                title: 'Link copied',
-                description: 'The image link has been copied to your clipboard.',
+                title: 'Copy/Share failed',
+                description: 'There was an issue sharing or copying the link.',
+                variant: 'destructive',
             });
         }
     };
+
 
     const handleImageInfo = (photo: Photo) => {
         toast({
@@ -89,7 +122,7 @@ export function UnsplashGallery() {
         <div className="container mx-auto p-4 space-y-8">
             <h1 className="text-4xl font-bold text-foreground mb-6">Unsplash Gallery</h1>
 
-            <SearchBar onSearch={handleSearch} loading={loading} />
+            <SearchBar onSearch={handleSearch} loading={loading}/>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {photos.map((photo, index) => (
@@ -97,14 +130,14 @@ export function UnsplashGallery() {
                         key={photo.id}
                         ref={index === photos.length - 1 ? lastPhotoElementRef : undefined}
                     >
-                        <ImageCard photo={photo} onClick={() => handlePhotoClick(photo)} />
+                        <ImageCard photo={photo} onClick={() => handlePhotoClick(photo)}/>
                     </div>
                 ))}
             </div>
 
             {loading && (
                 <div className="flex justify-center items-center h-24">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 animate-spin text-primary"/>
                 </div>
             )}
 

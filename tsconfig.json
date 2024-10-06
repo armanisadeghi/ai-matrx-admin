@@ -39,7 +39,8 @@
     ".next/types/**/*.ts",
     "tests/**/*",
     "node_modules/flowbite-react/lib/esm/index.d.ts",
-    "cartesia.d.ts"
+    "global.d.ts",
+    "cartesia.d.ts",
   ],
   "exclude": [
     "node_modules",
