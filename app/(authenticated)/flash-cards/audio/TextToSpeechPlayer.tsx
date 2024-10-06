@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import Cartesia, { WebPlayer } from '@cartesia/cartesia-js';
@@ -17,6 +19,8 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
+
+
 
     useEffect(() => {
         cartesiaRef.current = new Cartesia({ apiKey: apiKey || '' });

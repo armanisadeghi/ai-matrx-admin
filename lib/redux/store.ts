@@ -1,10 +1,10 @@
 // lib/redux/store.ts
 
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
+import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './featureSchema';
 import { createFeatureSlice } from './sliceCreator';
+import { createModuleSlice } from './slices/moduleSliceCreator';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
@@ -12,7 +12,7 @@ import aiChatReducer from './slices/aiChatSlice';
 import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
-import { themeReducer } from "@/styles/themes";
+import { themeReducer } from '@/styles/themes';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -23,8 +23,18 @@ const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) =>
     return acc;
 }, {} as Record<string, any>);
 
+const moduleNames = ['photoEditing', 'aiAudio'];
+
+const moduleReducers = moduleNames.reduce((acc, moduleName) => {
+    const moduleSlice = createModuleSlice(moduleName);
+    acc[moduleName] = moduleSlice.reducer;
+    return acc;
+}, {} as Record<string, any>);
+
+
 const rootReducer = combineReducers({
     ...featureReducers,
+    ...moduleReducers,
     layout: layoutReducer,
     theme: themeReducer,
     form: formReducer,
@@ -49,9 +59,4 @@ export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {
 export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = AppStore['dispatch'];
-export type AppThunk<ReturnType = void> = ThunkAction<
-    ReturnType,
-    RootState,
-    unknown,
-    Action<string>
->;
+export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action<string>>;

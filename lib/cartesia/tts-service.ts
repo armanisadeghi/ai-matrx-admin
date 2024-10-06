@@ -1,19 +1,26 @@
 // lib/cartesia/tts-service.ts
 
 import {useEffect, useRef, useCallback} from 'react';
+import Cartesia from "@cartesia/cartesia-js";
+
 import {v4 as uuidv4} from 'uuid';
 import {Buffer} from 'buffer';
+import { WebSocket } from 'ws';
+import {
+    PublishPayload,
+    WebSocketResponse,
+    VoiceMode,
+    AudioEncoding,
+    Language,
+    VoiceSpeed,
+} from './cartesia.types';
 
-// Enums and types
-export enum Language {
-    DE = 'de',
-    EN = 'en',
-    ES = 'es',
-    FR = 'fr',
-    JA = 'ja',
-    PT = 'pt',
-    ZH = 'zh'
-}
+const CARTESIA_WEBSOCKET_URL = 'wss://api.cartesia.ai/tts/websocket';
+
+const cartesia = new Cartesia({
+    apiKey: process.env.NEXT_PUBLIC_CARTESIA_API_KEY,
+});
+
 
 interface Frame {
 }
@@ -125,10 +132,11 @@ const CartesiaTTSService =
                 console.log('WebSocket connected');
             };
 
-            wsRef.current.onmessage = (event) => {
-                const msg: CartesiaMessage = JSON.parse(event.data);
-                handleMessage(msg);
-            };
+            // TODO: removed for type error
+            // wsRef.current.onmessage = (event) => {
+            //     const msg: CartesiaMessage = JSON.parse(event.data);
+            //     handleMessage(msg);
+            // };
 
             wsRef.current.onerror = (error) => {
                 console.error('WebSocket error:', error);

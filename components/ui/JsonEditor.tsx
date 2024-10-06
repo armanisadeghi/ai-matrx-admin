@@ -1,4 +1,8 @@
-import React, {useState, useEffect} from 'react';
+// components/ui/JsonEditor.tsx
+
+'use client';
+
+import React, {useState} from 'react';
 import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
@@ -10,9 +14,9 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {cn} from '@/lib/utils';
 import {Loader2} from 'lucide-react';
 
-const jsonSchema = z.any().refine((data) => {
+const jsonSchema = z.string().refine((data) => {
     try {
-        JSON.parse(JSON.stringify(data));
+        JSON.parse(data);
         return true;
     } catch {
         return false;
@@ -26,14 +30,14 @@ type FormData = {
 };
 
 interface BaseJsonEditorProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-    initialData?: object;
-    onJsonChange?: (data: object) => void;
+    initialData: string;
+    onJsonChange?: (data: string) => void;
     validateDelay?: number;
 }
 
 export const BaseJsonEditor: React.FC<BaseJsonEditorProps> = (
     {
-        initialData = {},
+        initialData,
         onJsonChange,
         className,
         validateDelay = 500,
@@ -43,7 +47,7 @@ export const BaseJsonEditor: React.FC<BaseJsonEditorProps> = (
 
     const {control, formState: {errors}} = useForm<FormData>({
         defaultValues: {
-            jsonInput: JSON.stringify(initialData, null, 2),
+            jsonInput: initialData,
         },
         resolver: zodResolver(z.object({
             jsonInput: jsonSchema,
@@ -54,8 +58,8 @@ export const BaseJsonEditor: React.FC<BaseJsonEditorProps> = (
         setIsValidating(true);
         const timer = setTimeout(() => {
             try {
-                const parsedData = JSON.parse(value);
-                onJsonChange?.(parsedData);
+                JSON.parse(value); // Validate JSON
+                onJsonChange?.(value);
             } catch (error) {
                 // Validation error will be handled by zod
             } finally {
@@ -131,13 +135,13 @@ export const JsonEditorWithFormatting: React.FC<JsonEditorWithFormattingProps> =
 };
 
 interface FullJsonEditorProps extends JsonEditorWithFormattingProps {
-    onSave?: (data: object) => void;
+    onSave?: (data: string) => void;
     title?: string;
 }
 
 export const FullJsonEditor: React.FC<FullJsonEditorProps> = (
     {
-        initialData = {},
+        initialData,
         onSave,
         onFormat,
         title = "JSON Editor",
@@ -152,8 +156,8 @@ export const FullJsonEditor: React.FC<FullJsonEditorProps> = (
 
     const handleFormat = () => {
         try {
-            const formatted = JSON.stringify(JSON.parse(JSON.stringify(jsonData)), null, 2);
-            setJsonData(JSON.parse(formatted));
+            const formatted = JSON.stringify(JSON.parse(jsonData), null, 2);
+            setJsonData(formatted);
             onFormat?.();
         } catch (error) {
             console.error('Error formatting JSON:', error);
