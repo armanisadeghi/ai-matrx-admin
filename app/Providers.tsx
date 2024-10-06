@@ -8,6 +8,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
+import { TooltipProvider } from "@/components/ui/tooltip"; // Import TooltipProvider
 
 export function Providers({ children, initialReduxState }: { children: React.ReactNode, initialReduxState?: any }) {
     return (
@@ -15,8 +16,10 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
             <ThemeProvider defaultTheme="dark" enableSystem={false}>
                 <SchemaProvider>
                     <NextUIProvider>
-                        {children}
-                        <Toaster/>
+                        <TooltipProvider>
+                            {children}
+                            <Toaster/>
+                        </TooltipProvider>
                     </NextUIProvider>
                 </SchemaProvider>
             </ThemeProvider>

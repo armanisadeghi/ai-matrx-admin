@@ -184,8 +184,8 @@ const config: Config = {
         nextui({
             prefix: "next-",
             addCommonColors: false,
-            defaultTheme: "light",
-            defaultExtendTheme: "light",
+            defaultTheme: "dark",
+            defaultExtendTheme: "dark",
             layout: {},
         }),
         addVariablesForColors,

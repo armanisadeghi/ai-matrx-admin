@@ -106,7 +106,7 @@ export function SidebarLayout(
         >
             <Sidebar open={open} setOpen={setOpen}>
                 <SidebarBody className="justify-between gap-10">
-                    <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                    <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden scrollbar-hide">
                         {open ? <Logo/> : <LogoIcon/>}
                         <div className="mt-8 flex flex-col">
                             {primaryLinks.map((link, idx) => (
@@ -231,7 +231,9 @@ export const DesktopSidebar = (
     return (
         <motion.div
             className={cn(
-                "group/sidebar-btn relative m-2 hidden h-full w-[300px] flex-shrink-0 rounded-xl bg-white px-4 py-4 dark:bg-neutral-900 md:flex md:flex-col",
+                "group/sidebar-btn relative m-2 hidden h-full w-[300px] flex-shrink-0 rounded-xl bg-white px-4 py-4 dark:bg-neutral-900 md:flex md:flex-col hide-scrollbar",
+                open ? "overflow-y-auto scrollbar-hide" : "overflow-hidden",
+
                 className,
             )}
             animate={{

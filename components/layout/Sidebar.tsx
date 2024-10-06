@@ -4,7 +4,7 @@
 
 import { useSelector } from 'react-redux';
 import { RootState } from '@/lib/redux/store';
-import { Sidebar as SidebarComponent, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import { Sidebar as SidebarComponent, SidebarBody, SidebarLink } from "@/components/ui/sidebar-collapsible";
 import { Logo, LogoIcon } from "@/components/layout/MatrixLogo";
 import { ThemeSwitcher } from "@/styles/themes";
 import { User } from "lucide-react";
@@ -27,8 +27,8 @@ function Sidebar({ open, setOpen, links }: SidebarProps) {
 
     return (
         <SidebarComponent open={open} setOpen={setOpen}>
-            <SidebarBody className="flex flex-col h-full justify-between">
-                <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+            <SidebarBody className="flex flex-col h-full justify-between scrollbar-hide">
+                <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
                     {open ? <Logo /> : <LogoIcon />}
                     <div className="mt-8 flex flex-col gap-2">
                         {links.map((link, idx) => (
