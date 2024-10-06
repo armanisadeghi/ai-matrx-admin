@@ -11,7 +11,7 @@ export const listVoices = async () => {
     }
 };
 
-// Function to get a specific voice by ID
+// Function to get a specific aiAudio by ID
 export const getVoice = async (voiceId: string) => {
     try {
         const voice = await cartesia.voices.get(voiceId);
@@ -22,7 +22,7 @@ export const getVoice = async (voiceId: string) => {
     }
 };
 
-// Function to clone a voice from a file (takes a File or Blob object as input)
+// Function to clone a aiAudio from a file (takes a File or Blob object as input)
 export const cloneVoiceFromFile = async (file: File | Blob) => {
     try {
         const clonedVoiceEmbedding = await cartesia.voices.clone({
@@ -31,7 +31,7 @@ export const cloneVoiceFromFile = async (file: File | Blob) => {
         });
         return clonedVoiceEmbedding;
     } catch (error) {
-        console.error("Error cloning voice from file:", error);
+        console.error("Error cloning aiAudio from file:", error);
         throw error;
     }
 };
@@ -47,7 +47,7 @@ export const mixVoices = async (voices: { id: string; weight: number }[]) => {
     }
 };
 
-// // Function to localize a voice
+// // Function to localize a aiAudio
 // export const localizeVoice = async (
 //     embedding: number[],
 //     originalSpeakerGender: "male" | "female",
@@ -61,12 +61,12 @@ export const mixVoices = async (voices: { id: string; weight: number }[]) => {
 //         });
 //         return localizedVoiceEmbedding;
 //     } catch (error) {
-//         console.error("Error localizing voice:", error);
+//         console.error("Error localizing aiAudio:", error);
 //         throw error;
 //     }
 // };
 
-// Function to create a new voice
+// Function to create a new aiAudio
 export const createVoice = async (name: string, description: string, embedding: number[]) => {
     try {
         const newVoice = await cartesia.voices.create({
@@ -76,7 +76,7 @@ export const createVoice = async (name: string, description: string, embedding: 
         });
         return newVoice;
     } catch (error) {
-        console.error("Error creating voice:", error);
+        console.error("Error creating aiAudio:", error);
         throw error;
     }
 };
@@ -97,11 +97,11 @@ const cartesia = new Cartesia({
 const voices = await cartesia.voices.list();
 console.log(voices);
 
-// Get a voice.
-const voice = await cartesia.voices.get("<voice-id>");
-console.log(voice);
+// Get a aiAudio.
+const aiAudio = await cartesia.voices.get("<aiAudio-id>");
+console.log(aiAudio);
 
-// Clone a voice from a file.
+// Clone a aiAudio from a file.
 const clonedVoiceEmbedding = await cartesia.voices.clone({
     mode: "clip",
     clip: myFile, // Pass a File object or a Blob.
@@ -109,20 +109,20 @@ const clonedVoiceEmbedding = await cartesia.voices.clone({
 
 // Mix voices together.
 const mixedVoiceEmbedding = await cartesia.voices.mix({
-    voices: [{ id: "<voice-id-1>", weight: 0.6 }, { id: "<voice-id-2>", weight: 0.4 }],
+    voices: [{ id: "<aiAudio-id-1>", weight: 0.6 }, { id: "<aiAudio-id-2>", weight: 0.4 }],
 });
 
-// Localize a voice.
+// Localize a aiAudio.
 const localizedVoiceEmbedding = await cartesia.voices.localize({
     embedding: Array(192).fill(1.0),
     original_speaker_gender: "female",
     language: "es",
 });
 
-// Create a voice.
+// Create a aiAudio.
 const newVoice = await cartesia.voices.create({
     name: "Tim",
-    description: "A deep, resonant voice.",
+    description: "A deep, resonant aiAudio.",
     embedding: Array(192).fill(1.0),
 });
 console.log(newVoice);
@@ -152,7 +152,7 @@ try {
 // Create a stream.
 const response = await websocket.send({
 	model_id: "sonic-english",
-	voice: {
+	aiAudio: {
 		mode: "id",
 		id: "a0e99841-438c-4a64-b679-ae501e7d6091",
 	},
@@ -176,7 +176,7 @@ for await (const message of response.events('message')) {
 /* Timestamps
 const response = await websocket.send({
 	model_id: "sonic-english",
-	voice: {
+	aiAudio: {
 		mode: "id",
 		id: "a0e99841-438c-4a64-b679-ae501e7d6091",
 	},
@@ -202,7 +202,7 @@ for (await const timestamps of response.events('timestamps')) {
 /* Speed and emotion controls [Alpha]
 const response = await websocket.send({
 	model_id: "sonic-english",
-	voice: {
+	aiAudio: {
 		mode: "id",
 		id: "a0e99841-438c-4a64-b679-ae501e7d6091",
 		__experimental_controls: {
@@ -245,7 +245,7 @@ function TextToSpeech() {
 		// Begin buffering the audio.
 		const response = await tts.buffer({
 			model_id: "sonic-english",
-			voice: {
+			aiAudio: {
         		mode: "id",
         		id: "a0e99841-438c-4a64-b679-ae501e7d6091",
         	},

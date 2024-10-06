@@ -1,35 +1,10 @@
-// lib/redux/slices/moduleSliceCreator.ts
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ModuleName, ModuleSchema } from '@/lib/redux/moduleSchema';
 
-export interface ModuleBaseState<T> {
-    initiated: boolean;
-    data: Record<string, any>;
-    items: Record<string, any>;
-    userPreferences: Record<string, any>;
-    loading: boolean;
-    error: string | null;
-    staleTime: number;
-}
-
-
-export const createModuleSlice = <T>(
-    moduleName: string,
-    initiated: boolean = false,
-    initialData: Record<string, any> = {},
-    initialItems: Record<string, any> = {},
-    staleTime: number = 600000,
+export const createModuleSlice = <T extends ModuleSchema>(
+    moduleName: ModuleName,
+    initialState: T
 ) => {
-    const initialState: ModuleBaseState<T> = {
-        initiated: initiated,
-        data: initialData,
-        items: initialItems,
-        userPreferences: {},
-        loading: false,
-        error: null,
-        staleTime,
-    };
-
     const slice = createSlice({
         name: moduleName,
         initialState,
@@ -43,24 +18,27 @@ export const createModuleSlice = <T>(
             setError: (state, action: PayloadAction<string | null>) => {
                 state.error = action.payload;
             },
-            setUserPreferences: (state, action: PayloadAction<Record<string, any>>) => {
-                state.userPreferences = action.payload;
-            },
-            setData: (state, action: PayloadAction<T>) => {
+            setData: (state, action: PayloadAction<T['data']>) => {
                 state.data = action.payload;
             },
-            setItems: (state, action: PayloadAction<T>) => {
-                state.items = action.payload;
+            setConfigs: (state, action: PayloadAction<T['configs']>) => {
+                state.configs = action.payload;
             },
-            resetState: (state) => {
-                state.loading = false;
-                state.error = null;
-                state.data = initialData;
-                state.items = initialItems;
-                state.userPreferences = {};
+            setUserPreferences: (state, action: PayloadAction<T['userPreferences']>) => {
+                state.userPreferences = action.payload;
             },
+            resetState: () => initialState,
             markDataStale: (state) => {
                 state.staleTime = Date.now();
+            },
+            updateData: (state, action: PayloadAction<Partial<T['data']>>) => {
+                state.data = { ...state.data, ...action.payload };
+            },
+            updateConfigs: (state, action: PayloadAction<Partial<T['configs']>>) => {
+                state.configs = { ...state.configs, ...action.payload };
+            },
+            updateUserPreferences: (state, action: PayloadAction<Partial<T['userPreferences']>>) => {
+                state.userPreferences = { ...state.userPreferences, ...action.payload };
             },
         },
     });
@@ -70,3 +48,5 @@ export const createModuleSlice = <T>(
         actions: slice.actions,
     };
 };
+
+export type ModuleActions<T extends ModuleSchema> = ReturnType<typeof createModuleSlice<T>>['actions'];

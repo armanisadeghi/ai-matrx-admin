@@ -281,8 +281,8 @@ const CartesiaTTSService =
                 // Implement model switching logic here
             },
             setVoice: (voice: string) => {
-                console.log('Switching TTS voice to:', voice);
-                // Implement voice switching logic here
+                console.log('Switching TTS aiAudio to:', voice);
+                // Implement aiAudio switching logic here
             },
             setSpeed: (speed: string | number) => {
                 console.log('Switching TTS speed to:', speed);

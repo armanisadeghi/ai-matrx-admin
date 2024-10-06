@@ -88,7 +88,7 @@ export const HistoryFlashcardData: FlashcardData[] = [
         front: "Discuss colonial representation in Parliament.",
         back: "Colonists had no representation in the British Parliament, which fueled their resentment and led to demands for greater rights.",
         example: "The lack of colonial representation led to the rallying cry 'no taxation without representation.'",
-        audioExplanation: "Colonial representation in the British Parliament was non-existent. This lack of representation meant that the colonists had no voice in the legislative decisions that affected them, including the imposition of taxes. This situation fueled significant resentment and led to the rallying cry 'no taxation without representation,' which became a major grievance leading up to the American Revolution.",
+        audioExplanation: "Colonial representation in the British Parliament was non-existent. This lack of representation meant that the colonists had no aiAudio in the legislative decisions that affected them, including the imposition of taxes. This situation fueled significant resentment and led to the rallying cry 'no taxation without representation,' which became a major grievance leading up to the American Revolution.",
         detailedExplanation: "Colonists were taxed by the British government without their consent. Felt their rights as English citizens were being violated.",
     },
     {

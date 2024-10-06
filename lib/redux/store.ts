@@ -1,10 +1,9 @@
-// lib/redux/store.ts
-
 import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import { featureSchemas } from './featureSchema';
 import { createFeatureSlice } from './sliceCreator';
 import { createModuleSlice } from './slices/moduleSliceCreator';
+import { moduleSchemas, ModuleName } from './moduleSchema';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
@@ -23,14 +22,12 @@ const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) =>
     return acc;
 }, {} as Record<string, any>);
 
-const moduleNames = ['photoEditing', 'aiAudio'];
-
-const moduleReducers = moduleNames.reduce((acc, moduleName) => {
-    const moduleSlice = createModuleSlice(moduleName);
+const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
+    const moduleSchema = moduleSchemas[moduleName as keyof typeof moduleSchemas];
+    const moduleSlice = createModuleSlice(moduleName as ModuleName, moduleSchema);
     acc[moduleName] = moduleSlice.reducer;
     return acc;
 }, {} as Record<string, any>);
-
 
 const rootReducer = combineReducers({
     ...featureReducers,
@@ -43,7 +40,6 @@ const rootReducer = combineReducers({
     testRoutes: testRoutesReducer,
     flashcardChat: flashcardChatReducer,
     aiChat: aiChatReducer,
-
 });
 
 export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {

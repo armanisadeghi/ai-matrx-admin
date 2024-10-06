@@ -48,11 +48,11 @@ const cartesia = new Cartesia({
 const voices = await cartesia.voices.list();
 console.log(voices);
 
-// Get a voice.
+// Get a aiAudio.
 const voice = await cartesia.voices.get("<voice-id>");
 console.log(voice);
 
-// Clone a voice from a file.
+// Clone a aiAudio from a file.
 const clonedVoiceEmbedding = await cartesia.voices.clone({
 	mode: "clip",
 	clip: myFile, // Pass a File object or a Blob.
@@ -60,13 +60,13 @@ const clonedVoiceEmbedding = await cartesia.voices.clone({
 
 // Mix voices together.
 const mixedVoiceEmbedding = await cartesia.voices.mix({
-	voices: [{ id: "<voice-id-1>", weight: 0.6 }, { id: "<voice-id-2>", weight: 0.4 }],
+	voices: [{ id: "<aiAudio-id-1>", weight: 0.6 }, { id: "<aiAudio-id-2>", weight: 0.4 }],
 });
 
-// Create a voice.
+// Create a aiAudio.
 const newVoice = await cartesia.voices.create({
 	name: "Tim",
-	description: "A deep, resonant voice.",
+	description: "A deep, resonant aiAudio.",
 	embedding: Array(192).fill(1.0),
 });
 console.log(newVoice);

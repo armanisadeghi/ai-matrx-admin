@@ -1,4 +1,4 @@
-// app/(authenticated)/demo/voice/components/VoiceModal.tsx
+// app/(authenticated)/demo/aiAudio/components/VoiceModal.tsx
 'use client';
 
 
@@ -54,7 +54,7 @@ const VoiceModal: React.FC<VoiceModalProps> = ({ voice, onClose }) => {
                         <Button onClick={() => console.log("Play sample")}>
                             Play Sample
                         </Button>
-                        <Button variant="outline" onClick={() => console.log("Use this voice")}>
+                        <Button variant="outline" onClick={() => console.log("Use this aiAudio")}>
                             Use This Voice
                         </Button>
                     </div>
