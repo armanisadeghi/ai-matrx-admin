@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import CartesiaTTSService, { Language } from '@/lib/cartesia/tts-service';
+import CartesiaTTSService from '@/lib/cartesia/tts-service';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { setModulePreferences } from '@/lib/redux/slices/userPreferencesSlice';
 import { RootState } from '@/lib/redux/store';
