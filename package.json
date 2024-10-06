@@ -125,6 +125,7 @@
     "tls": "^0.0.1",
     "tough-cookie": "^5.0.0",
     "ts-node": "latest",
+    "unsplash-js": "^7.0.19",
     "usehooks-ts": "latest",
     "uuid": "latest",
     "vaul": "latest",
