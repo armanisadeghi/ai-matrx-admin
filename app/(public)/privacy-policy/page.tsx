@@ -1,4 +1,4 @@
-// app/(public)/privacy-policy/page.tsx
+// app/(public)/privacy-policy/hold-hold-page.tsx
 import React from 'react';
 
 const DashboardPage = () => {

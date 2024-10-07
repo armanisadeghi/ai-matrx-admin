@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import {Edit, Eye, Maximize2, Trash} from "lucide-react";
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";

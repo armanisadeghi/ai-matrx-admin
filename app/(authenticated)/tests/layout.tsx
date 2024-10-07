@@ -5,7 +5,7 @@
 import React from "react";
 import { WindowLayout, NormalLayout } from "@/components/layout/baseLayout";
 import { appSidebarLinks } from "@/constants";
-import { LayoutWithSidebar } from "@/components/layout/new-layout";
+import { LayoutWithSidebar } from "@/components/layout/MatrixLayout";
 
 function Layout({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = React.useState(false);

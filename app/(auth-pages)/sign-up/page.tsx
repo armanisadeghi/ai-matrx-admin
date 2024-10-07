@@ -1,4 +1,4 @@
-// File: app/(auth-pages)/sign-up/page.tsx
+// File: app/(auth-pages)/sign-up/hold-hold-page.tsx
 
 import { signUpAction, signUpWithGoogleAction, signUpWithGithubAction } from "@/actions/auth.actions";
 import { Message } from "@/components/form-message";

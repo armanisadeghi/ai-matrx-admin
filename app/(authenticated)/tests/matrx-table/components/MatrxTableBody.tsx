@@ -42,12 +42,12 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
         if (data.length === 0) return [];
         const dataColumns = Object.keys(data[0]).map(key => ({
             Header: key.charAt(0).toUpperCase() + key.slice(1),
-            // accessor: key,
+            accessor: key,
         }));
         return [
             ...dataColumns,
             {
-                // id: 'actions',
+                id: 'actions',
                 Header: 'Actions',
                 Cell: () => null // We'll render this separately
             }
@@ -91,7 +91,7 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
 
     return (
         <>
-            <TableBody {...getTableBodyProps()}>
+            <TableBody className="scrollbar-hide" {...getTableBodyProps()}>
                 <AnimatePresence>
                     {rows.map((row, i) => {
                         prepareRow(row);
@@ -112,10 +112,10 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
                                 }}
                                 exit={{opacity: 0, y: 10}}
                                 whileHover={{
-                                    scale: 1.02,
+                                    y: -10,
                                     transition: {duration: 0.2},
                                 }}
-                                className="bg-card hover:bg-accent/50 cursor-pointer"
+                                className="bg-card hover:bg-accent/50 cursor-pointer scrollbar-hide"
                                 onClick={() => handleAction('view', row.original)}
                             >
                                 {row.cells.map((cell) => (

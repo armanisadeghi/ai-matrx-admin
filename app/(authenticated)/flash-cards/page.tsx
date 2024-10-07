@@ -1,4 +1,4 @@
-// File location: app\(authenticated)\tests\flash-cards\page.tsx
+// File location: app\(authenticated)\tests\flash-cards\hold-hold-page.tsx
 
 'use client'
 

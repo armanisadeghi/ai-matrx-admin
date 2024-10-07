@@ -1,4 +1,4 @@
-// File: app/(auth-pages)/sign-out/page.tsx
+// File: app/(auth-pages)/sign-out/hold-hold-page.tsx
 
 import { signOutAction } from "@/actions/auth.actions";
 import { Message } from "@/components/form-message";

@@ -1,4 +1,4 @@
-// File: app/(auth-pages)/reset-password/page.tsx
+// File: app/(auth-pages)/reset-password/hold-hold-page.tsx
 
 import { resetPasswordAction } from "@/actions/auth.actions";
 import { Message } from "@/components/form-message";

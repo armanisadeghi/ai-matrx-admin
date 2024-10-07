@@ -1,4 +1,4 @@
-// File location: app/(authenticated)/ai/basic-playground/page.tsx
+// File location: app/(authenticated)/ai/basic-playground/hold-hold-page.tsx
 
 
 import PlaygroundCollapsable from "@/app/(authenticated)/ai/basic-playground/PlaygroundCollapsable";

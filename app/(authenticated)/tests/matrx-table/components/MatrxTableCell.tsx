@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import {Cell} from "react-table";
 import {TableData} from "./table.types";

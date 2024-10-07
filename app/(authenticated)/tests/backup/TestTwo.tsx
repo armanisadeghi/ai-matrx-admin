@@ -10,7 +10,7 @@ function getTestPages() {
     const entries = fs.readdirSync(testsDir, {withFileTypes: true});
 
     return entries
-        .filter(entry => entry.isDirectory() && fs.existsSync(path.join(testsDir, entry.name, 'page.tsx')))
+        .filter(entry => entry.isDirectory() && fs.existsSync(path.join(testsDir, entry.name, 'hold-hold-page.tsx')))
         .map((entry, index) => ({
             id: index + 1,
             title: entry.name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),

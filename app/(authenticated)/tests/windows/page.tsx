@@ -1,4 +1,4 @@
-// File location: @/app/tests/windows/page.tsx
+// File location: @/app/tests/windows/hold-hold-page.tsx
 'use client';
 
 import WindowManager from "@/components/matrx/windows";

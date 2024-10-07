@@ -25,10 +25,6 @@ export interface Photo {
     };
 }
 
-function hasClipboard(nav: Navigator): nav is Navigator & { clipboard: Clipboard } {
-    return !!(nav.clipboard && typeof nav.clipboard.writeText === 'function');
-}
-
 export function UnsplashGallery() {
     const {
         photos,
@@ -144,21 +140,16 @@ export function UnsplashGallery() {
             <AnimatePresence>
                 {selectedPhoto && (
                     <ImageViewer
-                        photo={selectedPhoto}
-                        relatedPhotos={relatedPhotos}
+                        photos={photos}
+                        initialIndex={photos.findIndex((photo) => photo.id === selectedPhoto.id)}
                         onClose={closePhotoView}
-                        onDownload={() => downloadImage(selectedPhoto)}
-                        onFavorite={() => toggleFavorite(selectedPhoto)}
-                        onShare={() => handleShare(selectedPhoto)}
-                        onInfo={() => handleImageInfo(selectedPhoto)}
-                        isFavorite={favorites.some((fav) => fav.id === selectedPhoto.id)}
+                        onDownload={downloadImage}
+                        onFavorite={toggleFavorite}
+                        onShare={handleShare}
+                        onInfo={handleImageInfo}
+                        isFavorite={(photo) => favorites.some((fav) => fav.id === photo.id)}
                         onRelatedPhotoClick={handlePhotoClick}
-                        onPrevious={handlePreviousPhoto}
-                        onNext={handleNextPhoto}
-                        hasPrevious={photos.findIndex((photo) => photo.id === selectedPhoto.id) > 0}
-                        hasNext={
-                            photos.findIndex((photo) => photo.id === selectedPhoto.id) < photos.length - 1
-                        }
+                        loadMorePhotos={loadMore} // Assuming loadMore is your function to load more photos
                     />
                 )}
             </AnimatePresence>

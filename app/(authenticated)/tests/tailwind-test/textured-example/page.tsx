@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/tailwind-test/textured-example/page.tsx
+// app/(authenticated)/tests/tailwind-test/textured-example/hold-hold-page.tsx
 
 import React from 'react';
 import { Card } from "@/components/ui/card";

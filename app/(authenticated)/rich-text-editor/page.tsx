@@ -1,4 +1,4 @@
-// File Location: app/(authenticated)/tests/rich-text-editor/page.tsx
+// File Location: app/(authenticated)/tests/rich-text-editor/hold-hold-page.tsx
 
 import dynamic from 'next/dynamic';
 

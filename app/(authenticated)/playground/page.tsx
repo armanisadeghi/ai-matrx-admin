@@ -1,4 +1,4 @@
-// File location: @/app/playground/page.tsx
+// File location: @/app/playground/hold-hold-page.tsx
 
 import Playground from "@/components/playground/Playground";
 

@@ -1,4 +1,4 @@
-// File location: @/app/admin/page.tsx
+// File location: @/app/admin/hold-hold-page.tsx
 
 export default function AdminPage() {
     return (

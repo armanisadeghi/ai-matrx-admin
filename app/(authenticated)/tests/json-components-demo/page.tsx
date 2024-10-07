@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/json-components-demo/page.tsx
+// app/(authenticated)/tests/json-components-demo/hold-hold-page.tsx
 
 'use client';
 

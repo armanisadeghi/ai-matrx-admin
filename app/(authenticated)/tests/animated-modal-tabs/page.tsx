@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/animated-modal-tabs/page.tsx
+// app/(authenticated)/tests/animated-modal-tabs/hold-hold-page.tsx
 
 'use client';
 

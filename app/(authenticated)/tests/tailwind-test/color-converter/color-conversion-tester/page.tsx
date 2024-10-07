@@ -1,4 +1,4 @@
-// app/page.tsx
+// app/hold-hold-page.tsx
 'use client';
 
 import ColorTester from '../components/ColorTester';

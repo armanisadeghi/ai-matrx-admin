@@ -1,4 +1,4 @@
-// app/(authenticated)/image-editing/page.tsx
+// app/(authenticated)/image-editing/hold-hold-page.tsx
 "use client";
 
 import AdvancedImageEditorIndex from '@/components/advanced-image-editor';

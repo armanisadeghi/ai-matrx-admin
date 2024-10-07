@@ -1,4 +1,4 @@
-// File: app/(auth-pages)/sign-up/page.tsx
+// File: app/(auth-pages)/sign-up/hold-hold-page.tsx
 
 import {
     signUpAction,

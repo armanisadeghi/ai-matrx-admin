@@ -1,4 +1,4 @@
-// File location: app/(authenticated)/tests/floating-slider-demo/page.tsx
+// File location: app/(authenticated)/tests/floating-slider-demo/hold-hold-page.tsx
 
 import {
     IconBrandGithub,

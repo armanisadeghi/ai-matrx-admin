@@ -1,4 +1,4 @@
-// File location: @/app/registered-functions/page.tsx
+// File location: @/app/registered-functions/hold-hold-page.tsx
 
 
 import FunctionManagement from "@/features/registered-function/components/FunctionManagement";

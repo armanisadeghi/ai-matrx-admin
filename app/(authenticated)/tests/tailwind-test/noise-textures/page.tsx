@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/tailwind-test/noise-textures/page.tsx
+// app/(authenticated)/tests/tailwind-test/noise-textures/hold-hold-page.tsx
 
 import React from 'react';
 

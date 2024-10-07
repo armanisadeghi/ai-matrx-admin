@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/matrx-table/page.tsx
+// app/(authenticated)/tests/matrx-table/hold-hold-page.tsx
 
 'use client';
 
@@ -84,21 +84,21 @@ const MatrxTableTestPage: React.FC = () => {
                 />
             </div>
 
-            <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-2">Employee Data Table (Default Modal)</h2>
-                <MatrxTablePage
-                    data={tableDataOne}
-                    onAction={handleAction}
-                    columns={columns}
-                    defaultVisibleColumns={defaultVisibleColumns}
-                    className="pb-4 rounded-3xl bg-neutral-100 dark:bg-neutral-800"
-                    onAdd={handleAddTemp}
-                    onEdit={handleEditTemp}
-                    onDelete={handleDeleteTemp}
-                    onExpand={handleExpandTemp}
+            {/*<div className="mb-8">*/}
+            {/*    <h2 className="text-xl font-semibold mb-2">Employee Data Table (Default Modal)</h2>*/}
+            {/*    <MatrxTablePage*/}
+            {/*        data={tableDataOne}*/}
+            {/*        onAction={handleAction}*/}
+            {/*        columns={columns}*/}
+            {/*        defaultVisibleColumns={defaultVisibleColumns}*/}
+            {/*        className="pb-4 rounded-3xl bg-neutral-100 dark:bg-neutral-800"*/}
+            {/*        onAdd={handleAddTemp}*/}
+            {/*        onEdit={handleEditTemp}*/}
+            {/*        onDelete={handleDeleteTemp}*/}
+            {/*        onExpand={handleExpandTemp}*/}
 
-                />
-            </div>
+            {/*    />*/}
+            {/*</div>*/}
 
 
             <div className="mb-8">
