@@ -20,12 +20,12 @@ export default function TexturedExamplePage() {
 
                 <TextDivider text="Matrix Card Background Test"/>
 
-                <div className="w-1/2 bg-matrix-card-back p-8 rounded-lg">
+                <div className="w-1/2 bg-matrx-card-back p-8 rounded-lg">
                     <h2 className="text-2xl font-semibold mb-4">Matrix Card Background</h2>
                     <p>This div uses the Matrix Card Background utility directly.</p>
                 </div>
 
-                <div className="w-1/2 hover:bg-matrix-card-back p-8 rounded-lg transition duration-300">
+                <div className="w-1/2 hover:bg-matrx-card-back p-8 rounded-lg transition duration-300">
                     <h2 className="text-2xl font-semibold mb-4">Hover Matrix Card Background</h2>
                     <p>Hover over this div to see the Matrix Card Background appear.</p>
                 </div>

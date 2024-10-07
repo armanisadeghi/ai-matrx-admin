@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+    <filter id="noise">
+        <feTurbulence type="turbulence" baseFrequency="0.8" numOctaves="4" seed="5" stitchTiles="stitch"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0.07 0"/>
+    </filter>
+    <rect width="200" height="200" fill="#1e1e1e"/>
+    <rect width="200" height="200" filter="url(#noise)" fill="transparent"/>
+</svg>

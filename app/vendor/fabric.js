@@ -2851,7 +2851,7 @@ fabric.CommonMethods = {
         /**
          * Returns coordinates of points's bounding rectangle (left, top, width, height)
          * @param {Array} points 4 points array
-         * @param {Array} [transform] an array of 6 numbers representing a 2x3 transform matrix
+         * @param {Array} [transform] an array of 6 numbers representing a 2x3 transform matrx
          * @return {Object} Object with left, top, width, height properties
          */
         makeBoundingBoxFromPoints: function(points, transform) {

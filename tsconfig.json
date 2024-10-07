@@ -16,7 +16,8 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "/*": ["public/*"]
     },
     "incremental": true,
     "isolatedModules": true,
@@ -40,13 +41,12 @@
     "tests/**/*",
     "node_modules/flowbite-react/lib/esm/index.d.ts",
     "global.d.ts",
-    "cartesia.d.ts",
+    "cartesia.d.ts"
   ],
   "exclude": [
     "node_modules",
     "_armani",
-    "_dev",
-    "_armani"
+    "_dev"
   ],
   "ts-node": {
     "require": ["tsconfig-paths/register"],

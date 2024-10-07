@@ -129,7 +129,7 @@ How have you been? What have you been up to lately? How is that new Bikini line 
 
 export const greetings = [
   {
-    text: "%s. - Hey there, tech genius! Ready to matrix your way into AI greatness?",
+    text: "%s. - Hey there, tech genius! Ready to matrx your way into AI greatness?",
     strings: [contextualHello()],
   },
   {

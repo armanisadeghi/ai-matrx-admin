@@ -143,7 +143,7 @@ const VoiceCard: React.FC<VoiceCardProps> = React.memo(({ voice, onCardClick, on
         transition={{ type: 'spring', stiffness: 100 }}
         onClick={onCardClick}
     >
-        <Card className="bg-matrix-card-background shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
+        <Card className="bg-matrx-card-background shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="text-xl text-foreground">{voice.name}</CardTitle>
             </CardHeader>

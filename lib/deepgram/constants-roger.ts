@@ -124,7 +124,7 @@ How have you been? Don't tell me you took off to Mykonos again. Are you running 
 
 export const greetings = [
   {
-    text: "%s. - Hey there, tech genius! Ready to matrix your way into AI greatness?",
+    text: "%s. - Hey there, tech genius! Ready to matrx your way into AI greatness?",
     strings: [contextualHello()],
   },
   {

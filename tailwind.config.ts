@@ -27,7 +27,7 @@ const config: Config = {
         extend: {
             colors: {
                 border: "hsl(var(--border))",
-                matrixBorder: "var(--matrixBorder)",
+                matrxBorder: "var(--matrxBorder)",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
                 background: "hsl(var(--background))",
@@ -164,7 +164,7 @@ const config: Config = {
                 'gradient-3': 'var(--gradient-3)',
                 'checkerboard': 'var(--checkerboard)',
                 'matrx-background': 'var(--matrx-background)',
-                'matrix-card-background': 'var(--matrix-card-background)',
+                'matrx-card-background': 'var(--matrx-card-background)',
 
             },
             // New animation curves
@@ -196,8 +196,8 @@ const config: Config = {
                     backgroundImage: `${theme('backgroundImage.matrx-texture')}`,
                     backgroundColor: 'hsl(var(--background))',
                 },
-                '.bg-matrix-card-back': {
-                    backgroundImage: `${theme('backgroundImage.matrix-card-texture')}`,
+                '.bg-matrx-card-back': {
+                    backgroundImage: `${theme('backgroundImage.matrx-card-texture')}`,
                     backgroundColor: 'hsl(var(--background))',
                 },
 

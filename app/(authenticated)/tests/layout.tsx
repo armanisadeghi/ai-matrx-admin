@@ -3,22 +3,21 @@
 'use client';
 
 import React from "react";
-import {WindowLayout, NormalLayout} from "@/components/layout/baseLayout";
-import {appSidebarLinks} from "@/constants";
+import { WindowLayout, NormalLayout } from "@/components/layout/baseLayout";
+import { appSidebarLinks } from "@/constants";
+import { LayoutWithSidebar } from "@/components/layout/new-layout";
 
-
-function Layout({children, links}: any) {
+function Layout({ children }: { children: React.ReactNode }) {
     const [open, setOpen] = React.useState(false);
-
-    if (!links) links = appSidebarLinks;
+    const links = appSidebarLinks;
     const LayoutComponent = NormalLayout;
 
-    const layoutProps = {links, open, setOpen};
+    const layoutProps = { primaryLinks: links, open, setOpen };
 
     return (
-        <LayoutComponent {...layoutProps}>
-            {children}
-        </LayoutComponent>
+        <LayoutWithSidebar {...layoutProps}>
+                {children}
+        </LayoutWithSidebar>
     );
 }
 
