@@ -14,7 +14,8 @@ import {
     Image,
     Sliders,
     Video,
-    Edit3, AudioLines, User
+    Images,
+    Edit3, AudioLines, User, SquareSigma, Component
 } from "lucide-react";
 import React from "react";
 
@@ -144,7 +145,80 @@ export const primaryLinks = [
             <Edit3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
+    {
+        label: 'Math Demo',
+        href: '/tests/math',
+        icon: (
+            <SquareSigma className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Stock Image Gallery',
+        href: '/demo/images', // https://lucide.dev/icons/
+        icon: (
+            <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+    //
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+    //
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+    //
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+    //
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+    //
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+    //
+    // {
+    //     label: 'Module Name',
+    //     href: '/tests/module', // https://lucide.dev/icons/
+    //     icon: (
+    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+    //     ),
+    // },
+
 ];
 
 
+
+
 export const appSidebarLinks = primaryLinks;
+
