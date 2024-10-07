@@ -11,7 +11,7 @@ import {generateStandardTabData} from "./StandardTabUtil";
 import MatrxTableCell from "./MatrxTableCell";
 
 
-interface CustomTableBodyProps {
+interface MatrxTableBodyProps {
     data: TableData[];
     actions?: string[];
     onAction?: (actionName: string, rowData: TableData) => void;
@@ -22,7 +22,7 @@ interface CustomTableBodyProps {
 }
 
 
-const CustomTableBody: React.FC<CustomTableBodyProps> = (
+const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
     {
         data,
         actions = ['edit', 'delete', 'view', 'expand'],
@@ -154,4 +154,4 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
     );
 };
 
-export default CustomTableBody;
+export default MatrxTableBody;

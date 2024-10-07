@@ -1,4 +1,5 @@
-// app/(authenticated)/tests/matrx-table/components/CustomTableHeader.tsx
+// app/(authenticated)/tests/matrx-table/components/MatrxTableHeader.tsx
+
 import {UseSortByColumnProps} from "react-table";
 import React from "react";
 import {TableHead, TableHeader, TableRow} from "@/components/ui/table";
@@ -6,7 +7,7 @@ import {motion} from "framer-motion";
 import {ArrowUpDown} from "lucide-react";
 import {TableHeaderProps, TableData} from "./table.types";
 
-const CustomTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
+const MatrxTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
     return (
         <TableHeader>
             {headerGroups.map((headerGroup) => (
@@ -38,4 +39,4 @@ const CustomTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
 };
 
 
-export default CustomTableHeader;
+export default MatrxTableHeader;

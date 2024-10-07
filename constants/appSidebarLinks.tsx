@@ -83,15 +83,21 @@ export const primaryLinks = [
         ),
     },
     {
-        label: 'InteliTable',
+        label: 'Table Test',
         href: '/tests/table-test',
+        icon: (
+            <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },    {
+        label: 'InteliTable',
+        href: '/tests/matrx-table',
         icon: (
             <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
     {
         label: 'Rich Text Editor',
-        href: '/tests/rich-text-editor',
+        href: '/rich-text-editor',
         icon: (
             <Type className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
