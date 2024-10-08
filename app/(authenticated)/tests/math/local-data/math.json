@@ -374,7 +374,7 @@
           "lessonContent": [
             {
               "title": "Introduction to Linear Functions",
-              "description": "Define linear functions and introduce the standard form \( y = mx + b \)."
+              "description": "Define linear functions and introduce the standard form ( y = mx + b )."
             },
             {
               "title": "Slope and Y-Intercept",
@@ -382,7 +382,7 @@
             },
             {
               "title": "Evaluating Linear Functions",
-              "description": "Practice evaluating linear functions by substituting specific values for \( x \)."
+              "description": "Practice evaluating linear functions by substituting specific values for ( x )."
             },
             {
               "title": "Graphing Linear Functions from a Table",
@@ -398,7 +398,7 @@
             },
             {
               "title": "Graphing Horizontal and Vertical Lines",
-              "description": "Show how to graph equations where \( y \) or \( x \) is constant (horizontal and vertical lines)."
+              "description": "Show how to graph equations where ( y ) or ( x ) is constant (horizontal and vertical lines)."
             },
             {
               "title": "Writing Equations from Graphs",
@@ -562,31 +562,31 @@
             },
             {
               "title": "Product of Powers Rule",
-              "description": "Teach the rule for multiplying powers with the same base (e.g., \(a^m \cdot a^n = a^{m+n}\))."
+              "description": "Teach the rule for multiplying powers with the same base (e.g., (a^m cdot a^n = a^{m+n}))."
             },
             {
               "title": "Quotient of Powers Rule",
-              "description": "Explain the rule for dividing powers with the same base (e.g., \(a^m / a^n = a^{m-n}\))."
+              "description": "Explain the rule for dividing powers with the same base (e.g., (a^m / a^n = a^{m-n}))."
             },
             {
               "title": "Power of a Power Rule",
-              "description": "Practice raising a power to another power (e.g., \((a^m)^n = a^{mn}\))."
+              "description": "Practice raising a power to another power (e.g., ((a^m)^n = a^{mn}))."
             },
             {
               "title": "Power of a Product Rule",
-              "description": "Apply the power of a product rule (e.g., \((ab)^n = a^n \cdot b^n\))."
+              "description": "Apply the power of a product rule (e.g., ((ab)^n = a^n cdot b^n))."
             },
             {
               "title": "Power of a Quotient Rule",
-              "description": "Work with the power of a quotient rule (e.g., \((a/b)^n = a^n / b^n\))."
+              "description": "Work with the power of a quotient rule (e.g., ((a/b)^n = a^n / b^n))."
             },
             {
               "title": "Zero Exponent Rule",
-              "description": "Introduce the concept that any base raised to the power of zero equals one (e.g., \(a^0 = 1\))."
+              "description": "Introduce the concept that any base raised to the power of zero equals one (e.g., (a^0 = 1))."
             },
             {
               "title": "Negative Exponents",
-              "description": "Explain negative exponents and how they relate to reciprocals (e.g., \(a^{-n} = 1/a^n\))."
+              "description": "Explain negative exponents and how they relate to reciprocals (e.g., (a^{-n} = 1/a^n))."
             },
             {
               "title": "Combining Multiple Rules",
@@ -616,7 +616,7 @@
             },
             {
               "title": "Distributive Property with Exponents",
-              "description": "Use the distributive property with exponents when simplifying expressions like \(a(bc)^n\)."
+              "description": "Use the distributive property with exponents when simplifying expressions like (a(bc)^n)."
             },
             {
               "title": "Combining Like Terms with Exponents",
@@ -632,7 +632,7 @@
             },
             {
               "title": "Simplifying Expressions with Variables and Exponents",
-              "description": "Solve problems that combine variables with exponents, such as \(x^m \cdot y^n\)."
+              "description": "Solve problems that combine variables with exponents, such as (x^m cdot y^n)."
             },
             {
               "title": "Applying Exponent Rules to Real-World Problems",
@@ -674,7 +674,7 @@
             },
             {
               "title": "Special Products of Polynomials",
-              "description": "Explore patterns like the square of a binomial and the product of a sum and difference (e.g., \((a+b)^2\) and \((a+b)(a-b)\))."
+              "description": "Explore patterns like the square of a binomial and the product of a sum and difference (e.g., ((a+b)^2) and ((a+b)(a-b)))."
             },
             {
               "title": "Identifying the Degree of a Product",

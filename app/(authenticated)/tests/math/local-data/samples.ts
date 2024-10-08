@@ -66,7 +66,7 @@ export const mathCourse = {
                                                         explanation: "It is common practice to write the variable we are solving for on the left side. So, we flip the equation."
                                                     }
                                                 ],
-                                                finalAnswer: "P = \\frac{2(S - B)}{L}"
+                                                solutionAnswer: "P = \\frac{2(S - B)}{L}"
                                             },
                                             {
                                                 taskDescription: "We want to isolate P on one side of the equation in terms of S, L, and B. This time, we will solve the equation using a simplified approach, only showing the main steps without all the intermediary details.",
@@ -89,7 +89,7 @@ export const mathCourse = {
                                                         equation: "P = \\frac{2(S - B)}{L}"
                                                     }
                                                 ],
-                                                finalAnswer: "P = \\frac{2(S - B)}{L}"
+                                                solutionAnswer: "P = \\frac{2(S - B)}{L}"
                                             }
                                         ],
                                         hint: "Remember to perform the same operation on both sides of the equation.",

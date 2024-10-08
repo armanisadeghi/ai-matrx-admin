@@ -12,7 +12,8 @@ export type Step = {
 export type Solution = {
     task: string;
     steps: Step[];
-    finalAnswer: string;
+    solutionAnswer: string;
+    transitionText: string | null;
 };
 
 
@@ -31,7 +32,6 @@ export type Problem = {
     title: string;
     description: string;
     introText: string;
-    transitionTexts: string[];
     finalStatement: string;
     problemStatement: ProblemStatement;
     solutions: Solution[];

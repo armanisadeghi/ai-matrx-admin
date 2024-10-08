@@ -13,6 +13,7 @@ import {Settings, User} from "lucide-react";
 import {useSelector} from "react-redux";
 import {RootState} from "@/lib/redux/store";
 import TablePage from "@/app/(authenticated)/tests/table-test/page";
+import {ThemeSwitcher} from "@/styles/themes";
 
 interface Links {
     label: string;
@@ -149,6 +150,8 @@ export function SidebarLayout(
                         </div>
                     </div>
                     <div>
+                        <ThemeSwitcher/>
+
                         <SidebarLink
                             link={{
                                 label: userName,

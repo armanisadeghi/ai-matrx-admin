@@ -6,8 +6,10 @@ import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Problem } from '../types/algebraGuideTypes';
 import ControlPanel from './ControlPanel';
+import {BackgroundGradient} from "@/components/ui";
 
 const MathProblem: React.FC<Problem> = ({
                                             title,
@@ -16,35 +18,33 @@ const MathProblem: React.FC<Problem> = ({
                                             moduleName,
                                             description,
                                             introText,
-                                            transitionTexts,
                                             finalStatement,
                                             problemStatement,
                                             solutions,
                                         }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [stage, setStage] = useState<'overview' | 'intro' | 'problem' | 'task' | 'steps' | 'final' | 'transition'>('overview');
+    const [stage, setStage] = useState<'overview' | 'intro' | 'solution'>('overview');
+    const [subStage, setSubStage] = useState<'steps' | 'finalAnswer' | 'transition' | 'finalStatement'>('steps');
     const [currentSolution, setCurrentSolution] = useState(0);
     const [currentStep, setCurrentStep] = useState(-1);
-    const [currentStepPart, setCurrentStepPart] = useState(0);
-    const [started, setStarted] = useState(false);
     const [displayedContent, setDisplayedContent] = useState<JSX.Element[]>([]);
+    const [showCongratulations, setShowCongratulations] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const savedStage = searchParams.get('stage') || 'overview';
+        const savedSubStage = searchParams.get('subStage') || 'steps';
         const savedSolution = parseInt(searchParams.get('solution') || '0');
         const savedStep = parseInt(searchParams.get('step') || '-1');
-        const savedStepPart = parseInt(searchParams.get('stepPart') || '0');
 
         setStage(savedStage as any);
+        setSubStage(savedSubStage as any);
         setCurrentSolution(savedSolution);
         setCurrentStep(savedStep);
-        setCurrentStepPart(savedStepPart);
-        setStarted(savedStage !== 'overview');
 
-        rebuildContent(savedStage as any, savedSolution, savedStep, savedStepPart);
+        rebuildContent(savedStage as any, savedSubStage as any, savedSolution, savedStep);
     }, []);
 
     useEffect(() => {
@@ -56,208 +56,202 @@ const MathProblem: React.FC<Problem> = ({
     useEffect(() => {
         const params = new URLSearchParams();
         params.set('stage', stage);
+        params.set('subStage', subStage);
         params.set('solution', currentSolution.toString());
         params.set('step', currentStep.toString());
-        params.set('stepPart', currentStepPart.toString());
         router.push(`?${params.toString()}`, { scroll: false });
-    }, [stage, currentSolution, currentStep, currentStepPart]);
+    }, [stage, subStage, currentSolution, currentStep]);
 
     const addContent = (content: JSX.Element) => {
         setDisplayedContent(prev => [...prev, content]);
     };
 
-    const rebuildContent = (currentStage: string, solutionIndex: number, stepIndex: number, stepPartIndex: number) => {
+    const rebuildContent = (currentStage: string, currentSubStage: string, solutionIndex: number, stepIndex: number) => {
         setDisplayedContent([]);
-        if (currentStage === 'overview' || !started) return;
 
-        if (currentStage === 'intro' || currentStage === 'problem' || currentStage === 'task') {
-            addContent(<p key="intro" className="text-base">{introText}</p>);
-        }
-        if (currentStage === 'intro') return;
-
-        if (currentStage === 'problem' || currentStage === 'task' || currentStage === 'steps' || currentStage === 'final') {
+        if (currentStage === 'overview') {
             addContent(
-                <div key="problem" className="space-y-2">
+                <div key="overview" className="space-y-2">
+                    <h2 className="text-2xl font-bold mb-4">{title}</h2>
+                    <p className="text-base">Course: {courseName}</p>
+                    <p className="text-base">Topic: {topicName}</p>
+                    <p className="text-base">Module: {moduleName}</p>
+                    <p className="text-base">{description}</p>
+                </div>
+            );
+            return;
+        }
+
+        if (currentStage === 'intro' || currentStage === 'solution') {
+            if (currentStage === 'intro') {
+                addContent(<p key="intro" className="text-base mb-4">{introText}</p>);
+            }
+
+            addContent(
+                <div key="problem-statement" className="space-y-2 mb-4">
                     <p className="text-base">{problemStatement.text}</p>
                     <BlockMath math={problemStatement.equation} />
                     <p className="text-base">{problemStatement.instruction}</p>
                 </div>
             );
         }
-        if (currentStage === 'problem') return;
 
-        if (currentStage === 'task' || currentStage === 'steps' || currentStage === 'final') {
-            addContent(<p key={`task-${solutionIndex}`} className="text-base">{solutions[solutionIndex].task}</p>);
-        }
-        if (currentStage === 'task') return;
+        if (currentStage === 'solution') {
+            addContent(<p key={`task-${solutionIndex}`} className="text-base mb-4">{solutions[solutionIndex].task}</p>);
 
-        if (currentStage === 'steps' || currentStage === 'final') {
-            for (let i = 0; i <= stepIndex; i++) {
-                const step = solutions[solutionIndex].steps[i];
-                addContent(<h4 key={`step-${solutionIndex}-${i}-title`} className="font-semibold text-lg mt-4">{step.title}</h4>);
-                if (i < stepIndex || stepPartIndex > 0) addContent(<BlockMath key={`step-${solutionIndex}-${i}-equation`} math={step.equation} />);
-                if ((i < stepIndex || stepPartIndex > 1) && step.explanation) {
-                    addContent(<p key={`step-${solutionIndex}-${i}-explanation`} className="text-base">{step.explanation}</p>);
-                }
-                if ((i < stepIndex || stepPartIndex > 2) && step.simplified) {
+            if (currentSubStage === 'steps') {
+                for (let i = 0; i <= stepIndex; i++) {
+                    const step = solutions[solutionIndex].steps[i];
                     addContent(
-                        <div key={`step-${solutionIndex}-${i}-simplified`}>
-                            <p className="text-base">Simplified:</p>
-                            <BlockMath math={step.simplified} />
+                        <div key={`step-${solutionIndex}-${i}`} className="mb-4">
+                            <h4 className="font-semibold text-lg">{step.title}</h4>
+                            <BlockMath math={step.equation} />
+                            {step.explanation && <p className="text-base">{step.explanation}</p>}
                         </div>
                     );
                 }
+            } else if (currentSubStage === 'finalAnswer') {
+                addContent(
+                    <div key={`final-answer-${solutionIndex}`} className="space-y-2 mt-4">
+                        <h3 className="text-xl font-semibold">Final Answer</h3>
+                        <BlockMath math={solutions[solutionIndex].solutionAnswer} />
+                    </div>
+                );
+            } else if (currentSubStage === 'transition' && solutions[solutionIndex].transitionText) {
+                addContent(<p key={`transition-${solutionIndex}`} className="text-base">{solutions[solutionIndex].transitionText}</p>);
+            } else if (currentSubStage === 'finalStatement') {
+                addContent(<p key="final-statement" className="text-base">{finalStatement}</p>);
             }
-        }
-        if (currentStage === 'steps') return;
-
-        if (currentStage === 'final') {
-            addContent(
-                <div key={`final-answer-${solutionIndex}`} className="space-y-2 mt-4">
-                    <h3 className="text-xl font-semibold">Final Answer</h3>
-                    <BlockMath math={solutions[solutionIndex].finalAnswer} />
-                </div>
-            );
-        }
-
-        if (currentStage === 'transition' && solutionIndex < solutions.length - 1) {
-            addContent(<p key={`transition-${solutionIndex}`} className="text-base">{transitionTexts[solutionIndex]}</p>);
         }
     };
 
     const nextStep = () => {
-        let newStage = stage;
-        let newSolution = currentSolution;
-        let newStep = currentStep;
-        let newStepPart = currentStepPart;
-
-        if (!started) {
-            newStage = 'intro';
-            setStarted(true);
+        if (stage === 'overview') {
+            setStage('intro');
         } else if (stage === 'intro') {
-            newStage = 'problem';
-        } else if (stage === 'problem') {
-            newStage = 'task';
-        } else if (stage === 'task') {
-            newStage = 'steps';
-            newStep = 0;
-            newStepPart = 0;
-        } else if (stage === 'steps') {
-            const step = solutions[currentSolution].steps[currentStep];
-            if (currentStepPart < 3 && ((currentStepPart === 1 && step.explanation) || (currentStepPart === 2 && step.simplified))) {
-                newStepPart = currentStepPart + 1;
-            } else if (currentStep < solutions[currentSolution].steps.length - 1) {
-                newStep = currentStep + 1;
-                newStepPart = 0;
-            } else {
-                newStage = 'final';
+            setStage('solution');
+            setSubStage('steps');
+            setCurrentStep(0);
+        } else if (stage === 'solution') {
+            if (subStage === 'steps') {
+                if (currentStep < solutions[currentSolution].steps.length - 1) {
+                    setCurrentStep(currentStep + 1);
+                } else {
+                    setSubStage('finalAnswer');
+                }
+            } else if (subStage === 'finalAnswer') {
+                if (solutions[currentSolution].transitionText) {
+                    setSubStage('transition');
+                } else if (currentSolution < solutions.length - 1) {
+                    setCurrentSolution(currentSolution + 1);
+                    setSubStage('steps');
+                    setCurrentStep(0);
+                } else {
+                    setSubStage('finalStatement');
+                }
+            } else if (subStage === 'transition') {
+                if (currentSolution < solutions.length - 1) {
+                    setCurrentSolution(currentSolution + 1);
+                    setSubStage('steps');
+                    setCurrentStep(0);
+                } else {
+                    setSubStage('finalStatement');
+                }
+            } else if (subStage === 'finalStatement') {
+                setShowCongratulations(true);
             }
-        } else if (stage === 'final') {
-            if (currentSolution < solutions.length - 1) {
-                newSolution = currentSolution + 1;
-                newStage = 'transition';
-            } else {
-                newStage = 'overview';
-                setStarted(false);
-            }
-        } else if (stage === 'transition') {
-            newStage = 'task';
-            newStep = -1;
-            newStepPart = 0;
         }
 
-        setStage(newStage);
-        setCurrentSolution(newSolution);
-        setCurrentStep(newStep);
-        setCurrentStepPart(newStepPart);
-        rebuildContent(newStage, newSolution, newStep, newStepPart);
+        rebuildContent(stage, subStage, currentSolution, currentStep);
     };
 
     const previousStep = () => {
-        let newStage = stage;
-        let newSolution = currentSolution;
-        let newStep = currentStep;
-        let newStepPart = currentStepPart;
-
         if (stage === 'intro') {
-            newStage = 'overview';
-            setStarted(false);
-        } else if (stage === 'problem') {
-            newStage = 'intro';
-        } else if (stage === 'task') {
-            newStage = 'problem';
-        } else if (stage === 'steps') {
-            if (currentStepPart > 0) {
-                newStepPart = currentStepPart - 1;
-            } else if (currentStep > 0) {
-                newStep = currentStep - 1;
-                newStepPart = 3;
-            } else {
-                newStage = 'task';
+            setStage('overview');
+        } else if (stage === 'solution') {
+            if (subStage === 'steps') {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                } else {
+                    setStage('intro');
+                }
+            } else if (subStage === 'finalAnswer') {
+                setSubStage('steps');
+                setCurrentStep(solutions[currentSolution].steps.length - 1);
+            } else if (subStage === 'transition') {
+                setSubStage('finalAnswer');
+            } else if (subStage === 'finalStatement') {
+                if (solutions[solutions.length - 1].transitionText) {
+                    setSubStage('transition');
+                } else {
+                    setSubStage('finalAnswer');
+                }
             }
-        } else if (stage === 'final') {
-            newStage = 'steps';
-            newStep = solutions[currentSolution].steps.length - 1;
-            newStepPart = 3;
-        } else if (stage === 'transition') {
-            newStage = 'final';
-            newSolution = currentSolution - 1;
         }
 
-        setStage(newStage);
-        setCurrentSolution(newSolution);
-        setCurrentStep(newStep);
-        setCurrentStepPart(newStepPart);
-        rebuildContent(newStage, newSolution, newStep, newStepPart);
+        rebuildContent(stage, subStage, currentSolution, currentStep);
     };
 
     const reset = () => {
         setStage('overview');
+        setSubStage('steps');
         setCurrentSolution(0);
         setCurrentStep(-1);
-        setCurrentStepPart(0);
-        setStarted(false);
-        setDisplayedContent([]);
+        setShowCongratulations(false);
+        rebuildContent('overview', 'steps', 0, -1);
     };
+
+    if (showCongratulations) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full">
+                <h2 className="text-2xl font-bold mb-4">Congratulations!</h2>
+                <div className="space-x-4">
+                    <Button onClick={reset}>Review Again</Button>
+                    <Button onClick={() => router.push('/tests/math')}>Choose Another Lesson</Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full">
             <Card className="flex-grow overflow-y-auto" ref={contentRef}>
                 <CardContent className="p-4">
-                    {!started && <h2 className="text-2xl font-bold mb-4">{title}</h2>}
-                    {!started && (
-                        <div className="space-y-2 mb-4">
-                            <p className="text-base">Course: {courseName}</p>
-                            <p className="text-base">Topic: {topicName}</p>
-                            <p className="text-base">Module: {moduleName}</p>
-                            <p className="text-base">{description}</p>
-                        </div>
-                    )}
-
                     <div className="space-y-4">
                         {displayedContent.map((content, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3 }}
+                                initial={{opacity: 0, y: 20}}
+                                animate={{opacity: 1, y: 0}}
+                                transition={{duration: 0.3}}
                             >
                                 {content}
                             </motion.div>
                         ))}
                     </div>
-
-                    {stage === 'overview' && started && (
-                        <p className="mt-4 text-base">{finalStatement}</p>
-                    )}
                 </CardContent>
             </Card>
-
+            <div className="flex justify-center">
+                <BackgroundGradient className="w-full max-w-lg p-4 sm:p-10 bg-white dark:bg-zinc-900 rounded-[22px]">
+                    <Card>
+                        <CardContent className="p-1">
+                            <h3 className="text-xl font-semibold mb-2">Debug Information</h3>
+                            <p><strong>Stage:</strong> {stage}</p>
+                            <p><strong>Sub-Stage:</strong> {subStage}</p>
+                            <p><strong>Current Solution:</strong> {currentSolution}</p>
+                            <p><strong>Current Step:</strong> {currentStep}</p>
+                            <p><strong>Displayed Content Count:</strong> {displayedContent.length}</p>
+                            <p><strong>Show Congratulations:</strong> {showCongratulations ? 'Yes' : 'No'}</p>
+                            <p><strong>Started:</strong> {stage !== 'overview' ? 'Yes' : 'No'}</p>
+                        </CardContent>
+                    </Card>
+                </BackgroundGradient>
+            </div>
             <ControlPanel
                 onReset={reset}
                 onBack={previousStep}
                 onNext={nextStep}
-                started={started}
+                started={stage !== 'overview'}
             />
         </div>
     );

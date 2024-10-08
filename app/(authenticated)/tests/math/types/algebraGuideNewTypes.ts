@@ -12,7 +12,7 @@ type Step = {
 type Solution = {
     taskDescription: string;    // Renamed for clarity
     steps: Step[];              // Steps involved in solving the problem
-    finalAnswer: string;        // The final answer to the task
+    solutionAnswer: string;        // The final answer to the task
 };
 
 // Problem statement with text, equation, and instructions
