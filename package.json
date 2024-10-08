@@ -80,7 +80,7 @@
     "embla-carousel-react": "latest",
     "flowbite": "latest",
     "flowbite-react": "latest",
-    "framer-motion": "^11.11.1",
+    "framer-motion": "^11.11.2",
     "fs": "0.0.1-security",
     "google-fonts": "latest",
     "katex": "^0.16.11",
