@@ -28,7 +28,7 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
     }
 
     return (
-        <div className="w-full h-[360px] [perspective:1000px]">
+        <div className="w-full min-h-[400px] lg:h-full [perspective:1000px]">
             <div
                 className={`relative w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${
                     isFlipped ? "[transform:rotateY(180deg)]" : ""

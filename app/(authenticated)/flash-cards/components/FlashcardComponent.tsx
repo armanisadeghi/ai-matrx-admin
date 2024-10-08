@@ -114,70 +114,70 @@ const FlashcardComponent: React.FC = () => {
         setIsExpandedChatOpen(true);
     };
 
-    return (
-        <div className="w-full max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-stretch mb-4 gap-4">
-                <div className="w-2/3">
-                    <FlashcardDisplay
-                        isFlipped={isFlipped}
-                        fontSize={fontSize}
-                        onFlip={handleFlip}
-                        onAnswer={handleAnswer}
-                        onAskQuestion={handleAskQuestion}
-                    />
+        return (
+            <div className="w-full">
+                <div className="flex flex-col lg:flex-row justify-between items-stretch mb-4 gap-4">
+                    <div className="w-full lg:w-2/3 flex">
+                        <FlashcardDisplay
+                            isFlipped={isFlipped}
+                            fontSize={fontSize}
+                            onFlip={handleFlip}
+                            onAnswer={handleAnswer}
+                            onAskQuestion={handleAskQuestion}
+                        />
+                    </div>
+                    <div className="w-full lg:w-1/3 flex">
+                        <PerformanceChart/>
+                    </div>
                 </div>
-                <div className="w-1/3">
-                    <PerformanceChart/>
+
+                <FlashcardControls
+                    onPrevious={handlePrevious}
+                    onNext={handleNext}
+                    onShuffle={shuffleCards}
+                    onShowModal={showModal}
+                    onSelectChange={handleSelectChange}
+                    firstName={firstName}
+                />
+
+                <div className="mt-4">
+                    <Progress value={((currentIndex + 1) / allFlashcards.length) * 100} className="w-full"/>
                 </div>
+
+                <div className="mt-4 flex items-center space-x-2">
+                    <span>Font Size:</span>
+                    <Button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} variant="outline">-</Button>
+                    <span>{fontSize}px</span>
+                    <Button onClick={() => setFontSize(prev => Math.min(36, prev + 2))} variant="outline">+</Button>
+                </div>
+
+                <FlashcardTable
+                    onEditCard={handleEditCard}
+                />
+
+                <EditFlashcardDialog
+                    editingCard={editingCard}
+                    onSave={handleSaveEdit}
+                    onClose={() => setEditingCard(null)}
+                />
+
+                <AiAssistModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    defaultTab={modalDefaultTab}
+                    message={modalMessage}
+                />
+                {/*{activeFlashcard && (*/}
+                {/*    <ExpandedFlashcardWithChat*/}
+                {/*        isOpen={isExpandedChatOpen}*/}
+                {/*        onClose={() => setIsExpandedChatOpen(false)}*/}
+                {/*        cardId={activeFlashcard.id}*/}
+                {/*        firstName={firstName}*/}
+                {/*        fontSize={fontSize}*/}
+                {/*    />*/}
+                {/*)}*/}
             </div>
-
-            <FlashcardControls
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-                onShuffle={shuffleCards}
-                onShowModal={showModal}
-                onSelectChange={handleSelectChange}
-                firstName={firstName}
-            />
-
-            <div className="mt-4">
-                <Progress value={((currentIndex + 1) / allFlashcards.length) * 100} className="w-full"/>
-            </div>
-
-            <div className="mt-4 flex items-center space-x-2">
-                <span>Font Size:</span>
-                <Button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} variant="outline">-</Button>
-                <span>{fontSize}px</span>
-                <Button onClick={() => setFontSize(prev => Math.min(24, prev + 2))} variant="outline">+</Button>
-            </div>
-
-            <FlashcardTable
-                onEditCard={handleEditCard}
-            />
-
-            <EditFlashcardDialog
-                editingCard={editingCard}
-                onSave={handleSaveEdit}
-                onClose={() => setEditingCard(null)}
-            />
-
-            <AiAssistModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                defaultTab={modalDefaultTab}
-                message={modalMessage}
-            />
-            {/*{activeFlashcard && (*/}
-            {/*    <ExpandedFlashcardWithChat*/}
-            {/*        isOpen={isExpandedChatOpen}*/}
-            {/*        onClose={() => setIsExpandedChatOpen(false)}*/}
-            {/*        cardId={activeFlashcard.id}*/}
-            {/*        firstName={firstName}*/}
-            {/*        fontSize={fontSize}*/}
-            {/*    />*/}
-            {/*)}*/}
-        </div>
-    );
+        );
 };
 
 export default FlashcardComponent;

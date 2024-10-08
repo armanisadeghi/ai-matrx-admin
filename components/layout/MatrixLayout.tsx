@@ -19,19 +19,23 @@ interface Links {
     icon: React.JSX.Element | React.ReactNode;
 }
 
-
 export interface LayoutWithSidebarProps {
     primaryLinks?: Links[];
     secondaryLinks?: Links[];
-    open?: boolean;
-    setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+    initialOpen?: boolean;
     children?: React.ReactNode;
 }
 
-export function LayoutWithSidebar({primaryLinks, secondaryLinks, open, setOpen, children}: LayoutWithSidebarProps) {
+export function LayoutWithSidebar({
+                                      primaryLinks,
+                                      secondaryLinks,
+                                      initialOpen = false,
+                                      children
+                                  }: LayoutWithSidebarProps) {
     const user = useSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split('@')[0] || "User";
-    const profilePhoto = user.userMetadata.picture || null; // Assuming the profile photo URL is stored in avatar_url
+    const profilePhoto = user.userMetadata.picture || null;
+
     const defaultSecondaryLinks = [
         {
             label: "Settings",
@@ -52,8 +56,7 @@ export function LayoutWithSidebar({primaryLinks, secondaryLinks, open, setOpen, 
         <SidebarLayout
             primaryLinks={primaryLinks}
             secondaryLinks={secondaryLinks}
-            open={open}
-            setOpen={setOpen}
+            open={initialOpen}
             userName={displayName}
             userProfilePhoto={profilePhoto}
         >
@@ -65,6 +68,7 @@ export function LayoutWithSidebar({primaryLinks, secondaryLinks, open, setOpen, 
         </SidebarLayout>
     );
 }
+
 
 export interface SidebarLayoutProps {
     className?: string;
