@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import { z } from 'zod';
-import { CrudTable } from "./CrudTable";
-import { CrudForm } from "./CrudForm";
-import { CrudSidebar } from "./CrudSidebar";
-import { MatrixDeleteDialog } from "@/components/matrx/delete-dialog";
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {z} from 'zod';
+import {CrudTable} from "./CrudTable";
+import {CrudForm} from "./CrudForm";
+import {CrudSidebar} from "./CrudSidebar";
+import {MatrixDeleteDialog} from "@/components/matrx/delete-dialog";
+import {Button} from '@/components/ui/button';
+import {PlusCircle, Loader2} from 'lucide-react';
+import {Alert, AlertDescription} from '@/components/ui/alert';
 
 interface CrudComponentProps<T extends z.ZodType<any, any>> {
     schema: T;
@@ -97,7 +97,7 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
     }
 
     return (
-        <div className="flex h-full overflow-hidden">
+        <div className="flex overflow-hidden">
             <CrudSidebar
                 allIdAndNames={allIdAndNames}
                 onItemSelect={onItemSelect}
@@ -106,7 +106,7 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
             />
             <div className="flex-grow flex flex-col overflow-hidden">
                 <div className="flex-grow overflow-auto p-4">
-                    <div className="mb-4">
+                    <div className="mb-4 flex space-x-2">
                         <Button onClick={() => {
                             setSelectedItemId(null);
                             setIsEditing(true);
@@ -121,7 +121,7 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
                             <PlusCircle className="mr-2 h-4 w-4"/> Delete Selected
                         </Button>
                     </div>
-                    <div className="overflow-auto">
+                    <div>
 
                         <CrudTable
                             items={items}
@@ -135,26 +135,26 @@ export function CrudComponent<T extends z.ZodType<any, any>>(
                             onItemsPerPageChange={onItemsPerPageChange}
                         />
                     </div>
-                </div>
-                <div className="flex-shrink-0 p-4 border-t">
-                <CrudForm
-                        schema={schema}
-                        initialData={selectedItem}
-                        onSubmit={onSubmit}
-                        isEditing={isEditing}
-                        onEdit={setIsEditing}
-                        onDelete={() => setIsDeleteDialogOpen(true)}
-                        onCancel={() => {
-                            setIsEditing(false);
-                            setSelectedItemId(null);
-                        }}
-                        fields={fields}
-                    />
+                    <div className="flex-shrink-0 p-4 border-t">
+                        <CrudForm
+                            schema={schema}
+                            initialData={selectedItem}
+                            onSubmit={onSubmit}
+                            isEditing={isEditing}
+                            onEdit={setIsEditing}
+                            onDelete={() => setIsDeleteDialogOpen(true)}
+                            onCancel={() => {
+                                setIsEditing(false);
+                                setSelectedItemId(null);
+                            }}
+                            fields={fields}
+                        />
+                    </div>
                 </div>
             </div>
 
             <MatrixDeleteDialog
-                    isOpen={isDeleteDialogOpen}
+                isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={() => {
                     if (selectedItemId) {

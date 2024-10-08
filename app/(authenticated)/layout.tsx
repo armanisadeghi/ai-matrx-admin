@@ -7,7 +7,7 @@ import { mapUserData } from '@/utils/userDataMapper';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { LayoutWithSidebar } from "@/components/layout/MatrixLayout";
-import {appSidebarLinks} from "@/constants";
+import {appSidebarLinks, adminSidebarLinks} from "@/constants";
 
 async function getTestDirectories(): Promise<string[]> {
     const currentDir = path.dirname(new URL(import.meta.url).pathname.slice(1));
@@ -25,7 +25,7 @@ async function getTestDirectories(): Promise<string[]> {
 
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
-    const layoutProps = { primaryLinks: appSidebarLinks, initialOpen: false };
+    const layoutProps = { primaryLinks: appSidebarLinks, secondaryLinks: adminSidebarLinks, initialOpen: false };
 
     const {
         data: { user },
