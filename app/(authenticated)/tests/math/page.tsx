@@ -13,7 +13,7 @@ import {
     MediumComponentLoading,
     LargeComponentLoading,
     CardLoading
-} from '@/components';
+} from '@/components/matrx/LoadingComponents';
 
 const ProblemCard = ({ problem }: { problem: any }) => (
     <Link href={`/tests/math/${problem.id}`} className="group">

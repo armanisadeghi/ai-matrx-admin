@@ -5,7 +5,6 @@ import React, { Suspense } from 'react';
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
 import PerformanceChart from './PerformanceChart';
-import FlashcardTable from './FlashcardTable';
 import EditFlashcardDialog from './EditFlashcardDialog';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -18,7 +17,7 @@ import {
     LargeComponentLoading,
     FullPageLoading,
     CardLoading
-} from '@/components';
+} from '@/components/matrx/LoadingComponents';
 
 const FlashcardComponent: React.FC = () => {
     const {

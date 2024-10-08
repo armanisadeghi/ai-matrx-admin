@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ModuleName, ModuleSchema } from '@/lib/redux/moduleSchema';
+import { ModuleName, ModuleSchema } from '@/lib/redux/dynamic/moduleSchema';
 
 export const createModuleSlice = <T extends ModuleSchema>(
     moduleName: ModuleName,

@@ -16,7 +16,7 @@ import {
     RpcUpdateType,
     RpcCreateType, PaginatedResponse, FetchCustomRelsThunkArgs, RpcFetchCustomRelsType,
 } from '@/types/reduxTypes';
-import {createFeatureNormalizer} from '@/lib/redux/normalizers';
+import {createFeatureNormalizer} from '@/lib/redux/dynamic/normalizers';
 import * as z from 'zod';
 
 

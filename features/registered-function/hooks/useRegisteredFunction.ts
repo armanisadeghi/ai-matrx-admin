@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { createFeatureSelectors } from '@/lib/redux/featureSelectors';
-import { createApiThunks } from '@/lib/redux/apiThunks';
-import { featureSchemas } from '@/lib/redux/featureSchema';
+import { createFeatureSelectors } from '@/lib/redux/selectors/featureSelectors';
+import { createApiThunks } from '@/lib/redux/middleware/apiThunks';
+import { featureSchemas } from '@/lib/redux/dynamic/featureSchema';
 import { FetchOneThunkArgs, FetchPaginatedThunkArgs, DeleteOneThunkArgs, DeleteManyThunkArgs, UpdateThunkArgs, CreateThunkArgs } from '@/types/reduxTypes';
 
 const featureName = 'registeredFunction';

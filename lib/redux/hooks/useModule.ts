@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { createModuleSelectors } from '@/lib/redux/selectors/moduleSelectors';
-import { ModuleName, ModuleSchema } from '@/lib/redux/moduleSchema';
+import { ModuleName, ModuleSchema } from '@/lib/redux/dynamic/moduleSchema';
 import { ModuleActions, createModuleSlice } from '@/lib/redux/slices/moduleSliceCreator';
 
 export const createUseModuleHook = <T extends ModuleSchema>(

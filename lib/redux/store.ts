@@ -1,9 +1,9 @@
 import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import { featureSchemas } from './featureSchema';
-import { createFeatureSlice } from './sliceCreator';
+import { featureSchemas } from './dynamic/featureSchema';
+import { createFeatureSlice } from './slices/featureSliceCreator';
 import { createModuleSlice } from './slices/moduleSliceCreator';
-import { moduleSchemas, ModuleName } from './moduleSchema';
+import { moduleSchemas, ModuleName } from './dynamic/moduleSchema';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';

@@ -1,9 +1,9 @@
 // features/registered-function/registeredFunctionFeature.ts
 
 import { RegisteredFunctionBaseSchema, RegisteredFunctionBase } from '@/types/registeredFunctionTypes';
-import { createFeatureSlice } from "@/lib/redux/sliceCreator";
-import { createFeatureSelectors } from "@/lib/redux/featureSelectors";
-import { createFeatureActions } from '@/lib/redux/actions';
+import { createFeatureSlice } from "@/lib/redux/slices/featureSliceCreator";
+import { createFeatureSelectors } from "@/lib/redux/selectors/featureSelectors";
+import { createFeatureActions } from '@/lib/redux/actions/featureActions';
 
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { RootState } from '@/lib/redux/store';

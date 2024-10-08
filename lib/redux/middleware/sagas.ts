@@ -1,7 +1,7 @@
 import { call, put, takeEvery, all } from 'redux-saga/effects';
 import { FetchOneThunkArgs, PaginatedResponse } from '@/types/reduxTypes';
 import { fetchWithFk, fetchWithIfk, fetchWithFkIfk, fetchCustomRels } from "@/lib/redux/api";
-import { createFeatureActions } from './actions';
+import { createFeatureActions } from '../actions/featureActions';
 import { FeatureName } from '@/types/reduxTypes';
 import * as z from 'zod';
 

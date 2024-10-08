@@ -1,7 +1,7 @@
 // File Location: lib/redux/sliceCreator.ts
 import { createSlice, PayloadAction, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 import { FeatureName, SliceState, DeleteResponse, PaginatedResponse } from '@/types/reduxTypes';
-import { createApiThunks } from './apiThunks';
+import { createApiThunks } from '../middleware/apiThunks';
 import * as z from 'zod';
 
 export const createFeatureSlice = <T extends z.ZodTypeAny>(

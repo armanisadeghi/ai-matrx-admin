@@ -1,5 +1,5 @@
 // AiAudioConfig
-import {BaseModuleSchema} from "@/lib/redux/moduleSchema";
+import {BaseModuleSchema} from "@/lib/redux/dynamic/moduleSchema";
 
 export interface AiAudioConfig {
     model_id: string;

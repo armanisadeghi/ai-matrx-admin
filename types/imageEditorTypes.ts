@@ -1,7 +1,7 @@
 
 
 // ImageEditor types (placeholder, replace with actual types)
-import {BaseModuleSchema} from "@/lib/redux/moduleSchema";
+import {BaseModuleSchema} from "@/lib/redux/dynamic/moduleSchema";
 
 interface ImageEditorConfig {}
 interface ImageEditorUserPreferences {}
