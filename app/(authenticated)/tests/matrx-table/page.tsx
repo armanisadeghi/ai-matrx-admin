@@ -6,76 +6,16 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { EmployeeData } from "@/app/(authenticated)/tests/matrx-table/test-data/sample-employees";
 import { FlashcardData } from "@/app/(authenticated)/tests/matrx-table/test-data/sample-flashcards";
-import {urrentTableData} from "@/app/(authenticated)/tests/table-test/data";
-import {MatrixColumn} from "@/app/(authenticated)/tests/table-test/table.types";
-import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
-
 const DynamicMatrxTable = dynamic(() => import('./components/MatrxTable'), { ssr: false });
 
 const tableDataOne = EmployeeData;
 const tableDataTwo = FlashcardData;
 
 
-// This should not be needed, for the most part. The new system has automated this.
-
-const defaultVisibleColumns = [
-    'name', 'age', 'email', 'country', 'occupation', 'salary', 'start_date', 'actions',
-];
-
-const columns: MatrixColumn<CurrentTableData>[] = [
-    {Header: 'ID', accessor: 'id'},
-    {Header: 'Name', accessor: 'name'},
-    {Header: 'Age', accessor: 'age'},
-    {Header: 'Email', accessor: 'email'},
-    {Header: 'Country', accessor: 'country'},
-    {
-        Header: 'Occupation',
-        accessor: 'occupation',
-        actions: [{name: 'expand', position: 'before'}]
-    },
-    {Header: 'Salary', accessor: 'salary'},
-    {Header: 'Start Date', accessor: 'start_date'},
-    {
-        Header: 'Actions', accessor: 'actions', Cell: () => null,
-        actions: [
-            {name: 'view', position: 'after'},
-            {name: 'edit', position: 'after'},
-            {name: 'delete', position: 'after'},
-        ],
-    },
-];
-
-// --------------------------------------------------------------------------------
 
 
 const MatrxTableTestPage: React.FC = () => {
-    const {
-        allFlashcards,
-        currentIndex,
-        activeFlashcard,
-        firstName,
-        isFlipped,
-        fontSize,
-        editingCard,
-        isModalOpen,
-        modalMessage,
-        modalDefaultTab,
-        isExpandedChatOpen,
-        handleFlip,
-        handleNext,
-        handlePrevious,
-        handleSelectChange,
-        shuffleCards,
-        handleAnswer,
-        handleEditCard,
-        handleSaveEdit,
-        showModal,
-        handleAskQuestion,
-        setFontSize,
-        setIsModalOpen,
-        setIsExpandedChatOpen,
-        setEditingCard
-    } = useFlashcard();
+
 
     const handleAction = (actionName: string, data: any) => {
         switch (actionName) {
