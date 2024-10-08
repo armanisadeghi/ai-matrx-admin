@@ -2,15 +2,17 @@
 
 import React from 'react';
 import { useTheme } from '@/styles/themes/ThemeProvider';
-import { useSidebar } from '@/components/ui/sidebar-collapsible';
 import { cn } from '@/lib/utils';
-
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 
-export const ThemeSwitcher = ({ className }: { className?: string }) => {
+interface ThemeSwitcherProps {
+    className?: string;
+    open: boolean;
+}
+
+export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ className, open }) => {
     const { mode, toggleMode } = useTheme();
-    const { open } = useSidebar();
 
     React.useEffect(() => {
         document.cookie = `theme=${mode};path=/`;
@@ -18,9 +20,15 @@ export const ThemeSwitcher = ({ className }: { className?: string }) => {
     }, [mode]);
 
     const icon = mode === 'dark' ? (
-        <Sun className="h-5 w-5 text-foreground" />
+        <Sun className={cn(
+            "h-7 w-7 flex-shrink-0 rounded-full",
+            open ? "h-6 w-6" : "h-5 w-5",
+        )} />
     ) : (
-        <Moon className="h-5 w-5 text-foreground" />
+        <Moon className={cn(
+            "h-7 w-7 flex-shrink-0 rounded-full",
+            open ? "h-6 w-6" : "h-5 w-5",
+        )} />
     );
 
     const label = mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
@@ -29,7 +37,7 @@ export const ThemeSwitcher = ({ className }: { className?: string }) => {
         <button
             onClick={toggleMode}
             className={cn(
-                "group/sidebar flex items-center justify-start gap-2 rounded-sm px-2 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                "group/sidebar flex w-full items-center justify-start gap-2 rounded-sm px-2 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700",
                 className,
             )}
         >

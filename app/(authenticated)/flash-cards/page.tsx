@@ -12,8 +12,9 @@ const FlashcardsPage: React.FC = () => {
             <h1 className="text-4xl md:text-4xl lg:text-6xl font-semibold w-full text-center py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
                 History <Cover>Flashcards</Cover>
             </h1>
+
             <div className="flex-grow overflow-auto p-4">
-                <FlashcardComponent/>
+                    <FlashcardComponent/>
             </div>
         </div>
     );

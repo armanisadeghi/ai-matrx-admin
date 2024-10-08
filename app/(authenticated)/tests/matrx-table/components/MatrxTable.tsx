@@ -180,5 +180,3 @@ const MatrxTable: React.FC<MatrxTableProps> = (
 };
 
 export default MatrxTable;
-
-

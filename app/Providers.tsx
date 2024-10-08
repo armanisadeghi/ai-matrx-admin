@@ -9,7 +9,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider } from '@/components/ui/sidebar-collapsible'; // Import SidebarProvider
 
 export function Providers({ children, initialReduxState }: { children: React.ReactNode, initialReduxState?: any }) {
     return (
@@ -18,10 +17,8 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                 <SchemaProvider>
                     <NextUIProvider>
                         <TooltipProvider>
-                            <SidebarProvider>
                                 {children}
                                 <Toaster/>
-                            </SidebarProvider>
                         </TooltipProvider>
                     </NextUIProvider>
                 </SchemaProvider>

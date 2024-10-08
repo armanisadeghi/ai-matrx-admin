@@ -1,3 +1,4 @@
+/*
 "use client";
 
 import React, {useState} from "react";
@@ -22,7 +23,7 @@ function BaseLayout({children, links}) {
             )}
         >
             <Sidebar open={open} setOpen={setOpen}>
-                <SidebarBody className="justify-between gap-10 bg-green-300 dark:bg-green-600"> {/* Green for sidebar */}
+                <SidebarBody className="justify-between gap-10 bg-green-300 dark:bg-green-600"> {/!* Green for sidebar *!/}
                     <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
                         <div className="h-8 relative flex items-center">
                             <Infinity className="w-6 h-6 z-10 text-blue-500"/>
@@ -55,7 +56,7 @@ function BaseLayout({children, links}) {
                     </div>
                 </SidebarBody>
             </Sidebar>
-            <div className="flex flex-1 bg-pink-300 dark:bg-pink-600"> {/* Pink for main content wrapper */}
+            <div className="flex flex-1 bg-pink-300 dark:bg-pink-600"> {/!* Pink for main content wrapper *!/}
                 <div
                     className="p-2 md:p-10 rounded-tl-2xl border border-orange-500 bg-cyan-300 dark:bg-cyan-600 text-black dark:text-white flex flex-col gap-2 flex-1 w-full h-full"
                 >
@@ -69,3 +70,4 @@ function BaseLayout({children, links}) {
 }
 
 export default BaseLayout;
+*/

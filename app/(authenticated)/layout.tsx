@@ -25,8 +25,7 @@ async function getTestDirectories(): Promise<string[]> {
 
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
-    const links = appSidebarLinks;
-    const layoutProps = { primaryLinks: links, initialOpen: false };
+    const layoutProps = { primaryLinks: appSidebarLinks, initialOpen: false };
 
     const {
         data: { user },
