@@ -17,8 +17,8 @@ export default function MathProblemSelectionPage() {
             <div className="container mx-auto grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
                 {problemsData.map((problem) => (
                     <Link href={`/tests/math/${problem.id}`} key={problem.id} className="group">
-                        <BackgroundGradient containerClassName={cn("p-[2px] rounded-[16px]")}>
-                            <Card className="h-full bg-matrx-card-background group-hover:bg-background transition-colors">
+                        <BackgroundGradient containerClassName={cn("p-[2px]")}>
+                            <Card className="h-full bg-card group-hover:bg-background transition-colors">
                                 <CardHeader>
                                     <CardTitle className="line-clamp-2 min-h-[3rem]">{problem.title}</CardTitle>
                                     <CardDescription>Less than 5 minutes.</CardDescription>

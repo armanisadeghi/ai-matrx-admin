@@ -21,6 +21,21 @@ import React from "react";
 
 export const primaryLinks = [
     {
+        label: 'Math Demo',
+        href: '/tests/math',
+        icon: (
+            <SquareSigma className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Camera',
+        href: '/tests/camera-test',
+        icon: (
+            <Camera className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+
+    {
         label: 'Color Converter',
         href: '/tests/tailwind-test/color-converter',
         icon: (
@@ -67,13 +82,6 @@ export const primaryLinks = [
         href: '/flash-cards',
         icon: (
             <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-        ),
-    },
-    {
-        label: 'Camera',
-        href: '/tests/camera-test',
-        icon: (
-            <Camera className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
     {
@@ -145,13 +153,7 @@ export const primaryLinks = [
             <Edit3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    {
-        label: 'Math Demo',
-        href: '/tests/math',
-        icon: (
-            <SquareSigma className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-        ),
-    },
+
     {
         label: 'Stock Image Gallery',
         href: '/demo/images', // https://lucide.dev/icons/

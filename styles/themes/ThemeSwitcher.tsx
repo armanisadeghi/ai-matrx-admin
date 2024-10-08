@@ -10,7 +10,7 @@ import { Sun, Moon } from 'lucide-react';
 
 export const ThemeSwitcher = ({ className }: { className?: string }) => {
     const { mode, toggleMode } = useTheme();
-    // const { open } = useSidebar();
+    const { open } = useSidebar();
 
     React.useEffect(() => {
         document.cookie = `theme=${mode};path=/`;
@@ -35,15 +35,15 @@ export const ThemeSwitcher = ({ className }: { className?: string }) => {
         >
             {icon}
 
-            {/*<motion.span*/}
-            {/*    animate={{*/}
-            {/*        display: open ? "inline-block" : "none",*/}
-            {/*        opacity: open ? 1 : 0,*/}
-            {/*    }}*/}
-            {/*    className="!m-0 inline-block whitespace-pre !p-0 text-sm text-neutral-700 transition duration-150 dark:text-neutral-200"*/}
-            {/*>*/}
-            {/*    {label}*/}
-            {/*</motion.span>*/}
+            <motion.span
+                animate={{
+                    display: open ? "inline-block" : "none",
+                    opacity: open ? 1 : 0,
+                }}
+                className="!m-0 inline-block whitespace-pre !p-0 text-sm text-neutral-700 transition duration-150 dark:text-neutral-200"
+            >
+                {label}
+            </motion.span>
         </button>
     );
 };

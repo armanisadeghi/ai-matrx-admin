@@ -2,7 +2,7 @@
 
 'use client';
 
-import MathProblem from "../components/MathProblemG"
+import MathProblem from "../components/MathProblem"
 import { problemsData } from '../local-data/sample-data';
 import {useParams} from "next/navigation";
 
