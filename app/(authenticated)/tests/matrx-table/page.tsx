@@ -6,8 +6,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { EmployeeData } from "@/app/(authenticated)/tests/matrx-table/test-data/sample-employees";
 import { FlashcardData } from "@/app/(authenticated)/tests/matrx-table/test-data/sample-flashcards";
-import MatrxTablePage from "@/app/(authenticated)/tests/matrx-table/components/MatrxTablePage";
-import {currentData, CurrentTableData} from "@/app/(authenticated)/tests/table-test/data";
+import {urrentTableData} from "@/app/(authenticated)/tests/table-test/data";
 import {MatrixColumn} from "@/app/(authenticated)/tests/table-test/table.types";
 import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
