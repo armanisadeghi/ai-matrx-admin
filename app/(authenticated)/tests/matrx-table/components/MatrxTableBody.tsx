@@ -1,10 +1,9 @@
 // app/(authenticated)/tests/matrx-table/components/MatrxTableBody.tsx
 'use client';
 
-import React, {useState, useMemo} from "react";
+import React, {useState} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {TableBody} from "@/components/ui/table";
-import {useTable} from "react-table";
 import {AnimatedTabModal, TabData, FormState} from "@/components/matrx/AnimatedForm";
 import {TableData} from "./table.types";
 import {generateStandardTabData} from "./StandardTabUtil";
@@ -12,22 +11,21 @@ import MatrxTableCell from "./MatrxTableCell";
 
 
 interface MatrxTableBodyProps {
-    data: TableData[];
+    page,
+    prepareRow,
     actions?: string[];
     onAction?: (actionName: string, rowData: TableData) => void;
-    visibleColumns?: string[];
     truncateAt?: number;
     customModalContent?: (rowData: TableData) => React.ReactNode;
-    getTableBodyProps?: () => any;
 }
 
 
 const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
     {
-        data,
+        page,
+        prepareRow,
         actions = ['edit', 'delete', 'view', 'expand'],
         onAction,
-        visibleColumns,
         truncateAt = 100,
         customModalContent,
     }) => {
@@ -36,37 +34,6 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
     const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
     const [formState, setFormState] = useState<FormState>({});
 
-    const getRowId = (row: TableData, index: number) => row.id || `row-${index}`;
-
-    const createColumns = useMemo(() => {
-        if (data.length === 0) return [];
-        const dataColumns = Object.keys(data[0]).map(key => ({
-            Header: key.charAt(0).toUpperCase() + key.slice(1),
-            accessor: key,
-        }));
-        return [
-            ...dataColumns,
-            {
-                id: 'actions',
-                Header: 'Actions',
-                Cell: () => null // We'll render this separately
-            }
-        ];
-    }, [data]);
-
-    const columns = visibleColumns
-        ? createColumns.filter(col => visibleColumns.includes(col.Header))
-        : createColumns;
-
-    const {
-        getTableBodyProps,
-        rows,
-        prepareRow,
-    } = useTable({
-        columns,
-        data,
-        getRowId,
-    });
 
     const handleAction = (actionName: string, rowData: TableData) => {
         setSelectedRow(rowData);
@@ -86,14 +53,13 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
         setFormState(prev => ({...prev, [name]: value}));
     };
 
-    // Refactored to use the function to generate tabs
     const tabs: TabData[] = generateStandardTabData(selectedRow, setActiveTab, setIsModalOpen, formState, onAction);
 
     return (
         <>
-            <TableBody className="scrollbar-hide" {...getTableBodyProps()}>
+            <TableBody>
                 <AnimatePresence>
-                    {rows.map((row, i) => {
+                    {page.map((row, i) => {
                         prepareRow(row);
                         return (
                             <motion.tr

@@ -34,6 +34,8 @@ export interface FormState {
     [key: string]: any;
 }
 
+export type AnimatedModalFormState = FormState;
+
 export interface AnimatedFormProps {
     fields: FormField[];
     formState: FormState;

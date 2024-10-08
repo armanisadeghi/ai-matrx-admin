@@ -9,6 +9,7 @@ import { FlashcardData } from "@/app/(authenticated)/tests/matrx-table/test-data
 import MatrxTablePage from "@/app/(authenticated)/tests/matrx-table/components/MatrxTablePage";
 import {currentData, CurrentTableData} from "@/app/(authenticated)/tests/table-test/data";
 import {MatrixColumn} from "@/app/(authenticated)/tests/table-test/table.types";
+import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
 const DynamicMatrxTable = dynamic(() => import('./components/MatrxTable'), { ssr: false });
 
@@ -49,26 +50,60 @@ const columns: MatrixColumn<CurrentTableData>[] = [
 
 
 const MatrxTableTestPage: React.FC = () => {
-    const handleAction = (actionName: string, rowData: any) => {
-        console.log(`Action: ${actionName}`, rowData);
+    const {
+        allFlashcards,
+        currentIndex,
+        activeFlashcard,
+        firstName,
+        isFlipped,
+        fontSize,
+        editingCard,
+        isModalOpen,
+        modalMessage,
+        modalDefaultTab,
+        isExpandedChatOpen,
+        handleFlip,
+        handleNext,
+        handlePrevious,
+        handleSelectChange,
+        shuffleCards,
+        handleAnswer,
+        handleEditCard,
+        handleSaveEdit,
+        showModal,
+        handleAskQuestion,
+        setFontSize,
+        setIsModalOpen,
+        setIsExpandedChatOpen,
+        setEditingCard
+    } = useFlashcard();
+
+    const handleAction = (actionName: string, data: any) => {
+        switch (actionName) {
+            case 'add':
+                console.log('Adding new item:', data);
+                break;
+            case 'edit':
+                console.log('Editing item:', data);
+                break;
+            case 'delete':
+                console.log('Deleting item:', data);
+                break;
+            case 'expand':
+                console.log('Expanding item:', data);
+                break;
+            default:
+                console.log(`Unknown action: ${actionName}`);
+        }
     };
 
-
-    const handleAddTemp = (newItem: Omit<CurrentTableData, 'id'>) => {
-        console.log('Adding new item:', newItem);
-    };
-
-    const handleEditTemp = (item: CurrentTableData) => {
-        console.log('Editing item:', item);
-    };
-
-    const handleDeleteTemp = (item: CurrentTableData) => {
-        console.log('Deleting item:', item);
-    };
-
-    const handleExpandTemp = (item: CurrentTableData) => {
-        console.log('Expanding item:', item);
-    };
+    const data = tableDataOne;
+    const actions = undefined;
+    const onAction = handleAction;
+    const defaultVisibleColumns = undefined;
+    const truncateAt = undefined;
+    const customModalContent = undefined;
+    const className = undefined;
 
 
     return (
@@ -79,39 +114,45 @@ const MatrxTableTestPage: React.FC = () => {
             <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-2">Employee Data Table (Default Modal)</h2>
                 <DynamicMatrxTable
-                    data={tableDataOne}
-                    onAction={handleAction}
+                    data={data}
+                    actions={actions}
+                    onAction={onAction}
+                    defaultVisibleColumns={defaultVisibleColumns}
+                    truncateAt={truncateAt}
+                    className={className}
+                    customModalContent={customModalContent}
                 />
             </div>
 
-            {/*<div className="mb-8">*/}
-            {/*    <h2 className="text-xl font-semibold mb-2">Employee Data Table (Default Modal)</h2>*/}
-            {/*    <MatrxTablePage*/}
-            {/*        data={tableDataOne}*/}
-            {/*        onAction={handleAction}*/}
-            {/*        columns={columns}*/}
-            {/*        defaultVisibleColumns={defaultVisibleColumns}*/}
-            {/*        className="pb-4 rounded-3xl bg-neutral-100 dark:bg-neutral-800"*/}
-            {/*        onAdd={handleAddTemp}*/}
-            {/*        onEdit={handleEditTemp}*/}
-            {/*        onDelete={handleDeleteTemp}*/}
-            {/*        onExpand={handleExpandTemp}*/}
-
-            {/*    />*/}
-            {/*</div>*/}
 
 
             <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-2">Flashcard Data Table (Custom Modal Content)</h2>
                 <DynamicMatrxTable
                     data={tableDataTwo}
-                    onAction={handleAction}
                     actions={['view', 'edit', 'delete']}
+                    onAction={handleAction}
+                    defaultVisibleColumns={defaultVisibleColumns}
                     truncateAt={50}
+                    className={className}
                     customModalContent={(rowData) => (
-                        <div className="p-4 bg-accent rounded-md">
-                            <h3 className="text-lg font-semibold mb-2">{rowData.front}</h3>
-                            <p>{rowData.back}</p>
+                        <div className="p-6 bg-accent rounded-md space-y-4">
+                            <div>
+                                <h3 className="text-lg font-semibold mb-1">Question:</h3>
+                                <p className="text-base">{rowData.front}</p>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold mb-1">Answer:</h3>
+                                <p className="text-base">{rowData.back}</p>
+                            </div>
+                            <div className="space-y-3">
+                                {Object.keys(rowData).filter((key) => key !== 'front' && key !== 'back').map((key) => (
+                                    <div key={key} className="flex flex-col">
+                                        <span className="font-semibold">{key}:</span>
+                                        <span className="text-base">{rowData[key]}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 />
