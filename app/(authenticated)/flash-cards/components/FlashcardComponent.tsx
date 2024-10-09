@@ -18,6 +18,7 @@ import {
     FullPageLoading,
     CardLoading
 } from '@/components/matrx/LoadingComponents';
+import {ensureId} from "@/utils/schema/schemaUtils";
 
 const FlashcardComponent: React.FC = () => {
     const {
@@ -53,6 +54,9 @@ const FlashcardComponent: React.FC = () => {
         handleDeleteFlashcard,
         handleAddFlashcard,
     } = useFlashcard();
+
+
+    const flashcardsWithUUIDs = ensureId(allFlashcards);
 
     return (
         <div className="w-full">
@@ -99,7 +103,7 @@ const FlashcardComponent: React.FC = () => {
 
             <Suspense fallback={<LargeComponentLoading />}>
                 <MatrxTable
-                    data={allFlashcards}
+                    data={flashcardsWithUUIDs}
                     onAction={handleAction}
                     defaultVisibleColumns={['lesson','front', 'reviewCount', 'correctCount','incorrectCount']}
                 />

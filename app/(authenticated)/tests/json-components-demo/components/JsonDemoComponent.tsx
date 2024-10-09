@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { JsonViewer, FullJsonViewer } from '@/components/ui/JsonViewer';
-import { BaseJsonEditor, JsonEditorWithFormatting, FullJsonEditor } from '@/components/ui/JsonEditor';
+import { JsonViewer, FullJsonViewer } from '@/components/ui/json/JsonViewer';
+import { BaseJsonEditor, JsonEditorWithFormatting, FullJsonEditor } from '@/components/ui/json/JsonEditor';
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from '../sampleData';
 
 const JsonDemoComponent: React.FC = () => {

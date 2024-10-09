@@ -3,7 +3,7 @@ import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { motion } from "framer-motion";
 import { ArrowUpDown } from "lucide-react";
 import {UseSortByColumnProps} from "react-table";
-import {TableData} from "@/app/(authenticated)/tests/matrx-table/components/table.types";
+import {TableData} from "@/types/tableTypes";
 
 const MatrxTableHeader = ({ headerGroups }) => {
     return (

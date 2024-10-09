@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useForm, Controller} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
@@ -13,6 +13,7 @@ import {Alert, AlertDescription} from '@/components/ui/alert';
 import {motion, AnimatePresence} from 'framer-motion';
 import {cn} from '@/lib/utils';
 import {Loader2} from 'lucide-react';
+import {generateJsonTemplate} from "@/utils/schema/schemaUtils";
 
 const jsonSchema = z.string().refine((data) => {
     try {
@@ -178,4 +179,52 @@ export const FullJsonEditor: React.FC<FullJsonEditorProps> = (
     );
 };
 
-export default FullJsonEditor;
+interface SchemaJsonEditorProps {
+    tableName: string;
+    onSave?: (data: string) => void;
+    onFormat?: () => void;
+    title?: string;
+    className?: string;
+}
+
+export const SchemaJsonEditor: React.FC<SchemaJsonEditorProps> = (
+    {
+        tableName,
+        onSave,
+        onFormat,
+        title = "Schema JSON Editor",
+        className,
+    }) => {
+    const [jsonData, setJsonData] = useState<string>('');
+
+    useEffect(() => {
+        // Generate the initial JSON template based on the schema
+        const initialTemplate = generateJsonTemplate(tableName);
+        setJsonData(JSON.stringify(initialTemplate, null, 2));
+    }, [tableName]);
+
+    const handleSave = () => {
+        onSave?.(jsonData);
+    };
+
+    const handleFormat = () => {
+        try {
+            const formatted = JSON.stringify(JSON.parse(jsonData), null, 2);
+            setJsonData(formatted);
+            onFormat?.();
+        } catch (error) {
+            console.error('Error formatting JSON:', error);
+        }
+    };
+
+    return (
+        <FullJsonEditor
+            initialData={jsonData}
+            onJsonChange={setJsonData}
+            onSave={handleSave}
+            onFormat={handleFormat}
+            title={title}
+            className={cn(className)}
+        />
+    );
+};

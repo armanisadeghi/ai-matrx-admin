@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, ChevronDown, ChevronRight } from 'lucide-react';
+import React, {useState, useCallback} from 'react';
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {cn} from '@/lib/utils';
+import {motion, AnimatePresence} from 'framer-motion';
+import {Copy, ChevronDown, ChevronRight} from 'lucide-react';
 
 interface JsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
     data: object;
@@ -33,7 +33,7 @@ const JsonViewerItem: React.FC<{
             <div className="flex items-center">
                 {isObject && (
                     <Button variant="ghost" size="sm" className="p-0 h-auto" onClick={onToggle}>
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        {isExpanded ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
                     </Button>
                 )}
                 <span className="font-semibold text-foreground">{keyName}: </span>
@@ -51,10 +51,10 @@ const JsonViewerItem: React.FC<{
             {isObject && isExpanded && (
                 <AnimatePresence>
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
+                        initial={{opacity: 0, height: 0}}
+                        animate={{opacity: 1, height: 'auto'}}
+                        exit={{opacity: 0, height: 0}}
+                        transition={{duration: 0.2}}
                     >
                         {Object.entries(value).map(([k, v]) => (
                             <JsonViewerItem
@@ -73,13 +73,14 @@ const JsonViewerItem: React.FC<{
     );
 };
 
-export const JsonViewer: React.FC<JsonViewerProps> = ({
-                                                          data,
-                                                          className,
-                                                          initialExpanded = false,
-                                                          maxHeight = '400px',
-                                                          ...props
-                                                      }) => {
+export const JsonViewer: React.FC<JsonViewerProps> = (
+    {
+        data,
+        className,
+        initialExpanded = false,
+        maxHeight = '400px',
+        ...props
+    }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
@@ -127,7 +128,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
                 "relative bg-background text-foreground p-4 rounded-md overflow-auto",
                 className
             )}
-            style={{ maxHeight }}
+            style={{maxHeight}}
             {...props}
         >
             <div className="flex justify-end space-x-2 mb-2">
@@ -153,7 +154,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
                     onClick={copyToClipboard}
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                    <Copy className="h-4 w-4 mr-2" />
+                    <Copy className="h-4 w-4 mr-2"/>
                     {isCopied ? 'Copied!' : 'Copy'}
                 </Button>
             </div>
@@ -176,12 +177,13 @@ interface FullJsonViewerProps extends Omit<JsonViewerProps, 'className'> {
     className?: string;
 }
 
-export const FullJsonViewer: React.FC<FullJsonViewerProps> = ({
-                                                                  data,
-                                                                  title = "JSON Data",
-                                                                  className,
-                                                                  ...props
-                                                              }) => {
+export const FullJsonViewer: React.FC<FullJsonViewerProps> = (
+    {
+        data,
+        title = "JSON Data",
+        className,
+        ...props
+    }) => {
     return (
         <Card className={cn("p-4 bg-card", className)}>
             <h3 className="text-lg font-semibold mb-2 text-foreground">{title}</h3>
@@ -191,7 +193,6 @@ export const FullJsonViewer: React.FC<FullJsonViewerProps> = ({
 };
 
 export default FullJsonViewer;
-
 
 
 /* Docs:

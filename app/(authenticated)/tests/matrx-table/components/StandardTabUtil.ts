@@ -1,7 +1,8 @@
 // app/(authenticated)/tests/matrx-table/components/StandardTabUtil.ts
 
-import {TableData} from "./table.types";
+import {TableData} from "@/types/tableTypes";
 import {FormField, FormFieldType, FormState, TabData} from "@/components/matrx/AnimatedForm";
+import { ensureId} from "@/utils/schema/schemaUtils";
 
 
 export const truncateText = (text: unknown, maxLength: number = 100): string => {
@@ -54,6 +55,10 @@ export const generateStandardTabData = (
     formState: FormState,
     onAction: ((action: string, rowData: TableData) => void) | undefined
 ): TabData[] => {
+    const formStateWithUUIDs = ensureId(formState);
+
+
+
     if (!selectedRow) return [];
     return [
         {
@@ -76,7 +81,7 @@ export const generateStandardTabData = (
                 },
                 {
                     label: 'Save', onClick: () => {
-                        if (onAction) onAction('save', formState);
+                        if (onAction) onAction('save', formStateWithUUIDs);
                         setIsModalOpen(false);
                     }, className: 'bg-primary text-primary-foreground'
                 },

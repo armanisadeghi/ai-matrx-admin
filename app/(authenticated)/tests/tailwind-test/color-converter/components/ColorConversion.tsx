@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { getColorFormats } from '@/utils/color-utils/color-change-util';
-import FullJsonViewer from "@/components/ui/JsonViewer";
+import FullJsonViewer from "@/components/ui/json/JsonViewer";
 
 
 interface ColorConversionProps {

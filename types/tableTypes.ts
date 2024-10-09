@@ -8,14 +8,54 @@ import {
     UseTableInstanceProps,
     TableState, Cell, Row, HeaderGroup
 } from 'react-table';
-import {ActionDefinition} from "@/app/(authenticated)/tests/table-test/TableActionIcon";
-import React from "react";
 
+import React from "react";
+import {FlexibleId} from '@/types/FlexibleId';
 
 export interface TableData {
-    id: number | string;
+    id: FlexibleId;
     [key: string]: any;
 }
+
+
+export interface MatrxTableProps {
+    data: TableData[];
+    actions?: string[];
+    onAction?: (actionName: string, rowData: TableData) => void;
+    defaultVisibleColumns?: string[];
+    truncateAt?: number;
+    className?: string;
+    customModalContent?: (rowData: TableData) => React.ReactNode;
+    onPageChange?: (pageIndex: number, pageSize: number) => void;
+}
+
+export type TableInstance = UseTableInstanceProps<TableData> &
+    UseGlobalFiltersInstanceProps<TableData> &
+    UsePaginationInstanceProps<TableData> &
+    UseSortByInstanceProps<TableData>;
+
+export interface ExtendedTableState extends TableState<TableData> {
+    globalFilter: any;
+    pageIndex: number;
+    pageSize: number;
+}
+
+
+export interface ActionDefinition {
+    name: string;
+    label: string;
+    icon: React.ReactNode;
+    className?: string;
+}
+
+export interface MatrxColumnSettingsProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    columns: Column<TableData>[];
+    visibleColumns: string[];
+    setVisibleColumns: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
 
 export interface ModernTableProps {
     columns: Column<TableData>[];
@@ -28,10 +68,6 @@ export interface ModernTableProps {
     onExpand: (item: TableData) => void;
 }
 
-export type TableInstance = UseTableInstanceProps<TableData> &
-    UseGlobalFiltersInstanceProps<TableData> &
-    UsePaginationInstanceProps<TableData> &
-    UseSortByInstanceProps<TableData>;
 
 export interface ExtendedTableState extends TableState<TableData> {
     globalFilter: any;

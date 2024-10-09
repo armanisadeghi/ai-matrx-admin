@@ -1,5 +1,5 @@
 import {v4 as uuidv4} from 'uuid';
-import {TableData} from "@/app/(authenticated)/tests/table-test/table.types";
+import {TableData} from "@/types/tableTypes";
 
 export interface CurrentTableData {
     id: string;

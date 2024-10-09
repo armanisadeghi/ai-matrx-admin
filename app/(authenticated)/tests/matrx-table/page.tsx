@@ -7,11 +7,12 @@ import dynamic from 'next/dynamic';
 import {EmployeeData} from "@/app/(authenticated)/tests/matrx-table/test-data/sample-employees";
 import {FlashcardData} from "@/app/(authenticated)/tests/matrx-table/test-data/sample-flashcards";
 import {MatrxTableLoading} from '@/components/matrx/LoadingComponents';
+import {ensureId} from "@/utils/schema/schemaUtils";
 
 const DynamicMatrxTable = dynamic(() => import('./components/MatrxTable'), {ssr: false});
 
-const tableDataOne = EmployeeData;
-const tableDataTwo = FlashcardData;
+const tableDataOne = ensureId(EmployeeData);
+const tableDataTwo = ensureId(FlashcardData);
 
 
 const MatrxTableTestPage: React.FC = () => {

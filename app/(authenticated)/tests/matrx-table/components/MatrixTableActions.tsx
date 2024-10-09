@@ -4,7 +4,7 @@ import React from "react";
 import {Edit, Eye, Maximize2, Trash} from "lucide-react";
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";
 import {Button} from "@/components/ui/button";
-import {TableData, ActionDefinition} from "./table.types";
+import {ActionDefinition, TableData} from "@/types/tableTypes";
 
 export const actionDefinitions: Record<string, ActionDefinition> = {
     edit: {

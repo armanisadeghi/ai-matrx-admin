@@ -16,7 +16,7 @@ import {
     TableInstance,
     ModernTableProps,
     TableData
-} from "@/app/(authenticated)/tests/table-test/table.types";
+} from "@/types/tableTypes";
 
 const ModernTable: React.FC<ModernTableProps> = (
     {

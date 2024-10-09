@@ -5,7 +5,7 @@ import React, {useState} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {TableBody} from "@/components/ui/table";
 import {AnimatedTabModal, TabData, FormState} from "@/components/matrx/AnimatedForm";
-import {TableData} from "./table.types";
+import {TableData} from "@/types/tableTypes";
 import {generateStandardTabData} from "./StandardTabUtil";
 import MatrxTableCell from "./MatrxTableCell";
 

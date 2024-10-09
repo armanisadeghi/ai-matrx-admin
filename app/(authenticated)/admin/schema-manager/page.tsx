@@ -23,7 +23,14 @@ import SchemaAdmin from "@/app/(authenticated)/admin/schema-manager/components/S
 import SchemaInteractions from "@/app/(authenticated)/admin/schema-manager/components/SchemaInteractions";
 import FeatureSectionAnimatedGradientComponents from "@/components/animated/my-custom-demos/feature-section-animated-gradient-component";
 import {Layers3} from "lucide-react";
-import {FetchOperations, CreateOperation, UpdateOperation, DeleteOperation, PaginatedFetch, CustomQuery, RealtimeSubscription} from "@/app/(authenticated)/admin/schema-manager/components/DatabaseComponents";
+import FetchOperations from "@/app/(authenticated)/admin/schema-manager/components/FetchOperations";
+import CreateOperation from "@/app/(authenticated)/admin/schema-manager/components/CreateFromJson";
+import UpdateOperation from "@/app/(authenticated)/admin/schema-manager/components/UpdateOperation";
+import DeleteOperation from "@/app/(authenticated)/admin/schema-manager/components/DeleteOperation";
+import PaginatedFetch from "@/app/(authenticated)/admin/schema-manager/components/PaginatedFetch";
+import CustomQuery from "@/app/(authenticated)/admin/schema-manager/components/CustomQuery";
+import RealtimeSubscription from "@/app/(authenticated)/admin/schema-manager/components/RealtimeSubscription";
+
 
 export default function AdminPage() {
     const [selectedComponent, setSelectedComponent] = useState<string | null>(null);

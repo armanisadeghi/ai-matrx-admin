@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { listVoices } from '@/lib/cartesia/cartesiaUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
-import { FullJsonViewer } from '@/components/ui/JsonViewer';
+import { FullJsonViewer } from '@/components/ui/json/JsonViewer';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/components/ui/use-toast';

@@ -2,7 +2,7 @@ import React from "react";
 import { TableBody } from "@/components/ui/table";
 import { AnimatePresence, motion } from "framer-motion";
 import CustomTableCell from "@/app/(authenticated)/tests/table-test/CustomTableCell";
-import { CustomTableBodyProps } from "@/app/(authenticated)/tests/table-test/table.types";
+import { CustomTableBodyProps } from "@/types/tableTypes";
 
 const CustomTableBody: React.FC<CustomTableBodyProps> = (
     {

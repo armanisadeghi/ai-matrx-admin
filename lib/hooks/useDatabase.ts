@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { QueryOptions, databaseApi, TableOrView } from "@/utils/supabase/api-wrapper";
+import { TableData } from '@/types/tableTypes';
+import { FlexibleId, flexibleIdToString, isValidFlexibleId } from '@/types/FlexibleId';
 
 interface PaginationInfo {
     currentPage: number;
@@ -19,7 +21,7 @@ interface useDatabaseResult<T> {
     fetchPaginated: (name: TableOrView, options: QueryOptions<TableOrView>) => Promise<void>;
     create: (name: TableOrView, data: Partial<T>) => Promise<void>;
     update: (name: TableOrView, id: string, data: Partial<T>) => Promise<void>;
-    delete: (name: TableOrView, id: string) => Promise<void>;
+    delete: (name: TableOrView, id: string | number) => Promise<void>;
     executeQuery: (name: TableOrView, query: (baseQuery: any) => any) => Promise<void>;
     subscribeToChanges: (name: TableOrView) => void;
     unsubscribeFromChanges: (name: TableOrView) => void; // Updated this line
@@ -96,10 +98,15 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const deleteRecord = useCallback(async (name: TableOrView, id: string) => {
+    const deleteRecord = useCallback(async (name: TableOrView, id: FlexibleId) => {
+        if (!isValidFlexibleId(id)) {
+            throw new Error('Invalid ID provided');
+        }
+
         setLoading(true);
         try {
-            await databaseApi.delete(name, id);
+            const stringId = flexibleIdToString(id);
+            await databaseApi.delete(name, stringId);
             setData(prevData => prevData?.filter(item => item.id !== id) as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
