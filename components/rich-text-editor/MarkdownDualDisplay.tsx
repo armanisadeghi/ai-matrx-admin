@@ -5,7 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import { Remirror, useRemirror, EditorComponent } from '@remirror/react';
 import { MarkdownExtension } from 'remirror/extensions';
-import { motion } from 'framer-motion';
+import { motion, MotionStyle } from 'framer-motion';
 
 const MarkdownDualDisplay: React.FC = () => {
   const [markdown, setMarkdown] = useState('');
@@ -41,44 +41,47 @@ const MarkdownDualDisplay: React.FC = () => {
   }, [splitRatio]);
 
   return (
-    <motion.div 
-      className="flex flex-col sm:flex-row w-full h-[calc(100vh-4rem)] bg-background shadow-lg rounded-lg overflow-hidden"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="w-full sm:w-1/2 h-1/2 sm:h-full" style={{ flex: splitRatio }}>
-        <Remirror
-          manager={manager}
-          initialContent={state}
-          onChange={handleChange}
-          autoFocus
-        >
-          <div className="w-full h-full border-r border-border focus-within:ring-1 focus-within:ring-primary/50 transition-shadow overflow-auto">
-            <EditorComponent />
-          </div>
-        </Remirror>
-      </div>
-      <div 
-        className="w-1 h-1 sm:h-full bg-muted cursor-col-resize sm:cursor-ew-resize" 
-        onMouseDown={handleResize}
-      />
-      <Preview markdown={markdown} style={{ flex: 1 - splitRatio }} />
-    </motion.div>
+      <motion.div
+          className="flex flex-col sm:flex-row w-full h-[calc(100vh-4rem)] bg-background shadow-lg rounded-lg overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+      >
+        <div className="w-full sm:w-1/2 h-1/2 sm:h-full" style={{ flex: splitRatio }}>
+          <Remirror
+              manager={manager}
+              initialContent={state}
+              onChange={handleChange}
+              autoFocus
+          >
+            <div className="w-full h-full border-r border-border focus-within:ring-1 focus-within:ring-primary/50 transition-shadow overflow-auto">
+              <EditorComponent />
+            </div>
+          </Remirror>
+        </div>
+        <div
+            className="w-1 h-1 sm:h-full bg-muted cursor-col-resize sm:cursor-ew-resize"
+            onMouseDown={handleResize}
+        />
+        <Preview
+            markdown={markdown}
+            style={{ flex: 1 - splitRatio } as MotionStyle}
+        />
+      </motion.div>
   );
 };
 
-const Preview: React.FC<{ markdown: string, style?: React.CSSProperties }> = ({ markdown, style }) => {
+const Preview: React.FC<{ markdown: string, style?: MotionStyle }> = ({ markdown, style }) => {
   return (
-    <motion.div 
-      className="w-full sm:w-1/2 h-1/2 sm:h-full overflow-auto p-4 bg-card text-card-foreground"
-      style={style}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.3 }}
-    >
-      <div dangerouslySetInnerHTML={{ __html: markdown }} />
-    </motion.div>
+      <motion.div
+          className="w-full sm:w-1/2 h-1/2 sm:h-full overflow-auto p-4 bg-card text-card-foreground"
+          style={style}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+      >
+        <div dangerouslySetInnerHTML={{ __html: markdown }} />
+      </motion.div>
   );
 };
 

@@ -11,7 +11,7 @@ interface ImageCardProps {
     onMouseLeave?: () => void
 }
 
-export function ImageCard({ photo, onClick, onMouseEnter, onMouseLeave }: ImageCardProps) {
+export function ImageCard(x: ImageCardProps) {
     return (
         <motion.div
             layout
@@ -19,16 +19,16 @@ export function ImageCard({ photo, onClick, onMouseEnter, onMouseLeave }: ImageC
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.5 }}
-            onClick={onClick}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
+            onClick={x.onClick}
+            onMouseEnter={x.onMouseEnter}
+            onMouseLeave={x.onMouseLeave}
             className="cursor-pointer"
         >
             <Card className="overflow-hidden group">
                 <CardContent className="p-0 relative">
                     <img
-                        src={photo.urls.small}
-                        alt={photo.alt_description}
+                        src={x.photo.urls.small}
+                        alt={x.photo.alt_description}
                         className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center">
