@@ -22,6 +22,7 @@ const MatrxTable: React.FC<MatrxTableProps> = (
         truncateAt,
         customModalContent,
         className,
+        onPageChange,
 
     }) => {
 
@@ -137,6 +138,7 @@ const MatrxTable: React.FC<MatrxTableProps> = (
                 handleAdd={() => console.log('Add button clicked. Currently not implemented')}
                 setColumnSettingsOpen={setColumnSettingsOpen}
                 columnSettingsOpen={columnSettingsOpen}
+
             />
 
             <div className="relative overflow-hidden shadow-md sm:rounded-lg scrollbar-hide">

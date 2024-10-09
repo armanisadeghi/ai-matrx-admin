@@ -1,18 +1,18 @@
 import React from "react";
-import {TableBody} from "@/components/ui/table";
-import {AnimatePresence, motion} from "framer-motion";
+import { TableBody } from "@/components/ui/table";
+import { AnimatePresence, motion } from "framer-motion";
 import CustomTableCell from "@/app/(authenticated)/tests/table-test/CustomTableCell";
-import {CustomTableBodyProps} from "@/app/(authenticated)/tests/table-test/table.types";
+import { CustomTableBodyProps } from "@/app/(authenticated)/tests/table-test/table.types";
 
 const CustomTableBody: React.FC<CustomTableBodyProps> = (
     {
-        page,
-        prepareRow,
-        truncateText,
-        actions,
-        onAction,
-        visibleColumns
-    }) => {
+                                                             page,
+                                                             prepareRow,
+                                                             truncateText,
+                                                             actions,
+                                                             onAction,
+                                                             visibleColumns
+                                                         }) => {
     return (
         <TableBody>
             <AnimatePresence>
@@ -21,8 +21,8 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
                     return (
                         <motion.tr
                             key={row.id}
-                            {...row.getRowProps()}
-                            initial={{opacity: 0, y: -10}}
+                            {...(row.getRowProps() as any)}
+                            initial={{ opacity: 0, y: -10 }}
                             animate={{
                                 opacity: 1,
                                 y: 0,
@@ -33,10 +33,10 @@ const CustomTableBody: React.FC<CustomTableBodyProps> = (
                                     delay: i * 0.05,
                                 },
                             }}
-                            exit={{opacity: 0, y: 10}}
+                            exit={{ opacity: 0, y: 10 }}
                             whileHover={{
                                 scale: 1.02,
-                                transition: {duration: 0.2},
+                                transition: { duration: 0.2 },
                             }}
                             className="bg-card hover:bg-accent/50 cursor-pointer"
                             onClick={() => onAction('view', row.original)}

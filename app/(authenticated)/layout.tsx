@@ -56,8 +56,8 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
             userPreferences: preferences?.preferences || {}
         }}>
             <LayoutWithSidebar {...layoutProps}>
-                {children}
+                    {children}
             </LayoutWithSidebar>
         </Providers>
-    );
+);
 }

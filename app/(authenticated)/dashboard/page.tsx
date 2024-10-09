@@ -5,7 +5,7 @@ import React from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {CanvasRevealEffect} from "@/components/ui/canvas-reveal-effect";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {MatrixFloatingMenu} from "@/components/layout/floating-dock";
+import {MatrixFloatingMenu} from "@/components/layout/FloatingDock";
 import MatrixLogo from "@/public/MatrixLogo";
 
 const DashboardPage = () => {

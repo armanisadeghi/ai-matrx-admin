@@ -3,12 +3,12 @@
 'use client';
 
 import React, { createContext, useContext, useEffect } from 'react';
-import { SchemaRegistry, registerSchema, TableSchema } from '@/utils/supabase/schemaRegistry';
-import { initialSchemas } from '@/utils/supabase/initialSchemas';
+import { SchemaRegistry, registerSchema, TableSchema } from '@/utils/schema/schemaRegistry';
+import { initialSchemas } from '@/utils/schema/initialSchemas';
 
-const SchemaContext = createContext<SchemaRegistry>({});
+export const SchemaContext = createContext<SchemaRegistry>({});
 
-export function useSchema() {
+export function useSchemaContext() {
     return useContext(SchemaContext);
 }
 
@@ -16,6 +16,7 @@ export function SchemaProvider({ children }: { children: React.ReactNode }) {
     const schemaRegistry: SchemaRegistry = {};
 
     for (const [frontendName, schema] of Object.entries(initialSchemas)) {
+        console.log('Registering schema:', frontendName);
         registerSchema(frontendName, schema);
         schemaRegistry[frontendName] = schema;
     }

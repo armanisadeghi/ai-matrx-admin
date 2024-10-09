@@ -140,6 +140,7 @@ export const createApiThunks = <T extends z.ZodTypeAny>(featureName: FeatureName
             if (Date.now() - lastFetched < state.staleTime) {
                 const timeSinceLastFetched = Date.now() - lastFetched;
                 console.log('Time Since Last Fetched: ', timeSinceLastFetched);
+                console.log('Returning from cache:', state.items[args.id]);
                 return state.items[args.id];
             }
             console.log('Fetching from API with Args:', mapFetchWithIfkArgs(args));

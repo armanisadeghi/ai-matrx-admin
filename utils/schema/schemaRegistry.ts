@@ -1,6 +1,8 @@
 // File: lib/schemaRegistry.ts
 
-export type DataFormat = 'frontend' | 'backend' | 'database' | 'graphql' | 'restApi';
+export type DataFormat = 'frontend' | 'backend' | 'database' |'pretty'| 'graphql' | 'restApi';
+export type schemaType = 'table' | 'view' | 'function' | 'procedure';
+
 
 type DataType =
     | 'string'
@@ -41,6 +43,7 @@ export interface AltOptions {
     frontend: string;
     backend: string;
     database: string;
+    pretty: string;
     [key: string]: string; // Allow for additional naming conventions
 }
 
@@ -57,6 +60,7 @@ export type ConverterMap = {
 
 export interface TableSchema {
     name: AltOptions;
+    schemaType: schemaType;
     fields: ConverterMap;
 }
 
@@ -68,7 +72,7 @@ export function createTypeReference<T>(): TypeBrand<T> {
     return {} as TypeBrand<T>;
 }
 
-const globalSchemaRegistry: SchemaRegistry = {};
+export const globalSchemaRegistry: SchemaRegistry = {};
 
 export function registerSchema(frontendName: string, tableSchema: TableSchema) {
     globalSchemaRegistry[frontendName] = tableSchema;
@@ -107,12 +111,23 @@ function convertValue(value: any, converter: FieldConverter<any>): any {
 }
 
 function getFrontendTableName(tableName: string, format: DataFormat): string {
+    const availableNames: { [key: string]: string[] } = {};
+
     for (const [frontendName, schema] of Object.entries(globalSchemaRegistry)) {
-        if (schema.name[format] === tableName) {
-            return frontendName;
+        for (const [key, name] of Object.entries(schema.name)) {
+            if (name === tableName) {
+                return frontendName;
+            }
+            if (!availableNames[key]) {
+                availableNames[key] = [];
+            }
+            availableNames[key].push(name);
         }
     }
     console.warn(`Table name not found in registry: ${tableName}`);
+    for (const [key, names] of Object.entries(availableNames)) {
+        console.warn(`Available names in format '${key}': ${names.join(', ')}`);
+    }
     return tableName;
 }
 
@@ -230,3 +245,22 @@ export type InferSchemaType<T extends TableSchema> = {
 export function initializeSchemas() {
     console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
 }
+
+
+export function getRegisteredSchemas(format: DataFormat = 'database'): Array<AltOptions[typeof format]> {
+    const schemaNames: Array<AltOptions[typeof format]> = [];
+
+    for (const schema of Object.values(globalSchemaRegistry)) {
+        const schemaName = schema.name[format];
+        if (schemaName) {
+            schemaNames.push(schemaName);
+        }
+    }
+
+    return schemaNames;
+}
+
+const availableSchemas = getRegisteredSchemas('database');
+
+// Derive the AvailableTables type based on these schemas
+export type AvailableSchemas = typeof availableSchemas[number];

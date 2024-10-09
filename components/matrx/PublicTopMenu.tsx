@@ -1,7 +1,7 @@
 // File: @/components/matrx/PublicTopMenu.tsx
 import React from "react";
 import { Infinity } from "lucide-react";
-import { StandaloneThemeSwitcher } from "@/components/layout/StandaloneThemeSwitcher";
+import { StandaloneThemeSwitcher } from "@/styles/themes/StandaloneThemeSwitcher";
 import Link from "next/link";
 import { cookies } from 'next/headers';
 

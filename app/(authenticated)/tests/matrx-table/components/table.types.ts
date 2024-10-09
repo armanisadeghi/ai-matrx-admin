@@ -20,6 +20,7 @@ export interface MatrxTableProps {
     truncateAt?: number;
     className?: string;
     customModalContent?: (rowData: TableData) => React.ReactNode;
+    onPageChange?: (pageIndex: number, pageSize: number) => void;
 }
 
 export type TableInstance = UseTableInstanceProps<TableData> &

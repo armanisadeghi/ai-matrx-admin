@@ -21,7 +21,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <html lang="en" data-theme={theme} className={cn("dark", inter.variable, montserrat.variable)} suppressHydrationWarning>
         <head>
         </head>
-        <body className={cn("min-h-screen bg-background font-sans antialiased")}>
+        <body className={cn("min-h-screen bg-matrx-background font-sans antialiased")}>
         <NextUIProvider>
             {children}
             <Toaster />

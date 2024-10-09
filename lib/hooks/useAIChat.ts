@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { useUser } from '@/lib/redux/hooks/useUser';
+import { useUser } from '@/lib/hooks/useUser';
 import {
     createChat,
     addMessage,

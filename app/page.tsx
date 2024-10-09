@@ -17,7 +17,7 @@ import {CardBody, CardContainer, CardItem} from "@/components/ui/3d-card";
 import Link from 'next/link';
 import {Cover} from "@/components/ui/cover";
 import {BackgroundBeamsWithCollision} from "@/components/ui/background-beams-with-collision";
-import {StandaloneThemeSwitcher} from "@/components/layout/StandaloneThemeSwitcher";
+import {StandaloneThemeSwitcher} from "@/styles/themes/StandaloneThemeSwitcher";
 import {SimplePricingWithFourTiers, SimplePricingWithThreeTiers} from "@/components/packs/PricingSection";
 import { LogoHorizontal } from '@/public/MatrixLogo';
 

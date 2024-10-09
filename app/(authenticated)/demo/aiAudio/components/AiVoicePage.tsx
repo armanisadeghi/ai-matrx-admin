@@ -5,7 +5,7 @@ import { aiAudioInitialState } from '../aiVoiceModuleConfig';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VoicesList from './VoicesList';
 import VoiceActions from './VoiceActions';
-import { createUseModuleHook } from "@/lib/redux/hooks/useModule";
+import { createUseModuleHook } from "@/lib/hooks/useModule";
 import { AiAudioSchema } from "@/types/aiAudioTypes";
 
 export const useAiAudio = createUseModuleHook<AiAudioSchema>('aiAudio', aiAudioInitialState);
