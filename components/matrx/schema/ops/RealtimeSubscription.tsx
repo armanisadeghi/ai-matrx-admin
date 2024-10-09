@@ -1,39 +1,34 @@
 import React, {Suspense, useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
-import SchemaSelect from "@/app/(authenticated)/admin/schema-manager/components/SchemaSelect";
+import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {Button} from "@/components/ui";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
-const CustomQuery = () => {
+const RealtimeSubscription = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
-    const [query, setQuery] = useState('');
-    const {data, loading, error, executeQuery} = useDatabase();
+    const [subscribed, setSubscribed] = useState(false);
+    const {data, subscribeToChanges, unsubscribeFromChanges} = useDatabase();
 
-    const handleExecuteQuery = () => {
+    const handleToggleSubscription = () => {
         if (selectedSchema) {
-            executeQuery(selectedSchema, (baseQuery) => {
-                // This is a simple example. In a real application, you'd want to validate and sanitize this input.
-                return eval(`baseQuery.${query}`);
-            });
+            if (subscribed) {
+                unsubscribeFromChanges(selectedSchema);
+                setSubscribed(false);
+            } else {
+                subscribeToChanges(selectedSchema);
+                setSubscribed(true);
+            }
         }
     };
 
     return (
         <div className="space-y-4">
             <SchemaSelect onSchemaSelect={setSelectedSchema} selectedSchema={selectedSchema}/>
-            <textarea
-                className="w-full p-2 border rounded"
-                placeholder="Query (e.g., 'where('column', 'value')')"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-            />
-            <Button onClick={handleExecuteQuery} disabled={loading || !selectedSchema}>
-                Execute Query
+            <Button onClick={handleToggleSubscription} disabled={!selectedSchema}>
+                {subscribed ? 'Unsubscribe' : 'Subscribe'}
             </Button>
-            {loading && <p>Loading...</p>}
-            {error && <p className="text-red-500">Error: {error.message}</p>}
-            {data && (
+            {subscribed && data && (
                 <Suspense fallback={<MatrxTableLoading/>}>
                     <MatrxTable
                         data={data}
@@ -50,4 +45,4 @@ const CustomQuery = () => {
     );
 };
 
-export default CustomQuery;
+export default RealtimeSubscription;

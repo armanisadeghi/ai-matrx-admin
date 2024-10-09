@@ -29,7 +29,6 @@ type DataType =
 
 export type ConversionFormat = 'single' | 'array' | 'object';
 export type StructureType = 'simple' | 'foreignKey' | 'inverseForeignKey';
-
 const TypeBrand = Symbol('TypeBrand');
 export type TypeBrand<T> = { [TypeBrand]: T };
 
@@ -44,7 +43,7 @@ export interface AltOptions {
     backend: string;
     database: string;
     pretty: string;
-    [key: string]: string; // Allow for additional naming conventions
+    [key: string]: string;
 }
 
 export interface FieldConverter<T> {
@@ -67,6 +66,7 @@ export interface TableSchema {
 export interface SchemaRegistry {
     [tableName: string]: TableSchema;
 }
+
 
 export function createTypeReference<T>(): TypeBrand<T> {
     return {} as TypeBrand<T>;
@@ -130,6 +130,8 @@ function getFrontendTableName(tableName: string, format: DataFormat): string {
     }
     return tableName;
 }
+
+
 
 function handleSingleRelationship(
     item: any,
@@ -234,17 +236,38 @@ export function convertData(
     return result;
 }
 
-export function getSchema(tableName: string, format: DataFormat = 'frontend'): TableSchema | undefined {
-    return globalSchemaRegistry[getFrontendTableName(tableName, format)];
+
+
+function getFrontendTableNameFromUnknown(tableName: string): string {
+    console.log(`getFrontendTableName called with tableName: ${tableName}`);
+
+    if (!globalSchemaRegistry) {
+        console.error("Error: Global schema registry is not defined or unavailable.");
+        return tableName;
+    }
+
+    for (const [schemaKey, schema] of Object.entries(globalSchemaRegistry)) {
+        for (const [format, name] of Object.entries(schema.name)) {
+            if (name === tableName) {
+                console.log(`Match found: ${tableName} (${format}) maps to frontend name: ${schema.name.frontend}`);
+                return schema.name.frontend;
+            }
+        }
+    }
+
+    console.warn(`No matching schema found for: ${tableName}`);
+    console.log("Available schemas and their names:");
+    for (const [schemaKey, schema] of Object.entries(globalSchemaRegistry)) {
+        console.log(`  ${schemaKey}:`);
+        for (const [format, name] of Object.entries(schema.name)) {
+            console.log(`    ${format}: ${name}`);
+        }
+    }
+
+    return tableName;
 }
 
-export type InferSchemaType<T extends TableSchema> = {
-    [K in keyof T['fields']]: T['fields'][K] extends FieldConverter<infer U> ? U : never;
-};
 
-export function initializeSchemas() {
-    console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
-}
 
 
 export function getRegisteredSchemas(format: DataFormat = 'database'): Array<AltOptions[typeof format]> {
@@ -260,7 +283,165 @@ export function getRegisteredSchemas(format: DataFormat = 'database'): Array<Alt
     return schemaNames;
 }
 
-const availableSchemas = getRegisteredSchemas('database');
 
-// Derive the AvailableTables type based on these schemas
+export function getSchema(tableName: string, format: DataFormat = 'frontend'): TableSchema | undefined {
+    console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
+
+    const frontendTableName = getFrontendTableNameFromUnknown(tableName);
+
+    for (const [schemaKey, schema] of Object.entries(globalSchemaRegistry)) {
+        if (schema.name.frontend === frontendTableName) {
+            console.log(`Schema found for ${frontendTableName}. Returning schema in ${format} format.`);
+
+            const schemaInRequestedFormat = schema.name[format];
+            if (schemaInRequestedFormat) {
+                return schema;
+            } else {
+                console.warn(`Format ${format} not found for schema ${frontendTableName}. Returning schema in frontend format.`);
+                return schema;
+            }
+        }
+    }
+
+    console.warn(`No schema found for table name: ${tableName}`);
+    return undefined;
+}
+
+
+function removeEmptyFields(obj: Record<string, any>): Record<string, any> {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([_, value]) => {
+            if (value === null || value === undefined || value === '' || (typeof value === 'object' && Object.keys(value).length === 0)) {
+                return false; // Drop null, undefined, empty strings, and empty objects
+            }
+            if (Array.isArray(value)) {
+                return value.length > 0; // Keep non-empty arrays
+            }
+            return true; // Keep other types (strings, numbers, non-empty objects, etc.)
+        })
+    );
+}
+
+
+// Utility function to handle relationships based on schema structure
+function handleRelationshipField(fieldName: string, value: any, structureType: string, tableName: string, fieldSchema: any) {
+    // Get the related table name from the schema structure
+    const relatedTable = fieldSchema.structure.databaseTable;
+
+    if (structureType === 'foreignKey') {
+        if (typeof value === 'string' || typeof value === 'number') {
+            // Simple scalar value, treat it as a regular FK reference
+            return {
+                type: 'fk',
+                data: { [fieldName]: value },
+                appData: { [`${fieldName}Fk`]: value }, // App-specific field
+                table: relatedTable
+            };
+        } else if (typeof value === 'object' && value.id) {
+            // It's an object with an ID field
+            return {
+                type: 'fk',
+                data: { [fieldName]: value.id },
+                appData: { [`${fieldName}Object`]: value },
+                table: relatedTable
+            };
+        } else {
+            throw new Error(`Invalid value for foreign key field: ${fieldName}`);
+        }
+    } else if (structureType === 'inverseForeignKey') {
+        return {
+            type: 'ifk',
+            table: relatedTable,
+            data: value,
+            related_column: `${fieldName}_id`
+        };
+    }
+
+    throw new Error(`Unsupported structure type: ${structureType}`);
+}
+
+
+// Main utility function
+export function processDataForInsert(tableName: string, dbData: Record<string, any>) {
+    const schema = getSchema(tableName, 'database');
+    if (!schema) {
+        console.warn(`No schema found for table: ${tableName}. Returning original data.`);
+        return {
+            callMethod: 'simple',
+            processedData: dbData
+        };
+    }
+
+    const cleanedData = removeEmptyFields(dbData);
+    let result: Record<string, any> = {};
+    const relatedTables: Array<Record<string, any>> = [];
+    let hasForeignKey = false;
+    let hasInverseForeignKey = false;
+
+    for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
+        const dbKey = fieldSchema.alts['database'];
+
+        if (cleanedData.hasOwnProperty(dbKey)) {
+            const value = cleanedData[dbKey];
+            const structureType = fieldSchema.structure.structure;
+
+            if (structureType === 'simple') {
+                result[dbKey] = value;
+            } else if (structureType === 'foreignKey' || structureType === 'inverseForeignKey') {
+                const relationship = handleRelationshipField(dbKey, value, structureType, tableName, fieldSchema);
+
+                if (relationship.type === 'fk') {
+                    hasForeignKey = true;
+                    result = { ...result, ...relationship.data }; // Add the exact db field
+                    result = { ...result, ...relationship.appData }; // Add app-specific field (for internal use)
+                } else if (relationship.type === 'ifk') {
+                    hasInverseForeignKey = true;
+                    relatedTables.push({
+                        table: relationship.table,
+                        data: relationship.data,
+                        related_column: relationship.related_column
+                    });
+                }
+            } else {
+                console.warn(`Unknown structure type for field ${fieldName}: ${structureType}. Skipping field.`);
+            }
+        }
+    }
+
+    let callMethod: string;
+    if (!hasForeignKey && !hasInverseForeignKey) {
+        callMethod = 'simple';
+    } else if (hasForeignKey && !hasInverseForeignKey) {
+        callMethod = 'fk';
+    } else if (!hasForeignKey && hasInverseForeignKey) {
+        callMethod = 'ifk';
+    } else {
+        callMethod = 'fkAndIfk';
+    }
+
+    if (relatedTables.length > 0) {
+        result.relatedTables = relatedTables;
+    }
+
+    return {
+        callMethod,
+        processedData: result
+    };
+}
+
+
+
+
+export function initializeSchemas() {
+    console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
+}
+
+
+
+export type InferSchemaType<T extends TableSchema> = {
+    [K in keyof T['fields']]: T['fields'][K] extends FieldConverter<infer U> ? U : never;
+};
+
+
+const availableSchemas = getRegisteredSchemas('database');
 export type AvailableSchemas = typeof availableSchemas[number];

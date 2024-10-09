@@ -1,34 +1,31 @@
-import React, {Suspense, useState} from "react";
+import React, {Suspense, useEffect, useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
-import SchemaSelect from "@/app/(authenticated)/admin/schema-manager/components/SchemaSelect";
-import {Button} from "@/components/ui";
+import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
-const RealtimeSubscription = () => {
+const PaginatedFetch = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
-    const [subscribed, setSubscribed] = useState(false);
-    const {data, subscribeToChanges, unsubscribeFromChanges} = useDatabase();
+    const {data, loading, error, fetchPaginated} = useDatabase();
 
-    const handleToggleSubscription = () => {
+    const handlePageChange = (page: number, pageSize: number) => {
         if (selectedSchema) {
-            if (subscribed) {
-                unsubscribeFromChanges(selectedSchema);
-                setSubscribed(false);
-            } else {
-                subscribeToChanges(selectedSchema);
-                setSubscribed(true);
-            }
+            fetchPaginated(selectedSchema, {limit: pageSize, offset: (page - 1) * pageSize});
         }
     };
+
+    useEffect(() => {
+        if (selectedSchema) {
+            handlePageChange(1, 10); // Initial fetch
+        }
+    }, [selectedSchema]);
 
     return (
         <div className="space-y-4">
             <SchemaSelect onSchemaSelect={setSelectedSchema} selectedSchema={selectedSchema}/>
-            <Button onClick={handleToggleSubscription} disabled={!selectedSchema}>
-                {subscribed ? 'Unsubscribe' : 'Subscribe'}
-            </Button>
-            {subscribed && data && (
+            {loading && <p>Loading...</p>}
+            {error && <p className="text-red-500">Error: {error.message}</p>}
+            {data && (
                 <Suspense fallback={<MatrxTableLoading/>}>
                     <MatrxTable
                         data={data}
@@ -38,6 +35,7 @@ const RealtimeSubscription = () => {
                         customModalContent={(rowData) => (
                             <pre>{JSON.stringify(rowData, null, 2)}</pre>
                         )}
+                        onPageChange={handlePageChange}
                     />
                 </Suspense>
             )}
@@ -45,4 +43,4 @@ const RealtimeSubscription = () => {
     );
 };
 
-export default RealtimeSubscription;
+export default PaginatedFetch;

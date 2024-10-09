@@ -32,7 +32,8 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
-    "allowUnreachableCode": true
+    "allowUnreachableCode": true,
+    "forceConsistentCasingInFileNames": false
   },
   "include": [
     "**/*.ts",

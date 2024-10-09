@@ -15,7 +15,7 @@ import {
     Sliders,
     Video,
     Images,
-    Edit3, AudioLines, User, SquareSigma, Component, ShieldEllipsis, Repeat1, DatabaseZap
+    Edit3, AudioLines, User, SquareSigma, Component, ShieldEllipsis, Repeat1, DatabaseZap, FileJson
 } from "lucide-react";
 import React from "react";
 
@@ -154,13 +154,13 @@ export const primaryLinks = [
             <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    // {
-    //     label: 'Module Name',
-    //     href: '/tests/module', // https://lucide.dev/icons/
-    //     icon: (
-    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
+    {
+        label: 'JSON Components Demo',
+        href: '/tests/json-components-demo', // https://lucide.dev/icons/ json-components-demo
+        icon: (
+            <FileJson className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     //
     // {
     //     label: 'Module Name',

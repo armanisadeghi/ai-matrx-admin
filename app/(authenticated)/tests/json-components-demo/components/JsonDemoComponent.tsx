@@ -8,21 +8,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { JsonViewer, FullJsonViewer } from '@/components/ui/json/JsonViewer';
-import { BaseJsonEditor, JsonEditorWithFormatting, FullJsonEditor } from '@/components/ui/json/JsonEditor';
+
+
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from '../sampleData';
+import TextDivider from "@/components/matrx/TextDivider";
+import {JsonViewer} from "@/components/ui";
+import Json, {FullJsonViewer} from "components/ui/JsonComponents";
+import MiniJsonViewer from "@/app/(authenticated)/tests/json-components-demo/components/MiniJsonViewer";
+import MiniFullEditableJsonViewer, {
+    MiniEditableJsonViewer
+} from "@/app/(authenticated)/tests/json-components-demo/components/MiniJsonEditor";
 
 const JsonDemoComponent: React.FC = () => {
     const [currentData, setCurrentData] = useState<JsonDataType>(simpleJsonObject);
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [showFormatting, setShowFormatting] = useState<boolean>(false);
-    const [editorData, setEditorData] = useState<string>(JSON.stringify(simpleJsonObject, null, 2));
+    const [editorData, setEditorData] = useState<string | object>(JSON.stringify(simpleJsonObject, null, 2));
     const [isInvalidJson, setIsInvalidJson] = useState<boolean>(false);
+    const [isStringMode, setIsStringMode] = useState<boolean>(true);
 
-    const handleDataChange = (newData: string) => {
+    const handleDataChange = (newData: string | object) => {
         setEditorData(newData);
         try {
-            const parsedData = JSON.parse(newData);
+            const parsedData = typeof newData === 'string' ? JSON.parse(newData) : newData;
             setCurrentData(parsedData as JsonDataType);
             setIsInvalidJson(false);
         } catch (error) {
@@ -34,17 +42,17 @@ const JsonDemoComponent: React.FC = () => {
         switch (dataType) {
             case 'simple':
                 setCurrentData(simpleJsonObject);
-                setEditorData(JSON.stringify(simpleJsonObject, null, 2));
+                setEditorData(isStringMode ? JSON.stringify(simpleJsonObject, null, 2) : simpleJsonObject);
                 setIsInvalidJson(false);
                 break;
             case 'complex':
                 setCurrentData(complexJsonObject);
-                setEditorData(JSON.stringify(complexJsonObject, null, 2));
+                setEditorData(isStringMode ? JSON.stringify(complexJsonObject, null, 2) : complexJsonObject);
                 setIsInvalidJson(false);
                 break;
             case 'large':
                 setCurrentData(largeJsonObject);
-                setEditorData(JSON.stringify(largeJsonObject, null, 2));
+                setEditorData(isStringMode ? JSON.stringify(largeJsonObject, null, 2) : largeJsonObject);
                 setIsInvalidJson(false);
                 break;
             case 'invalid':
@@ -54,14 +62,21 @@ const JsonDemoComponent: React.FC = () => {
         }
     };
 
-    const handleEditorChange = (newData: string) => {
-        setEditorData(newData);
-        try {
-            const parsedData = JSON.parse(newData);
-            setCurrentData(parsedData as JsonDataType);
-            setIsInvalidJson(false);
-        } catch (error) {
-            setIsInvalidJson(true);
+    const toggleDataMode = () => {
+        setIsStringMode(!isStringMode);
+        setEditorData(isStringMode ? currentData : JSON.stringify(currentData, null, 2));
+    };
+
+    const handleFormat = () => {
+        if (typeof editorData === 'string') {
+            try {
+                const formatted = JSON.stringify(JSON.parse(editorData), null, 2);
+                setEditorData(formatted);
+            } catch (error) {
+                console.error('Error formatting JSON:', error);
+            }
+        } else if (typeof editorData === 'object') {
+            setEditorData(JSON.stringify(editorData, null, 2));
         }
     };
 
@@ -91,6 +106,14 @@ const JsonDemoComponent: React.FC = () => {
                         />
                         <Label htmlFor="expand-switch">Expand All</Label>
                     </div>
+                    <div className="flex items-center space-x-2 mb-4">
+                        <Switch
+                            id="mode-switch"
+                            checked={isStringMode}
+                            onCheckedChange={toggleDataMode}
+                        />
+                        <Label htmlFor="mode-switch">String Mode (vs Object Mode)</Label>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -98,28 +121,30 @@ const JsonDemoComponent: React.FC = () => {
                 <TabsList>
                     <TabsTrigger value="viewer">JSON Viewer</TabsTrigger>
                     <TabsTrigger value="editor">JSON Editor</TabsTrigger>
+                    <TabsTrigger value="miniViewer">Mini Viewer</TabsTrigger>
+                    <TabsTrigger value="miniEditor">Mini Editor</TabsTrigger>
                 </TabsList>
                 <TabsContent value="viewer">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>JSON Viewer Examples</CardTitle>
-                        </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">Basic JsonViewer</h3>
+                                <TextDivider text={'Basic JsonViewer'} />
                                 <JsonViewer data={currentData} initialExpanded={isExpanded} />
+                                <TextDivider text={'END'} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">FullJsonViewer</h3>
+                                <TextDivider text={'FullJsonViewer'} />
                                 <FullJsonViewer
                                     data={currentData}
                                     initialExpanded={isExpanded}
                                     title="Custom Title for Full JSON Viewer"
                                 />
+                                <TextDivider text={'END'} />
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
+
                 <TabsContent value="editor">
                     <Card>
                         <CardHeader>
@@ -127,11 +152,13 @@ const JsonDemoComponent: React.FC = () => {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">Basic JsonEditor</h3>
-                                <BaseJsonEditor
-                                    initialData={editorData}
-                                    onJsonChange={handleEditorChange}
+                                <TextDivider text={'Basic Json Editor: Json.Editor'} />
+                                <Json.Editor
+                                    data={editorData}
+                                    onChange={handleDataChange}
+                                    initialExpanded={isExpanded}
                                 />
+                                <TextDivider text={'END'} />
                             </div>
                             <div>
                                 <h3 className="text-lg font-semibold mb-2">JsonEditor with Formatting</h3>
@@ -143,31 +170,75 @@ const JsonDemoComponent: React.FC = () => {
                                     />
                                     <Label htmlFor="format-switch">Show Formatting Options</Label>
                                 </div>
+
                                 {showFormatting ? (
-                                    <JsonEditorWithFormatting
-                                        initialData={editorData}
-                                        onJsonChange={handleEditorChange}
-                                        onFormat={() => setEditorData(JSON.stringify(JSON.parse(editorData), null, 2))}
-                                    />
+                                    <>
+                                        <TextDivider text={'JsonEditor with Formatting'} />
+                                        <Json.Editor
+                                            data={editorData}
+                                            onChange={handleDataChange}
+                                            onFormat={handleFormat}
+                                            initialExpanded={isExpanded}
+                                        />
+                                        <TextDivider text={'END'} />
+                                    </>
                                 ) : (
-                                    <BaseJsonEditor
-                                        initialData={editorData}
-                                        onJsonChange={handleEditorChange}
-                                    />
+                                    <>
+                                        <TextDivider text={'Basic Json Editor (when formatting is off)'} />
+                                        <Json.Editor
+                                            data={editorData}
+                                            onChange={handleDataChange}
+                                            initialExpanded={isExpanded}
+                                        />
+                                        <TextDivider text={'END'} />
+                                    </>
                                 )}
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">Full JsonEditor</h3>
-                                <FullJsonEditor
-                                    initialData={editorData}
-                                    onJsonChange={handleEditorChange}
-                                    onSave={(data) => console.log('Saving JSON:', data)}
+                                <TextDivider text={'Full Json Editor: Json.FullEditor'} />
+                                <Json.FullEditor
+                                    data={editorData}
+                                    onChange={handleDataChange}
                                     title="Custom Title for Full JSON Editor"
+                                    initialExpanded={isExpanded}
                                 />
+                                <TextDivider text={'END'} />
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
+                <TabsContent value="miniViewer">
+                    <Card>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <TextDivider text={'Basic JsonViewer'} />
+                                <MiniJsonViewer data={currentData} initialExpanded={isExpanded} />
+                                <TextDivider text={'END'} />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="miniEditor">
+                    <Card>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <TextDivider text={'Basic JsonViewer'} />
+                                <MiniEditableJsonViewer data={currentData} initialExpanded={isExpanded} />
+                                <TextDivider text={'END'} />
+                            </div>
+                            <div>
+                                <TextDivider text={'FullJsonViewer'} />
+                                <MiniFullEditableJsonViewer
+                                    data={currentData}
+                                    initialExpanded={isExpanded}
+                                    title="Custom Title for Full JSON Viewer"
+                                />
+                                <TextDivider text={'END'} />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
             </Tabs>
             {isInvalidJson && (
                 <motion.div

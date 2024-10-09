@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { normalizeColorInput } from '@/utils/color-utils/color-change-util';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import FullJsonViewer from "@/components/ui/json/JsonViewer";
+import FullJsonViewer from "@/components/ui/JsonComponents/JsonViewer";
 
 const testColorValues = [
     "hwb(199 24% 20%)",

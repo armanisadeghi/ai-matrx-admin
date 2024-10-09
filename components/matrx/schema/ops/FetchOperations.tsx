@@ -1,28 +1,39 @@
-import React, {Suspense, useEffect, useState} from "react";
+import React, {Suspense, useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
-import SchemaSelect from "@/app/(authenticated)/admin/schema-manager/components/SchemaSelect";
+import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
+import {Button, Input} from "@/components/ui";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
-const PaginatedFetch = () => {
+const FetchOperations = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
-    const {data, loading, error, fetchPaginated} = useDatabase();
+    const [id, setId] = useState('');
+    const {data, loading, error, fetchOne, fetchAll} = useDatabase();
 
-    const handlePageChange = (page: number, pageSize: number) => {
-        if (selectedSchema) {
-            fetchPaginated(selectedSchema, {limit: pageSize, offset: (page - 1) * pageSize});
+    const handleFetchOne = () => {
+        if (selectedSchema && id) {
+            fetchOne(selectedSchema, id);
         }
     };
 
-    useEffect(() => {
+    const handleFetchAll = () => {
         if (selectedSchema) {
-            handlePageChange(1, 10); // Initial fetch
+            fetchAll(selectedSchema);
         }
-    }, [selectedSchema]);
+    };
 
     return (
         <div className="space-y-4">
             <SchemaSelect onSchemaSelect={setSelectedSchema} selectedSchema={selectedSchema}/>
+            <Input
+                placeholder="ID (for fetchOne)"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
+            />
+            <div className="space-x-2">
+                <Button onClick={handleFetchOne} disabled={!selectedSchema || !id}>Fetch One</Button>
+                <Button onClick={handleFetchAll} disabled={!selectedSchema}>Fetch All</Button>
+            </div>
             {loading && <p>Loading...</p>}
             {error && <p className="text-red-500">Error: {error.message}</p>}
             {data && (
@@ -35,7 +46,6 @@ const PaginatedFetch = () => {
                         customModalContent={(rowData) => (
                             <pre>{JSON.stringify(rowData, null, 2)}</pre>
                         )}
-                        onPageChange={handlePageChange}
                     />
                 </Suspense>
             )}
@@ -43,4 +53,4 @@ const PaginatedFetch = () => {
     );
 };
 
-export default PaginatedFetch;
+export default FetchOperations;

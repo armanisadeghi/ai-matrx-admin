@@ -23,13 +23,14 @@ import SchemaAdmin from "@/app/(authenticated)/admin/schema-manager/components/S
 import SchemaInteractions from "@/app/(authenticated)/admin/schema-manager/components/SchemaInteractions";
 import FeatureSectionAnimatedGradientComponents from "@/components/animated/my-custom-demos/feature-section-animated-gradient-component";
 import {Layers3} from "lucide-react";
-import FetchOperations from "@/app/(authenticated)/admin/schema-manager/components/FetchOperations";
-import CreateOperation from "@/app/(authenticated)/admin/schema-manager/components/CreateFromJson";
-import UpdateOperation from "@/app/(authenticated)/admin/schema-manager/components/UpdateOperation";
-import DeleteOperation from "@/app/(authenticated)/admin/schema-manager/components/DeleteOperation";
-import PaginatedFetch from "@/app/(authenticated)/admin/schema-manager/components/PaginatedFetch";
-import CustomQuery from "@/app/(authenticated)/admin/schema-manager/components/CustomQuery";
-import RealtimeSubscription from "@/app/(authenticated)/admin/schema-manager/components/RealtimeSubscription";
+import FetchOperations from "@/components/matrx/schema/ops/FetchOperations";
+import CreateOperationJson from "@/components/matrx/schema/ops/CreateFromJson";
+import UpdateOperation from "@/components/matrx/schema/ops/UpdateOperation";
+import DeleteOperation from "@/components/matrx/schema/ops/DeleteOperation";
+import PaginatedFetch from "@/components/matrx/schema/ops/PaginatedFetch";
+import CustomQuery from "@/components/matrx/schema/ops/CustomQuery";
+import RealtimeSubscription from "@/components/matrx/schema/ops/RealtimeSubscription";
+import CreateOperation from "@/components/matrx/schema/ops/CreateOperation";
 
 
 export default function AdminPage() {
@@ -65,6 +66,12 @@ export default function AdminPage() {
             description: "Test create operation on the database.",
             icon: <IconPlus />,
             component: <CreateOperation />,
+        },
+        {
+            title: "Create With JSON Operation",
+            description: "Test create operation on the database using a JSON.",
+            icon: <IconPlus />,
+            component: <CreateOperationJson />,
         },
         {
             title: "Update Operation",

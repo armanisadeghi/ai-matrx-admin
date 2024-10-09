@@ -1,39 +1,36 @@
 import React, {Suspense, useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
-import SchemaSelect from "@/app/(authenticated)/admin/schema-manager/components/SchemaSelect";
-import {Button, Input} from "@/components/ui";
+import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
+import {Button} from "@/components/ui";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
-const FetchOperations = () => {
+const CustomQuery = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
-    const [id, setId] = useState('');
-    const {data, loading, error, fetchOne, fetchAll} = useDatabase();
+    const [query, setQuery] = useState('');
+    const {data, loading, error, executeQuery} = useDatabase();
 
-    const handleFetchOne = () => {
-        if (selectedSchema && id) {
-            fetchOne(selectedSchema, id);
-        }
-    };
-
-    const handleFetchAll = () => {
+    const handleExecuteQuery = () => {
         if (selectedSchema) {
-            fetchAll(selectedSchema);
+            executeQuery(selectedSchema, (baseQuery) => {
+                // This is a simple example. In a real application, you'd want to validate and sanitize this input.
+                return eval(`baseQuery.${query}`);
+            });
         }
     };
 
     return (
         <div className="space-y-4">
             <SchemaSelect onSchemaSelect={setSelectedSchema} selectedSchema={selectedSchema}/>
-            <Input
-                placeholder="ID (for fetchOne)"
-                value={id}
-                onChange={(e) => setId(e.target.value)}
+            <textarea
+                className="w-full p-2 border rounded"
+                placeholder="Query (e.g., 'where('column', 'value')')"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
             />
-            <div className="space-x-2">
-                <Button onClick={handleFetchOne} disabled={!selectedSchema || !id}>Fetch One</Button>
-                <Button onClick={handleFetchAll} disabled={!selectedSchema}>Fetch All</Button>
-            </div>
+            <Button onClick={handleExecuteQuery} disabled={loading || !selectedSchema}>
+                Execute Query
+            </Button>
             {loading && <p>Loading...</p>}
             {error && <p className="text-red-500">Error: {error.message}</p>}
             {data && (
@@ -53,4 +50,4 @@ const FetchOperations = () => {
     );
 };
 
-export default FetchOperations;
+export default CustomQuery;

@@ -2,6 +2,7 @@
 
 import {TableSchema, createTypeReference, InferSchemaType} from './schemaRegistry';
 import {Json} from "@/types/database.types";
+import {BrokerType} from "@/types/brokerTypes";
 
 export const initialSchemas: Record<string, TableSchema> = {
     registeredFunction: {
@@ -17,7 +18,8 @@ export const initialSchemas: Record<string, TableSchema> = {
                 alts: {
                     frontend: 'id',
                     backend: 'id',
-                    database: 'p_id',
+                    database: 'id',
+                    db_p:`p_id`,
                     pretty: 'ID',
                 },
                 type: 'string',
@@ -31,7 +33,8 @@ export const initialSchemas: Record<string, TableSchema> = {
                 alts: {
                     frontend: 'name',
                     backend: 'name',
-                    database: 'p_name',
+                    database: 'name',
+                    db_p:`p_name`,
                     pretty: 'Name',
                 },
                 type: 'string',
@@ -45,7 +48,8 @@ export const initialSchemas: Record<string, TableSchema> = {
                 alts: {
                     frontend: 'modulePath',
                     backend: 'module_path',
-                    database: 'p_module_path',
+                    database: 'module_path',
+                    db_p:`p_module_path`,
                     pretty: 'Module Path',
                 },
                 type: 'string',
@@ -55,11 +59,72 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<string>(),
                 },
             },
+            className: {
+                alts: {
+                    frontend: 'className',
+                    backend: 'class_name',
+                    database: 'class_name',
+                    db_p:`p_class_name`,
+                    pretty: 'Class Name',
+                },
+                type: 'string',
+                format: 'single',
+                structure: {
+                    structure: 'simple',
+                    typeReference: createTypeReference<string>(),
+                },
+            },
+            description: {
+                alts: {
+                    frontend: 'description',
+                    backend: 'description',
+                    database: 'description',
+                    db_p:`p_description`,
+                    pretty: 'Description',
+                },
+                type: 'string',
+                format: 'single',
+                structure: {
+                    structure: 'simple',
+                    typeReference: createTypeReference<string>(),
+                },
+            },
+            returnBroker: {
+                alts: {
+                    frontend: 'returnBroker',
+                    backend: 'return_broker',
+                    database: 'return_broker',
+                    db_p:`p_return_broker`,
+                    pretty: 'Return Broker',
+                },
+                type: 'string',
+                format: 'single',
+                structure: {
+                    structure: 'simple',
+                    typeReference: createTypeReference<string>(),
+                },
+            },
+            returnBrokerReference: {
+                alts: {
+                    frontend: 'returnBrokerReference',
+                    backend: 'return_broker_reference',
+                    database: 'broker',
+                    db_p: `broker`,
+                    pretty: 'Return Broker',
+                },
+                type: 'string',
+                format: 'single',
+                structure: {
+                    structure: 'foreignKey',
+                    typeReference: createTypeReference<BrokerType>(),
+                },
+            },
             arg: {
                 alts: {
                     frontend: 'arg',
                     backend: 'arg',
-                    database: 'p_arg',
+                    database: 'arg',
+                    db_p:`p_arg`,
                     pretty: 'Arguments',
                 },
                 type: 'object',

@@ -1,28 +1,34 @@
 // File: lib/schemaUtils.ts
 
 
-import {TableSchema, globalSchemaRegistry, FieldConverter} from "@/utils/schema/schemaRegistry";
+import {TableSchema, getSchema, FieldConverter} from "@/utils/schema/schemaRegistry";
 import {v4 as uuidv4} from 'uuid';
 
-function generateJsonTemplate(tableName: string): Record<string, any> {
-    const schema: TableSchema | undefined = globalSchemaRegistry[tableName];
+export function generateJsonTemplate(tableName: string): Record<string, any> {
+    console.log("generateJsonTemplate: Called with tableName:", tableName);
+
+    const schema: TableSchema | undefined = getSchema(tableName);
+    console.log("generateJsonTemplate: Found schema:", schema);
 
     if (!schema) {
-        console.warn(`Schema not found for table: ${tableName}`);
+        console.warn(`generateJsonTemplate: Schema not found for table: ${tableName}`);
         return {};
     }
+
+    console.log("generateJsonTemplate: Found schema:", schema);
 
     const result: Record<string, any> = {};
 
     for (const [fieldName, converter] of Object.entries(schema.fields)) {
-        // Initialize each field based on its defined type
+        console.log(`generateJsonTemplate: Processing field: ${fieldName} with type: ${converter.type}`);
         result[fieldName] = initializeFieldValue(converter);
     }
 
+    console.log("generateJsonTemplate: Generated template:", result);
     return result;
 }
 
-function initializeFieldValue(converter: FieldConverter<any>): any {
+export function initializeFieldValue(converter: FieldConverter<any>): any {
     switch (converter.type) {
         case 'string':
             return '';
@@ -68,10 +74,10 @@ function initializeFieldValue(converter: FieldConverter<any>): any {
 }
 
 
-type DataWithOptionalId = { id?: string; [key: string]: any };
-type DataWithId = { id: string; [key: string]: any };
+export type DataWithOptionalId = { id?: string; [key: string]: any };
+export type DataWithId = { id: string; [key: string]: any };
 
-function ensureId<T extends DataWithOptionalId | DataWithOptionalId[]>(input: T):
+export function ensureId<T extends DataWithOptionalId | DataWithOptionalId[]>(input: T):
     T extends DataWithOptionalId[] ? DataWithId[] : DataWithId {
     if (Array.isArray(input)) {
         return input.map((item) => ({
@@ -87,4 +93,3 @@ function ensureId<T extends DataWithOptionalId | DataWithOptionalId[]>(input: T)
 }
 
 
-export {generateJsonTemplate, ensureId};

@@ -7,46 +7,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { BaseJsonEditor, JsonEditorWithFormatting, FullJsonEditor } from '@/components/ui/json/JsonEditor';
+import { Input } from '@/components/ui/input';
+import Json from 'components/ui/JsonComponents';
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from '../sampleData';
+import TextDivider from "@/components/matrx/TextDivider";
 
 const EnhancedJsonDemoComponent: React.FC = () => {
-    const [currentData, setCurrentData] = useState<string>(JSON.stringify(simpleJsonObject, null, 2));
+    const [currentData, setCurrentData] = useState<string | object>(JSON.stringify(simpleJsonObject, null, 2));
     const [showFormatting, setShowFormatting] = useState<boolean>(false);
     const [validateDelay, setValidateDelay] = useState<number>(500);
+    const [isStringMode, setIsStringMode] = useState<boolean>(true);
 
-    const handleDataChange = (newData: string) => {
+    const handleDataChange = (newData: string | object) => {
         setCurrentData(newData);
-    };
-
-    const handleFormat = () => {
-        try {
-            const formatted = JSON.stringify(JSON.parse(currentData), null, 2);
-            setCurrentData(formatted);
-        } catch (error) {
-            console.error('Error formatting JSON:', error);
-        }
-    };
-
-    const handleSave = (data: string) => {
-        console.log('Saved data:', JSON.parse(data));
     };
 
     const handleDataSwitch = (dataType: 'simple' | 'complex' | 'large' | 'invalid') => {
         switch (dataType) {
             case 'simple':
-                setCurrentData(JSON.stringify(simpleJsonObject, null, 2));
+                setCurrentData(isStringMode ? JSON.stringify(simpleJsonObject, null, 2) : simpleJsonObject);
                 break;
             case 'complex':
-                setCurrentData(JSON.stringify(complexJsonObject, null, 2));
+                setCurrentData(isStringMode ? JSON.stringify(complexJsonObject, null, 2) : complexJsonObject);
                 break;
             case 'large':
-                setCurrentData(JSON.stringify(largeJsonObject, null, 2));
+                setCurrentData(isStringMode ? JSON.stringify(largeJsonObject, null, 2) : largeJsonObject);
                 break;
             case 'invalid':
                 setCurrentData(invalidJsonString);
                 break;
         }
+    };
+
+    const toggleDataMode = () => {
+        setIsStringMode(!isStringMode);
+        setCurrentData(isStringMode ? JSON.parse(currentData as string) : JSON.stringify(currentData, null, 2));
     };
 
     return (
@@ -76,14 +71,22 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                             />
                             <Label htmlFor="formatting-switch">Show Formatting Options</Label>
                         </div>
+                        <div className="flex items-center space-x-2">
+                            <Switch
+                                id="mode-switch"
+                                checked={isStringMode}
+                                onCheckedChange={toggleDataMode}
+                            />
+                            <Label htmlFor="mode-switch">String Mode (vs Object Mode)</Label>
+                        </div>
                         <div>
                             <Label htmlFor="validate-delay">Validation Delay (ms)</Label>
-                            <input
+                            <Input
                                 id="validate-delay"
                                 type="number"
                                 value={validateDelay}
                                 onChange={(e) => setValidateDelay(Number(e.target.value))}
-                                className="ml-2 p-1 border rounded"
+                                className="w-24"
                             />
                         </div>
                     </div>
@@ -99,35 +102,39 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                 <TabsContent value="base">
                     <Card>
                         <CardContent>
-                            <BaseJsonEditor
-                                initialData={currentData}
-                                onJsonChange={handleDataChange}
+                            <TextDivider text="Json.Editor (Base)" />
+                            <Json.Editor
+                                data={currentData}
+                                onChange={handleDataChange}
                                 validateDelay={validateDelay}
                             />
+                            <TextDivider text="END" />
                         </CardContent>
                     </Card>
                 </TabsContent>
                 <TabsContent value="formatting">
                     <Card>
                         <CardContent>
-                            <JsonEditorWithFormatting
-                                initialData={currentData}
-                                onJsonChange={handleDataChange}
-                                onFormat={handleFormat}
+                            <TextDivider text="Json.Editor (with Formatting)" />
+                            <Json.Editor
+                                data={currentData}
+                                onChange={handleDataChange}
                                 validateDelay={validateDelay}
+                                onFormat={() => {}} // The component handles formatting internally
                             />
+                            <TextDivider text="END" />
                         </CardContent>
                     </Card>
                 </TabsContent>
                 <TabsContent value="full">
-                    <FullJsonEditor
-                        initialData={currentData}
-                        onJsonChange={handleDataChange}
-                        onFormat={handleFormat}
-                        onSave={handleSave}
-                        title="Full JSON Editor"
+                    <TextDivider text="Json.FullEditor" />
+                    <Json.FullEditor
+                        data={currentData}
+                        onChange={handleDataChange}
                         validateDelay={validateDelay}
+                        title="Full JSON Editor"
                     />
+                    <TextDivider text="END" />
                 </TabsContent>
             </Tabs>
 
@@ -136,8 +143,8 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                     <CardTitle>Current JSON Data</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <pre className="bg-gray-100 p-4 rounded-md overflow-auto max-h-60">
-                        {currentData}
+                    <pre className="p-4 rounded-md overflow-auto max-h-60">
+                        {typeof currentData === 'string' ? currentData : JSON.stringify(currentData, null, 2)}
                     </pre>
                 </CardContent>
             </Card>

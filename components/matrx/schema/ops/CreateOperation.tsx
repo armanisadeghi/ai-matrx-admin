@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
-import SchemaSelect from "@/app/(authenticated)/admin/schema-manager/components/SchemaSelect";
+import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {Button} from "@/components/ui";
 
 const CreateOperation = () => {
