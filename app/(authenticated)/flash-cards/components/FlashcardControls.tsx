@@ -1,29 +1,25 @@
 'use client';
 
 import React, {useState, useCallback} from 'react';
-import {useSelector} from 'react-redux';
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight, Minus, Plus, Shuffle} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {AiAssistModalTab} from '@/types/flashcards.types';
 import AudioModal from '../audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
-import {selectAllFlashcards, selectCurrentIndex, selectActiveFlashcard} from '@/lib/redux/selectors/flashcardSelectors';
 import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
 const FlashcardControls: React.FC = () => {
     const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-    const currentCard = useSelector(selectActiveFlashcard);
     const {
         allFlashcards,
         currentIndex,
         firstName,
-        fontSize,
         handleNext,
         handlePrevious,
         handleSelectChange,
+        activeFlashcard,
         shuffleCards,
         showModal,
         setFontSize,
@@ -37,19 +33,19 @@ const FlashcardControls: React.FC = () => {
         <div className="w-full flex flex-col space-y-4">
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 <Button onClick={handlePrevious} variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
                     <ArrowLeft className="mr-2 h-4 w-4"/> Previous
                 </Button>
                 <Button onClick={handleNext} variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
                     Next <ArrowRight className="ml-2 h-4 w-4"/>
                 </Button>
                 <Button onClick={shuffleCards} variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
                     <Shuffle className="mr-2 h-4 w-4"/> Shuffle
                 </Button>
                 <Select onValueChange={handleSelectChange} value={currentIndex.toString()}>
-                    <SelectTrigger className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                    <SelectTrigger className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
                         <SelectValue placeholder="Select a flashcard"/>
                     </SelectTrigger>
                     <SelectContent>
@@ -61,7 +57,6 @@ const FlashcardControls: React.FC = () => {
                     </SelectContent>
                 </Select>
             </div>
-
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
                 <Button
                     onClick={handleConfusedClick}
@@ -126,14 +121,13 @@ const FlashcardControls: React.FC = () => {
                 </Button>
             </div>
 
-            {currentCard && (
+            {activeFlashcard && (
                 <>
                     <AudioModal
                         isOpen={isAudioModalOpen}
                         onClose={() => setIsAudioModalOpen(false)}
-                        text={currentCard.audioExplanation || ''}
+                        text={activeFlashcard.audioExplanation || ''}
                     />
-
                     <AiChatModal
                         isOpen={isAiModalOpen}
                         onClose={() => setIsAiModalOpen(false)}

@@ -84,7 +84,7 @@ const FlashcardComponent: React.FC = () => {
                 <MatrxTable
                     data={flashcardsWithUUIDs}
                     onAction={handleAction}
-                    defaultVisibleColumns={['lesson', 'front', 'reviewCount', 'correctCount', 'incorrectCount']}
+                    defaultVisibleColumns={['lesson', 'topic','front', 'reviewCount', 'correctCount', 'incorrectCount']}
                 />
             </Suspense>
 

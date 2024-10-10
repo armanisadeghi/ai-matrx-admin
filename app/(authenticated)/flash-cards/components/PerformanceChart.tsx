@@ -4,10 +4,9 @@ import { useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Sector, Label } from 'recharts';
 import { ChartConfig, ChartContainer, ChartStyle, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 import { selectPerformanceCounts } from '@/lib/redux/selectors/flashcardSelectors';
-
 
 const chartConfig = {
     correct: {
@@ -21,12 +20,11 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const PerformanceChart: React.FC = () => {
-    const [shouldAnimate, setShouldAnimate] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
 
-
     const { totalCount, totalCorrect, totalIncorrect } = useSelector(selectPerformanceCounts);
-    const correctPercentage = totalCount > 0 ? Math.round((totalCorrect / totalCount) * 100) : 0;
+    const completedCount = totalCorrect + totalIncorrect;
+    const correctPercentage = completedCount > 0 ? Math.round((totalCorrect / completedCount) * 100) : 0;
 
     const pieData = [
         { name: 'correct', value: totalCorrect, fill: chartConfig.correct.color },
@@ -35,28 +33,28 @@ const PerformanceChart: React.FC = () => {
 
     const renderActiveShape = (props: any) => {
         const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
-      
+
         return (
-          <g>
-            <Sector
-              cx={cx}
-              cy={cy}
-              innerRadius={innerRadius}
-              outerRadius={outerRadius + 10}
-              startAngle={startAngle}
-              endAngle={endAngle}
-              fill={fill}
-            />
-            <Sector
-              cx={cx}
-              cy={cy}
-              startAngle={startAngle}
-              endAngle={endAngle}
-              innerRadius={outerRadius + 12}
-              outerRadius={outerRadius + 25}
-              fill={fill}
-            />
-          </g>
+            <g>
+                <Sector
+                    cx={cx}
+                    cy={cy}
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius + 10}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    fill={fill}
+                />
+                <Sector
+                    cx={cx}
+                    cy={cy}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    innerRadius={outerRadius + 12}
+                    outerRadius={outerRadius + 25}
+                    fill={fill}
+                />
+            </g>
         );
     };
 
@@ -67,15 +65,19 @@ const PerformanceChart: React.FC = () => {
                 <CardTitle>Performance</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-between">
-                <motion.div 
+                <motion.div
                     className="flex justify-around mb-4"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
                     <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Total</p>
+                        <p className="text-sm text-muted-foreground">Unique Cards</p>
                         <p className="text-2xl font-bold">{totalCount}</p>
+                    </div>
+                    <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Attempts</p>
+                        <p className="text-2xl font-bold">{completedCount}</p>
                     </div>
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">Correct</p>

@@ -4,6 +4,7 @@ import {Button} from "@/components/ui/button";
 import {CheckCircle, XCircle, MessageSquare} from 'lucide-react';
 import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
 import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import {cn} from "@/utils/cn";
 
 const FlashcardDisplay: React.FC = (    {    }) => {
     const {
@@ -69,9 +70,15 @@ const FlashcardDisplay: React.FC = (    {    }) => {
                     <CardContent className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)]">
                         <MarkdownRenderer content={activeFlashcard.back} type="flashcard" fontSize={fontSize} />
                         <div className="w-full border-t border-zinc-700 my-2"></div>
-                        <p className="text-left text-blue-400" style={{fontSize: `${fontSize}px`}}>
-                            Example: {activeFlashcard.example}
-                        </p>
+                        <div className={cn('text-left', 'text-blue-400')} style={{ fontSize: `${fontSize}px` }}>
+                            <span className="font-bold">Example:</span>
+                            <MarkdownRenderer
+                                content={activeFlashcard.example}
+                                type="flashcard"
+                                fontSize={fontSize}
+                                className="inline text-blue-400"
+                            />
+                        </div>
                     </CardContent>
                     <CardFooter className="flex justify-between p-2 absolute bottom-0 left-0 right-0">
                         <Button onClick={(e) => {
