@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { flashcardDataSet } from '../lesson-data';
+import { vocabFlashcards } from '../lesson-data';
 import { Flashcard, ChatMessage } from "@/types/flashcards.types";
 import { RootState, AppDispatch } from '@/lib/redux/store';
 import {
@@ -37,7 +37,7 @@ export const useFlashcard = () => {
     const [isExpandedChatOpen, setIsExpandedChatOpen] = useState(false);
 
     useEffect(() => {
-        const flashcardsToInitialize = flashcardDataSet.map((card, index) => ({
+        const flashcardsToInitialize = vocabFlashcards.map((card, index) => ({
             ...card,
             id: `flashcard-${index}`,
             reviewCount: 0,

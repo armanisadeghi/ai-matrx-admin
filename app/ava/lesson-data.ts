@@ -1,5 +1,256 @@
 import {FlashcardData} from "@/types/flashcards.types";
 
+
+export const vocabFlashcards: FlashcardData[] = [
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 1,
+        front: "Retrogress",
+        back: `*(verb)*  
+**Definition:** To move backward, especially into a worse or earlier condition; to decline or revert to a previous state.  
+**Synonyms:** Regress, relapse, deteriorate  
+**Antonyms:** Progress, advance, evolve  
+**Example:** *When the company lost its main client, it had to retrogress and reconsider its business strategy.*`,
+        audioExplanation: "Hey, it’s okay if this word seems tricky! Think of it like this: 'retrogress' is like hitting the rewind button on a situation, going back to a time when things weren’t as good or when things started. Imagine a video game where you lose a level and have to go back to a checkpoint—that’s kind of like retrogressing. Or, you know, it’s like playing 'All Too Well' (10-minute version) and reliving all those feelings again.",
+        detailedExplanation: `When we talk about retrogressing, we often think about situations where things go from better to worse. For example, if a student was doing well in school but then started to fail their classes, we could say they are retrogressing in their studies. It’s important to recognize when we might be moving backward in life so we can find ways to move forward again. Just like Taylor Swift reflects on her past in her songs, we can learn from our experiences to avoid retrogressing in the future.`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 2,
+        front: "Extol",
+        back: `*(verb)*  
+**Definition:** To praise highly or enthusiastically; to speak or write about something or someone with admiration.  
+**Synonyms:** Praise, applaud, exalt  
+**Antonyms:** Criticize, denounce, condemn  
+**Example:** *The coach extolled the team’s hard work after their impressive win.*`,
+        audioExplanation: "No worries! 'Extol' just means you’re really praising something. Like when your teacher says you did an awesome job on a project and talks about it in front of the class—she’s extolling your effort. It’s like a big cheer or a pat on the back! Kind of like when Swifties extol Taylor for her songwriting genius in *Folklore*—we just can’t help but hype it up.",
+        detailedExplanation: `Extolling someone means you are giving them a lot of compliments and showing how much you appreciate their efforts. For example, if a friend helps you out with a tough homework problem, you might extol their intelligence and kindness. It’s a way of celebrating the good things people do. Just like how Taylor Swift fans extol her for her amazing lyrics and catchy melodies, we should remember to appreciate those around us and let them know how great they are!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 3,
+        front: "Cursory",
+        back: `*(adjective)*  
+**Definition:** Done quickly with little attention to detail; a brief and superficial look at something.  
+**Synonyms:** Hasty, superficial, brief  
+**Antonyms:** Thorough, detailed, meticulous  
+**Example:** *She gave a cursory review of her essay, missing several important mistakes.*`,
+        audioExplanation: "Don’t worry if 'cursory' sounds weird! It basically means you’re doing something really fast without taking your time. Like when you flip through a book quickly without actually reading it—just kind of skimming it—that’s a cursory look. Think of it as listening to a new Taylor Swift album only once—totally cursory because we know you’ll go back for that deep, emotional dive later.",
+        detailedExplanation: `When you take a cursory glance at something, you’re not really paying close attention. For instance, if you quickly skim through your notes before a test, you might miss important details. It’s important to be careful not to be too cursory, especially when studying or doing assignments. Just like how Taylor Swift puts so much detail into her music videos, we should strive to be thorough in our work too!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 4,
+        front: "Quintessence",
+        back: `*(noun)*  
+**Definition:** The purest or most perfect example of something; the essence of a quality or thing in its most concentrated form.  
+**Synonyms:** Epitome, essence, ideal  
+**Antonyms:** Imperfection, anomaly, deviation  
+**Example:** *The golden retriever is often seen as the quintessence of loyalty in a pet.*`,
+        audioExplanation: "This one’s a bit fancy, but it’s really just a way of saying something is the absolute best example of what it’s supposed to be. Think of it like the perfect scoop of ice cream—exactly how ice cream should taste. That’s the 'quintessence' of ice cream. Or, in Swiftie terms, think of 'quintessence' as how *Fearless* is the quintessence of a classic Taylor Swift country album—timeless and iconic.",
+        detailedExplanation: `Quintessence is all about finding the best example of something. For example, if you think of the best pizza, that would be the quintessence of pizza! In literature, a character who embodies bravery might be considered the quintessence of a hero. Just like how Taylor Swift’s song *Love Story* is the quintessence of a romantic ballad, we can look for those perfect examples in our own lives!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 5,
+        front: "Adroit",
+        back: `*(adjective)*  
+**Definition:** Skilled and clever, particularly in physical activities or in using one's hands or mind.  
+**Synonyms:** Skillful, adept, proficient  
+**Antonyms:** Clumsy, inept, awkward  
+**Example:** *The adroit magician amazed the crowd with his sleight-of-hand tricks.*`,
+        audioExplanation: "If 'adroit' sounds confusing, just think of someone who’s really good at something, like a pro basketball player or an artist who paints perfectly. It means they’re clever or skilled—like they know exactly what they’re doing. It’s kind of like Taylor being so adroit with her guitar and lyrics—it’s just effortless brilliance.",
+        detailedExplanation: `Being adroit means you have a special skill or talent that makes you stand out. For instance, if someone is great at solving math problems quickly, they are adroit in mathematics. It’s important to recognize and develop our own skills, just like how Taylor Swift has honed her songwriting and performing abilities over the years. We can all strive to be adroit in our own unique ways!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 6,
+        front: "Feasible",
+        back: `*(adjective)*  
+**Definition:** Possible to achieve or accomplish; practical and likely to be successful.  
+**Synonyms:** Possible, achievable, practical  
+**Antonyms:** Impossible, impractical, unachievable  
+**Example:** *Completing the project in one week is feasible if everyone works together efficiently.*`,
+        audioExplanation: "Feasible just means it’s something that can actually happen. Like, if you want to build a treehouse, you’d ask if it’s feasible—if you have the tools and time to get it done. It’s like saying, 'Yep, that’s doable!' It’s like wondering if Taylor could actually re-record all her albums—totally feasible, and look how she’s doing it like a boss!",
+        detailedExplanation: `When we say something is feasible, we’re talking about whether it can realistically be done. For example, if you plan a school event, you need to consider if it’s feasible based on time and resources. Just like Taylor Swift’s plans to re-record her albums—she’s making it feasible by working hard and being organized. We should always think about what’s feasible in our own goals too!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 7,
+        front: "Scrutinize",
+        back: `*(verb)*  
+**Definition:** To examine closely and carefully, often to find any mistakes or issues.  
+**Synonyms:** Inspect, examine, analyze  
+**Antonyms:** Ignore, neglect, overlook  
+**Example:** *The editor scrutinized the article to ensure there were no factual errors.*`,
+        audioExplanation: "No problem if this sounds tough! 'Scrutinize' is just a fancy way of saying you’re looking at something super closely, like when you look at your homework to make sure everything’s right. Imagine you’re using a magnifying glass—that’s scrutinizing! It’s like how Swifties scrutinize every lyric of Taylor’s songs to uncover all the hidden Easter eggs—total detective mode!",
+        detailedExplanation: `Scrutinizing means you’re paying very close attention to details. For example, if you’re proofreading an essay, you need to scrutinize it to catch any mistakes. It’s a good habit to develop because it helps you improve your work. Just like how Taylor Swift meticulously scrutinizes her lyrics to make sure they convey the right emotions, we can all benefit from taking the time to scrutinize our own work!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 8,
+        front: "Tepid",
+        back: `*(adjective)*  
+**Definition:** Lacking enthusiasm or warmth; lukewarm, both in temperature and in emotion or attitude.  
+**Synonyms:** Unenthusiastic, indifferent, lukewarm  
+**Antonyms:** Enthusiastic, passionate, keen  
+**Example:** *His tepid response to the surprise party showed he wasn’t very excited.*`,
+        audioExplanation: "If 'tepid' is throwing you off, just think of something that’s not hot and not cold—it’s in between. It’s also used when someone isn’t that excited, like if you say 'meh' about something—kind of in the middle. It’s like when someone gives a tepid response to a new Taylor Swift single—honestly, how could they not be more excited?!",
+        detailedExplanation: `When someone is described as tepid, it means they’re not showing much excitement or interest. For example, if a friend is tepid about going to a concert, they might not be as enthusiastic as you are. It’s important to recognize our feelings and express them! Just like how Taylor Swift’s songs can evoke strong emotions, we should aim to be passionate about the things we love instead of being tepid!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 9,
+        front: "Duplicity",
+        back: `*(noun)*  
+**Definition:** Deceptive behavior or speech intended to mislead or deceive others; double-dealing.  
+**Synonyms:** Deceit, dishonesty, fraud  
+**Antonyms:** Honesty, sincerity, transparency  
+**Example:** *The politician’s duplicity became clear when his private actions contradicted his public promises.*`,
+        audioExplanation: "Hey, it’s okay if this seems confusing! 'Duplicity' is just another way of saying someone is being two-faced or sneaky. Like if someone says one thing but does the opposite behind your back—they’re being duplicitous. Think of it like when someone pretends to be your friend but talks about you behind your back—classic *Look What You Made Me Do* energy.",
+        detailedExplanation: `Duplicity refers to being dishonest or misleading. For example, if a friend tells you one thing but acts differently, they are showing duplicity. It’s important to be honest and straightforward in our relationships. Just like how Taylor Swift values authenticity in her music, we should strive to be genuine and avoid duplicity in our own lives!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 10,
+        front: "Holocaust",
+        back: `*(noun)*  
+**Definition:** A large-scale destruction, especially by fire; an event causing widespread devastation.  
+**Synonyms:** Catastrophe, disaster, annihilation  
+**Antonyms:** Salvation, rescue, preservation  
+**Example:** *The wildfire spread rapidly, turning the forest into a holocaust of charred trees.*`,
+        audioExplanation: "This word is really serious—it’s about huge destruction, like when something big gets destroyed by fire or another disaster. Think of a forest fire that wipes out a lot of land—that’s a holocaust. It’s like when Taylor sings about burning bridges or fiery heartbreaks—it’s not just a little sad; it’s an emotional holocaust.",
+        detailedExplanation: `The term holocaust is often used to describe significant destruction, particularly in a historical context. It’s important to understand the weight of this word and the events it refers to. For example, the Holocaust during World War II was a tragic event in history. Just like how Taylor Swift uses powerful imagery in her songs to convey deep emotions, we should be mindful of the language we use and its implications.`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 11,
+        front: "Averse",
+        back: `*(adjective)*  
+**Definition:** Having a strong dislike or unwillingness toward something; feeling opposed to something.  
+**Synonyms:** Opposed, unwilling, reluctant  
+**Antonyms:** Eager, willing, enthusiastic  
+**Example:** *He is averse to trying new foods, preferring to stick to familiar dishes.*`,
+        audioExplanation: "If you’re confused, don’t worry! 'Averse' just means you really don’t want to do something, like when you hate spinach—you’re averse to eating it. Or like when you’re totally averse to listening to any music that’s not Taylor Swift—why would you, right?",
+        detailedExplanation: `Being averse means you have a strong dislike for something. For example, if you’re averse to loud noises, you might prefer quiet environments. It’s important to recognize our preferences and communicate them. Just like how Taylor Swift expresses her feelings through her music, we should feel free to share what we like and dislike!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 12,
+        front: "Impervious",
+        back: `*(adjective)*  
+**Definition:** Not affected or penetrated by something; unable to be influenced or harmed.  
+**Synonyms:** Resistant, impermeable, unaffected  
+**Antonyms:** Vulnerable, susceptible, permeable  
+**Example:** *The new raincoat is impervious to water, keeping you completely dry in a storm.*`,
+        audioExplanation: "No problem if this one sounds tough! 'Impervious' means that something can’t be hurt or changed. Imagine if you had an invisible shield that kept you safe from rain or harm—that’s being impervious. Think of Taylor Swift being impervious to all the media drama—no matter what they say, she just keeps shining.",
+        detailedExplanation: `When something is described as impervious, it means it cannot be affected by outside forces. For example, if you wear an impervious jacket in the rain, you’ll stay dry. It’s a good quality to have, especially when facing challenges. Just like how Taylor Swift remains impervious to negativity and continues to create amazing music, we can also strive to be strong and resilient!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 13,
+        front: "Benevolent",
+        back: `*(adjective)*  
+**Definition:** Showing kindness and generosity; having a desire to help others.  
+**Synonyms:** Kind, generous, compassionate  
+**Antonyms:** Cruel, selfish, malevolent  
+**Example:** *The benevolent stranger offered to pay for the young boy’s lunch when he forgot his money.*`,
+        audioExplanation: "Hey, don’t worry! 'Benevolent' is just a fancy word for being kind and generous. Think of someone who loves helping others or donating to charity—that’s a benevolent person! Kind of like how Taylor donates to charities and helps out fans when they need it—total benevolent queen energy.",
+        detailedExplanation: `Being benevolent means you have a genuine desire to help others. For example, if you volunteer at a shelter or help a friend in need, you’re showing benevolence. It’s important to spread kindness and generosity in our communities. Just like how Taylor Swift uses her platform to support various causes, we can all strive to be benevolent in our own ways!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 14,
+        front: "Belligerent",
+        back: `*(adjective)*  
+**Definition:** Hostile and aggressive; eager to fight or argue.  
+**Synonyms:** Combative, aggressive, confrontational  
+**Antonyms:** Peaceful, friendly, agreeable  
+**Example:** *The belligerent student was always getting into arguments with his classmates.*`,
+        audioExplanation: "It’s okay if 'belligerent' seems a bit strange! It basically means someone who’s looking for a fight or acting super aggressive. Imagine someone who’s always ready to argue or get into trouble—that’s belligerent behavior. Or, you know, think of Taylor’s 'Bad Blood'—that’s the vibe of belligerence!",
+        detailedExplanation: `When someone is described as belligerent, it means they are often confrontational or aggressive. For example, if someone is always picking fights or arguing, they are showing belligerent behavior. It’s important to find peaceful ways to resolve conflicts. Just like how Taylor Swift promotes love and understanding in her music, we should aim to be friendly and avoid belligerence!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 15,
+        front: "Impetus",
+        back: `*(noun)*  
+**Definition:** A force or influence that causes something to happen or move forward; a stimulus or driving factor.  
+**Synonyms:** Momentum, motivation, incentive  
+**Antonyms:** Hindrance, deterrent, obstacle  
+**Example:** *The new safety regulations provided the impetus for companies to improve their workplace conditions.*`,
+        audioExplanation: "No problem! 'Impetus' is like a push that gets things moving. Think of it like the wind pushing a sailboat forward or someone giving you encouragement—it’s the reason things happen. Imagine how Taylor’s inspiration for *1989* was the impetus for her transition into pop—total game-changer!",
+        detailedExplanation: `Impetus refers to the motivation or force that drives action. For example, if a new law encourages people to recycle more, that law serves as an impetus for positive change. It’s important to recognize what motivates us in our own lives. Just like how Taylor Swift uses her experiences as impetus for her songwriting, we can find our own sources of inspiration to achieve our goals!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 16,
+        front: "Meticulous",
+        back: `*(adjective)*  
+**Definition:** Very careful and precise, paying close attention to details to ensure accuracy.  
+**Synonyms:** Careful, precise, thorough  
+**Antonyms:** Careless, sloppy, haphazard  
+**Example:** *She was meticulous in preparing her project, making sure every detail was perfect.*`,
+        audioExplanation: "Don’t worry if 'meticulous' sounds confusing! It just means being super careful and paying attention to every little thing. Like when you color inside the lines perfectly in a drawing—you’re being meticulous. Or when Taylor plans out her Easter eggs in songs and music videos—she’s so meticulous with every detail!",
+        detailedExplanation: `Being meticulous means you take great care in your work and pay attention to every detail. For example, if you’re writing a report, being meticulous means checking your facts and making sure everything is correct. It’s a valuable skill to have, especially in school. Just like how Taylor Swift meticulously crafts her albums to create the best music possible, we should strive to be meticulous in our own projects!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 17,
+        front: "Jeopardy",
+        back: `*(noun)*  
+**Definition:** Danger or risk of harm, loss, or failure.  
+**Synonyms:** Danger, risk, peril  
+**Antonyms:** Safety, security, assurance  
+**Example:** *The mountaineers knew they were in jeopardy when the avalanche started.*`,
+        audioExplanation: "If you’re stuck, think of 'jeopardy' as being in a risky situation, like when you might get hurt or something might go wrong. Imagine standing on the edge of a cliff—that’s being in jeopardy. Or like the feeling you get when Taylor drops hints about re-recording an album—you know something big is coming, and we’re all on edge!",
+        detailedExplanation: `Jeopardy refers to being in a situation where there is a risk of harm or danger. For example, if someone is driving recklessly, they are putting themselves and others in jeopardy. It’s important to be aware of our surroundings and make safe choices. Just like how Taylor Swift navigates the challenges of fame, we should be mindful of the risks we take in our own lives!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 18,
+        front: "Nostalgia",
+        back: `*(noun)*  
+**Definition:** A sentimental longing for the past, often remembering happy times and moments with fondness.  
+**Synonyms:** Longing, reminiscence, homesickness  
+**Antonyms:** Indifference, forgetfulness, contentment  
+**Example:** *She felt a wave of nostalgia as she flipped through the old photo album.*`,
+        audioExplanation: "It’s totally okay if this one is confusing! 'Nostalgia' is when you think back on good times from the past and feel a little bit happy and a little bit sad about them. Like missing summer vacation memories when you’re back at school. Or like listening to *Red* and feeling all the emotions from your teenage years—it’s pure nostalgia.",
+        detailedExplanation: `Nostalgia is all about remembering the good times and feeling a mix of happiness and sadness. For example, when you look at old photos from a family vacation, you might feel nostalgia for those moments. It’s important to cherish our memories while also looking forward to new experiences. Just like how Taylor Swift’s songs often evoke nostalgia for her fans, we can find joy in our own memories!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 19,
+        front: "Grimace",
+        back: `*(noun/verb)*  
+**Definition:** A facial expression showing discomfort, pain, or disgust; to make such an expression.  
+**Synonyms:** Scowl, frown, sneer  
+**Antonyms:** Smile, grin, beam  
+**Example:** *He grimaced when he bit into the bitter apple, showing his dislike.*`,
+        audioExplanation: "No worries! A 'grimace' is just a face you make when something is gross or hurts. Like when you eat something really sour and your face scrunches up—that’s a grimace. It’s all about showing how you feel with your expression. Or imagine seeing someone who betrayed you—like the look Taylor might have when singing 'I Knew You Were Trouble'—total grimace!",
+        detailedExplanation: `A grimace is a way of expressing discomfort or displeasure through your facial expressions. For example, if you taste something sour, you might grimace to show you don’t like it. It’s a natural reaction to certain situations. Just like how Taylor Swift uses her expressions in music videos to convey emotions, we can also use our faces to communicate how we feel!`
+    }
+];
+
 export const HistoryFlashcardData: FlashcardData[] = [
     {
         topic: "History",
