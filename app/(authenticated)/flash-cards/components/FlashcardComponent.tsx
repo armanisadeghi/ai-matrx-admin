@@ -6,7 +6,6 @@ import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
 import PerformanceChart from './PerformanceChart';
 import EditFlashcardDialog from './EditFlashcardDialog';
-import {Button} from "@/components/ui/button";
 import {Progress} from "@/components/ui/progress";
 import AiAssistModal from '../ai/AiAssistModal';
 import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
@@ -15,7 +14,6 @@ import {
     SmallComponentLoading,
     MediumComponentLoading,
     LargeComponentLoading,
-    FullPageLoading,
     CardLoading
 } from '@/components/matrx/LoadingComponents';
 import {ensureId} from "@/utils/schema/schemaUtils";
@@ -63,13 +61,7 @@ const FlashcardComponent: React.FC = () => {
             <div className="flex flex-col lg:flex-row justify-between items-stretch mb-4 gap-4">
                 <div className="w-full lg:w-2/3 flex">
                     <Suspense fallback={<CardLoading/>}>
-                        <FlashcardDisplay
-                            isFlipped={isFlipped}
-                            fontSize={fontSize}
-                            onFlip={handleFlip}
-                            onAnswer={handleAnswer}
-                            onAskQuestion={handleAskQuestion}
-                        />
+                        <FlashcardDisplay/>
                     </Suspense>
                 </div>
                 <div className="w-full lg:w-1/3 flex">

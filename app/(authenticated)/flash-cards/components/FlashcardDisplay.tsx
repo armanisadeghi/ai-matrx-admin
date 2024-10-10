@@ -1,38 +1,50 @@
 import React from 'react';
-import {useSelector} from 'react-redux';
 import {Card, CardContent, CardFooter} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {CheckCircle, XCircle, MessageSquare} from 'lucide-react';
-import {selectActiveFlashcard} from '@/lib/redux/selectors/flashcardSelectors';
 import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
+import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
-interface FlashcardDisplayProps {
-    isFlipped: boolean;
-    fontSize: number;
-    onFlip: () => void;
-    onAnswer: (isCorrect: boolean) => void;
-    onAskQuestion: () => void;
-}
-
-const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
-    {
+const FlashcardDisplay: React.FC = (    {    }) => {
+    const {
+        allFlashcards,
+        currentIndex,
+        activeFlashcard,
+        firstName,
         isFlipped,
         fontSize,
-        onFlip,
-        onAnswer,
-        onAskQuestion
-    }) => {
-    const card = useSelector(selectActiveFlashcard);
+        editingCard,
+        isModalOpen,
+        modalMessage,
+        modalDefaultTab,
+        isExpandedChatOpen,
+        handleFlip,
+        handleNext,
+        handlePrevious,
+        handleSelectChange,
+        shuffleCards,
+        handleAnswer,
+        handleEditCard,
+        handleSaveEdit,
+        showModal,
+        handleAskQuestion,
+        setFontSize,
+        setIsModalOpen,
+        setIsExpandedChatOpen,
+        setEditingCard,
+        handleAction,
+        handleAddMessage,
+        handleClearChat,
+        handleResetAllChats,
+        handleDeleteFlashcard,
+        handleAddFlashcard,
+    } = useFlashcard();
+
     const frontFontSize = fontSize + 10;
 
-    if (!card) {
+    if (!activeFlashcard) {
         return <div>No card data available</div>;
     }
-
-    // Helper function to format the card's back content with line breaks
-    const formatBackContent = (text: string) => {
-        return { __html: text.replace(/\n/g, '<br>') };
-    };
 
     return (
         <div className="w-full min-h-[400px] lg:h-full [perspective:1000px]">
@@ -40,14 +52,14 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
                 className={`relative w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${
                     isFlipped ? "[transform:rotateY(180deg)]" : ""
                 }`}
-                onClick={onFlip}
+                onClick={handleFlip}
             >
                 {/* Front of card */}
                 <Card
                     className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
                     <CardContent className="flex-grow flex items-center justify-center p-6 overflow-auto h-full">
                         <p className="text-center text-white" style={{fontSize: `${frontFontSize}px`}}>
-                            {card.front}
+                            {activeFlashcard.front}
                         </p>
                     </CardContent>
                 </Card>
@@ -55,28 +67,28 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
                 <Card
                     className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
                     <CardContent className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)]">
-                        <MarkdownRenderer content={card.back} type="flashcard" fontSize={fontSize} />
+                        <MarkdownRenderer content={activeFlashcard.back} type="flashcard" fontSize={fontSize} />
                         <div className="w-full border-t border-zinc-700 my-2"></div>
                         <p className="text-left text-blue-400" style={{fontSize: `${fontSize}px`}}>
-                            Example: {card.example}
+                            Example: {activeFlashcard.example}
                         </p>
                     </CardContent>
                     <CardFooter className="flex justify-between p-2 absolute bottom-0 left-0 right-0">
                         <Button onClick={(e) => {
                             e.stopPropagation();
-                            onAnswer(false);
+                            handleAnswer(false);
                         }} variant="destructive">
                             <XCircle className="mr-2 h-4 w-4"/> Incorrect
                         </Button>
                         <Button onClick={(e) => {
                             e.stopPropagation();
-                            onAskQuestion();
+                            handleAskQuestion();
                         }} variant="secondary">
                             <MessageSquare className="mr-2 h-4 w-4"/> Ask a Question
                         </Button>
                         <Button onClick={(e) => {
                             e.stopPropagation();
-                            onAnswer(true);
+                            handleAnswer(true);
                         }} variant="default" className="bg-primary hover:bg-green-700">
                             <CheckCircle className="mr-2 h-4 w-4"/> Correct
                         </Button>
