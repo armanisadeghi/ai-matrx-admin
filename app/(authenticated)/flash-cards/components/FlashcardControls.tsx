@@ -11,7 +11,6 @@ import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard
 const FlashcardControls: React.FC = () => {
     const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-
     const {
         allFlashcards,
         currentIndex,
@@ -24,6 +23,7 @@ const FlashcardControls: React.FC = () => {
         showModal,
         setFontSize,
     } = useFlashcard();
+
     const handleConfusedClick = useCallback(() => {
         setIsAudioModalOpen(true);
     }, []);

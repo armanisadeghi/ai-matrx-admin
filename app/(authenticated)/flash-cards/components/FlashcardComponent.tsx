@@ -22,35 +22,14 @@ const FlashcardComponent: React.FC = () => {
     const {
         allFlashcards,
         currentIndex,
-        activeFlashcard,
-        firstName,
-        isFlipped,
-        fontSize,
         editingCard,
         isModalOpen,
         modalMessage,
         modalDefaultTab,
-        isExpandedChatOpen,
-        handleFlip,
-        handleNext,
-        handlePrevious,
-        handleSelectChange,
-        shuffleCards,
-        handleAnswer,
-        handleEditCard,
         handleSaveEdit,
-        showModal,
-        handleAskQuestion,
-        setFontSize,
         setIsModalOpen,
-        setIsExpandedChatOpen,
         setEditingCard,
         handleAction,
-        handleAddMessage,
-        handleClearChat,
-        handleResetAllChats,
-        handleDeleteFlashcard,
-        handleAddFlashcard,
     } = useFlashcard();
 
 
@@ -78,7 +57,6 @@ const FlashcardComponent: React.FC = () => {
             <div className="mt-4">
                 <Progress value={((currentIndex + 1) / allFlashcards.length) * 100} className="w-full"/>
             </div>
-
 
             <Suspense fallback={<LargeComponentLoading/>}>
                 <MatrxTable

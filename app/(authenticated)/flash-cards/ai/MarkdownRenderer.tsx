@@ -10,7 +10,7 @@ interface MarkdownRendererProps {
     type: 'flashcard' | 'message';
     fontSize?: number;
     role?: 'user' | 'assistant';
-    className?: string; // Add className prop for styling
+    className?: string;
 }
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, fontSize = 16, role = 'assistant', className }) => {
@@ -42,7 +42,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
                     ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100'
                     : 'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100'
             }`,
-        className // Merge with additional styles if provided
+        className
     );
 
     return (
