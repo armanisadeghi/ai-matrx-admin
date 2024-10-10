@@ -93,3 +93,79 @@ export function ensureId<T extends DataWithOptionalId | DataWithOptionalId[]>(in
 }
 
 
+
+// 1. Get the pretty name for the table
+export function getPrettyNameForTable(tableName: string): string | undefined {
+    const schema = getSchema(tableName);
+    return schema?.name.pretty;
+}
+
+// 2. Get all non-FK/IFK fields with their frontend names, types, and pretty names
+export function getNonFkFields(tableName: string): Array<{ name: string; pretty: string; type: string }> {
+    const schema = getSchema(tableName);
+    if (!schema) return [];
+
+    return Object.entries(schema.fields)
+        .filter(([_, field]) => field.structure.structure === 'simple')
+        .map(([fieldName, field]) => ({
+            name: field.alts.frontend,
+            pretty: field.alts.pretty,
+            type: field.type
+        }));
+}
+
+// 3. Get a list of foreign keys
+export function getForeignKeys(tableName: string): Array<{ name: string; pretty: string; type: string }> {
+    const schema = getSchema(tableName);
+    if (!schema) return [];
+
+    return Object.entries(schema.fields)
+        .filter(([_, field]) => field.structure.structure === 'foreignKey')
+        .map(([fieldName, field]) => ({
+            name: field.alts.frontend,
+            pretty: field.alts.pretty,
+            type: field.type
+        }));
+}
+
+// 4. Get a list of inverse foreign keys
+export function getInverseForeignKeys(tableName: string): Array<{ name: string; pretty: string; type: string }> {
+    const schema = getSchema(tableName);
+    if (!schema) return [];
+
+    return Object.entries(schema.fields)
+        .filter(([_, field]) => field.structure.structure === 'inverseForeignKey')
+        .map(([fieldName, field]) => ({
+            name: field.alts.frontend,
+            pretty: field.alts.pretty,
+            type: field.type
+        }));
+}
+
+// 5. Get a list of both FK and IFK fields
+export function getAllKeys(tableName: string): Array<{ name: string; pretty: string; type: string; structure: string }> {
+    const schema = getSchema(tableName);
+    if (!schema) return [];
+
+    return Object.entries(schema.fields)
+        .filter(([_, field]) => field.structure.structure === 'foreignKey' || field.structure.structure === 'inverseForeignKey')
+        .map(([fieldName, field]) => ({
+            name: field.alts.frontend,
+            pretty: field.alts.pretty,
+            type: field.type,
+            structure: field.structure.structure
+        }));
+}
+
+// 6. Get a list of all fields, specifying which are simple, FK, or IFK
+export function getAllFields(tableName: string): Array<{ name: string; pretty: string; type: string; structure: string }> {
+    const schema = getSchema(tableName);
+    if (!schema) return [];
+
+    return Object.entries(schema.fields).map(([fieldName, field]) => ({
+        name: field.alts.frontend,
+        pretty: field.alts.pretty,
+        type: field.type,
+        structure: field.structure.structure
+    }));
+}

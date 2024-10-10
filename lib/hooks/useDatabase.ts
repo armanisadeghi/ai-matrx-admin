@@ -4,6 +4,16 @@ import { useState, useCallback, useEffect } from 'react';
 import { QueryOptions, databaseApi, TableOrView } from "@/utils/supabase/api-wrapper";
 import { TableData } from '@/types/tableTypes';
 import { FlexibleId, flexibleIdToString, isValidFlexibleId } from '@/types/FlexibleId';
+import {
+    getPrettyNameForTable,
+    getNonFkFields,
+    getForeignKeys,
+    getInverseForeignKeys,
+    getAllKeys,
+    getAllFields,
+    generateJsonTemplate,
+    ensureId
+} from "@/utils/schema/schemaUtils";
 
 interface PaginationInfo {
     currentPage: number;
@@ -27,7 +37,16 @@ interface useDatabaseResult<T> {
     unsubscribeFromChanges: (name: TableOrView) => void; // Updated this line
 }
 
-function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView): useDatabaseResult<T> {
+function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView): useDatabaseResult<T> & {
+    getPrettyNameForTable: typeof getPrettyNameForTable;
+    getNonFkFields: typeof getNonFkFields;
+    getForeignKeys: typeof getForeignKeys;
+    getInverseForeignKeys: typeof getInverseForeignKeys;
+    getAllKeys: typeof getAllKeys;
+    getAllFields: typeof getAllFields;
+    generateJsonTemplate: typeof generateJsonTemplate;
+    ensureId: typeof ensureId;
+} {
     const [data, setData] = useState<T[] | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
@@ -164,6 +183,15 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         executeQuery,
         subscribeToChanges,
         unsubscribeFromChanges,
+        // Schema utilities
+        getPrettyNameForTable,
+        getNonFkFields,
+        getForeignKeys,
+        getInverseForeignKeys,
+        getAllKeys,
+        getAllFields,
+        generateJsonTemplate,
+        ensureId
     };
 }
 

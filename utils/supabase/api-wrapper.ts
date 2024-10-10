@@ -136,14 +136,9 @@ class DatabaseApiWrapper {
         const dbName = this.getDatabaseTableName(name);
         const schema = getSchema(name, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', name);
-        console.log("create method....");
-        console.log('DB Name', dbName);
-        console.log('dbData', dbData);
         const response = processDataForInsert(dbName, dbData);
         const processedData = response.processedData;
         const requiredMethod = response.callMethod;
-        console.log('processMethod', requiredMethod);
-        console.log('processedData', processedData);
 
         let result;
 
