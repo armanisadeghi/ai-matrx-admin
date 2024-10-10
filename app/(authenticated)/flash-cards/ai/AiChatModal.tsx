@@ -10,7 +10,7 @@ import {ArrowUp} from 'lucide-react';
 import {useAiChat} from '../hooks/useAiChat';
 import {addMessage} from '@/lib/redux/slices/flashcardChatSlice';
 import {selectActiveFlashcard, selectActiveFlashcardChat} from '@/lib/redux/selectors/flashcardSelectors';
-import MarkdownMessageRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownMessageRenderer";
+import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
 
 interface AiChatModalProps {
     isOpen: boolean;
@@ -60,7 +60,7 @@ const AiChatModal: React.FC<AiChatModalProps> = ({isOpen, onClose, firstName}) =
     };
 
     const renderMessage = (content: string, role: any) => (
-        <MarkdownMessageRenderer content={content} role={role} />
+        <MarkdownRenderer content={content} type="message" role={role} />
     );
 
     return (

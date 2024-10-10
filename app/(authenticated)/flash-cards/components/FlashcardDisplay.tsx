@@ -4,6 +4,7 @@ import {Card, CardContent, CardFooter} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {CheckCircle, XCircle, MessageSquare} from 'lucide-react';
 import {selectActiveFlashcard} from '@/lib/redux/selectors/flashcardSelectors';
+import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
 
 interface FlashcardDisplayProps {
     isFlipped: boolean;
@@ -53,11 +54,8 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
                 {/* Back of card */}
                 <Card
                     className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
-                    <CardContent
-                        className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)]">
-                        <p className="text-left mb-4 text-white" style={{fontSize: `${fontSize}px`}}
-                            dangerouslySetInnerHTML={formatBackContent(card.back)}>
-                        </p>
+                    <CardContent className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)]">
+                        <MarkdownRenderer content={card.back} type="flashcard" fontSize={fontSize} />
                         <div className="w-full border-t border-zinc-700 my-2"></div>
                         <p className="text-left text-blue-400" style={{fontSize: `${fontSize}px`}}>
                             Example: {card.example}

@@ -61,7 +61,7 @@ const PerformanceChart: React.FC = () => {
     };
 
     return (
-        <Card className="w-full h-full flex flex-col hover:scale-105 transition-transform shadow-lg">
+        <Card className="w-full h-full flex flex-col hover:scale-105 transition-transform shadow-lg from-zinc-800 via-zinc-900 to-black">
             <ChartStyle id="flashcard-pie" config={chartConfig} />
             <CardHeader>
                 <CardTitle>Performance</CardTitle>
