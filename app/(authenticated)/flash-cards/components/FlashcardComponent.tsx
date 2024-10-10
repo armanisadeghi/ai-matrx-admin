@@ -86,7 +86,6 @@ const FlashcardComponent: React.FC = () => {
                     onShuffle={shuffleCards}
                     onShowModal={showModal}
                     onSelectChange={handleSelectChange}
-                    firstName={firstName}
                 />
             </Suspense>
 
@@ -94,12 +93,6 @@ const FlashcardComponent: React.FC = () => {
                 <Progress value={((currentIndex + 1) / allFlashcards.length) * 100} className="w-full"/>
             </div>
 
-            <div className="mt-4 flex items-center space-x-2">
-                <span>Font Size:</span>
-                <Button onClick={() => setFontSize(prev => Math.max(12, prev - 2))} variant="outline">-</Button>
-                <span>{fontSize}px</span>
-                <Button onClick={() => setFontSize(prev => Math.min(36, prev + 2))} variant="outline">+</Button>
-            </div>
 
             <Suspense fallback={<LargeComponentLoading />}>
                 <MatrxTable

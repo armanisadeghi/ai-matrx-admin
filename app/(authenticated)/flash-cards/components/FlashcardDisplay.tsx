@@ -22,10 +22,16 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
         onAskQuestion
     }) => {
     const card = useSelector(selectActiveFlashcard);
+    const frontFontSize = fontSize + 10;
 
     if (!card) {
         return <div>No card data available</div>;
     }
+
+    // Helper function to format the card's back content with line breaks
+    const formatBackContent = (text: string) => {
+        return { __html: text.replace(/\n/g, '<br>') };
+    };
 
     return (
         <div className="w-full min-h-[400px] lg:h-full [perspective:1000px]">
@@ -39,7 +45,7 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
                 <Card
                     className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
                     <CardContent className="flex-grow flex items-center justify-center p-6 overflow-auto h-full">
-                        <p className="text-center text-white" style={{fontSize: `${fontSize}px`}}>
+                        <p className="text-center text-white" style={{fontSize: `${frontFontSize}px`}}>
                             {card.front}
                         </p>
                     </CardContent>
@@ -49,8 +55,8 @@ const FlashcardDisplay: React.FC<FlashcardDisplayProps> = (
                     className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
                     <CardContent
                         className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)]">
-                        <p className="text-left mb-4 text-white" style={{fontSize: `${fontSize}px`}}>
-                            {card.back}
+                        <p className="text-left mb-4 text-white" style={{fontSize: `${fontSize}px`}}
+                            dangerouslySetInnerHTML={formatBackContent(card.back)}>
                         </p>
                         <div className="w-full border-t border-zinc-700 my-2"></div>
                         <p className="text-left text-blue-400" style={{fontSize: `${fontSize}px`}}>

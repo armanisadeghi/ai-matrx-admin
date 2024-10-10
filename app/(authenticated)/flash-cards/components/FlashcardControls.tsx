@@ -1,56 +1,54 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Shuffle } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AiAssistModalTab } from '@/types/flashcards.types';
+import React, {useState, useCallback} from 'react';
+import {useSelector} from 'react-redux';
+import {Button} from "@/components/ui/button";
+import {ArrowLeft, ArrowRight, Minus, Plus, Shuffle} from 'lucide-react';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {AiAssistModalTab} from '@/types/flashcards.types';
 import AudioModal from '../audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
-import { selectAllFlashcards, selectCurrentIndex, selectActiveFlashcard } from '@/lib/redux/selectors/flashcardSelectors';
+import {selectAllFlashcards, selectCurrentIndex, selectActiveFlashcard} from '@/lib/redux/selectors/flashcardSelectors';
+import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
-interface FlashcardControlsProps {
-    onPrevious: () => void;
-    onNext: () => void;
-    onShuffle: () => void;
-    onShowModal: (message: AiAssistModalTab) => void;
-    onSelectChange: (value: string) => void;
-    firstName: string;
-}
-
-const FlashcardControls: React.FC<FlashcardControlsProps> = ({
-                                                                 onPrevious,
-                                                                 onNext,
-                                                                 onShuffle,
-                                                                 onShowModal,
-                                                                 onSelectChange,
-                                                                 firstName,
-                                                             }) => {
+const FlashcardControls: React.FC = () => {
     const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-    const allFlashcards = useSelector(selectAllFlashcards);
-    const currentIndex = useSelector(selectCurrentIndex);
     const currentCard = useSelector(selectActiveFlashcard);
-
+    const {
+        allFlashcards,
+        currentIndex,
+        firstName,
+        fontSize,
+        handleNext,
+        handlePrevious,
+        handleSelectChange,
+        shuffleCards,
+        showModal,
+        setFontSize,
+    } = useFlashcard();
     const handleConfusedClick = useCallback(() => {
         setIsAudioModalOpen(true);
     }, []);
 
+
     return (
         <div className="w-full flex flex-col space-y-4">
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                <Button onClick={onPrevious} variant="outline" className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                <Button onClick={handlePrevious} variant="outline"
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
                     <ArrowLeft className="mr-2 h-4 w-4"/> Previous
                 </Button>
-                <Button onClick={onNext} variant="outline" className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                <Button onClick={handleNext} variant="outline"
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
                     Next <ArrowRight className="ml-2 h-4 w-4"/>
                 </Button>
-                <Button onClick={onShuffle} variant="outline" className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
+                <Button onClick={shuffleCards} variant="outline"
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
                     <Shuffle className="mr-2 h-4 w-4"/> Shuffle
                 </Button>
-                <Select onValueChange={onSelectChange} value={currentIndex.toString()}>
+                <Select onValueChange={handleSelectChange} value={currentIndex.toString()}>
                     <SelectTrigger className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform">
                         <SelectValue placeholder="Select a flashcard"/>
                     </SelectTrigger>
@@ -64,46 +62,65 @@ const FlashcardControls: React.FC<FlashcardControlsProps> = ({
                 </Select>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
                 <Button
                     onClick={handleConfusedClick}
                     variant="outline"
-                    className="w-full hover:scale-105 transition-transform"
+                    className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     I'm confused
                 </Button>
                 <Button
-                    onClick={() => onShowModal('example')}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform"
-                >
-                    Give me an example
-                </Button>
-                <Button
                     onClick={() => setIsAiModalOpen(true)}
                     variant="outline"
-                    className="w-full hover:scale-105 transition-transform"
+                    className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     I have a question
                 </Button>
                 <Button
-                    onClick={() => onShowModal('split')}
+                    onClick={() => showModal('example')}
                     variant="outline"
-                    className="w-full hover:scale-105 transition-transform"
+                    className="w-full hover:scale-105 transition-transform bg-card"
                 >
-                    Split into two cards
+                    Give me an example
+                </Button>
+                <div className="flex items-center justify-between w-full px-3 py-1 rounded-md border bg-card hover:scale-105 transition-transform">
+                    <Button
+                        onClick={() => setFontSize(prev => Math.max(18, prev - 2))}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 p-0"
+                    >
+                        <Minus className="h-4 w-4"/>
+                    </Button>
+                    <span className="text-sm whitespace-nowrap">Font Size</span>
+                    <Button
+                        onClick={() => setFontSize(prev => Math.min(36, prev + 2))}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 p-0"
+                    >
+                        <Plus className="h-4 w-4"/>
+                    </Button>
+                </div>
+                <Button
+                    onClick={() => showModal('split')}
+                    variant="outline"
+                    className="w-full hover:scale-105 transition-transform bg-card"
+                >
+                    Split cards
                 </Button>
                 <Button
-                    onClick={() => onShowModal('combine')}
+                    onClick={() => showModal('combine')}
                     variant="outline"
-                    className="w-full hover:scale-105 transition-transform"
+                    className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     Combine cards
                 </Button>
                 <Button
-                    onClick={() => onShowModal('compare')}
+                    onClick={() => showModal('compare')}
                     variant="outline"
-                    className="w-full hover:scale-105 transition-transform"
+                    className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     Compare Cards
                 </Button>
