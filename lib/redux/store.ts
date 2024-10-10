@@ -73,7 +73,7 @@ export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {
             getDefaultMiddleware({ serializableCheck: false }).concat(sagaMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
-    sagaMiddleware.run(rootSaga);
+    // sagaMiddleware.run(rootSaga);
 };
 
 export type AppStore = ReturnType<typeof makeStore>;

@@ -15,13 +15,16 @@ export function useUnsplashGallery() {
     const [relatedPhotos, setRelatedPhotos] = useState([])
     const [favorites, setFavorites] = useState([])
 
-    const searchPhotos = useCallback(async (searchQuery: string, pageNum: number) => {
+    const searchPhotos = useCallback(async (searchQuery: string, pageNum: number, options = {}) => {
         setLoading(true)
+        console.log(`Searching for: "${searchQuery}" with options:`, options)
         const result = await unsplash.search.getPhotos({
             query: searchQuery || 'nature',
             page: pageNum,
             perPage: 15,
+            ...options
         })
+        console.log('Search result:', result)
         if (result.type === 'success') {
             if (pageNum === 1) {
                 setPhotos(result.response.results)
@@ -29,18 +32,30 @@ export function useUnsplashGallery() {
                 setPhotos(prev => [...prev, ...result.response.results])
             }
             setHasMore(result.response.results.length > 0)
+        } else {
+            console.error('Search failed:', result.errors)
         }
         setLoading(false)
     }, [])
 
     useEffect(() => {
+        if (query) {
         searchPhotos(query, 1)
+        }
     }, [query, searchPhotos])
 
     const handleSearch = (newQuery: string) => {
+        console.log(`handleSearch called with query: "${newQuery}"`)
         setQuery(newQuery)
         setPage(1)
     }
+
+    const handleAdvancedSearch = useCallback((newQuery: string, options = {}) => {
+        console.log(`handleAdvancedSearch called with query: "${newQuery}" and options:`, options)
+        setQuery(newQuery)
+        setPage(1)
+        searchPhotos(newQuery, 1, options)
+    }, [searchPhotos])
 
     const loadMore = useCallback(() => {
         if (!loading && hasMore) {
@@ -93,6 +108,7 @@ export function useUnsplashGallery() {
         relatedPhotos,
         favorites,
         handleSearch,
+        handleAdvancedSearch,
         loadMore,
         handlePhotoClick,
         closePhotoView,

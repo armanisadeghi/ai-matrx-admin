@@ -29,6 +29,7 @@ yarn-error.log*
 # vercel
 .vercel
 
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -52,7 +53,6 @@ _armani/
 -armani/
 _dev/
 temp/
-data/
 
 .env
 .env.local

@@ -93,21 +93,21 @@ const AiVoicePage: React.FC = () => {
     return (
         <div className="container mx-auto py-8 bg-background text-foreground">
             <h1 className="text-4xl font-bold mb-6">Cartesia Voice Testing</h1>
-            <Tabs defaultValue="actions" className="w-full">
+            <Tabs defaultValue="voices" className="w-full">
                 <TabsList className="mb-6">
-                    <TabsTrigger value="actions">Voice Actions</TabsTrigger>
                     <TabsTrigger value="voices">Available Voices</TabsTrigger>
+                    <TabsTrigger value="actions">Voice Actions</TabsTrigger>
                 </TabsList>
-                <TabsContent value="actions">
-                    <div className="bg-card rounded-lg shadow-lg p-6">
-                        <h2 className="text-2xl font-semibold mb-4">Voice Actions</h2>
-                        <VoiceActions />
-                    </div>
-                </TabsContent>
                 <TabsContent value="voices">
                     <div className="bg-card rounded-lg shadow-lg p-6">
                         <h2 className="text-2xl font-semibold mb-4">Available Voices</h2>
                         <VoicesList />
+                    </div>
+                </TabsContent>
+                <TabsContent value="actions">
+                    <div className="bg-card rounded-lg shadow-lg p-6">
+                        <h2 className="text-2xl font-semibold mb-4">Voice Actions</h2>
+                        <VoiceActions />
                     </div>
                 </TabsContent>
             </Tabs>
