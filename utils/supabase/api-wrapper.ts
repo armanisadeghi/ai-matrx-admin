@@ -1,3 +1,5 @@
+// utils/supabase/api-wrapper.ts
+
 import { SupabaseClient } from '@supabase/supabase-js';
 import {
     convertData,
@@ -302,7 +304,6 @@ class DatabaseApiWrapper {
         this.subscriptions.clear();
     }
 
-
     // Helper method to convert any data to frontend format
     convertToFrontendFormat<T extends TableOrView>(name: T, data: any): any {
         if (Array.isArray(data)) {
@@ -310,120 +311,6 @@ class DatabaseApiWrapper {
         } else {
             return this.convertResponse(data, name);
         }
-    }
-
-    private async insertSimpleBackup(dbName: string, processedData: any): Promise<any> {
-        const { data: result, error } = await this.client.from(dbName).insert(processedData).select().single();
-        if (error) throw error;
-        return result;
-    }
-
-    private async insertOneFkBackup(dbName: string, processedData: any): Promise<any> {
-        // Assuming processedData already contains the foreign key value
-        const { data: result, error } = await this.client.from(dbName).insert(processedData).select().single();
-        if (error) throw error;
-        return result;
-    }
-
-    private async insertOneIfkBackup(dbName: string, processedData: any): Promise<any> {
-        // First insert into the main table
-        const { data: primaryResult, error: primaryError } = await this.client
-            .from(dbName)
-            .insert(processedData)
-            .select()
-            .single();
-
-        if (primaryError) throw primaryError;
-
-        // Now insert into the related table using primaryResult.id
-        const relatedData = { ...processedData.related, related_column: primaryResult.id };
-        const { data: relatedResult, error: relatedError } = await this.client
-            .from('related_table')
-            .insert(relatedData)
-            .select()
-            .single();
-
-        if (relatedError) throw relatedError;
-        return relatedResult;
-    }
-
-    private async insertOneFkOneIfkBackup(dbName: string, processedData: any): Promise<any> {
-        // Insert into the main table with the foreign key value
-        const { data: primaryResult, error: primaryError } = await this.client
-            .from(dbName)
-            .insert(processedData)
-            .select()
-            .single();
-
-        if (primaryError) throw primaryError;
-
-        // Use the newly inserted primaryResult.id as the foreign key for the related table
-        const relatedData = { ...processedData.related, related_column: primaryResult.id };
-        const { data: relatedResult, error: relatedError } = await this.client
-            .from('related_table')
-            .insert(relatedData)
-            .select()
-            .single();
-
-        if (relatedError) throw relatedError;
-        return relatedResult;
-    }
-
-    private async insertManyFkBackup(dbName: string, processedData: any): Promise<any> {
-        // Assuming processedData contains all necessary foreign key values
-        const { data: result, error } = await this.client.from(dbName).insert(processedData).select().single();
-        if (error) throw error;
-        return result;
-    }
-
-    private async insertManyIfkBackup(dbName: string, processedData: any): Promise<any> {
-        // Insert into the main table
-        const { data: primaryResult, error: primaryError } = await this.client
-            .from(dbName)
-            .insert(processedData)
-            .select()
-            .single();
-
-        if (primaryError) throw primaryError;
-
-        // Loop through inverse FKs and insert into related tables
-        for (const relatedData of processedData.relatedTables) {
-            const relatedInsertData = { ...relatedData, related_column: primaryResult.id };
-            const { error: relatedError } = await this.client
-                .from(relatedData.table)
-                .insert(relatedInsertData)
-                .select()
-                .single();
-
-            if (relatedError) throw relatedError;
-        }
-
-        return primaryResult;
-    }
-
-    private async insertManyFkIfkBackup(dbName: string, processedData: any): Promise<any> {
-        // Insert into the main table with the FKs
-        const { data: primaryResult, error: primaryError } = await this.client
-            .from(dbName)
-            .insert(processedData)
-            .select()
-            .single();
-
-        if (primaryError) throw primaryError;
-
-        // Loop through inverse FKs and insert into related tables
-        for (const relatedData of processedData.relatedTables) {
-            const relatedInsertData = { ...relatedData, related_column: primaryResult.id };
-            const { error: relatedError } = await this.client
-                .from(relatedData.table)
-                .insert(relatedInsertData)
-                .select()
-                .single();
-
-            if (relatedError) throw relatedError;
-        }
-
-        return primaryResult;
     }
 }
 
