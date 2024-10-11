@@ -7,10 +7,26 @@ import {Icon} from "@iconify/react";
 import {cn} from "./cn";
 
 import PromptInput from "./prompt-input";
-import {ideasData} from "@/components/playground/data";
 
 export default function Component() {
-    const ideas = ideasData
+    const ideas = [
+        {
+            title: "Create a blog post about NextUI",
+            description: "explain it in simple terms",
+        },
+        {
+            title: "Give me 10 ideas for my next blog post",
+            description: "include only the best ideas",
+        },
+        {
+            title: "Compare NextUI with other UI libraries",
+            description: "be as objective as possible",
+        },
+        {
+            title: "Write a text message to my friend",
+            description: "be polite and friendly",
+        },
+    ];
 
     const [prompt, setPrompt] = React.useState<string>("");
 

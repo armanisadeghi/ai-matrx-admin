@@ -99,6 +99,10 @@ export function ImageViewer({
         });
     };
 
+    const getShareableImageUrl = (photo: any) => {
+        return photo.urls.full || photo.urls.raw || photo.urls.regular;
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -231,7 +235,11 @@ export function ImageViewer({
 
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button variant="outline" size="icon" onClick={() => onShare(photos[imageIndex])}>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => onShare(getShareableImageUrl(photos[imageIndex]))}
+                                        >
                                             <Share2 className="h-4 w-4" />
                                         </Button>
                                     </TooltipTrigger>

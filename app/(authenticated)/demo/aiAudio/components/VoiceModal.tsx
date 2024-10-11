@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 
 import ImageLoader from './ImageLoader';
 import { useUnsplashGallery } from '../../images/hooks/useUnsplashGallery';
+import { voiceImages, defaultVoiceImage } from '../data/voiceImages';
 
 interface VoiceModalProps {
     voice: any;
@@ -27,30 +28,40 @@ const VoiceModal: React.FC<VoiceModalProps> = ({ voice, onClose }) => {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
 
     useEffect(() => {
-        if (voice && voice.name) {
-            console.log(`Searching for voice image: "${voice.name}"`)
+        if (voice && voice.id) {
+            console.log('Voice ID:', voice.id);
+            console.log('Predefined image:', voiceImages[voice.id]);
+
+            if (voiceImages[voice.id]) {
+                console.log('Using predefined image');
+                setImageUrl(voiceImages[voice.id]);
+            } else {
+                console.log('Falling back to Unsplash search');
             handleAdvancedSearch(`${voice.name} person`, { orientation: 'landscape' });
+        }
         }
     }, [voice, handleAdvancedSearch]);
 
     useEffect(() => {
-        console.log('Photos updated:', photos)
-        if (photos.length > 0) {
+        if (!voiceImages[voice.id] && photos.length > 0) {
+            console.log('Setting image from Unsplash search');
             setImageUrl(photos[0].urls.regular);
         }
-    }, [photos]);
+    }, [photos, voice]);
 
     if (!voice) return null;
+
+    const displayImage = imageUrl || defaultVoiceImage;
+    console.log('Final display image:', displayImage);
 
     return (
         <Credenza open={!!voice} onOpenChange={onClose}>
             <CredenzaContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <div className="relative">
                     <Suspense fallback={<ImageLoader />}>
-                        {imageUrl && (
                             <div className="relative h-[200px] w-full">
                                 <Image
-                                    src={imageUrl}
+                                src={displayImage}
                                     alt={`AI Voice Illustration for ${voice.name}`}
                                     fill
                                     style={{ objectFit: 'cover' }}
@@ -58,7 +69,6 @@ const VoiceModal: React.FC<VoiceModalProps> = ({ voice, onClose }) => {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background opacity-90" />
                             </div>
-                        )}
                     </Suspense>
                     <div className="absolute bottom-4 left-4 right-4 text-foreground">
                         <h2 className="text-2xl font-bold">{voice.name}</h2>

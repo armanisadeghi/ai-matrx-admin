@@ -1,9 +1,28 @@
 import React from "react";
+
+import {userMessages, assistantMessages} from "./messages";
+
 import MessageCard from "./message-card";
-import {messagesDemo} from "@/components/playground/data";
 
 export default function Component() {
-    const messages = messagesDemo
+    const messages = [
+        {
+            role: "user",
+            message: userMessages[0],
+        },
+        {
+            role: "assistant",
+            message: assistantMessages[0],
+        },
+        {
+            role: "user",
+            message: userMessages[1],
+        },
+        {
+            role: "assistant",
+            message: assistantMessages[1],
+        },
+    ];
 
     return (
         <div className="flex flex-col gap-4 px-1">
