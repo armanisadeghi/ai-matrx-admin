@@ -2,6 +2,7 @@
 
 import { useTTS } from '@cartesia/cartesia-js/react';
 import {useState} from "react";
+import {indianMan} from "@/app/(authenticated)/flash-cards/audio/audioOptions";
 
 function TextToSpeech() {
     const tts = useTTS({
@@ -17,7 +18,8 @@ function TextToSpeech() {
             model_id: "sonic-english",
             voice: {
                 mode: "id",
-                id: "bd9120b6-7761-47a6-a446-77ca49132781",
+                // id: "bd9120b6-7761-47a6-a446-77ca49132781",
+                id: indianMan,
             },
             transcript: text,
         });

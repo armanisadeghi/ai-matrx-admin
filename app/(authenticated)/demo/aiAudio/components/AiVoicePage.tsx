@@ -5,6 +5,7 @@ import { aiAudioInitialState } from '../aiVoiceModuleConfig';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VoicesList from './VoicesList';
 import VoiceActions from './VoiceActions';
+import VoicePlayground from './VoicePlayground';
 import { createUseModuleHook } from "@/lib/hooks/useModule";
 import { AiAudioSchema } from "@/types/aiAudioTypes";
 
@@ -97,6 +98,7 @@ const AiVoicePage: React.FC = () => {
                 <TabsList className="mb-6">
                     <TabsTrigger value="voices">Available Voices</TabsTrigger>
                     <TabsTrigger value="actions">Voice Actions</TabsTrigger>
+                    <TabsTrigger value="playground">Voice Playground</TabsTrigger>
                 </TabsList>
                 <TabsContent value="voices">
                     <div className="bg-card rounded-lg shadow-lg p-6">
@@ -108,6 +110,12 @@ const AiVoicePage: React.FC = () => {
                     <div className="bg-card rounded-lg shadow-lg p-6">
                         <h2 className="text-2xl font-semibold mb-4">Voice Actions</h2>
                         <VoiceActions />
+                    </div>
+                </TabsContent>
+                <TabsContent value="playground">
+                    <div className="bg-card rounded-lg shadow-lg p-6">
+                        <h2 className="text-2xl font-semibold mb-4">Voice Playground</h2>
+                        <VoicePlayground />
                     </div>
                 </TabsContent>
             </Tabs>

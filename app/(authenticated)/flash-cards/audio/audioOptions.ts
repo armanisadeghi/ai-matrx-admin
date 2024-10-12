@@ -11,7 +11,6 @@ enum VoiceSpeed {
     NORMAL = "normal",
     FAST = "fast",
     FASTEST = "fastest",
-    CUSTOM = "double", // Representing double as a string for specific values
 }
 
 // Enum for Audio Encodings
@@ -151,3 +150,13 @@ const sampleStreamingPartsUnknownEnd = [
     {"transcript": "", "continue": false, "context_id": "happy-monkeys-fly"},
 ]
 
+
+export const indianMan = "638efaaa-4d0c-442e-b701-3fae16aad012"
+
+export const princess = "8f091740-3df1-4795-8bd9-dc62d88e5131"
+
+export const californiaGirl = "b7d50908-b17c-442d-ad8d-810c63997ed9"
+
+export const frenchNarratorLady = "8832a0b5-47b2-4751-bb22-6a8e2149303d"
+
+export const teacherLady = "573e3144-a684-4e72-ac2b-9b2063a50b53"
