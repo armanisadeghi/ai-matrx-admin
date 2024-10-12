@@ -1,6 +1,6 @@
 // File: lib/schemaRegistry.ts
 
-export type DataFormat = 'frontend' | 'backend' | 'database' |'pretty'| 'graphql' | 'restApi';
+export type DataFormat = 'frontend' | 'backend' | 'database' | 'component' |'pretty'| 'graphql' | 'restApi';
 export type schemaType = 'table' | 'view' | 'function' | 'procedure';
 
 
@@ -25,7 +25,9 @@ type DataType =
     | 'intersection'
     | 'literal'
     | 'void'
-    | 'never';
+    | 'never'
+    | 'stringArray'
+    | 'objectArray';
 
 export type ConversionFormat = 'single' | 'array' | 'object';
 export type StructureType = 'simple' | 'foreignKey' | 'inverseForeignKey';
