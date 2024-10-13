@@ -1,16 +1,41 @@
 // components/matrix/AnimatedForm/FormComponent.tsx
 'use client';
 
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/styles/themes/utils";
+import React, {useState, useRef, useEffect} from "react";
+import {motion, AnimatePresence} from "framer-motion";
+import {cn} from "@/styles/themes/utils";
 import AnimatedInput from "./AnimatedInput";
 import AnimatedTextarea from "./AnimatedTextarea";
 import AnimatedSelect from "./AnimatedSelect";
 import AnimatedCheckbox from "./AnimatedCheckbox";
 import AnimatedRadioGroup from "./AnimatedRadioGroup";
 import AnimatedButton from "./AnimatedButton";
-import { AnimatedFormProps, FormField } from "./types";
+import {FormFieldType} from "@/components/matrx/AnimatedForm/types";
+
+export interface FormField {
+    name: string;
+    label: string;
+    type: FormFieldType;
+    options?: string[];
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+}
+
+export interface FormState {
+    [key: string]: any;
+}
+
+export interface AnimatedFormProps {
+    fields: FormField[];
+    formState: FormState;
+    onUpdateField: (name: string, value: any) => void;
+    onSubmit: () => void;
+    currentStep?: number;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
+    isSinglePage?: boolean;
+}
 
 interface ExtendedAnimatedFormProps extends AnimatedFormProps {
     className?: string;
@@ -19,21 +44,22 @@ interface ExtendedAnimatedFormProps extends AnimatedFormProps {
     columns?: number | 'auto';
 }
 
-const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
-                                                               fields,
-                                                               formState,
-                                                               onUpdateField,
-                                                               onSubmit,
-                                                               currentStep: externalCurrentStep,
-                                                               onNextStep: externalOnNextStep,
-                                                               onPrevStep: externalOnPrevStep,
-                                                               isSinglePage = false,
-                                                               className,
-                                                               isFullPage = false,
-                                                               enableScroll = true,
-                                                               columns = 1,
-                                                               ...props
-                                                           }) => {
+const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = (
+    {
+        fields,
+        formState,
+        onUpdateField,
+        onSubmit,
+        currentStep: externalCurrentStep,
+        onNextStep: externalOnNextStep,
+        onPrevStep: externalOnPrevStep,
+        isSinglePage = false,
+        className,
+        isFullPage = false,
+        enableScroll = true,
+        columns = 1,
+        ...props
+    }) => {
     const [internalCurrentStep, setInternalCurrentStep] = useState(0);
     const currentStep = externalCurrentStep !== undefined ? externalCurrentStep : internalCurrentStep;
     const formRef = useRef<HTMLDivElement>(null);
@@ -99,7 +125,7 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
                     />
                 );
             case 'radio':
-                return <AnimatedRadioGroup {...commonProps} />;
+                return <AnimatedRadioGroup layout="vertical" {...commonProps} />;
             default:
                 return null;
         }
@@ -110,11 +136,16 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
             return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
         }
         switch (columns) {
-            case 1: return 'grid-cols-1';
-            case 2: return 'grid-cols-1 sm:grid-cols-2';
-            case 3: return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
-            case 4: return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
-            default: return 'grid-cols-1';
+            case 1:
+                return 'grid-cols-1';
+            case 2:
+                return 'grid-cols-1 sm:grid-cols-2';
+            case 3:
+                return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+            case 4:
+                return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+            default:
+                return 'grid-cols-1';
         }
     };
 
@@ -127,9 +158,9 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
                 isScrollable && enableScroll && "max-h-[65vh] overflow-y-auto",
                 className
             )}
-            initial={{ opacity: 0, scale: isFullPage ? 0.98 : 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            initial={{opacity: 0, scale: isFullPage ? 0.98 : 0.9}}
+            animate={{opacity: 1, scale: 1}}
+            transition={{duration: 0.5}}
             {...props}
         >
             <form onSubmit={(e) => {
@@ -142,9 +173,9 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
                             {fields.map((field, index) => (
                                 <motion.div
                                     key={field.name}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                                    initial={{opacity: 0, y: 20}}
+                                    animate={{opacity: 1, y: 0}}
+                                    transition={{delay: index * 0.1, duration: 0.3}}
                                 >
                                     {renderField(field)}
                                 </motion.div>
@@ -155,9 +186,9 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
                     <>
                         <motion.h2
                             className={cn("font-bold mb-4 text-foreground", isFullPage ? "text-3xl" : "text-2xl")}
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.5 }}
+                            initial={{opacity: 0, y: -20}}
+                            animate={{opacity: 1, y: 0}}
+                            transition={{delay: 0.2, duration: 0.5}}
                         >
                             {fields[currentStep].label}
                         </motion.h2>
@@ -165,10 +196,10 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentStep}
-                                initial={{ opacity: 0, x: 50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -50 }}
-                                transition={{ duration: 0.3 }}
+                                initial={{opacity: 0, x: 50}}
+                                animate={{opacity: 1, x: 0}}
+                                exit={{opacity: 0, x: -50}}
+                                transition={{duration: 0.3}}
                             >
                                 {renderField(fields[currentStep])}
                             </motion.div>
@@ -178,9 +209,9 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
 
                 <motion.div
                     className="flex justify-between mt-6"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
+                    initial={{opacity: 0, y: 20}}
+                    animate={{opacity: 1, y: 0}}
+                    transition={{delay: 0.3, duration: 0.5}}
                 >
                     {!isSinglePage && (
                         <AnimatedButton
@@ -213,9 +244,9 @@ const FlexAnimatedForm: React.FC<ExtendedAnimatedFormProps> = ({
             {!isSinglePage && (
                 <motion.div
                     className="mt-4 text-sm text-muted-foreground"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
+                    initial={{opacity: 0}}
+                    animate={{opacity: 1}}
+                    transition={{delay: 0.5, duration: 0.5}}
                 >
                     Step {currentStep + 1} of {fields.length}
                 </motion.div>

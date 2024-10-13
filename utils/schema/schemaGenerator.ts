@@ -14,6 +14,9 @@ type TableField = {
         database: string;
         db_p: string;
         pretty: string;
+        component: string;
+        kebab: string;
+
     };
     type: string;
     format: string;

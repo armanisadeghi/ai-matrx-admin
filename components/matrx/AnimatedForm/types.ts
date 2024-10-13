@@ -41,9 +41,9 @@ export interface AnimatedFormProps {
     formState: FormState;
     onUpdateField: (name: string, value: any) => void;
     onSubmit: () => void;
-    currentStep: number;
-    onNextStep: () => void;
-    onPrevStep: () => void;
+    currentStep?: number;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
     isSinglePage?: boolean;
 }
 

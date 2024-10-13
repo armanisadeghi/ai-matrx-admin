@@ -15,7 +15,7 @@ const formFields: FormField[] = [
     { name: 'country', label: 'Country', type: 'select', options: ['USA', 'Canada', 'UK', 'Australia'], required: true },
     { name: 'bio', label: 'Bio', type: 'textarea' },
     { name: 'newsletter', label: 'Subscribe to newsletter', type: 'checkbox' },
-    { name: 'gender', label: 'Gender', type: 'radio', options: ['Male', 'Female', 'Other'], required: true },
+    { name: 'gender', label: 'Gender', type: 'radio', options: ['Male', 'Female', 'Other', "another", "More", 'One more long option'], required: true },
 ];
 
 const AnimatedFormModalPage: React.FC = () => {
