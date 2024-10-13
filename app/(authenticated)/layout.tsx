@@ -1,4 +1,4 @@
-// app/(authenticated)/layout.tsx
+// app/(authenticated)/DynamicLayout.tsx
 
 import { redirect } from 'next/navigation';
 import { createClient } from "@/utils/supabase/server";

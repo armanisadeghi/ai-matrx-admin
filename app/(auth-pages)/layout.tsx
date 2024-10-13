@@ -1,4 +1,4 @@
-// app/(auth-pages)/layout.tsx
+// app/(auth-pages)/DynamicLayout.tsx
 
 export default async function Layout(
     {

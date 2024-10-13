@@ -1,4 +1,4 @@
-// File location: app/meetings/layout.tsx
+// File location: app/meetings/DynamicLayout.tsx
 import {ReactNode} from "react";
 import type {Metadata} from "next";
 import {Inter} from "next/font/google";

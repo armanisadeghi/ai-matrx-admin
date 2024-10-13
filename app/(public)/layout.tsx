@@ -1,4 +1,4 @@
-// File Location: @app/(public)/layout.tsx
+// File Location: @app/(public)/DynamicLayout.tsx
 
 import React from 'react';
 import { PublicProviders } from './PublicProviders';

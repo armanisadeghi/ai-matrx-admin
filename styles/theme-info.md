@@ -5,7 +5,7 @@
 │   ├── /(public)
 │   ├── /api
 │   ├── /auth
-│   ├── layout.tsx
+│   ├── DynamicLayout.tsx
 │   ├── hold-hold-page.tsx  
 │   └── Providers.tsx
 ├── /components
