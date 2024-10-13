@@ -78,15 +78,6 @@ const FlashcardComponent: React.FC = () => {
                 defaultTab={modalDefaultTab}
                 message={modalMessage}
             />
-            {/*{activeFlashcard && (*/}
-            {/*    <ExpandedFlashcardWithChat*/}
-            {/*        isOpen={isExpandedChatOpen}*/}
-            {/*        onClose={() => setIsExpandedChatOpen(false)}*/}
-            {/*        cardId={activeFlashcard.id}*/}
-            {/*        firstName={firstName}*/}
-            {/*        fontSize={fontSize}*/}
-            {/*    />*/}
-            {/*)}*/}
         </div>
     );
 };
