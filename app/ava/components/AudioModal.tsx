@@ -28,7 +28,7 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
             setIsTextComplete(false);
             setStartTextAnimation(false);
 
-            // Delay the start of text animation by 2 seconds
+            // Delay the start of text animated-menu by 2 seconds
             const delayTimer = setTimeout(() => {
                 setStartTextAnimation(true);
             }, 1000);

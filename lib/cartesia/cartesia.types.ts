@@ -1,30 +1,35 @@
 // lib/cartesia/cartesia.types.ts
 
 
-import emittery__default from 'emittery';
-
-interface ClientOptions {
-    apiKey?: string | (() => Promise<string>);
-    baseUrl?: string;
-}
-export type Sentinel = null;
-export type Chunk = string | Sentinel;
-export type ConnectionEventData = {
-    open: never;
-    close: never;
-};
-export type VoiceSpecifier = {
-    mode?: "id";
-    id: string;
-} | {
-    mode?: "embedding";
-    embedding: number[];
-};
 export type Emotion = "anger" | "sadness" | "positivity" | "curiosity" | "surprise";
 
-export type Intensity = "lowest" | "low" | "high" | "highest";
+export enum EmotionName {
+    ANGER = "anger",
+    POSITIVITY = "positivity",
+    SURPRISE = "surprise",
+    SADNESS = "sadness",
+    CURIOSITY = "curiosity",
+}
+
+export type Intensity = "lowest" | "low" | "high" | "highest" | "";
+
+export enum EmotionLevel {
+    LOWEST = "lowest",
+    LOW = "low",
+    MEDIUM = "",
+    HIGH = "high",
+    HIGHEST = "highest",
+}
 
 export type EmotionControl = Emotion | `${Emotion}:${Intensity}`;
+
+export type VoiceSpecifier = {
+    mode?: "id",
+    id: string
+} | {
+    mode?: "embedding",
+    embedding: number[]
+}
 
 export type VoiceOptions = VoiceSpecifier & {
     __experimental_controls?: {
@@ -41,7 +46,6 @@ export enum VoiceSpeed {
     FASTEST = "fastest",
 }
 
-// Enum for Audio Encodings
 export enum AudioEncoding {
     PCM_S16LE = "pcm_s16le",
     PCM_F32LE = "pcm_f32le",
@@ -49,7 +53,6 @@ export enum AudioEncoding {
     PCM_ALAW = "pcm_alaw",
 }
 
-// Enum for Languages
 export enum Language {
     EN = "en",
     DE = "de",
@@ -68,159 +71,37 @@ export enum Language {
     TR = "tr",
 }
 
-// Enum for Emotion Names
-export enum EmotionName {
-    ANGER = "anger",
-    POSITIVITY = "positivity",
-    SURPRISE = "surprise",
-    SADNESS = "sadness",
-    CURIOSITY = "curiosity",
+export enum OutputContainer {
+    Raw = "raw",
+    Mp3 = "mp3",
+    Wave = "wave",
 }
 
-// Enum for Emotion Levels
-export enum EmotionLevel {
-    LOWEST = "lowest",
-    LOW = "low",
-    MEDIUM = "", // Medium level, as per the documentation, is represented by an empty string
-    HIGH = "high",
-    HIGHEST = "highest",
-}
-
-
-export type StreamRequest = {
-    model_id: string;
-    transcript: string;
-    voice: VoiceOptions;
-    output_format?: {
-        container: string;
-        encoding: string;
-        sample_rate: number;
-    };
-    context_id?: string;
-    continue?: boolean;
-    duration?: number;
-    language?: string;
-    add_timestamps?: boolean;
-};
-
-type StreamOptions = {
-    timeout?: number;
-};
-type WebSocketBaseResponse = {
-    context_id: string;
-    status_code: number;
-    done: boolean;
-};
-type WordTimestamps = {
-    words: string[];
-    start: number[];
-    end: number[];
-};
-type WebSocketTimestampsResponse = WebSocketBaseResponse & {
-    type: "timestamps";
-    word_timestamps: WordTimestamps;
-};
-type WebSocketChunkResponse = WebSocketBaseResponse & {
-    type: "chunk";
-    data: string;
-    step_time: number;
-};
-type WebSocketErrorResponse = WebSocketBaseResponse & {
-    type: "error";
-    error: string;
-};
-type WebSocketResponse = WebSocketTimestampsResponse | WebSocketChunkResponse | WebSocketErrorResponse;
-
-type EmitteryCallbacks<T> = {
-    on: emittery__default<T>["on"];
-    off: emittery__default<T>["off"];
-    once: emittery__default<T>["once"];
-    events: emittery__default<T>["events"];
-};
-type CloneOptions = {
-    mode: "url";
-    link: string;
-    enhance?: boolean;
-} | {
-    mode: "clip";
-    clip: Blob;
-    enhance?: boolean;
-};
-interface VoiceToMix {
-    id?: string;
-    embedding?: number[];
-    weight: number;
-}
-interface MixVoicesOptions {
-    voices: VoiceToMix[];
-}
-type Voice = {
-    id: string;
-    name: string;
-    description: string;
-    embedding: number[];
-    is_public: boolean;
-    user_id: string;
-    created_at: string;
-    language: string;
-};
-type CreateVoice = Pick<Voice, "name" | "description" | "embedding"> & Partial<Omit<Voice, "name" | "description" | "embedding">>;
-type UpdateVoice = Partial<Pick<Voice, "name" | "description" | "embedding">>;
-type CloneResponse = {
-    embedding: number[];
-};
-type MixVoicesResponse = {
-    embedding: number[];
-};
-type SourceEventData = {
-    enqueue: never;
-    close: never;
-    wait: never;
-    read: never;
-};
-type TypedArray = Float32Array | Int16Array | Uint8Array;
-type Encoding = "pcm_f32le" | "pcm_s16le" | "pcm_alaw" | "pcm_mulaw";
-
-export type { Chunk, ClientOptions, CloneOptions, CloneResponse, ConnectionEventData, CreateVoice, EmitteryCallbacks, Emotion, EmotionControl, Encoding, Intensity, MixVoicesOptions, MixVoicesResponse, Sentinel, SourceEventData, StreamOptions, StreamRequest, TypedArray, UpdateVoice, Voice, VoiceOptions, VoiceSpecifier, VoiceToMix, WebSocketBaseResponse, WebSocketChunkResponse, WebSocketErrorResponse, WebSocketResponse, WebSocketTimestampsResponse, WordTimestamps };
-
-
-
-// Enum for Voice Modes
-export enum VoiceMode {
-    ID = "id",
-    EMBEDDING = "embedding",
-}
-
-// Enum for Voice Speeds
-
-
-// Type for Output Format
 export interface OutputFormat {
     container: "raw";
     encoding: AudioEncoding;
     sample_rate: number;
 }
 
-// Type for Word Timestamps
-export interface WordTimestamp {
-    word: string[];
-    start: number[];
-    end: number[];
+// Additional types based on the initial example
+export enum ModelId {
+    SonicEnglish = "sonic-english",
+    SonicMultilingual = "sonic-multilingual",
+    // Custom models can be added here if needed
 }
 
-// // Type for WebSocket Response
-// export interface WebSocketResponse {
-//     type?: string;
-//     done?: boolean;
-//     status_code?: number;
-//     step_time?: number;
-//     context_id?: string;
-//     data?: string;
-//     word_timestamps?: WordTimestamp;
-// }
+export interface TTSRequestBody {
+    model_id: ModelId;
+    transcript: string;
+    voice: VoiceOptions;
+    output_format: OutputFormat;
+    language: Language;
+    duration: number;
+}
+
 
 // Type for Publish Payload (WebSocket request body)
-export interface PublishPayload {
+interface PublishPayload {
     context_id: string;
     model_id: string;
     transcript: string;
@@ -239,7 +120,112 @@ export interface PublishPayload {
     add_timestamps?: boolean;
 }
 
+export type StreamRequest = {
+    model_id: string;
+    transcript: string;
+    voice: VoiceOptions;
+    output_format?: {
+        container: string;
+        encoding: string;
+        sample_rate: number;
+    };
+    context_id?: string;
+    continue?: boolean;
+    duration?: number;
+    language?: string;
+    add_timestamps?: boolean;
+};
 
+
+enum VoiceMode {
+    ID = "id",
+    EMBEDDING = "embedding",
+}
+
+
+interface ClientOptions {
+    apiKey?: string | (() => Promise<string>);
+    baseUrl?: string;
+}
+
+export type Sentinel = null;
+export type Chunk = string | Sentinel;
+export type ConnectionEventData = {
+    open: never;
+    close: never;
+};
+
+
+type StreamOptions = {
+    timeout?: number;
+};
+type WebSocketBaseResponse = {
+    context_id: string;
+    status_code: number;
+    done: boolean;
+};
+type CloneOptions = {
+    mode: "url";
+    link: string;
+    enhance?: boolean;
+} | {
+    mode: "clip";
+    clip: Blob;
+    enhance?: boolean;
+};
+
+interface VoiceToMix {
+    id?: string;
+    embedding?: number[];
+    weight: number;
+}
+
+interface MixVoicesOptions {
+    voices: VoiceToMix[];
+}
+
+type Voice = {
+    id: string;
+    name: string;
+    description: string;
+    embedding: number[];
+    is_public: boolean;
+    user_id: string;
+    created_at: string;
+    language: string;
+};
+type CreateVoice =
+    Pick<Voice, "name" | "description" | "embedding">
+    & Partial<Omit<Voice, "name" | "description" | "embedding">>;
+type UpdateVoice = Partial<Pick<Voice, "name" | "description" | "embedding">>;
+type CloneResponse = {
+    embedding: number[];
+};
+type MixVoicesResponse = {
+    embedding: number[];
+};
+
+
+function formatEmotionControl(emotion: Emotion, intensity: Intensity): string {
+    return intensity ? `${emotion}:${intensity}` : emotion;
+}
+
+
+
+
+// // Type for WebSocket Response
+// export interface WebSocketResponse {
+//     type?: string;
+//     done?: boolean;
+//     status_code?: number;
+//     step_time?: number;
+//     context_id?: string;
+//     data?: string;
+//     word_timestamps?: WordTimestamp;
+// }
+
+
+/*
 const samplePayload = {
     "context_id": "happy-monkeys-fly",
     "model_id": "sonic-english",
@@ -301,3 +287,4 @@ const sampleStreamingPartsUnknownEnd = [
     {"transcript": "", "continue": false, "context_id": "happy-monkeys-fly"},
 ]
 
+*/

@@ -16,7 +16,7 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-import rootSaga from "@/lib/redux/schemaSagas/rootSaga";
+// import rootSaga from "@/lib/redux/schemaSagas/rootSaga";
 
 // Initialize saga middleware
 const sagaMiddleware = createSagaMiddleware();
@@ -42,9 +42,10 @@ const registeredSchemaNames = getRegisteredSchemas('frontend');
 // Create reducers for each registered schema
 const schemaReducers = registeredSchemaNames.reduce((acc, tableName) => {
     const schema = getSchema(tableName, 'frontend');
+
     if (schema) {
-        const reducer = schemaSliceCreator(tableName).reducer;
-        acc[schema.name.frontend] = reducer;
+        const slice = schemaSliceCreator(tableName);
+        acc[schema.name.frontend] = slice.reducer;
     }
     return acc;
 }, {} as Record<string, any>);

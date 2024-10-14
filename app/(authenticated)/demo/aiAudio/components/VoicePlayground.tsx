@@ -1,269 +1,219 @@
-import React, { useState, useEffect } from 'react';
-import { useAiAudio } from './AiVoicePage';
-import useTextToSpeech from '@/hooks/useTextToSpeech';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Pause, RotateCcw, RefreshCw } from 'lucide-react';
-import { listVoices } from '@/lib/cartesia/cartesiaUtils';
-import { AiVoice } from "@/types/aiAudioTypes";
-import { toast } from '@/components/ui/use-toast';
-import { VoiceSpeed, AudioEncoding, Language, EmotionName, EmotionLevel, EmotionControl } from '@/lib/cartesia/cartesia.types';
+'use client';
 
-const VoicePlayground: React.FC = () => {
-    const { data, configs } = useAiAudio();
-    const [text, setText] = useState("Hi. Welcome to the voice playground. My name is AI Matrx and I'm excited you decided to give the playground a try!");
-    const [selectedVoice, setSelectedVoice] = useState<string>("");
-    const [speed, setSpeed] = useState<VoiceSpeed>(VoiceSpeed.NORMAL);
-    const [customSpeed, setCustomSpeed] = useState<number>(1);
-    const [emotions, setEmotions] = useState<EmotionControl[]>([]);
-    const [language, setLanguage] = useState<Language>(Language.EN);
-    const [audioEncoding, setAudioEncoding] = useState<AudioEncoding>(AudioEncoding.PCM_S16LE);
-    const [addTimestamps, setAddTimestamps] = useState(false);
-    const [voices, setVoices] = useState<AiVoice[]>([]);
-    const [loadingVoices, setLoadingVoices] = useState(false);
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { useCartesia } from '@/hooks/tts/useCartesia';
+import { availableVoices } from '@/lib/cartesia/voices';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Loader2, RefreshCw, Play, Pause, Square } from 'lucide-react';
+import {
+    Emotion,
+    EmotionName,
+    EmotionLevel,
+    VoiceSpeed,
+    Language,
+    ModelId,
+    VoiceOptions
+} from '@/lib/cartesia/cartesia.types';
 
-    const {
-        buffer,
-        play,
-        pause,
-        restart,
-        stop,
-        isPlaying,
-        playbackStatus,
-        bufferStatus,
-        isWaiting,
-        error,
-    } = useTextToSpeech({
-        text,
-        apiKey: process.env.NEXT_PUBLIC_CARTESIA_API_KEY || '',
-        voiceId: selectedVoice,
-        speed: speed === VoiceSpeed.CUSTOM ? customSpeed : speed,
-        emotions,
-        language,
-        audioEncoding,
-        addTimestamps,
-        modelId: language === Language.EN ? 'sonic-english' : 'sonic-multilingual',
-    });
+const emotions: Emotion[] = ['anger', 'sadness', 'positivity', 'curiosity', 'surprise'];
 
-    useEffect(() => {
-        console.log("VoicePlayground mounted");
-        loadVoices();
-        return () => {
-            console.log("VoicePlayground unmounted");
-            stop();
-        };
-    }, [stop]);
-
-    const handlePlayClick = async () => {
-        console.log("Play button clicked");
-        try {
-            await play();
-        } catch (error) {
-            console.error("Error in play:", error);
-            toast({
-                title: "Playback Error",
-                description: `Failed to play audio: ${error instanceof Error ? error.message : String(error)}`,
-                variant: "destructive",
-            });
-        }
-    };
-
-    const loadVoices = async () => {
-        setLoadingVoices(true);
-        try {
-            const voicesData = await listVoices();
-            setVoices(voicesData.map(({ id, name, description }) => ({ id, name, description })));
-        } catch (error) {
-            console.error("Error loading voices:", error);
-            toast({
-                title: "Error",
-                description: "Failed to load voices. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoadingVoices(false);
-        }
-    };
-
-    const handleEmotionChange = (emotion: EmotionName, value: number) => {
-        const levelMap: Record<number, EmotionLevel> = {
-            0: EmotionLevel.LOWEST,
-            25: EmotionLevel.LOW,
-            50: EmotionLevel.MEDIUM,
-            75: EmotionLevel.HIGH,
-            100: EmotionLevel.HIGHEST,
-        };
-        const newEmotionControl: EmotionControl = `${emotion}:${levelMap[value] || EmotionLevel.MEDIUM}`;
-        setEmotions(prev => {
-            const filteredEmotions = prev.filter(e => !e.startsWith(emotion));
-            return [...filteredEmotions, newEmotionControl];
-        });
-    };
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
-    return (
-        <Card className="w-full">
-            <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                    Voice Playground
-                    <Button variant="outline" size="sm" onClick={loadVoices} disabled={loadingVoices}>
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Refresh Voices
-                    </Button>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <Tabs defaultValue="basic" className="w-full">
-                    <TabsList>
-                        <TabsTrigger value="basic">Basic Settings</TabsTrigger>
-                        <TabsTrigger value="advanced">Advanced Settings</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="basic" className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="text-input">Text to Speak</Label>
-                            <Input
-                                id="text-input"
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                placeholder="Enter text to speak..."
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="voice-select">Select Voice</Label>
-                            <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-                                <SelectTrigger id="voice-select">
-                                    <SelectValue placeholder="Select a voice" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {voices.map((voice) => (
-                                        <SelectItem key={voice.id} value={voice.id}>
-                                            {voice.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="language-select">Language</Label>
-                            <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
-                                <SelectTrigger id="language-select">
-                                    <SelectValue placeholder="Select language" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(Language).map(([key, value]) => (
-                                        <SelectItem key={key} value={value}>
-                                            {key}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Speed</Label>
-                            <Select value={speed} onValueChange={(value: VoiceSpeed) => setSpeed(value)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select speed" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(VoiceSpeed).map(([key, value]) => (
-                                        <SelectItem key={key} value={value}>
-                                            {key.charAt(0) + key.slice(1).toLowerCase()}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {speed === VoiceSpeed.CUSTOM && (
-                                <Slider
-                                    min={0.5}
-                                    max={2}
-                                    step={0.1}
-                                    value={[customSpeed]}
-                                    onValueChange={([value]) => setCustomSpeed(value)}
-                                />
-                            )}
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="advanced" className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Emotions</Label>
-                            {Object.values(EmotionName).map((emotion) => (
-                                <div key={emotion} className="space-y-1">
-                                    <Label>{emotion.charAt(0).toUpperCase() + emotion.slice(1)}</Label>
-                                    <Slider
-                                        min={0}
-                                        max={100}
-                                        step={25}
-                                        value={[Object.keys(EmotionLevel).indexOf(EmotionLevel.MEDIUM) * 25]}
-                                        onValueChange={([value]) => handleEmotionChange(emotion, value)}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="encoding-select">Audio Encoding</Label>
-                            <Select value={audioEncoding} onValueChange={(value: AudioEncoding) => setAudioEncoding(value)}>
-                                <SelectTrigger id="encoding-select">
-                                    <SelectValue placeholder="Select encoding" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(AudioEncoding).map(([key, value]) => (
-                                        <SelectItem key={key} value={value}>
-                                            {value}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Switch
-                                id="timestamps"
-                                checked={addTimestamps}
-                                onCheckedChange={setAddTimestamps}
-                            />
-                            <Label htmlFor="timestamps">Add Timestamps</Label>
-                        </div>
-                    </TabsContent>
-                </Tabs>
-
-                <div className="flex space-x-4">
-                    {isWaiting ? (
-                        <Button disabled>Buffering...</Button>
-                    ) : isPlaying ? (
-                        <Button onClick={pause}>
-                            <Pause className="mr-2 h-4 w-4" /> Pause
-                        </Button>
-                    ) : (
-                        <Button onClick={handlePlayClick}>
-                            <Play className="mr-2 h-4 w-4" /> Play
-                        </Button>
-                    )}
-                    <Button onClick={restart} disabled={isWaiting}>
-                        <RotateCcw className="mr-2 h-4 w-4" /> Restart
-                    </Button>
-                </div>
-
-                <div className="text-sm">
-                    <p>Status: {isWaiting ? bufferStatus : playbackStatus}</p>
-                    <p>Is Playing: {isPlaying ? "Yes" : "No"}</p>
-                    <p>Is Waiting: {isWaiting ? "Yes" : "No"}</p>
-                </div>
-            </CardContent>
-        </Card>
-    );
+const languageNames: Record<Language, string> = {
+    [Language.EN]: 'English',
+    [Language.DE]: 'German',
+    [Language.ES]: 'Spanish',
+    [Language.FR]: 'French',
+    [Language.JA]: 'Japanese',
+    [Language.PT]: 'Portuguese',
+    [Language.ZH]: 'Chinese',
+    [Language.HI]: 'Hindi',
+    [Language.IT]: 'Italian',
+    [Language.KO]: 'Korean',
+    [Language.NL]: 'Dutch',
+    [Language.PL]: 'Polish',
+    [Language.RU]: 'Russian',
+    [Language.SV]: 'Swedish',
+    [Language.TR]: 'Turkish',
 };
 
-export default VoicePlayground;
+interface EmotionControl {
+    active: boolean;
+    intensity: EmotionLevel;
+}
+
+export default function PlaygroundPage() {
+    const { sendMessage, isConnected, error, pausePlayback, resumePlayback, stopPlayback, updateConfigs } = useCartesia();
+    const [text, setText] = useState("Hi. This is A.I. Matrix, and I'm really happy to have you here. Take a look around the Playground and try the cool emotions controls!");
+    const [voice, setVoice] = useState(availableVoices[0]?.id || '');
+    const [language, setLanguage] = useState<Language>(Language.EN);
+    const [speed, setSpeed] = useState<VoiceSpeed>(VoiceSpeed.NORMAL);
+    const [emotionControls, setEmotionControls] = useState<Record<Emotion, EmotionControl>>(
+        emotions.reduce((acc, emotion) => ({ ...acc, [emotion]: { active: false, intensity: EmotionLevel.MEDIUM } }), {} as Record<Emotion, EmotionControl>)
+    );
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    useEffect(() => {
+        const voiceOptions: VoiceOptions = { mode: 'id', id: voice };
+
+        updateConfigs({ voice: voiceOptions, language, });
+    }, [voice, language, updateConfigs]);
+
+    const handleSendMessage = async () => {
+        const activeEmotions = Object.entries(emotionControls)
+            .filter(([, control]) => control.active)
+            .map(([emotion, control]) => ({
+                emotion: emotion as EmotionName,
+                intensity: control.intensity
+            }));
+
+        const voiceOptions: VoiceOptions = { mode: 'id', id: voice };
+
+        try {
+            await sendMessage(text, speed, voiceOptions, activeEmotions);
+            setIsPlaying(true);
+        } catch (err) {
+            console.error("Error sending message:", err);
+        }
+    };
+
+    const handleEmotionChange = (emotion: Emotion, field: 'active' | 'intensity', value: boolean | EmotionLevel) => {
+        setEmotionControls(prev => ({
+            ...prev,
+            [emotion]: { ...prev[emotion], [field]: value }
+        }));
+    };
+
+    const handlePlayPause = () => {
+        if (isPlaying) {
+            pausePlayback();
+        } else {
+            resumePlayback();
+        }
+        setIsPlaying(!isPlaying);
+    };
+
+    const handleStop = () => {
+        stopPlayback();
+        setIsPlaying(false);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="container mx-auto p-6 space-y-6"
+        >
+            <div className="space-y-4">
+                <div>
+                    <Label htmlFor="text" className="sr-only">Text to Speak</Label>
+                    <Input id="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Enter text to speak..." />
+                </div>
+
+                <div className="flex space-x-4 items-end">
+                    <div className="flex-1">
+                        <Label htmlFor="voice">Voice</Label>
+                        <div className="flex">
+                            <Select value={voice} onValueChange={(value: string) => setVoice(value)}>
+                                <SelectTrigger id="voice">
+                                    <SelectValue placeholder="Select voice" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableVoices.map((v) => (
+                                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button variant="outline" size="icon" className="ml-2">
+                                <RefreshCw className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex space-x-4">
+                    <div className="flex-1">
+                        <Label htmlFor="language">Language</Label>
+                        <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
+                            <SelectTrigger id="language">
+                                <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(languageNames).map(([key, value]) => (
+                                    <SelectItem key={key} value={key as Language}>{value}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex-1">
+                        <Label htmlFor="speed">Speed</Label>
+                        <Select value={speed} onValueChange={(value: VoiceSpeed) => setSpeed(value)}>
+                            <SelectTrigger id="speed">
+                                <SelectValue placeholder="Select speed" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(VoiceSpeed).map(([key, value]) => (
+                                    <SelectItem key={key} value={value}>{key}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label>Emotions</Label>
+                    {emotions.map((emotion) => (
+                        <div key={emotion} className="flex items-center space-x-4">
+                            <Checkbox
+                                id={`${emotion}-checkbox`}
+                                checked={emotionControls[emotion].active}
+                                onCheckedChange={(checked) => handleEmotionChange(emotion, 'active', checked as boolean)}
+                            />
+                            <Label htmlFor={`${emotion}-checkbox`} className="w-24">{emotion}</Label>
+                            <Slider
+                                value={[Object.values(EmotionLevel).indexOf(emotionControls[emotion].intensity)]}
+                                onValueChange={([value]) => handleEmotionChange(emotion, 'intensity', Object.values(EmotionLevel)[value] as EmotionLevel)}
+                                min={0}
+                                max={4}
+                                step={1}
+                                disabled={!emotionControls[emotion].active}
+                                className="w-32"
+                            />
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex justify-between items-center">
+                    <div className="space-x-2">
+                        <Button onClick={handlePlayPause} disabled={!isConnected}>
+                            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                        </Button>
+                        <Button onClick={handleStop} disabled={!isConnected}>
+                            <Square className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <Button onClick={handleSendMessage} disabled={!isConnected || !text}>
+                        {isConnected ? 'Speak' : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    </Button>
+                </div>
+
+                {error && <p className="text-red-500">{error.message}</p>}
+            </div>
+
+            <motion.div
+                className="w-full h-16 bg-gray-200 rounded-lg overflow-hidden"
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ duration: 0.5 }}
+            >
+                {/* Audio visualization placeholder */}
+                <div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 animate-pulse" />
+            </motion.div>
+        </motion.div>
+    );
+}

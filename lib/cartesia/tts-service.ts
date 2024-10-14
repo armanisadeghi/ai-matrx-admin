@@ -7,12 +7,7 @@ import {v4 as uuidv4} from 'uuid';
 import {Buffer} from 'buffer';
 import { WebSocket } from 'ws';
 import {
-    PublishPayload,
-    WebSocketResponse,
-    VoiceMode,
-    AudioEncoding,
     Language,
-    VoiceSpeed,
 } from './cartesia.types';
 
 const CARTESIA_WEBSOCKET_URL = 'wss://api.cartesia.ai/tts/websocket';

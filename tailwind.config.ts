@@ -150,7 +150,7 @@ const config: Config = {
                 "accordion-up": "accordion-up 0.2s ease-out",
                 "caret-blink": "caret-blink 1.25s ease-out infinite",
                 shimmer: "shimmer 2s linear infinite",
-                'hover-bounce': 'hover-bounce 0.3s var(--animation-bounce)',
+                'hover-bounce': 'hover-bounce 0.3s var(--animated-menu-bounce)',
                 'fade-in': 'fade-in 0.4s ease-in-out',
                 'fade-out': 'fade-out 0.4s ease-in-out',
             },
@@ -167,10 +167,10 @@ const config: Config = {
                 'matrx-card-background': 'var(--matrx-card-background)',
 
             },
-            // New animation curves
+            // New animated-menu curves
             transitionTimingFunction: {
-                'bounce': 'var(--animation-bounce)',
-                'smooth': 'var(--animation-smooth)',
+                'bounce': 'var(--animated-menu-bounce)',
+                'smooth': 'var(--animated-menu-smooth)',
             },
         },
     },

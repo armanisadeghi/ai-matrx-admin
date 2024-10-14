@@ -1,3 +1,4 @@
+/*
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CartesiaTTSService from '@/lib/cartesia/tts-service';
@@ -8,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { setModulePreferences } from '@/lib/redux/slices/userPreferencesSlice';
 import { RootState } from '@/lib/redux/store';
+import {Language} from "@/lib/cartesia/cartesia.types";
 
 // Redux action to update user preferences
 const updateUserPreferences = (preferences) => ({
@@ -82,21 +84,12 @@ const AudioPlayground = () => {
         { id: 'voice2', name: 'Voice 2' },
         // Add more voices as needed
     ]);
-    const [languages] = useState([
-        { Language: Language.EN, name: 'English' },
-        { code: Language.ES, name: 'Spanish' },
-        { code: Language.DE, name: 'German' },
-        { code: Language.FR, name: 'French' },
-        { code: Language.JA, name: 'Japanese' },
-        { code: Language.PT, name: 'Portuguese' },
-        { code: Language.ZH, name: 'Chinese' },
-    ]);
 
     const [emotions] = useState(['Happy', 'Sad', 'Excited', 'Calm']);
 
     const [settings, setSettings] = useState({
         voice: voicePreferences.voice || voices[0].id,
-        language: (voicePreferences.language as Language) || Language.EN,
+        language: (voicePreferences.language: Language) || 'en',
         speed: voicePreferences.speed || 1,
         emotion: voicePreferences.emotion || emotions[0],
         microphone: voicePreferences.microphone || false,
@@ -197,4 +190,4 @@ const AudioPlayground = () => {
     );
 };
 
-export default AudioPlayground;
+export default AudioPlayground;*/

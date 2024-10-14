@@ -89,28 +89,28 @@ export async function fetchAndGenerateSchema() {
             };
 
             // Iterate over the columns and structure them
-            for (const column of columns || []) {
-                const columnName = column.column_name;
-                const columnType = mapDataType(column.data_type);
-
-                tableSchema.fields[columnName] = {
-                    alts: {
-                        frontend: columnName,
-                        backend: columnName.replace(/_/g, ''),
-                        database: columnName,
-                        db_p: `p_${columnName}`,
-                        pretty: capitalizeWords(columnName.replace(/_/g, ' ')),
-                    },
-                    type: columnType,
-                    format: 'single',
-                    structure: {
-                        structure: 'simple',
-                        typeReference: `createTypeReference<${mapTypeScriptType(columnType)}>()`,
-                    },
-                };
-            }
-
-            outputSchema[tableName] = tableSchema;
+            // for (const column of columns || []) {
+            //     const columnName = column.column_name;
+            //     const columnType = mapDataType(column.data_type);
+            //
+            //     tableSchema.fields[columnName] = {
+            //         alts: {
+            //             frontend: columnName,
+            //             backend: columnName.replace(/_/g, ''),
+            //             database: columnName,
+            //             db_p: `p_${columnName}`,
+            //             pretty: capitalizeWords(columnName.replace(/_/g, ' ')),
+            //         },
+            //         type: columnType,
+            //         format: 'single',
+            //         structure: {
+            //             structure: 'simple',
+            //             typeReference: `createTypeReference<${mapTypeScriptType(columnType)}>()`,
+            //         },
+            //     };
+            // }
+            //
+            // outputSchema[tableName] = tableSchema;
         }
 
         // Convert the output schema to TypeScript content

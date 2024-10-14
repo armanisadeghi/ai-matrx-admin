@@ -203,7 +203,7 @@ const CollisionMechanism = React.forwardRef<
                 }
             }, 2000);
 
-            // Reset the beam animation after a delay
+            // Reset the beam animated-menu after a delay
             setTimeout(() => {
                 setBeamKey((prevKey) => prevKey + 1);
             }, 2000);

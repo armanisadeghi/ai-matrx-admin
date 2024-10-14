@@ -115,24 +115,24 @@ export const schemaSliceCreator = (tableName: string) => {
         extraReducers: (builder: ActionReducerMapBuilder<typeof tableInitialState>) => {
             // Responding to Saga-triggered actions
             builder
-                .addCase(actions.fetchSuccess, (state, action: PayloadAction<{ tableName: string; data: any[] }>) => {
-                    state.data = action.payload.data;
-                    state.loading = false;
-                    state.error = null;
-                })
-                .addCase(actions.fetchFailure, (state, action: PayloadAction<{ tableName: string; error: string }>) => {
-                    state.loading = false;
-                    state.error = action.payload.error;
-                })
-                .addCase(actions.executeQuerySuccess, (state, action: PayloadAction<{ tableName: string; data: any[] }>) => {
-                    state.data = action.payload.data;
-                    state.loading = false;
-                    state.error = null;
-                })
-                .addCase(actions.executeQueryFailure, (state, action: PayloadAction<{ tableName: string; error: string }>) => {
-                    state.loading = false;
-                    state.error = action.payload.error;
-                });
+                // .addCase(actions.fetchSuccess, (state, action: PayloadAction<{ tableName: string; data: any[] }>) => {
+                //     state.data = action.payload.data;
+                //     state.loading = false;
+                //     state.error = null;
+                // })
+                // .addCase(actions.fetchFailure, (state, action: PayloadAction<{ tableName: string; error: string }>) => {
+                //     state.loading = false;
+                //     state.error = action.payload.error;
+                // })
+                // .addCase(actions.executeQuerySuccess, (state, action: PayloadAction<{ tableName: string; data: any[] }>) => {
+                //     state.data = action.payload.data;
+                //     state.loading = false;
+                //     state.error = null;
+                // })
+                // .addCase(actions.executeQueryFailure, (state, action: PayloadAction<{ tableName: string; error: string }>) => {
+                //     state.loading = false;
+                //     state.error = action.payload.error;
+                // });
         },
     });
 

@@ -32,9 +32,9 @@
 //     defaultVisibleColumns?: string[];
 //     className?: string;
 //     onAdd: (newItem: Omit<TableData, 'id'>) => void;
-//     onEdit: (item: TableData) => void;
-//     onDelete: (item: TableData) => void;
-//     onExpand: (item: TableData) => void;
+//     onEdit: (item.tsx: TableData) => void;
+//     onDelete: (item.tsx: TableData) => void;
+//     onExpand: (item.tsx: TableData) => void;
 //     actions?: string[];
 //     onAction?: (actionName: string, rowData: TableData) => void;
 //     customModalContent?: (rowData: TableData) => React.ReactNode;
@@ -153,9 +153,9 @@
 //         setSelectedItem(null);
 //     }, [selectedItem, onAdd, onEdit, onDelete, onExpand]);
 //
-//     const openModal = useCallback((mode: 'add' | 'edit' | 'delete' | 'view', item: TableData | null = null) => {
+//     const openModal = useCallback((mode: 'add' | 'edit' | 'delete' | 'view', item.tsx: TableData | null = null) => {
 //         setDialogMode(mode);
-//         setSelectedItem(item);
+//         setSelectedItem(item.tsx);
 //         setModalOpen(true);
 //     }, []);
 //

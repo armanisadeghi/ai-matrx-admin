@@ -57,7 +57,7 @@ const FunctionManagement: React.FC = () => {
 
     const handleDelete = (id: string) => {
         deleteOne({ featureName: 'registeredFunction', id });
-        setSelectedItemId(null); // Clear the selected item after deletion
+        setSelectedItemId(null); // Clear the selected item.tsx after deletion
         setIsDeleteDialogOpen(false); // Close the delete dialog
         fetchPaginated({ featureName: 'registeredFunction', page: currentPage, pageSize: itemsPerPage });
     };

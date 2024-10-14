@@ -46,9 +46,9 @@ const registeredFunctionSlice = createSlice({
                 state.loading = false;
                 state.totalCount = action.payload.totalCount;
                 state.allIdAndNames = action.payload.allIdAndNames;
-                action.payload.paginatedData.forEach((item) => {
-                    state.items[item.id] = item;
-                    state.lastFetched[item.id] = Date.now();
+                action.payload.paginatedData.forEach((item.tsx) => {
+                    state.items[item.tsx.id] = item.tsx;
+                    state.lastFetched[item.tsx.id] = Date.now();
                 });
             })
             .addCase(registeredFunctionActions.fetchPaginatedRejected, (state, action: PayloadAction<string>) => {
@@ -63,7 +63,7 @@ const registeredFunctionSlice = createSlice({
                 state.loading = false;
                 action.payload.deletedIds.forEach((id) => {
                     delete state.items[id];
-                    state.allIdAndNames = state.allIdAndNames.filter((item) => item.id !== id);
+                    state.allIdAndNames = state.allIdAndNames.filter((item.tsx) => item.tsx.id !== id);
                     state.totalCount -= 1;
                 });
             })
