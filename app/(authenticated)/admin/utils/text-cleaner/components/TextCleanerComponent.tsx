@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { useTextCleaner } from '../hooks/useTextCleaner';
-import { Textarea } from '@/components/UI/Textarea';
-import { Button } from '@/components/UI/Button';
+
 import { FullEditableJsonViewer } from '@/components/ui/JsonComponents';
 import { useClipboard } from '@/hooks/useClipboard';
 import { textContext } from "@/app/(authenticated)/admin/utils/text-cleaner/configs";
 import AnimatedSelect from '@/components/matrx/AnimatedForm/AnimatedSelect';
 import { FormField } from "@/types/AnimatedFormTypes";
 import { Copy } from 'lucide-react';
+import {Button, Textarea} from "@/components/ui";
 
 export const TextCleanerComponent: React.FC = () => {
     const {
