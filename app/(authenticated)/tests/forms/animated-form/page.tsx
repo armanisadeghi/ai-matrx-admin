@@ -3,9 +3,10 @@
 
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {AnimatedForm, FormField} from "@/components/matrx/AnimatedForm";
+import {AnimatedForm} from "@/components/matrx/AnimatedForm";
 import { AppDispatch, RootState } from "@/lib/redux/store";
 import { submitForm, updateFormField } from "@/lib/redux/slices/formSlice";
+import { FormField } from '@/types/AnimatedFormTypes';
 
 const formFields: FormField[] = [
     { name: 'name', label: 'Full Name', type: 'text', required: true },

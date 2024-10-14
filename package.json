@@ -23,6 +23,7 @@
     "@cartesia/cartesia-js": "latest",
     "@deepgram/sdk": "latest",
     "@hookform/resolvers": "latest",
+    "@midudev/tailwind-animations": "^0.1.0",
     "@mynaui/icons-react": "^0.3.2",
     "@nextui-org/react": "latest",
     "@nextui-org/theme": "latest",

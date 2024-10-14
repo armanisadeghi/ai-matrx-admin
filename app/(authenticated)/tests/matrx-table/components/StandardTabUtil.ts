@@ -1,7 +1,7 @@
 // app/(authenticated)/tests/matrx-table/components/StandardTabUtil.ts
 
+import { FormField, FormFieldType, FormState, TabData } from "@/types/AnimatedFormTypes";
 import {TableData} from "@/types/tableTypes";
-import {FormField, FormFieldType, FormState, TabData} from "@/components/matrx/AnimatedForm";
 import { ensureId} from "@/utils/schema/schemaUtils";
 
 

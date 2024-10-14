@@ -1,106 +1,135 @@
 'use client';
 
-import React, {useEffect, useRef} from 'react';
-import {Button} from "@/components/ui/button";
-import {Play, Pause, RotateCcw} from 'lucide-react';
-import useTextToSpeech from '@/hooks/useTextToSpeech'; // Adjust the import path as needed
-import {Language, VoiceSpeed, EmotionControl} from '@/lib/cartesia/cartesia.types'; // Adjust the import path as needed
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Button } from "@/components/ui/button";
+import Cartesia, { WebPlayer } from '@cartesia/cartesia-js';
+import { Play, Pause, RotateCcw } from 'lucide-react';
 
 interface TextToSpeechPlayerProps {
     text: string;
+    autoPlay?: boolean;
     onPlaybackEnd?: () => void;
-    modelId?: string;
-    voiceId?: string;
-    language?: Language;
-    speed?: VoiceSpeed;
-    emotions?: EmotionControl[];
-    sampleRate?: number;
-    addTimestamps?: boolean;
-    onClose?: () => void;
 }
 
-const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
-    {
-        text,
-        onPlaybackEnd,
-        modelId,
-        voiceId,
-        language,
-        speed = VoiceSpeed.NORMAL,
-        emotions,
-        sampleRate,
-        addTimestamps,
-        onClose,
-    }) => {
+const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay = false, onPlaybackEnd }) => {
     const apiKey = process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
-    const hasPlayedRef = useRef(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [playbackStatus, setPlaybackStatus] = useState('');
+    const cartesiaRef = useRef<Cartesia | null>(null);
+    const websocketRef = useRef<any>(null);
+    const playerRef = useRef<WebPlayer | null>(null);
+    const sourceRef = useRef<any>(null);
 
-    const {
-        play,
-        pause,
-        restart,
-        stop,
-        isPlaying,
-        playbackStatus,
-        bufferStatus,
-        isWaiting,
-        error,
-    } = useTextToSpeech({
-        text,
-        apiKey: apiKey || '',
-        onPlaybackEnd,
-        modelId,
-        voiceId,
-        language,
-        speed,
-        emotions,
-        sampleRate,
-        addTimestamps,
-    });
+
 
     useEffect(() => {
-        const playAudio = async () => {
-            if (!hasPlayedRef.current) {
-                try {
-                    await play();
-                    hasPlayedRef.current = true;
-                } catch (error) {
-                    console.error("Error playing audio:", error);
-                }
-            }
-        };
+        cartesiaRef.current = new Cartesia({ apiKey: apiKey || '' });
+        websocketRef.current = cartesiaRef.current.tts.websocket({
+            container: "raw",
+            encoding: "pcm_f32le",
+            sampleRate: 44100
+        });
 
-        playAudio();
+        playerRef.current = new WebPlayer({ bufferDuration: 1 }); // 1 second buffer
+
+        if (autoPlay) {
+            handlePlay();
+        }
 
         return () => {
-            stop();
-            if (onClose) onClose();
+            websocketRef.current?.disconnect();
         };
-    }, [play, stop, onClose]);
+    }, [apiKey, autoPlay]);
+
+    const handlePlay = useCallback(async () => {
+        if (!apiKey || !websocketRef.current || !playerRef.current) {
+            console.error("Cartesia API key is not set or WebSocket/Player is not initialized");
+            return;
+        }
+
+        try {
+            setIsPlaying(true);
+            setPlaybackStatus('Connecting...');
+            await websocketRef.current.connect();
+
+            setPlaybackStatus('Buffering audio...');
+            const response = await websocketRef.current.send({
+                model_id: "sonic-english",
+                voice: {
+                    mode: "id",
+                    id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
+                    __experimental_controls: {
+                        "speed": "medium",
+                        "emotion": [
+                            "positivity:high",
+                            "curiosity"
+                        ]
+                    },
+
+                },
+                transcript: text
+            });
+
+            sourceRef.current = response.source;
+
+            setPlaybackStatus('Playing audio...');
+            await playerRef.current.play(sourceRef.current);
+            setPlaybackStatus('Playback finished');
+        } catch (error) {
+            console.error("Error playing audio:", error);
+            setPlaybackStatus('Error occurred');
+        } finally {
+            setIsPlaying(false);
+            onPlaybackEnd?.();
+        }
+    }, [text, onPlaybackEnd, apiKey]);
+
+    const handlePause = useCallback(async () => {
+        if (playerRef.current) {
+            await playerRef.current.pause();
+            setIsPlaying(false);
+            setPlaybackStatus('Paused');
+        }
+    }, []);
+
+    const handleResume = useCallback(async () => {
+        if (playerRef.current) {
+            await playerRef.current.resume();
+            setIsPlaying(true);
+            setPlaybackStatus('Playing audio...');
+        }
+    }, []);
+
+    const handleReplay = useCallback(async () => {
+        if (playerRef.current && sourceRef.current) {
+            setIsPlaying(true);
+            setPlaybackStatus('Playing audio...');
+            await playerRef.current.play(sourceRef.current);
+            setPlaybackStatus('Playback finished');
+            setIsPlaying(false);
+        }
+    }, []);
 
     if (!apiKey) return <div>API key not set. Unable to play audio.</div>;
-    if (error) return <div>Error: {error}</div>;
 
     return (
         <div className="flex flex-col items-center">
             <div className="flex space-x-4">
-                {isWaiting ? (
-                    <Button disabled>Buffering...</Button>
-                ) : isPlaying ? (
-                    <Button onClick={pause}>
-                        <Pause className="mr-2 h-4 w-4"/> Pause
+                {isPlaying ? (
+                    <Button onClick={handlePause}>
+                        <Pause className="mr-2 h-4 w-4" /> Pause
                     </Button>
                 ) : (
-                    <Button onClick={play}>
-                        <Play className="mr-2 h-4 w-4"/> Play
+                    <Button onClick={handleResume}>
+                        <Play className="mr-2 h-4 w-4" /> Play
                     </Button>
                 )}
-                <Button onClick={restart} disabled={isWaiting}>
-                    <RotateCcw className="mr-2 h-4 w-4"/> Restart
+                <Button onClick={handleReplay}>
+                    <RotateCcw className="mr-2 h-4 w-4" /> Replay
                 </Button>
             </div>
             <div className="mt-2 text-sm">
-                Status: {isWaiting ? bufferStatus : playbackStatus}
+                Status: {playbackStatus}
             </div>
         </div>
     );

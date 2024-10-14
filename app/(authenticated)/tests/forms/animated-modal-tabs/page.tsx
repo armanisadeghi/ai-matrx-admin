@@ -4,9 +4,10 @@
 
 import React, { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { AnimatedTabModal, FormField, TabData } from "@/components/matrx/AnimatedForm";
+import { AnimatedTabModal } from "@/components/matrx/AnimatedForm";
 import { AppDispatch, RootState } from "@/lib/redux/store";
 import { submitForm, updateFormField } from "@/lib/redux/slices/formSlice";
+import {FormField, TabData} from "@/types/AnimatedFormTypes";
 
 const AnimatedTabModalPage: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
