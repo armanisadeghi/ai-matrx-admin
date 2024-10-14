@@ -1,4 +1,4 @@
-import Star from "./star";
+import Star from "./";
 
 export default function Colors() {
     return (
