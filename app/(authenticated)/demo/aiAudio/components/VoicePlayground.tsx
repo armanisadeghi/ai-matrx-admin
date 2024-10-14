@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCartesia } from '@/hooks/tts/useCartesia';
 import { availableVoices } from '@/lib/cartesia/voices';

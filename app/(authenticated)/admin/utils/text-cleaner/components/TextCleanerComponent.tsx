@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useTextCleaner } from '../hooks/useTextCleaner';
-
 import { FullEditableJsonViewer } from '@/components/ui/JsonComponents';
 import { useClipboard } from '@/hooks/useClipboard';
 import { textContext } from "@/app/(authenticated)/admin/utils/text-cleaner/configs";
