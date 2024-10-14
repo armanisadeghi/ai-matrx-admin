@@ -21,16 +21,16 @@ const MatrxTableTestPage: React.FC = () => {
     const handleAction = (actionName: string, data: any) => {
         switch (actionName) {
             case 'add':
-                console.log('Adding new item:', data);
+                console.log('Adding new item.tsx:', data);
                 break;
             case 'edit':
-                console.log('Editing item:', data);
+                console.log('Editing item.tsx:', data);
                 break;
             case 'delete':
-                console.log('Deleting item:', data);
+                console.log('Deleting item.tsx:', data);
                 break;
             case 'expand':
-                console.log('Expanding item:', data);
+                console.log('Expanding item.tsx:', data);
                 break;
             default:
                 console.log(`Unknown action: ${actionName}`);

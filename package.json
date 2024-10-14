@@ -82,6 +82,7 @@
     "flowbite-react": "latest",
     "framer-motion": "latest",
     "fs": "0.0.1-security",
+    "gasp": "^0.0.2",
     "google-fonts": "latest",
     "jsonlint-mod": "^1.7.6",
     "katex": "latest",

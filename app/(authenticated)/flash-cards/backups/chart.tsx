@@ -34,10 +34,10 @@
 //   const [activeMonth, setActiveMonth] = React.useState(desktopData[0].month)
 
 //   const activeIndex = React.useMemo(
-//     () => desktopData.findIndex((item) => item.month === activeMonth),
+//     () => desktopData.findIndex((item.tsx) => item.tsx.month === activeMonth),
 //     [activeMonth]
 //   )
-//   const months = React.useMemo(() => desktopData.map((item) => item.month), [])
+//   const months = React.useMemo(() => desktopData.map((item.tsx) => item.tsx.month), [])
 
 //   return (
 //     <Card data-chart={id} className="flex flex-col">

@@ -9,19 +9,19 @@ import {ActionDefinition, TableData} from "@/types/tableTypes";
 export const actionDefinitions: Record<string, ActionDefinition> = {
     edit: {
         name: 'edit',
-        label: "Edit this item",
+        label: "Edit this item.tsx",
         icon: <Edit className="h-3 w-3"/>,
         className: "text-primary hover:bg-primary hover:text-primary-foreground",
     },
     delete: {
         name: 'delete',
-        label: "Delete this item",
+        label: "Delete this item.tsx",
         icon: <Trash className="h-4 w-4"/>,
         className: "text-destructive hover:bg-destructive hover:text-destructive-foreground",
     },
     view: {
         name: 'view',
-        label: "View this item",
+        label: "View this item.tsx",
         icon: <Eye className="h-4 w-4"/>,
         className: "text-primary hover:bg-secondary hover:text-secondary-foreground",
     },

@@ -44,4 +44,4 @@
 
 
 // I think a better approach would be to replicate the flashcard, but change it to have an internal part with the chat interface
-// Update the animation to have a grow effect of some sort.
+// Update the animated-menu to have a grow effect of some sort.

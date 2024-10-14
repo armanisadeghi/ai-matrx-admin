@@ -36,19 +36,19 @@ const columns: MatrixColumn<CurrentTableData>[] = [
 
 export default function TablePage() {
     const handleAdd = (newItem: Omit<CurrentTableData, 'id'>) => {
-        console.log('Adding new item:', newItem);
+        console.log('Adding new item.tsx:', newItem);
     };
 
     const handleEdit = (item: CurrentTableData) => {
-        console.log('Editing item:', item);
+        console.log('Editing item.tsx:', item);
     };
 
     const handleDelete = (item: CurrentTableData) => {
-        console.log('Deleting item:', item);
+        console.log('Deleting item.tsx:', item);
     };
 
     const handleExpand = (item: CurrentTableData) => {
-        console.log('Expanding item:', item);
+        console.log('Expanding item.tsx:', item);
     };
 
     return (

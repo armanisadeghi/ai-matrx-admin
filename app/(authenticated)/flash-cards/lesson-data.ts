@@ -1,6 +1,310 @@
 import {FlashcardData} from "@/types/flashcards.types";
 
+
 export const vocabFlashcards: FlashcardData[] = [
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 1,
+        front: "Action",
+        back: `*(noun)*
+**Definition:** What people in photographs are doing. For captions, action helps form the caption starter.
+**Synonyms:** Activity, movement, deed
+**Antonyms:** Inactivity, stillness, passivity`,
+        example: `*In the photograph, the students are laughing and playing soccer, showing their action during recess.*`,
+        audioExplanation: "Action refers to what people are doing in a photo. It’s important for captions because it helps describe the moment captured. Think of it like when you see a picture of Taylor Swift performing on stage—her action is singing and engaging with the crowd!",
+        detailedExplanation: `When we talk about action in photography, we’re referring to the activities that people are engaged in at that moment. For example, if you take a picture of a basketball game, the action could be players shooting hoops or cheering fans. Capturing action helps tell a story in a single image, making it more engaging for the viewer. Just like how Taylor Swift captures action in her music videos, we can use action to bring our photos to life!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 2,
+        front: "Angle",
+        back: `*(noun)*
+**Definition:** A writer's specific point of view on a larger topic.  
+**Synonyms:** Perspective, viewpoint, stance
+**Antonyms:** Indifference, neutrality, impartiality`,
+        example: `*The article took a unique angle on the school's fundraising efforts, highlighting student involvement.*`,
+        audioExplanation: "Angle is all about the perspective a writer chooses to take on a topic. It’s like when Taylor Swift writes a song from a specific point of view—she gives us her unique angle on love and relationships.",
+        detailedExplanation: `In writing, the angle is crucial because it shapes how the audience understands the topic. For instance, if a writer covers a school event, they might choose to focus on the students’ experiences rather than the event itself. This angle can make the story more relatable and engaging. Just like how Taylor Swift often shares her personal experiences in her songs, writers can use their angles to connect with their readers!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 3,
+        front: "Attribution",
+        back: `*(noun)*  
+**Definition:** Identifying the source of a quote. Crediting a person for their direct quote.  
+**Synonyms:** Citation, acknowledgment, reference  
+**Antonyms:** Plagiarism, omission, neglect`,
+        example: `*The article included attribution for the quote, stating it was from the student council president.*`,
+        audioExplanation: "Attribution is about giving credit where it’s due! When you quote someone, you need to say who said it. Just like when Taylor Swift shares her inspirations in interviews, she gives attribution to the people who influenced her music.",
+        detailedExplanation: `Attribution is important in journalism because it shows where information comes from and gives credit to the original speaker. For example, if a reporter quotes a student, they should include the student’s name to show who provided that information. This practice helps maintain credibility and trust in reporting. Just like how Taylor Swift acknowledges her influences, we should always attribute our sources to honor their contributions!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 4,
+        front: "Basic Information",
+        back: `*(noun)*  
+**Definition:** Documenting the who, what, when, where, why and how of a picture to write factual copy and captions.  
+**Synonyms:** Factual details, essential information, core facts  
+**Antonyms:** Misleading information, ambiguity, vagueness`,
+        example: `*The basic information for the event included the date, location, and purpose of the fundraiser.*`,
+        audioExplanation: "Basic information is all about the essential details that help tell a story. It’s like when you read the back cover of a book to get the main points before diving in—super helpful!",
+        detailedExplanation: `Basic information is crucial for understanding the context of a photo or event. It includes details like who is involved, what is happening, when and where it takes place, and why it matters. For example, if you take a picture at a school dance, the basic information would include the date, location, and purpose of the event. Just like how Taylor Swift shares the story behind her songs, we should provide basic information to give our audience a complete picture!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 5,
+        front: "Body Copy",
+        back: `*(noun)*  
+**Definition:** The main words on a spread. Yearbook body copy is written through interviews with sources.  
+**Synonyms:** Main text, article content, narrative  
+**Antonyms:** Headline, caption, summary`,
+        example: `*The body copy of the yearbook spread included quotes from students about their favorite memories.*`,
+        audioExplanation: "Body copy is the main text that tells the story. It’s like the lyrics of a song that convey the message—super important for understanding the whole piece!",
+        detailedExplanation: `Body copy is where the bulk of the information is presented in a written piece. In a yearbook, this might include interviews, quotes, and narratives that provide depth to the photos. For example, if a yearbook spread features a sports team, the body copy would include player interviews and highlights from the season. Just like how Taylor Swift’s lyrics tell a story, body copy helps convey the full narrative behind the images!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 6,
+        front: "Caption",
+        back: `*(noun)*  
+**Definition:** The first sentence is written in present tense and describes the action and basic information of a picture.  
+**Synonyms:** Description, label, title  
+**Antonyms:** Ambiguity, confusion, vagueness`,
+        example: `*The caption reads, "Students cheer as the team scores a goal during the game."*`,
+        audioExplanation: "A caption is like a mini-story for a photo! It tells you what’s happening in the picture and gives you some context—super helpful for understanding the moment captured.",
+        detailedExplanation: `Captions are essential for providing context to images. They typically start with a present tense verb to describe the action taking place. For example, a caption for a photo of students studying might say, "Students collaborate on a group project." Captions help viewers connect with the image and understand its significance. Just like how Taylor Swift uses captions in her social media posts to share moments from her life, we can use captions to enhance our storytelling!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 7,
+        front: "Complementary Information",
+        back: `*(noun)*  
+**Definition:** Any sentence following the first sentence of a caption. Information relevant to the picture, but may not be readily apparent.  
+**Synonyms:** Additional details, supporting information, context  
+**Antonyms:** Irrelevant information, distraction, confusion`,
+        example: `*The complementary information explained the significance of the event and included quotes from participants.*`,
+        audioExplanation: "Complementary information adds extra details to a caption, helping to explain more about the picture. It’s like the extra verses in a song that give more depth to the story!",
+        detailedExplanation: `Complementary information provides additional context that enhances the understanding of a photo. For example, if a caption describes a school event, the complementary information might include details about the event’s purpose or quotes from attendees. This extra layer helps the audience grasp the full significance of the image. Just like how Taylor Swift often includes deeper meanings in her lyrics, we should strive to provide complementary information to enrich our storytelling!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 8,
+        front: "Conversation Quotas",
+        back: `*(noun)*  
+**Definition:** The minimum number of students a staffer is required to interview each week.  
+**Synonyms:** Interview requirements, engagement targets, outreach goals  
+**Antonyms:** None`,
+        example: `*The yearbook staff has a conversation quota of five students each week to ensure diverse perspectives.*`,
+        audioExplanation: "Conversation quotas are like goals for how many people you need to talk to. It helps make sure you’re getting a variety of opinions—super important for a well-rounded story!",
+        detailedExplanation: `Conversation quotas ensure that reporters engage with a diverse range of sources. For example, if a yearbook staff has a quota of five interviews per week, it encourages them to reach out to different students for their perspectives. This practice helps create a more inclusive and representative narrative. Just like how Taylor Swift connects with her fans through her music, we should aim to connect with a variety of voices in our reporting!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 9,
+        front: "Direct Quote",
+        back: `*(noun)*  
+**Definition:** A statement straight from a source a reporter obtains through interviews.  
+**Synonyms:** Quotation, citation, verbatim statement  
+**Antonyms:** Paraphrase, summary, indirect quote`,
+        example: `*The article included a direct quote from the principal about the importance of school spirit.*`,
+        audioExplanation: "A direct quote is when you use someone’s exact words. It’s super important because it gives authenticity to your writing—like when Taylor Swift shares her thoughts directly in interviews!",
+        detailedExplanation: `Direct quotes are essential for capturing the voice of the source accurately. For example, if a student says, "I love participating in school events," that statement can be used as a direct quote in an article. Using direct quotes adds credibility and personality to writing. Just like how Taylor Swift’s direct quotes in interviews resonate with her fans, we should strive to include direct quotes to bring our stories to life!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 10,
+        front: "Editorializing",
+        back: `*(verb)*  
+**Definition:** When a reporter injects his or her opinion in a story. If it isn't a direct quote or summary of a direct quote from a student, it should not be included.  
+**Synonyms:** Opinionating, bias, subjectivity  
+**Antonyms:** Objectivity, neutrality, impartiality`,
+        example: `*The article was criticized for editorializing instead of sticking to the facts.*`,
+        audioExplanation: "Editorializing means adding your own opinion to a story, which can be tricky! It’s important to stick to the facts—like how Taylor Swift focuses on storytelling in her songs rather than pushing her personal views.",
+        detailedExplanation: `Editorializing can undermine the objectivity of a news piece. For example, if a reporter writes, "The event was a disaster," that’s an opinion rather than a fact. Instead, they should report on what happened without inserting their feelings. Just like how Taylor Swift tells stories through her music without forcing her opinions on listeners, we should aim to present facts clearly and fairly in our writing!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 11,
+        front: "Headline",
+        back: `*(noun)*  
+**Definition:** A reader entry device that introduces reporting. Words simply labeling what's on the page.  
+**Synonyms:** Title, heading, banner  
+**Antonyms:** None`,
+        example: `*The headline read, "Students Celebrate Spirit Week with Fun Activities!"*`,
+        audioExplanation: "A headline is like the title of a song—it grabs your attention and tells you what to expect. It’s super important for drawing readers in!",
+        detailedExplanation: `Headlines are crucial for attracting readers to an article. They should be catchy and informative, giving a clear idea of what the story is about. For example, a headline for a school event might say, "Homecoming Dance Brings Students Together." Just like how Taylor Swift’s song titles hint at the themes within, we should create headlines that entice readers to dive into our stories!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 12,
+        front: "Interview",
+        back: `*(noun)*  
+**Definition:** A conversation between a reporter and their source. The purpose is to obtain and confirm basic information.  
+**Synonyms:** Discussion, conversation, Q&A  
+**Antonyms:** None`,
+        example: `*The reporter conducted an interview with the student council president to gather insights for the article.*`,
+        audioExplanation: "An interview is when you talk to someone to get information. It’s super important for gathering quotes and facts—just like how Taylor Swift interviews her collaborators to create amazing music!",
+        detailedExplanation: `Interviews are essential for obtaining firsthand information from sources. For example, a reporter might interview a student about their experience at a school event to gather insights. This process helps create a more accurate and engaging story. Just like how Taylor Swift connects with her collaborators to create her songs, we should strive to build connections with our sources during interviews!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 13,
+        front: "Inverted Pyramid",
+        back: `*(noun)*  
+**Definition:** A method of journalistic writing that puts the most important information at the top of the story.  
+**Synonyms:** Priority structure, hierarchical writing, lead-first approach  
+**Antonyms:** Chronological order, narrative structure, bottom-up approach`,
+        example: `*Using the inverted pyramid, the article started with the main event details before diving into background information.*`,
+        audioExplanation: "The inverted pyramid is a writing style that puts the most important stuff first! It’s like how Taylor Swift starts her songs with a catchy hook to grab your attention right away.",
+        detailedExplanation: `The inverted pyramid structure is used in journalism to ensure that readers get the most crucial information first. For example, in a news article about a school event, the first paragraph would include the who, what, when, and where, while later paragraphs provide additional details. Just like how Taylor Swift hooks her listeners with powerful openings in her songs, we should aim to lead with the most important information in our writing!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 14,
+        front: "Kicker",
+        back: `*(noun)*  
+**Definition:** The conclusion of the story. Use a surprising or poignant revelation at the end.  
+**Synonyms:** Conclusion, ending, wrap-up  
+**Antonyms:** None`,
+        example: `*The kicker revealed that the event raised more money than expected, leaving everyone surprised and excited.*`,
+        audioExplanation: "A kicker is like the final twist in a story—it leaves you with something to think about! It’s super important for wrapping things up nicely, just like how Taylor Swift often ends her songs with a memorable line.",
+        detailedExplanation: `The kicker is the final part of a story that leaves a lasting impression on the reader. For example, if a story about a school fundraiser ends with a surprising amount of money raised, that’s a great kicker! It’s important to craft a strong conclusion that resonates with the audience. Just like how Taylor Swift often leaves us with powerful messages in her songs, we should aim to create kickers that make our stories unforgettable!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 15,
+        front: "Lead",
+        back: `*(noun)*  
+**Definition:** An attention-grabbing first sentence or paragraph to a story that forces the reader to want to learn more.  
+**Synonyms:** Opening, introduction, hook  
+**Antonyms:** Conclusion, ending, wrap-up`,
+        example: `*The lead of the article captured the excitement of the event, drawing readers in immediately.*`,
+        audioExplanation: "The lead is like the opening line of a song—it needs to grab your attention right away! It’s super important for making readers want to keep reading.",
+        detailedExplanation: `The lead is the first part of a story that sets the tone and grabs the reader’s interest. For example, a lead might start with an exciting fact or a compelling quote to draw readers in. Just like how Taylor Swift often starts her songs with catchy lines that hook listeners, we should craft leads that make our stories irresistible!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 16,
+        front: "Nut Graf",
+        back: `*(noun)*  
+**Definition:** Right after your lead, this string of no more than three sentences gives context and direction to the story.  
+**Synonyms:** Context paragraph, summary, overview  
+**Antonyms:** None`,
+        example: `*The nut graf explained the significance of the event and what readers could expect in the article.*`,
+        audioExplanation: "The nut graf is like the bridge that connects the lead to the rest of the story—it gives you the important context you need to understand what’s coming next!",
+        detailedExplanation: `A nut graf provides essential context right after the lead, helping readers understand the significance of the story. For example, if the lead introduces a school event, the nut graf might explain why it’s important and what will be covered in the article. Just like how Taylor Swift often provides context in her lyrics, we should aim to include nut grafs that enrich our storytelling!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 17,
+        front: "Quote",
+        back: `*(noun)*  
+**Definition:** A direct statement from a source a reporter obtains through interviews. Set off with quotation marks and include attribution.  
+**Synonyms:** Citation, direct speech, statement  
+**Antonyms:** Paraphrase, summary, indirect statement`,
+        example: `*The article featured a quote from a student who said, "This event was the best part of my year!"*`,
+        audioExplanation: "A quote is when you use someone’s exact words, and it’s super important for adding authenticity to your writing—just like when Taylor Swift shares her thoughts directly in interviews!",
+        detailedExplanation: `Quotes are vital for capturing the voice of the source accurately. For example, if a student says, "I had a great time at the event," that statement can be used as a quote in an article. Using quotes adds credibility and personality to writing. Just like how Taylor Swift’s direct quotes resonate with her fans, we should strive to include quotes to bring our stories to life!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 18,
+        front: "Quote Collections",
+        back: `*(noun)*  
+**Definition:** Alternative copy format that uses only direct quotes from students to tell the story of the year.  
+**Synonyms:** Direct quote format, testimonial collection, student voices  
+**Antonyms:** None`,
+        example: `*The yearbook featured quote collections from students sharing their favorite memories.*`,
+        audioExplanation: "Quote collections are like a compilation of everyone’s voices—it’s a great way to showcase different perspectives, just like how Taylor Swift often highlights her fans’ stories in her music!",
+        detailedExplanation: `Quote collections allow reporters to present a story through the voices of multiple sources. For example, a yearbook might feature a collection of quotes from students about their favorite moments from the school year. This format emphasizes the diversity of experiences and opinions. Just like how Taylor Swift often includes fan stories in her songs, we should aim to create quote collections that celebrate the voices of our community!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 19,
+        front: "Source",
+        back: `*(noun)*  
+**Definition:** The person a reporter interviews. They are a "source" of information because they experienced the event you are asking about.  
+**Synonyms:** Informant, contributor, interviewee  
+**Antonyms:** None`,
+        example: `*The source for the article was a student who attended the event and shared their experience.*`,
+        audioExplanation: "A source is someone you talk to for information. They’re super important because they provide firsthand accounts—just like how Taylor Swift often shares her own experiences in her songs!",
+        detailedExplanation: `Sources are essential for gathering accurate information in journalism. For example, if a reporter interviews a teacher about a school event, that teacher becomes a source of information. It’s important to choose reliable sources to ensure the story is credible. Just like how Taylor Swift draws from her own life experiences, we should seek out trustworthy sources to enrich our reporting!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 20,
+        front: "Style Guide",
+        back: `*(noun)*  
+**Definition:** A list of guidelines a writer uses to maintain consistent punctuation and capitalization.  
+**Synonyms:** Writing standards, formatting rules, editorial guidelines  
+**Antonyms:** None`,
+        example: `*The style guide helped the writers ensure consistency in their articles.*`,
+        audioExplanation: "A style guide is like a rulebook for writing—it helps keep everything neat and tidy, just like how Taylor Swift has her own style in her music and performances!",
+        detailedExplanation: `A style guide provides writers with rules for formatting, punctuation, and capitalization. For example, it might specify how to write dates or titles consistently. Following a style guide helps maintain professionalism and clarity in writing. Just like how Taylor Swift has a distinct style in her music, we should aim for consistency in our writing to create a polished final product!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 21,
+        front: "Subheadline",
+        back: `*(noun)*  
+**Definition:** A secondary headline under the main headline that provides specific, detailed information about the copy.  
+**Synonyms:** Secondary title, subtitle, supporting headline  
+**Antonyms:** None`,
+        example: `*The subheadline provided additional context about the event, explaining its significance.*`,
+        audioExplanation: "A subheadline adds more detail to the main headline, helping readers understand what to expect. It’s like the extra info you get on a movie poster that tells you more about the film!",
+        detailedExplanation: `Subheadlines are important for providing additional context and details to the main headline. For example, if the main headline is "School Carnival Brings Fun," the subheadline might say, "Students Enjoy Games, Food, and Prizes." This extra information helps readers grasp the story’s focus. Just like how Taylor Swift often includes extra details in her song descriptions, we should use subheadlines to enhance our writing!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 22,
+        front: "Talking Head",
+        back: `*(noun)*  
+**Definition:** Alternative copy format where student headshots are combined with direct quotes to form coverage around a topic.  
+**Synonyms:** Student spotlight, quote format, visual quotes  
+**Antonyms:** None`,
+        example: `*The talking head format featured student headshots alongside their quotes about the school year.*`,
+        audioExplanation: "Talking heads are a fun way to showcase students’ voices and faces together! It’s like when Taylor Swift shares her fans’ stories and pictures on social media—super engaging!",
+        detailedExplanation: `Talking head formats combine visuals with quotes to create a dynamic storytelling approach. For example, a yearbook might feature students’ photos next to their quotes about their favorite memories. This format adds a personal touch and makes the story more relatable. Just like how Taylor Swift highlights her fans’ experiences, we should aim to create talking heads that celebrate the voices of our community!`
+    },
+    {
+        topic: "English",
+        lesson: "Vocab",
+        order: 23,
+        front: "Transition",
+        back: `*(noun)*  
+**Definition:** Sentences a writer uses to logically link one fact or quotation to another in a piece of copy.  
+**Synonyms:** Linking sentences, connectors, flow sentences  
+**Antonyms:** Disjointed writing, abrupt changes, confusion`,
+        example: `*The transitions between quotes helped the article flow smoothly and made it easy to read.*`,
+        audioExplanation: "Transitions are like the glue that holds your writing together! They help connect ideas and make everything flow nicely—just like how Taylor Swift transitions between different themes in her albums!",
+        detailedExplanation: `Transitions are essential for maintaining coherence in writing. For example, if you’re moving from one idea to another, a transition sentence helps guide the reader smoothly. It’s important to use transitions to avoid abrupt changes that can confuse readers. Just like how Taylor Swift skillfully weaves different themes throughout her albums, we should aim to create seamless transitions in our writing to enhance clarity and flow!`
+    }
+];
+
+
+export const vocabFlashcardsTwo: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",

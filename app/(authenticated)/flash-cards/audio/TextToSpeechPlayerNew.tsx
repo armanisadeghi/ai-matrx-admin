@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import React, {useEffect, useRef} from 'react';
+import {Button} from "@/components/ui/button";
+import {Play, Pause, RotateCcw} from 'lucide-react';
 import useTextToSpeech from '@/hooks/useTextToSpeech'; // Adjust the import path as needed
-import { Language, VoiceSpeed, EmotionControl } from '@/lib/cartesia/cartesia.types'; // Adjust the import path as needed
+import {Language, VoiceSpeed, EmotionControl} from '@/lib/cartesia/cartesia.types'; // Adjust the import path as needed
 
 interface TextToSpeechPlayerProps {
     text: string;
@@ -19,18 +19,19 @@ interface TextToSpeechPlayerProps {
     onClose?: () => void;
 }
 
-const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({
-                                                                   text,
-                                                                   onPlaybackEnd,
-                                                                   modelId,
-                                                                   voiceId,
-                                                                   language,
-                                                                   speed = VoiceSpeed.NORMAL,
-                                                                   emotions,
-                                                                   sampleRate,
-                                                                   addTimestamps,
-                                                                   onClose,
-                                                               }) => {
+const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
+    {
+        text,
+        onPlaybackEnd,
+        modelId,
+        voiceId,
+        language,
+        speed = VoiceSpeed.NORMAL,
+        emotions,
+        sampleRate,
+        addTimestamps,
+        onClose,
+    }) => {
     const apiKey = process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
     const hasPlayedRef = useRef(false);
 

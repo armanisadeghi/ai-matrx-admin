@@ -5,11 +5,11 @@
 // import { motion, MotionStyle, ViewportBox } from "framer-motion";
 // import { useMeasurePosition } from "./use-measure-position";
 // import { usePositionReorder } from "./use-position-reorder";
-// import "./styles.css";
+// import "./module.css";
 //
 // interface ItemProps {
 //     i: number;
-//     item: number;
+//     item.tsx: number;
 //     updatePosition: (i: number, pos: Position) => void;
 //     updateOrder: (i: number, viewportBox: ViewportBox) => void;
 // }
@@ -21,7 +21,7 @@
 //     top: number;
 // }
 //
-// function Item({ i, item, updatePosition, updateOrder }: ItemProps) {
+// function Item({ i, item.tsx, updatePosition, updateOrder }: ItemProps) {
 //     const [isDragging, setDragging] = useState(false);
 //
 //     const ref = useMeasurePosition((pos: Position) => updatePosition(i, pos));
@@ -63,7 +63,7 @@
 //                 isDragging && updateOrder(i, viewportBox);
 //             }}
 //         >
-//             {item}
+//             {item.tsx}
 //         </motion.div>
 //
 //
@@ -84,10 +84,10 @@
 //                 width: 700,
 //             }}
 //         >
-//             {order.map((item, i) => (
+//             {order.map((item.tsx, i) => (
 //                 <Item
-//                     key={item}
-//                     item={item}
+//                     key={item.tsx}
+//                     item.tsx={item.tsx}
 //                     i={i}
 //                     updatePosition={updatePosition}
 //                     updateOrder={updateOrder}

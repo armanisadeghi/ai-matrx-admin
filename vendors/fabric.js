@@ -6047,7 +6047,7 @@ fabric.warn = console.warn;
    * @property {number | number[]} [byValue=100] Value to modify the property by
    * @property {Function} [easing] Easing function
    * @property {Number} [duration=500] Duration of change (in ms)
-   * @property {Function} [abort] Additional function with logic. If returns true, animation aborts.
+   * @property {Function} [abort] Additional function with logic. If returns true, animated-menu aborts.
    *
    * @typedef {() => void} CancelFunction
    *
@@ -6122,7 +6122,7 @@ fabric.warn = console.warn;
     /**
      *
      * @param {CancelFunction} cancelFunc the function returned by animate
-     * @returns {AnimationContext | undefined} animation's options object
+     * @returns {AnimationContext | undefined} animated-menu's options object
      */
     findAnimation: function (cancelFunc) {
       return this.find(function (animation) {
@@ -6132,8 +6132,8 @@ fabric.warn = console.warn;
 
     /**
      *
-     * @param {*} target the object that is assigned to the target property of the animation context
-     * @returns {AnimationContext[]} array of animation options object associated with target
+     * @param {*} target the object that is assigned to the target property of the animated-menu context
+     * @returns {AnimationContext[]} array of animated-menu options object associated with target
      */
     findAnimationsByTarget: function (target) {
       if (!target) {
@@ -6257,7 +6257,7 @@ fabric.warn = console.warn;
    * In order to get a precise start time, `requestAnimFrame` should be called as an entry into the method
    * @memberOf fabric.util
    * @param {Function} callback Callback to invoke
-   * @param {DOMElement} element optional Element to associate with animation
+   * @param {DOMElement} element optional Element to associate with animated-menu
    */
   function requestAnimFrame() {
     return _requestAnimFrame.apply(fabric.window, arguments);
@@ -6296,7 +6296,7 @@ fabric.warn = console.warn;
    * @param {Object} [options] Animation options
    * @param {Function} [options.onChange] Callback; invoked on every value change
    * @param {Function} [options.onComplete] Callback; invoked when value change is completed
-   * @param {Function} [options.colorEasing] Easing function. Note that this function only take two arguments (currentTime, duration). Thus the regular animation easing functions cannot be used.
+   * @param {Function} [options.colorEasing] Easing function. Note that this function only take two arguments (currentTime, duration). Thus the regular animated-menu easing functions cannot be used.
    * @param {Function} [options.abort] Additional function with logic. If returns true, onComplete is called.
    * @returns {Function} abort function
    */
@@ -11688,7 +11688,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
     },
 
     /**
-     * Append a renderAll request to next animation frame.
+     * Append a renderAll request to next animated-menu frame.
      * unless one is already in progress, in that case nothing is done
      * a boolean flag will avoid appending more.
      * @return {fabric.Canvas} instance
@@ -12239,7 +12239,7 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
       else {
         idx = this._objects.indexOf(object);
         if (idx !== this._objects.length - 1) {
-          // if object is not on top of stack (last item in an array)
+          // if object is not on top of stack (last item.tsx in an array)
           newIdx = this._findNewUpperIndex(object, idx, intersecting);
           removeFromArray(this._objects, object);
           this._objects.splice(newIdx, 0, object);
@@ -19691,11 +19691,11 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
   FX_DURATION: 500,
 
   /**
-   * Centers object horizontally with animation.
+   * Centers object horizontally with animated-menu.
    * @param {fabric.Object} object Object to center
    * @param {Object} [callbacks] Callbacks object with optional "onComplete" and/or "onChange" properties
    * @param {Function} [callbacks.onComplete] Invoked on completion
-   * @param {Function} [callbacks.onChange] Invoked on every step of animation
+   * @param {Function} [callbacks.onChange] Invoked on every step of animated-menu
    * @return {fabric.AnimationContext} context
    */
   fxCenterObjectH: function (object, callbacks) {
@@ -19724,11 +19724,11 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
   },
 
   /**
-   * Centers object vertically with animation.
+   * Centers object vertically with animated-menu.
    * @param {fabric.Object} object Object to center
    * @param {Object} [callbacks] Callbacks object with optional "onComplete" and/or "onChange" properties
    * @param {Function} [callbacks.onComplete] Invoked on completion
-   * @param {Function} [callbacks.onChange] Invoked on every step of animation
+   * @param {Function} [callbacks.onChange] Invoked on every step of animated-menu
    * @return {fabric.AnimationContext} context
    */
   fxCenterObjectV: function (object, callbacks) {
@@ -19761,7 +19761,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
    * @param {fabric.Object} object Object to remove
    * @param {Object} [callbacks] Callbacks object with optional "onComplete" and/or "onChange" properties
    * @param {Function} [callbacks.onComplete] Invoked on completion
-   * @param {Function} [callbacks.onChange] Invoked on every step of animation
+   * @param {Function} [callbacks.onChange] Invoked on every step of animated-menu
    * @return {fabric.AnimationContext} context
    */
   fxRemove: function (object, callbacks) {
@@ -19797,7 +19797,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
    * @param {Number|Object} value Value to animate property to (if string was given first) or options object
    * @return {fabric.Object} thisArg
    * @tutorial {@link http://fabricjs.com/fabric-intro-part-2#animation}
-   * @return {fabric.AnimationContext | fabric.AnimationContext[]} animation context (or an array if passed multiple properties)
+   * @return {fabric.AnimationContext | fabric.AnimationContext[]} animated-menu context (or an array if passed multiple properties)
    *
    * As object — multiple properties
    *
@@ -22672,10 +22672,10 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
   },
 
   /**
-   * Same as {@link fabric.Object.prototype.straighten} but with animation
+   * Same as {@link fabric.Object.prototype.straighten} but with animated-menu
    * @param {Object} callbacks Object with callback functions
    * @param {Function} [callbacks.onComplete] Invoked on completion
-   * @param {Function} [callbacks.onChange] Invoked on every step of animation
+   * @param {Function} [callbacks.onChange] Invoked on every step of animated-menu
    * @return {fabric.Object} thisArg
    */
   fxStraighten: function(callbacks) {
@@ -28896,7 +28896,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
       this.clearContextTop();
       this.callSuper('render', ctx);
       // clear the cursorOffsetCache, so we ensure to calculate once per renderCursor
-      // the correct position but not at every cursor animation.
+      // the correct position but not at every cursor animated-menu.
       this.cursorOffsetCache = { };
       this.renderCursorOrSelection();
     },
@@ -29310,7 +29310,7 @@ fabric.Image.filters.BaseFilter.fromObject = function(object, callback) {
     },
 
     /**
-     * Aborts cursor animation and clears all timeouts
+     * Aborts cursor animated-menu and clears all timeouts
      */
     abortCursorAnimation: function() {
       var shouldClear = this._currentTickState || this._currentTickCompleteState,

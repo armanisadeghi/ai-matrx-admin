@@ -59,7 +59,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
                     __experimental_controls: {
-                        "speed": "fast",
+                        "speed": "medium",
                         "emotion": [
                             "positivity:high",
                             "curiosity"
