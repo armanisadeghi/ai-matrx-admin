@@ -1,5 +1,6 @@
 import type {Config} from "tailwindcss";
 import {nextui} from "@nextui-org/react";
+import animations from '@midudev/tailwind-animations'
 
 const {fontFamily} = require("tailwindcss/defaultTheme");
 const colors = require("tailwindcss/colors");
@@ -189,6 +190,7 @@ const config: Config = {
             layout: {},
         }),
         addVariablesForColors,
+        animations,
         function ({addUtilities, variants, theme}) {
             const newUtilities = {
 

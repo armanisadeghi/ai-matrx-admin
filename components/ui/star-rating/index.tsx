@@ -11,15 +11,16 @@ interface starProps {
     onChange?: (rating: number) => void; // Add this to handle the rating change
 }
 
-const StarRating = ({
-                        rating = 1,
-                        filled = false,
-                        color = "amber",
-                        disabled = false,
-                        size = "md",
-                        viewOnly = false,
-                        onChange,  // Add onChange here
-                    }: starProps) => {
+const StarRating = (
+    {
+        rating = 1,
+        filled = false,
+        color = "amber",
+        disabled = false,
+        size = "md",
+        viewOnly = false,
+        onChange,  // Add onChange here
+    }: starProps) => {
     const starColor = {
         amber: "text-amber-500",
         slate: "text-muted-foreground",
@@ -53,7 +54,7 @@ const StarRating = ({
     return (
         <>
             {viewOnly ? (
-                <StarSVG />
+                <StarSVG/>
             ) : (
                 <button
                     className="appearance-none disabled:opacity-50"
@@ -62,7 +63,7 @@ const StarRating = ({
                     onClick={handleClick}  // Trigger handleClick
                     disabled={disabled}
                 >
-                    <StarSVG />
+                    <StarSVG/>
                 </button>
             )}
         </>
