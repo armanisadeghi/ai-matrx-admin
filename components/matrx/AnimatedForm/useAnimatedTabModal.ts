@@ -1,5 +1,5 @@
 import {useState, useEffect, useCallback} from 'react';
-import {AnimatedModalFormState} from "@/components/matrx/AnimatedForm/index";
+import {AnimatedModalFormState, AnimatedTabModalProps} from "@/types/AnimatedFormTypes";
 
 export const useAnimatedTabModal = (
     {
