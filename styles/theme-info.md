@@ -6,7 +6,7 @@
 │   ├── /api
 │   ├── /auth
 │   ├── DynamicLayout.tsx
-│   ├── hold-hold-page.tsx  
+│   ├── hold-hold-BasicForm.tsx  
 │   └── Providers.tsx
 ├── /components
 ├── tailwind.config.ts
@@ -15,8 +15,8 @@
 └── /styles
     ├── globals.css
     └── /themes
-        ├── index.ts
-        ├── flashcards.types.ts
+        ├── index.tsx
+        ├── flashcards.AnimatedFormTypes.ts
         ├── themeDefinitions.ts
         ├── ThemeProvider.tsx
         ├── themeSlice.ts
@@ -28,8 +28,8 @@ File Descriptions:
 
 1. `/styles/globals.css`: Global styles and Tailwind directives
 2. `/tailwind.config.ts`: Tailwind configuration (in root directory)
-3. `/styles/themes/index.ts`: Central export point for all theme-related modules
-4. `/styles/themes/flashcards.types.ts`: TypeScript types for themes
+3. `/styles/themes/index.tsx`: Central export point for all theme-related modules
+4. `/styles/themes/flashcards.AnimatedFormTypes.ts`: TypeScript types for themes
 5. `/styles/themes/themeDefinitions.ts`: Define all themes and their properties (colors, typography, etc.)
 6. `/styles/themes/ThemeProvider.tsx`: React context provider for themes
 7. `/styles/themes/themeSlice.ts`: Redux slice for theme state management
@@ -43,7 +43,7 @@ File Descriptions:
 
 Let's update the content of these files:
 
-1. `styles/themes/index.ts`:
+1. `styles/themes/index.tsx`:
 
 ```typescript
 export * from './types';

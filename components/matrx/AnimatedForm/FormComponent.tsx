@@ -10,7 +10,7 @@ import AnimatedSelect from "./AnimatedSelect";
 import AnimatedCheckbox from "./AnimatedCheckbox";
 import AnimatedRadioGroup from "./AnimatedRadioGroup";
 import AnimatedButton from "./AnimatedButton";
-import { AnimatedFormProps, FormField } from "./types";
+import {AnimatedFormProps, FormField } from "@/types/AnimatedFormTypes";
 
 const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
     {

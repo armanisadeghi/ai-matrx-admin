@@ -3,36 +3,41 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/styles/themes/utils';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {motion, AnimatePresence} from 'framer-motion';
+import {cn} from '@/styles/themes/utils';
+import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/tabs';
 import AnimatedForm from './FormComponent';
-import { AnimatedTabModalProps, TabButton } from './types';
-import AnimatedButton from './AnimatedButton';
-import { useAnimatedTabModal } from './useAnimatedTabModal'; // Import the custom hook
+import {AnimatedTabModalProps, TabButton} from "@/types/AnimatedFormTypes";
 
-const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }> = ({
-                                                                                        isOpen: externalIsOpen,
-                                                                                        onClose: externalOnClose,
-                                                                                        onSubmit: externalOnSubmit,
-                                                                                        triggerButton,
-                                                                                        fields = [],
-                                                                                        formState: externalFormState = {},
-                                                                                        onUpdateField: externalOnUpdateField,
-                                                                                        currentStep = 0,
-                                                                                        onNextStep = () => {},
-                                                                                        onPrevStep = () => {},
-                                                                                        isSinglePage = false,
-                                                                                        title,
-                                                                                        description,
-                                                                                        tabs,
-                                                                                        footer,
-                                                                                        className,
-                                                                                        activeTab: externalActiveTab,
-                                                                                        onTabChange: externalOnTabChange,
-                                                                                        children,
-                                                                                        ...props
-                                                                                    }) => {
+
+import AnimatedButton from './AnimatedButton';
+import {useAnimatedTabModal} from './useAnimatedTabModal'; // Import the custom hook
+
+const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }> = (
+    {
+        isOpen: externalIsOpen,
+        onClose: externalOnClose,
+        onSubmit: externalOnSubmit,
+        triggerButton,
+        fields = [],
+        formState: externalFormState = {},
+        onUpdateField: externalOnUpdateField,
+        currentStep = 0,
+        onNextStep = () => {
+        },
+        onPrevStep = () => {
+        },
+        isSinglePage = false,
+        title,
+        description,
+        tabs,
+        footer,
+        className,
+        activeTab: externalActiveTab,
+        onTabChange: externalOnTabChange,
+        children,
+        ...props
+    }) => {
     const {
         isOpen,
         activeTab,
@@ -110,25 +115,25 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
 
     return (
         <>
-            {triggerButton && React.cloneElement(triggerButton as React.ReactElement, { onClick: openModal })}
+            {triggerButton && React.cloneElement(triggerButton as React.ReactElement, {onClick: openModal})}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        initial={{opacity: 0}}
+                        animate={{opacity: 1}}
+                        exit={{opacity: 0}}
                         className={cn("fixed inset-0 z-50 flex items-center justify-center", className)}
                     >
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
+                            initial={{opacity: 0, scale: 0.8}}
+                            animate={{opacity: 1, scale: 1}}
+                            exit={{opacity: 0, scale: 0.8}}
                             className={cn(
                                 "bg-neutral-50 dark:bg-neutral-900 p-6 text-foreground rounded-xl border border-gray-300 dark:border-neutral-600 " +
                                 "shadow-xl max-w-lg w-full relative z-10 overflow-y-auto scrollbar-none",
                                 className
                             )}
-                            style={{ maxHeight: "95vh" }}
+                            style={{maxHeight: "95vh"}}
                             {...props}
                         >
                             <button
@@ -159,7 +164,8 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                                             </TabsTrigger>
                                         ))}
                                     </TabsList>
-                                    <div className="mt-5 mb-5 mx-auto border-t border-gray-300 dark:border-neutral-600"/>
+                                    <div
+                                        className="mt-5 mb-5 mx-auto border-t border-gray-300 dark:border-neutral-600"/>
 
                                     {customTab && renderCustomTab()}
 
@@ -181,9 +187,9 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                             )}
                         </motion.div>
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            exit={{opacity: 0}}
                             className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-xl"
                             onClick={closeModal}
                         />

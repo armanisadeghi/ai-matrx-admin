@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import { Check } from "lucide-react";
 import { cn } from "@/styles/themes/utils"; // Import cn utility
-import { FormField } from "./types";
+import { FormField } from "@/types/AnimatedFormTypes";
 
 const AnimatedCheckbox: React.FC<{
     field: FormField;

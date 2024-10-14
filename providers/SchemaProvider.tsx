@@ -16,7 +16,7 @@ export function SchemaProvider({ children }: { children: React.ReactNode }) {
     const schemaRegistry: SchemaRegistry = {};
 
     for (const [frontendName, schema] of Object.entries(initialSchemas)) {
-        // console.log('Registering schema:', frontendName);
+
         registerSchema(frontendName, schema);
         schemaRegistry[frontendName] = schema;
     }

@@ -1,7 +1,4 @@
-// components/matrx/AnimatedForm/flashcards.types.ts
-
-import React from "react";
-
+// Existing types remain unchanged
 export type FormFieldType =
     'text'
     | 'email'
@@ -18,7 +15,14 @@ export type FormFieldType =
     | 'week'
     | 'tel'
     | 'url'
-    | 'color';
+    | 'color'
+    | 'slider'
+    | 'switch'
+    | 'json'
+    | 'file'
+    | 'image'
+    | 'rating';
+
 
 export interface FormField {
     name: string;
@@ -47,7 +51,43 @@ export interface AnimatedFormProps {
     isSinglePage?: boolean;
 }
 
+export interface FlexFormField {
+    name: string;
+    label: string;
+    type: FormFieldType;
+    options?: string[];
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    section?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    accept?: string;
+    multiple?: boolean;
+    src?: string;
+    alt?: string;
+    jsonSchema?: object;
+}
 
+export interface FlexAnimatedFormProps {
+    fields: FlexFormField[];
+    formState: FormState;
+    onUpdateField: (name: string, value: any) => void;
+    onSubmit: () => void;
+    currentStep?: number;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
+    isSinglePage?: boolean;
+    className?: string;
+    isFullPage?: boolean;
+    columns?: number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
+    layout?: 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
+    enableSearch?: boolean;
+    direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
+}
+
+// Keep other interfaces unchanged
 export type ModalOnSubmit = (() => void) | ((formData: FormState) => void);
 
 export interface AnimatedFormModalProps extends Omit<Partial<AnimatedFormProps>, 'onSubmit'> {
@@ -56,7 +96,6 @@ export interface AnimatedFormModalProps extends Omit<Partial<AnimatedFormProps>,
     onSubmit?: ModalOnSubmit;
     triggerButton?: React.ReactNode;
 }
-
 
 export interface TabButton {
     label: string;

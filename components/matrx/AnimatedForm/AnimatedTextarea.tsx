@@ -7,7 +7,7 @@ import {motion} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
-import {FormField} from "./types";
+import { FormField } from "@/types/AnimatedFormTypes";
 
 interface AnimatedTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
     field: FormField;

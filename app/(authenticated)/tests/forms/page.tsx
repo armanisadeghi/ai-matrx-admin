@@ -4,19 +4,11 @@
 
 import React, { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { FlexAnimatedForm, AnimatedFormModal, FormField } from "@/components/matrx/AnimatedForm";
+import { FlexAnimatedForm, AnimatedFormModal } from "@/components/matrx/AnimatedForm";
 import { AppDispatch, RootState } from "@/lib/redux/store";
 import { submitForm, updateFormField } from "@/lib/redux/slices/formSlice";
+import {formFields} from "@/app/(authenticated)/tests/forms/formData";
 
-const formFields: FormField[] = [
-    { name: 'name', label: 'Full Name', type: 'text', required: true },
-    { name: 'email', label: 'Email', type: 'email', required: true },
-    { name: 'age', label: 'Age', type: 'number', required: true },
-    { name: 'country', label: 'Country', type: 'select', options: ['USA', 'Canada', 'UK', 'Australia'], required: true },
-    { name: 'bio', label: 'Bio', type: 'textarea' },
-    { name: 'newsletter', label: 'Subscribe to newsletter', type: 'checkbox' },
-    { name: 'gender', label: 'Gender', type: 'radio', options: ['Male', 'Female', 'Other', "another", "More", 'One more long option'], required: true },
-];
 
 const AnimatedFormModalPage: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -135,7 +127,6 @@ const AnimatedFormModalPage: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6 text-foreground">Animated Form Test Page</h1>
 
             {/* Control Panel */}
             <div className="mb-8 flex flex-wrap gap-2">

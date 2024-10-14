@@ -1,10 +1,11 @@
 // components/matrx/AnimatedForm/AnimatedSelect.tsx
 
 'use client';
+
 import React from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/styles/themes/utils"; // Import cn utility
-import { FormField } from "./types";
+import { cn } from "@/styles/themes/utils";
+import { FormField } from "@/types/AnimatedFormTypes";
 
 const AnimatedSelect: React.FC<{
     field: FormField;
@@ -12,7 +13,8 @@ const AnimatedSelect: React.FC<{
     onChange: (value: string) => void;
     className?: string;
     disabled?: boolean; // Add disabled prop
-}> = ({ field, value, onChange, className, disabled = false, ...props }) => (
+    hideLabel?: boolean; // New prop to hide label
+}> = ({ field, value, onChange, className, disabled = false, hideLabel = false, ...props }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -21,14 +23,16 @@ const AnimatedSelect: React.FC<{
         className={cn("mb-4", className)} // Use cn for class names
         {...props}
     >
-        <label
-            className={cn(
-                "block text-sm font-medium mb-1",
-                disabled ? "text-muted" : "text-foreground" // Adjust label style when disabled
-            )}
-        >
-            {field.label}
-        </label>
+        {!hideLabel && ( // Conditionally render the label
+            <label
+                className={cn(
+                    "block text-sm font-medium mb-1",
+                    disabled ? "text-muted" : "text-foreground" // Adjust label style when disabled
+                )}
+            >
+                {field.label}
+            </label>
+        )}
         <motion.select
             value={value}
             onChange={(e) => onChange(e.target.value)}

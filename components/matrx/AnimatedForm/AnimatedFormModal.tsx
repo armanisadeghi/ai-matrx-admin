@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/styles/themes/utils'; // Import cn utility
 import AnimatedForm from './FormComponent';
-import { AnimatedFormModalProps, FormState } from "./types";
+import { AnimatedFormModalProps, FormField, FormState } from "@/types/AnimatedFormTypes";
 
 const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string }> = (
     {

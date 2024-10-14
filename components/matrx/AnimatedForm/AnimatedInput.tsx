@@ -5,7 +5,7 @@ import {motion} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {FormField} from "./types";
+import { FormField } from "@/types/AnimatedFormTypes";
 
 interface AnimatedInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
     field: FormField;

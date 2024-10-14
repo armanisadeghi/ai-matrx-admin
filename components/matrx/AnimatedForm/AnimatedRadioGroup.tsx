@@ -4,7 +4,7 @@ import React from "react";
 import {motion} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import * as RadixRadioGroup from "@radix-ui/react-radio-group";
-import {FormField} from "./types";
+import { FormField } from "@/types/AnimatedFormTypes";
 
 interface AnimatedRadioGroupProps {
     field: FormField;

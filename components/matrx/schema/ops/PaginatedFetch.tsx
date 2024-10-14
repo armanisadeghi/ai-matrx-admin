@@ -16,7 +16,7 @@ const PaginatedFetch = () => {
 
     useEffect(() => {
         if (selectedSchema) {
-            handlePageChange(1, 10); // Initial fetch
+            handlePageChange(1, 10);
         }
     }, [selectedSchema]);
 

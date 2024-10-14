@@ -13,7 +13,7 @@ import {Copy, ChevronDown, ChevronRight, Plus, Trash, Save, X, Edit} from 'lucid
 import jsonlint from 'jsonlint-mod';
 
 export interface EditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
-    data: object | string;
+    data: object | string | null; // Allow null
     onChange: (newData: object | string) => void;
     onFormat?: () => void;
     initialExpanded?: boolean;
@@ -220,6 +220,13 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
 
     useEffect(() => {
         const initializeData = () => {
+            // Check if data is valid or set to empty object
+            if (data === null || data === undefined) {
+                setParsedData({});
+                setBasicJsonText('');
+                return;
+            }
+
             if (typeof data === 'string') {
                 setBasicJsonText(data);
                 try {
@@ -381,36 +388,40 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
                 )}
             </div>
             {isEnhancedMode ? (
-                Object.entries(parsedData).map(([key, value], index) => (
-                    <JsonEditorItem
-                        key={key}
-                        keyName={key}
-                        value={value}
-                        depth={0}
-                        isExpanded={expandedKeys.has(key)}
-                        onToggle={() => toggleExpand(key)}
-                        onEdit={(newKey, newValue) => {
-                            const newData = {...parsedData};
-                            delete newData[key];
-                            newData[newKey] = newValue;
-                            handleChange(newData);
-                        }}
-                        onAdd={(newKey, newValue, index) => {
-                            const entries = Object.entries(parsedData);
-                            entries.splice(index, 0, [newKey, newValue]);
-                            const newData = Object.fromEntries(entries);
-                            handleChange(newData);
-                        }}
-                        onDelete={() => {
-                            const newData = {...parsedData};
-                            delete newData[key];
-                            handleChange(newData);
-                        }}
-                        error={validationErrors.find(error => error.line === index + 1)}
-                        lockKeys={lockKeys}
-                        index={index}
-                    />
-                ))
+                Object.entries(parsedData).length > 0 ? (
+                    Object.entries(parsedData).map(([key, value], index) => (
+                        <JsonEditorItem
+                            key={key}
+                            keyName={key}
+                            value={value}
+                            depth={0}
+                            isExpanded={expandedKeys.has(key)}
+                            onToggle={() => toggleExpand(key)}
+                            onEdit={(newKey, newValue) => {
+                                const newData = {...parsedData};
+                                delete newData[key];
+                                newData[newKey] = newValue;
+                                handleChange(newData);
+                            }}
+                            onAdd={(newKey, newValue, index) => {
+                                const entries = Object.entries(parsedData);
+                                entries.splice(index, 0, [newKey, newValue]);
+                                const newData = Object.fromEntries(entries);
+                                handleChange(newData);
+                            }}
+                            onDelete={() => {
+                                const newData = {...parsedData};
+                                delete newData[key];
+                                handleChange(newData);
+                            }}
+                            error={validationErrors.find(error => error.line === index + 1)}
+                            lockKeys={lockKeys}
+                            index={index}
+                        />
+                    ))
+                ) : (
+                    <div className="text-gray-500">No data available</div>
+                )
             ) : (
                 <Textarea
                     value={basicJsonText}

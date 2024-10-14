@@ -8,5 +8,4 @@ export type RecipeBrokerType = {
     broker: string;
     brokerRole: BrokerRoleType;
     required?: boolean;
-
 };
