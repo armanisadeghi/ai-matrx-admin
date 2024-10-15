@@ -3,6 +3,237 @@ import {FlashcardData} from "@/types/flashcards.types";
 
 export const vocabFlashcards: FlashcardData[] = [
     {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 1,
+        front: "Chemical Reaction",
+        back: `*(noun)*  
+**Definition:** A process where substances (reactants) transform into new substances (products).`,
+        example: `*Burning wood is a chemical reaction that produces ash and smoke.*`,
+        audioExplanation: "A chemical reaction is like a magic trick where the original substances change into something completely new! Just like how Taylor Swift transforms her music style over the years.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 2,
+        front: "Physical Change",
+        back: `*(noun)*  
+**Definition:** A change that does not alter the identity of a substance (e.g., cutting, melting).`,
+        example: `*Melting ice is a physical change because it remains water.*`,
+        audioExplanation: "Think of a physical change like changing your hairstyle—you're still you, just looking a bit different! Just like when Taylor changes her hair for different eras.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 3,
+        front: "Chemical Change",
+        back: `*(noun)*  
+**Definition:** A change that results in the formation of new substances (e.g., rusting, combustion).`,
+        example: `*Rusting of iron is a chemical change that produces iron oxide.*`,
+        audioExplanation: "A chemical change is like when you bake a cake; the ingredients change into something new and delicious! Just like how Taylor's songs evolve into something fresh.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 4,
+        front: "Signs of Chemical Reactions",
+        back: `*(noun)*  
+**Definition:** Indicators that a chemical reaction has occurred, such as color change, gas production, or energy change.`,
+        example: `*Baking soda and vinegar produce bubbles, indicating a chemical reaction.*`,
+        audioExplanation: "Signs of a chemical reaction are like clues in a mystery! They help us figure out what's happening, just like when we analyze Taylor's lyrics for hidden meanings.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 5,
+        front: "Photosynthesis",
+        back: `*(noun)*  
+**Definition:** The process by which green plants use sunlight to produce glucose and oxygen from carbon dioxide and water.`,
+        example: `*Photosynthesis allows plants to grow and produce oxygen for us to breathe.*`,
+        audioExplanation: "Photosynthesis is like nature's way of making food! Just like how Taylor creates beautiful music that feeds our souls.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 6,
+        front: "Combustion",
+        back: `*(noun)*  
+**Definition:** A chemical reaction that typically involves the reaction of a substance with oxygen, releasing energy (heat and light).`,
+        example: `*Burning wood in a fireplace is an example of combustion.*`,
+        audioExplanation: "Combustion is like a firework show—lots of energy and light! Just like the excitement of a Taylor Swift concert.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "States of Matter",
+        order: 7,
+        front: "Melting",
+        back: `*(verb)*  
+**Definition:** A process where a solid changes to a liquid by absorbing energy (e.g., ice melting).`,
+        example: `*Ice melts into water when it absorbs heat from the surroundings.*`,
+        audioExplanation: "Melting is like when you warm up chocolate—it's solid at first, but then it becomes gooey and delicious! Just like how Taylor's songs can warm our hearts.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "States of Matter",
+        order: 8,
+        front: "Freezing",
+        back: `*(verb)*  
+**Definition:** A process where a liquid changes to a solid by releasing energy (e.g., water freezing into ice).`,
+        example: `*Water freezes into ice when the temperature drops below 0 degrees Celsius.*`,
+        audioExplanation: "Freezing is like putting your favorite drink in the freezer to make it icy cold! Just like how Taylor's music can give us chills.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "States of Matter",
+        order: 9,
+        front: "Evaporation",
+        back: `*(noun)*  
+**Definition:** A process where a liquid changes to a gas by absorbing energy (e.g., water to steam).`,
+        example: `*Water evaporates from a puddle on a sunny day.*`,
+        audioExplanation: "Evaporation is like magic—water disappears into the air! Just like how Taylor's songs can make our worries disappear.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "States of Matter",
+        order: 10,
+        front: "Condensation",
+        back: `*(noun)*  
+**Definition:** A process where a gas changes to a liquid by losing energy (e.g., water vapor on a cold glass).`,
+        example: `*Water vapor condenses on a cold glass, forming droplets.*`,
+        audioExplanation: "Condensation is like when you see dew on grass in the morning—it's water coming back down! Just like how Taylor brings back memories with her lyrics.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Properties",
+        order: 11,
+        front: "Physical Properties",
+        back: `*(noun)*  
+**Definition:** Observations that do not change the identity of the substance (e.g., melting point, density).`,
+        example: `*The melting point of ice is 0 degrees Celsius.*`,
+        audioExplanation: "Physical properties are like the traits of a person—what you can see without changing who they are! Just like how Taylor has her unique style.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Properties",
+        order: 12,
+        front: "Chemical Properties",
+        back: `*(noun)*  
+**Definition:** Observed during a reaction that changes the substance (e.g., reactivity, flammability).`,
+        example: `*Flammability is a chemical property that indicates how easily a substance can catch fire.*`,
+        audioExplanation: "Chemical properties are like secrets that come out during a reaction—what happens when things change! Just like how Taylor reveals her feelings in her songs.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 13,
+        front: "Endothermic Reaction",
+        back: `*(noun)*  
+**Definition:** A reaction that absorbs heat from the surroundings.`,
+        example: `*Chemical cold packs use endothermic reactions to cool injuries.*`,
+        audioExplanation: "Endothermic reactions are like a cool breeze on a hot day—they take in heat! Just like how Taylor's music can cool us down after a long day.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 14,
+        front: "Exothermic Reaction",
+        back: `*(noun)*  
+**Definition:** A reaction that releases heat into the surroundings.`,
+        example: `*Burning wood is an exothermic reaction that releases heat and light.*`,
+        audioExplanation: "Exothermic reactions are like a warm hug—they give off heat! Just like how Taylor's concerts warm our hearts.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 15,
+        front: "Reactants",
+        back: `*(noun)*  
+**Definition:** Initial substances in a chemical reaction.`,
+        example: `*In the reaction of hydrogen and oxygen, both are reactants that form water.*`,
+        audioExplanation: "Reactants are like the ingredients in a recipe—they're what you start with! Just like how Taylor starts with her ideas before creating a song.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 16,
+        front: "Products",
+        back: `*(noun)*  
+**Definition:** Substances formed in a chemical reaction.`,
+        example: `*Water is the product formed when hydrogen and oxygen react.*`,
+        audioExplanation: "Products are like the finished dish after cooking—what you end up with! Just like how Taylor's songs are the final product of her creativity.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 17,
+        front: "Precipitate",
+        back: `*(noun)*  
+**Definition:** A solid that forms from a solution during a chemical reaction.`,
+        example: `*When vinegar is added to baking soda, a precipitate forms as bubbles rise.*`,
+        audioExplanation: "A precipitate is like a surprise guest at a party—it suddenly appears! Just like how Taylor surprises us with unexpected collaborations.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 18,
+        front: "Catalyst",
+        back: `*(noun)*  
+**Definition:** A substance that speeds up a chemical reaction without being consumed.`,
+        example: `*Enzymes act as catalysts in biological reactions.*`,
+        audioExplanation: "A catalyst is like a helpful friend who speeds things up without getting tired! Just like how Taylor's fans help spread her music far and wide.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 19,
+        front: "Combustion",
+        back: `*(noun)*  
+**Definition:** A chemical reaction that typically involves the reaction of a substance with oxygen, releasing energy (heat and light).`,
+        example: `*Combustion of gasoline powers cars.*`,
+        audioExplanation: "Combustion is like a fireworks show—lots of energy and excitement! Just like the energy Taylor brings to her performances.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 20,
+        front: "Evaporation",
+        back: `*(noun)*  
+**Definition:** Process of a liquid turning into gas, absorbing energy.`,
+        example: `*Water evaporates from a puddle on a sunny day.*`,
+        audioExplanation: "Evaporation is like magic—water disappears into the air! Just like how Taylor's songs can make our worries disappear.",
+        detailedExplanation: ""
+    },
+    {
+        topic: "Chemistry",
+        lesson: "Chemical Processes",
+        order: 21,
+        front: "Condensation",
+        back: `*(noun)*  
+**Definition:** Process of a gas turning into liquid, releasing energy.`,
+        example: `*Water vapor condenses on a cold glass, forming droplets.*`,
+        audioExplanation: "Condensation is like when you see dew on grass in the morning—it's water coming back down! Just like how Taylor brings back memories with her lyrics.",
+        detailedExplanation: ""
+    },
+    {
         topic: "English",
         lesson: "Vocab",
         order: 1,
