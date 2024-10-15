@@ -3,6 +3,160 @@ import {FlashcardData} from "@/types/flashcards.types";
 
 export const vocabFlashcards: FlashcardData[] = [
     {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 100,
+        front: "States of Matter",
+        back: `*(noun)*  
+**Definition:** The three main forms that matter can take: solid, liquid, and gas.  
+**Example:** Ice (solid), water (liquid), and steam (gas) are all states of water.`,
+        audioExplanation: "The states of matter refer to the physical forms that substances can take. Most matter exists in one of three states: solid, liquid, or gas. Solids have a fixed shape and volume, liquids have a fixed volume but take the shape of their container, and gases have neither a fixed shape nor a fixed volume. Think of how ice melts into water and then evaporates into steam—this shows the transitions between states of matter. Just like how Taylor Swift transitions between musical styles in her albums, matter can change states based on temperature and pressure.",
+        detailedExplanation: `Understanding the states of matter is essential in science. Each state has unique properties that determine how matter behaves. For example, solids maintain their shape because their particles are closely packed together, while liquids can flow because their particles are less tightly bound. Gases, on the other hand, have particles that are far apart and move freely, allowing them to fill any container. These concepts are foundational in chemistry and physics, helping us understand the world around us.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 101,
+        front: "Physical Properties of Matter",
+        back: `*(noun)*  
+**Definition:** Characteristics that can be observed or measured without changing the substance's identity.  
+**Example:** Color, shape, volume, and mass are all physical properties.`,
+        audioExplanation: "Physical properties are essential for identifying and classifying matter. They include attributes like color, shape, volume, and mass. For example, you can observe that a piece of ice is solid and has a specific shape, while water is liquid and takes the shape of its container. These properties help scientists and students alike to categorize and understand different materials. Just as Taylor Swift uses her unique style to express herself, scientists use physical properties to describe matter.",
+        detailedExplanation: `Physical properties are important in everyday life. When you look at an object, you can often determine its state of matter just by observing its physical properties. For instance, a solid object like a rock has a definite shape, while a liquid like juice takes the shape of the glass it’s in. Understanding these properties allows us to make predictions about how substances will behave in different situations, which is a key aspect of scientific inquiry.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 102,
+        front: "Volume",
+        back: `*(noun)*  
+**Definition:** The amount of space that matter occupies.  
+**Example:** The volume of a liquid can be measured using a graduated cylinder.`,
+        audioExplanation: "Volume is a crucial concept in science, as it helps us quantify how much space an object or substance takes up. For liquids, we often use tools like graduated cylinders to measure volume accurately. Understanding volume is essential for experiments and calculations in chemistry and physics. Just like how Taylor Swift measures her success through album sales and concert attendance, scientists measure volume to understand the properties of matter.",
+        detailedExplanation: `Measuring volume can be done in various ways depending on the state of matter. For liquids, graduated cylinders provide precise measurements, while for solids, you might use geometric formulas to calculate volume based on dimensions. Gases are a bit trickier, as they expand to fill their containers, but we can still measure their volume using gas syringes or other methods. Knowing how to measure volume is fundamental in science, as it allows us to conduct experiments and understand the relationships between different substances.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 103,
+        front: "Shape of Solids",
+        back: `*(noun)*  
+**Definition:** The fixed form that a solid object maintains.  
+**Example:** A cube of ice has a definite shape that does not change unless it melts.`,
+        audioExplanation: "Solids have a fixed shape because their particles are closely packed together in a regular pattern. This arrangement allows solids to maintain their shape even when not in a container. For example, a block of ice retains its cube shape until it melts into water. Understanding the shape of solids is important in both everyday life and scientific applications. Just like how Taylor Swift has a distinct style that defines her music, solids have a defined shape that distinguishes them from liquids and gases.",
+        detailedExplanation: `The shape of solids is a key characteristic that sets them apart from liquids and gases. In solids, particles vibrate in place but do not move freely, which keeps the solid's shape intact. This property is crucial in many applications, from construction materials to everyday objects. Recognizing how solids maintain their shape helps us understand their behavior in different environments, such as temperature changes that can cause melting or solidification.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 104,
+        front: "Shape of Liquids",
+        back: `*(noun)*  
+**Definition:** The form that a liquid takes, which is determined by its container.  
+**Example:** Water takes the shape of the glass it is poured into.`,
+        audioExplanation: "Liquids do not have a fixed shape; instead, they take the shape of their container. This is because the particles in a liquid are close together but can slide past one another, allowing the liquid to flow. For instance, when you pour water into a glass, it adopts the shape of the glass. Understanding how liquids behave is essential in many scientific fields. Just like how Taylor Swift adapts her music style to fit different themes and emotions, liquids adapt their shape to fit their surroundings.",
+        detailedExplanation: `The ability of liquids to take the shape of their container is a fundamental property that distinguishes them from solids. This characteristic is due to the arrangement of particles in liquids, which allows them to move freely while remaining close together. This property is vital in various applications, such as cooking, where liquids are often heated and poured. Recognizing how liquids behave helps us understand their role in chemical reactions and everyday life.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 105,
+        front: "Shape of Gases",
+        back: `*(noun)*  
+**Definition:** Gases have no fixed shape and expand to fill their container.  
+**Example:** Helium fills a balloon and takes its shape.`,
+        audioExplanation: "Gases are unique because they have neither a fixed shape nor a fixed volume. Instead, gas particles are far apart and move freely, allowing them to expand and fill any container. For example, when you blow up a balloon, the helium gas inside expands to take the shape of the balloon. Understanding the behavior of gases is crucial in many scientific applications. Just like how Taylor Swift's music can fill a stadium, gas can fill any space available to it!",
+        detailedExplanation: `The behavior of gases is governed by the principles of particle motion and energy. Gas particles move rapidly and are spaced far apart, which allows them to fill any container they occupy. This property is essential in various scientific fields, including chemistry and physics, as it explains phenomena such as pressure and temperature changes. Recognizing how gases behave helps us understand their role in the atmosphere and other environments.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 106,
+        front: "Melting",
+        back: `*(verb)*  
+**Definition:** The process of a solid turning into a liquid due to heat.  
+**Example:** Ice melts into water when heated.`,
+        audioExplanation: "Melting occurs when a solid absorbs heat and changes into a liquid. For example, when ice is placed in a warm environment, it absorbs heat and melts into water. This process is a key concept in understanding phase changes in matter. Just like how Taylor Swift evolves her music with each album, solids can change states when the right conditions are met.",
+        detailedExplanation: `Melting is an important phase change that occurs at a specific temperature known as the melting point. For example, ice melts at 0 degrees Celsius. Understanding melting helps us comprehend how materials behave under different temperature conditions. This concept is crucial in various fields, including meteorology, cooking, and materials science. Recognizing how melting works allows us to predict how substances will behave in different environments.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 107,
+        front: "Freezing",
+        back: `*(verb)*  
+**Definition:** The process of a liquid turning into a solid due to the removal of heat.  
+**Example:** Water freezes into ice when cooled.`,
+        audioExplanation: "Freezing is the opposite of melting; it occurs when a liquid loses heat and changes into a solid. For example, when water is placed in a freezer, it cools down and eventually freezes into ice. Understanding freezing is essential for various applications, from food preservation to weather patterns. Just like how Taylor Swift's songs can evoke strong emotions, the freezing process can create beautiful ice formations!",
+        detailedExplanation: `Freezing occurs at a specific temperature known as the freezing point, which is the same as the melting point for a given substance. For water, this temperature is 0 degrees Celsius. Understanding the freezing process is crucial in many scientific fields, including meteorology and environmental science. Recognizing how freezing works helps us predict how substances will behave under different temperature conditions and is essential for understanding seasonal changes.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 108,
+        front: "Evaporation",
+        back: `*(verb)*  
+**Definition:** The process of a liquid turning into a gas due to heat.  
+**Example:** Water evaporates into steam when heated.`,
+        audioExplanation: "Evaporation occurs when a liquid absorbs heat and changes into a gas. For example, when water is heated, it eventually turns into steam. This process is vital for understanding the water cycle and weather patterns. Just like how Taylor Swift's music can inspire change, evaporation plays a crucial role in the natural world!",
+        detailedExplanation: `Evaporation happens at any temperature, but it occurs more quickly at higher temperatures. This process is essential for the water cycle, as it allows water from oceans, lakes, and rivers to enter the atmosphere as vapor. Understanding evaporation helps us comprehend weather patterns and climate changes. Recognizing how evaporation works is crucial for various applications, including cooking and environmental science.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 109,
+        front: "Condensation",
+        back: `*(verb)*  
+**Definition:** The process of a gas turning into a liquid due to cooling.  
+**Example:** Water vapor condenses into droplets on a cold glass.`,
+        audioExplanation: "Condensation is the process that occurs when a gas loses heat and changes back into a liquid. For example, when water vapor in the air comes into contact with a cold surface, it condenses into droplets. Understanding condensation is essential for grasping the water cycle and weather phenomena. Just like how Taylor Swift reflects on her past experiences in her songs, condensation is a reminder of how matter can change states!",
+        detailedExplanation: `Condensation occurs when the temperature of a gas decreases, causing its particles to come closer together and form a liquid. This process is crucial in the water cycle, as it leads to the formation of clouds and precipitation. Understanding condensation helps us predict weather patterns and is essential for various scientific applications, including meteorology and HVAC systems. Recognizing how condensation works allows us to appreciate the dynamic nature of matter in our environment.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 110,
+        front: "Gas Expansion",
+        back: `*(noun)*  
+**Definition:** The ability of a gas to fill the entire volume of its container.  
+**Example:** A balloon expands when filled with air.`,
+        audioExplanation: "Gas expansion is a unique property of gases that allows them to fill any available space. When you blow air into a balloon, the gas expands to fill the entire balloon. Understanding gas expansion is crucial for various scientific applications, from understanding weather patterns to designing engines. Just like how Taylor Swift's music fills a concert hall, gas expands to fill its container!",
+        detailedExplanation: `Gas expansion occurs because gas particles are far apart and move freely. This property is essential in understanding pressure and temperature relationships in gases. For example, when a gas is heated, it expands and takes up more space. Recognizing how gas expansion works is vital for various scientific fields, including chemistry and physics, as it helps us understand the behavior of gases under different conditions.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 111,
+        front: "Particle Arrangement in Solids",
+        back: `*(noun)*  
+**Definition:** The close and orderly arrangement of particles in a solid.  
+**Example:** In a solid, particles vibrate in fixed positions.`,
+        audioExplanation: "In solids, particles are arranged closely together in a fixed, orderly pattern. This arrangement allows solids to maintain their shape and resist changes. Understanding particle arrangement is essential for grasping the properties of different states of matter. Just like how Taylor Swift carefully arranges her lyrics and melodies, the arrangement of particles in solids is crucial for their stability!",
+        detailedExplanation: `The arrangement of particles in solids is what gives them their unique properties. In solids, particles vibrate in place but do not move freely, which keeps the solid's shape intact. This property is important in various applications, from construction materials to everyday objects. Recognizing how particle arrangement affects the behavior of solids helps us understand their role in different environments and situations.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 112,
+        front: "Particle Arrangement in Liquids",
+        back: `*(noun)*  
+**Definition:** The close but mobile arrangement of particles in a liquid.  
+**Example:** In a liquid, particles can slide past each other.`,
+        audioExplanation: "In liquids, particles are close together but can slide past one another, allowing liquids to flow and take the shape of their container. Understanding particle arrangement in liquids is essential for grasping their unique properties. Just like how Taylor Swift flows between different musical styles, liquids flow and adapt to their surroundings!",
+        detailedExplanation: `The arrangement of particles in liquids is what allows them to take the shape of their container while maintaining a fixed volume. This property is crucial in various applications, such as cooking and chemical reactions. Recognizing how particle arrangement affects the behavior of liquids helps us understand their role in different environments and situations.`
+    },
+    {
+        topic: "Science",
+        lesson: "States of Matter",
+        order: 113,
+        front: "Particle Arrangement in Gases",
+        back: `*(noun)*  
+**Definition:** The far apart and random arrangement of particles in a gas.  
+**Example:** In a gas, particles move freely and fill the available space.`,
+        audioExplanation: "In gases, particles are far apart and move freely, allowing them to fill any container they occupy. Understanding particle arrangement in gases is essential for grasping their unique properties. Just like how Taylor Swift's music can fill a stadium, gas can fill any space available to it!",
+        detailedExplanation: `The arrangement of particles in gases is what gives them their unique properties. Gas particles move rapidly and are spaced far apart, which allows them to fill any container they occupy. This property is essential in various scientific fields, including chemistry and physics, as it explains phenomena such as pressure and temperature changes. Recognizing how particle arrangement affects the behavior of gases helps us understand their role in the atmosphere and other environments.`
+    },
+    {
         topic: "Chemistry",
         lesson: "Chemical Processes",
         order: 1,
