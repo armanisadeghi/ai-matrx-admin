@@ -1,7 +1,18 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import {useState, useEffect, useCallback, useRef} from 'react';
 import cartesia from "@/lib/cartesia/client";
-import { OutputContainer, AudioEncoding, ModelId, VoiceOptions, Language, VoiceSpeed, Emotion, Intensity, EmotionName, EmotionLevel } from '@/lib/cartesia/cartesia.types';
-import { Source, WebPlayer } from "@cartesia/cartesia-js";
+import {
+    OutputContainer,
+    AudioEncoding,
+    ModelId,
+    VoiceOptions,
+    Language,
+    VoiceSpeed,
+    Emotion,
+    Intensity,
+    EmotionName,
+    EmotionLevel
+} from '@/lib/cartesia/cartesia.types';
+import {Source, WebPlayer} from "@cartesia/cartesia-js";
 
 interface UseCartesiaProps {
     container?: OutputContainer;
@@ -14,7 +25,10 @@ interface UseCartesiaProps {
 }
 
 interface UseCartesiaResult {
-    sendMessage: (transcript: string, speed?: VoiceSpeed, voice?: VoiceOptions, emotions?: Array<{ emotion: EmotionName, intensity?: EmotionLevel }>) => Promise<void>;
+    sendMessage: (transcript: string, speed?: VoiceSpeed, voice?: VoiceOptions, emotions?: Array<{
+        emotion: EmotionName,
+        intensity?: EmotionLevel
+    }>) => Promise<void>;
     messages: any[];
     isConnected: boolean;
     error: Error | null;
@@ -29,20 +43,29 @@ function formatEmotionControl(emotion: EmotionName, intensity?: EmotionLevel): s
     return intensity ? `${emotion}:${intensity}` : emotion;
 }
 
-export function useCartesia({
-                                container = OutputContainer.Raw,
-                                encoding = AudioEncoding.PCM_F32LE,
-                                sampleRate = 44100,
-                                modelId = ModelId.SonicEnglish,
-                                voice = { mode: "id", id: "a0e99841-438c-4a64-b679-ae501e7d6091" },
-                                language = Language.EN,
-                                bufferDuration = 0,
-                            }: UseCartesiaProps = {}): UseCartesiaResult {
+export function useCartesia(
+    {
+        container = OutputContainer.Raw,
+        encoding = AudioEncoding.PCM_F32LE,
+        sampleRate = 44100,
+        modelId = ModelId.SonicEnglish,
+        voice = {mode: "id", id: "a0e99841-438c-4a64-b679-ae501e7d6091"},
+        language = Language.EN,
+        bufferDuration = 0,
+    }: UseCartesiaProps = {}): UseCartesiaResult {
     const [websocket, setWebsocket] = useState<any>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [messages, setMessages] = useState<any[]>([]);
     const [error, setError] = useState<Error | null>(null);
-    const [config, setConfig] = useState<UseCartesiaProps>({ container, encoding, sampleRate, modelId, voice, language, bufferDuration });
+    const [config, setConfig] = useState<UseCartesiaProps>({
+        container,
+        encoding,
+        sampleRate,
+        modelId,
+        voice,
+        language,
+        bufferDuration
+    });
 
     const playerRef = useRef<WebPlayer | null>(null);
 
@@ -56,7 +79,7 @@ export function useCartesia({
             .then(() => {
                 setIsConnected(true);
                 setWebsocket(ws);
-                playerRef.current = new WebPlayer({ bufferDuration: config.bufferDuration });
+                playerRef.current = new WebPlayer({bufferDuration: config.bufferDuration});
             })
             .catch((err: Error) => {
                 console.error(`Failed to connect to Cartesia: ${err}`);
@@ -83,7 +106,7 @@ export function useCartesia({
     const sendMessage = useCallback(async (
         transcript: string,
         speed: VoiceSpeed = VoiceSpeed.NORMAL,
-        voice: VoiceOptions = { mode: "id", id: "a0e99841-438c-4a64-b679-ae501e7d6091" },
+        voice: VoiceOptions = {mode: "id", id: "a0e99841-438c-4a64-b679-ae501e7d6091"},
         emotions?: Array<{ emotion: EmotionName, intensity?: EmotionLevel }>
     ) => {
         if (!websocket || !isConnected) {
@@ -97,7 +120,7 @@ export function useCartesia({
                     ...voice,
                     __experimental_controls: {
                         speed,
-                        emotion: emotions?.map(({ emotion, intensity }) => formatEmotionControl(emotion, intensity)),
+                        emotion: emotions?.map(({emotion, intensity}) => formatEmotionControl(emotion, intensity)),
                     },
                 },
                 transcript,

@@ -47,7 +47,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
             encoding: "pcm_f32le",
             sampleRate: 44100
         });
-        playerRef.current = new WebPlayer({ bufferDuration: 1 });
+        playerRef.current = new WebPlayer({ bufferDuration: .25 });
 
         updatePlaybackStatus('websocketConnected', 'First useEffect');
 
@@ -82,7 +82,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
                     __experimental_controls: {
-                        "speed": "",
+                        "speed": "normal",
                         "emotion": [
                             "positivity:high",
                             "curiosity"

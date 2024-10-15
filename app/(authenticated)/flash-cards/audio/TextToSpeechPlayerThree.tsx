@@ -16,12 +16,11 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     const apiKey = process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
     const [isPlaying, setIsPlaying] = useState(false);
     const [playbackStatus, setPlaybackStatus] = useState('');
+    const [editableText, setEditableText] = useState(text); // State for editable text
     const cartesiaRef = useRef<Cartesia | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
-
-
 
     useEffect(() => {
         cartesiaRef.current = new Cartesia({ apiKey: apiKey || '' });
@@ -60,15 +59,14 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
                     __experimental_controls: {
-                        "speed": "fast",
+                        "speed": "normal",
                         "emotion": [
                             "positivity:high",
                             "curiosity"
                         ]
                     },
-
                 },
-                transcript: text
+                transcript: editableText // Use the editable text here
             });
 
             sourceRef.current = response.source;
@@ -83,7 +81,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
             setIsPlaying(false);
             onPlaybackEnd?.();
         }
-    }, [text, onPlaybackEnd, apiKey]);
+    }, [editableText, onPlaybackEnd, apiKey]);
 
     const handlePause = useCallback(async () => {
         if (playerRef.current) {
@@ -116,29 +114,30 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
             <Textarea
-                value={text}
-                onChange={(e) => console.log(e.target.value)}
+                value={editableText} // Bind the state to the textarea
+                onChange={(e) => setEditableText(e.target.value)} // Update the state on change
                 placeholder="Enter text to speak..."
                 className="w-96 h-auto min-h-[10rem] max-w-3xl resize-none" // Adjust max-width and set height
             />
 
             <div className="flex space-x-4 mt-4">
-                <Button onClick={handlePlay}>
+                <Button onClick={handlePlay} disabled={isPlaying}>
                     <Play className="mr-2 h-4 w-4"/> Play
                 </Button>
-                {isPlaying ? (
-                    <Button onClick={handlePause}>
-                        <Pause className="mr-2 h-4 w-4"/> Pause
-                    </Button>
-                ) : (
-                    <Button onClick={handleResume}>
-                        <Play className="mr-2 h-4 w-4"/> Resume
-                    </Button>
-                )}
+
+                <Button onClick={handlePause} disabled={!isPlaying}>
+                    <Pause className="mr-2 h-4 w-4"/> Pause
+                </Button>
+
+                <Button onClick={handleResume} disabled={isPlaying}>
+                    <Play className="mr-2 h-4 w-4"/> Resume
+                </Button>
+
                 <Button onClick={handleReplay}>
                     <RotateCcw className="mr-2 h-4 w-4"/> Replay
                 </Button>
             </div>
+
             <div className="mt-2 text-sm">
                 Status: {playbackStatus}
             </div>
