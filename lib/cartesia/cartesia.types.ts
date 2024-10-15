@@ -11,7 +11,7 @@ export enum EmotionName {
     CURIOSITY = "curiosity",
 }
 
-export type Intensity = "lowest" | "low" | "high" | "highest" | "";
+export type Intensity = "lowest" | "low" | "high" | "highest" | ""; // there is no medium. It's represented by an empty string
 
 export enum EmotionLevel {
     LOWEST = "lowest",
