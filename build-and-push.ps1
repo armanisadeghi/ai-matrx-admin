@@ -1,3 +1,11 @@
+# Use buildpush "commit message here"
+
+# Gets status of git, pushes changes, and builds local project for testing.
+# Set-Alias buildpush "D:\app_dev\ai-matrx-admin\build-and-push.ps1"
+
+cls
+
+
 param (
     [string]$commitMessage
 )

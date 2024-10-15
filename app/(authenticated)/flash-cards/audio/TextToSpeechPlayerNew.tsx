@@ -11,16 +11,34 @@ interface TextToSpeechPlayerProps {
     onPlaybackEnd?: () => void;
 }
 
+export type TtsStatus =
+    'initialLoad'
+    | 'websocketConnected'
+    | 'readyForAutoPlay'
+    | 'connectedNoAutoPlay'
+    | 'disconnected'
+    | 'reconnected'
+    | 'buffering'
+    | 'playing'
+    | 'paused'
+    | 'finished'
+    | 'error';
+
 const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay = false, onPlaybackEnd }) => {
     const apiKey = process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
     const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackStatus, setPlaybackStatus] = useState('');
+    const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
+    const [playbackStatus, setPlaybackStatus] = useState<TtsStatus>('initialLoad');
     const cartesiaRef = useRef<Cartesia | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
 
-
+    // Utility to set status with logging
+    const updatePlaybackStatus = (status: TtsStatus, identifier: string) => {
+        console.log(`${identifier}: ${status}`);
+        setPlaybackStatus(status);
+    };
 
     useEffect(() => {
         cartesiaRef.current = new Cartesia({ apiKey: apiKey || '' });
@@ -29,8 +47,9 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
             encoding: "pcm_f32le",
             sampleRate: 44100
         });
+        playerRef.current = new WebPlayer({ bufferDuration: 1 });
 
-        playerRef.current = new WebPlayer({ bufferDuration: 1 }); // 1 second buffer
+        updatePlaybackStatus('websocketConnected', 'First useEffect');
 
         if (autoPlay) {
             handlePlay();
@@ -38,46 +57,74 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
 
         return () => {
             websocketRef.current?.disconnect();
+            updatePlaybackStatus('disconnected', 'First useEffect');
         };
     }, [apiKey, autoPlay]);
 
     const handlePlay = useCallback(async () => {
         if (!apiKey || !websocketRef.current || !playerRef.current) {
             console.error("Cartesia API key is not set or WebSocket/Player is not initialized");
+            updatePlaybackStatus('error', 'handlePlay');
             return;
         }
 
+        console.log("Handle Play Before Try... TEXT: ", text);
+
         try {
             setIsPlaying(true);
-            setPlaybackStatus('Connecting...');
+            updatePlaybackStatus('buffering', 'handlePlay');
             await websocketRef.current.connect();
+            console.log("Handle Play after current.connect()... TEXT: ", text);
 
-            setPlaybackStatus('Buffering audio...');
             const response = await websocketRef.current.send({
                 model_id: "sonic-english",
                 voice: {
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
                     __experimental_controls: {
-                        "speed": "medium",
+                        "speed": "",
                         "emotion": [
                             "positivity:high",
                             "curiosity"
                         ]
-                    },
-
+                    }
                 },
                 transcript: text
             });
 
+            console.log("Handle Play after send... response: ", response);
+
             sourceRef.current = response.source;
 
-            setPlaybackStatus('Playing audio...');
+            if (!sourceRef.current) {
+                console.error("Source reference is null or undefined.");
+                updatePlaybackStatus('error', 'handlePlay');
+                return;
+            }
+
+            // Attach error and event listeners to the source and player to capture more details
+            sourceRef.current.on('error', (error: any) => {
+                console.error("Audio source error: ", error);
+            });
+
+            sourceRef.current.on('end', () => {
+                console.log("Audio source ended.");
+            });
+
+            updatePlaybackStatus('playing', 'handlePlay');
+
+            // Log the player instance and the source
+            console.log("Player instance:", playerRef.current);
+            console.log("Source details:", sourceRef.current);
+
             await playerRef.current.play(sourceRef.current);
-            setPlaybackStatus('Playback finished');
+
+            console.log("Audio is playing...");
+            updatePlaybackStatus('finished', 'handlePlay');
+            setHasPlayedOnce(true);  // Mark that we've played audio at least once
         } catch (error) {
             console.error("Error playing audio:", error);
-            setPlaybackStatus('Error occurred');
+            updatePlaybackStatus('error', 'handlePlay');
         } finally {
             setIsPlaying(false);
             onPlaybackEnd?.();
@@ -88,7 +135,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
         if (playerRef.current) {
             await playerRef.current.pause();
             setIsPlaying(false);
-            setPlaybackStatus('Paused');
+            updatePlaybackStatus('paused', 'handlePause');
         }
     }, []);
 
@@ -96,35 +143,49 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
         if (playerRef.current) {
             await playerRef.current.resume();
             setIsPlaying(true);
-            setPlaybackStatus('Playing audio...');
+            updatePlaybackStatus('playing', 'handleResume');
         }
     }, []);
 
     const handleReplay = useCallback(async () => {
         if (playerRef.current && sourceRef.current) {
             setIsPlaying(true);
-            setPlaybackStatus('Playing audio...');
+            updatePlaybackStatus('playing', 'handleReplay');
             await playerRef.current.play(sourceRef.current);
-            setPlaybackStatus('Playback finished');
-            setIsPlaying(false);
+            updatePlaybackStatus('finished', 'handleReplay');
         }
     }, []);
+
+    const isButtonDisabled = (action: string): boolean => {
+        switch (action) {
+            case 'play':
+                return isPlaying || hasPlayedOnce;
+            case 'pause':
+                return !isPlaying;
+            case 'resume':
+                return playbackStatus !== 'paused';
+            case 'replay':
+                return !hasPlayedOnce || isPlaying;
+            default:
+                return false;
+        }
+    };
 
     if (!apiKey) return <div>API key not set. Unable to play audio.</div>;
 
     return (
         <div className="flex flex-col items-center">
             <div className="flex space-x-4">
-                {isPlaying ? (
-                    <Button onClick={handlePause}>
-                        <Pause className="mr-2 h-4 w-4" /> Pause
-                    </Button>
-                ) : (
-                    <Button onClick={handleResume}>
-                        <Play className="mr-2 h-4 w-4" /> Play
-                    </Button>
-                )}
-                <Button onClick={handleReplay}>
+                <Button onClick={handlePlay} disabled={isButtonDisabled('play')}>
+                    <Play className="mr-2 h-4 w-4" /> Play
+                </Button>
+                <Button onClick={handlePause} disabled={isButtonDisabled('pause')}>
+                    <Pause className="mr-2 h-4 w-4" /> Pause
+                </Button>
+                <Button onClick={handleResume} disabled={isButtonDisabled('resume')}>
+                    <Play className="mr-2 h-4 w-4" /> Resume
+                </Button>
+                <Button onClick={handleReplay} disabled={isButtonDisabled('replay')}>
                     <RotateCcw className="mr-2 h-4 w-4" /> Replay
                 </Button>
             </div>

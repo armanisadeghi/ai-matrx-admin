@@ -21,7 +21,7 @@ export const toTitleCase = (str: string) => {
 };
 
 
-
+// TODO: Integrate this with many other tools like it in a centralized place. (Great for demos and adds 'intelligence' to the app)
 
 export const generateFormFields = (rowData: TableData): FormField[] => {
     return Object.entries(rowData).map(([key, value]): FormField => {

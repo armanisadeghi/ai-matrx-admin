@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Credenza,
     CredenzaContent,
@@ -9,11 +7,9 @@ import {
     CredenzaDescription,
     CredenzaBody,
 } from "@/components/ui/added-ui/credenza-modal/credenza";
-import { Beaker, Play, Pause, RotateCcw } from 'lucide-react';
+import { Beaker } from 'lucide-react';
+import TextToSpeechPlayer from './TextToSpeechPlayer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from "@/components/ui/button";
-import { VoiceSpeed, EmotionName, EmotionLevel, VoiceOptions } from '@/lib/cartesia/cartesia.types';
-import { useCartesia } from "@/hooks/tts/useCartesia";
 
 interface AudioModalProps {
     isOpen: boolean;
@@ -25,46 +21,21 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
     const [displayedText, setDisplayedText] = useState('');
     const [isTextComplete, setIsTextComplete] = useState(false);
     const [startTextAnimation, setStartTextAnimation] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackStatus, setPlaybackStatus] = useState('Stopped');
-
-    const {
-        sendMessage,
-        messages,
-        isConnected,
-        error,
-        pausePlayback,
-        resumePlayback,
-        togglePlayback,
-        stopPlayback
-    } = useCartesia();
-
-    const voice: VoiceOptions = {
-        mode: "id",
-        id: "42b39f37-515f-4eee-8546-73e841679c1d",
-    };
-
-    const speed = VoiceSpeed.NORMAL;
-    const emotions = [
-        { emotion: EmotionName.POSITIVITY, intensity: EmotionLevel.HIGHEST },
-        { emotion: EmotionName.CURIOSITY }
-    ];
 
     useEffect(() => {
-        if (isOpen && isConnected) {
+        if (isOpen) {
             setDisplayedText('');
-            sendMessage(text, speed, voice, emotions)
-                .catch(err => console.error('Failed to send message:', err));
             setIsTextComplete(false);
             setStartTextAnimation(false);
 
+            // Delay the start of text animation by 2 seconds
             const delayTimer = setTimeout(() => {
                 setStartTextAnimation(true);
             }, 1000);
 
             return () => clearTimeout(delayTimer);
         }
-    }, [isOpen, isConnected, sendMessage, text, speed, voice, emotions]);
+    }, [isOpen]);
 
     useEffect(() => {
         if (startTextAnimation) {
@@ -77,27 +48,10 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
                     clearInterval(intervalId);
                     setIsTextComplete(true);
                 }
-            }, 50);
+            }, 50); // Adjust this value to control the speed of text appearance
             return () => clearInterval(intervalId);
         }
     }, [startTextAnimation, text]);
-
-    const handlePlayPause = useCallback(async () => {
-        if (isPlaying) {
-            await pausePlayback();
-            setPlaybackStatus('Paused');
-        } else {
-            await resumePlayback();
-            setPlaybackStatus('Playing');
-        }
-        setIsPlaying((prev) => !prev);
-    }, [isPlaying, pausePlayback, resumePlayback]);
-
-    const handleTogglePlayback = useCallback(async () => {
-        await togglePlayback();
-        setIsPlaying(false);
-        setPlaybackStatus('Toggled');
-    }, [togglePlayback]);
 
     return (
         <Credenza open={isOpen} onOpenChange={onClose}>
@@ -127,20 +81,11 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
                         </AnimatePresence>
                     </div>
                     <div className="mt-8">
-                        <div className="flex flex-col items-center">
-                            <div className="flex space-x-4">
-                                <Button onClick={handlePlayPause}>
-                                    {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
-                                    {isPlaying ? 'Pause' : 'Play'}
-                                </Button>
-                                <Button onClick={handleTogglePlayback}>
-                                    <RotateCcw className="mr-2 h-4 w-4" /> Replay
-                                </Button>
-                            </div>
-                            <div className="mt-2 text-sm">
-                                Status: {playbackStatus}
-                            </div>
-                        </div>
+                        <TextToSpeechPlayer
+                            text={text}
+                            autoPlay={true}
+                            onPlaybackEnd={() => {}}
+                        />
                     </div>
                 </CredenzaBody>
             </CredenzaContent>

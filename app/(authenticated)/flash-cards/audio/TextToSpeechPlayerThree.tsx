@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import Cartesia, { WebPlayer } from '@cartesia/cartesia-js';
 import { Play, Pause, RotateCcw } from 'lucide-react';
+import { Textarea } from '@/components/ui';
 
 interface TextToSpeechPlayerProps {
     text: string;
@@ -113,19 +114,29 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     if (!apiKey) return <div>API key not set. Unable to play audio.</div>;
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="flex space-x-4">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <Textarea
+                value={text}
+                onChange={(e) => console.log(e.target.value)}
+                placeholder="Enter text to speak..."
+                className="w-96 h-auto min-h-[10rem] max-w-3xl resize-none" // Adjust max-width and set height
+            />
+
+            <div className="flex space-x-4 mt-4">
+                <Button onClick={handlePlay}>
+                    <Play className="mr-2 h-4 w-4"/> Play
+                </Button>
                 {isPlaying ? (
                     <Button onClick={handlePause}>
-                        <Pause className="mr-2 h-4 w-4" /> Pause
+                        <Pause className="mr-2 h-4 w-4"/> Pause
                     </Button>
                 ) : (
                     <Button onClick={handleResume}>
-                        <Play className="mr-2 h-4 w-4" /> Play
+                        <Play className="mr-2 h-4 w-4"/> Resume
                     </Button>
                 )}
                 <Button onClick={handleReplay}>
-                    <RotateCcw className="mr-2 h-4 w-4" /> Replay
+                    <RotateCcw className="mr-2 h-4 w-4"/> Replay
                 </Button>
             </div>
             <div className="mt-2 text-sm">
