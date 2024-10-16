@@ -241,7 +241,7 @@ export function convertData(
 
 
 function getFrontendTableNameFromUnknown(tableName: string): string {
-    console.log(`getFrontendTableName called with tableName: ${tableName}`);
+    //console.log(`getFrontendTableName called with tableName: ${tableName}`);
 
     if (!globalSchemaRegistry) {
         console.error("Error: Global schema registry is not defined or unavailable.");
@@ -287,7 +287,7 @@ export function getRegisteredSchemas(format: DataFormat = 'database'): Array<Alt
 
 
 export function getSchema(tableName: string, format: DataFormat = 'frontend'): TableSchema | undefined {
-    console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
+    // console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
 
     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
 
