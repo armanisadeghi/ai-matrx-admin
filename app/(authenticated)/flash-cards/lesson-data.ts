@@ -3,6 +3,402 @@ import {FlashcardData} from "@/types/flashcards.types";
 
 export const vocabFlashcards: FlashcardData[] = [
     {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It's easy to remember! Just think of ice (solid), water (liquid), and steam (gas). These are the three main forms that matter can take around us.",
+        "detailedExplanation": "Matter exists in three primary states: solids, liquids, and gases. Solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container.",
+        "example": "An ice cube is a solid, water in a glass is a liquid, and the air in a balloon is a gas.",
+        "order": 1
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can use a graduated cylinder to measure the volume of a liquid.",
+        "audioExplanation": "No worries if you're unsure! A graduated cylinder is a tall, clear container with markings on the side to help you see how much liquid is inside. It's like a measuring cup but more precise.",
+        "detailedExplanation": "A graduated cylinder is a common laboratory tool used to measure the volume of liquids accurately. The markings on the side allow you to read the volume at the bottom of the meniscus (the curve of the liquid's surface). This method is preferred for precise measurements in experiments.",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the level rise to the 50 mL mark.",
+        "order": 2
+    },
+    {
+        "front": "What happens to the shape and volume of liquid metal when poured into a mold?",
+        "back": "The liquid metal takes the shape of the mold but retains its volume.",
+        "audioExplanation": "Think of it like pouring pancake batter into a pan! The batter spreads out to fill the shape of the pan, but the amount of batter (volume) stays the same.",
+        "detailedExplanation": "When liquid metal is poured into a mold, it conforms to the shape of the mold, meaning it changes shape. However, the volume of the liquid remains constant because the amount of liquid does not change; it simply fills the new shape of the mold.",
+        "example": "When you pour water into a glass, it takes the shape of the glass but the amount of water (volume) stays the same.",
+        "order": 3
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Both solids and liquids have a definite volume, but solids have a fixed shape while liquids take the shape of their container.",
+        "audioExplanation": "It's like comparing a rock and a cup of water! The rock keeps its shape, but the water changes shape depending on the cup you pour it into.",
+        "detailedExplanation": "Solids and liquids share the property of having a definite volume, meaning they occupy a specific amount of space. However, solids maintain a fixed shape due to closely packed particles, while liquids can flow and adapt to the shape of their container because their particles are less tightly packed and can move around each other.",
+        "example": "A block of wood is a solid with a specific shape, while a glass of juice is a liquid that takes the shape of the glass.",
+        "order": 4
+    },
+    {
+        "front": "What is the procedure to observe the shape of solids and liquids?",
+        "back": "You can use a syringe to measure and observe the volume and shape of solids and liquids.",
+        "audioExplanation": "Using a syringe is a fun way to see how different materials behave! You can see how solids and liquids fill the space in the syringe and how they change shape.",
+        "detailedExplanation": "In the lab, you can draw air, liquids, or solids into a syringe to observe their properties. By pushing the plunger, you can see how the volume changes and how the materials behave when confined to a space. This hands-on activity helps illustrate the differences between states of matter.",
+        "example": "When you draw water into a syringe, it takes the shape of the syringe, but when you add marbles, they keep their shape and fill the syringe differently.",
+        "order": 5
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It’s simple! Matter can exist in three main forms: solids, liquids, and gases. Each has its own characteristics that make it unique.",
+        "detailedExplanation": "Matter is anything that has mass and takes up space. The three states of matter are solid (definite shape and volume), liquid (definite volume but takes the shape of its container), and gas (no definite shape or volume, expands to fill its container). Understanding these states helps us categorize and describe the materials around us.",
+        "example": "Think of ice (solid), water (liquid), and steam (gas) as examples of the same substance in different states.",
+        "order": 6
+    },
+    {
+        "front": "What is the difference between volume and shape in matter?",
+        "back": "Volume is the amount of space matter occupies, while shape is the external form or appearance of the matter.",
+        "audioExplanation": "Volume is like how much space something takes up, while shape is how it looks. For example, a cube has a different shape than a ball, but both can have the same volume if they take up the same amount of space.",
+        "detailedExplanation": "Volume can be measured using tools like graduated cylinders for liquids or calculated for solids using formulas. Shape is more about the outline or form of an object. Solids have a fixed shape, liquids take the shape of their container, and gases fill the entire space available to them.",
+        "example": "A cube of ice has a specific shape and volume, while water in a glass takes the shape of the glass but has the same volume as the ice.",
+        "order": 7
+    },
+    {
+        "front": "How does the shape and volume of a liquid change when poured into a mold?",
+        "back": "The shape of the liquid changes to match the mold, but the volume remains the same.",
+        "audioExplanation": "When you pour a liquid into a mold, it takes the shape of that mold. But the amount of liquid, or its volume, doesn’t change—it just fills a different space.",
+        "detailedExplanation": "Liquids are fluid and can change shape easily. When you pour liquid aluminum into a block-shaped mold, it conforms to the shape of the mold. However, the total volume of the liquid remains constant, as the same amount of liquid is just rearranged to fit the new shape.",
+        "example": "If you pour water into a round bowl, it takes the shape of the bowl, but if you measure it, the volume is still the same as when it was in a square container.",
+        "order": 8
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Similarities: Both have mass and occupy space. Differences: Solids have a definite shape and volume, while liquids have a definite volume but take the shape of their container.",
+        "audioExplanation": "Solids and liquids are both types of matter, but they behave differently. Solids hold their shape, while liquids flow and take the shape of whatever they’re in.",
+        "detailedExplanation": "Both solids and liquids are considered fluids in some contexts, as they can both flow. However, solids maintain a fixed shape and volume, while liquids have a fixed volume but adapt their shape to their container. This is why ice cubes stay as cubes, but water spreads out in a glass.",
+        "example": "A rock (solid) keeps its shape, while a puddle of water (liquid) spreads out on the ground.",
+        "order": 9
+    },
+    {
+        "front": "What is the purpose of measuring the volume of gases, solids, and liquids in an experiment?",
+        "back": "To observe how the volume changes and to understand the properties of different states of matter.",
+        "audioExplanation": "Measuring volume helps us see how much space something takes up and how it behaves in different situations. It’s important for understanding the characteristics of matter.",
+        "detailedExplanation": "In experiments, measuring volume allows scientists to gather data on how different states of matter respond to changes in conditions, such as pressure or temperature. For example, observing how a gas expands in a syringe can show how gases behave differently from solids and liquids.",
+        "example": "When you push the plunger of a syringe filled with air, you can see how the volume of the gas changes, demonstrating its compressibility.",
+        "order": 10
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It's simple! Matter can exist in three forms: solids, liquids, and gases. Think of ice (solid), water (liquid), and steam (gas) as examples of each state.",
+        "detailedExplanation": "Matter is anything that has mass and takes up space. The three states of matter are defined by their physical properties, particularly volume and shape. Solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container.",
+        "example": "Ice is a solid, water is a liquid, and steam is a gas.",
+        "order": 11
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can measure the volume of a liquid using a graduated cylinder.",
+        "audioExplanation": "Measuring liquid volume is easy! A graduated cylinder is a tool that helps you see how much space the liquid takes up, usually marked in milliliters.",
+        "detailedExplanation": "A graduated cylinder is a tall, narrow container with markings along the side that indicate volume. When you pour a liquid into it, you can read the measurement at the bottom of the meniscus (the curve of the liquid surface) to determine the volume accurately.",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the measurement on the side.",
+        "order": 12
+    },
+    {
+        "front": "What happens to the shape and volume of a liquid when poured into a mold?",
+        "back": "The liquid takes the shape of the mold but retains its volume.",
+        "audioExplanation": "When you pour a liquid into a mold, it changes shape to fit the mold but the amount of liquid stays the same. It’s like pouring juice into a cup—it takes the cup's shape but the volume of juice doesn’t change.",
+        "detailedExplanation": "Liquids are unique because they can flow and take the shape of their container. However, the volume of the liquid remains constant regardless of the shape it takes. For example, if you pour 100 mL of liquid into a block-shaped mold, it will fill the mold but still be 100 mL of liquid.",
+        "example": "If you pour 200 mL of liquid aluminum into a block-shaped mold, it will fill the mold and take that shape, but you still have 200 mL of liquid aluminum.",
+        "order": 13
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Similarities: Both have mass and take up space. Differences: Solids have a definite shape and volume; liquids have a definite volume but take the shape of their container.",
+        "audioExplanation": "Think of solids and liquids like this: both are types of matter, but solids hold their shape while liquids flow to fit their container. Imagine a rock (solid) versus water (liquid).",
+        "detailedExplanation": "Solids and liquids are both states of matter, meaning they both have mass and occupy space. However, solids have a fixed shape and volume, while liquids have a fixed volume but adapt their shape to whatever container they are in. This is why a solid like a cube of ice stays a cube, but water in a glass takes the shape of the glass.",
+        "example": "A rock is a solid that keeps its shape, while water in a bottle takes the shape of the bottle.",
+        "order": 14
+    },
+    {
+        "front": "What is the purpose of the Hands-On Lab in observing states of matter?",
+        "back": "To observe the shape and volume of solids, liquids, and gases in different containers.",
+        "audioExplanation": "The lab is a fun way to see how different states of matter behave! You’ll get to see how solids and liquids look in various containers and how their volume can change.",
+        "detailedExplanation": "The Hands-On Lab allows students to engage with the concepts of states of matter by observing how solids, liquids, and gases behave in different situations. By measuring and recording the volume and shape of different materials, students can better understand the properties that define each state of matter and how they interact with their environment.",
+        "example": "In the lab, you might see how marbles (solid) and water (liquid) behave differently when placed in the same container.",
+        "order": 15
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It's easy to remember! Everything around us is made of matter, and it can be in one of three forms: solid (like ice), liquid (like water), or gas (like steam).",
+        "detailedExplanation": "Matter exists in three primary states: solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container.",
+        "example": "Think of ice (solid), water (liquid), and steam (gas) as examples of the three states of matter.",
+        "order": 16
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can use a graduated cylinder to measure the volume of a liquid.",
+        "audioExplanation": "Measuring liquid volume is simple! A graduated cylinder has markings that help you see how much liquid is inside. Just pour the liquid in and read the measurement at eye level.",
+        "detailedExplanation": "A graduated cylinder is a tall, narrow container marked with lines to indicate volume. When measuring, you pour the liquid in and read the level at the bottom of the meniscus (the curve formed by the liquid). This gives you an accurate measurement of the liquid's volume.",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the level rise to the 50 mL mark.",
+        "order": 17
+    },
+    {
+        "front": "What happens to the shape and volume of liquid metal when poured into a mold?",
+        "back": "The liquid metal takes the shape of the mold while maintaining its volume.",
+        "audioExplanation": "When you pour liquid metal into a mold, it flows and fills the shape of the mold, but the amount of metal (its volume) stays the same. It just changes shape!",
+        "detailedExplanation": "When a liquid is poured into a mold, it adapts to the shape of the mold due to its fluid nature. However, the volume of the liquid remains constant because the amount of substance does not change, only its shape does. This is a key characteristic of liquids—they can change shape but not volume.",
+        "example": "Think of pouring pancake batter into a round pan. The batter takes the shape of the pan, but the amount of batter stays the same.",
+        "order": 18
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Both solids and liquids have volume, but solids have a definite shape while liquids take the shape of their container.",
+        "audioExplanation": "Solids and liquids are similar because they both have volume, meaning they take up space. But solids keep their shape, while liquids change shape based on where they are poured.",
+        "detailedExplanation": "Solids have a fixed shape and volume, meaning they do not change unless force is applied. Liquids, on the other hand, have a fixed volume but can change shape to fit their container. This difference is due to the arrangement of particles: solids have tightly packed particles, while liquids have more space between particles, allowing them to move around.",
+        "example": "A rock is a solid with a specific shape, while water in a cup takes the shape of the cup.",
+        "order": 19
+    },
+    {
+        "front": "What is the procedure to observe the states of matter?",
+        "back": "You can observe the shape and volume of solids, liquids, and gases using a syringe and containers.",
+        "audioExplanation": "To see how different states of matter behave, you can use a syringe to measure air, marbles, and water. Each will show you how shape and volume change.",
+        "detailedExplanation": "In the lab, you can draw air into a syringe to observe its volume. Then, by adding marbles and water, you can see how solids and liquids behave in terms of shape and volume. This hands-on approach helps you understand the properties of matter by observing them directly.",
+        "example": "When you pull the plunger of the syringe, you can see how air fills the space, and when you add marbles, you can see how they keep their shape.",
+        "order": 20
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It's easy to remember! Just think of ice, water, and steam. Ice is a solid, water is a liquid, and steam is a gas. They are all made of the same stuff—water—but they look and behave differently depending on their state.",
+        "detailedExplanation": "Matter can exist in three primary states: solids, liquids, and gases. Solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container. Understanding these states helps us classify and describe the materials around us.",
+        "example": "Think of a cube of ice (solid), a glass of water (liquid), and steam rising from a kettle (gas). Each one is water, but in different states.",
+        "order": 21
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can measure the volume of a liquid using a graduated cylinder.",
+        "audioExplanation": "If you're unsure, just remember that a graduated cylinder is like a measuring cup for liquids. It has markings on the side that tell you how much liquid is inside, just like a ruler measures length.",
+        "detailedExplanation": "A graduated cylinder is a common laboratory tool used to measure the volume of liquids accurately. It has markings (graduations) that indicate volume, allowing you to read the amount of liquid at the bottom of the meniscus (the curve formed by the liquid surface). Other methods include using measuring cups or syringes for smaller volumes.",
+        "example": "When you pour juice into a graduated cylinder, you can see the liquid level rise and read the volume directly from the markings.",
+        "order": 22
+    },
+    {
+        "front": "What happens to the shape and volume of liquid metal when poured into a mold?",
+        "back": "The liquid metal takes the shape of the mold while maintaining its volume.",
+        "audioExplanation": "Think of pouring pancake batter into a pan. The batter spreads out and takes the shape of the pan, but the amount of batter (volume) stays the same. That's what happens with liquid metal too!",
+        "detailedExplanation": "When liquid metal is poured into a mold, it flows and conforms to the shape of the mold, which means it changes shape. However, the volume of the liquid remains constant because the amount of liquid does not change; it simply fills the space of the mold. This property is characteristic of liquids, allowing them to adapt to the shape of their containers.",
+        "example": "Imagine pouring melted chocolate into a heart-shaped mold. The chocolate takes on the heart shape but the total amount of chocolate remains the same.",
+        "order": 23
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Similarities: Both have mass and occupy space. Differences: Solids have a definite shape and volume, while liquids have a definite volume but take the shape of their container.",
+        "audioExplanation": "It’s like comparing a rock to water. The rock keeps its shape no matter what, but water changes shape based on the container it’s in. Both are matter, but they behave differently!",
+        "detailedExplanation": "Solids and liquids are both states of matter that have mass and occupy space. However, solids maintain a fixed shape and volume due to closely packed particles, while liquids have a fixed volume but can change shape to fit their container because their particles are less tightly packed and can move around each other. This fundamental difference affects how we interact with these materials in everyday life.",
+        "example": "A block of wood (solid) keeps its shape on a table, while a cup of juice (liquid) takes the shape of the cup it's in.",
+        "order": 24
+    },
+    {
+        "front": "What is the procedure to observe the shape of solids and liquids?",
+        "back": "You can use a syringe to observe how the volume of a solid, liquid, and gas may change.",
+        "audioExplanation": "Using a syringe is a fun way to see how different materials behave! You can push and pull the plunger to see how much space the liquid or gas takes up, and you can also see how solids fit in the syringe.",
+        "detailedExplanation": "In the lab, you can observe the properties of solids and liquids by using a syringe to measure and compare their volumes. By drawing air, liquids, and solids into the syringe, you can see how each behaves. Solids will maintain their shape, while liquids will take the shape of the syringe, and gases will expand to fill the entire syringe. This hands-on activity helps reinforce the concepts of volume and shape in different states of matter.",
+        "example": "When you draw water into the syringe, it takes the shape of the syringe, but when you try to draw marbles in, they keep their shape and don't change.",
+        "order": 25
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It's simple! Matter can exist in three forms: solids, liquids, and gases. Each one behaves differently, and they all have unique properties.",
+        "detailedExplanation": "Matter can be classified into three main states: solids, liquids, and gases. Solids have a fixed shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a fixed shape nor a fixed volume, expanding to fill their container.",
+        "example": "Think of ice (solid), water (liquid), and steam (gas) as examples of the three states of matter.",
+        "order": 26
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can measure the volume of a liquid using a graduated cylinder.",
+        "audioExplanation": "Measuring liquid volume is easy! A graduated cylinder is a tool that helps you see how much space the liquid takes up. Just pour the liquid in and read the measurement on the side.",
+        "detailedExplanation": "A graduated cylinder is a common laboratory instrument used to measure the volume of liquids accurately. It has markings along the side that indicate volume measurements, usually in milliliters (mL). You pour the liquid into the cylinder and read the level at the bottom of the meniscus (the curve of the liquid's surface).",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the measurement on the side.",
+        "order": 27
+    },
+    {
+        "front": "What happens to the shape and volume of a liquid when poured into a mold?",
+        "back": "The liquid takes the shape of the mold but retains its volume.",
+        "audioExplanation": "When you pour a liquid into a mold, it changes shape to fit the mold but the amount of liquid stays the same. It’s like pouring juice into different cups; the juice takes the shape of the cup but the amount of juice doesn’t change.",
+        "detailedExplanation": "When a liquid is poured into a mold, it adapts to the shape of the mold while maintaining its volume. This is because liquids have a definite volume but no fixed shape. For example, pouring liquid aluminum into a block-shaped mold allows it to solidify into that shape, but the volume of aluminum remains constant throughout the process.",
+        "example": "If you pour water into a round cup, it takes the shape of the cup but the volume of water stays the same.",
+        "order": 28
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Similarities: Both have mass and volume. Differences: Solids have a fixed shape; liquids take the shape of their container.",
+        "audioExplanation": "Solids and liquids are both types of matter, but they behave differently. Solids hold their shape, while liquids flow and fill the shape of their container. Think of a rock (solid) and water (liquid) to see the difference!",
+        "detailedExplanation": "Both solids and liquids are forms of matter and possess mass and volume. However, solids maintain a fixed shape and volume, while liquids have a definite volume but no fixed shape, adapting to the shape of their container. This difference is due to the arrangement of particles in each state: particles in solids are tightly packed and vibrate in place, while particles in liquids are more loosely arranged and can move past each other.",
+        "example": "A block of wood is a solid with a fixed shape, while a cup of water is a liquid that takes the shape of the cup.",
+        "order": 29
+    },
+    {
+        "front": "What is the procedure to observe the volume of air in a syringe?",
+        "back": "Draw air into the syringe, cap it, and record the initial volume before pushing the plunger.",
+        "audioExplanation": "To see how much air is in a syringe, you pull the plunger back to fill it with air, then cap it so the air stays inside. You can then measure how much air is in there!",
+        "detailedExplanation": "To observe the volume of air in a syringe, you first draw air into the syringe by pulling back the plunger. After sealing the syringe, you can record the initial volume indicated on the scale of the syringe. This volume represents the amount of air contained within the syringe before any changes are made by pushing the plunger.",
+        "example": "If you pull the plunger back to the 10 mL mark, you have 10 mL of air in the syringe.",
+        "order": 30
+    },
+    {
+        "front": "What safety precautions should you take when using a syringe?",
+        "back": "Always point the tip safely away from others when pushing in the plunger.",
+        "audioExplanation": "Safety first! When using a syringe, make sure to keep the tip pointed away from people. This way, you avoid any accidents or spills.",
+        "detailedExplanation": "When using a syringe, it is crucial to ensure safety by directing the tip away from yourself and others while pushing in the plunger. This prevents any accidental release of liquid or air that could cause harm or create a mess. Always handle syringes carefully, especially when they contain liquids or gases under pressure.",
+        "example": "If you're pushing the plunger in, make sure it’s pointed away from your friends to keep everyone safe.",
+        "order": 31
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "Think of matter like different forms of things around you. Solids are hard and keep their shape, liquids flow and take the shape of their container, and gases fill up the space they are in. It's like how ice, water, and steam are all the same substance but look different!",
+        "detailedExplanation": "Matter exists in three primary states: solids, liquids, and gases. Solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container. Understanding these states helps us describe and classify the materials we encounter every day.",
+        "example": "Ice (solid), water (liquid), and steam (gas) are all forms of H2O, showing how the same substance can exist in different states.",
+        "order": 32
+    },
+    {
+        "front": "What physical properties are used to describe states of matter?",
+        "back": "Volume and shape.",
+        "audioExplanation": "When we talk about states of matter, we look at how much space something takes up (volume) and what it looks like (shape). For example, a cube of ice has a specific shape and volume, while water in a cup takes the shape of the cup but has the same volume.",
+        "detailedExplanation": "The two main physical properties used to describe states of matter are volume and shape. Volume refers to the amount of space an object occupies, which can be measured in units like milliliters or liters. Shape refers to the form of the object, which can be fixed in solids or changeable in liquids and gases. Understanding these properties helps us classify and differentiate between solids, liquids, and gases.",
+        "example": "A solid like a brick has a fixed shape and volume, while a liquid like juice takes the shape of its container but has a fixed volume.",
+        "order": 33
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can measure the volume of a liquid using a graduated cylinder.",
+        "audioExplanation": "Measuring liquid volume is easy! A graduated cylinder has markings on it that tell you how much liquid is inside. Just pour the liquid in and read the measurement at eye level to get an accurate volume.",
+        "detailedExplanation": "A graduated cylinder is a common laboratory tool used to measure the volume of liquids accurately. It has markings that indicate the volume at different levels, allowing for precise measurements. When measuring, it's important to read the measurement at eye level to avoid parallax errors, which can lead to inaccurate readings.",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the level rise to the 50 mL mark.",
+        "order": 34
+    },
+    {
+        "front": "What happens to the shape and volume of a liquid when poured into a mold?",
+        "back": "The liquid takes the shape of the mold but retains its volume.",
+        "audioExplanation": "When you pour a liquid into a mold, it changes shape to fit the mold but the amount of liquid stays the same. It’s like pouring jelly into a bowl—it looks different but you still have the same amount of jelly!",
+        "detailedExplanation": "When a liquid is poured into a mold, it adapts to the shape of the mold while maintaining its volume. This is because liquids do not have a fixed shape; they flow and fill the bottom of their container. However, the total amount of liquid remains constant, meaning the volume does not change, just the shape does.",
+        "example": "When you pour liquid aluminum into a block-shaped mold, it takes the shape of the mold but the volume of aluminum remains the same.",
+        "order": 35
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Similarities: Both have volume. Differences: Solids have a fixed shape; liquids take the shape of their container.",
+        "audioExplanation": "Solids and liquids both take up space, but solids are hard and keep their shape, while liquids flow and change shape based on their container. Think of a rock (solid) versus water (liquid)—the rock stays the same, but the water changes shape!",
+        "detailedExplanation": "Solids and liquids share the property of having volume, meaning they both occupy space. However, they differ significantly in shape. Solids have a definite shape and do not change unless force is applied, while liquids do not have a fixed shape and will conform to the shape of their container. This distinction is crucial in understanding how matter behaves in different states.",
+        "example": "A book (solid) has a specific shape and does not change, while a glass of water (liquid) takes the shape of the glass.",
+        "order": 36
+    },
+    {
+        "front": "What is the procedure for observing the states of matter in a lab?",
+        "back": "Draw air into a syringe, observe marbles and water in different containers, and record volume and observations.",
+        "audioExplanation": "In the lab, you’ll use a syringe to see how air, marbles, and water behave. You’ll measure how much space they take up and see how they change shape in different containers. It’s a fun way to learn about solids, liquids, and gases!",
+        "detailedExplanation": "The lab procedure involves several steps: first, you draw air into a syringe and record its volume. Next, you observe the shape of marbles in a cup, then place them in the syringe to see how their volume changes. Finally, you repeat the process with water. This hands-on activity helps illustrate the properties of solids, liquids, and gases, allowing students to see the differences and similarities firsthand.",
+        "example": "By observing how marbles fit in the syringe compared to how water fills it, you can see the differences in how solids and liquids behave.",
+        "order": 37
+    },
+    {
+        "front": "What are the three states of matter?",
+        "back": "Solid, liquid, and gas.",
+        "audioExplanation": "It's simple! Matter can exist in three forms: solids, liquids, and gases. Think of ice (solid), water (liquid), and steam (gas).",
+        "detailedExplanation": "Matter can be classified into three main states based on its physical properties: solids have a definite shape and volume, liquids have a definite volume but take the shape of their container, and gases have neither a definite shape nor volume, expanding to fill their container.",
+        "example": "Ice is a solid, water is a liquid, and steam is a gas.",
+        "order": 38
+    },
+    {
+        "front": "How can you measure the volume of a liquid?",
+        "back": "You can use a graduated cylinder.",
+        "audioExplanation": "Measuring liquid volume is easy! A graduated cylinder has markings that help you see how much liquid is inside.",
+        "detailedExplanation": "A graduated cylinder is a common laboratory tool used to measure the volume of liquids accurately. The markings on the side indicate the volume, allowing you to read how much liquid is present.",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the level rise to the 50 mL mark.",
+        "order": 39
+    },
+    {
+        "front": "What happens to the shape and volume of liquid metal when poured into a mold?",
+        "back": "The shape changes to fit the mold, but the volume remains the same.",
+        "audioExplanation": "When you pour liquid metal into a mold, it takes the shape of the mold but keeps the same amount of metal. It’s like pouring water into a cup—it changes shape but not the amount!",
+        "detailedExplanation": "When liquid metal is poured into a mold, it conforms to the shape of the mold, demonstrating the property of liquids to take the shape of their container. However, the volume of the liquid remains constant, as the amount of matter does not change.",
+        "example": "If you pour 100 mL of liquid aluminum into a block-shaped mold, it will fill the mold and take that shape, but it will still be 100 mL of aluminum.",
+        "order": 40
+    },
+    {
+        "front": "What are the similarities and differences between solids and liquids?",
+        "back": "Similarities: Both have mass and volume. Differences: Solids have a definite shape; liquids take the shape of their container.",
+        "audioExplanation": "Solids and liquids are both types of matter, but solids hold their shape while liquids flow and take the shape of their container.",
+        "detailedExplanation": "Both solids and liquids are forms of matter that occupy space and have mass. However, solids maintain a fixed shape and volume, while liquids have a fixed volume but adapt their shape to the container they are in. This is due to the arrangement and movement of their particles.",
+        "example": "A rock is a solid with a fixed shape, while water in a glass takes the shape of the glass.",
+        "order": 41
+    },
+    {
+        "front": "What is the procedure to observe the states of matter?",
+        "back": "You will measure the volume of air, marbles, and water using a syringe and observe their shapes.",
+        "audioExplanation": "To see how different states of matter behave, you can use a syringe to measure air, marbles, and water. You’ll notice how their shapes and volumes change!",
+        "detailedExplanation": "The procedure involves drawing air into a syringe, observing the shape of marbles in a cup, and measuring the volume of water. By pushing the plunger, you can see how the volume of gases and liquids can change, while solids maintain their shape.",
+        "example": "You can fill a syringe with air, marbles, and water, and see how each behaves differently when you push the plunger.",
+        "order": 42
+    },
+    {
+        "topic": "Chemistry",
+        "lesson": "States of Matter",
+        "front": "What are the three states of matter?",
+        "back": "The three states of matter are solid, liquid, and gas.",
+        "audioExplanation": "It's simple! Matter can exist in three forms: solids, which hold their shape; liquids, which take the shape of their container; and gases, which fill the entire space available to them.",
+        "detailedExplanation": "Matter is anything that has mass and takes up space. The three main states of matter are solids, which have a definite shape and volume; liquids, which have a definite volume but take the shape of their container; and gases, which have neither a definite shape nor volume and expand to fill their container. Understanding these states helps us describe how different materials behave.",
+        "example": "Think of ice (solid), water (liquid), and steam (gas). Ice keeps its shape, water takes the shape of the glass, and steam spreads out in the air.",
+        "order": 43
+    },
+    {
+        "topic": "Chemistry",
+        "lesson": "Physical Properties of Matter",
+        "front": "What are the physical properties used to describe states of matter?",
+        "back": "The physical properties used to describe states of matter are volume and shape.",
+        "audioExplanation": "When we talk about matter, we look at how much space it takes up (volume) and what it looks like (shape). This helps us understand what kind of matter we're dealing with.",
+        "detailedExplanation": "Volume is the amount of space that a substance occupies, and it can be measured using tools like graduated cylinders for liquids. Shape refers to the form of the matter. Solids have a fixed shape, liquids take the shape of their container, and gases have no fixed shape. Observing these properties helps classify matter into its respective state.",
+        "example": "A cube of ice has a definite shape and volume, while water in a glass takes the shape of the glass but has the same volume as the ice cube when melted.",
+        "order": 44
+    },
+    {
+        "topic": "Chemistry",
+        "lesson": "Observing Matter",
+        "front": "How can you classify matter as a solid, liquid, or gas?",
+        "back": "You can classify matter by observing its volume and shape.",
+        "audioExplanation": "To figure out what state matter is in, just look at how it behaves! If it keeps its shape, it's a solid. If it takes the shape of its container, it's a liquid. If it spreads out to fill the space, it's a gas.",
+        "detailedExplanation": "To classify matter, observe its physical properties. Solids have a fixed shape and volume, liquids have a fixed volume but take the shape of their container, and gases have neither a fixed shape nor volume. By measuring and observing these characteristics, you can determine the state of the matter.",
+        "example": "When you pour water into a bottle, it takes the shape of the bottle (liquid). If you look at a rock, it stays the same shape (solid). And when you blow up a balloon, the air inside fills the entire balloon (gas).",
+        "order": 45
+    },
+    {
+        "topic": "Chemistry",
+        "lesson": "Volume Measurement",
+        "front": "How do you measure the volume of a liquid?",
+        "back": "You can measure the volume of a liquid using a graduated cylinder.",
+        "audioExplanation": "Measuring liquid volume is easy! A graduated cylinder has markings that show how much liquid is inside. Just pour the liquid in and read the measurement at eye level.",
+        "detailedExplanation": "A graduated cylinder is a common laboratory tool used to measure the volume of liquids accurately. It has markings along the side that indicate volume measurements. When measuring, it's important to read the bottom of the meniscus (the curve of the liquid surface) at eye level for an accurate reading.",
+        "example": "If you pour 50 mL of water into a graduated cylinder, you can see the level of the water against the markings to know exactly how much you have.",
+        "order": 46
+    },
+    {
+        "topic": "Chemistry",
+        "lesson": "Properties of Solids and Liquids",
+        "front": "What are similarities and differences between solids and liquids?",
+        "back": "Both solids and liquids have a definite volume, but solids have a fixed shape while liquids take the shape of their container.",
+        "audioExplanation": "Think of solids and liquids like this: solids are like a box that doesn't change shape, while liquids are like water that can change shape based on where you put it. They both take up space, but they behave differently!",
+        "detailedExplanation": "Solids and liquids share the property of having a definite volume, meaning they occupy a specific amount of space. However, solids maintain a fixed shape, while liquids adapt to the shape of their container. This difference is due to the arrangement of particles; in solids, particles are tightly packed and vibrate in place, while in liquids, particles are less tightly packed and can move around each other.",
+        "example": "A rock (solid) keeps its shape no matter where you put it, but water (liquid) will take the shape of whatever container it's in, like a cup or a bottle.",
+        "order": 47
+    },
+    {
+        "topic": "Chemistry",
+        "lesson": "Observing Changes in Volume",
+        "front": "What happens to the shape and volume of liquid metal when poured into a mold?",
+        "back": "The liquid metal takes the shape of the mold while maintaining its volume.",
+        "audioExplanation": "When you pour liquid metal into a mold, it changes shape to fit the mold but the amount of metal stays the same. It’s like pouring water into a bottle—it takes the bottle's shape but the amount of water doesn’t change!",
+        "detailedExplanation": "When liquid metal is poured into a mold, it adapts to the shape of the mold, demonstrating the property of liquids to take the shape of their container. However, the volume of the liquid metal remains constant, as the amount of substance does not change during this process. This illustrates the behavior of liquids in response to external shapes while maintaining their volume.",
+        "example": "If you pour melted chocolate into a heart-shaped mold, it will take the shape of the heart but still be the same amount of chocolate as before.",
+        "order": 48
+    },
+    {
         topic: "Science",
         lesson: "States of Matter",
         order: 100,
@@ -159,7 +555,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 1,
+        order: 1001,
         front: "Chemical Reaction",
         back: `*(noun)*  
 **Definition:** A process where substances (reactants) transform into new substances (products).`,
@@ -170,7 +566,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 2,
+        order: 1002,
         front: "Physical Change",
         back: `*(noun)*  
 **Definition:** A change that does not alter the identity of a substance (e.g., cutting, melting).`,
@@ -181,7 +577,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 3,
+        order: 1003,
         front: "Chemical Change",
         back: `*(noun)*  
 **Definition:** A change that results in the formation of new substances (e.g., rusting, combustion).`,
@@ -192,7 +588,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 4,
+        order: 1004,
         front: "Signs of Chemical Reactions",
         back: `*(noun)*  
 **Definition:** Indicators that a chemical reaction has occurred, such as color change, gas production, or energy change.`,
@@ -203,7 +599,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 5,
+        order: 1005,
         front: "Photosynthesis",
         back: `*(noun)*  
 **Definition:** The process by which green plants use sunlight to produce glucose and oxygen from carbon dioxide and water.`,
@@ -214,7 +610,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 6,
+        order: 1006,
         front: "Combustion",
         back: `*(noun)*  
 **Definition:** A chemical reaction that typically involves the reaction of a substance with oxygen, releasing energy (heat and light).`,
@@ -225,7 +621,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "States of Matter",
-        order: 7,
+        order: 1007,
         front: "Melting",
         back: `*(verb)*  
 **Definition:** A process where a solid changes to a liquid by absorbing energy (e.g., ice melting).`,
@@ -236,7 +632,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "States of Matter",
-        order: 8,
+        order: 1008,
         front: "Freezing",
         back: `*(verb)*  
 **Definition:** A process where a liquid changes to a solid by releasing energy (e.g., water freezing into ice).`,
@@ -247,7 +643,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "States of Matter",
-        order: 9,
+        order: 1009,
         front: "Evaporation",
         back: `*(noun)*  
 **Definition:** A process where a liquid changes to a gas by absorbing energy (e.g., water to steam).`,
@@ -258,7 +654,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "States of Matter",
-        order: 10,
+        order: 10010,
         front: "Condensation",
         back: `*(noun)*  
 **Definition:** A process where a gas changes to a liquid by losing energy (e.g., water vapor on a cold glass).`,
@@ -269,7 +665,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Properties",
-        order: 11,
+        order: 10011,
         front: "Physical Properties",
         back: `*(noun)*  
 **Definition:** Observations that do not change the identity of the substance (e.g., melting point, density).`,
@@ -280,7 +676,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Properties",
-        order: 12,
+        order: 10012,
         front: "Chemical Properties",
         back: `*(noun)*  
 **Definition:** Observed during a reaction that changes the substance (e.g., reactivity, flammability).`,
@@ -291,7 +687,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 13,
+        order: 10013,
         front: "Endothermic Reaction",
         back: `*(noun)*  
 **Definition:** A reaction that absorbs heat from the surroundings.`,
@@ -302,7 +698,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 14,
+        order: 10014,
         front: "Exothermic Reaction",
         back: `*(noun)*  
 **Definition:** A reaction that releases heat into the surroundings.`,
@@ -313,7 +709,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 15,
+        order: 10015,
         front: "Reactants",
         back: `*(noun)*  
 **Definition:** Initial substances in a chemical reaction.`,
@@ -324,7 +720,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 16,
+        order: 10016,
         front: "Products",
         back: `*(noun)*  
 **Definition:** Substances formed in a chemical reaction.`,
@@ -335,7 +731,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 17,
+        order: 10017,
         front: "Precipitate",
         back: `*(noun)*  
 **Definition:** A solid that forms from a solution during a chemical reaction.`,
@@ -346,7 +742,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 18,
+        order: 10018,
         front: "Catalyst",
         back: `*(noun)*  
 **Definition:** A substance that speeds up a chemical reaction without being consumed.`,
@@ -357,7 +753,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 19,
+        order: 10019,
         front: "Combustion",
         back: `*(noun)*  
 **Definition:** A chemical reaction that typically involves the reaction of a substance with oxygen, releasing energy (heat and light).`,
@@ -368,7 +764,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 20,
+        order: 10020,
         front: "Evaporation",
         back: `*(noun)*  
 **Definition:** Process of a liquid turning into gas, absorbing energy.`,
@@ -379,7 +775,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "Chemistry",
         lesson: "Chemical Processes",
-        order: 21,
+        order: 10021,
         front: "Condensation",
         back: `*(noun)*  
 **Definition:** Process of a gas turning into liquid, releasing energy.`,
@@ -390,7 +786,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 1,
+        order: 1101,
         front: "Action",
         back: `*(noun)*
 **Definition:** What people in photographs are doing. For captions, action helps form the caption starter.
@@ -403,7 +799,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 2,
+        order: 1102,
         front: "Angle",
         back: `*(noun)*
 **Definition:** A writer's specific point of view on a larger topic.  
@@ -416,7 +812,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 3,
+        order: 1103,
         front: "Attribution",
         back: `*(noun)*  
 **Definition:** Identifying the source of a quote. Crediting a person for their direct quote.  
@@ -429,7 +825,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 4,
+        order: 1104,
         front: "Basic Information",
         back: `*(noun)*  
 **Definition:** Documenting the who, what, when, where, why and how of a picture to write factual copy and captions.  
@@ -442,7 +838,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 5,
+        order: 1105,
         front: "Body Copy",
         back: `*(noun)*  
 **Definition:** The main words on a spread. Yearbook body copy is written through interviews with sources.  
@@ -455,7 +851,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 6,
+        order: 1106,
         front: "Caption",
         back: `*(noun)*  
 **Definition:** The first sentence is written in present tense and describes the action and basic information of a picture.  
@@ -468,7 +864,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 7,
+        order: 1107,
         front: "Complementary Information",
         back: `*(noun)*  
 **Definition:** Any sentence following the first sentence of a caption. Information relevant to the picture, but may not be readily apparent.  
@@ -481,7 +877,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 8,
+        order: 1108,
         front: "Conversation Quotas",
         back: `*(noun)*  
 **Definition:** The minimum number of students a staffer is required to interview each week.  
@@ -494,7 +890,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 9,
+        order: 1109,
         front: "Direct Quote",
         back: `*(noun)*  
 **Definition:** A statement straight from a source a reporter obtains through interviews.  
@@ -507,7 +903,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 10,
+        order: 11010,
         front: "Editorializing",
         back: `*(verb)*  
 **Definition:** When a reporter injects his or her opinion in a story. If it isn't a direct quote or summary of a direct quote from a student, it should not be included.  
@@ -520,7 +916,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 11,
+        order: 11011,
         front: "Headline",
         back: `*(noun)*  
 **Definition:** A reader entry device that introduces reporting. Words simply labeling what's on the page.  
@@ -533,7 +929,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 12,
+        order: 11012,
         front: "Interview",
         back: `*(noun)*  
 **Definition:** A conversation between a reporter and their source. The purpose is to obtain and confirm basic information.  
@@ -546,7 +942,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 13,
+        order: 11013,
         front: "Inverted Pyramid",
         back: `*(noun)*  
 **Definition:** A method of journalistic writing that puts the most important information at the top of the story.  
@@ -559,7 +955,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 14,
+        order: 11014,
         front: "Kicker",
         back: `*(noun)*  
 **Definition:** The conclusion of the story. Use a surprising or poignant revelation at the end.  
@@ -572,7 +968,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 15,
+        order: 11015,
         front: "Lead",
         back: `*(noun)*  
 **Definition:** An attention-grabbing first sentence or paragraph to a story that forces the reader to want to learn more.  
@@ -585,7 +981,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 16,
+        order: 11016,
         front: "Nut Graf",
         back: `*(noun)*  
 **Definition:** Right after your lead, this string of no more than three sentences gives context and direction to the story.  
@@ -598,7 +994,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 17,
+        order: 11017,
         front: "Quote",
         back: `*(noun)*  
 **Definition:** A direct statement from a source a reporter obtains through interviews. Set off with quotation marks and include attribution.  
@@ -611,7 +1007,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 18,
+        order: 11018,
         front: "Quote Collections",
         back: `*(noun)*  
 **Definition:** Alternative copy format that uses only direct quotes from students to tell the story of the year.  
@@ -624,7 +1020,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 19,
+        order: 11019,
         front: "Source",
         back: `*(noun)*  
 **Definition:** The person a reporter interviews. They are a "source" of information because they experienced the event you are asking about.  
@@ -637,7 +1033,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 20,
+        order: 11020,
         front: "Style Guide",
         back: `*(noun)*  
 **Definition:** A list of guidelines a writer uses to maintain consistent punctuation and capitalization.  
@@ -650,7 +1046,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 21,
+        order: 11021,
         front: "Subheadline",
         back: `*(noun)*  
 **Definition:** A secondary headline under the main headline that provides specific, detailed information about the copy.  
@@ -663,7 +1059,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 22,
+        order: 11022,
         front: "Talking Head",
         back: `*(noun)*  
 **Definition:** Alternative copy format where student headshots are combined with direct quotes to form coverage around a topic.  
@@ -676,7 +1072,7 @@ export const vocabFlashcards: FlashcardData[] = [
     {
         topic: "English",
         lesson: "Vocab",
-        order: 23,
+        order: 11023,
         front: "Transition",
         back: `*(noun)*  
 **Definition:** Sentences a writer uses to logically link one fact or quotation to another in a piece of copy.  

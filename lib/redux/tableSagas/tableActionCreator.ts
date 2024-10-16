@@ -1,4 +1,4 @@
-// lib/redux/schemaSagas/schemaActionCreator.ts
+// lib/redux/tableSagas/tableActionCreator.ts
 
 import { getSchema, InferSchemaType, TableSchema } from "@/utils/schema/schemaRegistry";
 
@@ -21,7 +21,7 @@ interface PayloadAction<T extends string, P> extends BaseAction<T> {
 }
 
 // Create standard action creators
-export function schemaActionCreators<K extends string>(tableName: K) {
+export function tableActionCreators<K extends string>(tableName: K) {
     const schema = getSchema(tableName);
     if (!schema) {
         throw new Error(`No schema found for table: ${tableName}`);
@@ -175,4 +175,4 @@ function createCustomActions<T extends TableSchema>(
 }
 
 // Export types for action creators
-export type Actions<K extends string> = ReturnType<typeof schemaActionCreators<K>>;
+export type Actions<K extends string> = ReturnType<typeof tableActionCreators<K>>;

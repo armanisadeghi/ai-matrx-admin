@@ -146,6 +146,7 @@
     "usehooks-ts": "latest",
     "uuid": "latest",
     "vaul": "latest",
+    "wikipedia": "^2.1.2",
     "zod": "latest"
   },
   "devDependencies": {

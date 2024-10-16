@@ -53,3 +53,31 @@ export function createFeatureSagas(featureName: FeatureName, featureSchema: z.Zo
 
     return featureSagas;
 }
+
+export function createSchemaSagas(featureName: FeatureName, featureSchema: z.ZodTypeAny) {
+    const {
+        fetchWithFksPending, fetchWithFksFulfilled, fetchWithFksRejected,
+        fetchWithIFKsPending, fetchWithIFKsFulfilled, fetchWithIFKsRejected,
+        fetchWithFkIfkPending, fetchWithFkIfkFulfilled, fetchWithFkIfkRejected,
+        fetchCustomRelsPending, fetchCustomRelsFulfilled, fetchCustomRelsRejected
+    } = createFeatureActions(featureName, featureSchema);
+
+    function* featureSagas() {
+        yield all([
+            takeEvery(fetchWithFksPending.type, function* (action: ReturnType<typeof fetchWithFksPending>) {
+                yield fetchWithSaga(action, fetchWithFk, fetchWithFksFulfilled, fetchWithFksRejected);
+            }),
+            takeEvery(fetchWithIFKsPending.type, function* (action: ReturnType<typeof fetchWithIFKsPending>) {
+                yield fetchWithSaga(action, fetchWithIfk, fetchWithIFKsFulfilled, fetchWithIFKsRejected);
+            }),
+            takeEvery(fetchWithFkIfkPending.type, function* (action: ReturnType<typeof fetchWithFkIfkPending>) {
+                yield fetchWithSaga(action, fetchWithFkIfk, fetchWithFkIfkFulfilled, fetchWithFkIfkRejected);
+            }),
+            takeEvery(fetchCustomRelsPending.type, function* (action: ReturnType<typeof fetchCustomRelsPending>) {
+                yield fetchWithSaga(action, fetchCustomRels, fetchCustomRelsFulfilled, fetchCustomRelsRejected);
+            })
+        ]);
+    }
+
+    return featureSagas;
+}

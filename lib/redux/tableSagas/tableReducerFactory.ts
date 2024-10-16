@@ -1,24 +1,20 @@
-// lib/redux/schemaSagas/schemaReducerFactory.ts
+// lib/redux/tableSagas/tableReducerFactory.ts
 
 import { getSchema, InferSchemaType, TableSchema } from "@/utils/schema/schemaRegistry";
 import { UnknownAction } from '@reduxjs/toolkit';
 
-// Define a generic state interface for a given table schema
 interface State<T> {
     data: T[];
     loading: boolean;
     error: Error | null;
 }
 
-// Action type constants
 type ActionType = 'FETCH' | 'CREATE' | 'UPDATE' | 'DELETE' | 'CHANGE_STATUS';
 
-// Helper function to create action type strings
 function getActionType(baseType: string, action: ActionType, status: 'REQUEST' | 'SUCCESS' | 'FAILURE') {
     return `${baseType}_${action}_${status}`;
 }
 
-// Type guard to check if an action is of a specific type
 function isActionOfType(action: UnknownAction, baseType: string, actionType: ActionType, status: 'REQUEST' | 'SUCCESS' | 'FAILURE'): action is { type: string; payload?: any } {
     return action.type === getActionType(baseType, actionType, status);
 }
@@ -111,7 +107,7 @@ function handleCustomActions<T extends TableSchema>(
         }
     }
 
-    // Add more custom action handling as needed
+    // More custom action to be added here...
 
     return state;
 }

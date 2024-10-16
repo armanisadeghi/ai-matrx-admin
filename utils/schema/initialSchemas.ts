@@ -1,7 +1,6 @@
 // File: lib/initialSchemas.ts
 
 import {TableSchema, createTypeReference, InferSchemaType} from './schemaRegistry';
-import {Json} from "@/types/database.types";
 
 export const initialSchemas: Record<string, TableSchema> = {
     action: {

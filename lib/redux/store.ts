@@ -1,13 +1,9 @@
-// lib/redux/store.ts
-
-import {configureStore, ThunkAction, Action, combineReducers} from '@reduxjs/toolkit';
+import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import { featureSchemas } from './dynamic/featureSchema';
 import { createFeatureSlice } from './slices/featureSliceCreator';
-import { getRegisteredSchemas, getSchema } from '@/utils/schema/schemaRegistry';
 import { createModuleSlice } from './slices/moduleSliceCreator';
 import { moduleSchemas, ModuleName } from './dynamic/moduleSchema';
-import { schemaSliceCreator } from '@/lib/redux/slices/schemaSliceCreator';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
 import userReducer from './slices/userSlice';
@@ -16,7 +12,9 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-// import rootSaga from "@/lib/redux/schemaSagas/rootSaga";
+import { rootSaga } from "@/lib/redux/rootSaga";
+import { initialSchemas } from "@/utils/schema/initialSchemas";
+import { createTableSlice } from "@/lib/redux/tableSagas/tableSliceCreator";
 
 // Initialize saga middleware
 const sagaMiddleware = createSagaMiddleware();
@@ -35,27 +33,17 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-
-// Get all registered schemas in the 'frontend' format
-const registeredSchemaNames = getRegisteredSchemas('frontend');
-
-// Create reducers for each registered schema
-const schemaReducers = registeredSchemaNames.reduce((acc, tableName) => {
-    const schema = getSchema(tableName, 'frontend');
-
-    if (schema) {
-        const slice = schemaSliceCreator(tableName);
-        acc[schema.name.frontend] = slice.reducer;
-    }
+const tableReducers = Object.keys(initialSchemas).reduce((acc, tableName) => {
+    const tableSchema = initialSchemas[tableName as keyof typeof initialSchemas];
+    const tableSlice = createTableSlice(tableName as keyof typeof initialSchemas, tableSchema);
+    acc[tableName] = tableSlice.reducer;
     return acc;
 }, {} as Record<string, any>);
 
-
-// Combine all reducers
 const rootReducer = combineReducers({
     ...featureReducers,
     ...moduleReducers,
-    ...schemaReducers, // Include the schema reducers
+    ...tableReducers,
     layout: layoutReducer,
     theme: themeReducer,
     form: formReducer,
@@ -67,17 +55,21 @@ const rootReducer = combineReducers({
 });
 
 export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {
-    return configureStore({
+    const store = configureStore({
         reducer: rootReducer,
         preloadedState: initialState,
-        middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware({ serializableCheck: false }).concat(sagaMiddleware),
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
-    // sagaMiddleware.run(rootSaga);
+
+    sagaMiddleware.run(rootSaga);
+
+    return store;
 };
 
 export type AppStore = ReturnType<typeof makeStore>;
-export type RootState = ReturnType<typeof rootReducer>;
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];
-export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action<string>>;
+
+export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>;
