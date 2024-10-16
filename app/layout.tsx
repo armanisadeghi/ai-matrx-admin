@@ -16,6 +16,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
     const cookieStore = cookies();
     const theme = cookieStore.get('theme')?.value || 'dark';
+    console.log("Server Layout: GROQ_API_KEY: ",process.env.GROQ_API_KEY);
 
     return (
         <html lang="en" data-theme={theme} className={cn("dark", inter.variable, montserrat.variable)} suppressHydrationWarning>

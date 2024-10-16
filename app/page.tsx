@@ -25,6 +25,8 @@ interface TopMenuProps {
 }
 
 const TopMenu: React.FC<TopMenuProps> = () => {
+    console.log("Server Page: GROQ_API_KEY: ",process.env.GROQ_API_KEY);
+
     return (
         <header
             className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -60,6 +62,7 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({Icon, title, description, features}) => (
+
     <CardContainer className="inter-var">
         <CardBody
             className="bg-background relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] border-border w-full h-full rounded-xl p-6 border">

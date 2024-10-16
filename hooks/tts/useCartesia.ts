@@ -51,7 +51,7 @@ export function useCartesia(
         modelId = ModelId.SonicEnglish,
         voice = {mode: "id", id: "a0e99841-438c-4a64-b679-ae501e7d6091"},
         language = Language.EN,
-        bufferDuration = 0,
+        bufferDuration = 1,
     }: UseCartesiaProps = {}): UseCartesiaResult {
     const [websocket, setWebsocket] = useState<any>(null);
     const [isConnected, setIsConnected] = useState(false);

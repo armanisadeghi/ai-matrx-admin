@@ -34,6 +34,11 @@ export default function Playground() {
 
     const onSelectedPresetChange = (key: React.Key) => {
         const preset = presets.find((preset) => preset.id === key);
+        console.log("Client Side Page: GROQ_API_KEY: ",process.env.GROQ_API_KEY);
+        console.log("Client Side Page: NEXT_PUBLIC_GROQ_API_KEY: ",process.env.NEXT_PUBLIC_GROQ_API_KEY);
+        console.log("Client Side Page: NEXT_PUBLIC_SUPABASE_URL: ",process.env.NEXT_PUBLIC_SUPABASE_URL);
+        console.log("Client Side Page: HUME_API_KEY: ",process.env.HUME_API_KEY);
+        console.log("Client Side Page: CUSTOM_MESSAGE: ",process.env.CUSTOM_MESSAGE);
 
         if (!preset) {
             return;
