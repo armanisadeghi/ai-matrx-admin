@@ -103,17 +103,14 @@ const nextConfig = {
             config.externals.push({
                 'tough-cookie': 'commonjs tough-cookie',
                 jsdom: 'commonjs jsdom',
-                canvas: 'commonjs canvas',  // Exclude canvas from client-side
+                canvas: 'commonjs canvas',
             });
         }
 
         return config;
     },
-    // Add ESLint configuration
     eslint: {
-        // This will allow the build to continue even with ESLint errors
         ignoreDuringBuilds: true,
-        // Specify the directories to lint
         dirs: ['pages', 'components', 'lib', 'utils', 'app'],
     },
 };

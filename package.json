@@ -88,6 +88,7 @@
     "fs": "0.0.1-security",
     "gasp": "^0.0.2",
     "google-fonts": "latest",
+    "groq-sdk": "^0.7.0",
     "jsonlint-mod": "^1.7.6",
     "katex": "latest",
     "lucide-react": "latest",
