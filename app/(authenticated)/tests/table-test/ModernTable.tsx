@@ -16,7 +16,7 @@ import {
     TableInstance,
     ModernTableProps,
     TableData
-} from "@/types/tableTypes";
+} from "@/_armani/old-types/tableTypes";
 
 const ModernTable: React.FC<ModernTableProps> = (
     {

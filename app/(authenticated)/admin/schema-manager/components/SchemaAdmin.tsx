@@ -29,7 +29,7 @@ export default function SchemaAdmin() {
                     database: newSchemaName.toLowerCase(),
                     pretty: newSchemaName,
                 },
-                schemaType: 'table',
+                schemaType: 'table', // You can update this to the appropriate type ('table', 'view', etc.)
                 fields: {
                     id: {
                         alts: {
@@ -38,16 +38,26 @@ export default function SchemaAdmin() {
                             database: 'id',
                             pretty: 'ID',
                         },
-                        type: 'string',
-                        format: 'single',
+                        type: 'string', // Based on DataType defined in the types
+                        format: 'single', // Refers to ConversionFormat
                         structure: {
-                            structure: 'simple',
-                            typeReference: createTypeReference<string>(),
+                            structure: 'simple', // Refers to StructureType ('simple', 'foreignKey', etc.)
+                            typeReference: createTypeReference<string>(), // Keeps the generic type reference structure
                         },
                     },
                 },
+                relationships: {
+                    fetchStrategy: 'simple', // Default fetch strategy, you can adjust based on actual need
+                    foreignKeys: [], // Array of foreign key relationships (empty by default)
+                    inverseForeignKeys: [], // Array of inverse foreign key relationships (empty by default)
+                    manyToMany: [], // Array of many-to-many relationships (empty by default)
+                },
             };
+
+            // Register the new schema in the global registry
             registerNewSchema(newSchemaName, newSchema);
+
+            // Clear the input field after adding the schema
             setNewSchemaName('');
         }
     };

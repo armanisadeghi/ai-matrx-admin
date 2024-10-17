@@ -5,7 +5,7 @@
 import React from 'react';
 import ModernTable from "@/app/(authenticated)/tests/table-test/ModernTable";
 import {CurrentTableData, currentData} from "@/app/(authenticated)/tests/table-test/data";
-import {MatrixColumn} from "@/types/tableTypes";
+import {MatrixColumn} from "@/_armani/old-types/tableTypes";
 
 const defaultVisibleColumns = [
     'name', 'age', 'email', 'country', 'occupation', 'salary', 'start_date', 'actions',

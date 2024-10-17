@@ -1,11 +1,13 @@
+// lib/redux/tableSagas/useTable.ts
+
 import { initialSchemas } from "@/utils/schema/initialSchemas";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createTableSlice } from "@/lib/redux/tableSagas/tableSliceCreator";
+import { createTableSlice } from "@/lib/redux/tables/tableSliceCreator";
 import { RootState } from "@/lib/redux/store";
 
 type TableStateKeys = keyof typeof initialSchemas & keyof RootState;
 
-export function useTable<K extends TableStateKeys>(tableName: K) {
+export function useDynamicTable<K extends TableStateKeys>(tableName: K) {
     const dispatch = useAppDispatch();
 
     const { actions } = createTableSlice(tableName, initialSchemas[tableName]);

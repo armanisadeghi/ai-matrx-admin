@@ -1,3 +1,5 @@
+// lib/redux/tableSagas/tableSagas.ts
+
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { getSchema, TableSchema } from "@/utils/schema/schemaRegistry";

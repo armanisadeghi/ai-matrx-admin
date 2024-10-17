@@ -148,6 +148,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<TransformerType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'matrix', relatedTable: 'automation_matrix', relatedColumn: 'id'},
+                {column: 'transformer', relatedTable: 'transformer', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     aiEndpoint: {
@@ -278,6 +288,13 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<Record<string, unknown>>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "simple",
+            foreignKeys: [],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     aiModel: {
@@ -477,6 +494,22 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeModelType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'recipe_model', relatedColumn: 'ai_model', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'recipe_model',
+                    relatedTable: 'recipe',
+                    mainTableColumn: 'ai_model',
+                    relatedTableColumn: 'recipe'
+                }
+            ],
+
         }
     },
     arg: {
@@ -624,6 +657,15 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RegisteredFunctionType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fk",
+            foreignKeys: [
+                {column: 'registered_function', relatedTable: 'registered_function', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     automationBoundaryBroker: {
@@ -754,6 +796,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<AutomationMatrixType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'broker', relatedTable: 'broker', relatedColumn: 'id'},
+                {column: 'matrix', relatedTable: 'automation_matrix', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     automationMatrix: {
@@ -903,6 +955,29 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<AutomationBoundaryBrokerType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'action', relatedColumn: 'matrix', mainTableColumn: 'id'},
+                {relatedTable: 'automation_boundary_broker', relatedColumn: 'matrix', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'action',
+                    relatedTable: 'transformer',
+                    mainTableColumn: 'matrix',
+                    relatedTableColumn: 'transformer'
+                },
+                {
+                    junctionTable: 'automation_boundary_broker',
+                    relatedTable: 'broker',
+                    mainTableColumn: 'matrix',
+                    relatedTableColumn: 'broker'
+                }
+            ],
+
         }
     },
     broker: {
@@ -1274,6 +1349,32 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<AutomationBoundaryBrokerType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fkIfkAndM2M",
+            foreignKeys: [
+                {column: 'custom_source_component', relatedTable: 'data_input_component', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [
+                {relatedTable: 'recipe_broker', relatedColumn: 'broker', mainTableColumn: 'id'},
+                {relatedTable: 'registered_function', relatedColumn: 'return_broker', mainTableColumn: 'id'},
+                {relatedTable: 'automation_boundary_broker', relatedColumn: 'broker', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'automation_boundary_broker',
+                    relatedTable: 'automation_matrix',
+                    mainTableColumn: 'broker',
+                    relatedTableColumn: 'matrix'
+                },
+                {
+                    junctionTable: 'recipe_broker',
+                    relatedTable: 'recipe',
+                    mainTableColumn: 'broker',
+                    relatedTableColumn: 'recipe'
+                }
+            ],
+
         }
     },
     dataInputComponent: {
@@ -1524,6 +1625,15 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<BrokerType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "ifk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'broker', relatedColumn: 'custom_source_component', mainTableColumn: 'id'}
+            ],
+            manyToMany: [],
+
         }
     },
     dataOutputComponent: {
@@ -1620,6 +1730,13 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<Record<string, unknown>>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "simple",
+            foreignKeys: [],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     displayOption: {
@@ -1734,6 +1851,22 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeDisplayType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'recipe_display', relatedColumn: 'display', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'recipe_display',
+                    relatedTable: 'recipe',
+                    mainTableColumn: 'display',
+                    relatedTableColumn: 'recipe'
+                }
+            ],
+
         }
     },
     emails: {
@@ -1864,6 +1997,13 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<boolean>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "simple",
+            foreignKeys: [],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     extractor: {
@@ -1960,6 +2100,13 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<number>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "simple",
+            foreignKeys: [],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     flashcardData: {
@@ -2297,6 +2444,24 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<FlashcardImagesType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'flashcard_history', relatedColumn: 'flashcard_id', mainTableColumn: 'id'},
+                {relatedTable: 'flashcard_set_relations', relatedColumn: 'flashcard_id', mainTableColumn: 'id'},
+                {relatedTable: 'flashcard_images', relatedColumn: 'flashcard_id', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'flashcard_set_relations',
+                    relatedTable: 'flashcard_sets',
+                    mainTableColumn: 'flashcard_id',
+                    relatedTableColumn: 'set_id'
+                }
+            ],
+
         }
     },
     flashcardHistory: {
@@ -2461,6 +2626,15 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<FlashcardDataType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fk",
+            foreignKeys: [
+                {column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     flashcardImages: {
@@ -2608,6 +2782,15 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<FlashcardDataType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fk",
+            foreignKeys: [
+                {column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     flashcardSetRelations: {
@@ -2704,6 +2887,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<FlashcardSetsType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id'},
+                {column: 'set_id', relatedTable: 'flashcard_sets', relatedColumn: 'set_id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     flashcardSets: {
@@ -2920,6 +3113,22 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<FlashcardSetRelationsType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'flashcard_set_relations', relatedColumn: 'set_id', mainTableColumn: 'set_id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'flashcard_set_relations',
+                    relatedTable: 'flashcard_data',
+                    mainTableColumn: 'set_id',
+                    relatedTableColumn: 'flashcard_id'
+                }
+            ],
+
         }
     },
     processor: {
@@ -3069,6 +3278,25 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<ProcessorType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fkIfkAndM2M",
+            foreignKeys: [
+                {column: 'depends_default', relatedTable: 'self_reference', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [
+                {relatedTable: 'recipe_processor', relatedColumn: 'processor', mainTableColumn: 'id'},
+                {relatedTable: 'processor', relatedColumn: 'depends_default', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'recipe_processor',
+                    relatedTable: 'recipe',
+                    mainTableColumn: 'processor',
+                    relatedTableColumn: 'recipe'
+                }
+            ],
+
         }
     },
     recipe: {
@@ -3358,6 +3586,57 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeToolType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'recipe_broker', relatedColumn: 'recipe', mainTableColumn: 'id'},
+                {relatedTable: 'recipe_processor', relatedColumn: 'recipe', mainTableColumn: 'id'},
+                {relatedTable: 'recipe_model', relatedColumn: 'recipe', mainTableColumn: 'id'},
+                {relatedTable: 'recipe_display', relatedColumn: 'recipe', mainTableColumn: 'id'},
+                {relatedTable: 'recipe_function', relatedColumn: 'recipe', mainTableColumn: 'id'},
+                {relatedTable: 'recipe_tool', relatedColumn: 'recipe', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'recipe_broker',
+                    relatedTable: 'broker',
+                    mainTableColumn: 'recipe',
+                    relatedTableColumn: 'broker'
+                },
+                {
+                    junctionTable: 'recipe_display',
+                    relatedTable: 'display_option',
+                    mainTableColumn: 'recipe',
+                    relatedTableColumn: 'display'
+                },
+                {
+                    junctionTable: 'recipe_function',
+                    relatedTable: 'system_function',
+                    mainTableColumn: 'recipe',
+                    relatedTableColumn: 'function'
+                },
+                {
+                    junctionTable: 'recipe_model',
+                    relatedTable: 'ai_model',
+                    mainTableColumn: 'recipe',
+                    relatedTableColumn: 'ai_model'
+                },
+                {
+                    junctionTable: 'recipe_processor',
+                    relatedTable: 'processor',
+                    mainTableColumn: 'recipe',
+                    relatedTableColumn: 'processor'
+                },
+                {
+                    junctionTable: 'recipe_tool',
+                    relatedTable: 'tool',
+                    mainTableColumn: 'recipe',
+                    relatedTableColumn: 'tool'
+                }
+            ],
+
         }
     },
     recipeBroker: {
@@ -3488,6 +3767,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'broker', relatedTable: 'broker', relatedColumn: 'id'},
+                {column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     recipeDisplay: {
@@ -3618,6 +3907,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'display', relatedTable: 'display_option', relatedColumn: 'id'},
+                {column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     recipeFunction: {
@@ -3748,6 +4047,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'function', relatedTable: 'system_function', relatedColumn: 'id'},
+                {column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     recipeModel: {
@@ -3878,6 +4187,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'ai_model', relatedTable: 'ai_model', relatedColumn: 'id'},
+                {column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     recipeProcessor: {
@@ -3991,6 +4310,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'processor', relatedTable: 'processor', relatedColumn: 'id'},
+                {column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     recipeTool: {
@@ -4104,6 +4433,16 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<ToolType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndFk",
+            foreignKeys: [
+                {column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id'},
+                {column: 'tool', relatedTable: 'tool', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     },
     registeredFunction: {
@@ -4270,6 +4609,18 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<ArgType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fkAndIfk",
+            foreignKeys: [
+                {column: 'return_broker', relatedTable: 'broker', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [
+                {relatedTable: 'system_function', relatedColumn: 'rf_id', mainTableColumn: 'id'},
+                {relatedTable: 'arg', relatedColumn: 'registered_function', mainTableColumn: 'id'}
+            ],
+            manyToMany: [],
+
         }
     },
     systemFunction: {
@@ -4453,6 +4804,25 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeFunctionType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fkIfkAndM2M",
+            foreignKeys: [
+                {column: 'rf_id', relatedTable: 'registered_function', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [
+                {relatedTable: 'tool', relatedColumn: 'system_function', mainTableColumn: 'id'},
+                {relatedTable: 'recipe_function', relatedColumn: 'function', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'recipe_function',
+                    relatedTable: 'recipe',
+                    mainTableColumn: 'function',
+                    relatedTableColumn: 'recipe'
+                }
+            ],
+
         }
     },
     tool: {
@@ -4635,6 +5005,24 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<RecipeToolType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "fkIfkAndM2M",
+            foreignKeys: [
+                {column: 'system_function', relatedTable: 'system_function', relatedColumn: 'id'}
+            ],
+            inverseForeignKeys: [
+                {relatedTable: 'recipe_tool', relatedColumn: 'tool', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'recipe_tool',
+                    relatedTable: 'recipe',
+                    mainTableColumn: 'tool',
+                    relatedTableColumn: 'recipe'
+                }
+            ],
+
         }
     },
     transformer: {
@@ -4732,6 +5120,22 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<ActionType>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "m2mAndIfk",
+            foreignKeys: [],
+            inverseForeignKeys: [
+                {relatedTable: 'action', relatedColumn: 'transformer', mainTableColumn: 'id'}
+            ],
+            manyToMany: [
+                {
+                    junctionTable: 'action',
+                    relatedTable: 'automation_matrix',
+                    mainTableColumn: 'transformer',
+                    relatedTableColumn: 'matrix'
+                }
+            ],
+
         }
     },
     userPreferences: {
@@ -4811,6 +5215,13 @@ export const initialSchemas: Record<string, TableSchema> = {
                     typeReference: createTypeReference<Date>(),
                 }
             },
+        },
+        relationships: {
+            fetchStrategy: "simple",
+            foreignKeys: [],
+            inverseForeignKeys: [],
+            manyToMany: [],
+
         }
     }
 };

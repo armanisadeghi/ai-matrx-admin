@@ -2,7 +2,7 @@
 
 import React from "react";
 import {Cell} from "react-table";
-import {TableData} from "@/types/tableTypes";
+import {TableData} from "@/_armani/old-types/tableTypes";
 import {TableCell} from "@/components/ui/table";
 import {TableActionIcon} from "./MatrixTableActions";
 import {truncateText} from "./StandardTabUtil";

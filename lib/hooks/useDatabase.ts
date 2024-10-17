@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { QueryOptions, databaseApi, TableOrView } from "@/utils/supabase/api-wrapper";
-import { TableData } from '@/types/tableTypes';
+import { TableData } from '@/_armani/old-types/tableTypes';
 import { FlexibleId, flexibleIdToString, isValidFlexibleId } from '@/types/FlexibleId';
 import {
     getPrettyNameForTable,
@@ -28,13 +28,16 @@ interface useDatabaseResult<T> {
     paginationInfo: PaginationInfo | null;
     fetchOne: (name: TableOrView, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => Promise<void>;
     fetchAll: (name: TableOrView, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => Promise<void>;
+    fetchFk: (name: TableOrView, id: string, foreignKeys: any) => Promise<void>;
+    fetchIfk: (name: TableOrView, id: string, inverseForeignKeys: any) => Promise<void>;
+    fetchM2m: (name: TableOrView, id: string, manyToMany: any) => Promise<void>;
     fetchPaginated: (name: TableOrView, options: QueryOptions<TableOrView>) => Promise<void>;
     create: (name: TableOrView, data: Partial<T>) => Promise<void>;
     update: (name: TableOrView, id: string, data: Partial<T>) => Promise<void>;
     delete: (name: TableOrView, id: string | number) => Promise<void>;
     executeQuery: (name: TableOrView, query: (baseQuery: any) => any) => Promise<void>;
     subscribeToChanges: (name: TableOrView) => void;
-    unsubscribeFromChanges: (name: TableOrView) => void; // Updated this line
+    unsubscribeFromChanges: (name: TableOrView) => void;
 }
 
 function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView): useDatabaseResult<T> & {
@@ -76,22 +79,70 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchPaginated = useCallback(async (name: TableOrView, options: QueryOptions<TableOrView>) => {
+    const fetchFk = useCallback(async (name: TableOrView, id: string, foreignKeys: any) => {
         setLoading(true);
         try {
-            const { data: result, count } = await databaseApi.fetchPaginated(name, options);
-            setData(result as T[]);
-            setPaginationInfo({
-                currentPage: Math.floor(options.offset! / options.limit!) + 1,
-                totalPages: Math.ceil(count / options.limit!),
-                totalCount: count,
-            });
+            const result = await databaseApi.fetchFk(name, id, foreignKeys);
+            setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
         } finally {
             setLoading(false);
         }
     }, []);
+
+    const fetchIfk = useCallback(async (name: TableOrView, id: string, inverseForeignKeys: any) => {
+        setLoading(true);
+        try {
+            const result = await databaseApi.fetchIfk(name, id, inverseForeignKeys);
+            setData([result] as T[]);
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchM2m = useCallback(async (name: TableOrView, id: string, manyToMany: any) => {
+        setLoading(true);
+        try {
+            const result = await databaseApi.fetchM2m(name, id, manyToMany);
+            setData([result] as T[]);
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchPaginated = useCallback(
+        async (name: TableOrView, options: QueryOptions<TableOrView>, page: number = 1, pageSize: number = 10, maxCount: number = 10000) => {
+            setLoading(true);
+
+            try {
+                // Call the updated fetchPaginated method from the database API
+                const { page: currentPage, allNamesAndIds, pageSize: returnedPageSize, totalCount, paginatedData } =
+                    await databaseApi.fetchPaginated(name, options, page, pageSize, maxCount);
+
+                // Set the returned data and pagination info in the state
+                setData(paginatedData as T[]);
+                setPaginationInfo({
+                    currentPage: currentPage,
+                    totalPages: Math.ceil(totalCount / returnedPageSize),
+                    totalCount: totalCount,
+                });
+
+                // Optionally, if you want to use `allNamesAndIds` somewhere else in the component, you can set it to a state:
+                // setAllNamesAndIds(allNamesAndIds);
+
+            } catch (err) {
+                setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
+            } finally {
+                setLoading(false);
+            }
+        },
+        []
+    );
 
     const create = useCallback(async (name: TableOrView, payload: Partial<T>) => {
         setLoading(true);
@@ -137,7 +188,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
     const executeQuery = useCallback(async (name: TableOrView, queryFn: (baseQuery: any) => any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.executeQuery(name, queryFn);
+            const result = await databaseApi.executeCustomQuery(name, queryFn);
             setData(result as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -176,6 +227,9 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         paginationInfo,
         fetchOne,
         fetchAll,
+        fetchFk,
+        fetchIfk,
+        fetchM2m,
         fetchPaginated,
         create,
         update,

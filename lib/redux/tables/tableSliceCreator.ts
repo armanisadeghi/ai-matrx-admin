@@ -1,3 +1,5 @@
+// lib/redux/tableSagas/tableSliceCreator.ts
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TableSchema, InferSchemaType } from "@/utils/schema/schemaRegistry";
 import { QueryOptions } from '@/utils/supabase/api-wrapper';

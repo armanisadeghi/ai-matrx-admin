@@ -1,3 +1,5 @@
+// lib/redux/store.ts
+
 import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import { featureSchemas } from './dynamic/featureSchema';
@@ -14,7 +16,7 @@ import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
 import { rootSaga } from "@/lib/redux/rootSaga";
 import { initialSchemas } from "@/utils/schema/initialSchemas";
-import { createTableSlice } from "@/lib/redux/tableSagas/tableSliceCreator";
+import { createTableSlice } from "@/lib/redux/tables/tableSliceCreator";
 
 // Initialize saga middleware
 const sagaMiddleware = createSagaMiddleware();

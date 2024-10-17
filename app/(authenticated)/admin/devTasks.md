@@ -1,8 +1,8 @@
 # Pending Tasks
 
-- [ ] Sidebar not opening
-- [ ] Sidebar Mobile issues
-- [ ] Task
+- [ X ] Sidebar not opening
+- [ X ] Sidebar Mobile issues
+- [ ] Set up Voice Assistant as independent app with voice.aimatrx.com
 - [ ] Task
 - [ ] Task
 - [ ] Task

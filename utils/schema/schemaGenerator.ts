@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/server';
 const supabase = createClient();
 
 // Define the structure for the output schema
-export type TableField = {
+type TableField = {
     alts: {
         frontend: string;
         backend: string;
@@ -27,7 +27,7 @@ export type TableField = {
     };
 };
 
-export type TableSchema = {
+type TableSchema = {
     name: {
         frontend: string;
         backend: string;

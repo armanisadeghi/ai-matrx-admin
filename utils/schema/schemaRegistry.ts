@@ -1,6 +1,39 @@
 // File: lib/schemaRegistry.ts
 
-export type DataFormat = 'frontend' | 'backend' | 'database' | 'component' |'pretty'| 'graphql' | 'restApi';
+export type TableSchemaFull = {
+    name: {
+        frontend: string;
+        backend: string;
+        database: string;
+        pretty: string;
+        [key: string]: string;
+    };
+    schemaType: 'table' | 'view' | 'function' | 'procedure';
+    fields: Record<string, {
+        alts: {
+            frontend: string;
+            backend: string;
+            database: string;
+            [key: string]: string;
+        };
+        type: DataType;
+        format: 'single' | 'array' | 'object';
+        structure: {
+            structure: 'simple' | 'foreignKey' | 'inverseForeignKey';
+            typeReference: TypeBrand<any>;
+            databaseTable?: TableSchemaFull['name']['database'];
+        };
+    }>;
+    relationships: {
+        fetchStrategy: string;
+        foreignKeys: Array<TableRelationship['foreignKeys']>;
+        inverseForeignKeys: Array<TableRelationship['inverseForeignKeys']>;
+        manyToMany: Array<TableRelationship['manyToMany']>;
+    };
+};
+
+
+export type DataFormat = 'frontend' | 'backend' | 'database' | 'component' | 'pretty' | 'graphql' | 'restApi';
 export type schemaType = 'table' | 'view' | 'function' | 'procedure';
 
 
@@ -36,8 +69,8 @@ export type TypeBrand<T> = { [TypeBrand]: T };
 
 export interface FieldStructure<T> {
     structure: StructureType;
-    databaseTable?: string;
     typeReference: TypeBrand<T>;
+    databaseTable?: string;
 }
 
 export interface AltOptions {
@@ -45,6 +78,7 @@ export interface AltOptions {
     backend: string;
     database: string;
     pretty: string;
+
     [key: string]: string;
 }
 
@@ -59,11 +93,35 @@ export type ConverterMap = {
     [key: string]: FieldConverter<any>;
 };
 
+
+export interface TableRelationship {
+    fetchStrategy: 'simple' | 'fk' | 'ifk' | 'm2m' | 'fkAndIfk' | 'm2mAndFk' | 'm2mAndIfk' | 'fkIfkAndM2M';
+    foreignKeys: Array<{
+        column: string;
+        relatedTable: string;
+        relatedColumn: string;
+    }>;
+    inverseForeignKeys: Array<{
+        relatedTable: string;
+        relatedColumn: string;
+        mainTableColumn: string;
+    }>;
+    manyToMany: Array<{
+        junctionTable: string;
+        relatedTable: string;
+        mainTableColumn: string;
+        relatedTableColumn: string;
+
+    }>;
+}
+
 export interface TableSchema {
     name: AltOptions;
     schemaType: schemaType;
     fields: ConverterMap;
+    relationships: TableRelationship;
 }
+
 
 export interface SchemaRegistry {
     [tableName: string]: TableSchema;
@@ -87,28 +145,51 @@ export interface ConversionOptions {
 
 function convertValue(value: any, converter: FieldConverter<any>): any {
     switch (converter.type) {
-        case 'string': return String(value);
-        case 'number': return Number(value) || 0;
-        case 'boolean': return Boolean(value);
-        case 'array': return Array.isArray(value) ? value : [value];
-        case 'object': return typeof value === 'object' && value !== null ? value : {};
-        case 'null': return null;
-        case 'undefined': return undefined;
-        case 'function': return typeof value === 'function' ? value : () => {};
-        case 'symbol': return typeof value === 'symbol' ? value : Symbol(value);
-        case 'bigint': return typeof value === 'bigint' ? value : BigInt(value);
-        case 'date': return value instanceof Date ? value : new Date(value);
-        case 'map': return value instanceof Map ? value : new Map(Object.entries(value));
-        case 'set': return value instanceof Set ? value : new Set(Array.isArray(value) ? value : [value]);
-        case 'tuple': return Array.isArray(value) ? value : [value];
-        case 'enum': return value;
-        case 'union': return value;
-        case 'intersection': return value;
-        case 'literal': return value;
-        case 'void': return undefined;
-        case 'never': throw new Error('Cannot convert to never type');
-        case 'any': return value;
-        default: return value;
+        case 'string':
+            return String(value);
+        case 'number':
+            return Number(value) || 0;
+        case 'boolean':
+            return Boolean(value);
+        case 'array':
+            return Array.isArray(value) ? value : [value];
+        case 'object':
+            return typeof value === 'object' && value !== null ? value : {};
+        case 'null':
+            return null;
+        case 'undefined':
+            return undefined;
+        case 'function':
+            return typeof value === 'function' ? value : () => {
+            };
+        case 'symbol':
+            return typeof value === 'symbol' ? value : Symbol(value);
+        case 'bigint':
+            return typeof value === 'bigint' ? value : BigInt(value);
+        case 'date':
+            return value instanceof Date ? value : new Date(value);
+        case 'map':
+            return value instanceof Map ? value : new Map(Object.entries(value));
+        case 'set':
+            return value instanceof Set ? value : new Set(Array.isArray(value) ? value : [value]);
+        case 'tuple':
+            return Array.isArray(value) ? value : [value];
+        case 'enum':
+            return value;
+        case 'union':
+            return value;
+        case 'intersection':
+            return value;
+        case 'literal':
+            return value;
+        case 'void':
+            return undefined;
+        case 'never':
+            throw new Error('Cannot convert to never type');
+        case 'any':
+            return value;
+        default:
+            return value;
     }
 }
 
@@ -134,7 +215,6 @@ function getFrontendTableName(tableName: string, format: DataFormat): string {
 }
 
 
-
 function handleSingleRelationship(
     item: any,
     converter: FieldConverter<any>,
@@ -144,7 +224,7 @@ function handleSingleRelationship(
     processedEntities: Set<string>
 ): any {
     if (typeof item === 'string') {
-        return { id: item };
+        return {id: item};
     } else if (typeof item === 'object' && item !== null) {
         const relatedTableName = converter.structure.databaseTable;
         if (!relatedTableName) {
@@ -155,7 +235,7 @@ function handleSingleRelationship(
         const frontendTableName = getFrontendTableName(relatedTableName, 'database');
         const entityId = item.id || item.p_id;
         if (entityId && processedEntities.has(`${frontendTableName}:${entityId}`)) {
-            return { id: entityId };
+            return {id: entityId};
         }
 
         if (entityId) {
@@ -239,7 +319,6 @@ export function convertData(
 }
 
 
-
 function getFrontendTableNameFromUnknown(tableName: string): string {
     console.log(`getFrontendTableName called with tableName: ${tableName}`);
 
@@ -268,8 +347,6 @@ function getFrontendTableNameFromUnknown(tableName: string): string {
 
     return tableName;
 }
-
-
 
 
 export function getRegisteredSchemas(format: DataFormat = 'database'): Array<AltOptions[typeof format]> {
@@ -335,16 +412,16 @@ function handleRelationshipField(fieldName: string, value: any, structureType: s
             // Simple scalar value, treat it as a regular FK reference
             return {
                 type: 'fk',
-                data: { [fieldName]: value },
-                appData: { [`${fieldName}Fk`]: value }, // App-specific field
+                data: {[fieldName]: value},
+                appData: {[`${fieldName}Fk`]: value}, // App-specific field
                 table: relatedTable
             };
         } else if (typeof value === 'object' && value.id) {
             // It's an object with an ID field
             return {
                 type: 'fk',
-                data: { [fieldName]: value.id },
-                appData: { [`${fieldName}Object`]: value },
+                data: {[fieldName]: value.id},
+                appData: {[`${fieldName}Object`]: value},
                 table: relatedTable
             };
         } else {
@@ -394,8 +471,8 @@ export function processDataForInsert(tableName: string, dbData: Record<string, a
 
                 if (relationship.type === 'fk') {
                     hasForeignKey = true;
-                    result = { ...result, ...relationship.data }; // Add the exact db field
-                    result = { ...result, ...relationship.appData }; // Add app-specific field (for internal use)
+                    result = {...result, ...relationship.data}; // Add the exact db field
+                    result = {...result, ...relationship.appData}; // Add app-specific field (for internal use)
                 } else if (relationship.type === 'ifk') {
                     hasInverseForeignKey = true;
                     relatedTables.push({
@@ -431,13 +508,48 @@ export function processDataForInsert(tableName: string, dbData: Record<string, a
     };
 }
 
+export async function getRelationships(tableName: string, format: DataFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
+    const schema = getSchema(tableName, format);
+    if (!schema) {
+        console.error(`Schema not found for table: ${tableName}`);
+        return null;
+    }
+    let hasForeignKey = false;
+    let hasInverseForeignKey = false;
 
+    for (const field of Object.values(schema.fields)) {
+        const structure = field.structure?.structure;
+
+        if (structure === 'foreignKey') {
+            hasForeignKey = true;
+        } else if (structure === 'inverseForeignKey') {
+            hasInverseForeignKey = true;
+        }
+
+        if (hasForeignKey && hasInverseForeignKey) {
+            console.log(`Both foreignKey and inverseForeignKey found for table: ${tableName}. Returning 'fkAndIfk'.`);
+            return 'fkAndIfk';
+        }
+    }
+
+    if (hasForeignKey) {
+        console.log(`Only foreignKey found for table: ${tableName}. Returning 'fk'.`);
+        return 'fk';
+    }
+
+    if (hasInverseForeignKey) {
+        console.log(`Only inverseForeignKey found for table: ${tableName}. Returning 'ifk'.`);
+        return 'ifk';
+    }
+
+    console.log(`No foreignKey or inverseForeignKey found for table: ${tableName}. Returning 'simple'.`);
+    return 'simple';
+}
 
 
 export function initializeSchemas() {
     console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
 }
-
 
 
 export type InferSchemaType<T extends TableSchema> = {

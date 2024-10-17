@@ -3,27 +3,27 @@
 'use client';
 
 import React from 'react';
-import { SchemaProvider } from '@/providers/SchemaProvider';
-import { NextUIProvider } from "@nextui-org/react";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/styles/themes";
+import {SchemaProvider} from '@/providers/SchemaProvider';
+import {NextUIProvider} from "@nextui-org/react";
+import {Toaster} from "@/components/ui/toaster";
+import {ThemeProvider} from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import {TooltipProvider} from "@/components/ui/tooltip";
 
-export function Providers({ children, initialReduxState }: { children: React.ReactNode, initialReduxState?: any }) {
+export function Providers({children, initialReduxState}: { children: React.ReactNode, initialReduxState?: any }) {
     return (
-        <StoreProvider initialState={initialReduxState}>
-            <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                <SchemaProvider>
+        <SchemaProvider>
+            <StoreProvider initialState={initialReduxState}>
+                <ThemeProvider defaultTheme="dark" enableSystem={false}>
                     <NextUIProvider>
                         <TooltipProvider>
-                                {children}
-                                <Toaster/>
+                            {children}
+                            <Toaster/>
                         </TooltipProvider>
                     </NextUIProvider>
-                </SchemaProvider>
-            </ThemeProvider>
-        </StoreProvider>
+                </ThemeProvider>
+            </StoreProvider>
+        </SchemaProvider>
     );
 }
 

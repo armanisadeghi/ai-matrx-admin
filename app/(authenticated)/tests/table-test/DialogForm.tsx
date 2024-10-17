@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {DialogFormProps} from '@/types/tableTypes';
+import {DialogFormProps} from '@/_armani/old-types/tableTypes';
 
 const DialogForm: React.FC<DialogFormProps> = (
     {

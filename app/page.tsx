@@ -25,7 +25,6 @@ interface TopMenuProps {
 }
 
 const TopMenu: React.FC<TopMenuProps> = () => {
-    console.log("Server Page: GROQ_API_KEY: ",process.env.GROQ_API_KEY);
 
     return (
         <header

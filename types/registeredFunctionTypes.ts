@@ -1,7 +1,7 @@
-import { ArgType } from '@/types/argTypes';
-import { SystemFunctionType } from '@/types/systemFunctionTypes';
-import { RecipeFunctionType } from '@/types/recipeFunctionTypes';
-import { BrokerType } from "@/types/brokerTypes";
+import { ArgType } from './argTypes';
+import { SystemFunctionType } from './systemFunctionTypes';
+import { RecipeFunctionType } from './recipeFunctionTypes';
+import { BrokerType } from "./brokerTypes";
 import * as z from 'zod';
 
 export enum RegisteredFunctionTypeEnum {
