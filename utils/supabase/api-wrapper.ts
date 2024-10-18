@@ -13,17 +13,17 @@ import {
     getSchema,
     processDataForInsert,
 } from '../schema/schemaRegistry';
-import {TableNames, TableSchema} from "@/types/tableSchemaTypes";
+import {AllTableNames, DatabaseFieldName, DatabaseTableName, TableSchema} from "@/types/tableSchemaTypes";
 
 const availableSchemas = getRegisteredSchemas('database');
-export type TableOrView = typeof availableSchemas[number];
+export type TableOrView = keyof typeof availableSchemas;
 
 export type QueryOptions<T extends TableOrView> = {
     filters?: Partial<Record<keyof TableSchema['fields'], any>>;
-    sorts?: Array<{ column: keyof TableSchema['fields']; ascending?: boolean }>;
+    sorts?: Array<{ column: DatabaseFieldName; ascending?: boolean }>;
     limit?: number;
     offset?: number;
-    columns?: Array<keyof TableSchema['fields']>;
+    columns?: Array<DatabaseFieldName>;
 };
 
 type SubscriptionCallback = (data: any[]) => void;
@@ -35,19 +35,18 @@ type FilterOperator =
     | 'adj' | 'ov' | 'fts' | 'plfts' | 'phfts' | 'wfts';
 
 type QueryBuilder<T extends Record<string, any> = any> = {
-    from: (table: string) => QueryBuilder<T>;
-    select: (columns: string) => QueryBuilder<T>;
-    filter: (column: keyof T, operator: FilterOperator, value: any) => QueryBuilder<T>;
-    order: (column: keyof T, ascending?: boolean) => QueryBuilder<T>;
+    from: (table: DatabaseTableName) => QueryBuilder<T>;
+    select: (columns: DatabaseFieldName | DatabaseFieldName[]) => QueryBuilder<T>;
+    filter: (column: DatabaseFieldName, operator: FilterOperator, value: any) => QueryBuilder<T>;
+    order: (column: DatabaseFieldName, ascending?: boolean) => QueryBuilder<T>;
     limit: (count: number) => QueryBuilder<T>;
     offset: (count: number) => QueryBuilder<T>;
-    joinRelated: (table: string) => QueryBuilder<T>;
+    joinRelated: (table: DatabaseTableName) => QueryBuilder<T>;
     execute: () => Promise<{ data: T[] | null; error: PostgrestError | null }>;
 };
 
 type PostgrestList = Array<Record<string, any>>;
 type PostgrestMap = Record<string, any>;
-
 
 class DatabaseApiWrapper {
     private client: SupabaseClient;
@@ -58,10 +57,10 @@ class DatabaseApiWrapper {
         this.client = client;
     }
 
-    private getDatabaseTableName(name: TableNames): string {
-        const tableSchema = getSchema(name, 'database');
+    private getDatabaseTableName(tableName: AllTableNames): string {
+        const tableSchema = getSchema(tableName, 'database');
         if (!tableSchema) {
-            throw new Error(`tableSchema not found for table or view: ${name}`);
+            throw new Error(`tableSchema not found for table or view: ${tableName}`);
         }
         return tableSchema.name.database;
     }
@@ -73,7 +72,7 @@ class DatabaseApiWrapper {
     ): any {
         if (options.filters) {
             for (const [key, value] of Object.entries(options.filters)) {
-                const dbField = tableSchema.fields[key as keyof typeof tableSchema.fields]?.alts.database;
+                const dbField = tableSchema.fields[key as DatabaseFieldName]?.alts.database;
                 if (dbField) {
                     query = query.eq(dbField, value);
                 }
@@ -82,9 +81,9 @@ class DatabaseApiWrapper {
 
         if (options.sorts) {
             for (const sort of options.sorts) {
-                const dbField = tableSchema.fields[sort.column as keyof typeof tableSchema.fields]?.alts.database;
+                const dbField = tableSchema.fields[sort.column as DatabaseFieldName]?.alts.database;
                 if (dbField) {
-                    query = query.order(dbField, {ascending: sort.ascending ?? true});
+                    query = query.order(dbField, { ascending: sort.ascending ?? true });
                 }
             }
         }
@@ -98,26 +97,34 @@ class DatabaseApiWrapper {
         }
 
         if (options.columns) {
-            const dbColumns = options.columns.map(col => tableSchema.fields[col]?.alts.database).filter(Boolean);
+            const dbColumns = options.columns
+                .map(col => tableSchema.fields[col as DatabaseFieldName]?.alts.database)
+                .filter(Boolean);
             query = query.select(dbColumns.join(', '));
         }
 
         return query;
     }
 
-    private convertResponse(data: any, name: TableNames): any {
-        return convertData(data, 'database', 'frontend', name);
+    private convertResponse(data: any, tableName: AllTableNames): any {
+        return convertData(
+            data,
+            'database',
+            'frontend',
+            tableName,
+            undefined,
+            undefined
+        );
     }
 
-
     async fetchSimple<T extends TableOrView>(
-        dbTableName: string,
+        dbTableName: DatabaseTableName,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
     ): Promise<any> {
         let query = this.client.from(dbTableName).select('*').eq('id', id);
         query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
-        const {data, error} = await query.single();
+        const { data, error } = await query.single();
         if (error) {
             console.error(`Error fetching data for ${dbTableName}: ${error.message}`);
             return null;
@@ -125,27 +132,21 @@ class DatabaseApiWrapper {
         return data;
     }
 
-
-
-
-
     async fetchOne<T extends TableOrView>(
-        name: TableNames,
+        tableName: AllTableNames,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any> {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
         const fetchStrategy = tableSchema.relationships.fetchStrategy;
 
-        // Fetch the main table data once
         let result = await this.fetchSimple(dbTableName, id, options);
         if (!result) return null;
 
-        // Handle relationships based on fetchStrategy
         switch (fetchStrategy) {
             case 'simple':
-                return this.convertResponse(result, name);
+                return this.convertResponse(result, tableName);
 
             case 'fk':
                 result = await this.fetchFk(dbTableName, result, tableSchema);
@@ -185,24 +186,23 @@ class DatabaseApiWrapper {
                 return null;
         }
 
-        return this.convertResponse(result, name);
+        return this.convertResponse(result, tableName);
     }
 
-
     async fetchFk<T extends TableOrView>(
-        dbTableName: string,
+        dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
     ): Promise<any> {
         const foreignKeyQueries = tableSchema.relationships.foreignKeys.map(fk => {
-            const mainTableColumn = tableSchema.fields[fk.column].alts.database;  // The column in the main table
-            const relatedTable = fk.relatedTable;  // The related table to fetch from
-            const relatedColumn = fk.relatedColumn;  // The column in the related table
+            const mainTableColumn = tableSchema.fields[fk.column].alts.database;
+            const relatedTable = fk.relatedTable;
+            const relatedColumn = fk.relatedColumn;
 
             return this.client
                 .from(relatedTable)
                 .select('*')
-                .eq(relatedColumn, data[mainTableColumn]); // Fetch records where relatedColumn matches mainTableColumn value
+                .eq(relatedColumn, data[mainTableColumn]);
         });
 
         const foreignKeyResults = await Promise.all(foreignKeyQueries);
@@ -213,7 +213,6 @@ class DatabaseApiWrapper {
                 console.error(`Error fetching FK data for ${tableSchema.relationships.foreignKeys[index].relatedTable}: ${error.message}`);
                 return;
             }
-            // Attach the related data to the main data object
             data[tableSchema.relationships.foreignKeys[index].relatedTable] = relatedData;
         });
 
@@ -221,19 +220,19 @@ class DatabaseApiWrapper {
     }
 
     async fetchIfk<T extends TableOrView>(
-        dbTableName: string,
+        dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
     ): Promise<any> {
         const inverseForeignKeyQueries = tableSchema.relationships.inverseForeignKeys.map(ifk => {
-            const relatedTable = ifk.relatedTable;  // The related table to fetch from
-            const relatedColumn = ifk.relatedColumn;  // The column in the related table
-            const mainTableColumn = ifk.mainTableColumn;  // The column in the main table that is referenced
+            const relatedTable = ifk.relatedTable;
+            const relatedColumn = ifk.relatedColumn;
+            const mainTableColumn = ifk.mainTableColumn;
 
             return this.client
                 .from(relatedTable)
                 .select('*')
-                .eq(relatedColumn, data[mainTableColumn]); // Match on the column in the main table
+                .eq(relatedColumn, data[mainTableColumn]);
         });
 
         const inverseForeignKeyResults = await Promise.all(inverseForeignKeyQueries);
@@ -244,7 +243,6 @@ class DatabaseApiWrapper {
                 console.error(`Error fetching IFK data for ${tableSchema.relationships.inverseForeignKeys[index].relatedTable}: ${error.message}`);
                 return;
             }
-            // Attach the related data to the main data object
             data[tableSchema.relationships.inverseForeignKeys[index].relatedTable] = relatedData;
         });
 
@@ -252,20 +250,19 @@ class DatabaseApiWrapper {
     }
 
     async fetchM2m<T extends TableOrView>(
-        dbTableName: string,
+        dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
     ): Promise<any> {
         const manyToManyQueries = tableSchema.relationships.manyToMany.map(m2m => {
-            const junctionTable = m2m.junctionTable;  // The junction table
-            const mainTableColumn = m2m.mainTableColumn;  // The column in the junction table that references the main table
-            const relatedTableColumn = m2m.relatedTableColumn;  // The column in the junction table that references the related table
+            const junctionTable = m2m.junctionTable;
+            const mainTableColumn = m2m.mainTableColumn;
+            const relatedTableColumn = m2m.relatedTableColumn;
 
-            // Fetch from the junction table based on the main table's reference column
             return this.client
                 .from(junctionTable)
                 .select('*')
-                .eq(mainTableColumn, data[tableSchema.fields['id'].alts.database]); // Match on the main table column in the junction table
+                .eq(mainTableColumn, data[tableSchema.fields['id'].alts.database]);
         });
 
         const manyToManyResults = await Promise.all(manyToManyQueries);
@@ -278,7 +275,6 @@ class DatabaseApiWrapper {
                     return;
                 }
 
-                // Now, fetch related table data for each junction record
                 const relatedDataQueries = junctionData.map(junctionRecord => {
                     const relatedTable = tableSchema.relationships.manyToMany[index].relatedTable;
                     const relatedTableColumn = tableSchema.relationships.manyToMany[index].relatedTableColumn;
@@ -286,7 +282,7 @@ class DatabaseApiWrapper {
                     return this.client
                         .from(relatedTable)
                         .select('*')
-                        .eq('id', junctionRecord[relatedTableColumn]); // Match on the related table column in the junction table
+                        .eq('id', junctionRecord[relatedTableColumn]);
                 });
 
                 const relatedDataResults = await Promise.all(relatedDataQueries);
@@ -297,26 +293,24 @@ class DatabaseApiWrapper {
         return data;
     }
 
-
-
     async fetchAll<T extends TableOrView>(
-        name: TableNames,
+        tableName: AllTableNames,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any[]> {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
 
         let query = this.client.from(dbTableName).select('*');
         query = this.applyQueryOptions(query, options, tableSchema);
 
-        const {data, error} = await query;
+        const { data, error } = await query;
 
         if (error) throw error;
-        return data.map(item => this.convertResponse(item, name));
+        return data.map(item => this.convertResponse(item, tableName));
     }
 
     async fetchPaginated<T extends TableOrView>(
-        name: TableNames,
+        tableName: AllTableNames,
         options: QueryOptions<T>,
         page: number = 1,
         pageSize: number = 10,
@@ -328,16 +322,16 @@ class DatabaseApiWrapper {
         totalCount: number;
         paginatedData: any[];
     }> {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
 
         options.limit = pageSize;
         options.offset = (page - 1) * pageSize;
 
-        let query = this.client.from(dbTableName).select('*', {count: 'exact'});
+        let query = this.client.from(dbTableName).select('*', { count: 'exact' });
         query = this.applyQueryOptions(query, options, tableSchema);
 
-        const {data, error, count} = await query;
+        const { data, error, count } = await query;
         if (error) {
             console.error(`Error fetching data: ${error.message}`);
             return {
@@ -351,7 +345,7 @@ class DatabaseApiWrapper {
         let allNamesAndIds: { id: string; name: string }[] | undefined;
         if (maxCount !== 0) {
             const idNameQuery = this.client.from(dbTableName).select('id, name').limit(maxCount);
-            const {data: idNameData, error: idNameError} = await idNameQuery;
+            const { data: idNameData, error: idNameError } = await idNameQuery;
             if (idNameError) {
                 console.error(`Error fetching names and IDs: ${idNameError.message}`);
             } else {
@@ -368,7 +362,7 @@ class DatabaseApiWrapper {
                     return null;
                 }
             } else if (typeof item === 'object' && item !== null) {
-                return this.convertResponse(item, name); // Correctly convert the response
+                return this.convertResponse(item, tableName);
             } else {
                 console.warn('Unexpected item type:', typeof item, item);
                 return null;
@@ -384,10 +378,10 @@ class DatabaseApiWrapper {
         };
     }
 
-    async create<T extends TableOrView>(name: TableNames, data: Partial<any>): Promise<any> {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
-        const dbData = convertData(data, 'frontend', 'database', name);
+    async create<T extends TableOrView>(tableName: AllTableNames, data: Partial<any>): Promise<any> {
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
+        const dbData = convertData(data, 'frontend', 'database', tableName);
         const response = processDataForInsert(dbTableName, dbData);
         const processedData = response.processedData;
         const requiredMethod = response.callMethod;
@@ -412,22 +406,22 @@ class DatabaseApiWrapper {
                 throw new Error('Invalid method for insertion');
         }
 
-        return this.convertResponse(result, name);
+        return this.convertResponse(result, tableName);
     }
 
-    async insertSimple(dbTableName: string, processedData: any): Promise<any> {
+    async insertSimple(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
         const {data: result, error} = await this.client.from(dbTableName).insert(processedData).select().single();
         if (error) throw error;
         return result;
     }
 
-    async insertWithFk(dbTableName: string, processedData: any): Promise<any> {
+    async insertWithFk(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
         const {data: result, error} = await this.client.from(dbTableName).insert(processedData).select().single();
         if (error) throw error;
         return result;
     }
 
-    async insertWithIfk(dbTableName: string, processedData: any): Promise<any> {
+    async insertWithIfk(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
         const {data: primaryResult, error: primaryError} = await this.client
             .from(dbTableName)
             .insert(processedData)
@@ -451,7 +445,7 @@ class DatabaseApiWrapper {
     }
 
 
-    async insertWithFkAndIfk(dbTableName: string, processedData: any): Promise<any> {
+    async insertWithFkAndIfk(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
         const {data: primaryResult, error: primaryError} = await this.client
             .from(dbTableName)
             .insert(processedData)
@@ -475,10 +469,10 @@ class DatabaseApiWrapper {
     }
 
 
-    async update<T extends TableOrView>(name: TableNames, id: string, data: Partial<any>): Promise<any> {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
-        const dbData = convertData(data, 'frontend', 'database', name);
+    async update<T extends TableOrView>(tableName: AllTableNames, id: string, data: Partial<any>): Promise<any> {
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
+        const dbData = convertData(data, 'frontend', 'database', tableName);
 
         const {data: result, error} = await this.client
             .from(dbTableName)
@@ -488,15 +482,15 @@ class DatabaseApiWrapper {
             .single();
 
         if (error) throw error;
-        return this.convertResponse(result, name);
+        return this.convertResponse(result, tableName);
     }
 
-    async delete<T extends TableOrView>(name: TableNames, id: string): Promise<void> {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
+    async delete<T extends TableOrView>(tableName: AllTableNames, id: string): Promise<void> {
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
 
         if (tableSchema.schemaType === 'view') {
-            throw new Error(`Cannot delete from view: ${name}`);
+            throw new Error(`Cannot delete from view: ${tableName}`);
         }
 
         const {error} = await this.client.from(dbTableName).delete().eq('id', id);
@@ -505,30 +499,30 @@ class DatabaseApiWrapper {
     }
 
     async executeCustomQuery<T extends TableOrView>(
-        name: TableNames,
+        tableName: AllTableNames,
         query: (baseQuery: any) => any
     ): Promise<any[]> {
-        const dbTableName = this.getDatabaseTableName(name);
+        const dbTableName = this.getDatabaseTableName(tableName);
         const baseQuery = this.client.from(dbTableName).select('*');
         const customQuery = query(baseQuery);
 
-        const {data, error} = await customQuery;
+        const { data, error } = await customQuery;
 
         if (error) throw error;
-        return data.map(item => this.convertResponse(item, name));
+        return data.map(item => this.convertResponse(item, tableName));
     }
 
-    subscribeToChanges<T extends TableOrView>(name: TableNames, callback: SubscriptionCallback): void {
-        const dbTableName = this.getDatabaseTableName(name);
-        const tableSchema = getSchema(name, 'database')!;
+    subscribeToChanges<T extends TableOrView>(tableName: AllTableNames, callback: SubscriptionCallback): void {
+        const dbTableName = this.getDatabaseTableName(tableName);
+        const tableSchema = getSchema(tableName, 'database')!;
 
         // Unsubscribe from existing subscription if any
-        this.unsubscribeFromChanges(name);
+        this.unsubscribeFromChanges(tableName);
 
         const subscription = this.client
             .channel(`public:${dbTableName}`)
-            .on('postgres_changes', {event: '*', schema: 'public', table: dbTableName}, payload => {
-                this.fetchAll(name).then(data => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: dbTableName }, payload => {
+                this.fetchAll(tableName).then(data => {
                     callback(data);
                 }).catch(error => {
                     console.error('Error fetching updated data:', error);
@@ -536,14 +530,14 @@ class DatabaseApiWrapper {
             })
             .subscribe();
 
-        this.subscriptions.set(name, subscription);
+        this.subscriptions.set(tableName, subscription);
     }
 
-    unsubscribeFromChanges(name: TableOrView): void {
-        const subscription = this.subscriptions.get(name);
+    unsubscribeFromChanges(tableName: AllTableNames): void {
+        const subscription = this.subscriptions.get(tableName);
         if (subscription) {
             this.client.removeChannel(subscription);
-            this.subscriptions.delete(name);
+            this.subscriptions.delete(tableName);
         }
     }
 
@@ -554,12 +548,11 @@ class DatabaseApiWrapper {
         this.subscriptions.clear();
     }
 
-    // Helper method to convert any data to frontend format
-    convertToFrontendFormat<T extends TableOrView>(name: TableNames, data: any): any {
+    convertToFrontendFormat<T extends TableOrView>(tableName: AllTableNames, data: any): any {
         if (Array.isArray(data)) {
-            return data.map(item => this.convertResponse(item, name));
+            return data.map(item => this.convertResponse(item, tableName));
         } else {
-            return this.convertResponse(data, name);
+            return this.convertResponse(data, tableName);
         }
     }
 

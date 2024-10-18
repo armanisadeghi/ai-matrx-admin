@@ -1,24 +1,33 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { InferSchemaType, TableSchema, SchemaTypes, TableNames } from "@/types/tableSchemaTypes";
+import { InferSchemaType, TableSchema, SchemaTypes, FrontendTableNames } from "@/types/tableSchemaTypes";
 import { QueryOptions } from '@/utils/supabase/api-wrapper';
-import { initialSchemas } from "@/utils/schema/initialSchemas";
 
 export interface TableState<T extends TableSchema> {
     data: InferSchemaType<T>[];
+    allIdAndNames: { id: string; name: string }[];
+    totalCount: number;
+    lastFetched: Record<string, number>;
+    staleTime: number;
     selectedItem: InferSchemaType<T> | null;
     loading: boolean;
     error: string | null;
 }
 
-export function createTableSlice<K extends TableNames>(
+export function createTableSlice<K extends FrontendTableNames>(
     tableName: K,
-    schema: TableSchema
+    schema: TableSchema,
+    staleTime: number = 600000,
+    additionalReducers: Record<string, any> = {}
 ) {
-    type Schema = typeof schema;
+    // Infer the correct schema and data type
     type Data = SchemaTypes[K];
 
-    const initialState: TableState<Schema> = {
+    const initialState: TableState<TableSchema> = {
         data: [],
+        allIdAndNames: [],
+        totalCount: 0,
+        lastFetched: {},
+        staleTime,
         selectedItem: null,
         loading: false,
         error: null,
@@ -79,7 +88,7 @@ export function createTableSlice<K extends TableNames>(
                 state.data = action.payload;
                 state.error = null;
             },
-            ...customReducers,
+            ...customReducers, // Custom reducers added dynamically based on the schema
         },
     });
 
@@ -104,7 +113,8 @@ export function createTableSlice<K extends TableNames>(
     };
 }
 
-function createCustomReducers<K extends TableNames>(schema: TableSchema) {
+// Custom reducers added dynamically based on schema
+function createCustomReducers<K extends FrontendTableNames>(schema: TableSchema) {
     type Data = SchemaTypes[K];
     const customReducers: Record<string, any> = {};
 
@@ -128,7 +138,8 @@ function createCustomReducers<K extends TableNames>(schema: TableSchema) {
     return customReducers;
 }
 
-function createCustomActions<K extends TableNames>(schema: TableSchema, baseType: string) {
+// Custom actions based on schema
+function createCustomActions<K extends FrontendTableNames>(schema: TableSchema, baseType: string) {
     type Data = SchemaTypes[K];
     const customActions: Record<string, any> = {};
 
@@ -142,4 +153,4 @@ function createCustomActions<K extends TableNames>(schema: TableSchema, baseType
     return customActions;
 }
 
-export type TableActions<K extends TableNames> = ReturnType<typeof createTableSlice<K>>['actions'];
+export type TableActions<K extends FrontendTableNames> = ReturnType<typeof createTableSlice<K>>['actions'];

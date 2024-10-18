@@ -1,13 +1,12 @@
-// lib/redux/tableSagas/tableSagas.ts
-
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { getSchema, TableSchema } from "@/utils/schema/schemaRegistry";
+import { getSchema } from "@/utils/schema/schemaRegistry";
 import { databaseApi, TableOrView, QueryOptions } from '@/utils/supabase/api-wrapper';
-import { createTableSlice } from './tableSliceCreator'; // Assuming you've kept the slice creation logic
+import { createTableSlice } from './tableSliceCreator';
+import {AllTableNames, FrontendTableNames, TableSchema} from "@/types/tableSchemaTypes";
 
 // Handle the fetch operation
-function* handleFetch<T extends TableOrView>(
+function* handleFetch<T extends FrontendTableNames>(
     tableName: T,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<QueryOptions<T> | undefined>
@@ -21,9 +20,8 @@ function* handleFetch<T extends TableOrView>(
     }
 }
 
-// Handle fetching a single record
 function* handleFetchOne<T extends TableOrView>(
-    tableName: T,
+    tableName: FrontendTableNames,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<{ id: string; options?: Omit<QueryOptions<T>, 'limit' | 'offset'> }>
 ) {
@@ -38,7 +36,7 @@ function* handleFetchOne<T extends TableOrView>(
 
 // Handle creating a new record
 function* handleCreate<T extends TableOrView>(
-    tableName: T,
+    tableName: FrontendTableNames,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<Partial<any>>
 ) {
@@ -53,7 +51,7 @@ function* handleCreate<T extends TableOrView>(
 
 // Handle updating an existing record
 function* handleUpdate<T extends TableOrView>(
-    tableName: T,
+    tableName: FrontendTableNames,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<{ id: string; data: Partial<any> }>
 ) {
@@ -68,7 +66,7 @@ function* handleUpdate<T extends TableOrView>(
 
 // Handle deleting a record
 function* handleDelete<T extends TableOrView>(
-    tableName: T,
+    tableName: FrontendTableNames,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<string>
 ) {
@@ -83,7 +81,7 @@ function* handleDelete<T extends TableOrView>(
 
 // Handle custom queries
 function* handleExecuteCustomQuery<T extends TableOrView>(
-    tableName: T,
+    tableName: FrontendTableNames,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<(baseQuery: any) => any>
 ) {
@@ -96,8 +94,24 @@ function* handleExecuteCustomQuery<T extends TableOrView>(
     }
 }
 
+// Handle paginated fetch
+function* handleFetchPaginated<T extends TableOrView>(
+    tableName: FrontendTableNames,
+    actions: ReturnType<typeof createTableSlice<T>>['actions'],
+    action: PayloadAction<{ options: QueryOptions<T>; page: number; pageSize: number }>
+) {
+    try {
+        yield put(actions.setLoading());
+        const { page, pageSize, options } = action.payload;
+        const data = yield call([databaseApi, databaseApi.fetchPaginated], tableName, options, page, pageSize);
+        yield put(actions.fetchSuccess(data.paginatedData));
+    } catch (error: any) {
+        yield put(actions.setError(error.message));
+    }
+}
+
 // Create a saga generator for a given table
-export function createTableSaga<T extends TableOrView>(tableName: T) {
+export function createTableSaga<T extends FrontendTableNames>(tableName: T) {
     const schema = getSchema(tableName);
     if (!schema) {
         throw new Error(`Schema not found for table: ${tableName}`);
@@ -114,6 +128,7 @@ export function createTableSaga<T extends TableOrView>(tableName: T) {
             takeLatest(`${baseType}/UPDATE`, handleUpdate, tableName, actions),
             takeLatest(`${baseType}/DELETE`, handleDelete, tableName, actions),
             takeLatest(`${baseType}/EXECUTE_QUERY`, handleExecuteCustomQuery, tableName, actions),
+            takeLatest(`${baseType}/FETCH_PAGINATED`, handleFetchPaginated, tableName, actions),
             ...createCustomSagas(schema, baseType, tableName, actions),
         ]);
     }
@@ -125,7 +140,7 @@ export function createTableSaga<T extends TableOrView>(tableName: T) {
 function createCustomSagas<T extends TableSchema>(
     schema: T,
     baseType: string,
-    tableName: TableOrView,
+    tableName: FrontendTableNames,
     actions: ReturnType<typeof createTableSlice<TableOrView>>['actions']
 ) {
     const customSagas: any[] = [];
@@ -136,7 +151,7 @@ function createCustomSagas<T extends TableSchema>(
             try {
                 yield put(actions.setLoading());
                 const data = yield call([databaseApi, databaseApi.update], tableName, action.payload.id, { status: action.payload.status });
-                // yield put(actions.changeStatusSuccess(data));
+                yield put(actions.changeStatusSuccess(data));
             } catch (error: any) {
                 yield put(actions.setError(error.message));
             }

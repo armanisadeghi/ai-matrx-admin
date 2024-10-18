@@ -68,6 +68,7 @@
     "@tsparticles/engine": "latest",
     "@tsparticles/react": "latest",
     "@tsparticles/slim": "latest",
+    "@types/uuid": "^10.0.0",
     "@uidotdev/usehooks": "latest",
     "ai": "latest",
     "anthropic-vertex-ai": "latest",

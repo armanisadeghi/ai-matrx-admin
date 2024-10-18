@@ -2,18 +2,18 @@
 
 
 import {getSchema, globalSchemaRegistry} from "@/utils/schema/schemaRegistry";
-import {v4 as uuidv4} from 'uuid';
+import {v4 as uuidv4} from "uuid";
 import {initialSchemas} from "@/utils/schema/initialSchemas";
-import {AltOptions, FieldConverter, TableSchema} from "@/types/tableSchemaTypes";
+import {AltOptions, FieldConverter, FrontendTableNames, TableSchema} from "@/types/tableSchemaTypes";
 
 
 
 export function resolveTableName<T extends keyof typeof initialSchemas>(
-    table: T,
+    table: FrontendTableNames,
     variant: keyof typeof initialSchemas[T]['name']
 ): string {
     const tableSchema = globalSchemaRegistry[table as string];
-    return tableSchema.name[variant as keyof AltOptions];
+    return <string>tableSchema.name[variant as keyof AltOptions];
 }
 
 

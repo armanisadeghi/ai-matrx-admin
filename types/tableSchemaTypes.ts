@@ -28,15 +28,15 @@ export interface FieldStructure<T> {
 
 // Common field properties
 type CommonFieldProperties = {
-    isRequired: boolean;
-    characterMaximumLength: number | null;
-    isArray: boolean;
-    default: any;
-    isPrimaryKey: boolean;
-    defaultGeneratorFunction: string | null;
-    validationFunctions: string[];
-    exclusionRules: string[];
-    defaultComponent: string;
+    isRequired?: boolean;
+    characterMaximumLength?: number | null;
+    isArray?: boolean;
+    default?: any;
+    isPrimaryKey?: boolean;
+    defaultGeneratorFunction?: string | null;
+    validationFunctions?: string[];
+    exclusionRules?: string[];
+    defaultComponent?: string;
     description?: string; // Added for documentation
 };
 
@@ -70,13 +70,15 @@ export interface AltOptions {
     [key: string]: string | undefined;
 }
 
+
+
 // Table schema
 export interface TableSchema {
     name: AltOptions;
     schemaType: SchemaType;
     fields: ConverterMap;
     relationships: TableRelationship;
-    description?: string; // Added for documentation
+    description?: string;
 }
 
 export interface SchemaRegistry {
@@ -87,22 +89,22 @@ export interface SchemaRegistry {
 type FetchStrategy = 'simple' | 'fk' | 'ifk' | 'm2m' | 'fkAndIfk' | 'm2mAndFk' | 'm2mAndIfk' | 'fkIfkAndM2M';
 
 type ForeignKeyRelation = {
-    column: string;
+    column: DatabaseFieldName;
     relatedTable: string;
-    relatedColumn: string;
+    relatedColumn: DatabaseFieldName;
 };
 
 type InverseForeignKeyRelation = {
     relatedTable: string;
-    relatedColumn: string;
-    mainTableColumn: string;
+    relatedColumn: DatabaseFieldName;
+    mainTableColumn: DatabaseFieldName;
 };
 
 type ManyToManyRelation = {
     junctionTable: string;
     relatedTable: string;
-    mainTableColumn: string;
-    relatedTableColumn: string;
+    mainTableColumn: DatabaseFieldName;
+    relatedTableColumn: DatabaseFieldName;
 };
 
 export interface TableRelationship {
@@ -147,10 +149,10 @@ export type TableSchemaTypes = {
     };
 };
 
-export type TableNames = keyof typeof initialSchemas;
+export type TableNames = Extract<keyof typeof initialSchemas, string>;
 export type AllTableNames = string;
 
-export type FrontendTableNames = keyof typeof initialSchemas;
+export type FrontendTableNames = AltOptions['frontend'];
 export type DatabaseTableName = AltOptions['database'];
 
 
@@ -181,6 +183,10 @@ export type NestedProp<T, K extends string> = K extends keyof T
 export function createTypeReference<T>(): TypeBrand<T> {
     return {} as TypeBrand<T>;
 }
+
+export type FrontendFieldName = AltOptions['frontend'];
+export type DatabaseFieldName = AltOptions['database'];
+
 
 export function fieldName<T extends TableNames, F extends FieldNames<T>>(table: T, field: F): F {
     return field;

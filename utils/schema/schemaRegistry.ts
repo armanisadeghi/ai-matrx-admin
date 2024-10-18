@@ -155,6 +155,7 @@ function handleRelationship(
     }
 }
 
+
 export function convertData(
     data: any,
     sourceFormat: DataFormat,
@@ -203,7 +204,7 @@ export function convertData(
 }
 
 
-function getFrontendTableNameFromUnknown(tableName: string): string {
+function getFrontendTableNameFromUnknown(tableName: AllTableNames): string {
     console.log(`getFrontendTableName called with tableName: ${tableName}`);
 
     if (!globalSchemaRegistry) {
@@ -247,7 +248,7 @@ export function getRegisteredSchemas(format: DataFormat = 'database'): Array<Alt
 }
 
 
-export function getSchema(tableName: string, format: DataFormat = 'frontend'): TableSchema | undefined {
+export function getSchema(tableName: AllTableNames, format: DataFormat = 'frontend'): TableSchema | undefined {
     console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
 
     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
@@ -325,7 +326,7 @@ function handleRelationshipField(fieldName: string, value: any, structureType: s
 
 
 // Main utility function
-export function processDataForInsert(tableName: string, dbData: Record<string, any>) {
+export function processDataForInsert(tableName: AllTableNames, dbData: Record<string, any>) {
     const schema = getSchema(tableName, 'database');
     if (!schema) {
         console.warn(`No schema found for table: ${tableName}. Returning original data.`);
@@ -392,7 +393,7 @@ export function processDataForInsert(tableName: string, dbData: Record<string, a
     };
 }
 
-export async function getRelationships(tableName: string, format: DataFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
+export async function getRelationships(tableName: AllTableNames, format: DataFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     const schema = getSchema(tableName, format);
     if (!schema) {
         console.error(`Schema not found for table: ${tableName}`);

@@ -1,8 +1,10 @@
 // lib/redux/tableSagas/tableActionCreator.ts
 
-import { getSchema, InferSchemaType, TableSchema } from "@/utils/schema/schemaRegistry";
 
 // Action type constants
+import {getSchema} from "@/utils/schema/schemaRegistry";
+import {InferSchemaType, TableSchema} from "@/types/tableSchemaTypes";
+
 type ActionStatus = 'REQUEST' | 'SUCCESS' | 'FAILURE';
 type ActionType = 'FETCH' | 'CREATE' | 'UPDATE' | 'DELETE' | 'CHANGE_STATUS' | 'SUBSCRIBE' | 'UNSUBSCRIBE' | 'EXECUTE_QUERY';
 
