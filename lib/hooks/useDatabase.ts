@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { QueryOptions, databaseApi, TableOrView } from "@/utils/supabase/api-wrapper";
-import { TableData } from '@/_armani/old-types/tableTypes';
+import { TableData } from '@/types/tableTypes';
 import { FlexibleId, flexibleIdToString, isValidFlexibleId } from '@/types/FlexibleId';
 import {
     getPrettyNameForTable,
@@ -35,7 +35,7 @@ interface useDatabaseResult<T> {
     create: (name: TableOrView, data: Partial<T>) => Promise<void>;
     update: (name: TableOrView, id: string, data: Partial<T>) => Promise<void>;
     delete: (name: TableOrView, id: string | number) => Promise<void>;
-    executeQuery: (name: TableOrView, query: (baseQuery: any) => any) => Promise<void>;
+    executeCustomQuery: (name: TableOrView, query: (baseQuery: any) => any) => Promise<void>;
     subscribeToChanges: (name: TableOrView) => void;
     unsubscribeFromChanges: (name: TableOrView) => void;
 }
@@ -185,7 +185,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const executeQuery = useCallback(async (name: TableOrView, queryFn: (baseQuery: any) => any) => {
+    const executeCustomQuery = useCallback(async (name: TableOrView, queryFn: (baseQuery: any) => any) => {
         setLoading(true);
         try {
             const result = await databaseApi.executeCustomQuery(name, queryFn);
@@ -234,7 +234,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         create,
         update,
         delete: deleteRecord,
-        executeQuery,
+        executeCustomQuery,
         subscribeToChanges,
         unsubscribeFromChanges,
         // Schema utilities

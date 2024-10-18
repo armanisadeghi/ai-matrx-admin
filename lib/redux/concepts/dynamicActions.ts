@@ -92,10 +92,10 @@ export const createActions = (actionTypes: any) => ({
     deleteSuccess: (id: string) => ({ type: actionTypes.DELETE_SUCCESS, payload: id }),
     deleteFailure: (error: any) => ({ type: actionTypes.DELETE_FAILURE, payload: error }),
 
-    // Actions for executeQuery
-    executeQueryRequest: (query: any) => ({ type: actionTypes.EXECUTE_QUERY_REQUEST, payload: query }),
-    executeQuerySuccess: (data: any[]) => ({ type: actionTypes.EXECUTE_QUERY_SUCCESS, payload: data }),
-    executeQueryFailure: (error: any) => ({ type: actionTypes.EXECUTE_QUERY_FAILURE, payload: error }),
+    // Actions for executeCustomQuery
+    executeCustomQueryRequest: (query: any) => ({ type: actionTypes.EXECUTE_QUERY_REQUEST, payload: query }),
+    executeCustomQuerySuccess: (data: any[]) => ({ type: actionTypes.EXECUTE_QUERY_SUCCESS, payload: data }),
+    executeCustomQueryFailure: (error: any) => ({ type: actionTypes.EXECUTE_QUERY_FAILURE, payload: error }),
 });
 
 const actions = createActions(actionTypes);

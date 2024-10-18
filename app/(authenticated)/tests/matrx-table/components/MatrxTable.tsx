@@ -4,7 +4,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {useTable, useSortBy, useGlobalFilter, usePagination} from 'react-table';
 import {Table} from "@/components/ui/table";
-import {MatrxTableProps, TableInstance, ExtendedTableState} from "@/_armani/old-types/tableTypes";
+import {MatrxTableProps, TableInstance, ExtendedTableState} from "@/types/tableTypes";
 import MatrxTableHeader from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableHeader";
 import MatrxTableBody from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableBody";
 import {cn} from "@/styles/themes";
@@ -27,6 +27,7 @@ const MatrxTable: React.FC<MatrxTableProps> = (
     }) => {
 
     const allData = useMemo(() => {
+        console.log('Data:', data);
         return data.map((row, index) => ({
             ...row,
             actions: actions,

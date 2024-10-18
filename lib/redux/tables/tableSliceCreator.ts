@@ -1,7 +1,5 @@
-// lib/redux/tableSagas/tableSliceCreator.ts
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TableSchema, InferSchemaType } from "@/utils/schema/schemaRegistry";
+import { InferSchemaType, TableSchema, SchemaTypes, TableNames } from "@/types/tableSchemaTypes";
 import { QueryOptions } from '@/utils/supabase/api-wrapper';
 import { initialSchemas } from "@/utils/schema/initialSchemas";
 
@@ -12,12 +10,12 @@ export interface TableState<T extends TableSchema> {
     error: string | null;
 }
 
-export function createTableSlice<K extends keyof typeof initialSchemas>(
+export function createTableSlice<K extends TableNames>(
     tableName: K,
     schema: TableSchema
 ) {
     type Schema = typeof schema;
-    type Data = InferSchemaType<Schema>;
+    type Data = SchemaTypes[K];
 
     const initialState: TableState<Schema> = {
         data: [],
@@ -28,7 +26,7 @@ export function createTableSlice<K extends keyof typeof initialSchemas>(
 
     const baseType = schema.name.frontend.toUpperCase();
 
-    const customReducers = createCustomReducers(schema);
+    const customReducers = createCustomReducers<K>(schema);
 
     const slice = createSlice({
         name: baseType,
@@ -76,7 +74,7 @@ export function createTableSlice<K extends keyof typeof initialSchemas>(
                 }
                 state.error = null;
             },
-            executeQuerySuccess: (state, action: PayloadAction<Data[]>) => {
+            executeCustomQuerySuccess: (state, action: PayloadAction<Data[]>) => {
                 state.loading = false;
                 state.data = action.payload;
                 state.error = null;
@@ -85,7 +83,7 @@ export function createTableSlice<K extends keyof typeof initialSchemas>(
         },
     });
 
-    const customActions = createCustomActions<Schema>(schema, baseType);
+    const customActions = createCustomActions<K>(schema, baseType);
     const actions = {
         ...slice.actions,
         fetch: (options?: QueryOptions<K>) => ({ type: `${baseType}/FETCH`, payload: options }),
@@ -96,7 +94,7 @@ export function createTableSlice<K extends keyof typeof initialSchemas>(
         create: (data: Partial<Data>) => ({ type: `${baseType}/CREATE`, payload: data }),
         update: (id: string, data: Partial<Data>) => ({ type: `${baseType}/UPDATE`, payload: { id, data } }),
         delete: (id: string) => ({ type: `${baseType}/DELETE`, payload: id }),
-        executeQuery: (query: (baseQuery: any) => any) => ({ type: `${baseType}/EXECUTE_QUERY`, payload: query }),
+        executeCustomQuery: (query: (baseQuery: any) => any) => ({ type: `${baseType}/EXECUTE_QUERY`, payload: query }),
         ...customActions,
     };
 
@@ -106,13 +104,14 @@ export function createTableSlice<K extends keyof typeof initialSchemas>(
     };
 }
 
-function createCustomReducers<Schema extends TableSchema>(schema: Schema) {
+function createCustomReducers<K extends TableNames>(schema: TableSchema) {
+    type Data = SchemaTypes[K];
     const customReducers: Record<string, any> = {};
 
-    if (schema.fields.status) {
+    if ('status' in schema.fields) {
         customReducers.changeStatusSuccess = (
-            state: TableState<Schema>,
-            action: PayloadAction<InferSchemaType<Schema>>
+            state: TableState<TableSchema>,
+            action: PayloadAction<Data>
         ) => {
             const index = state.data.findIndex(item => item.id === action.payload.id);
             if (index !== -1) {
@@ -129,11 +128,12 @@ function createCustomReducers<Schema extends TableSchema>(schema: Schema) {
     return customReducers;
 }
 
-function createCustomActions<Schema extends TableSchema>(schema: Schema, baseType: string) {
+function createCustomActions<K extends TableNames>(schema: TableSchema, baseType: string) {
+    type Data = SchemaTypes[K];
     const customActions: Record<string, any> = {};
 
-    if (schema.fields.status) {
-        customActions.changeStatus = (id: string, status: string) => ({
+    if ('status' in schema.fields) {
+        customActions.changeStatus = (id: string, status: Data['status']) => ({
             type: `${baseType}/CHANGE_STATUS`,
             payload: { id, status },
         });
@@ -142,4 +142,4 @@ function createCustomActions<Schema extends TableSchema>(schema: Schema, baseTyp
     return customActions;
 }
 
-export type TableActions<K extends keyof typeof initialSchemas> = ReturnType<typeof createTableSlice<K>>['actions'];
+export type TableActions<K extends TableNames> = ReturnType<typeof createTableSlice<K>>['actions'];

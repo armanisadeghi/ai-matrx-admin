@@ -17,7 +17,7 @@ export const fetchPaginated = (name, options) => ({ type: FETCH_PAGINATED, paylo
 export const create = (name, data) => ({ type: CREATE, payload: { name, data } });
 export const update = (name, id, data) => ({ type: UPDATE, payload: { name, id, data } });
 export const deleteItem = (name, id) => ({ type: DELETE, payload: { name, id } });
-export const executeQuery = (name, query) => ({ type: EXECUTE_QUERY, payload: { name, query } });
+export const executeCustomQuery = (name, query) => ({ type: EXECUTE_QUERY, payload: { name, query } });
 
 // Sagas
 function* fetchOneSaga(action) {
@@ -80,10 +80,10 @@ function* deleteSaga(action) {
     }
 }
 
-function* executeQuerySaga(action) {
+function* executeCustomQuerySaga(action) {
     try {
         const { name, query } = action.payload;
-        const result = yield call(databaseApi.executeQuery.bind(databaseApi), name, query);
+        const result = yield call(databaseApi.executeCustomQuery.bind(databaseApi), name, query);
         yield put({ type: `${EXECUTE_QUERY}_SUCCESS`, payload: result });
     } catch (error) {
         yield put({ type: `${EXECUTE_QUERY}_FAILURE`, error: error.message });
@@ -98,5 +98,5 @@ export function* databaseSaga() {
     yield takeLatest(CREATE, createSaga);
     yield takeLatest(UPDATE, updateSaga);
     yield takeLatest(DELETE, deleteSaga);
-    yield takeLatest(EXECUTE_QUERY, executeQuerySaga);
+    yield takeLatest(EXECUTE_QUERY, executeCustomQuerySaga);
 }

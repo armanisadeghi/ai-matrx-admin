@@ -82,15 +82,15 @@ function* handleDelete<T extends TableOrView>(
 }
 
 // Handle custom queries
-function* handleExecuteQuery<T extends TableOrView>(
+function* handleExecuteCustomQuery<T extends TableOrView>(
     tableName: T,
     actions: ReturnType<typeof createTableSlice<T>>['actions'],
     action: PayloadAction<(baseQuery: any) => any>
 ) {
     try {
         yield put(actions.setLoading());
-        const data = yield call([databaseApi, databaseApi.executeQuery], tableName, action.payload);
-        yield put(actions.executeQuerySuccess(data));
+        const data = yield call([databaseApi, databaseApi.executeCustomQuery], tableName, action.payload);
+        yield put(actions.executeCustomQuerySuccess(data));
     } catch (error: any) {
         yield put(actions.setError(error.message));
     }
@@ -113,7 +113,7 @@ export function createTableSaga<T extends TableOrView>(tableName: T) {
             takeLatest(`${baseType}/CREATE`, handleCreate, tableName, actions),
             takeLatest(`${baseType}/UPDATE`, handleUpdate, tableName, actions),
             takeLatest(`${baseType}/DELETE`, handleDelete, tableName, actions),
-            takeLatest(`${baseType}/EXECUTE_QUERY`, handleExecuteQuery, tableName, actions),
+            takeLatest(`${baseType}/EXECUTE_QUERY`, handleExecuteCustomQuery, tableName, actions),
             ...createCustomSagas(schema, baseType, tableName, actions),
         ]);
     }

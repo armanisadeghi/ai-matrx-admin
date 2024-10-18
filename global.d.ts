@@ -7,3 +7,9 @@ interface NavigatorClipboard {
 }
 
 interface Navigator extends NavigatorClipboard {}
+
+import * as SchemaTypes from './types/tableSchemaTypes';
+
+declare global {
+    type SchemaTypes = typeof SchemaTypes;
+}

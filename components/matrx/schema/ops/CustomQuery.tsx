@@ -8,11 +8,11 @@ import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/Matrx
 const CustomQuery = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [query, setQuery] = useState('');
-    const {data, loading, error, executeQuery} = useDatabase();
+    const {data, loading, error, executeCustomQuery} = useDatabase();
 
-    const handleExecuteQuery = () => {
+    const handleExecuteCustomQuery = () => {
         if (selectedSchema) {
-            executeQuery(selectedSchema, (baseQuery) => {
+            executeCustomQuery(selectedSchema, (baseQuery) => {
                 // This is a simple example. In a real application, you'd want to validate and sanitize this input.
                 return eval(`baseQuery.${query}`);
             });
@@ -28,7 +28,7 @@ const CustomQuery = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
             />
-            <Button onClick={handleExecuteQuery} disabled={loading || !selectedSchema}>
+            <Button onClick={handleExecuteCustomQuery} disabled={loading || !selectedSchema}>
                 Execute Query
             </Button>
             {loading && <p>Loading...</p>}

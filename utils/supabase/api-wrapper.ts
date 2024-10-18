@@ -6,18 +6,14 @@ import {SupabaseClient} from '@supabase/supabase-js';
 import {supabase} from '@/utils/supabase/client';
 import {
     PostgrestError,
-    PostgrestFilterBuilder,
-    PostgrestQueryBuilder,
-    PostgrestResponse,
-    PostgrestSingleResponse
 } from "@supabase/postgrest-js";
 import {
     convertData,
     getRegisteredSchemas,
     getSchema,
     processDataForInsert,
-    TableSchema
 } from '../schema/schemaRegistry';
+import {TableNames, TableSchema} from "@/types/tableSchemaTypes";
 
 const availableSchemas = getRegisteredSchemas('database');
 export type TableOrView = typeof availableSchemas[number];
@@ -62,7 +58,7 @@ class DatabaseApiWrapper {
         this.client = client;
     }
 
-    private getDatabaseTableName<T extends TableOrView>(name: T): string {
+    private getDatabaseTableName(name: TableNames): string {
         const tableSchema = getSchema(name, 'database');
         if (!tableSchema) {
             throw new Error(`tableSchema not found for table or view: ${name}`);
@@ -109,7 +105,7 @@ class DatabaseApiWrapper {
         return query;
     }
 
-    private convertResponse<T extends TableOrView>(data: any, name: T): any {
+    private convertResponse(data: any, name: TableNames): any {
         return convertData(data, 'database', 'frontend', name);
     }
 
@@ -134,7 +130,7 @@ class DatabaseApiWrapper {
 
 
     async fetchOne<T extends TableOrView>(
-        name: T,
+        name: TableNames,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any> {
@@ -304,7 +300,7 @@ class DatabaseApiWrapper {
 
 
     async fetchAll<T extends TableOrView>(
-        name: T,
+        name: TableNames,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any[]> {
         const dbTableName = this.getDatabaseTableName(name);
@@ -320,7 +316,7 @@ class DatabaseApiWrapper {
     }
 
     async fetchPaginated<T extends TableOrView>(
-        name: T,
+        name: TableNames,
         options: QueryOptions<T>,
         page: number = 1,
         pageSize: number = 10,
@@ -388,7 +384,7 @@ class DatabaseApiWrapper {
         };
     }
 
-    async create<T extends TableOrView>(name: T, data: Partial<any>): Promise<any> {
+    async create<T extends TableOrView>(name: TableNames, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(name);
         const tableSchema = getSchema(name, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', name);
@@ -479,7 +475,7 @@ class DatabaseApiWrapper {
     }
 
 
-    async update<T extends TableOrView>(name: T, id: string, data: Partial<any>): Promise<any> {
+    async update<T extends TableOrView>(name: TableNames, id: string, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(name);
         const tableSchema = getSchema(name, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', name);
@@ -495,7 +491,7 @@ class DatabaseApiWrapper {
         return this.convertResponse(result, name);
     }
 
-    async delete<T extends TableOrView>(name: T, id: string): Promise<void> {
+    async delete<T extends TableOrView>(name: TableNames, id: string): Promise<void> {
         const dbTableName = this.getDatabaseTableName(name);
         const tableSchema = getSchema(name, 'database')!;
 
@@ -509,7 +505,7 @@ class DatabaseApiWrapper {
     }
 
     async executeCustomQuery<T extends TableOrView>(
-        name: T,
+        name: TableNames,
         query: (baseQuery: any) => any
     ): Promise<any[]> {
         const dbTableName = this.getDatabaseTableName(name);
@@ -522,7 +518,7 @@ class DatabaseApiWrapper {
         return data.map(item => this.convertResponse(item, name));
     }
 
-    subscribeToChanges<T extends TableOrView>(name: T, callback: SubscriptionCallback): void {
+    subscribeToChanges<T extends TableOrView>(name: TableNames, callback: SubscriptionCallback): void {
         const dbTableName = this.getDatabaseTableName(name);
         const tableSchema = getSchema(name, 'database')!;
 
@@ -531,7 +527,7 @@ class DatabaseApiWrapper {
 
         const subscription = this.client
             .channel(`public:${dbTableName}`)
-            .on('postgres_changes', {event: '*', tableSchema: 'public', table: dbTableName}, payload => {
+            .on('postgres_changes', {event: '*', schema: 'public', table: dbTableName}, payload => {
                 this.fetchAll(name).then(data => {
                     callback(data);
                 }).catch(error => {
@@ -559,7 +555,7 @@ class DatabaseApiWrapper {
     }
 
     // Helper method to convert any data to frontend format
-    convertToFrontendFormat<T extends TableOrView>(name: T, data: any): any {
+    convertToFrontendFormat<T extends TableOrView>(name: TableNames, data: any): any {
         if (Array.isArray(data)) {
             return data.map(item => this.convertResponse(item, name));
         } else {
@@ -578,7 +574,7 @@ class DatabaseApiWrapper {
     //     return this.queryBuilders.get(queryName) as PostgrestQueryBuilder<T> | undefined;
     // }
     //
-    // async executeQuery<T extends Record<string, any> = any>(
+    // async executeCustomQuery<T extends Record<string, any> = any>(
     //     queryName: string,
     //     params?: Partial<T>
     // ): Promise<PostgrestResponse<T>> {

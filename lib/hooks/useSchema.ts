@@ -4,7 +4,8 @@
 
 import { useContext, useCallback } from 'react';
 import { SchemaContext } from '@/providers/SchemaProvider';
-import { TableSchema, registerSchema, getSchema, getRegisteredSchemas, globalSchemaRegistry } from '@/utils/schema/schemaRegistry';
+import { registerSchema, getSchema, getRegisteredSchemas, globalSchemaRegistry } from '@/utils/schema/schemaRegistry';
+import { TableSchema } from '@/types/tableSchemaTypes';
 
 // Ensure that globalSchemaRegistry is exported from schemaRegistry
 export { globalSchemaRegistry };

@@ -5,7 +5,7 @@ import React, {useState} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {TableBody} from "@/components/ui/table";
 import {AnimatedTabModal} from "@/components/matrx/AnimatedForm";
-import {TableData} from "@/_armani/old-types/tableTypes";
+import {TableData} from "@/types/tableTypes";
 import {generateStandardTabData} from "./StandardTabUtil";
 import MatrxTableCell from "./MatrxTableCell";
 import {FormState, TabData} from "@/types/AnimatedFormTypes";

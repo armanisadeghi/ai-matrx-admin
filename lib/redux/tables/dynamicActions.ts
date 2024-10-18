@@ -118,15 +118,15 @@ export function tableActionCreators<K extends string>(tableName: K) {
         }),
 
         // Execute Query Actions
-        executeQueryRequest: (query: any): PayloadAction<typeof actionTypes.EXECUTE_QUERY_REQUEST, any> => ({
+        executeCustomQueryRequest: (query: any): PayloadAction<typeof actionTypes.EXECUTE_QUERY_REQUEST, any> => ({
             type: actionTypes.EXECUTE_QUERY_REQUEST,
             payload: query,
         }),
-        executeQuerySuccess: (data: TableData[]): PayloadAction<typeof actionTypes.EXECUTE_QUERY_SUCCESS, TableData[]> => ({
+        executeCustomQuerySuccess: (data: TableData[]): PayloadAction<typeof actionTypes.EXECUTE_QUERY_SUCCESS, TableData[]> => ({
             type: actionTypes.EXECUTE_QUERY_SUCCESS,
             payload: data,
         }),
-        executeQueryFailure: (error: Error): PayloadAction<typeof actionTypes.EXECUTE_QUERY_FAILURE, Error> => ({
+        executeCustomQueryFailure: (error: Error): PayloadAction<typeof actionTypes.EXECUTE_QUERY_FAILURE, Error> => ({
             type: actionTypes.EXECUTE_QUERY_FAILURE,
             payload: error,
         }),

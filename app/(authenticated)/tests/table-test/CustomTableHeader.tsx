@@ -3,7 +3,7 @@ import React from "react";
 import {TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {motion} from "framer-motion";
 import {ArrowUpDown} from "lucide-react";
-import {TableHeaderProps, TableData} from "@/_armani/old-types/tableTypes";
+import {TableHeaderProps, TableData} from "@/types/tableTypes";
 
 const CustomTableHeader: React.FC<TableHeaderProps> = ({headerGroups}) => {
     return (

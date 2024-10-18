@@ -1,141 +1,21 @@
 // File: lib/schemaRegistry.ts
 
-export type TableSchemaFull = {
-    name: {
-        frontend: string;
-        backend: string;
-        database: string;
-        pretty: string;
-        [key: string]: string;
-    };
-    schemaType: 'table' | 'view' | 'function' | 'procedure';
-    fields: Record<string, {
-        alts: {
-            frontend: string;
-            backend: string;
-            database: string;
-            [key: string]: string;
-        };
-        type: DataType;
-        format: 'single' | 'array' | 'object';
-        structure: {
-            structure: 'simple' | 'foreignKey' | 'inverseForeignKey';
-            typeReference: TypeBrand<any>;
-            databaseTable?: TableSchemaFull['name']['database'];
-        };
-    }>;
-    relationships: {
-        fetchStrategy: string;
-        foreignKeys: Array<TableRelationship['foreignKeys']>;
-        inverseForeignKeys: Array<TableRelationship['inverseForeignKeys']>;
-        manyToMany: Array<TableRelationship['manyToMany']>;
-    };
-};
+import {
+    DataFormat,
+    FieldConverter,
+    TableSchema,
+    AltOptions,
+    AllTableNames
+} from "@/types/tableSchemaTypes";
 
-
-export type DataFormat = 'frontend' | 'backend' | 'database' | 'component' | 'pretty' | 'graphql' | 'restApi';
-export type schemaType = 'table' | 'view' | 'function' | 'procedure';
-
-
-type DataType =
-    | 'string'
-    | 'number'
-    | 'boolean'
-    | 'array'
-    | 'object'
-    | 'null'
-    | 'undefined'
-    | 'any'
-    | 'function'
-    | 'symbol'
-    | 'bigint'
-    | 'date'
-    | 'map'
-    | 'set'
-    | 'tuple'
-    | 'enum'
-    | 'union'
-    | 'intersection'
-    | 'literal'
-    | 'void'
-    | 'never'
-    | 'stringArray'
-    | 'objectArray';
-
-export type ConversionFormat = 'single' | 'array' | 'object';
-export type StructureType = 'simple' | 'foreignKey' | 'inverseForeignKey';
-const TypeBrand = Symbol('TypeBrand');
-export type TypeBrand<T> = { [TypeBrand]: T };
-
-export interface FieldStructure<T> {
-    structure: StructureType;
-    typeReference: TypeBrand<T>;
-    databaseTable?: string;
-}
-
-export interface AltOptions {
-    frontend: string;
-    backend: string;
-    database: string;
-    pretty: string;
-
-    [key: string]: string;
-}
-
-export interface FieldConverter<T> {
-    alts: AltOptions;
-    type: DataType;
-    format: ConversionFormat;
-    structure: FieldStructure<T>;
-}
-
-export type ConverterMap = {
-    [key: string]: FieldConverter<any>;
-};
-
-
-export interface TableRelationship {
-    fetchStrategy: 'simple' | 'fk' | 'ifk' | 'm2m' | 'fkAndIfk' | 'm2mAndFk' | 'm2mAndIfk' | 'fkIfkAndM2M';
-    foreignKeys: Array<{
-        column: string;
-        relatedTable: string;
-        relatedColumn: string;
-    }>;
-    inverseForeignKeys: Array<{
-        relatedTable: string;
-        relatedColumn: string;
-        mainTableColumn: string;
-    }>;
-    manyToMany: Array<{
-        junctionTable: string;
-        relatedTable: string;
-        mainTableColumn: string;
-        relatedTableColumn: string;
-
-    }>;
-}
-
-export interface TableSchema {
-    name: AltOptions;
-    schemaType: schemaType;
-    fields: ConverterMap;
-    relationships: TableRelationship;
-}
-
-
-export interface SchemaRegistry {
-    [tableName: string]: TableSchema;
-}
-
-
-export function createTypeReference<T>(): TypeBrand<T> {
-    return {} as TypeBrand<T>;
-}
-
-export const globalSchemaRegistry: SchemaRegistry = {};
+export const globalSchemaRegistry: Record<string, TableSchema> = {};
 
 export function registerSchema(frontendName: string, tableSchema: TableSchema) {
     globalSchemaRegistry[frontendName] = tableSchema;
+}
+
+export function initializeSchemas() {
+    console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
 }
 
 export interface ConversionOptions {
@@ -193,24 +73,28 @@ function convertValue(value: any, converter: FieldConverter<any>): any {
     }
 }
 
-function getFrontendTableName(tableName: string, format: DataFormat): string {
+export function getFrontendTableName(tableName: AllTableNames, format: DataFormat): AllTableNames {
     const availableNames: { [key: string]: string[] } = {};
 
     for (const [frontendName, schema] of Object.entries(globalSchemaRegistry)) {
         for (const [key, name] of Object.entries(schema.name)) {
             if (name === tableName) {
-                return frontendName;
+                return frontendName;  // Return the matching frontend name if found
             }
             if (!availableNames[key]) {
                 availableNames[key] = [];
             }
-            availableNames[key].push(name);
+            if (typeof name === 'string') {
+                availableNames[key].push(name);  // Add the name to available names if it's a string
+            }
         }
     }
+
     console.warn(`Table name not found in registry: ${tableName}`);
     for (const [key, names] of Object.entries(availableNames)) {
         console.warn(`Available names in format '${key}': ${names.join(', ')}`);
     }
+
     return tableName;
 }
 
@@ -275,7 +159,7 @@ export function convertData(
     data: any,
     sourceFormat: DataFormat,
     targetFormat: DataFormat,
-    tableName: string,
+    tableName: AllTableNames,
     options: ConversionOptions = {},
     processedEntities: Set<string> = new Set()
 ): any {
@@ -293,7 +177,7 @@ export function convertData(
         const sourceKey = converter.alts[sourceFormat];
         const targetKey = converter.alts[targetFormat];
 
-        if (data.hasOwnProperty(sourceKey)) {
+        if (sourceKey && targetKey && data.hasOwnProperty(sourceKey)) {
             let value = data[sourceKey];
 
             if (value !== undefined) {
@@ -547,15 +431,4 @@ export async function getRelationships(tableName: string, format: DataFormat = '
 }
 
 
-export function initializeSchemas() {
-    console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
-}
 
-
-export type InferSchemaType<T extends TableSchema> = {
-    [K in keyof T['fields']]: T['fields'][K] extends FieldConverter<infer U> ? U : never;
-};
-
-
-const availableSchemas = getRegisteredSchemas('database');
-export type AvailableSchemas = typeof availableSchemas[number];

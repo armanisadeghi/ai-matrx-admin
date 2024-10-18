@@ -1,7 +1,7 @@
 import React from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import MatrxCheckbox from "@/components/matrx/MatrxCheckbox";
-import {ColumnSettingsModalProps} from "@/_armani/old-types/tableTypes";
+import {ColumnSettingsModalProps} from "@/types/tableTypes";
 
 const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = (
     {

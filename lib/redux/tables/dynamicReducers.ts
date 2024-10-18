@@ -1,7 +1,8 @@
 // lib/redux/tableSagas/tableReducerFactory.ts
 
-import { getSchema, InferSchemaType, TableSchema } from "@/utils/schema/schemaRegistry";
 import { UnknownAction } from '@reduxjs/toolkit';
+import {getSchema} from "@/utils/schema/schemaRegistry";
+import {InferSchemaType, TableSchema} from "@/types/tableSchemaTypes";
 
 interface State<T> {
     data: T[];

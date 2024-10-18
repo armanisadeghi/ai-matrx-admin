@@ -63,8 +63,8 @@ export const createSagaForTable = (tableName: string) => {
     }
 
     // Saga for executing custom queries
-    function* executeQuerySaga(action: any) {
-        yield* apiSaga(action, databaseApi.executeQuery.bind(databaseApi, tableName), actions.executeQuerySuccess, actions.executeQueryFailure);
+    function* executeCustomQuerySaga(action: any) {
+        yield* apiSaga(action, databaseApi.executeCustomQuery.bind(databaseApi, tableName), actions.executeCustomQuerySuccess, actions.executeCustomQueryFailure);
     }
 
     // Watcher Saga that listens to each action type and delegates to the appropriate worker saga
@@ -78,7 +78,7 @@ export const createSagaForTable = (tableName: string) => {
         yield takeEvery(actionTypes.INSERT_WITH_FK_AND_IFK_REQUEST, insertWithFkAndIfkDataSaga);
         yield takeEvery(actionTypes.UPDATE_REQUEST, updateDataSaga);
         yield takeEvery(actionTypes.DELETE_REQUEST, deleteDataSaga);
-        yield takeEvery(actionTypes.EXECUTE_QUERY_REQUEST, executeQuerySaga);
+        yield takeEvery(actionTypes.EXECUTE_QUERY_REQUEST, executeCustomQuerySaga);
     }
 
     return watchTableSagas;

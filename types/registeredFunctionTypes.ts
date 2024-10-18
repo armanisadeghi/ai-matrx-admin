@@ -1,7 +1,3 @@
-import { ArgType } from './argTypes';
-import { SystemFunctionType } from './systemFunctionTypes';
-import { RecipeFunctionType } from './recipeFunctionTypes';
-import { BrokerType } from "./brokerTypes";
 import * as z from 'zod';
 
 export enum RegisteredFunctionTypeEnum {
@@ -20,10 +16,10 @@ export const RegisteredFunctionBaseSchema = z.object({
 
 export const RegisteredFunctionFullSchema = RegisteredFunctionBaseSchema.extend({
     type: z.literal(RegisteredFunctionTypeEnum.Full),
-    returnBrokerObject: z.custom<BrokerType>().nullable().optional(),
-    args: z.array(z.custom<ArgType>()).nullable().optional(),
-    systemFunction: z.custom<SystemFunctionType>().nullable().optional(),
-    recipeFunctions: z.array(z.custom<RecipeFunctionType>()).nullable().optional(),
+    returnBrokerObject: z.custom<any>().nullable().optional(),
+    args: z.array(z.custom<any>()).nullable().optional(),
+    systemFunction: z.custom<any>().nullable().optional(),
+    recipeFunctions: z.array(z.custom<any>()).nullable().optional(),
 });
 
 export const RegisteredFunctionUnionSchema = z.discriminatedUnion('type', [
