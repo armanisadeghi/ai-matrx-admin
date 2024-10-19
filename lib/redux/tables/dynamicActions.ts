@@ -3,7 +3,7 @@
 
 // Action type constants
 import {getSchema} from "@/utils/schema/schemaRegistry";
-import {InferSchemaType, TableSchema} from "@/types/tableSchemaTypes";
+import {InferFieldTypes, TableSchema} from "@/types/tableSchemaTypes";
 
 type ActionStatus = 'REQUEST' | 'SUCCESS' | 'FAILURE';
 type ActionType = 'FETCH' | 'CREATE' | 'UPDATE' | 'DELETE' | 'CHANGE_STATUS' | 'SUBSCRIBE' | 'UNSUBSCRIBE' | 'EXECUTE_QUERY';
@@ -29,7 +29,7 @@ export function tableActionCreators<K extends string>(tableName: K) {
         throw new Error(`No schema found for table: ${tableName}`);
     }
 
-    type TableData = InferSchemaType<typeof schema> & { id: string };
+    type TableData = InferFieldTypes<typeof schema> & { id: string };
 
     const baseType = schema.name.frontend.toUpperCase();
 
@@ -153,7 +153,7 @@ function createCustomActions<T extends TableSchema>(
             CHANGE_STATUS_FAILURE: getActionType(baseType, 'CHANGE_STATUS', 'FAILURE'),
         };
 
-        type TableData = InferSchemaType<T> & { id: string };
+        type TableData = InferFieldTypes<T> & { id: string };
 
         customActions.changeStatusRequest = (id: string, status: string): PayloadAction<typeof actionTypes.CHANGE_STATUS_REQUEST, { id: string; status: string }> => ({
             type: actionTypes.CHANGE_STATUS_REQUEST,

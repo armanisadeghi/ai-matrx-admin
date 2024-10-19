@@ -1,5 +1,5 @@
 export {MatrxRadioGroup, MatrxRadioGroupItem} from './radio-group'
-export {MatrxButton, buttonVariants} from './button'
+export {MatrxButton, buttonVariants, ButtonGroup} from './button'
 export {
     MatrxSelect,
     MatrxSelectGroup,

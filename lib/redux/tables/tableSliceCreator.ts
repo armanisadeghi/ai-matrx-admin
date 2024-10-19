@@ -1,14 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {InferSchemaType, TableSchema, SchemaTypes, TableName} from "@/types/tableSchemaTypes";
+import {InferFieldTypes, TableSchema, TableName} from "@/types/tableSchemaTypes";
 import { QueryOptions } from '@/utils/supabase/api-wrapper';
 
 export interface TableState<T extends TableSchema> {
-    data: InferSchemaType<T>[];
+    data: InferFieldTypes<T>[];
     allIdAndNames: { id: string; name: string }[];
     totalCount: number;
     lastFetched: Record<string, number>;
     staleTime: number;
-    selectedItem: InferSchemaType<T> | null;
+    selectedItem: InferFieldTypes<T> | null;
     loading: boolean;
     error: string | null;
 }

@@ -6,10 +6,22 @@ const TypeBrand = Symbol('TypeBrand');
 export type TypeBrand<T> = { _typeBrand: T };
 
 
+export type NameVariations = {
+    frontendName: string;
+    backendName: string;
+    databaseName: string;
+    prettyName: string;
+    componentName: string;
+    kebabName: string;
+    [key: string]: string;
+};
+
+export type DataStructure = 'single' | 'array' | 'object';
+
 export type FieldProperties = {
-    alts: AltFieldNameMap;
+    fieldNameVariations: NameVariations;
     type: DataType;
-    format: ConversionFormat;
+    format: DataStructure;
     structure: FieldStructure;
     isRequired?: boolean;
     characterMaximumLength?: number | null;
@@ -23,17 +35,6 @@ export type FieldProperties = {
 };
 
 
-export interface AltFieldNameMap {
-    frontend: string;
-    backend: string;
-    database: string;
-    pretty: string;
-    component?: string;
-    graphql?: string;
-    restApi?: string;
-
-    [key: string]: string;
-}
 
 export interface FieldStructure {
     structure: StructureTypes;
@@ -41,7 +42,6 @@ export interface FieldStructure {
     databaseTable?: TableName;
 }
 
-export type ConversionFormat = 'single' | 'array' | 'object';
 
 
 export type DataType =
@@ -49,7 +49,7 @@ export type DataType =
     | 'null' | 'undefined' | 'any' | 'function' | 'symbol'
     | 'bigint' | 'date' | 'map' | 'set' | 'tuple' | 'enum'
     | 'union' | 'intersection' | 'literal' | 'void' | 'never'
-    | 'stringArray' | 'objectArray';
+
 
 export type InferFieldType<T extends FieldProperties> =
     T['isRequired'] extends false
@@ -69,9 +69,9 @@ export type InferBaseType<T extends FieldProperties> =
 
 type InferStructureType<T extends FieldStructure> =
     T['structure'] extends 'simple' ? unknown :
-        T['structure'] extends 'foreignKey' ? (T['databaseTable'] extends TableName ? InferSchemaType<SchemaRegistry[T['databaseTable']]> : never) :
-            T['structure'] extends 'inverseForeignKey' ? (T['databaseTable'] extends TableName ? Array<InferSchemaType<SchemaRegistry[T['databaseTable']]>> : never) :
-                T['structure'] extends 'manyToMany' ? (T['databaseTable'] extends TableName ? Array<InferSchemaType<SchemaRegistry[T['databaseTable']]>> : never) :
+        T['structure'] extends 'foreignKey' ? (T['databaseTable'] extends TableName ? InferFieldTypes<SchemaRegistry[T['databaseTable']]> : never) :
+            T['structure'] extends 'inverseForeignKey' ? (T['databaseTable'] extends TableName ? Array<InferFieldTypes<SchemaRegistry[T['databaseTable']]>> : never) :
+                T['structure'] extends 'manyToMany' ? (T['databaseTable'] extends TableName ? Array<InferFieldTypes<SchemaRegistry[T['databaseTable']]>> : never) :
                     unknown;
 
 export type StructureTypes = "simple" | "foreignKey" | "inverseForeignKey" | "manyToMany";
@@ -81,57 +81,14 @@ export type DataFormat = 'frontend' | 'backend' | 'database' | 'component' | 'pr
 export interface SchemaRegistry {
     [tableName: string]: TableSchema;
 }
+export type TableName = keyof typeof initialSchemas;
 
-export interface AltTableNameMap {
-    frontend: string;
-    backend: string;
-    database: string;
-    pretty: string;
-    component?: string;
-    graphql?: string;
-    restApi?: string;
-
-    [key: string]: string;
-}
 
 export type SchemaType = 'table' | 'view' ;
 
 export type TableFieldSchema = {
-    [key: string]: FieldProperties;
+    [fieldName: string]: FieldProperties;
 };
-
-
-
-
-export interface TableSchema {
-    name: AltTableNameMap;
-    schemaType: SchemaType;
-    fields: TableFieldSchema;
-    relationships: TableRelationship;
-    description?: string;
-}
-
-export type TableName = keyof typeof initialSchemas;
-
-
-
-export type InferSchemaType<T extends TableSchema> = {
-    [K in keyof T['fields']]: InferFieldType<T['fields'][K]>;
-};
-
-
-
-
-export type TableFieldTypes = {
-    [K in TableName]: InferSchemaType<typeof initialSchemas[K]>
-};
-
-
-export type TableFields<T extends keyof SchemaRegistry> = InferSchemaType<SchemaRegistry[T]>;
-export type FieldType<T extends keyof SchemaRegistry, F extends keyof TableFields<T>> = TableFields<T>[F];
-export type FieldNames<T extends keyof SchemaRegistry> = keyof TableFields<T>;
-
-
 
 export interface TableRelationship {
     fetchStrategy: FetchStrategy;
@@ -139,6 +96,33 @@ export interface TableRelationship {
     inverseForeignKeys: InverseForeignKeyRelation[];
     manyToMany: ManyToManyRelation[];
 }
+
+
+
+
+export interface TableSchema {
+    tableNameVariations: NameVariations;
+    schemaType: SchemaType;
+    fields: TableFieldSchema;
+    relationships: TableRelationship;
+}
+
+
+
+export type InferFieldTypes<T extends TableSchema> = {
+    [K in keyof T['fields']]: InferFieldType<T['fields'][K]>;
+};
+
+
+export type TableFieldTypes = {
+    [K in TableName]: InferFieldTypes<typeof initialSchemas[K]>
+};
+
+export type TableFields<T extends keyof SchemaRegistry> = InferFieldTypes<SchemaRegistry[T]>;
+export type FieldType<T extends keyof SchemaRegistry, F extends keyof TableFields<T>> = TableFields<T>[F];
+export type FieldNames<T extends keyof SchemaRegistry> = keyof TableFields<T>;
+
+
 
 
 type FetchStrategy = 'simple' | 'fk' | 'ifk' | 'm2m' | 'fkAndIfk' | 'm2mAndFk' | 'm2mAndIfk' | 'fkIfkAndM2M';
@@ -206,10 +190,10 @@ export function createTypeReference<T>(): TypeBrand<T> {
 }
 
 
-export type FieldNameKey = keyof AltFieldNameMap;
+export type FieldNameKey = keyof NameVariations;
 
-export type FrontendFieldName = AltFieldNameMap['frontend'];
-export type DatabaseFieldName = AltFieldNameMap['database'];
+export type FrontendFieldName = NameVariations['frontend'];
+export type DatabaseFieldName = NameVariations['database'];
 
 
 export function fieldName<T extends TableName, F extends FieldNames<T>>(table: T, field: F): F {
@@ -298,4 +282,38 @@ export interface CustomFieldConverter<T> extends Omit<FieldProperties, 'alts'> {
     customFieldName: string;
     customFormat: DataFormat;
 }
+
+
+// InferSchemaType REPLACED BY InferFieldTypes
+// export type InferSchemaType<T extends TableSchema> = {
+//     [K in keyof T['fields']]: InferFieldType<T['fields'][K]>;
+// };
+
+
+/* Replaced by DataStructure
+export type ConversionFormat = 'single' | 'array' | 'object';
+*/
+
+
+
+
+/*
+export type FieldProperties = {
+    structure: FieldStructure;
+    characterMaximumLength?: number | null;
+    isArray?: boolean;
+};
+
+
+export interface FieldStructure {
+    structure: StructureTypes;
+    typeReference: TypeBrand<any>;
+    databaseTable?: TableName;
+}
+
+*/
+
+
+
+
 

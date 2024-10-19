@@ -107,7 +107,7 @@ export async function fetchAndGenerateSchema() {
         console.log(`File path set to: ${filePath}`);
 
         const staticImports = `
-import { TableSchema, createTypeReference, InferSchemaType } from './schemaRegistry';
+import { TableSchema, createTypeReference, InferFieldTypes } from './schemaRegistry';
 import { Json } from "@/types/database.types";
 `;
 

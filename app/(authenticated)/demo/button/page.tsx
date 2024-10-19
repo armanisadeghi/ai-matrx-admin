@@ -2,14 +2,15 @@
 'use client';
 
 import * as React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {
     MatrxButton,
     MatrxSelect,
     MatrxSelectContent, MatrxSelectItem,
     MatrxSelectTrigger,
-    MatrxSelectValue
+    MatrxSelectValue,
+    ButtonGroup
 } from '@/components/ui/samples';
 import {
     Select,
@@ -22,7 +23,7 @@ import {
     Label
 } from '@/components/ui';
 import TextDivider from '@/components/matrx/TextDivider';
-import {Infinity, Bot, Handshake, Smile, Loader2} from 'lucide-react';
+import {Infinity, Bot, Handshake, Smile, Loader2, ThumbsUp, ThumbsDown, Star} from 'lucide-react';
 
 export default function DemoPage() {
     const [basicButtonState, setBasicButtonState] = React.useState('default');
@@ -36,23 +37,33 @@ export default function DemoPage() {
         tooltip: '',
         dropdown: false,
         count: 0,
-        icon: undefined as React.ReactNode | undefined,
+        icon: 'none' as 'none' | 'infinity' | 'bot' | 'handshake' | 'smile',
     });
 
     const iconOptions = [
-        { value: 'none', label: 'None', icon: null },
-        { value: 'infinity', label: 'Infinity', icon: <Infinity /> },
-        { value: 'bot', label: 'Bot', icon: <Bot /> },
-        { value: 'handshake', label: 'Handshake', icon: <Handshake /> },
-        { value: 'smile', label: 'Smile', icon: <Smile /> },
-    ]
-    const [selectedIcon, setSelectedIcon] = React.useState('none')
+        {value: 'none', label: 'None', icon: null},
+        {value: 'infinity', label: 'Infinity', icon: <Infinity className="h-4 w-4"/>},
+        {value: 'bot', label: 'Bot', icon: <Bot className="h-4 w-4"/>},
+        {value: 'handshake', label: 'Handshake', icon: <Handshake className="h-4 w-4"/>},
+        {value: 'smile', label: 'Smile', icon: <Smile className="h-4 w-4"/>},
+    ];
 
     const handleAdvancedChange = (key: string, value: any) => {
         setAdvancedButtonState((prevState) => ({
             ...prevState,
             [key]: value,
         }));
+    };
+
+    const toggleBasicButtonState = () => {
+        setBasicButtonState((prevState) =>
+            prevState === 'default' ? 'clicked' : 'default'
+        );
+    };
+
+    const getIconComponent = (iconName: string) => {
+        const option = iconOptions.find(opt => opt.value === iconName);
+        return option ? option.icon : null;
     };
 
     return (
@@ -63,6 +74,7 @@ export default function DemoPage() {
                 <TabsList className="mb-4">
                     <TabsTrigger value="basic">Basic Example</TabsTrigger>
                     <TabsTrigger value="advanced">Advanced Example</TabsTrigger>
+                    <TabsTrigger value="groups">Button Groups</TabsTrigger>
                     <TabsTrigger value="all">All Variations</TabsTrigger>
                 </TabsList>
 
@@ -76,9 +88,9 @@ export default function DemoPage() {
                             <MatrxButton
                                 variant="default"
                                 size="m"
-                                onClick={() => setBasicButtonState('clicked')}
+                                onClick={toggleBasicButtonState}
                             >
-                                Basic Button
+                                {basicButtonState === 'default' ? 'Click Me' : 'Click Again'}
                             </MatrxButton>
                         </CardContent>
                     </Card>
@@ -88,7 +100,7 @@ export default function DemoPage() {
                             <CardTitle>Current State</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <pre>{JSON.stringify({ basicButtonState }, null, 2)}</pre>
+                            <pre>{JSON.stringify({basicButtonState}, null, 2)}</pre>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -207,25 +219,25 @@ export default function DemoPage() {
                                         </div>
                                         <div>
                                             <Label className="block text-sm font-medium mb-1">Icon</Label>
-                                            <MatrxSelect
-                                                value={selectedIcon}
-                                                onValueChange={(value) => {
-                                                    setSelectedIcon(value)
-                                                    handleAdvancedChange('icon', iconOptions.find(option => option.value === value)?.icon || null)
-                                                }}
+                                            <Select
+                                                value={advancedButtonState.icon}
+                                                onValueChange={(value) => handleAdvancedChange('icon', value)}
                                             >
-                                                <MatrxSelectTrigger>
-                                                    <MatrxSelectValue/>
-                                                </MatrxSelectTrigger>
-                                                <MatrxSelectContent>
+                                                <SelectTrigger>
+                                                    <SelectValue/>
+                                                </SelectTrigger>
+                                                <SelectContent>
                                                     {iconOptions.map((option) => (
-                                                        <MatrxSelectItem key={option.value} value={option.value}>
-                                                            {option.icon && <span className="mr-2">{option.icon}</span>}
-                                                            {option.label}
-                                                        </MatrxSelectItem>
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            <div className="flex items-center">
+                                                                {option.icon &&
+                                                                    <span className="mr-2">{option.icon}</span>}
+                                                                {option.label}
+                                                            </div>
+                                                        </SelectItem>
                                                     ))}
-                                                </MatrxSelectContent>
-                                            </MatrxSelect>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -249,10 +261,10 @@ export default function DemoPage() {
                                         tooltip={advancedButtonState.tooltip}
                                         dropdown={advancedButtonState.dropdown}
                                         count={advancedButtonState.count}
-                                        icon={advancedButtonState.icon}
+                                        icon={getIconComponent(advancedButtonState.icon)}
                                         onClick={() => handleAdvancedChange('count', advancedButtonState.count + 1)}
                                     >
-                                        Advanced Button
+                                        {advancedButtonState.size === 'icon' ? '' : 'Advanced Button'}
                                     </MatrxButton>
                                 </CardContent>
                             </Card>
@@ -270,6 +282,37 @@ export default function DemoPage() {
                     </Card>
                 </TabsContent>
 
+                {/* Button Groups Tab */}
+                <TabsContent value="groups">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Button Groups</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <TextDivider text="Horizontal Group"/>
+                            <ButtonGroup>
+                                <MatrxButton variant="outline" icon={<ThumbsUp/>}>Like</MatrxButton>
+                                <MatrxButton variant="outline" icon={<ThumbsDown/>}>Dislike</MatrxButton>
+                                <MatrxButton variant="outline" icon={<Star/>}>Favorite</MatrxButton>
+                            </ButtonGroup>
+
+                            <TextDivider text="Vertical Group"/>
+                            <ButtonGroup direction="column" spacing="medium">
+                                <MatrxButton variant="default">Button 1</MatrxButton>
+                                <MatrxButton variant="default">Button 2</MatrxButton>
+                                <MatrxButton variant="default">Button 3</MatrxButton>
+                            </ButtonGroup>
+
+                            <TextDivider text="Full Width Group"/>
+                            <ButtonGroup fullWidth>
+                                <MatrxButton variant="secondary">Left</MatrxButton>
+                                <MatrxButton variant="secondary">Center</MatrxButton>
+                                <MatrxButton variant="secondary">Right</MatrxButton>
+                            </ButtonGroup>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
                 {/* All Variations Tab */}
                 <TabsContent value="all">
                     <Card>
@@ -277,35 +320,80 @@ export default function DemoPage() {
                             <CardTitle>All Variations</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <TextDivider text="Default Variant" />
+                            <TextDivider text="Default Variant"/>
                             <MatrxButton variant="default">Default Button</MatrxButton>
 
-                            <TextDivider text="Destructive Variant" />
+                            <TextDivider text="Destructive Variant"/>
                             <MatrxButton variant="destructive">Destructive Button</MatrxButton>
 
-                            <TextDivider text="Outline Variant" />
+                            <TextDivider text="Outline Variant"/>
                             <MatrxButton variant="outline">Outline Button</MatrxButton>
 
-                            <TextDivider text="Secondary Variant" />
+                            <TextDivider text="Secondary Variant"/>
                             <MatrxButton variant="secondary">Secondary Button</MatrxButton>
 
-                            <TextDivider text="Ghost Variant" />
+                            <TextDivider text="Ghost Variant"/>
                             <MatrxButton variant="ghost">Ghost Button</MatrxButton>
 
-                            <TextDivider text="Link Variant" />
+                            <TextDivider text="Link Variant"/>
                             <MatrxButton variant="link">Link Button</MatrxButton>
 
-                            <TextDivider text="With Icon" />
-                            <MatrxButton icon={<Loader2 className="h-4 w-4" />}>Button with Icon</MatrxButton>
+                            <TextDivider text="With Icon"/>
+                            <MatrxButton icon={<Loader2 className="h-4 w-4"/>}>Button with Icon</MatrxButton>
 
-                            <TextDivider text="With Dropdown" />
+                            <TextDivider text="With Dropdown"/>
                             <MatrxButton dropdown>Button with Dropdown</MatrxButton>
 
-                            <TextDivider text="With Count" />
+                            <TextDivider text="With Count"/>
                             <MatrxButton count={5}>Button with Count</MatrxButton>
 
-                            <TextDivider text="Full Width" />
+                            <TextDivider text="Full Width"/>
                             <MatrxButton fullWidth>Full Width Button</MatrxButton>
+                            <TextDivider text="Icon Only"/>
+                            <div className="flex space-x-2">
+                                <MatrxButton variant="default" size="icon" icon={<Star className="h-4 w-4"/>}/>
+                                <MatrxButton variant="outline" size="icon" icon={<ThumbsUp className="h-4 w-4"/>}/>
+                                <MatrxButton variant="ghost" size="icon" icon={<ThumbsDown className="h-4 w-4"/>}/>
+                            </div>
+
+                            <TextDivider text="With Tooltip"/>
+                            <MatrxButton tooltip="This is a tooltip">Hover Me</MatrxButton>
+
+                            <TextDivider text="With Ripple Effect"/>
+                            <MatrxButton ripple>Click for Ripple</MatrxButton>
+
+                            <TextDivider text="Loading State"/>
+                            <MatrxButton loading>Loading Button</MatrxButton>
+
+                            <TextDivider text="Different Sizes"/>
+                            <div className="flex space-x-2 items-end">
+                                <MatrxButton size="xs">XS</MatrxButton>
+                                <MatrxButton size="sm">SM</MatrxButton>
+                                <MatrxButton size="m">M</MatrxButton>
+                                <MatrxButton size="lg">LG</MatrxButton>
+                                <MatrxButton size="xl">XL</MatrxButton>
+                            </div>
+
+                            <TextDivider text="Different Animations"/>
+                            <div className="flex space-x-2">
+                                <MatrxButton animation="none">No Animation</MatrxButton>
+                                <MatrxButton animation="basic">Basic Animation</MatrxButton>
+                                <MatrxButton animation="moderate">Moderate Animation</MatrxButton>
+                                <MatrxButton animation="enhanced">Enhanced Animation</MatrxButton>
+                            </div>
+
+                            <TextDivider text="Combination Example"/>
+                            <MatrxButton
+                                variant="outline"
+                                size="lg"
+                                icon={<Star className="h-4 w-4"/>}
+                                ripple
+                                tooltip="A complex button example"
+                                count={10}
+                                dropdown
+                            >
+                                Complex Button
+                            </MatrxButton>
                         </CardContent>
                     </Card>
                 </TabsContent>

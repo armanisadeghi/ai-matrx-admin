@@ -56,17 +56,19 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.client = supabase;
         this.requestTableName = requestTableName;
 
-        const {schema, frontend, database} = getApiWrapperSchemaFormats(requestTableName);
-        if (!schema) {
-            throw new Error(`Schema not found for table '${requestTableName}'.`);
-        }
-
-        this.fullSchema = schema;
-        this.frontendSchema = frontend;
-        this.databaseSchema = database;
-        this.frontendTableName = frontend.frontendTableName;
-        this.databaseTableName = database.databaseTableName;
-        this.primaryKeyField = this.findPrimaryKeyField();
+        // const {schema, frontend, database} = getApiWrapperSchemaFormats(requestTableName);
+        // // if (!schema) {
+        // //     throw new Error(`Schema not found for table '${requestTableName}'.`);
+        // // }
+        //
+        // console.error('schema', schema);
+        //
+        // this.fullSchema = schema;
+        // this.frontendSchema = frontend;
+        // this.databaseSchema = database;
+        // this.frontendTableName = frontend.frontendTableName;
+        // this.databaseTableName = database.databaseTableName;
+        // this.primaryKeyField = this.findPrimaryKeyField();
     }
 
     private findPrimaryKeyField(): keyof TableFieldSchema {
@@ -242,7 +244,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
     async fetchOne<T extends keyof SchemaRegistry>(
-        tableName: AllTableNames,
+        tableName: TableName,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any> {
@@ -403,7 +405,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
     async fetchAll<T extends keyof SchemaRegistry>(
-        tableName: AllTableNames,
+        tableName: TableName,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any[]> {
         const dbTableName = this.getDatabaseTableName(tableName);
@@ -419,7 +421,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
     async fetchPaginated<T extends DatabaseTableOrView>(
-        tableName: AllTableNames,
+        tableName: TableName,
         options: QueryOptions<T>,
         page: number = 1,
         pageSize: number = 10,
@@ -487,7 +489,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         };
     }
 
-    async create<T extends keyof SchemaRegistry>(tableName: AllTableNames, data: Partial<any>): Promise<any> {
+    async create<T extends keyof SchemaRegistry>(tableName: TableName, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -578,7 +580,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async update<T extends keyof SchemaRegistry>(tableName: AllTableNames, id: string, data: Partial<any>): Promise<any> {
+    async update<T extends keyof SchemaRegistry>(tableName: TableName, id: string, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -594,7 +596,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return this.convertResponse(result, tableName);
     }
 
-    async delete<T extends keyof SchemaRegistry>(tableName: AllTableNames, id: string): Promise<void> {
+    async delete<T extends keyof SchemaRegistry>(tableName: TableName, id: string): Promise<void> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -608,7 +610,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
     async executeCustomQuery<T extends keyof SchemaRegistry>(
-        tableName: AllTableNames,
+        tableName: TableName,
         query: (baseQuery: any) => any
     ): Promise<any[]> {
         const dbTableName = this.getDatabaseTableName(tableName);
@@ -621,7 +623,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data.map(item => this.convertResponse(item, tableName));
     }
 
-    subscribeToChanges<T extends keyof SchemaRegistry>(tableName: AllTableNames, callback: SubscriptionCallback): void {
+    subscribeToChanges<T extends keyof SchemaRegistry>(tableName: TableName, callback: SubscriptionCallback): void {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -642,7 +644,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.subscriptions.set(tableName, subscription);
     }
 
-    unsubscribeFromChanges(tableName: AllTableNames): void {
+    unsubscribeFromChanges(tableName: TableName): void {
         const subscription = this.subscriptions.get(tableName);
         if (subscription) {
             this.client.removeChannel(subscription);
@@ -657,7 +659,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.subscriptions.clear();
     }
 
-    convertToFrontendFormat<T extends keyof SchemaRegistry>(tableName: AllTableNames, data: any): any {
+    convertToFrontendFormat<T extends keyof SchemaRegistry>(tableName: TableName, data: any): any {
         if (Array.isArray(data)) {
             return data.map(item => this.convertResponse(item, tableName));
         } else {

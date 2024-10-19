@@ -2,7 +2,7 @@
 
 import { UnknownAction } from '@reduxjs/toolkit';
 import {getSchema} from "@/utils/schema/schemaRegistry";
-import {InferSchemaType, TableSchema} from "@/types/tableSchemaTypes";
+import {InferFieldTypes, TableSchema} from "@/types/tableSchemaTypes";
 
 interface State<T> {
     data: T[];
@@ -27,7 +27,7 @@ export function createReducer<T extends string>(tableName: T) {
     }
 
     // Infer the type of our table
-    type TableData = InferSchemaType<typeof schema>;
+    type TableData = InferFieldTypes<typeof schema>;
 
     // Initial state which uses the inferred type
     const initialState: State<TableData> = {
@@ -85,10 +85,10 @@ export function createReducer<T extends string>(tableName: T) {
 }
 
 function handleCustomActions<T extends TableSchema>(
-    state: State<InferSchemaType<T>>,
+    state: State<InferFieldTypes<T>>,
     action: UnknownAction,
     schema: T
-): State<InferSchemaType<T>> {
+): State<InferFieldTypes<T>> {
     const baseType = schema.name.frontend.toUpperCase();
 
     if (schema.fields.status && action.type.includes('CHANGE_STATUS')) {

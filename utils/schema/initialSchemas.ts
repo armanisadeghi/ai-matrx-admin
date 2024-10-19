@@ -1,6 +1,18 @@
 // File: lib/initialSchemas.ts
 
-import {TypeBrand, InferSchemaType, SchemaRegistry,} from '@/types/tableSchemaTypes';
+import {TypeBrand, InferFieldTypes, SchemaRegistry,} from '@/types/tableSchemaTypes';
+
+// const tableLookups = {
+//     "userPreferences.frontend": "user_preferences",
+//     "userPreferences.backend": "user_prefs",
+//     "userPreferences.database": "user_pref_table",
+//     "userPreferences.restAPI": "userPreferencesAPI",
+//     "userPreferences.graphQL": "userPreferencesGQL",
+//     // Repeat for other tables...
+// } as const;
+
+
+
 
 export const initialSchemas: SchemaRegistry = {
     action: {
@@ -7611,5 +7623,5 @@ export const initialSchemas: SchemaRegistry = {
 };
 
 export type SchemaTypes = {
-    [K in keyof typeof initialSchemas]: InferSchemaType<typeof initialSchemas[K]>
+    [K in keyof typeof initialSchemas]: InferFieldTypes<typeof initialSchemas[K]>
 };

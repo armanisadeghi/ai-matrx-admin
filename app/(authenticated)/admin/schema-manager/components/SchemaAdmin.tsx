@@ -40,7 +40,7 @@ export default function SchemaAdmin() {
                             pretty: 'ID',
                         },
                         type: 'string', // Based on DataType defined in the types
-                        format: 'single', // Refers to ConversionFormat
+                        format: 'single', // Refers to DataStructure
                         structure: {
                             structure: 'simple', // Refers to StructureType ('simple', 'foreignKey', etc.)
                             typeReference: createTypeReference<string>(), // Keeps the generic type reference structure

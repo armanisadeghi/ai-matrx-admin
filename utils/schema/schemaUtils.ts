@@ -4,7 +4,7 @@
 import {getSchema, globalSchemaRegistry} from "@/utils/schema/schemaRegistry";
 import {v4 as uuidv4} from "uuid";
 import {initialSchemas} from "@/utils/schema/initialSchemas";
-import {AltOptions, FieldConverter, FrontendTableNames, TableSchema} from "@/types/tableSchemaTypes";
+import {TableSchema} from "@/types/tableSchemaTypes";
 
 
 

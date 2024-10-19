@@ -1,4 +1,6 @@
-import React, {useRef, useCallback} from 'react';
+'use client';
+
+import React, { useRef, useCallback, useState } from 'react';
 import {AnimatePresence} from 'framer-motion';
 import {useUnsplashGallery} from '../hooks/useUnsplashGallery';
 import {ImageCard} from './ImageCard';
@@ -43,6 +45,7 @@ export function UnsplashGallery() {
 
     const {toast} = useToast();
     const observer = useRef<IntersectionObserver | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const lastPhotoElementRef = useCallback(
         (node: HTMLDivElement | null) => {
@@ -98,6 +101,12 @@ export function UnsplashGallery() {
         });
     };
 
+    const handleSearchChange = (query: string) => {
+        setSearchQuery(query);
+        handleSearch(query);
+    };
+
+
     const handlePreviousPhoto = () => {
         if (!selectedPhoto) return;
         const currentIndex = photos.findIndex((photo) => photo.id === selectedPhoto.id);
@@ -118,7 +127,18 @@ export function UnsplashGallery() {
         <div className="container mx-auto p-4 space-y-8">
             <h1 className="text-4xl font-bold text-foreground mb-6">Unsplash Gallery</h1>
 
-            <SearchBar onSearch={handleSearch} loading={loading}/>
+            <SearchBar
+                onSearch={handleSearchChange}
+                loading={loading}
+                placeholder="Search Unsplash..."
+                defaultValue={searchQuery}
+                className="max-w-3xl mx-auto mb-8"
+                debounceTime={300}
+                showClearButton={true}
+                autoFocus={false}
+                onFocus={() => console.log("Search focused")}
+                onBlur={() => console.log("Search blurred")}
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {photos.map((photo, index) => (
@@ -149,7 +169,7 @@ export function UnsplashGallery() {
                         onInfo={handleImageInfo}
                         isFavorite={(photo) => favorites.some((fav) => fav.id === photo.id)}
                         onRelatedPhotoClick={handlePhotoClick}
-                        loadMorePhotos={loadMore} // Assuming loadMore is your function to load more photos
+                        loadMorePhotos={loadMore}
                     />
                 )}
             </AnimatePresence>

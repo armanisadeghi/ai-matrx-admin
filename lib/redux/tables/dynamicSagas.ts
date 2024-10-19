@@ -1,9 +1,16 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { getSchema } from "@/utils/schema/schemaRegistry";
-import { databaseApi, TableOrView, QueryOptions } from '@/utils/supabase/api-wrapper';
+import { databaseApi, QueryOptions } from '@/utils/supabase/api-wrapper';
 import { createTableSlice } from './tableSliceCreator';
-import {AllTableNames, FrontendTableNames, TableSchema} from "@/types/tableSchemaTypes";
+import {TableSchema} from "@/types/tableSchemaTypes";
+import {initialSchemas} from "@/utils/schema/initialSchemas";
+
+
+
+type TableName = keyof typeof initialSchemas;
+
+
 
 // Handle the fetch operation
 function* handleFetch<T extends FrontendTableNames>(

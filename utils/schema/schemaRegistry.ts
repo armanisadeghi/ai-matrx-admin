@@ -3,16 +3,13 @@
 import {
     DataFormat,
     TableSchema,
-    DataType,
-    FieldStructure,
-    ConversionFormat,
-    TableRelationship,
     PrettyTableSchema,
     DatabaseTableSchema,
     BackendTableSchema,
     FrontendTableSchema,
-    CustomTableSchema,
+    CustomTableSchema, TableName, DataType, DataStructure,
 } from "@/types/tableSchemaTypes";
+import {ApiWrapperSchemaFormats} from "@/utils/supabase/api-wrapper";
 
 export const globalSchemaRegistry: Record<string, TableSchema> = {};
 
@@ -79,7 +76,7 @@ function convertValue(value: any, converter: FieldConverter<any>): any {
     }
 }
 
-export function getFrontendTableName(tableName: AllTableNames, format: DataFormat): AllTableNames {
+export function getFrontendTableName(tableName: TableName, format: DataFormat): TableName {
     const availableNames: { [key: string]: string[] } = {};
 
     for (const [frontendName, schema] of Object.entries(globalSchemaRegistry)) {
@@ -105,7 +102,7 @@ export function getFrontendTableName(tableName: AllTableNames, format: DataForma
 }
 
 
-export function getPrimaryKeyField(tableName: AllTableNames): { fieldName: string; message: string } {
+export function getPrimaryKeyField(tableName: TableName): { fieldName: string; message: string } {
     const schema = globalSchemaRegistry[tableName];
     if (!schema) {
         return {
@@ -130,7 +127,7 @@ export function getPrimaryKeyField(tableName: AllTableNames): { fieldName: strin
 }
 
 export function getSchema(
-    tableName: AllTableNames,
+    tableName: TableName,
     format: DataFormat = 'frontend'
 ): FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema | undefined {
     console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
@@ -241,7 +238,7 @@ function applyCustomFormat(schema: TableSchema, customFormat: DataFormat): Custo
 
 
 export function getApiWrapperSchemaFormats(
-    tableName: AllTableNames
+    tableName: TableName
 ): ApiWrapperSchemaFormats | undefined {
     console.log(`getApiWrapperSchemaFormats called for tableName: ${tableName}`);
 
@@ -341,7 +338,7 @@ interface ConvertDataParams {
     data: any;
     sourceFormat: DataFormat;
     targetFormat: DataFormat;
-    tableName: AllTableNames;
+    tableName: TableName;
     options?: ConversionOptions;
     processedEntities?: Set<string>;
 }
@@ -395,7 +392,7 @@ export function convertData(
 }
 
 
-function getFrontendTableNameFromUnknown(tableName: AllTableNames): string {
+function getFrontendTableNameFromUnknown(tableName: TableName): string {
     console.log(`getFrontendTableName called with tableName: ${tableName}`);
 
     if (!globalSchemaRegistry) {
@@ -495,7 +492,7 @@ function handleRelationshipField(fieldName: string, value: any, structureType: s
 
 
 // Main utility function
-export function processDataForInsert(tableName: AllTableNames, dbData: Record<string, any>) {
+export function processDataForInsert(tableName: TableName, dbData: Record<string, any>) {
     const schema = getSchema(tableName, 'database');
     if (!schema) {
         console.warn(`No schema found for table: ${tableName}. Returning original data.`);
@@ -562,7 +559,7 @@ export function processDataForInsert(tableName: AllTableNames, dbData: Record<st
     };
 }
 
-export async function getRelationships(tableName: AllTableNames, format: DataFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
+export async function getRelationships(tableName: TableName, format: DataFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     const schema = getSchema(tableName, format);
     if (!schema) {
         console.error(`Schema not found for table: ${tableName}`);
@@ -602,3 +599,44 @@ export async function getRelationships(tableName: AllTableNames, format: DataFor
 
 
 
+
+
+
+
+const TypeBrand = Symbol('TypeBrand');
+
+export type TypeBrand<T> = { [TypeBrand]: T };
+
+export interface FieldStructure<T> {
+    structure: 'simple' | 'foreignKey' | 'inverseForeignKey';
+    databaseTable?: string;
+    typeReference: TypeBrand<T>;
+}
+
+export interface AltOptions {
+    frontend: string;
+    backend: string;
+    database: string;
+    pretty: string;
+    [key: string]: string;
+}
+
+export interface FieldConverter<T> {
+    alts: AltOptions;
+    type: DataType;
+    format: DataStructure;
+    structure: FieldStructure<T>;
+}
+
+export type ConverterMap = {
+    [key: string]: FieldConverter<any>;
+};
+
+export interface SchemaRegistry {
+    [tableName: string]: TableSchema;
+}
+
+
+export function createTypeReference<T>(): TypeBrand<T> {
+    return {} as TypeBrand<T>;
+}

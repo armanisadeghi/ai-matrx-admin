@@ -14,7 +14,7 @@ import {
     generateJsonTemplate,
     ensureId
 } from "@/utils/schema/schemaUtils";
-import {AllTableNames} from "@/types/tableSchemaTypes";
+import {TableName} from "@/types/tableSchemaTypes";
 
 interface PaginationInfo {
     currentPage: number;
@@ -56,7 +56,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
     const [error, setError] = useState<Error | null>(null);
     const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
 
-    const fetchOne = useCallback(async (tableName: AllTableNames, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
+    const fetchOne = useCallback(async (tableName: TableName, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
         setLoading(true);
         try {
             const result = await databaseApi.fetchOne(tableName, id, options);
@@ -68,7 +68,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchAll = useCallback(async (tableName: AllTableNames, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
+    const fetchAll = useCallback(async (tableName: TableName, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
         setLoading(true);
         try {
             const result = await databaseApi.fetchAll(tableName, options);
@@ -80,7 +80,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchFk = useCallback(async (tableName: AllTableNames, id: string, foreignKeys: any) => {
+    const fetchFk = useCallback(async (tableName: TableName, id: string, foreignKeys: any) => {
         setLoading(true);
         try {
             const result = await databaseApi.fetchFk(tableName, id, foreignKeys);
@@ -92,7 +92,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchIfk = useCallback(async (tableName: AllTableNames, id: string, inverseForeignKeys: any) => {
+    const fetchIfk = useCallback(async (tableName: TableName, id: string, inverseForeignKeys: any) => {
         setLoading(true);
         try {
             const result = await databaseApi.fetchIfk(tableName, id, inverseForeignKeys);
@@ -104,7 +104,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchM2m = useCallback(async (tableName: AllTableNames, id: string, manyToMany: any) => {
+    const fetchM2m = useCallback(async (tableName: TableName, id: string, manyToMany: any) => {
         setLoading(true);
         try {
             const result = await databaseApi.fetchM2m(tableName, id, manyToMany);
@@ -117,7 +117,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
     }, []);
 
     const fetchPaginated = useCallback(
-        async (tableName: AllTableNames, options: QueryOptions<TableOrView>, page: number = 1, pageSize: number = 10, maxCount: number = 10000) => {
+        async (tableName: TableName, options: QueryOptions<TableOrView>, page: number = 1, pageSize: number = 10, maxCount: number = 10000) => {
             setLoading(true);
 
             try {
@@ -145,7 +145,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         []
     );
 
-    const create = useCallback(async (tableName: AllTableNames, payload: Partial<T>) => {
+    const create = useCallback(async (tableName: TableName, payload: Partial<T>) => {
         setLoading(true);
         try {
             const result = await databaseApi.create(tableName, payload);
@@ -157,7 +157,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const update = useCallback(async (tableName: AllTableNames, id: string, payload: Partial<T>) => {
+    const update = useCallback(async (tableName: TableName, id: string, payload: Partial<T>) => {
         setLoading(true);
         try {
             const result = await databaseApi.update(tableName, id, payload);
@@ -169,7 +169,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const deleteRecord = useCallback(async (tableName: AllTableNames, id: FlexibleId) => {
+    const deleteRecord = useCallback(async (tableName: TableName, id: FlexibleId) => {
         if (!isValidFlexibleId(id)) {
             throw new Error('Invalid ID provided');
         }
@@ -186,7 +186,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const executeCustomQuery = useCallback(async (tableName: AllTableNames, queryFn: (baseQuery: any) => any) => {
+    const executeCustomQuery = useCallback(async (tableName: TableName, queryFn: (baseQuery: any) => any) => {
         setLoading(true);
         try {
             const result = await databaseApi.executeCustomQuery(tableName, queryFn);
@@ -198,13 +198,13 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const subscribeToChanges = useCallback((tableName: AllTableNames) => {
+    const subscribeToChanges = useCallback((tableName: TableName) => {
         databaseApi.subscribeToChanges(tableName, (newData) => {
             setData(newData as T[]);
         });
     }, []);
 
-    const unsubscribeFromChanges = useCallback((tableName: AllTableNames) => {
+    const unsubscribeFromChanges = useCallback((tableName: TableName) => {
         databaseApi.unsubscribeFromChanges(tableName);
     }, []);
 
