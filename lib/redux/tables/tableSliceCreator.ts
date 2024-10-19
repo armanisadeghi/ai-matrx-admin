@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { InferSchemaType, TableSchema, SchemaTypes, FrontendTableNames } from "@/types/tableSchemaTypes";
+import {InferSchemaType, TableSchema, SchemaTypes, TableName} from "@/types/tableSchemaTypes";
 import { QueryOptions } from '@/utils/supabase/api-wrapper';
 
 export interface TableState<T extends TableSchema> {
@@ -13,14 +13,13 @@ export interface TableState<T extends TableSchema> {
     error: string | null;
 }
 
-export function createTableSlice<K extends FrontendTableNames>(
-    tableName: K,
+export function createTableSlice(
+    tableName: TableName,
     schema: TableSchema,
     staleTime: number = 600000,
     additionalReducers: Record<string, any> = {}
 ) {
-    // Infer the correct schema and data type
-    type Data = SchemaTypes[K];
+    type Data = SchemaTypes[TableName];
 
     const initialState: TableState<TableSchema> = {
         data: [],
@@ -35,7 +34,7 @@ export function createTableSlice<K extends FrontendTableNames>(
 
     const baseType = schema.name.frontend.toUpperCase();
 
-    const customReducers = createCustomReducers<K>(schema);
+    const customReducers = createCustomReducers(schema);
 
     const slice = createSlice({
         name: baseType,

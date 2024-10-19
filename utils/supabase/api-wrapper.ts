@@ -10,14 +10,14 @@ import {
     processDataForInsert,
 } from '../schema/schemaRegistry';
 import {
-    AnyTableName, ConverterMap,
+    AnyTableName,
     DatabaseFieldName,
     DatabaseTableSchema,
-    FrontendTableSchema, ResolveDatabaseTableName, ResolveFrontendTableName, SchemaRegistry,
+    FrontendTableSchema, ResolveDatabaseTableName, ResolveFrontendTableName, SchemaRegistry, TableFieldSchema,
     TableSchema
 } from "@/types/tableSchemaTypes";
 
-export type QueryOptions<T extends DatabaseTableOrView> = {
+export type QueryOptions<T extends TableSchema> = {
     filters?: Partial<Record<keyof TableSchema['fields'], any>>;
     sorts?: Array<{ column: DatabaseFieldName; ascending?: boolean }>;
     limit?: number;
@@ -34,34 +34,20 @@ type FilterOperator =
     | 'adj' | 'ov' | 'fts' | 'plfts' | 'phfts' | 'wfts';
 
 type QueryBuilder<T extends Record<string, any> = any> = {
-    from: (table: DatabaseTableName) => QueryBuilder<T>;
+    from: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
     select: (columns: DatabaseFieldName | DatabaseFieldName[]) => QueryBuilder<T>;
     filter: (column: DatabaseFieldName, operator: FilterOperator, value: any) => QueryBuilder<T>;
     order: (column: DatabaseFieldName, ascending?: boolean) => QueryBuilder<T>;
     limit: (count: number) => QueryBuilder<T>;
     offset: (count: number) => QueryBuilder<T>;
-    joinRelated: (table: DatabaseTableName) => QueryBuilder<T>;
+    joinRelated: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
     execute: () => Promise<{ data: T[] | null; error: PostgrestError | null }>;
 };
 
 type PostgrestList = Array<Record<string, any>>;
 type PostgrestMap = Record<string, any>;
 
-export type AllTableNames = string;
 
-
-export interface ApiWrapperSchemaFormats {
-    schema: TableSchema;
-    frontend: FrontendTableSchema;
-    database: DatabaseTableSchema;
-}
-
-
-export interface ApiWrapperSchemaFormats {
-    schema: TableSchema;
-    frontend: FrontendTableSchema;
-    database: DatabaseTableSchema;
-}
 
 export interface ApiWrapperSchemaFormats {
     schema: TableSchema;
@@ -71,13 +57,13 @@ export interface ApiWrapperSchemaFormats {
 
 class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     private client: SupabaseClient;
-    private requestTableName: AnyTableName<T>;  // Now type-safe, accepting only valid table names in any format
-    private fullSchema: TableSchema;  // Full schema object
-    private frontendSchema: FrontendTableSchema;  // Frontend schema
-    private databaseSchema: DatabaseTableSchema;  // Database schema
-    private frontendTableName: ResolveFrontendTableName<T>;  // Frontend table name
-    private databaseTableName: ResolveDatabaseTableName<T>;  // Database table name
-    private primaryKeyField: keyof ConverterMap;  // The primary key field
+    private requestTableName: AnyTableName<T>;
+    private fullSchema: TableSchema;
+    private frontendSchema: FrontendTableSchema;
+    private databaseSchema: DatabaseTableSchema;
+    private frontendTableName: ResolveFrontendTableName<T>;
+    private databaseTableName: ResolveDatabaseTableName<T>;
+    private primaryKeyField: keyof TableFieldSchema;
 
     private subscriptions: Map<string, any> = new Map();
     private queryBuilders: Map<string, QueryBuilder> = new Map();
@@ -86,7 +72,6 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.client = client;
         this.requestTableName = requestTableName;
 
-        // Use getApiWrapperSchemaFormats to get the schema and validate it
         const { schema, frontend, database } = getApiWrapperSchemaFormats(requestTableName);
         if (!schema) {
             throw new Error(`Schema not found for table '${requestTableName}'.`);
@@ -95,42 +80,19 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.fullSchema = schema;
         this.frontendSchema = frontend;
         this.databaseSchema = database;
-
-        // Extract the frontend and database table names
         this.frontendTableName = frontend.frontendTableName;
         this.databaseTableName = database.databaseTableName;
-
-        // Find the primary key field
         this.primaryKeyField = this.findPrimaryKeyField();
     }
 
-    // Private method to find the primary key field in the schema
-    private findPrimaryKeyField(): keyof ConverterMap {
+    private findPrimaryKeyField(): keyof TableFieldSchema {
         const primaryKeyEntry = Object.entries(this.fullSchema.fields).find(([_, field]) => field.isPrimaryKey);
         if (!primaryKeyEntry) {
             throw new Error(`Primary key not found for table '${this.requestTableName}'.`);
         }
 
-        // Return the field key (which is the primary key)
-        return primaryKeyEntry[0] as keyof ConverterMap;
+        return primaryKeyEntry[0] as keyof TableFieldSchema;
     }
-
-
-
-
-    private getDatabaseTableName(tableName: AllTableNames): DatabaseTableOrView {
-        const tableSchema = getSchema(tableName, 'database');
-        if (!this.fullSchema) {
-            // throw new Error(`tableSchema not found for table or view: ${tableName}`);
-            console.error(`tableSchema not found for table or view: ${tableName}`);
-            return null;
-        }
-        return tableSchema.name.database as DatabaseTableOrView;
-    }
-
-
-
-
 
 
     private handleError(error: any, context: string): any {
@@ -170,7 +132,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         });
     }
 
-    private applyQueryOptions<T extends DatabaseTableOrView>(
+    private applyQueryOptions<T extends keyof SchemaRegistry>(
         query: any,
         options: QueryOptions<T>,
         tableSchema: TableSchema
@@ -213,7 +175,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async fetchByPrimaryKey<T extends DatabaseTableOrView>(
+    async fetchByPrimaryKey<T extends keyof SchemaRegistry>(
         primaryKeyValue: string | number,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
     ): Promise<any> {
@@ -241,7 +203,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         }
     }
 
-    async fetchByField<T extends DatabaseTableOrView>(
+    async fetchByField<T extends keyof SchemaRegistry>(
         dbTableName: DatabaseTableName,
         fieldName: string,
         fieldValue: string | number,
@@ -260,7 +222,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data;
     }
 
-    async fetchById<T extends DatabaseTableOrView>(
+    async fetchById<T extends keyof SchemaRegistry>(
         dbTableName: DatabaseTableName,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
@@ -276,7 +238,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async fetchSimple<T extends DatabaseTableOrView>(
+    async fetchSimple<T extends keyof SchemaRegistry>(
         dbTableName: DatabaseTableName,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
@@ -291,7 +253,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data;
     }
 
-    async fetchOne<T extends DatabaseTableOrView>(
+    async fetchOne<T extends keyof SchemaRegistry>(
         tableName: AllTableNames,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
@@ -348,7 +310,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return this.convertResponse(result, tableName);
     }
 
-    async fetchFk<T extends DatabaseTableOrView>(
+    async fetchFk<T extends keyof SchemaRegistry>(
         dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
@@ -378,7 +340,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data;
     }
 
-    async fetchIfk<T extends DatabaseTableOrView>(
+    async fetchIfk<T extends keyof SchemaRegistry>(
         dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
@@ -408,7 +370,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data;
     }
 
-    async fetchM2m<T extends DatabaseTableOrView>(
+    async fetchM2m<T extends keyof SchemaRegistry>(
         dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
@@ -452,7 +414,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data;
     }
 
-    async fetchAll<T extends DatabaseTableOrView>(
+    async fetchAll<T extends keyof SchemaRegistry>(
         tableName: AllTableNames,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any[]> {
@@ -537,7 +499,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         };
     }
 
-    async create<T extends DatabaseTableOrView>(tableName: AllTableNames, data: Partial<any>): Promise<any> {
+    async create<T extends keyof SchemaRegistry>(tableName: AllTableNames, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -628,7 +590,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async update<T extends DatabaseTableOrView>(tableName: AllTableNames, id: string, data: Partial<any>): Promise<any> {
+    async update<T extends keyof SchemaRegistry>(tableName: AllTableNames, id: string, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -644,7 +606,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return this.convertResponse(result, tableName);
     }
 
-    async delete<T extends DatabaseTableOrView>(tableName: AllTableNames, id: string): Promise<void> {
+    async delete<T extends keyof SchemaRegistry>(tableName: AllTableNames, id: string): Promise<void> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -657,7 +619,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         if (error) throw error;
     }
 
-    async executeCustomQuery<T extends DatabaseTableOrView>(
+    async executeCustomQuery<T extends keyof SchemaRegistry>(
         tableName: AllTableNames,
         query: (baseQuery: any) => any
     ): Promise<any[]> {
@@ -671,7 +633,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data.map(item => this.convertResponse(item, tableName));
     }
 
-    subscribeToChanges<T extends DatabaseTableOrView>(tableName: AllTableNames, callback: SubscriptionCallback): void {
+    subscribeToChanges<T extends keyof SchemaRegistry>(tableName: AllTableNames, callback: SubscriptionCallback): void {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -707,7 +669,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.subscriptions.clear();
     }
 
-    convertToFrontendFormat<T extends DatabaseTableOrView>(tableName: AllTableNames, data: any): any {
+    convertToFrontendFormat<T extends keyof SchemaRegistry>(tableName: AllTableNames, data: any): any {
         if (Array.isArray(data)) {
             return data.map(item => this.convertResponse(item, tableName));
         } else {
