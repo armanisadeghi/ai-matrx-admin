@@ -101,7 +101,7 @@
     "next-themes": "latest",
     "normalizr": "latest",
     "ollama-ai-provider": "latest",
-    "openai": "latest",
+    "openai": "^4.68.0",
     "popmotion": "latest",
     "react": "^18.3.1",
     "react-colorful": "latest",

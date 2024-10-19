@@ -1,6 +1,6 @@
 // File: lib/ai/providers/openAIProvider.ts
 
-import { BaseProvider } from "./baseProvider";
+import { BaseProvider } from "../baseProvider";
 import OpenAI from 'openai'; // Assuming you're using the OpenAI npm package
 
 export default class OpenAIProvider implements BaseProvider {

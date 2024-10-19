@@ -1,24 +1,23 @@
 // utils/supabase/api-wrapper.ts
 
 import {SupabaseClient} from '@supabase/supabase-js';
-
-
 import {supabase} from '@/utils/supabase/client';
+import { PostgrestError } from '@supabase/postgrest-js';
 import {
-    PostgrestError,
-} from "@supabase/postgrest-js";
-import {
-    convertData,
-    getRegisteredSchemas,
+    convertData, getApiWrapperSchemaFormats,
+    getPrimaryKeyField,
     getSchema,
     processDataForInsert,
 } from '../schema/schemaRegistry';
-import {AllTableNames, DatabaseFieldName, DatabaseTableName, TableSchema} from "@/types/tableSchemaTypes";
+import {
+    AnyTableName, ConverterMap,
+    DatabaseFieldName,
+    DatabaseTableSchema,
+    FrontendTableSchema, ResolveDatabaseTableName, ResolveFrontendTableName, SchemaRegistry,
+    TableSchema
+} from "@/types/tableSchemaTypes";
 
-const availableSchemas = getRegisteredSchemas('database');
-export type TableOrView = keyof typeof availableSchemas;
-
-export type QueryOptions<T extends TableOrView> = {
+export type QueryOptions<T extends DatabaseTableOrView> = {
     filters?: Partial<Record<keyof TableSchema['fields'], any>>;
     sorts?: Array<{ column: DatabaseFieldName; ascending?: boolean }>;
     limit?: number;
@@ -48,28 +47,135 @@ type QueryBuilder<T extends Record<string, any> = any> = {
 type PostgrestList = Array<Record<string, any>>;
 type PostgrestMap = Record<string, any>;
 
-class DatabaseApiWrapper {
+export type AllTableNames = string;
+
+
+export interface ApiWrapperSchemaFormats {
+    schema: TableSchema;
+    frontend: FrontendTableSchema;
+    database: DatabaseTableSchema;
+}
+
+
+export interface ApiWrapperSchemaFormats {
+    schema: TableSchema;
+    frontend: FrontendTableSchema;
+    database: DatabaseTableSchema;
+}
+
+export interface ApiWrapperSchemaFormats {
+    schema: TableSchema;
+    frontend: FrontendTableSchema;
+    database: DatabaseTableSchema;
+}
+
+class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     private client: SupabaseClient;
+    private requestTableName: AnyTableName<T>;  // Now type-safe, accepting only valid table names in any format
+    private fullSchema: TableSchema;  // Full schema object
+    private frontendSchema: FrontendTableSchema;  // Frontend schema
+    private databaseSchema: DatabaseTableSchema;  // Database schema
+    private frontendTableName: ResolveFrontendTableName<T>;  // Frontend table name
+    private databaseTableName: ResolveDatabaseTableName<T>;  // Database table name
+    private primaryKeyField: keyof ConverterMap;  // The primary key field
+
     private subscriptions: Map<string, any> = new Map();
     private queryBuilders: Map<string, QueryBuilder> = new Map();
 
-    constructor(client: SupabaseClient) {
+    constructor(client: SupabaseClient, requestTableName: AnyTableName<T>) {
         this.client = client;
-    }
+        this.requestTableName = requestTableName;
 
-    private getDatabaseTableName(tableName: AllTableNames): string {
-        const tableSchema = getSchema(tableName, 'database');
-        if (!tableSchema) {
-            throw new Error(`tableSchema not found for table or view: ${tableName}`);
+        // Use getApiWrapperSchemaFormats to get the schema and validate it
+        const { schema, frontend, database } = getApiWrapperSchemaFormats(requestTableName);
+        if (!schema) {
+            throw new Error(`Schema not found for table '${requestTableName}'.`);
         }
-        return tableSchema.name.database;
+
+        this.fullSchema = schema;
+        this.frontendSchema = frontend;
+        this.databaseSchema = database;
+
+        // Extract the frontend and database table names
+        this.frontendTableName = frontend.frontendTableName;
+        this.databaseTableName = database.databaseTableName;
+
+        // Find the primary key field
+        this.primaryKeyField = this.findPrimaryKeyField();
     }
 
-    private applyQueryOptions<T extends TableOrView>(
+    // Private method to find the primary key field in the schema
+    private findPrimaryKeyField(): keyof ConverterMap {
+        const primaryKeyEntry = Object.entries(this.fullSchema.fields).find(([_, field]) => field.isPrimaryKey);
+        if (!primaryKeyEntry) {
+            throw new Error(`Primary key not found for table '${this.requestTableName}'.`);
+        }
+
+        // Return the field key (which is the primary key)
+        return primaryKeyEntry[0] as keyof ConverterMap;
+    }
+
+
+
+
+    private getDatabaseTableName(tableName: AllTableNames): DatabaseTableOrView {
+        const tableSchema = getSchema(tableName, 'database');
+        if (!this.fullSchema) {
+            // throw new Error(`tableSchema not found for table or view: ${tableName}`);
+            console.error(`tableSchema not found for table or view: ${tableName}`);
+            return null;
+        }
+        return tableSchema.name.database as DatabaseTableOrView;
+    }
+
+
+
+
+
+
+    private handleError(error: any, context: string): any {
+        if (error instanceof PostgrestError) {
+            console.error(`PostgrestError in ${context}: ${error.message}`);
+        } else if (error instanceof Error) {
+            console.error(`Error in ${context}: ${error.message}`);
+        } else {
+            console.error(`Unknown error in ${context}: ${error}`);
+        }
+
+        return {
+            error: true,
+            message: `An error occurred while processing your request in ${context}.`,
+        };
+    }
+
+    private convertRequest(data: any): any {
+        return convertData({
+            data,
+            sourceFormat: 'frontend',
+            targetFormat: 'database',
+            tableName: this.requestTableName,
+            options: undefined,
+            processedEntities: undefined,
+        });
+    }
+
+    private convertResponse(data: any): any {
+        return convertData({
+            data,
+            sourceFormat: 'database',
+            targetFormat: 'frontend',
+            tableName: this.requestTableName,
+            options: undefined,
+            processedEntities: undefined,
+        });
+    }
+
+    private applyQueryOptions<T extends DatabaseTableOrView>(
         query: any,
         options: QueryOptions<T>,
         tableSchema: TableSchema
     ): any {
+        // Apply filters, sorts, limit, etc., with database field names
         if (options.filters) {
             for (const [key, value] of Object.entries(options.filters)) {
                 const dbField = tableSchema.fields[key as DatabaseFieldName]?.alts.database;
@@ -98,7 +204,7 @@ class DatabaseApiWrapper {
 
         if (options.columns) {
             const dbColumns = options.columns
-                .map(col => tableSchema.fields[col as DatabaseFieldName]?.alts.database)
+                .map((col) => tableSchema.fields[col as DatabaseFieldName]?.alts.database)
                 .filter(Boolean);
             query = query.select(dbColumns.join(', '));
         }
@@ -106,25 +212,62 @@ class DatabaseApiWrapper {
         return query;
     }
 
-    private convertResponse(data: any, tableName: AllTableNames): any {
-        return convertData(
-            data,
-            'database',
-            'frontend',
-            tableName,
-            undefined,
-            undefined
-        );
+
+    async fetchByPrimaryKey<T extends DatabaseTableOrView>(
+        primaryKeyValue: string | number,
+        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
+    ): Promise<any> {
+        const { fieldName, message } = getPrimaryKeyField(this.requestTableName);
+
+        if (message) {
+            console.warn(message);
+        }
+
+        let query = this.client
+            .from(this.requestTableName)
+            .select('*')
+            .eq(fieldName, primaryKeyValue);
+
+        query = this.applyQueryOptions(query, options, getSchema(this.requestTableName, 'database')!);
+
+        try {
+            const { data, error } = await query.single();
+            if (error) {
+                throw error;
+            }
+            return this.convertResponse(data);
+        } catch (error) {
+            return this.handleError(error, `fetchByPrimaryKey for ${this.requestTableName}`);
+        }
     }
 
-    async fetchSimple<T extends TableOrView>(
+    async fetchByField<T extends DatabaseTableOrView>(
+        dbTableName: DatabaseTableName,
+        fieldName: string,
+        fieldValue: string | number,
+        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
+    ): Promise<any[]> {
+        let query = this.client.from(dbTableName).select('*').eq(fieldName, fieldValue);
+        query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error(`Error fetching data from ${dbTableName} where ${fieldName}=${fieldValue}: ${error.message}`);
+            return [];
+        }
+
+        return data;
+    }
+
+    async fetchById<T extends DatabaseTableOrView>(
         dbTableName: DatabaseTableName,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
     ): Promise<any> {
         let query = this.client.from(dbTableName).select('*').eq('id', id);
         query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
-        const { data, error } = await query.single();
+        const {data, error} = await query.single();
         if (error) {
             console.error(`Error fetching data for ${dbTableName}: ${error.message}`);
             return null;
@@ -132,7 +275,23 @@ class DatabaseApiWrapper {
         return data;
     }
 
-    async fetchOne<T extends TableOrView>(
+
+    async fetchSimple<T extends DatabaseTableOrView>(
+        dbTableName: DatabaseTableName,
+        id: string,
+        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
+    ): Promise<any> {
+        let query = this.client.from(dbTableName).select('*').eq('id', id);
+        query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
+        const {data, error} = await query.single();
+        if (error) {
+            console.error(`Error fetching data for ${dbTableName}: ${error.message}`);
+            return null;
+        }
+        return data;
+    }
+
+    async fetchOne<T extends DatabaseTableOrView>(
         tableName: AllTableNames,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
@@ -189,7 +348,7 @@ class DatabaseApiWrapper {
         return this.convertResponse(result, tableName);
     }
 
-    async fetchFk<T extends TableOrView>(
+    async fetchFk<T extends DatabaseTableOrView>(
         dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
@@ -208,7 +367,7 @@ class DatabaseApiWrapper {
         const foreignKeyResults = await Promise.all(foreignKeyQueries);
 
         foreignKeyResults.forEach((result, index) => {
-            const { data: relatedData, error } = result;
+            const {data: relatedData, error} = result;
             if (error) {
                 console.error(`Error fetching FK data for ${tableSchema.relationships.foreignKeys[index].relatedTable}: ${error.message}`);
                 return;
@@ -219,7 +378,7 @@ class DatabaseApiWrapper {
         return data;
     }
 
-    async fetchIfk<T extends TableOrView>(
+    async fetchIfk<T extends DatabaseTableOrView>(
         dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
@@ -238,7 +397,7 @@ class DatabaseApiWrapper {
         const inverseForeignKeyResults = await Promise.all(inverseForeignKeyQueries);
 
         inverseForeignKeyResults.forEach((result, index) => {
-            const { data: relatedData, error } = result;
+            const {data: relatedData, error} = result;
             if (error) {
                 console.error(`Error fetching IFK data for ${tableSchema.relationships.inverseForeignKeys[index].relatedTable}: ${error.message}`);
                 return;
@@ -249,7 +408,7 @@ class DatabaseApiWrapper {
         return data;
     }
 
-    async fetchM2m<T extends TableOrView>(
+    async fetchM2m<T extends DatabaseTableOrView>(
         dbTableName: DatabaseTableName,
         data: any,
         tableSchema: TableSchema
@@ -269,7 +428,7 @@ class DatabaseApiWrapper {
 
         await Promise.all(
             manyToManyResults.map(async (result, index) => {
-                const { data: junctionData, error } = result;
+                const {data: junctionData, error} = result;
                 if (error) {
                     console.error(`Error fetching M2M junction table data for ${tableSchema.relationships.manyToMany[index].junctionTable}: ${error.message}`);
                     return;
@@ -293,7 +452,7 @@ class DatabaseApiWrapper {
         return data;
     }
 
-    async fetchAll<T extends TableOrView>(
+    async fetchAll<T extends DatabaseTableOrView>(
         tableName: AllTableNames,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
     ): Promise<any[]> {
@@ -303,13 +462,13 @@ class DatabaseApiWrapper {
         let query = this.client.from(dbTableName).select('*');
         query = this.applyQueryOptions(query, options, tableSchema);
 
-        const { data, error } = await query;
+        const {data, error} = await query;
 
         if (error) throw error;
         return data.map(item => this.convertResponse(item, tableName));
     }
 
-    async fetchPaginated<T extends TableOrView>(
+    async fetchPaginated<T extends DatabaseTableOrView>(
         tableName: AllTableNames,
         options: QueryOptions<T>,
         page: number = 1,
@@ -328,10 +487,10 @@ class DatabaseApiWrapper {
         options.limit = pageSize;
         options.offset = (page - 1) * pageSize;
 
-        let query = this.client.from(dbTableName).select('*', { count: 'exact' });
+        let query = this.client.from(dbTableName).select('*', {count: 'exact'});
         query = this.applyQueryOptions(query, options, tableSchema);
 
-        const { data, error, count } = await query;
+        const {data, error, count} = await query;
         if (error) {
             console.error(`Error fetching data: ${error.message}`);
             return {
@@ -345,7 +504,7 @@ class DatabaseApiWrapper {
         let allNamesAndIds: { id: string; name: string }[] | undefined;
         if (maxCount !== 0) {
             const idNameQuery = this.client.from(dbTableName).select('id, name').limit(maxCount);
-            const { data: idNameData, error: idNameError } = await idNameQuery;
+            const {data: idNameData, error: idNameError} = await idNameQuery;
             if (idNameError) {
                 console.error(`Error fetching names and IDs: ${idNameError.message}`);
             } else {
@@ -378,7 +537,7 @@ class DatabaseApiWrapper {
         };
     }
 
-    async create<T extends TableOrView>(tableName: AllTableNames, data: Partial<any>): Promise<any> {
+    async create<T extends DatabaseTableOrView>(tableName: AllTableNames, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -469,7 +628,7 @@ class DatabaseApiWrapper {
     }
 
 
-    async update<T extends TableOrView>(tableName: AllTableNames, id: string, data: Partial<any>): Promise<any> {
+    async update<T extends DatabaseTableOrView>(tableName: AllTableNames, id: string, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -485,7 +644,7 @@ class DatabaseApiWrapper {
         return this.convertResponse(result, tableName);
     }
 
-    async delete<T extends TableOrView>(tableName: AllTableNames, id: string): Promise<void> {
+    async delete<T extends DatabaseTableOrView>(tableName: AllTableNames, id: string): Promise<void> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -498,7 +657,7 @@ class DatabaseApiWrapper {
         if (error) throw error;
     }
 
-    async executeCustomQuery<T extends TableOrView>(
+    async executeCustomQuery<T extends DatabaseTableOrView>(
         tableName: AllTableNames,
         query: (baseQuery: any) => any
     ): Promise<any[]> {
@@ -506,13 +665,13 @@ class DatabaseApiWrapper {
         const baseQuery = this.client.from(dbTableName).select('*');
         const customQuery = query(baseQuery);
 
-        const { data, error } = await customQuery;
+        const {data, error} = await customQuery;
 
         if (error) throw error;
         return data.map(item => this.convertResponse(item, tableName));
     }
 
-    subscribeToChanges<T extends TableOrView>(tableName: AllTableNames, callback: SubscriptionCallback): void {
+    subscribeToChanges<T extends DatabaseTableOrView>(tableName: AllTableNames, callback: SubscriptionCallback): void {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -521,7 +680,7 @@ class DatabaseApiWrapper {
 
         const subscription = this.client
             .channel(`public:${dbTableName}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: dbTableName }, payload => {
+            .on('postgres_changes', {event: '*', schema: 'public', table: dbTableName}, payload => {
                 this.fetchAll(tableName).then(data => {
                     callback(data);
                 }).catch(error => {
@@ -548,7 +707,7 @@ class DatabaseApiWrapper {
         this.subscriptions.clear();
     }
 
-    convertToFrontendFormat<T extends TableOrView>(tableName: AllTableNames, data: any): any {
+    convertToFrontendFormat<T extends DatabaseTableOrView>(tableName: AllTableNames, data: any): any {
         if (Array.isArray(data)) {
             return data.map(item => this.convertResponse(item, tableName));
         } else {
@@ -588,7 +747,7 @@ class DatabaseApiWrapper {
     //     return await query;
     // }
     //
-    // async fetchSimpleWithRelations<T extends TableOrView>(
+    // async fetchSimpleWithRelations<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     id: string,
     //     options: QueryOptions<T> & { relations?: string[] }
@@ -635,8 +794,7 @@ class DatabaseApiWrapper {
     // }
 
 
-
-    // async fetchFk<T extends TableOrView>(
+    // async fetchFk<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     data: any,
     //     tableSchema: TableSchema
@@ -661,7 +819,7 @@ class DatabaseApiWrapper {
     //     return data;
     // }
     //
-    // async fetchIfk<T extends TableOrView>(
+    // async fetchIfk<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     data: any,
     //     tableSchema: TableSchema
@@ -686,7 +844,7 @@ class DatabaseApiWrapper {
     //     return data;
     // }
     //
-    // async fetchM2m<T extends TableOrView>(
+    // async fetchM2m<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     data: any,
     //     tableSchema: TableSchema
@@ -723,7 +881,7 @@ class DatabaseApiWrapper {
     //     return data;
     // }
     //
-    // async fetchWithFkAndIfk<T extends TableOrView>(
+    // async fetchWithFkAndIfk<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     id: string,
     //     options: Omit<QueryOptions<T>, 'limit' | 'offset'>,
@@ -741,7 +899,7 @@ class DatabaseApiWrapper {
     //     return data;
     // }
     //
-    // async fetchWithFkIfkAndM2M<T extends TableOrView>(
+    // async fetchWithFkIfkAndM2M<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     id: string,
     //     options: Omit<QueryOptions<T>, 'limit' | 'offset'>,
@@ -763,7 +921,7 @@ class DatabaseApiWrapper {
     // }
     //
     //
-    // async fetchWithFkAndM2M<T extends TableOrView>(
+    // async fetchWithFkAndM2M<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     id: string,
     //     options: Omit<QueryOptions<T>, 'limit' | 'offset'>,
@@ -781,7 +939,7 @@ class DatabaseApiWrapper {
     //     return data;
     // }
     //
-    // async fetchWithIfkAndM2M<T extends TableOrView>(
+    // async fetchWithIfkAndM2M<T extends DatabaseTableOrView>(
     //     dbTableName: string,
     //     id: string,
     //     options: Omit<QueryOptions<T>, 'limit' | 'offset'>,

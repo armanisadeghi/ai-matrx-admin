@@ -283,7 +283,7 @@ importers:
         specifier: latest
         version: 0.15.2(zod@3.23.8)
       openai:
-        specifier: latest
+        specifier: ^4.68.0
         version: 4.68.0(zod@3.23.8)
       popmotion:
         specifier: latest

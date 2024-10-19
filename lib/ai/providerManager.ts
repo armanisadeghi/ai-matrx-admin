@@ -1,8 +1,8 @@
 // File: lib/ai/providerManager.ts
 
 import { AIProvider } from "@/lib/ai/aiChat.types";
-import OpenAIProvider from "./providers/openAIProvider";
-import AnthropicProvider from "./providers/anthropicProvider";
+import OpenAIProvider from "./providers/openai/openAIProvider";
+import AnthropicProvider from "./providers/anthropic/anthropicProvider";
 // Import other providers as needed
 
 class ProviderManager {

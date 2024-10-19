@@ -1,5 +1,5 @@
 import { initialSchemas } from "@/utils/schema/initialSchemas";
-import {getRegisteredSchemas} from "@/utils/schema/schemaRegistry";
+import {getRegisteredSchemaNames} from "@/utils/schema/schemaRegistry";
 
 // Basic types
 export type SchemaType = 'table' | 'view' | 'function' | 'procedure';
@@ -149,24 +149,46 @@ export type TableSchemaTypes = {
     };
 };
 
+
+
+
 export type TableNames = Extract<keyof typeof initialSchemas, string>;
-export type AllTableNames = string;
-
-export type FrontendTableNames = AltOptions['frontend'];
-export type DatabaseTableName = AltOptions['database'];
 
 
-// Utility types for table names and dynamic access
-export type TableNameKey = keyof AltOptions;
-export type FrontendTableName = AltOptions['frontend'];
-export type AltOptionKeys<T extends TableSchema> = keyof T['name'];
+
+
+
+
+
+export type AltOptionKeys<T extends TableSchema> = keyof T['name']; // Not sure if this is even accurate
+
+
 export type TableNameResolver<T extends keyof SchemaRegistry, V extends keyof SchemaRegistry[T]['name']> = SchemaRegistry[T]['name'][V];
 export type ResolveFrontendTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'frontend'>;
 export type ResolveDatabaseTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'database'>;
+export type ResolveBackendTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'backend'>;
+export type ResolvePrettyTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'pretty'>;
 
-export const databaseSchemas = getRegisteredSchemas('database');
-export const frontendSchemas = getRegisteredSchemas('frontend');
-export const backendSchemas = getRegisteredSchemas('backend');
+export type AnyTableName<T extends keyof SchemaRegistry> =
+    ResolveFrontendTableName<T> |
+    ResolveBackendTableName<T> |
+    ResolveDatabaseTableName<T> |
+    ResolvePrettyTableName<T>;  // Add other formats as needed
+
+
+export type ResolveTableName<T extends keyof SchemaRegistry, V extends keyof SchemaRegistry[T]['name']> = SchemaRegistry[T]['name'][V];
+
+
+
+// Example usage
+type AiTableNameInFormat<F extends keyof SchemaRegistry['aiEndpoint']['name']> = ResolveTableName<'aiEndpoint', F>;
+
+
+
+
+export const databaseSchemas = getRegisteredSchemaNames('database');
+export const frontendSchemas = getRegisteredSchemaNames('frontend');
+export const backendSchemas = getRegisteredSchemaNames('backend');
 
 
 
@@ -183,6 +205,9 @@ export type NestedProp<T, K extends string> = K extends keyof T
 export function createTypeReference<T>(): TypeBrand<T> {
     return {} as TypeBrand<T>;
 }
+
+
+export type FieldNameKey = keyof AltOptions;
 
 export type FrontendFieldName = AltOptions['frontend'];
 export type DatabaseFieldName = AltOptions['database'];
@@ -237,4 +262,46 @@ export type ToolType = SchemaTypes["tool"];
 export type TransformerType = SchemaTypes["transformer"];
 export type UserPreferencesType = SchemaTypes["userPreferences"];
 
+
+export interface FrontendTableSchema extends Omit<TableSchema, 'name'> {
+    frontendTableName: string;
+}
+
+export interface DatabaseTableSchema extends Omit<TableSchema, 'name'> {
+    databaseTableName: string;
+}
+
+export interface BackendTableSchema extends Omit<TableSchema, 'name'> {
+    backendTableName: string;
+}
+
+export interface PrettyTableSchema extends Omit<TableSchema, 'name'> {
+    prettyTableName: string;
+}
+
+export interface CustomTableSchema extends Omit<TableSchema, 'name'> {
+    customName: string;
+    customFormat: DataFormat;
+}
+
+export interface FrontendFieldConverter<T> extends Omit<FieldConverter<T>, 'alts'> {
+    frontendFieldName: string;
+}
+
+export interface DatabaseFieldConverter<T> extends Omit<FieldConverter<T>, 'alts'> {
+    databaseFieldName: string;
+}
+
+export interface BackendFieldConverter<T> extends Omit<FieldConverter<T>, 'alts'> {
+    backendFieldName: string;
+}
+
+export interface PrettyFieldConverter<T> extends Omit<FieldConverter<T>, 'alts'> {
+    prettyFieldName: string;
+}
+
+export interface CustomFieldConverter<T> extends Omit<FieldConverter<T>, 'alts'> {
+    customFieldName: string;
+    customFormat: DataFormat;
+}
 

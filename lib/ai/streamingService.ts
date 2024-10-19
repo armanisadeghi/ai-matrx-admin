@@ -2,7 +2,7 @@
 
 import { EventEmitter } from 'events';
 import { AIProvider } from "@/lib/ai/aiChat.types";
-import OpenAIAdapter from "./adapters/openAIAdapter";
+import OpenAIOptionsAdapter from "./adapters/openAIOptionsAdapter";
 import AnthropicAdapter from "./adapters/anthropicAdapter";
 
 class StreamingService extends EventEmitter {

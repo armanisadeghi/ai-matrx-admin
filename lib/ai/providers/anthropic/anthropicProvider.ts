@@ -1,6 +1,6 @@
 // File: lib/ai/providers/anthropicProvider.ts
 
-import { BaseProvider } from "./baseProvider";
+import { BaseProvider } from "../baseProvider";
 import Anthropic from '@anthropic-ai/sdk'; // Assuming you're using the Anthropic npm package
 
 export default class AnthropicProvider implements BaseProvider {

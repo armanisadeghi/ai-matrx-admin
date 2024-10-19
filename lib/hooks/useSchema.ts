@@ -4,7 +4,7 @@
 
 import { useContext, useCallback } from 'react';
 import { SchemaContext } from '@/providers/SchemaProvider';
-import { registerSchema, getSchema, getRegisteredSchemas, globalSchemaRegistry } from '@/utils/schema/schemaRegistry';
+import { registerSchema, getSchema, getRegisteredSchemaNames, globalSchemaRegistry } from '@/utils/schema/schemaRegistry';
 import { TableSchema } from '@/types/tableSchemaTypes';
 
 // Ensure that globalSchemaRegistry is exported from schemaRegistry
@@ -24,7 +24,7 @@ export function useSchema(): UseSchemaResult {
     const schemaRegistry = useContext(SchemaContext);
 
     // Retrieve all registered schemas for the 'database' format
-    const registeredSchemas = getRegisteredSchemas('database');
+    const registeredSchemas = getRegisteredSchemaNames('database');
 
     // Function to get a specific table or view schema based on its frontend name
     const getTableSchema = useCallback((tableName: string): TableSchema | undefined => {

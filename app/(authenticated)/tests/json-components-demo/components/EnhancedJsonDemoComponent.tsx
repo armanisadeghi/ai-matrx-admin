@@ -120,7 +120,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                                 data={currentData}
                                 onChange={handleDataChange}
                                 validateDelay={validateDelay}
-                                onFormat={() => {}} // The component handles formatting internally
+                                onFormat={() => {}}
                             />
                             <TextDivider text="END" />
                         </CardContent>

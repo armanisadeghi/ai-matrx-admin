@@ -14,6 +14,7 @@ import {
     generateJsonTemplate,
     ensureId
 } from "@/utils/schema/schemaUtils";
+import {AllTableNames} from "@/types/tableSchemaTypes";
 
 interface PaginationInfo {
     currentPage: number;
@@ -55,10 +56,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
     const [error, setError] = useState<Error | null>(null);
     const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
 
-    const fetchOne = useCallback(async (name: TableOrView, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
+    const fetchOne = useCallback(async (tableName: AllTableNames, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchOne(name, id, options);
+            const result = await databaseApi.fetchOne(tableName, id, options);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -67,10 +68,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchAll = useCallback(async (name: TableOrView, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
+    const fetchAll = useCallback(async (tableName: AllTableNames, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchAll(name, options);
+            const result = await databaseApi.fetchAll(tableName, options);
             setData(result as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -79,10 +80,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchFk = useCallback(async (name: TableOrView, id: string, foreignKeys: any) => {
+    const fetchFk = useCallback(async (tableName: AllTableNames, id: string, foreignKeys: any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchFk(name, id, foreignKeys);
+            const result = await databaseApi.fetchFk(tableName, id, foreignKeys);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -91,10 +92,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchIfk = useCallback(async (name: TableOrView, id: string, inverseForeignKeys: any) => {
+    const fetchIfk = useCallback(async (tableName: AllTableNames, id: string, inverseForeignKeys: any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchIfk(name, id, inverseForeignKeys);
+            const result = await databaseApi.fetchIfk(tableName, id, inverseForeignKeys);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -103,10 +104,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchM2m = useCallback(async (name: TableOrView, id: string, manyToMany: any) => {
+    const fetchM2m = useCallback(async (tableName: AllTableNames, id: string, manyToMany: any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchM2m(name, id, manyToMany);
+            const result = await databaseApi.fetchM2m(tableName, id, manyToMany);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -116,13 +117,13 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
     }, []);
 
     const fetchPaginated = useCallback(
-        async (name: TableOrView, options: QueryOptions<TableOrView>, page: number = 1, pageSize: number = 10, maxCount: number = 10000) => {
+        async (tableName: AllTableNames, options: QueryOptions<TableOrView>, page: number = 1, pageSize: number = 10, maxCount: number = 10000) => {
             setLoading(true);
 
             try {
                 // Call the updated fetchPaginated method from the database API
                 const { page: currentPage, allNamesAndIds, pageSize: returnedPageSize, totalCount, paginatedData } =
-                    await databaseApi.fetchPaginated(name, options, page, pageSize, maxCount);
+                    await databaseApi.fetchPaginated(tableName, options, page, pageSize, maxCount);
 
                 // Set the returned data and pagination info in the state
                 setData(paginatedData as T[]);
@@ -144,10 +145,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         []
     );
 
-    const create = useCallback(async (name: TableOrView, payload: Partial<T>) => {
+    const create = useCallback(async (tableName: AllTableNames, payload: Partial<T>) => {
         setLoading(true);
         try {
-            const result = await databaseApi.create(name, payload);
+            const result = await databaseApi.create(tableName, payload);
             setData(prevData => prevData ? [...prevData, result] : [result]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -156,10 +157,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const update = useCallback(async (name: TableOrView, id: string, payload: Partial<T>) => {
+    const update = useCallback(async (tableName: AllTableNames, id: string, payload: Partial<T>) => {
         setLoading(true);
         try {
-            const result = await databaseApi.update(name, id, payload);
+            const result = await databaseApi.update(tableName, id, payload);
             setData(prevData => prevData?.map(item => item.id === id ? result : item) as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -168,7 +169,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const deleteRecord = useCallback(async (name: TableOrView, id: FlexibleId) => {
+    const deleteRecord = useCallback(async (tableName: AllTableNames, id: FlexibleId) => {
         if (!isValidFlexibleId(id)) {
             throw new Error('Invalid ID provided');
         }
@@ -176,7 +177,7 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         setLoading(true);
         try {
             const stringId = flexibleIdToString(id);
-            await databaseApi.delete(name, stringId);
+            await databaseApi.delete(tableName, stringId);
             setData(prevData => prevData?.filter(item => item.id !== id) as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -185,10 +186,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const executeCustomQuery = useCallback(async (name: TableOrView, queryFn: (baseQuery: any) => any) => {
+    const executeCustomQuery = useCallback(async (tableName: AllTableNames, queryFn: (baseQuery: any) => any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.executeCustomQuery(name, queryFn);
+            const result = await databaseApi.executeCustomQuery(tableName, queryFn);
             setData(result as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -197,14 +198,14 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const subscribeToChanges = useCallback((name: TableOrView) => {
-        databaseApi.subscribeToChanges(name, (newData) => {
+    const subscribeToChanges = useCallback((tableName: AllTableNames) => {
+        databaseApi.subscribeToChanges(tableName, (newData) => {
             setData(newData as T[]);
         });
     }, []);
 
-    const unsubscribeFromChanges = useCallback((name: TableOrView) => {
-        databaseApi.unsubscribeFromChanges(name);
+    const unsubscribeFromChanges = useCallback((tableName: AllTableNames) => {
+        databaseApi.unsubscribeFromChanges(tableName);
     }, []);
 
     useEffect(() => {
