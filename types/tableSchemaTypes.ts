@@ -6,11 +6,6 @@ const TypeBrand = Symbol('TypeBrand');
 export type TypeBrand<T> = { _typeBrand: T };
 
 
-export type TableFieldSchema = {
-    [key: string]: FieldProperties;
-};
-
-
 export type FieldProperties = {
     alts: AltFieldNameMap;
     type: DataType;
@@ -72,11 +67,11 @@ export type InferBaseType<T extends FieldProperties> =
                                 unknown;
 
 
-type InferStructureType<T extends FieldStructure<any>> =
+type InferStructureType<T extends FieldStructure> =
     T['structure'] extends 'simple' ? unknown :
-        T['structure'] extends 'foreignKey' ? (T['databaseTable'] extends TableName ? TableSchemaTypes[T['databaseTable']] : never) :
-            T['structure'] extends 'inverseForeignKey' ? (T['databaseTable'] extends TableName ? Array<TableSchemaTypes[T['databaseTable']]> : never) :
-                T['structure'] extends 'manyToMany' ? (T['databaseTable'] extends TableName ? Array<TableSchemaTypes[T['databaseTable']]> : never) :
+        T['structure'] extends 'foreignKey' ? (T['databaseTable'] extends TableName ? InferSchemaType<SchemaRegistry[T['databaseTable']]> : never) :
+            T['structure'] extends 'inverseForeignKey' ? (T['databaseTable'] extends TableName ? Array<InferSchemaType<SchemaRegistry[T['databaseTable']]>> : never) :
+                T['structure'] extends 'manyToMany' ? (T['databaseTable'] extends TableName ? Array<InferSchemaType<SchemaRegistry[T['databaseTable']]>> : never) :
                     unknown;
 
 export type StructureTypes = "simple" | "foreignKey" | "inverseForeignKey" | "manyToMany";
@@ -99,7 +94,13 @@ export interface AltTableNameMap {
     [key: string]: string;
 }
 
-export type SchemaType = 'table' | 'view' | 'function' | 'procedure';
+export type SchemaType = 'table' | 'view' ;
+
+export type TableFieldSchema = {
+    [key: string]: FieldProperties;
+};
+
+
 
 
 export interface TableSchema {
@@ -112,13 +113,24 @@ export interface TableSchema {
 
 export type TableName = keyof typeof initialSchemas;
 
+
+
 export type InferSchemaType<T extends TableSchema> = {
     [K in keyof T['fields']]: InferFieldType<T['fields'][K]>;
 };
 
+
+
+
 export type TableFieldTypes = {
     [K in TableName]: InferSchemaType<typeof initialSchemas[K]>
 };
+
+
+export type TableFields<T extends keyof SchemaRegistry> = InferSchemaType<SchemaRegistry[T]>;
+export type FieldType<T extends keyof SchemaRegistry, F extends keyof TableFields<T>> = TableFields<T>[F];
+export type FieldNames<T extends keyof SchemaRegistry> = keyof TableFields<T>;
+
 
 
 export interface TableRelationship {
@@ -208,12 +220,12 @@ export function tableName<T extends TableName>(table: T): T {
     return table;
 }
 
-// Additional utility types
-export type FieldType<T extends keyof TableSchemaTypes, F extends keyof TableSchemaTypes[T]> = TableSchemaTypes[T][F];
-export type FieldNames<T extends keyof TableSchemaTypes> = keyof TableSchemaTypes[T];
 
-// Generate types for each table
+// Generate types for each table  -- Not working. TypeScript is NOT inferring the details of the tables.
 export type ActionType = TableFieldTypes["action"];
+
+// Should all of these actually be "export type ActionType = SchemaRegistry["action"];"?????
+
 export type AiEndpointType = TableFieldTypes["aiEndpoint"];
 export type AiModelType = TableFieldTypes["aiModel"];
 export type ArgType = TableFieldTypes["arg"];

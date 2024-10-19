@@ -2,9 +2,10 @@
 
 import {SupabaseClient} from '@supabase/supabase-js';
 import {supabase} from '@/utils/supabase/client';
-import { PostgrestError } from '@supabase/postgrest-js';
+import {PostgrestError} from '@supabase/postgrest-js';
 import {
-    convertData, getApiWrapperSchemaFormats,
+    convertData,
+    getApiWrapperSchemaFormats,
     getPrimaryKeyField,
     getSchema,
     processDataForInsert,
@@ -13,7 +14,11 @@ import {
     AnyTableName,
     DatabaseFieldName,
     DatabaseTableSchema,
-    FrontendTableSchema, ResolveDatabaseTableName, ResolveFrontendTableName, SchemaRegistry, TableFieldSchema,
+    FrontendTableSchema,
+    ResolveDatabaseTableName,
+    ResolveFrontendTableName,
+    SchemaRegistry,
+    TableFieldSchema,
     TableSchema
 } from "@/types/tableSchemaTypes";
 
@@ -26,27 +31,6 @@ export type QueryOptions<T extends TableSchema> = {
 };
 
 type SubscriptionCallback = (data: any[]) => void;
-
-
-type FilterOperator =
-    | 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike'
-    | 'is' | 'in' | 'cs' | 'cd' | 'sl' | 'sr' | 'nxl' | 'nxr'
-    | 'adj' | 'ov' | 'fts' | 'plfts' | 'phfts' | 'wfts';
-
-type QueryBuilder<T extends Record<string, any> = any> = {
-    from: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
-    select: (columns: DatabaseFieldName | DatabaseFieldName[]) => QueryBuilder<T>;
-    filter: (column: DatabaseFieldName, operator: FilterOperator, value: any) => QueryBuilder<T>;
-    order: (column: DatabaseFieldName, ascending?: boolean) => QueryBuilder<T>;
-    limit: (count: number) => QueryBuilder<T>;
-    offset: (count: number) => QueryBuilder<T>;
-    joinRelated: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
-    execute: () => Promise<{ data: T[] | null; error: PostgrestError | null }>;
-};
-
-type PostgrestList = Array<Record<string, any>>;
-type PostgrestMap = Record<string, any>;
-
 
 
 export interface ApiWrapperSchemaFormats {
@@ -68,11 +52,11 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     private subscriptions: Map<string, any> = new Map();
     private queryBuilders: Map<string, QueryBuilder> = new Map();
 
-    constructor(client: SupabaseClient, requestTableName: AnyTableName<T>) {
-        this.client = client;
+    constructor(requestTableName: AnyTableName<T>) {
+        this.client = supabase;
         this.requestTableName = requestTableName;
 
-        const { schema, frontend, database } = getApiWrapperSchemaFormats(requestTableName);
+        const {schema, frontend, database} = getApiWrapperSchemaFormats(requestTableName);
         if (!schema) {
             throw new Error(`Schema not found for table '${requestTableName}'.`);
         }
@@ -95,8 +79,12 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
+    private isPostgrestError(error: any): error is PostgrestError {
+        return error && typeof error.message === 'string' && typeof error.code === 'string';
+    }
+
     private handleError(error: any, context: string): any {
-        if (error instanceof PostgrestError) {
+        if (this.isPostgrestError(error)) {
             console.error(`PostgrestError in ${context}: ${error.message}`);
         } else if (error instanceof Error) {
             console.error(`Error in ${context}: ${error.message}`);
@@ -151,7 +139,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
             for (const sort of options.sorts) {
                 const dbField = tableSchema.fields[sort.column as DatabaseFieldName]?.alts.database;
                 if (dbField) {
-                    query = query.order(dbField, { ascending: sort.ascending ?? true });
+                    query = query.order(dbField, {ascending: sort.ascending ?? true});
                 }
             }
         }
@@ -179,7 +167,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         primaryKeyValue: string | number,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
     ): Promise<any> {
-        const { fieldName, message } = getPrimaryKeyField(this.requestTableName);
+        const {fieldName, message} = getPrimaryKeyField(this.requestTableName);
 
         if (message) {
             console.warn(message);
@@ -193,7 +181,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         query = this.applyQueryOptions(query, options, getSchema(this.requestTableName, 'database')!);
 
         try {
-            const { data, error } = await query.single();
+            const {data, error} = await query.single();
             if (error) {
                 throw error;
             }
@@ -212,7 +200,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         let query = this.client.from(dbTableName).select('*').eq(fieldName, fieldValue);
         query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
 
-        const { data, error } = await query;
+        const {data, error} = await query;
 
         if (error) {
             console.error(`Error fetching data from ${dbTableName} where ${fieldName}=${fieldValue}: ${error.message}`);
@@ -925,4 +913,21 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
 export const databaseApi = new DatabaseApiWrapper(supabase);
 
 
+type FilterOperator =
+    | 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike'
+    | 'is' | 'in' | 'cs' | 'cd' | 'sl' | 'sr' | 'nxl' | 'nxr'
+    | 'adj' | 'ov' | 'fts' | 'plfts' | 'phfts' | 'wfts';
 
+type QueryBuilder<T extends Record<string, any> = any> = {
+    from: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
+    select: (columns: DatabaseFieldName | DatabaseFieldName[]) => QueryBuilder<T>;
+    filter: (column: DatabaseFieldName, operator: FilterOperator, value: any) => QueryBuilder<T>;
+    order: (column: DatabaseFieldName, ascending?: boolean) => QueryBuilder<T>;
+    limit: (count: number) => QueryBuilder<T>;
+    offset: (count: number) => QueryBuilder<T>;
+    joinRelated: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
+    execute: () => Promise<{ data: T[] | null; error: PostgrestError | null }>;
+};
+
+type PostgrestList = Array<Record<string, any>>;
+type PostgrestMap = Record<string, any>;

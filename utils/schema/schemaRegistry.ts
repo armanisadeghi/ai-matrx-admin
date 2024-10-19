@@ -2,10 +2,7 @@
 
 import {
     DataFormat,
-    FieldConverter,
     TableSchema,
-    AltOptions,
-    AllTableNames,
     DataType,
     FieldStructure,
     ConversionFormat,
@@ -15,7 +12,6 @@ import {
     BackendTableSchema,
     FrontendTableSchema,
     CustomTableSchema,
-    ApiWrapperSchemaFormats
 } from "@/types/tableSchemaTypes";
 
 export const globalSchemaRegistry: Record<string, TableSchema> = {};
