@@ -1,178 +1,34 @@
-import {initialSchemas} from "@/utils/schema/initialSchemas";
 import {getRegisteredSchemaNames} from "@/utils/schema/schemaRegistry";
+import {TypeBrand} from "@/types/AutomationSchemaTypes";
 
 
-const TypeBrand = Symbol('TypeBrand');
-export type TypeBrand<T> = { _typeBrand: T };
+export type RelationshipType = 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
 
 
-export type NameVariations = {
-    frontendName: string;
-    backendName: string;
-    databaseName: string;
-    prettyName: string;
-    componentName: string;
-    kebabName: string;
-    [key: string]: string;
+export type SchemaTableName = keyof typeof initialSchemas;
+
+type InitialSchemas = typeof initialSchemas;
+
+
+
+
+
+export type StringKeysOnly<T> = {
+    [K in Extract<keyof T, string>]: T[K]
 };
 
-export type DataStructure = 'single' | 'array' | 'object';
-
-export type FieldProperties = {
-    fieldNameVariations: NameVariations;
-    type: DataType;
-    format: DataStructure;
-    structure: FieldStructure;
-    isRequired?: boolean;
-    characterMaximumLength?: number | null;
-    isArray?: boolean;
-    default?: any;
-    isPrimaryKey?: boolean;
-    defaultGeneratorFunction?: string | null;
-    validationFunctions?: string[];
-    exclusionRules?: string[];
-    defaultComponent?: string;
-};
-
-
-
-export interface FieldStructure {
-    structure: StructureTypes;
-    typeReference: TypeBrand<any>;
-    databaseTable?: TableName;
-}
-
-
-
-export type DataType =
-    | 'string' | 'number' | 'boolean' | 'array' | 'object'
-    | 'null' | 'undefined' | 'any' | 'function' | 'symbol'
-    | 'bigint' | 'date' | 'map' | 'set' | 'tuple' | 'enum'
-    | 'union' | 'intersection' | 'literal' | 'void' | 'never'
-
-
-export type InferFieldType<T extends FieldProperties> =
-    T['isRequired'] extends false
-        ? (T['isArray'] extends true ? Array<InferBaseType<T>> | null | undefined : InferBaseType<T> | null | undefined)
-        : (T['isArray'] extends true ? Array<InferBaseType<T>> : InferBaseType<T>);
-
-export type InferBaseType<T extends FieldProperties> =
-    T['type'] extends 'string' ? string :
-        T['type'] extends 'number' ? number :
-            T['type'] extends 'boolean' ? boolean :
-                T['type'] extends 'date' ? Date :
-                    T['type'] extends 'object' ? Record<string, unknown> :
-                        T['type'] extends 'stringArray' ? Array<string> :
-                            T['type'] extends 'objectArray' ? Array<Record<string, unknown>> :
-                                unknown;
-
-
-type InferStructureType<T extends FieldStructure> =
-    T['structure'] extends 'simple' ? unknown :
-        T['structure'] extends 'foreignKey' ? (T['databaseTable'] extends TableName ? InferFieldTypes<SchemaRegistry[T['databaseTable']]> : never) :
-            T['structure'] extends 'inverseForeignKey' ? (T['databaseTable'] extends TableName ? Array<InferFieldTypes<SchemaRegistry[T['databaseTable']]>> : never) :
-                T['structure'] extends 'manyToMany' ? (T['databaseTable'] extends TableName ? Array<InferFieldTypes<SchemaRegistry[T['databaseTable']]>> : never) :
-                    unknown;
-
-export type StructureTypes = "simple" | "foreignKey" | "inverseForeignKey" | "manyToMany";
-export type DataFormat = 'frontend' | 'backend' | 'database' | 'component' | 'pretty' | 'graphql' | 'restApi';
-
-
-export interface SchemaRegistry {
-    [tableName: string]: TableSchema;
-}
-export type TableName = keyof typeof initialSchemas;
-
-
-export type SchemaType = 'table' | 'view' ;
-
-export type TableFieldSchema = {
-    [fieldName: string]: FieldProperties;
-};
-
-export interface TableRelationship {
-    fetchStrategy: FetchStrategy;
-    foreignKeys: ForeignKeyRelation[];
-    inverseForeignKeys: InverseForeignKeyRelation[];
-    manyToMany: ManyToManyRelation[];
-}
+type ValueOf<T> = T[keyof T];
 
 
 
 
-export interface TableSchema {
-    tableNameVariations: NameVariations;
-    schemaType: SchemaType;
-    fields: TableFieldSchema;
-    relationships: TableRelationship;
-}
-
-
-
-export type InferFieldTypes<T extends TableSchema> = {
-    [K in keyof T['fields']]: InferFieldType<T['fields'][K]>;
-};
-
-
-export type TableFieldTypes = {
-    [K in TableName]: InferFieldTypes<typeof initialSchemas[K]>
-};
-
-export type TableFields<T extends keyof SchemaRegistry> = InferFieldTypes<SchemaRegistry[T]>;
-export type FieldType<T extends keyof SchemaRegistry, F extends keyof TableFields<T>> = TableFields<T>[F];
-export type FieldNames<T extends keyof SchemaRegistry> = keyof TableFields<T>;
 
 
 
 
-type FetchStrategy = 'simple' | 'fk' | 'ifk' | 'm2m' | 'fkAndIfk' | 'm2mAndFk' | 'm2mAndIfk' | 'fkIfkAndM2M';
-
-type ForeignKeyRelation = {
-    column: DatabaseFieldName;
-    relatedTable: string;
-    relatedColumn: DatabaseFieldName;
-};
-
-type InverseForeignKeyRelation = {
-    relatedTable: string;
-    relatedColumn: DatabaseFieldName;
-    mainTableColumn: DatabaseFieldName;
-};
-
-type ManyToManyRelation = {
-    junctionTable: string;
-    relatedTable: string;
-    mainTableColumn: DatabaseFieldName;
-    relatedTableColumn: DatabaseFieldName;
-};
-
-
-export type AltOptionKeys<T extends TableSchema> = keyof T['name']; // Not sure if this is even accurate
-
-
-export type TableNameResolver<T extends keyof SchemaRegistry, V extends keyof SchemaRegistry[T]['name']> = SchemaRegistry[T]['name'][V];
-export type ResolveFrontendTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'frontend'>;
-export type ResolveDatabaseTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'database'>;
-export type ResolveBackendTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'backend'>;
-export type ResolvePrettyTableName<T extends keyof SchemaRegistry> = TableNameResolver<T, 'pretty'>;
-
-export type AnyTableName<T extends keyof SchemaRegistry> =
-    ResolveFrontendTableName<T> |
-    ResolveBackendTableName<T> |
-    ResolveDatabaseTableName<T> |
-    ResolvePrettyTableName<T>;
-
-
-export type ResolveTableName<T extends keyof SchemaRegistry, V extends keyof SchemaRegistry[T]['name']> = SchemaRegistry[T]['name'][V];
-
-
-// Example usage
-type AiTableNameInFormat<F extends keyof SchemaRegistry['aiEndpoint']['name']> = ResolveTableName<'aiEndpoint', F>;
-
-
-export const databaseSchemaNames = getRegisteredSchemaNames('database');
-export const frontendSchemasNames = getRegisteredSchemaNames('frontend');
-export const backendSchemasNames = getRegisteredSchemaNames('backend');
+export const databaseSchemaNames = getRegisteredSchemaNames('databaseName');
+export const frontendSchemasNames = getRegisteredSchemaNames('frontendName');
+export const backendSchemasNames = getRegisteredSchemaNames('backendName');
 
 
 // Utility types for accessing nested properties
@@ -196,89 +52,65 @@ export type FrontendFieldName = NameVariations['frontend'];
 export type DatabaseFieldName = NameVariations['database'];
 
 
-export function fieldName<T extends TableName, F extends FieldNames<T>>(table: T, field: F): F {
+export function fieldName<T extends SchemaTableName, F extends FieldNames<T>>(table: T, field: F): F {
     return field;
 }
 
-export function tableName<T extends TableName>(table: T): T {
+export function tableName<T extends SchemaTableName>(table: T): T {
     return table;
 }
 
 
-// Generate types for each table  -- Not working. TypeScript is NOT inferring the details of the tables.
-export type ActionType = TableFieldTypes["action"];
-
-// Should all of these actually be "export type ActionType = SchemaRegistry["action"];"?????
-
-export type AiEndpointType = TableFieldTypes["aiEndpoint"];
-export type AiModelType = TableFieldTypes["aiModel"];
-export type ArgType = TableFieldTypes["arg"];
-export type AutomationBoundaryBrokerType = TableFieldTypes["automationBoundaryBroker"];
-export type AutomationMatrixType = TableFieldTypes["automationMatrix"];
-export type BrokerType = TableFieldTypes["broker"];
-export type DataInputComponentType = TableFieldTypes["dataInputComponent"];
-export type DataOutputComponentType = TableFieldTypes["dataOutputComponent"];
-export type DisplayOptionType = TableFieldTypes["displayOption"];
-export type EmailsType = TableFieldTypes["emails"];
-export type ExtractorType = TableFieldTypes["extractor"];
-export type FlashcardDataType = TableFieldTypes["flashcardData"];
-export type FlashcardHistoryType = TableFieldTypes["flashcardHistory"];
-export type FlashcardImagesType = TableFieldTypes["flashcardImages"];
-export type FlashcardSetRelationsType = TableFieldTypes["flashcardSetRelations"];
-export type FlashcardSetsType = TableFieldTypes["flashcardSets"];
-export type ProcessorType = TableFieldTypes["processor"];
-export type RecipeType = TableFieldTypes["recipe"];
-export type RecipeBrokerType = TableFieldTypes["recipeBroker"];
-export type RecipeDisplayType = TableFieldTypes["recipeDisplay"];
-export type RecipeFunctionType = TableFieldTypes["recipeFunction"];
-export type RecipeModelType = TableFieldTypes["recipeModel"];
-export type RecipeProcessorType = TableFieldTypes["recipeProcessor"];
-export type RecipeToolType = TableFieldTypes["recipeTool"];
-export type RegisteredFunctionType = TableFieldTypes["registeredFunction"];
-export type SystemFunctionType = TableFieldTypes["systemFunction"];
-export type ToolType = TableFieldTypes["tool"];
-export type TransformerType = TableFieldTypes["transformer"];
-export type UserPreferencesType = TableFieldTypes["userPreferences"];
 
 
-export interface FrontendTableSchema extends Omit<TableSchema, 'name'> {
+export type DataFormat =
+    'frontendName'
+    | 'backendName'
+    | 'databaseName'
+    | 'prettyName'
+    | 'componentName'
+    | 'kebabName'
+    | 'others';
+
+
+export interface FrontendTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
     frontendTableName: string;
 }
 
-export interface DatabaseTableSchema extends Omit<TableSchema, 'name'> {
+export interface DatabaseTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
     databaseTableName: string;
 }
 
-export interface BackendTableSchema extends Omit<TableSchema, 'name'> {
+export interface BackendTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
     backendTableName: string;
 }
 
-export interface PrettyTableSchema extends Omit<TableSchema, 'name'> {
+export interface PrettyTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
     prettyTableName: string;
 }
 
-export interface CustomTableSchema extends Omit<TableSchema, 'name'> {
+export interface CustomTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
     customName: string;
     customFormat: DataFormat;
 }
 
-export interface FrontendFieldConverter extends Omit<FieldProperties, 'alts'> {
+export interface FrontendFieldConverter extends Omit<FieldProperties, 'fieldNameVariations'> {
     frontendFieldName: string;
 }
 
-export interface DatabaseFieldConverter extends Omit<FieldProperties, 'alts'> {
+export interface DatabaseFieldConverter extends Omit<FieldProperties, 'fieldNameVariations'> {
     databaseFieldName: string;
 }
 
-export interface BackendFieldConverter<T> extends Omit<FieldProperties, 'alts'> {
+export interface BackendFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
     backendFieldName: string;
 }
 
-export interface PrettyFieldConverter<T> extends Omit<FieldProperties, 'alts'> {
+export interface PrettyFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
     prettyFieldName: string;
 }
 
-export interface CustomFieldConverter<T> extends Omit<FieldProperties, 'alts'> {
+export interface CustomFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
     customFieldName: string;
     customFormat: DataFormat;
 }
@@ -295,8 +127,6 @@ export type ConversionFormat = 'single' | 'array' | 'object';
 */
 
 
-
-
 /*
 export type FieldProperties = {
     structure: FieldStructure;
@@ -308,12 +138,130 @@ export type FieldProperties = {
 export interface FieldStructure {
     structure: StructureTypes;
     typeReference: TypeBrand<any>;
-    databaseTable?: TableName;
+    databaseTable?: SchemaTableName;
 }
 
 */
 
 
+/* REPLACED BY Relationship
+export interface TableRelationship {
+    fetchStrategy: FetchStrategy;
+    foreignKeys: ForeignKeyRelation[];
+    inverseForeignKeys: InverseForeignKeyRelation[];
+    manyToMany: ManyToManyRelation[];
+}
+*/
 
+
+// ELIMINATED when we moved structure entries to direct properties of FieldProperties
+// export interface FieldStructure {
+//     structure: StructureTypes;
+//     typeReference: TypeBrand<any>;
+//     databaseTable?: SchemaTableName;
+// }
+//
+//
+// type InferStructureType<T extends FieldStructure> =
+//     T['structure'] extends 'simple' ? unknown :
+//         T['structure'] extends 'foreignKey' ? (T['databaseTable'] extends SchemaTableName ? InferFieldTypes<SchemaRegistry[T['databaseTable']]> : never) :
+//             T['structure'] extends 'inverseForeignKey' ? (T['databaseTable'] extends SchemaTableName ? Array<InferFieldTypes<SchemaRegistry[T['databaseTable']]>> : never) :
+//                 T['structure'] extends 'manyToMany' ? (T['databaseTable'] extends SchemaTableName ? Array<InferFieldTypes<SchemaRegistry[T['databaseTable']]>> : never) :
+//                     unknown;
+//
+//
+
+
+// Eliminated when relationships were merged into a single array of objects for 'relationships' in the same format
+// type ForeignKeyRelation = {
+//     column: DatabaseFieldName;
+//     relatedTable: string;
+//     relatedColumn: DatabaseFieldName;
+// };
+//
+// type InverseForeignKeyRelation = {
+//     relatedTable: string;
+//     relatedColumn: DatabaseFieldName;
+//     mainTableColumn: DatabaseFieldName;
+// };
+//
+// type ManyToManyRelation = {
+//     junctionTable: string;
+//     relatedTable: string;
+//     mainTableColumn: DatabaseFieldName;
+//     relatedTableColumn: DatabaseFieldName;
+// };
+//
+//
+// export type AltOptionKeys<T extends TableSchema> = keyof T['tableNameVariations']; // Not sure if this is even accurate
+
+// Eliminated when these options were added to 'DataStructure' but this is one that might not work.
+// export type StructureTypes = "simple" | "foreignKey" | "inverseForeignKey" | "manyToMany";
+
+
+// // Generate types for each table  -- Not working. TypeScript is NOT inferring the details of the tables.
+// export type ActionType = TableFieldTypes["action"];
+//
+// // Should all of these actually be "export type ActionType = SchemaRegistry["action"];"?????
+//
+// export type AiEndpointType = TableFieldTypes["aiEndpoint"];
+// export type AiModelType = TableFieldTypes["aiModel"];
+// export type ArgType = TableFieldTypes["arg"];
+// export type AutomationBoundaryBrokerType = TableFieldTypes["automationBoundaryBroker"];
+// export type AutomationMatrixType = TableFieldTypes["automationMatrix"];
+// export type BrokerType = TableFieldTypes["broker"];
+// export type DataInputComponentType = TableFieldTypes["dataInputComponent"];
+// export type DataOutputComponentType = TableFieldTypes["dataOutputComponent"];
+// export type DisplayOptionType = TableFieldTypes["displayOption"];
+// export type EmailsType = TableFieldTypes["emails"];
+// export type ExtractorType = TableFieldTypes["extractor"];
+// export type FlashcardDataType = TableFieldTypes["flashcardData"];
+// export type FlashcardHistoryType = TableFieldTypes["flashcardHistory"];
+// export type FlashcardImagesType = TableFieldTypes["flashcardImages"];
+// export type FlashcardSetRelationsType = TableFieldTypes["flashcardSetRelations"];
+// export type FlashcardSetsType = TableFieldTypes["flashcardSets"];
+// export type ProcessorType = TableFieldTypes["processor"];
+// export type RecipeType = TableFieldTypes["recipe"];
+// export type RecipeBrokerType = TableFieldTypes["recipeBroker"];
+// export type RecipeDisplayType = TableFieldTypes["recipeDisplay"];
+// export type RecipeFunctionType = TableFieldTypes["recipeFunction"];
+// export type RecipeModelType = TableFieldTypes["recipeModel"];
+// export type RecipeProcessorType = TableFieldTypes["recipeProcessor"];
+// export type RecipeToolType = TableFieldTypes["recipeTool"];
+// export type RegisteredFunctionType = TableFieldTypes["registeredFunction"];
+// export type SystemFunctionType = TableFieldTypes["systemFunction"];
+// export type ToolType = TableFieldTypes["tool"];
+// export type TransformerType = TableFieldTypes["transformer"];
+// export type UserPreferencesType = TableFieldTypes["userPreferences"];
+
+
+// type NameVariations = {
+//     frontendName: string;
+//     backendName: string;
+//     databaseName: string;
+//     prettyName: string;
+//     componentName: string;
+//     kebabName: string;
+//     [key: string]: string;
+// };
+//
+//
+// type FieldProperties = {
+//     fieldNameVariations: NameVariations;
+//     dataType: DataType;
+//     isRequired?: boolean;
+//     maxLength?: number | null;
+//     isArray?: boolean;
+//     defaultValue?: any;
+//     isPrimaryKey?: boolean;
+//     defaultGeneratorFunction?: string | null;
+//     validationFunctions?: string[];
+//     exclusionRules?: string[];
+//     defaultComponent?: string;
+//     structure: DataStructure;
+//     isNative: boolean;
+//     typeReference: TypeBrand<any>;
+//     databaseTable: SchemaTableName;
+// };
 
 

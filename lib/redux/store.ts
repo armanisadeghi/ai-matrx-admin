@@ -13,11 +13,10 @@ import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
 import { rootSaga } from "@/lib/redux/rootSaga";
-import { initialSchemas } from "@/utils/schema/initialSchemas";
-import { createTableSlice } from "@/lib/redux/tables/tableSliceCreator";
-import { FrontendTableNames, TableSchema } from "@/types/tableSchemaTypes";
+import {tableSchemas, viewSchemas} from "@/utils/schema/initialSchemas";
+import {initializeTableSchema} from "@/lib/redux/concepts/automation-concept/baseAutomationConcept";
+import {TableSchema, ViewSchema} from '@/types/AutomationTypes';
 
-// Initialize saga middleware
 const sagaMiddleware = createSagaMiddleware();
 
 // Stronger typing for featureReducers and moduleReducers
@@ -35,18 +34,25 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-// Stronger typing for tableReducers
-const tableReducers = Object.keys(initialSchemas).reduce((acc, tableName) => {
-    const tableSchema = initialSchemas[tableName as FrontendTableNames];
-    const tableSlice = createTableSlice(tableName as FrontendTableNames, tableSchema);
-    acc[tableName] = tableSlice.reducer;
+const initializedTableSchemas = Object.keys(tableSchemas).reduce((acc, tableName) => {
+    const tableSchema = tableSchemas[tableName as keyof typeof tableSchemas];
+    acc[tableName] = initializeTableSchema(tableSchema as TableSchema);
     return acc;
-}, {} as Record<FrontendTableNames, ReturnType<typeof createTableSlice<FrontendTableNames>>['reducer']>);
+}, {} as Record<string, TableSchema>);
+
+// Initialize all view schemas similarly
+const initializedViewSchemas = Object.keys(viewSchemas).reduce((acc, viewName) => {
+    const viewSchema = viewSchemas[viewName as keyof typeof viewSchemas];
+    acc[viewName] = initializeViewSchema(viewSchema as ViewSchema); // Create this similar to initializeTableSchema
+    return acc;
+}, {} as Record<string, ViewSchema>);
+
 
 const rootReducer = combineReducers({
     ...featureReducers,
     ...moduleReducers,
-    ...tableReducers,
+    ...initializedTableSchemas,
+    ...initializedViewSchemas,
     layout: layoutReducer,
     theme: themeReducer,
     form: formReducer,

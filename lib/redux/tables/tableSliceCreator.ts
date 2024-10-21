@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {InferFieldTypes, TableSchema, TableName} from "@/types/tableSchemaTypes";
 import { QueryOptions } from '@/utils/supabase/api-wrapper';
 
 export interface TableState<T extends TableSchema> {

@@ -3,8 +3,9 @@
 'use client';
 
 import React, { createContext, useContext, useEffect } from 'react';
-import { SchemaRegistry, registerSchema, TableSchema } from '@/utils/schema/schemaRegistry';
+import { registerSchema } from '@/utils/schema/schemaRegistry';
 import { initialSchemas } from '@/utils/schema/initialSchemas';
+import {SchemaRegistry} from "@/types/AutomationSchemaTypes";
 
 export const SchemaContext = createContext<SchemaRegistry>({});
 

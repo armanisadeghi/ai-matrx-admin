@@ -1,33 +1,17 @@
 // File: lib/schemaRegistry.ts
 
-import {
-    DataFormat,
-    TableSchema,
-    PrettyTableSchema,
-    DatabaseTableSchema,
-    BackendTableSchema,
-    FrontendTableSchema,
-    CustomTableSchema, TableName, DataType, DataStructure,
-} from "@/types/tableSchemaTypes";
-import {ApiWrapperSchemaFormats} from "@/utils/supabase/api-wrapper";
+import {getPrecomputedFormat, DataFormat} from "@/lib/redux/concepts/automation-concept/baseAutomationConcept";
 
-export const globalSchemaRegistry: Record<string, TableSchema> = {};
 
-export function registerSchema(frontendName: string, tableSchema: TableSchema) {
-    globalSchemaRegistry[frontendName] = tableSchema;
-}
 
-export function initializeSchemas() {
-    console.log("Registered schemas:", Object.keys(globalSchemaRegistry));
-}
 
 export interface ConversionOptions {
     maxDepth?: number;
     // Add more options as needed
 }
 
-function convertValue(value: any, converter: FieldConverter<any>): any {
-    switch (converter.type) {
+function convertValue(value: any, converter: DataType): any {
+    switch (converter) {
         case 'string':
             return String(value);
         case 'number':
@@ -80,7 +64,7 @@ export function getFrontendTableName(tableName: TableName, format: DataFormat): 
     const availableNames: { [key: string]: string[] } = {};
 
     for (const [frontendName, schema] of Object.entries(globalSchemaRegistry)) {
-        for (const [key, name] of Object.entries(schema.name)) {
+        for (const [key, name] of Object.entries(schema.tableNameVariations)) {
             if (name === tableName) {
                 return frontendName;  // Return the matching frontend name if found
             }
@@ -134,27 +118,24 @@ export function getSchema(
 
     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
 
-    for (const [schemaKey, schema] of Object.entries(globalSchemaRegistry)) {
-        if (schema.name.frontend === frontendTableName) {
-            console.log(`Schema found for ${frontendTableName}. Attempting to return schema in ${format} format.`);
+    // Use the global schema registry to find the schema by frontend name
+    const schema = globalSchemaRegistry[frontendTableName];
 
-            switch (format) {
-                case 'frontend':
-                    return applyFrontendFormat(schema) as FrontendTableSchema;
-                case 'backend':
-                    return applyBackendFormat(schema) as BackendTableSchema;
-                case 'database':
-                    return applyDatabaseFormat(schema) as DatabaseTableSchema;
-                case 'pretty':
-                    return applyPrettyFormat(schema) as PrettyTableSchema;
-                default:
-                    console.log(`Custom format requested: ${format}.`);
-                    return applyCustomFormat(schema, format) as CustomTableSchema;
-            }
-        }
+    if (!schema) {
+        console.warn(`No schema found for table name: ${tableName}`);
+        return undefined;
     }
-    console.warn(`No schema found for table name: ${tableName}`);
-    return undefined;
+
+    // Use precomputed format-specific schemas directly
+    const precomputedSchema = getPrecomputedFormat(schema, format);
+
+    if (!precomputedSchema) {
+        console.warn(`No schema found for table name: ${tableName} in format: ${format}`);
+        return undefined;
+    }
+
+    console.log(`Schema found for ${frontendTableName} in ${format} format.`);
+    return precomputedSchema as FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema;
 }
 
 
@@ -245,7 +226,7 @@ export function getApiWrapperSchemaFormats(
     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
 
     const schema = Object.values(globalSchemaRegistry).find(
-        (schema) => schema.name.frontend === frontendTableName
+        (schema) => schema.tableNameVariations.frontend === frontendTableName
     );
 
     if (!schema) {
@@ -287,7 +268,7 @@ function handleSingleRelationship(
             return item;
         }
 
-        const frontendTableName = getFrontendTableName(relatedTableName, 'database');
+        const frontendTableName = getFrontendTableName(relatedTableName, 'databaseName');
         const entityId = item.id || item.p_id;
         if (entityId && processedEntities.has(`${frontendTableName}:${entityId}`)) {
             return { id: entityId };
@@ -352,25 +333,31 @@ export function convertData(
         options = {},
         processedEntities = new Set(),
     }: ConvertDataParams): any {
+
+    // Get precomputed schema from the global registry (or Redux)
     const frontendTableName = getFrontendTableName(tableName, sourceFormat);
     const schema = globalSchemaRegistry[frontendTableName];
+
     if (!schema) {
         console.warn(`No schema registered for table: ${frontendTableName}. Returning original data.`);
         return data;
     }
 
+    // Use precomputed formats for fast access to translated fields
+    const translatedSchema = getPrecomputedFormat(schema, targetFormat);
+
     const result: any = {};
     const processedKeys: Set<string> = new Set();
 
-    for (const [fieldName, converter] of Object.entries(schema.fields)) {
-        const sourceKey = converter.alts[sourceFormat];
-        const targetKey = converter.alts[targetFormat];
+    for (const [fieldName, converter] of Object.entries(translatedSchema.entityFields)) {
+        const sourceKey = converter.fieldNameVariations[sourceFormat];
+        const targetKey = converter.fieldNameVariations[targetFormat];
 
         if (sourceKey && targetKey && data.hasOwnProperty(sourceKey)) {
             let value = data[sourceKey];
 
             if (value !== undefined) {
-                if (converter.structure.structure === 'foreignKey' || converter.structure.structure === 'inverseForeignKey') {
+                if (converter.structure === 'foreignKey' || converter.structure === 'inverseForeignKey') {
                     value = handleRelationship(value, converter, sourceFormat, targetFormat, options, processedEntities);
                 } else {
                     value = convertValue(value, converter);
@@ -401,10 +388,10 @@ function getFrontendTableNameFromUnknown(tableName: TableName): string {
     }
 
     for (const [schemaKey, schema] of Object.entries(globalSchemaRegistry)) {
-        for (const [format, name] of Object.entries(schema.name)) {
+        for (const [format, name] of Object.entries(schema.tableNameVariations)) {
             if (name === tableName) {
                 console.log(`Match found: ${tableName} (${format}) maps to frontend name: ${schema.name.frontend}`);
-                return schema.name.frontend;
+                return schema.tableNameVariations.frontend;
             }
         }
     }
@@ -493,7 +480,7 @@ function handleRelationshipField(fieldName: string, value: any, structureType: s
 
 // Main utility function
 export function processDataForInsert(tableName: TableName, dbData: Record<string, any>) {
-    const schema = getSchema(tableName, 'database');
+    const schema = getSchema(tableName, 'databaseName');
     if (!schema) {
         console.warn(`No schema found for table: ${tableName}. Returning original data.`);
         return {
@@ -509,7 +496,7 @@ export function processDataForInsert(tableName: TableName, dbData: Record<string
     let hasInverseForeignKey = false;
 
     for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
-        const dbKey = fieldSchema.alts['database'];
+        const dbKey = fieldSchema.alts['databaseName'];
 
         if (cleanedData.hasOwnProperty(dbKey)) {
             const value = cleanedData[dbKey];
@@ -598,45 +585,32 @@ export async function getRelationships(tableName: TableName, format: DataFormat 
 }
 
 
+type EnumValues<T> = T extends TypeBrand<infer U> ? U : never;
 
+function extractEnumValues<T extends keyof SchemaRegistry>(
+    tableName: T,
+    fieldName: keyof SchemaRegistry[T]['tableFields']
+): EnumValues<SchemaRegistry[T]['tableFields'][typeof fieldName]['typeReference']>[] | undefined {
+    const schema = initialSchemas[tableName];
+    if (!schema) return undefined;
 
+    const field = schema.tableFields[fieldName as string];
+    if (!field) return undefined;
 
+    const typeReference = field.typeReference;
 
+    // Check if typeReference is a union type (enum-like)
+    if (typeof typeReference === 'object' && Object.keys(typeReference).length === 0) {
+        // This is a TypeBrand with a union type
+        // We need to use a type assertion here because TypeScript can't infer the type correctly
+        return (Object.keys(typeReference) as EnumValues<typeof typeReference>[]).filter(key => key !== 'undefined');
+    }
 
-const TypeBrand = Symbol('TypeBrand');
-
-export type TypeBrand<T> = { [TypeBrand]: T };
-
-export interface FieldStructure<T> {
-    structure: 'simple' | 'foreignKey' | 'inverseForeignKey';
-    databaseTable?: string;
-    typeReference: TypeBrand<T>;
-}
-
-export interface AltOptions {
-    frontend: string;
-    backend: string;
-    database: string;
-    pretty: string;
-    [key: string]: string;
-}
-
-export interface FieldConverter<T> {
-    alts: AltOptions;
-    type: DataType;
-    format: DataStructure;
-    structure: FieldStructure<T>;
-}
-
-export type ConverterMap = {
-    [key: string]: FieldConverter<any>;
-};
-
-export interface SchemaRegistry {
-    [tableName: string]: TableSchema;
+    return undefined;
 }
 
 
-export function createTypeReference<T>(): TypeBrand<T> {
-    return {} as TypeBrand<T>;
-}
+
+
+
+

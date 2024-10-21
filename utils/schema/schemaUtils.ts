@@ -1,10 +1,11 @@
 // File: lib/schemaUtils.ts
 
-
-import {getSchema, globalSchemaRegistry} from "@/utils/schema/schemaRegistry";
 import {v4 as uuidv4} from "uuid";
-import {initialSchemas} from "@/utils/schema/initialSchemas";
-import {TableSchema} from "@/types/tableSchemaTypes";
+
+// These have been replaced or need to be updated.
+// import {getSchema, globalSchemaRegistry} from "@/utils/schema/schemaRegistry";
+// import {initialSchemas} from "@/utils/schema/initialSchemas";
+// import {TableSchema} from "@/types/tableSchemaTypes";
 
 
 
