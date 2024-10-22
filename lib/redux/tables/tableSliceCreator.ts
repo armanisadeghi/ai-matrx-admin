@@ -1,26 +1,38 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { QueryOptions } from '@/utils/supabase/api-wrapper';
+import {
+    TableSchema,
+    AutomationType, UnwrapTypeBrand,
+} from '@/types/AutomationTypes';
+import { AutomationTableName } from '@/types/AutomationSchemaTypes';
 
-export interface TableState<T extends TableSchema> {
-    data: InferFieldTypes<T>[];
+// Helper type to extract the actual data type from a table schema
+export type ExtractTableData<T extends AutomationTableName> = {
+    [K in keyof AutomationType<T>['entityFields']]: UnwrapTypeBrand<
+        AutomationType<T>['entityFields'][K]['typeReference']
+    >
+};
+
+export interface TableState<T extends AutomationTableName> {
+    data: ExtractTableData<T>[];
     allIdAndNames: { id: string; name: string }[];
     totalCount: number;
     lastFetched: Record<string, number>;
     staleTime: number;
-    selectedItem: InferFieldTypes<T> | null;
+    selectedItem: ExtractTableData<T> | null;
     loading: boolean;
     error: string | null;
 }
 
-export function createTableSlice(
-    tableName: TableName,
-    schema: TableSchema,
+export function createTableSlice<T extends AutomationTableName>(
+    tableName: T,
+    schema: TableSchema<T>,
     staleTime: number = 600000,
     additionalReducers: Record<string, any> = {}
 ) {
-    type Data = SchemaTypes[TableName];
+    type TableData = ExtractTableData<T>;
 
-    const initialState: TableState<TableSchema> = {
+    const initialState: TableState<T> = {
         data: [],
         allIdAndNames: [],
         totalCount: 0,
@@ -31,9 +43,9 @@ export function createTableSlice(
         error: null,
     };
 
-    const baseType = schema.name.frontend.toUpperCase();
+    const baseType = schema.entityNameVariations.frontend.toUpperCase();
 
-    const customReducers = createCustomReducers(schema);
+    const customReducers = createCustomReducers<T>(schema);
 
     const slice = createSlice({
         name: baseType,
@@ -47,22 +59,22 @@ export function createTableSlice(
                 state.loading = false;
                 state.error = action.payload;
             },
-            fetchSuccess: (state, action: PayloadAction<Data[]>) => {
+            fetchSuccess: (state, action: PayloadAction<TableData[]>) => {
                 state.loading = false;
                 state.data = action.payload;
                 state.error = null;
             },
-            fetchOneSuccess: (state, action: PayloadAction<Data>) => {
+            fetchOneSuccess: (state, action: PayloadAction<TableData>) => {
                 state.loading = false;
                 state.selectedItem = action.payload;
                 state.error = null;
             },
-            createSuccess: (state, action: PayloadAction<Data>) => {
+            createSuccess: (state, action: PayloadAction<TableData>) => {
                 state.loading = false;
                 state.data.push(action.payload);
                 state.error = null;
             },
-            updateSuccess: (state, action: PayloadAction<Data>) => {
+            updateSuccess: (state, action: PayloadAction<TableData>) => {
                 state.loading = false;
                 const index = state.data.findIndex(item => item.id === action.payload.id);
                 if (index !== -1) {
@@ -81,27 +93,44 @@ export function createTableSlice(
                 }
                 state.error = null;
             },
-            executeCustomQuerySuccess: (state, action: PayloadAction<Data[]>) => {
+            executeCustomQuerySuccess: (state, action: PayloadAction<TableData[]>) => {
                 state.loading = false;
                 state.data = action.payload;
                 state.error = null;
             },
-            ...customReducers, // Custom reducers added dynamically based on the schema
+            ...customReducers,
         },
     });
 
-    const customActions = createCustomActions<K>(schema, baseType);
+    const customActions = createCustomActions(schema, baseType);
+
+    // Type-safe actions
     const actions = {
         ...slice.actions,
-        fetch: (options?: QueryOptions<K>) => ({ type: `${baseType}/FETCH`, payload: options }),
-        fetchOne: (id: string, options?: Omit<QueryOptions<K>, 'limit' | 'offset'>) => ({
+        fetch: (options?: QueryOptions<TableData>) => ({
+            type: `${baseType}/FETCH`,
+            payload: options
+        }),
+        fetchOne: (id: string, options?: Omit<QueryOptions<TableData>, 'limit' | 'offset'>) => ({
             type: `${baseType}/FETCH_ONE`,
             payload: { id, options }
         }),
-        create: (data: Partial<Data>) => ({ type: `${baseType}/CREATE`, payload: data }),
-        update: (id: string, data: Partial<Data>) => ({ type: `${baseType}/UPDATE`, payload: { id, data } }),
-        delete: (id: string) => ({ type: `${baseType}/DELETE`, payload: id }),
-        executeCustomQuery: (query: (baseQuery: any) => any) => ({ type: `${baseType}/EXECUTE_QUERY`, payload: query }),
+        create: (data: Partial<TableData>) => ({
+            type: `${baseType}/CREATE`,
+            payload: data
+        }),
+        update: (id: string, data: Partial<TableData>) => ({
+            type: `${baseType}/UPDATE`,
+            payload: { id, data }
+        }),
+        delete: (id: string) => ({
+            type: `${baseType}/DELETE`,
+            payload: id
+        }),
+        executeCustomQuery: (query: (baseQuery: any) => any) => ({
+            type: `${baseType}/EXECUTE_QUERY`,
+            payload: query
+        }),
         ...customActions,
     };
 
@@ -111,15 +140,18 @@ export function createTableSlice(
     };
 }
 
-// Custom reducers added dynamically based on schema
-function createCustomReducers<K extends FrontendTableNames>(schema: TableSchema) {
-    type Data = SchemaTypes[K];
+// Helper function to create custom reducers based on schema
+function createCustomReducers<T extends AutomationTableName>(
+    schema: TableSchema<T>
+) {
+    type TableData = ExtractTableData<T>;
     const customReducers: Record<string, any> = {};
 
-    if ('status' in schema.fields) {
+    // Check for specific fields in the schema and add corresponding reducers
+    if ('status' in schema.entityFields) {
         customReducers.changeStatusSuccess = (
-            state: TableState<TableSchema>,
-            action: PayloadAction<Data>
+            state: TableState<T>,
+            action: PayloadAction<TableData>
         ) => {
             const index = state.data.findIndex(item => item.id === action.payload.id);
             if (index !== -1) {
@@ -136,13 +168,16 @@ function createCustomReducers<K extends FrontendTableNames>(schema: TableSchema)
     return customReducers;
 }
 
-// Custom actions based on schema
-function createCustomActions<K extends FrontendTableNames>(schema: TableSchema, baseType: string) {
-    type Data = SchemaTypes[K];
+// Helper function to create custom actions based on schema
+function createCustomActions<T extends AutomationTableName>(
+    schema: TableSchema<T>,
+    baseType: string
+) {
+    type TableData = ExtractTableData<T>;
     const customActions: Record<string, any> = {};
 
-    if ('status' in schema.fields) {
-        customActions.changeStatus = (id: string, status: Data['status']) => ({
+    if ('status' in schema.entityFields) {
+        customActions.changeStatus = (id: string, status: TableData['status']) => ({
             type: `${baseType}/CHANGE_STATUS`,
             payload: { id, status },
         });
@@ -151,4 +186,4 @@ function createCustomActions<K extends FrontendTableNames>(schema: TableSchema, 
     return customActions;
 }
 
-export type TableActions<K extends FrontendTableNames> = ReturnType<typeof createTableSlice<K>>['actions'];
+export type TableActions<T extends AutomationTableName> = ReturnType<typeof createTableSlice<T>>['actions'];

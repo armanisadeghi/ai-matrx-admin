@@ -5,7 +5,7 @@
 import { useContext, useCallback } from 'react';
 import { SchemaContext } from '@/providers/SchemaProvider';
 import { registerSchema, getSchema, getRegisteredSchemaNames, globalSchemaRegistry } from '@/utils/schema/schemaRegistry';
-import { TableSchema } from '@/types/tableSchemaTypes';
+import { TableSchema } from '@/lib/redux/concepts/tableSchemaTypes';
 
 // Ensure that globalSchemaRegistry is exported from schemaRegistry
 export { globalSchemaRegistry };

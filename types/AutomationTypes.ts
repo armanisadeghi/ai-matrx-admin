@@ -1,96 +1,108 @@
-import {tableSchemas, viewSchemas} from "@/utils/schema/initialSchemas";
+import {automationTableSchema, automationviewSchemas} from "@/utils/schema/initialSchemas";
+import {
+    NameFormat,
+    AutomationTableName,
+    AutomationViewName,
+    AutomationDynamicName,
+    AutomationCustomName,
+    DataStructure,
+    FieldDataType,
+    FetchStrategy, RequiredNameFormats, OptionalNameFormats
+} from "@/types/AutomationSchemaTypes";
 
 
+export type AutomationEntityName =
+    AutomationTableName
+    | AutomationViewName
+    | AutomationDynamicName
+    | AutomationCustomName;
+
+// Utility types
 export type TypeBrand<T> = { _typeBrand: T };
+export type UnwrapTypeBrand<T> = T extends TypeBrand<infer U> ? U : T;
+type Merge<T, U> = Omit<T, keyof U> & U;
 
-export type AutomationSchema = {
-    [K in AutomationTableName]: unknown;
+
+export type NameVariations = {
+    [K in RequiredNameFormats]: string;
 } & {
-    [K in AutomationViewName]: unknown;
+    [K in OptionalNameFormats]?: string;
+} & {
+    [key: string]: string;
 };
 
-export type DataType =
-    | 'string' | 'number' | 'boolean' | 'array' | 'object'
-    | 'null' | 'undefined' | 'any' | 'function' | 'symbol'
-    | 'bigint' | 'date' | 'map' | 'set' | 'tuple' | 'enum'
-    | 'union' | 'intersection' | 'literal' | 'void' | 'never';
+export type TableNameVariations = {
+    [K in AutomationTableName]: NameVariations;
+};
 
-export type DataStructure = 'single' | 'array' | 'object' | 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
+export type AnyTableNameVariation<T extends AutomationTableName> = TableNameVariations[T][NameFormat];
 
-export type FetchStrategy = 'simple' | 'fk' | 'ifk' | 'm2m' | 'fkAndIfk' | 'm2mAndFk' | 'm2mAndIfk' | 'fkIfkAndM2M';
+// Field types
+export type BaseField<T = any> = {
+    fieldNameVariations: NameVariations;
+    dataType: FieldDataType;
+    isArray: boolean;
+    structure: DataStructure;
+    isNative: boolean;
+    typeReference: TypeBrand<T>;
+    defaultComponent?: string;
+    componentProps?: Record<string, unknown>;
+};
 
-export type DataFormat = 'frontend' | 'backend' | 'database' | 'pretty' | 'component' | 'kebab';
+export type TableField<T = any> = BaseField<T> & {
+    isRequired?: boolean;
+    maxLength?: number | null;
+    defaultValue?: T;
+    isPrimaryKey?: boolean;
+    defaultGeneratorFunction?: string | null;
+    validationFunctions?: readonly string[];
+    exclusionRules?: readonly string[];
+    databaseTable?: AnyTableNameVariation<AutomationTableName>;
+    sqlFunctionRef?: string;
+};
 
-export type AutomationTableName =
-    'action'
-    | 'aiEndpoint'
-    | 'aiModel'
-    | 'arg'
-    | 'automationBoundaryBroker'
-    | 'automationMatrix'
-    | 'broker'
-    | 'dataInputComponent'
-    | 'dataOutputComponent'
-    | 'displayOption'
-    | 'emails'
-    | 'extractor'
-    | 'flashcardData'
-    | 'flashcardHistory'
-    | 'flashcardImages'
-    | 'flashcardSetRelations'
-    | 'flashcardSets'
-    | 'processor'
-    | 'recipe'
-    | 'recipeBroker'
-    | 'recipeDisplay'
-    | 'recipeFunction'
-    | 'recipeModel'
-    | 'recipeProcessor'
-    | 'recipeTool'
-    | 'registeredFunction'
-    | 'systemFunction'
-    | 'tool'
-    | 'transformer'
-    | 'userPreferences';
+export type ViewField<T = any> = BaseField<T> & {
+    excludeFromFetch?: boolean;
+    hideFromUser?: boolean;
+    databaseTable?: AnyTableNameVariation<AutomationTableName>;
+};
 
-export type AutomationViewName =
-    'viewRegisteredFunction'
-    | 'viewRegisteredFunctionAllRels';
-
-export type BaseEntitySchema = {
-    entityNameVariations: {
-        frontendName: string;
-        backendName: string;
-        databaseName: string;
-        prettyName: string;
-        componentName: string;
-        kebabName: string;
-        [key: string]: string;
-    };
-    schemaType: 'table' | 'view' | 'dynamic' | 'other';
-    entityFields: Record<string, TableField>;
-    fieldNameMappings: Record<string, Record<DataFormat, string>>;
+// Schema types
+export type BaseEntitySchema<T extends AutomationEntityName, Fields extends Record<string, BaseField>> = {
+    schemaType: T extends AutomationTableName ? 'table'
+    : T extends AutomationViewName ? 'view'
+    : T extends AutomationDynamicName ? 'dynamic'
+    : T extends AutomationCustomName ? 'custom'
+    : never;
+    entityFields: Fields;
     defaultFetchStrategy: FetchStrategy;
-    relationships: Array<Relationship> | null;
-    precomputedFormats?: Record<DataFormat, TableSchema>;
+    entityNameVariations: NameVariations;
+    fieldNameMappings?: Record<string, Partial<Record<NameFormat, string>>>;
+    precomputedFormats?: Partial<Record<NameFormat, TableSchema<AutomationTableName>>>;
+    componentProps?: Record<string, unknown>;
 };
 
-
-export type TableSchema = {
+export type TableSchema<T extends AutomationTableName> = BaseEntitySchema<T, Record<string, TableField>> & {
     schemaType: 'table';
-    entityFields: Record<string, TableField>;
     relationships: Array<Relationship>;
-    defaultFetchStrategy: FetchStrategy;
-    precomputedFormats?: Record<DataFormat, TableSchema>;
 };
 
-export type ViewSchema = BaseEntitySchema & {
+export type ViewSchema<T extends AutomationViewName> = BaseEntitySchema<T, Record<string, ViewField>> & {
     schemaType: 'view';
-    entityFields: Record<string, ViewField>;
-    relationships: null;
+    defaultFetchStrategy: 'simple';
 };
 
+export type DynamicSchema<T extends AutomationDynamicName> = BaseEntitySchema<T, Record<string, BaseField>> & {
+    schemaType: 'dynamic';
+    defaultFetchStrategy?: 'none';
+};
 
+export type CustomSchema<T extends AutomationCustomName> = BaseEntitySchema<T, Record<string, BaseField>> & {
+    schemaType: 'custom';
+    defaultFetchStrategy?: 'none';
+};
+
+// Relationship type
 export type Relationship = {
     relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
     column: string;
@@ -99,94 +111,107 @@ export type Relationship = {
     junctionTable: string | null;
 };
 
-export type TableField = {
-    dataType: DataType;
-    isRequired?: boolean;
-    maxLength?: number | null;
-    isArray?: boolean;
-    defaultValue?: any;
-    isPrimaryKey?: boolean;
-    defaultGeneratorFunction?: string | null;
-    validationFunctions?: string[];
-    exclusionRules?: string[];
-    defaultComponent?: string;
-    structure: DataStructure;
-    isNative: boolean;
-    typeReference: TypeBrand<any>;
-    databaseTable?: string;
+export type AnySchema =
+    | TableSchema<AutomationTableName>
+    | ViewSchema<AutomationViewName>
+    | DynamicSchema<AutomationDynamicName>
+    | CustomSchema<AutomationCustomName>;
+
+
+// AutomationSchema type
+export type AutomationSchema = {
+    [K in AutomationTableName]: TableSchema<K>;
+} & {
+    [K in AutomationViewName]: ViewSchema<K>;
+} & {
+    [K in AutomationDynamicName]: DynamicSchema<K>;
+} & {
+    [K in AutomationCustomName]: CustomSchema<K>;
 };
 
+type ExpandFetchStrategy<T> = T extends FetchStrategy ? T : never;
 
-export type ViewField = {
-    fieldNameVariations: {
-        frontendName: string;
-        backendName: string;
-        databaseName: string;
-        prettyName: string;
-        componentName: string;
-        kebabName: string;
-        [key: string]: string;
-    };
-    dataType: DataType;
-    isArray?: boolean;
-    defaultComponent?: string;
-    structure: DataStructure;
-    isNative: boolean;
-    typeReference: TypeBrand<any>;
+type ExpandNameVariations<T> = T extends NameVariations ? T : never;
+
+type ExpandFieldNameMappings<T> = T extends Record<string, Partial<Record<NameFormat, string>>> ? T : never;
+
+type ExpandFields<T extends Record<string, BaseField>> = {
+    [K in keyof T]: UnwrapTypeBrand<T[K]['typeReference']>;
 };
 
+// Utility types for expanding schemas
+type ExpandField<F> = F extends BaseField ? {
+    [K in keyof F]: K extends 'typeReference' ? UnwrapTypeBrand<F[K]> : F[K]
+} : never;
+
+type ExpandEntityFields<T extends Record<string, BaseField>> = {
+    [K in keyof T]: ExpandField<T[K]>;
+};
+
+type ExpandSchema<T extends AnySchema> = {
+    [K in keyof T]: K extends 'entityFields'
+        ? ExpandEntityFields<T[K]>
+        : K extends 'relationships'
+            ? T[K] extends Array<infer R>
+                ? Array<{[P in keyof R]: R[P]}>
+                : T[K]
+        : K extends 'defaultFetchStrategy'
+            ? ExpandFetchStrategy<T[K]>
+        : K extends 'entityNameVariations'
+            ? ExpandNameVariations<T[K]>
+        : K extends 'fieldNameMappings'
+            ? ExpandFieldNameMappings<T[K]>
+        : T[K];
+};
+
+// Merged schema types
+export type ExpandedTableSchema<T extends AutomationTableName> = ExpandSchema<TableSchema<T>>;
+export type ExpandedViewSchema<T extends AutomationViewName> = ExpandSchema<ViewSchema<T>>;
+export type ExpandedDynamicSchema<T extends AutomationDynamicName> = ExpandSchema<DynamicSchema<T>>;
+export type ExpandedCustomSchema<T extends AutomationCustomName> = ExpandSchema<CustomSchema<T>>;
+
+// Full AutomationSchema with expanded types
+export type FullAutomationSchema = {
+    [K in AutomationTableName]: ExpandedTableSchema<K>;
+} & {
+    [K in AutomationViewName]: ExpandedViewSchema<K>;
+} & {
+    [K in AutomationDynamicName]: ExpandedDynamicSchema<K>;
+} & {
+    [K in AutomationCustomName]: ExpandedCustomSchema<K>;
+};
+
+// Helper types for precise entity types and name variations
+export type AutomationType<K extends keyof FullAutomationSchema> = FullAutomationSchema[K];
+
+export type TableNameVariation<T extends AutomationTableName> = FullAutomationSchema[T]['entityNameVariations'][NameFormat];
+
+export type FieldNameVariation<T extends keyof FullAutomationSchema, F extends keyof FullAutomationSchema[T]['entityFields']> =
+    FullAutomationSchema[T]['entityFields'][F]['fieldNameVariations'][RequiredNameFormats] |
+    (FullAutomationSchema[T]['entityFields'][F]['fieldNameVariations'][OptionalNameFormats] extends string ? FullAutomationSchema[T]['entityFields'][F]['fieldNameVariations'][OptionalNameFormats] : never);
 
 
+export type TableSchemaStructure = {
+    [K in AutomationTableName]: AutomationType<K>;
+};
+
+export type ViewSchemaStructure = {
+    [K in AutomationViewName]: AutomationType<K>;
+};
+
+export type DynamicSchemaStructure = {
+    [K in AutomationDynamicName]: AutomationType<K>;
+};
+
+export type CustomSchemaStructure = {
+    [K in AutomationCustomName]: AutomationType<K>;
+};
+
+// Full schema structure (combination of all)
+export type FullSchemaStructure =
+    TableSchemaStructure &
+    ViewSchemaStructure &
+    DynamicSchemaStructure &
+    CustomSchemaStructure;
 
 
-
-
-
-
-
-export type ActionType = AutomationSchema["action"];
-export type AiEndpointType = AutomationSchema["aiEndpoint"];
-export type AiModelType = AutomationSchema["aiModel"];
-export type ArgType = AutomationSchema["arg"];
-export type AutomationBoundaryBrokerType = AutomationSchema["automationBoundaryBroker"];
-export type AutomationMatrixType = AutomationSchema["automationMatrix"];
-export type BrokerType = AutomationSchema["broker"];
-export type DataInputComponentType = AutomationSchema["dataInputComponent"];
-export type DataOutputComponentType = AutomationSchema["dataOutputComponent"];
-export type DisplayOptionType = AutomationSchema["displayOption"];
-export type EmailsType = AutomationSchema["emails"];
-export type ExtractorType = AutomationSchema["extractor"];
-export type FlashcardDataType = AutomationSchema["flashcardData"];
-export type FlashcardHistoryType = AutomationSchema["flashcardHistory"];
-export type FlashcardImagesType = AutomationSchema["flashcardImages"];
-export type FlashcardSetRelationsType = AutomationSchema["flashcardSetRelations"];
-export type FlashcardSetsType = AutomationSchema["flashcardSets"];
-export type ProcessorType = AutomationSchema["processor"];
-export type RecipeType = AutomationSchema["recipe"];
-export type RecipeBrokerType = AutomationSchema["recipeBroker"];
-export type RecipeDisplayType = AutomationSchema["recipeDisplay"];
-export type RecipeFunctionType = AutomationSchema["recipeFunction"];
-export type RecipeModelType = AutomationSchema["recipeModel"];
-export type RecipeProcessorType = AutomationSchema["recipeProcessor"];
-export type RecipeToolType = AutomationSchema["recipeTool"];
-export type RegisteredFunctionType = AutomationSchema["registeredFunction"];
-export type SystemFunctionType = AutomationSchema["systemFunction"];
-export type ToolType = AutomationSchema["tool"];
-export type TransformerType = AutomationSchema["transformer"];
-export type UserPreferencesType = AutomationSchema["userPreferences"];
-
-
-
-
-/*
-export type AutomationEntityName = AutomationTableName | AutomationViewName;
-export type AutomationEntitySchema = TableSchema | ViewSchema;
-
-
-
-
-
-
-
-
-*/

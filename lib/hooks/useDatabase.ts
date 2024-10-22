@@ -14,7 +14,7 @@ import {
     generateJsonTemplate,
     ensureId
 } from "@/utils/schema/schemaUtils";
-import {TableName} from "@/types/tableSchemaTypes";
+import {TableName} from "@/lib/redux/concepts/tableSchemaTypes";
 
 interface PaginationInfo {
     currentPage: number;

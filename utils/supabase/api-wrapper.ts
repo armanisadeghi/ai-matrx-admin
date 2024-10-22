@@ -20,7 +20,7 @@ import {
     SchemaRegistry,
     TableFieldSchema,
     TableSchema
-} from "@/types/tableSchemaTypes";
+} from "@/lib/redux/concepts/tableSchemaTypes";
 
 export type QueryOptions<T extends TableSchema> = {
     filters?: Partial<Record<keyof TableSchema['fields'], any>>;

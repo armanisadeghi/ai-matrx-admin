@@ -1,3 +1,4 @@
+/*
 import {getRegisteredSchemaNames} from "@/utils/schema/schemaRegistry";
 import {TypeBrand} from "@/types/AutomationSchemaTypes";
 
@@ -122,12 +123,12 @@ export interface CustomFieldConverter<T> extends Omit<FieldProperties, 'fieldNam
 // };
 
 
-/* Replaced by DataStructure
+/!* Replaced by DataStructure
 export type ConversionFormat = 'single' | 'array' | 'object';
-*/
+*!/
 
 
-/*
+/!*
 export type FieldProperties = {
     structure: FieldStructure;
     characterMaximumLength?: number | null;
@@ -141,17 +142,17 @@ export interface FieldStructure {
     databaseTable?: SchemaTableName;
 }
 
-*/
+*!/
 
 
-/* REPLACED BY Relationship
+/!* REPLACED BY Relationship
 export interface TableRelationship {
     fetchStrategy: FetchStrategy;
     foreignKeys: ForeignKeyRelation[];
     inverseForeignKeys: InverseForeignKeyRelation[];
     manyToMany: ManyToManyRelation[];
 }
-*/
+*!/
 
 
 // ELIMINATED when we moved structure entries to direct properties of FieldProperties
@@ -265,3 +266,4 @@ export interface TableRelationship {
 // };
 
 
+*/

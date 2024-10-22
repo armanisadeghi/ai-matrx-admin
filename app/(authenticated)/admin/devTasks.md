@@ -17,3 +17,18 @@
 - [ ] Integrate schema system with the Features system
 - [ ] Test system with two tables simultaneously
 - [ ] Write basics in Python
+
+
+Add to VSCode:
+{
+"typescript.tsserver.maxTsServerMemory": 8192,
+"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+"editor.quickSuggestions": {
+"strings": true
+},
+"typescript.inlayHints.functionLikeReturnTypes": true,
+"typescript.inlayHints.parameterTypes": true,
+"typescript.inlayHints.propertyDeclarationTypes": true,
+"typescript.inlayHints.variableTypes": true
+}
+

@@ -1,9 +1,10 @@
 // File: lib/schemaRegistry.ts
 
-import {getPrecomputedFormat, DataFormat} from "@/lib/redux/concepts/automation-concept/baseAutomationConcept";
 
 
 
+
+import {NameFormat} from "@/types/AutomationSchemaTypes";
 
 export interface ConversionOptions {
     maxDepth?: number;
@@ -60,7 +61,7 @@ function convertValue(value: any, converter: DataType): any {
     }
 }
 
-export function getFrontendTableName(tableName: TableName, format: DataFormat): TableName {
+export function getFrontendTableName(tableName: TableName, format: NameFormat): TableName {
     const availableNames: { [key: string]: string[] } = {};
 
     for (const [frontendName, schema] of Object.entries(globalSchemaRegistry)) {
@@ -112,7 +113,7 @@ export function getPrimaryKeyField(tableName: TableName): { fieldName: string; m
 
 export function getSchema(
     tableName: TableName,
-    format: DataFormat = 'frontend'
+    format: NameFormat = 'frontend'
 ): FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema | undefined {
     console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
 
@@ -199,7 +200,7 @@ function applyPrettyFormat(schema: TableSchema): PrettyTableSchema {
     };
 }
 
-function applyCustomFormat(schema: TableSchema, customFormat: DataFormat): CustomTableSchema {
+function applyCustomFormat(schema: TableSchema, customFormat: NameFormat): CustomTableSchema {
     const customName = `custom_${schema.name[customFormat as keyof typeof schema.name] || schema.name.frontend}`;
     const transformedFields = {};
     for (const [fieldKey, field] of Object.entries(schema.fields)) {
@@ -254,8 +255,8 @@ export function getApiWrapperSchemaFormats(
 function handleSingleRelationship(
     item: any,
     converter: FieldConverter<any>,
-    sourceFormat: DataFormat,
-    targetFormat: DataFormat,
+    sourceFormat: NameFormat,
+    targetFormat: NameFormat,
     options: ConversionOptions,
     processedEntities: Set<string>
 ): any {
@@ -302,8 +303,8 @@ function handleSingleRelationship(
 function handleRelationship(
     data: any,
     converter: FieldConverter<any>,
-    sourceFormat: DataFormat,
-    targetFormat: DataFormat,
+    sourceFormat: NameFormat,
+    targetFormat: NameFormat,
     options: ConversionOptions,
     processedEntities: Set<string>
 ): any {
@@ -317,8 +318,8 @@ function handleRelationship(
 
 interface ConvertDataParams {
     data: any;
-    sourceFormat: DataFormat;
-    targetFormat: DataFormat;
+    sourceFormat: NameFormat;
+    targetFormat: NameFormat;
     tableName: TableName;
     options?: ConversionOptions;
     processedEntities?: Set<string>;
@@ -409,7 +410,7 @@ function getFrontendTableNameFromUnknown(tableName: TableName): string {
 }
 
 
-export function getRegisteredSchemaNames(format: DataFormat = 'database'): Array<AltOptions[typeof format]> {
+export function getRegisteredSchemaNames(format: NameFormat = 'database'): Array<AltOptions[typeof format]> {
     const schemaNames: Array<AltOptions[typeof format]> = [];
 
     for (const schema of Object.values(globalSchemaRegistry)) {
@@ -546,7 +547,7 @@ export function processDataForInsert(tableName: TableName, dbData: Record<string
     };
 }
 
-export async function getRelationships(tableName: TableName, format: DataFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
+export async function getRelationships(tableName: TableName, format: NameFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     const schema = getSchema(tableName, format);
     if (!schema) {
         console.error(`Schema not found for table: ${tableName}`);

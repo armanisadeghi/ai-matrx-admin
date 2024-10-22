@@ -1,30 +1,12 @@
-import {AutomationTableName, DataFormat, TypeBrand} from "@/types/AutomationTypes";
-import {tableSchemas} from "@/utils/schema/initialSchemas";
-
-export const tableNameLookup: Record<string, string> = {
-    action: 'action',
-    backend_action: 'action',
-    tbl_action: 'action',
-    'action-component': 'action',
-    Action: 'action',
-    // Other tables and their variations...
-};
+import {AutomationTableName, NameFormat} from "@/types/AutomationSchemaTypes";
+import {fieldNameLookup, tableNameLookup} from "@/utils/schema/lookupSchema";
+import {automationTableSchema} from "@/utils/schema/initialSchemas";
 
 
-export const fieldNameLookup: Record<string, Record<string, string>> = {
-    action: {
-        id: 'id',
-        backend_id: 'id',
-        db_id: 'id',
-        'id-component': 'id',
-        Id: 'id',
-        // Other field variations...
-    },
-    // Other tables...
-};
+
 
 function isAutomationTableName(name: string): name is AutomationTableName {
-    return name in tableSchemas;
+    return name in automationTableSchema;
 }
 
 function resolveTableName(requestedName: string): string | undefined {
@@ -36,7 +18,7 @@ function resolveTableName(requestedName: string): string | undefined {
 
 function resolveFieldName(tableName: string, requestedField: string): string | undefined {
     if (isAutomationTableName(tableName)) {
-        const schema = tableSchemas[tableName];
+        const schema = automationTableSchema[tableName];
         if (schema?.entityFields[requestedField]) {
             return requestedField;
         }
@@ -44,24 +26,24 @@ function resolveFieldName(tableName: string, requestedField: string): string | u
     return fieldNameLookup[tableName as AutomationTableName]?.[requestedField] || undefined;
 }
 
-function translateTableName(tableName: string, sourceFormat: DataFormat, destinationFormat: DataFormat): string | undefined {
+function translateTableName(tableName: string, sourceFormat: NameFormat, destinationFormat: NameFormat): string | undefined {
     const resolvedTableName = resolveTableName(tableName);
     if (!resolvedTableName) return undefined;
 
     return resolvedTableName;
 }
 
-function translateFieldName(tableName: string, fieldName: string, sourceFormat: DataFormat, destinationFormat: DataFormat): string | undefined {
+function translateFieldName(tableName: string, fieldName: string, sourceFormat: NameFormat, destinationFormat: NameFormat): string | undefined {
     const resolvedTableName = resolveTableName(tableName);
     if (!resolvedTableName) return undefined;
 
     const resolvedFieldName = resolveFieldName(resolvedTableName, fieldName);
     if (!resolvedFieldName) return undefined;
 
-    return resolvedFieldName; // All translations handled via lookups
+    return resolvedFieldName;
 }
 
-function handleRequest(request: { tableName: string; fieldName: string; sourceFormat?: DataFormat; destinationFormat?: DataFormat }) {
+function handleRequest(request: { tableName: string; fieldName: string; sourceFormat?: NameFormat; destinationFormat?: NameFormat }) {
     const sourceFormat = request.sourceFormat || 'frontend';
     const destinationFormat = request.destinationFormat || 'frontend';
 
@@ -80,3 +62,5 @@ function handleRequest(request: { tableName: string; fieldName: string; sourceFo
     const translatedFieldName = translateFieldName(resolvedTableName, resolvedFieldName, sourceFormat, destinationFormat);
     console.log(`Request resolved: Table '${resolvedTableName}', Field '${translatedFieldName}'`);
 }
+
+

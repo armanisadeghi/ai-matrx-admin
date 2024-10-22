@@ -8,7 +8,7 @@ interface NavigatorClipboard {
 
 interface Navigator extends NavigatorClipboard {}
 
-import * as SchemaTypes from './types/tableSchemaTypes';
+import * as SchemaTypes from './lib/redux/concepts/tableSchemaTypes';
 
 declare global {
     type SchemaTypes = typeof SchemaTypes;

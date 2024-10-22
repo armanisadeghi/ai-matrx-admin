@@ -13,11 +13,16 @@ import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
 import { rootSaga } from "@/lib/redux/rootSaga";
-import {tableSchemas, viewSchemas} from "@/utils/schema/initialSchemas";
-import {initializeTableSchema} from "@/lib/redux/concepts/automation-concept/baseAutomationConcept";
-import {TableSchema, ViewSchema} from '@/types/AutomationTypes';
+import {automationTableSchema} from "@/utils/schema/initialSchemas";
+import {TableSchema, TableSchemaStructure} from "@/types/AutomationTypes";
+import {initializeTableSchema} from "@/utils/schema/precomputeUtil";
+import {AutomationTableName} from "@/types/AutomationSchemaTypes";
 
 const sagaMiddleware = createSagaMiddleware();
+
+type AutomationTableReducers = {
+    [K in AutomationTableName]: TableSchema<K>;
+};
 
 // Stronger typing for featureReducers and moduleReducers
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
@@ -34,25 +39,18 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-const initializedTableSchemas = Object.keys(tableSchemas).reduce((acc, tableName) => {
-    const tableSchema = tableSchemas[tableName as keyof typeof tableSchemas];
-    acc[tableName] = initializeTableSchema(tableSchema as TableSchema);
+const automationTableReducers = Object.entries(automationTableSchema).reduce<AutomationTableReducers>((acc, [tableName, tableSchema]) => {
+    acc[tableName as AutomationTableName] = initializeTableSchema(
+        tableSchema as TableSchema<AutomationTableName>
+    );
     return acc;
-}, {} as Record<string, TableSchema>);
-
-// Initialize all view schemas similarly
-const initializedViewSchemas = Object.keys(viewSchemas).reduce((acc, viewName) => {
-    const viewSchema = viewSchemas[viewName as keyof typeof viewSchemas];
-    acc[viewName] = initializeViewSchema(viewSchema as ViewSchema); // Create this similar to initializeTableSchema
-    return acc;
-}, {} as Record<string, ViewSchema>);
+}, {} as AutomationTableReducers);
 
 
 const rootReducer = combineReducers({
     ...featureReducers,
     ...moduleReducers,
-    ...initializedTableSchemas,
-    ...initializedViewSchemas,
+    ...automationTableReducers,
     layout: layoutReducer,
     theme: themeReducer,
     form: formReducer,
@@ -80,3 +78,19 @@ export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];
 export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>;
+
+
+
+
+
+/*
+    ...initializedViewSchemas,
+
+// Initialize all view schemas similarly
+const initializedViewSchemas = Object.keys(automationviewSchemas).reduce((acc, viewName) => {
+    const viewSchema = automationviewSchemas[viewName as keyof typeof automationviewSchemas];
+    acc[viewName] = initializeViewSchema(viewSchema as ViewSchema); // Create this similar to initializeTableSchema
+    return acc;
+}, {} as Record<string, ViewSchema>);
+
+ */
