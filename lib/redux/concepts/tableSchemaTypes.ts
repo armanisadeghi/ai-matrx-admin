@@ -1,14 +1,15 @@
-/*
+import {AutomationTableName, NameFormat, TypeBrand} from "@/types/AutomationSchemaTypes";
+import {getGlobalCache} from "@/utils/schema/precomputeUtil";
+import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 import {getRegisteredSchemaNames} from "@/utils/schema/schemaRegistry";
-import {TypeBrand} from "@/types/AutomationSchemaTypes";
 
 
 export type RelationshipType = 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
 
 
-export type SchemaTableName = keyof typeof initialSchemas;
+export type SchemaTableName = keyof typeof initialAutomationTableSchema;
 
-type InitialSchemas = typeof initialSchemas;
+type InitialSchemas = typeof initialAutomationTableSchema;
 
 
 
@@ -19,7 +20,6 @@ export type StringKeysOnly<T> = {
 };
 
 type ValueOf<T> = T[keyof T];
-
 
 
 
@@ -47,15 +47,15 @@ export function createTypeReference<T>(): TypeBrand<T> {
 }
 
 
-export type FieldNameKey = keyof NameVariations;
+export type FieldNameKey = keyof NameFormat;
 
-export type FrontendFieldName = NameVariations['frontend'];
-export type DatabaseFieldName = NameVariations['database'];
-
-
-export function fieldName<T extends SchemaTableName, F extends FieldNames<T>>(table: T, field: F): F {
-    return field;
-}
+// export type FrontendFieldName = NameFormat['frontend'];
+// export type DatabaseFieldName = NameFormat['database'];
+//
+//
+// export function fieldName<T extends SchemaTableName, F extends FieldNames<T>>(table: T, field: F): F {
+//     return field;
+// }
 
 export function tableName<T extends SchemaTableName>(table: T): T {
     return table;
@@ -74,61 +74,61 @@ export type DataFormat =
     | 'others';
 
 
-export interface FrontendTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
+export interface FrontendTableSchema extends Omit<AutomationTableName, 'entityNameVariations'> {
     frontendTableName: string;
 }
 
-export interface DatabaseTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
+export interface DatabaseTableSchema extends Omit<AutomationTableName, 'tableNameVariations'> {
     databaseTableName: string;
 }
 
-export interface BackendTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
+export interface BackendTableSchema extends Omit<AutomationTableName, 'tableNameVariations'> {
     backendTableName: string;
 }
 
-export interface PrettyTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
+export interface PrettyTableSchema extends Omit<AutomationTableName, 'tableNameVariations'> {
     prettyTableName: string;
 }
 
-export interface CustomTableSchema extends Omit<TableSchema, 'tableNameVariations'> {
+export interface CustomTableSchema extends Omit<AutomationTableName, 'tableNameVariations'> {
     customName: string;
     customFormat: DataFormat;
 }
 
-export interface FrontendFieldConverter extends Omit<FieldProperties, 'fieldNameVariations'> {
-    frontendFieldName: string;
-}
-
-export interface DatabaseFieldConverter extends Omit<FieldProperties, 'fieldNameVariations'> {
-    databaseFieldName: string;
-}
-
-export interface BackendFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
-    backendFieldName: string;
-}
-
-export interface PrettyFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
-    prettyFieldName: string;
-}
-
-export interface CustomFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
-    customFieldName: string;
-    customFormat: DataFormat;
-}
-
+// export interface FrontendFieldConverter extends Omit<FieldProperties, 'fieldNameVariations'> {
+//     frontendFieldName: string;
+// }
+//
+// export interface DatabaseFieldConverter extends Omit<FieldProperties, 'fieldNameVariations'> {
+//     databaseFieldName: string;
+// }
+//
+// export interface BackendFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
+//     backendFieldName: string;
+// }
+//
+// export interface PrettyFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
+//     prettyFieldName: string;
+// }
+//
+// export interface CustomFieldConverter<T> extends Omit<FieldProperties, 'fieldNameVariations'> {
+//     customFieldName: string;
+//     customFormat: DataFormat;
+// }
+//
 
 // InferSchemaType REPLACED BY InferFieldTypes
-// export type InferSchemaType<T extends TableSchema> = {
+// export type InferSchemaType<T extends AutomationTableName> = {
 //     [K in keyof T['fields']]: InferFieldType<T['fields'][K]>;
 // };
 
 
-/!* Replaced by DataStructure
+/* Replaced by DataStructure
 export type ConversionFormat = 'single' | 'array' | 'object';
-*!/
+*/
 
 
-/!*
+/*
 export type FieldProperties = {
     structure: FieldStructure;
     characterMaximumLength?: number | null;
@@ -142,17 +142,17 @@ export interface FieldStructure {
     databaseTable?: SchemaTableName;
 }
 
-*!/
+*/
 
 
-/!* REPLACED BY Relationship
+/* REPLACED BY Relationship
 export interface TableRelationship {
     fetchStrategy: FetchStrategy;
     foreignKeys: ForeignKeyRelation[];
     inverseForeignKeys: InverseForeignKeyRelation[];
     manyToMany: ManyToManyRelation[];
 }
-*!/
+*/
 
 
 // ELIMINATED when we moved structure entries to direct properties of FieldProperties
@@ -194,7 +194,7 @@ export interface TableRelationship {
 // };
 //
 //
-// export type AltOptionKeys<T extends TableSchema> = keyof T['tableNameVariations']; // Not sure if this is even accurate
+// export type AltOptionKeys<T extends AutomationTableName> = keyof T['tableNameVariations']; // Not sure if this is even accurate
 
 // Eliminated when these options were added to 'DataStructure' but this is one that might not work.
 // export type StructureTypes = "simple" | "foreignKey" | "inverseForeignKey" | "manyToMany";
@@ -266,4 +266,3 @@ export interface TableRelationship {
 // };
 
 
-*/

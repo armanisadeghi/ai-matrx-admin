@@ -2,8 +2,8 @@
 
 import {AutomationTableName, FieldDataType, NameFormat} from "@/types/AutomationSchemaTypes";
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
-import {globalSchemaRegistry} from "@/lib/hooks/useSchema";
-import {DatabaseTableSchema, FrontendTableSchema, TableSchema} from "@/lib/redux/concepts/tableSchemaTypes";
+import {getGlobalCache} from "@/utils/schema/precomputeUtil";
+import {AutomationTable} from "@/types/automationTableTypes";
 
 export interface ConversionOptions {
     maxDepth?: number;
@@ -99,165 +99,165 @@ export function getTableNameByFormat(tableName: string, nameFormat: string): str
 
 
 
-export function getPrimaryKeyField(tableName: string): { fieldName: string; message: string } {
-    const schema = initialAutomationTableSchema[tableName];
-    if (!schema) {
-        return {
-            fieldName: "id",
-            message: `Table '${tableName}' not found in the schema registry. Returning default 'id'.`
-        };
-    }
-
-    const primaryKeyField = Object.entries(schema.fields).find(([_, field]) => field.isPrimaryKey);
-
-    if (primaryKeyField) {
-        const [fieldName, fieldData] = primaryKeyField;
-        return {
-            fieldName: fieldData.alts.database,
-            message: `Primary key '${fieldName}' found for table '${tableName}'.`
-        };
-    }
-    return {
-        fieldName: "id",
-        message: `No primary key found for table '${tableName}'. Returning default 'id'.`
-    };
-}
-
-export function getSchema(
-    tableName: string,
-    format: NameFormat = 'frontend'
-): FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema | undefined {
-    console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
-
-    const frontendTableName = getFrontendTableNameFromUnknown(tableName);
-
-    // Use the global schema registry to find the schema by frontend name
-    const schema = globalSchemaRegistry[frontendTableName];
-
-    if (!schema) {
-        console.warn(`No schema found for table name: ${tableName}`);
-        return undefined;
-    }
-
-    // Use precomputed format-specific schemas directly
-    const precomputedSchema = getPrecomputedFormat(schema, format);
-
-    if (!precomputedSchema) {
-        console.warn(`No schema found for table name: ${tableName} in format: ${format}`);
-        return undefined;
-    }
-
-    console.log(`Schema found for ${frontendTableName} in ${format} format.`);
-    return precomputedSchema as FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema;
-}
-
-
-function applyFrontendFormat(schema: TableSchema): FrontendTableSchema {
-    const transformedFields = {};
-    for (const [fieldKey, field] of Object.entries(schema.fields)) {
-        transformedFields[fieldKey] = {
-            ...field,
-            frontendFieldName: field.alts.frontend
-        };
-    }
-    return {
-        ...schema,
-        frontendTableName: schema.name.frontend,
-        fields: transformedFields
-    };
-}
-
-function applyBackendFormat(schema: TableSchema): BackendTableSchema {
-    const transformedFields = {};
-    for (const [fieldKey, field] of Object.entries(schema.fields)) {
-        transformedFields[fieldKey] = {
-            ...field,
-            backendFieldName: field.alts.backend
-        };
-    }
-    return {
-        ...schema,
-        backendTableName: schema.name.backend,
-        fields: transformedFields
-    };
-}
-
-function applyDatabaseFormat(schema: TableSchema): DatabaseTableSchema {
-    const transformedFields = {};
-    for (const [fieldKey, field] of Object.entries(schema.fields)) {
-        transformedFields[fieldKey] = {
-            ...field,
-            databaseFieldName: field.alts.database
-        };
-    }
-    return {
-        ...schema,
-        databaseTableName: schema.name.database,
-        fields: transformedFields
-    };
-}
-
-function applyPrettyFormat(schema: TableSchema): PrettyTableSchema {
-    const transformedFields = {};
-    for (const [fieldKey, field] of Object.entries(schema.fields)) {
-        transformedFields[fieldKey] = {
-            ...field,
-            prettyFieldName: field.alts.pretty
-        };
-    }
-    return {
-        ...schema,
-        prettyTableName: schema.name.pretty,
-        fields: transformedFields
-    };
-}
-
-function applyCustomFormat(schema: TableSchema, customFormat: NameFormat): CustomTableSchema {
-    const customName = `custom_${schema.name[customFormat as keyof typeof schema.name] || schema.name.frontend}`;
-    const transformedFields = {};
-    for (const [fieldKey, field] of Object.entries(schema.fields)) {
-        transformedFields[fieldKey] = {
-            ...field,
-            customFieldName: field.alts[customFormat as keyof typeof field.alts] || field.alts.frontend,
-            customFormat
-        };
-    }
-    return {
-        ...schema,
-        customName,
-        customFormat,
-        fields: transformedFields
-    };
-}
-
-
-export function getApiWrapperSchemaFormats(
-    tableName: TableName
-): ApiWrapperSchemaFormats | undefined {
-    console.log(`getApiWrapperSchemaFormats called for tableName: ${tableName}`);
-
-    const frontendTableName = getFrontendTableNameFromUnknown(tableName);
-
-    const schema = Object.values(globalSchemaRegistry).find(
-        (schema) => schema.entityNameVariations.frontend === frontendTableName
-    );
-
-    if (!schema) {
-        console.warn(`No schema found for table name: ${tableName}`);
-        return undefined;
-    }
-
-    console.log(`Schema found for ${frontendTableName}. Preparing frontend and database formats.`);
-
-    const frontendSchema = applyFrontendFormat(schema);
-    const databaseSchema = applyDatabaseFormat(schema);
-
-    return {
-        schema,
-        frontend: frontendSchema,
-        database: databaseSchema
-    };
-}
+// export function getPrimaryKeyField(tableName: string): { fieldName: string; message: string } {
+//     const schema = initialAutomationTableSchema[tableName];
+//     if (!schema) {
+//         return {
+//             fieldName: "id",
+//             message: `Table '${tableName}' not found in the schema registry. Returning default 'id'.`
+//         };
+//     }
+//
+//     const primaryKeyField = Object.entries(schema.entityFields).find(([_, field]) => field.isPrimaryKey);
+//
+//     if (primaryKeyField) {
+//         const [fieldName, fieldData] = primaryKeyField;
+//         return {
+//             fieldName: fieldData.alts.database,
+//             message: `Primary key '${fieldName}' found for table '${tableName}'.`
+//         };
+//     }
+//     return {
+//         fieldName: "id",
+//         message: `No primary key found for table '${tableName}'. Returning default 'id'.`
+//     };
+// }
+//
+// export function getSchema(
+//     tableName: string,
+//     format: NameFormat = 'frontend'
+// ): FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema | undefined {
+//     console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
+//
+//     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
+//
+//     // Use the global schema registry to find the schema by frontend name
+//     const schema = globalSchemaRegistry[frontendTableName];
+//
+//     if (!schema) {
+//         console.warn(`No schema found for table name: ${tableName}`);
+//         return undefined;
+//     }
+//
+//     // Use precomputed format-specific schemas directly
+//     const precomputedSchema = getPrecomputedFormat(schema, format);
+//
+//     if (!precomputedSchema) {
+//         console.warn(`No schema found for table name: ${tableName} in format: ${format}`);
+//         return undefined;
+//     }
+//
+//     console.log(`Schema found for ${frontendTableName} in ${format} format.`);
+//     return precomputedSchema as FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema;
+// }
+//
+//
+// function applyFrontendFormat(schema: TableSchema): FrontendTableSchema {
+//     const transformedFields = {};
+//     for (const [fieldKey, field] of Object.entries(schema.fields)) {
+//         transformedFields[fieldKey] = {
+//             ...field,
+//             frontendFieldName: field.alts.frontend
+//         };
+//     }
+//     return {
+//         ...schema,
+//         frontendTableName: schema.name.frontend,
+//         fields: transformedFields
+//     };
+// }
+//
+// function applyBackendFormat(schema: TableSchema): BackendTableSchema {
+//     const transformedFields = {};
+//     for (const [fieldKey, field] of Object.entries(schema.fields)) {
+//         transformedFields[fieldKey] = {
+//             ...field,
+//             backendFieldName: field.alts.backend
+//         };
+//     }
+//     return {
+//         ...schema,
+//         backendTableName: schema.name.backend,
+//         fields: transformedFields
+//     };
+// }
+//
+// function applyDatabaseFormat(schema: TableSchema): DatabaseTableSchema {
+//     const transformedFields = {};
+//     for (const [fieldKey, field] of Object.entries(schema.fields)) {
+//         transformedFields[fieldKey] = {
+//             ...field,
+//             databaseFieldName: field.alts.database
+//         };
+//     }
+//     return {
+//         ...schema,
+//         databaseTableName: schema.name.database,
+//         fields: transformedFields
+//     };
+// }
+//
+// function applyPrettyFormat(schema: TableSchema): PrettyTableSchema {
+//     const transformedFields = {};
+//     for (const [fieldKey, field] of Object.entries(schema.fields)) {
+//         transformedFields[fieldKey] = {
+//             ...field,
+//             prettyFieldName: field.alts.pretty
+//         };
+//     }
+//     return {
+//         ...schema,
+//         prettyTableName: schema.name.pretty,
+//         fields: transformedFields
+//     };
+// }
+//
+// function applyCustomFormat(schema: TableSchema, customFormat: NameFormat): CustomTableSchema {
+//     const customName = `custom_${schema.name[customFormat as keyof typeof schema.name] || schema.name.frontend}`;
+//     const transformedFields = {};
+//     for (const [fieldKey, field] of Object.entries(schema.fields)) {
+//         transformedFields[fieldKey] = {
+//             ...field,
+//             customFieldName: field.alts[customFormat as keyof typeof field.alts] || field.alts.frontend,
+//             customFormat
+//         };
+//     }
+//     return {
+//         ...schema,
+//         customName,
+//         customFormat,
+//         fields: transformedFields
+//     };
+// }
+//
+//
+// export function getApiWrapperSchemaFormats(
+//     tableName: TableName
+// ): ApiWrapperSchemaFormats | undefined {
+//     console.log(`getApiWrapperSchemaFormats called for tableName: ${tableName}`);
+//
+//     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
+//
+//     const schema = Object.values(globalSchemaRegistry).find(
+//         (schema) => schema.entityNameVariations.frontend === frontendTableName
+//     );
+//
+//     if (!schema) {
+//         console.warn(`No schema found for table name: ${tableName}`);
+//         return undefined;
+//     }
+//
+//     console.log(`Schema found for ${frontendTableName}. Preparing frontend and database formats.`);
+//
+//     const frontendSchema = applyFrontendFormat(schema);
+//     const databaseSchema = applyDatabaseFormat(schema);
+//
+//     return {
+//         schema,
+//         frontend: frontendSchema,
+//         database: databaseSchema
+//     };
+// }
 
 
 
@@ -281,7 +281,7 @@ function handleSingleRelationship(
             return item;
         }
 
-        const frontendTableName = getFrontendTableName(relatedTableName, 'databaseName');
+        const frontendTableName = getFrontendTableName(relatedTableName, 'database');
         const entityId = item.id || item.p_id;
         if (entityId && processedEntities.has(`${frontendTableName}:${entityId}`)) {
             return { id: entityId };
@@ -422,11 +422,20 @@ function getFrontendTableNameFromUnknown(tableName: TableName): string {
 }
 
 
-export function getRegisteredSchemaNames(format: NameFormat = 'database'): Array<AltOptions[typeof format]> {
-    const schemaNames: Array<AltOptions[typeof format]> = [];
+export function getRegisteredSchemaNames(
+    format: keyof AutomationTable['entityNameMappings'] = 'database',
+    trace: string[] = ['unknownCaller']
+): Array<string> {
+    trace = [...trace, 'getRegisteredSchemaNames'];
 
-    for (const schema of Object.values(globalSchemaRegistry)) {
-        const schemaName = schema.name[format];
+    const globalCache = getGlobalCache(trace);
+    if (!globalCache) return [];
+
+    const schemaNames: Array<string> = [];
+
+    // Iterate over each schema in the global cache and get the name in the desired format
+    for (const table of Object.values(globalCache.schema)) {
+        const schemaName = table.entityNameMappings[format];
         if (schemaName) {
             schemaNames.push(schemaName);
         }
@@ -491,73 +500,74 @@ function handleRelationshipField(fieldName: string, value: any, structureType: s
 }
 
 
-// Main utility function
-export function processDataForInsert(tableName: TableName, dbData: Record<string, any>) {
-    const schema = getSchema(tableName, 'databaseName');
-    if (!schema) {
-        console.warn(`No schema found for table: ${tableName}. Returning original data.`);
-        return {
-            callMethod: 'simple',
-            processedData: dbData
-        };
-    }
-
-    const cleanedData = removeEmptyFields(dbData);
-    let result: Record<string, any> = {};
-    const relatedTables: Array<Record<string, any>> = [];
-    let hasForeignKey = false;
-    let hasInverseForeignKey = false;
-
-    for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
-        const dbKey = fieldSchema.fieldNameVariations['databaseName'];
-
-        if (cleanedData.hasOwnProperty(dbKey)) {
-            const value = cleanedData[dbKey];
-            const structureType = fieldSchema.structure.structure;
-
-            if (structureType === 'simple') {
-                result[dbKey] = value;
-            } else if (structureType === 'foreignKey' || structureType === 'inverseForeignKey') {
-                const relationship = handleRelationshipField(dbKey, value, structureType, tableName, fieldSchema);
-
-                if (relationship.type === 'fk') {
-                    hasForeignKey = true;
-                    result = {...result, ...relationship.data}; // Add the exact db field
-                    result = {...result, ...relationship.appData}; // Add app-specific field (for internal use)
-                } else if (relationship.type === 'ifk') {
-                    hasInverseForeignKey = true;
-                    relatedTables.push({
-                        table: relationship.table,
-                        data: relationship.data,
-                        related_column: relationship.related_column
-                    });
-                }
-            } else {
-                console.warn(`Unknown structure type for field ${fieldName}: ${structureType}. Skipping field.`);
-            }
-        }
-    }
-
-    let callMethod: string;
-    if (!hasForeignKey && !hasInverseForeignKey) {
-        callMethod = 'simple';
-    } else if (hasForeignKey && !hasInverseForeignKey) {
-        callMethod = 'fk';
-    } else if (!hasForeignKey && hasInverseForeignKey) {
-        callMethod = 'ifk';
-    } else {
-        callMethod = 'fkAndIfk';
-    }
-
-    if (relatedTables.length > 0) {
-        result.relatedTables = relatedTables;
-    }
-
-    return {
-        callMethod,
-        processedData: result
-    };
-}
+// // Main utility function
+// export function processDataForInsert(tableName: TableName, dbData: Record<string, any>) {
+//
+//     const schema = getSchema(tableName, 'databaseName');
+//     if (!schema) {
+//         console.warn(`No schema found for table: ${tableName}. Returning original data.`);
+//         return {
+//             callMethod: 'simple',
+//             processedData: dbData
+//         };
+//     }
+//
+//     const cleanedData = removeEmptyFields(dbData);
+//     let result: Record<string, any> = {};
+//     const relatedTables: Array<Record<string, any>> = [];
+//     let hasForeignKey = false;
+//     let hasInverseForeignKey = false;
+//
+//     for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
+//         const dbKey = fieldSchema.fieldNameVariations['databaseName'];
+//
+//         if (cleanedData.hasOwnProperty(dbKey)) {
+//             const value = cleanedData[dbKey];
+//             const structureType = fieldSchema.structure.structure;
+//
+//             if (structureType === 'simple') {
+//                 result[dbKey] = value;
+//             } else if (structureType === 'foreignKey' || structureType === 'inverseForeignKey') {
+//                 const relationship = handleRelationshipField(dbKey, value, structureType, tableName, fieldSchema);
+//
+//                 if (relationship.type === 'fk') {
+//                     hasForeignKey = true;
+//                     result = {...result, ...relationship.data}; // Add the exact db field
+//                     result = {...result, ...relationship.appData}; // Add app-specific field (for internal use)
+//                 } else if (relationship.type === 'ifk') {
+//                     hasInverseForeignKey = true;
+//                     relatedTables.push({
+//                         table: relationship.table,
+//                         data: relationship.data,
+//                         related_column: relationship.related_column
+//                     });
+//                 }
+//             } else {
+//                 console.warn(`Unknown structure type for field ${fieldName}: ${structureType}. Skipping field.`);
+//             }
+//         }
+//     }
+//
+//     let callMethod: string;
+//     if (!hasForeignKey && !hasInverseForeignKey) {
+//         callMethod = 'simple';
+//     } else if (hasForeignKey && !hasInverseForeignKey) {
+//         callMethod = 'fk';
+//     } else if (!hasForeignKey && hasInverseForeignKey) {
+//         callMethod = 'ifk';
+//     } else {
+//         callMethod = 'fkAndIfk';
+//     }
+//
+//     if (relatedTables.length > 0) {
+//         result.relatedTables = relatedTables;
+//     }
+//
+//     return {
+//         callMethod,
+//         processedData: result
+//     };
+// }
 
 export async function getRelationships(tableName: TableName, format: NameFormat = 'frontend'): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     const schema = getSchema(tableName, format);

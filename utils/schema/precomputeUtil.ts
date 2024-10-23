@@ -5,13 +5,13 @@ import {
     TableSchemaStructure,
     AutomationTableStructure,
 } from "@/types/automationTableTypes";
-import {NameFormat} from "@/types/AutomationSchemaTypes";
-import { schemaLogger } from '@/lib/logger/schema-logger';
+import {AutomationTableName, NameFormat} from "@/types/AutomationSchemaTypes";
+import {schemaLogger} from '@/lib/logger/schema-logger';
 
 
 export function initializeTableSchema(
     initialAutomationTableSchema: TableSchemaStructure
-): AutomationTableStructure {
+): Record<AutomationTableName, AutomationTable> {
     const schemaMapping: Record<string, AutomationTable> = {};
 
     for (const [entityKey, entity] of Object.entries(initialAutomationTableSchema)) {
@@ -56,7 +56,7 @@ export function initializeTableSchema(
             }
 
             let enumValues: string[] | null = null;
-            const { typeReference } = field;
+            const {typeReference} = field;
 
             if (typeof typeReference === 'object' && Object.keys(typeReference).length > 0) {
                 enumValues = (Object.keys(typeReference) as (keyof typeof typeReference)[]).filter(key => key !== '_typeBrand');
@@ -66,9 +66,7 @@ export function initializeTableSchema(
 
 
             updatedFields[fieldKey] = {
-                fieldNameMappings: {
-                    [fieldKey]: fieldNameMappings
-                },
+                fieldNameMappings: fieldNameMappings,
                 value: field.defaultValue,
                 dataType: field.dataType,
                 isArray: field.isArray,
@@ -88,6 +86,7 @@ export function initializeTableSchema(
                 exclusionRules: field.exclusionRules,
                 databaseTable: field.databaseTable
             };
+            console.log('Added field:', fieldKey, updatedFields[fieldKey]);
         }
 
         schemaMapping[entityKey] = {
@@ -98,16 +97,11 @@ export function initializeTableSchema(
             componentProps: entity.componentProps,
             relationships: entity.relationships
         };
-        console.log('Added schema for:', entityKey, schemaMapping[entityKey]);
+        // console.log('Added schema for:', entityKey, schemaMapping[entityKey]);
     }
 
     return schemaMapping;
 }
-
-
-
-
-
 
 
 export type UnifiedSchemaCache = {
@@ -365,10 +359,8 @@ export function getFieldKey(
     // Fall back to resolveFieldName if no match found
     return resolveFieldName(tableKey, anyFieldNameVariation, trace);
 }
+
 // =================================================================================================
-
-
-
 
 
 // CRITICAL CONVERSION FUNCTIONS TO ENSURE NO ERRORS! =========================================
@@ -396,7 +388,6 @@ export function getUnknownFieldWithKnownTableKey(
 }
 
 
-
 // Updated to adhere to the new guidelines
 export function getFieldKeyFromUnknown(
     tableNameVariant: string,
@@ -412,8 +403,6 @@ export function getFieldKeyFromUnknown(
     // Then resolve the field key
     return getFieldKey(tableKey, anyFieldNameVariation, trace);
 }
-
-
 
 
 /**
@@ -544,17 +533,13 @@ export function getFieldName(
     return field.fieldNameMappings[fieldKey]?.[format] || fieldNameVariant;
 }
 
-/**
- * Retrieves the schema for a table, optionally rekeying it based on the provided format.
- * @param tableName The name of the table in any format.
- * @param responseFormat Optional. The desired format to rekey the schema (e.g., 'frontend', 'backend', 'database').
- */
-export function getSchem(
+
+export function getSchema(
     tableName: string,
     responseFormat?: keyof AutomationTable['entityNameMappings'],
     trace: string[] = ['unknownCaller']
 ): AutomationTable | null {
-    trace = [...trace, 'getSchem'];
+    trace = [...trace, 'getSchema'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return null;
@@ -573,12 +558,12 @@ export function getSchem(
         ...table,
         entityNameMappings: {
             ...table.entityNameMappings,
-            [responseFormat]: table.entityNameMappings[responseFormat],
+            [responseFormat]: table.entityNameMappings[responseFormat],  // Return table name in the requested format
         },
         entityFields: Object.fromEntries(
             Object.entries(table.entityFields).map(([fieldKey, field]) => [
-                field.fieldNameMappings[responseFormat] || fieldKey,
-                field,
+                field.fieldNameMappings[responseFormat] || fieldKey,  // Get the field name based on the requested format
+                field  // Preserve all other field properties
             ])
         ),
     };
@@ -694,6 +679,7 @@ export function getTableNameByFormat(tableName: string, nameFormat: string, trac
 
     return tableName;  // Fallback to original if no match
 }
+
 /**
  * Retrieves complete table information from the cached schema.
  */
@@ -811,11 +797,6 @@ export function getDisplayFields(tableName: string, trace: string[] = ['unknownC
 }
 
 
-
-
-
-
-
 /**
  * Generates the client-side schema bundle
  */
@@ -888,16 +869,16 @@ function handleRelationshipField(
             // Simple scalar value, treat it as a regular FK reference
             return {
                 type: 'fk',
-                data: { [fieldName]: value },
-                appData: { [`${fieldName}Fk`]: value }, // App-specific field
+                data: {[fieldName]: value},
+                appData: {[`${fieldName}Fk`]: value}, // App-specific field
                 table: relatedTable
             };
         } else if (typeof value === 'object' && value.id) {
             // It's an object with an ID field
             return {
                 type: 'fk',
-                data: { [fieldName]: value.id },
-                appData: { [`${fieldName}Object`]: value },
+                data: {[fieldName]: value.id},
+                appData: {[`${fieldName}Object`]: value},
                 table: relatedTable
             };
         } else {
@@ -923,7 +904,7 @@ export function processDataForInsert(
     trace = [...trace, 'processDataForInsert'];
 
     // Get schema from the cache, rekeyed for 'databaseName' format
-    const schema = getSchem(tableName, 'database', trace);
+    const schema = getSchema(tableName, 'database', trace);
     if (!schema) {
         console.warn(`No schema found for table: ${tableName}. Returning original data.`);
         return {
@@ -952,8 +933,8 @@ export function processDataForInsert(
 
                 if (relationship.type === 'fk') {
                     hasForeignKey = true;
-                    result = { ...result, ...relationship.data }; // Add exact db field
-                    result = { ...result, ...relationship.appData }; // Add app-specific field
+                    result = {...result, ...relationship.data}; // Add exact db field
+                    result = {...result, ...relationship.appData}; // Add app-specific field
                 } else if (relationship.type === 'ifk') {
                     hasInverseForeignKey = true;
                     relatedTables.push({
@@ -997,7 +978,7 @@ export async function getRelationships(
 ): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     trace = [...trace, 'getRelationships'];
 
-    const schema = getSchem(tableName, format, trace);
+    const schema = getSchema(tableName, format, trace);
     if (!schema) {
         console.error(`Schema not found for table: ${tableName}`);
         return null;
@@ -1033,4 +1014,26 @@ export async function getRelationships(
 
     console.log(`No foreignKey or inverseForeignKey found for table: ${tableName}. Returning 'simple'.`);
     return 'simple';
+}
+
+export function getRegisteredSchemaNames(
+    format: keyof AutomationTable['entityNameMappings'] = 'database',
+    trace: string[] = ['unknownCaller']
+): Array<string> {
+    trace = [...trace, 'getRegisteredSchemaNames'];
+
+    const globalCache = getGlobalCache(trace);
+    if (!globalCache) return [];
+
+    const schemaNames: Array<string> = [];
+
+    // Iterate over each schema in the global cache and get the name in the desired format
+    for (const table of Object.values(globalCache.schema)) {
+        const schemaName = table.entityNameMappings[format];
+        if (schemaName) {
+            schemaNames.push(schemaName);
+        }
+    }
+
+    return schemaNames;
 }

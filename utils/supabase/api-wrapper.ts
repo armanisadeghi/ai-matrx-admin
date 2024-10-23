@@ -1,3 +1,4 @@
+/*
 // utils/supabase/api-wrapper.ts
 
 import {SupabaseClient} from '@supabase/supabase-js';
@@ -932,3 +933,4 @@ type QueryBuilder<T extends Record<string, any> = any> = {
 
 type PostgrestList = Array<Record<string, any>>;
 type PostgrestMap = Record<string, any>;
+*/

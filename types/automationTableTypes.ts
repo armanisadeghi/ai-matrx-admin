@@ -1,4 +1,10 @@
-import {DataStructure, FetchStrategy, FieldDataType, NameFormat} from "@/types/AutomationSchemaTypes";
+import {
+    AutomationTableName,
+    DataStructure,
+    FetchStrategy,
+    FieldDataType,
+    NameFormat
+} from "@/types/AutomationSchemaTypes";
 
 
 export type TypeBrand<DataType> = { _typeBrand: DataType };
@@ -45,13 +51,12 @@ export type InitialTableSchema = {
 };
 
 export type TableSchemaStructure = {
-    [entityName: string]: InitialTableSchema;
+    [entityName in AutomationTableName]: InitialTableSchema;
 };
 
-export type TableNames = string & {};
 
 export type AutomationTableStructure = {
-    [K in TableNames]: AutomationTable;
+    [K in AutomationTableName]: AutomationTable;
 };
 
 
@@ -69,15 +74,13 @@ export type AutomationTable = {
     entityFields: {
         [fieldName: string]: {
             fieldNameMappings: {
-                [fieldName: string]: {
-                    frontend: string;
-                    backend: string;
-                    database: string;
-                    pretty: string;
-                    component: string;
-                    sqlFunctionRef: string;
-                    [key: string | string]: string;
-                };
+                frontend: string;
+                backend: string;
+                database: string;
+                pretty: string;
+                component: string;
+                sqlFunctionRef: string;
+                [key: string | string]: string;
             };
             value: any;
             dataType: FieldDataType;
