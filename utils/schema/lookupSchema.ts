@@ -154,20 +154,6 @@ export const tableNameLookup: Record<string, string> = {
     userPreferences: "user_preferences",
 };
 
-export const viewNameLookup: Record<string, string> = {
-    ViewRegisteredFunction: "view_registered_function",
-    "View Registered Function": "view_registered_function",
-    "view-registered-function": "view_registered_function",
-    viewRegisteredFunction: "view_registered_function",
-    p_view_registered_function: "view_registered_function",
-    view_registered_function: "view_registered_function",
-    ViewRegisteredFunctionAllRels: "view_registered_function_all_rels",
-    p_view_registered_function_all_rels: "view_registered_function_all_rels",
-    viewRegisteredFunctionAllRels: "view_registered_function_all_rels",
-    view_registered_function_all_rels: "view_registered_function_all_rels",
-    "view-registered-function-all-rels": "view_registered_function_all_rels",
-    "View Registered Function All Rels": "view_registered_function_all_rels",
-};
 
 export const fieldNameLookup: Record<string, Record<string, string>> = {
     action: {
@@ -1111,26 +1097,42 @@ export const fieldNameLookup: Record<string, Record<string, string>> = {
         "output-params": "output_params"
     },
     userPreferences: {
-        "User Id": "user_id",
-        userId: "user_id",
-        user_id: "user_id",
-        p_user_id: "user_id",
-        "user-id": "user_id",
-        UserId: "user_id",
+        "User Id": "userId",
+        userId: "userId",
+        user_id: "userId",
+        p_user_id: "userId",
+        "user-id": "userId",
+        UserId: "userId",
         Preferences: "preferences",
         p_preferences: "preferences",
         preferences: "preferences",
-        created_at: "created_at",
-        createdAt: "created_at",
-        CreatedAt: "created_at",
-        "created-at": "created_at",
-        p_created_at: "created_at",
-        "Created At": "created_at",
-        updated_at: "updated_at",
-        "updated-at": "updated_at",
-        "Updated At": "updated_at",
-        p_updated_at: "updated_at",
-        updatedAt: "updated_at",
-        UpdatedAt: "updated_at"
+        created_at: "createdAt",
+        createdAt: "createdAt",
+        CreatedAt: "createdAt",
+        "created-at": "createdAt",
+        p_created_at: "createdAt",
+        "Created At": "createdAt",
+        updated_at: "createdAt",
+        "updated-at": "createdAt",
+        "Updated At": "createdAt",
+        p_updated_at: "createdAt",
+        updatedAt: "updatedAt",
+        UpdatedAt: "updatedAt",
+        last_login: "updatedAt",
     },
+};
+
+export const viewNameLookup: Record<string, string> = {
+    ViewRegisteredFunction: "view_registered_function",
+    "View Registered Function": "view_registered_function",
+    "view-registered-function": "view_registered_function",
+    viewRegisteredFunction: "view_registered_function",
+    p_view_registered_function: "view_registered_function",
+    view_registered_function: "view_registered_function",
+    ViewRegisteredFunctionAllRels: "view_registered_function_all_rels",
+    p_view_registered_function_all_rels: "view_registered_function_all_rels",
+    viewRegisteredFunctionAllRels: "view_registered_function_all_rels",
+    view_registered_function_all_rels: "view_registered_function_all_rels",
+    "view-registered-function-all-rels": "view_registered_function_all_rels",
+    "View Registered Function All Rels": "view_registered_function_all_rels",
 };

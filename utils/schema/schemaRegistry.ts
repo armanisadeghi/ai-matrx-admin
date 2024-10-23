@@ -1,17 +1,16 @@
 // File: lib/schemaRegistry.ts
 
-
-
-
-
-import {NameFormat} from "@/types/AutomationSchemaTypes";
+import {AutomationTableName, FieldDataType, NameFormat} from "@/types/AutomationSchemaTypes";
+import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
+import {globalSchemaRegistry} from "@/lib/hooks/useSchema";
+import {DatabaseTableSchema, FrontendTableSchema, TableSchema} from "@/lib/redux/concepts/tableSchemaTypes";
 
 export interface ConversionOptions {
     maxDepth?: number;
     // Add more options as needed
 }
 
-function convertValue(value: any, converter: DataType): any {
+function convertValue(value: any, converter: FieldDataType): any {
     switch (converter) {
         case 'string':
             return String(value);
@@ -61,34 +60,47 @@ function convertValue(value: any, converter: DataType): any {
     }
 }
 
-export function getFrontendTableName(tableName: TableName, format: NameFormat): TableName {
-    const availableNames: { [key: string]: string[] } = {};
-
-    for (const [frontendName, schema] of Object.entries(globalSchemaRegistry)) {
-        for (const [key, name] of Object.entries(schema.tableNameVariations)) {
-            if (name === tableName) {
-                return frontendName;  // Return the matching frontend name if found
-            }
-            if (!availableNames[key]) {
-                availableNames[key] = [];
-            }
-            if (typeof name === 'string') {
-                availableNames[key].push(name);  // Add the name to available names if it's a string
-            }
+export function getFrontendTableName(tableName: string): string {
+    for (const [frontend, schema] of Object.entries(initialAutomationTableSchema)) {
+        if (Object.values(schema.entityNameVariations).includes(tableName)) {
+            return frontend;
         }
     }
+    return tableName;
+}
 
-    console.warn(`Table name not found in registry: ${tableName}`);
-    for (const [key, names] of Object.entries(availableNames)) {
-        console.warn(`Available names in format '${key}': ${names.join(', ')}`);
+export function getDatabaseTableName(tableName: string): string {
+    for (const [database, schema] of Object.entries(initialAutomationTableSchema)) {
+        if (Object.values(schema.entityNameVariations).includes(tableName)) {
+            return database;
+        }
     }
+    return tableName;
+}
 
+export function getBackendTableName(tableName: string): string {
+    for (const [backend, schema] of Object.entries(initialAutomationTableSchema)) {
+        if (Object.values(schema.entityNameVariations).includes(tableName)) {
+            return backend;
+        }
+    }
+    return tableName;
+}
+
+export function getTableNameByFormat(tableName: string, nameFormat: string): string {
+    for (const [key, schema] of Object.entries(initialAutomationTableSchema)) {
+        if (schema.entityNameVariations[nameFormat] === tableName) {
+            return key;
+        }
+    }
     return tableName;
 }
 
 
-export function getPrimaryKeyField(tableName: TableName): { fieldName: string; message: string } {
-    const schema = globalSchemaRegistry[tableName];
+
+
+export function getPrimaryKeyField(tableName: string): { fieldName: string; message: string } {
+    const schema = initialAutomationTableSchema[tableName];
     if (!schema) {
         return {
             fieldName: "id",
@@ -112,7 +124,7 @@ export function getPrimaryKeyField(tableName: TableName): { fieldName: string; m
 }
 
 export function getSchema(
-    tableName: TableName,
+    tableName: string,
     format: NameFormat = 'frontend'
 ): FrontendTableSchema | BackendTableSchema | DatabaseTableSchema | PrettyTableSchema | CustomTableSchema | undefined {
     console.log(`getSchema called with tableName: ${tableName} and format: ${format}`);
@@ -227,7 +239,7 @@ export function getApiWrapperSchemaFormats(
     const frontendTableName = getFrontendTableNameFromUnknown(tableName);
 
     const schema = Object.values(globalSchemaRegistry).find(
-        (schema) => schema.tableNameVariations.frontend === frontendTableName
+        (schema) => schema.entityNameVariations.frontend === frontendTableName
     );
 
     if (!schema) {

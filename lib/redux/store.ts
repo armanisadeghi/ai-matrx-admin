@@ -12,19 +12,12 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-import { rootSaga } from "@/lib/redux/rootSaga";
-import {automationTableSchema} from "@/utils/schema/initialSchemas";
-import {TableSchema, TableSchemaStructure} from "@/types/AutomationTypes";
-import {initializeTableSchema} from "@/utils/schema/precomputeUtil";
-import {AutomationTableName} from "@/types/AutomationSchemaTypes";
+import {createTableSlice} from "@/lib/redux/tables/tableSliceCreator";
+import { TableNames, AutomationTableStructure } from '@/types/automationTableTypes';
+import {createRootSaga} from "@/lib/redux/rootSaga";
 
 const sagaMiddleware = createSagaMiddleware();
 
-type AutomationTableReducers = {
-    [K in AutomationTableName]: TableSchema<K>;
-};
-
-// Stronger typing for featureReducers and moduleReducers
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
     const featureSlice = createFeatureSlice(featureName as any, featureSchema);
@@ -39,37 +32,56 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-const automationTableReducers = Object.entries(automationTableSchema).reduce<AutomationTableReducers>((acc, [tableName, tableSchema]) => {
-    acc[tableName as AutomationTableName] = initializeTableSchema(
-        tableSchema as TableSchema<AutomationTableName>
-    );
-    return acc;
-}, {} as AutomationTableReducers);
+type TableReducers = Record<TableNames, ReturnType<typeof createTableSlice>['reducer']>;
 
+function createAutomationTableReducers(schema: AutomationTableStructure): TableReducers {
+    return Object.entries(schema).reduce((acc, [tableName, tableSchema]) => {
+        const tableSlice = createTableSlice(tableName as TableNames, tableSchema);
+        acc[tableName as TableNames] = tableSlice.reducer;
+        return acc;
+    }, {} as TableReducers);
+}
 
-const rootReducer = combineReducers({
-    ...featureReducers,
-    ...moduleReducers,
-    ...automationTableReducers,
-    layout: layoutReducer,
-    theme: themeReducer,
-    form: formReducer,
-    user: userReducer,
-    userPreferences: userPreferencesReducer,
-    testRoutes: testRoutesReducer,
-    flashcardChat: flashcardChatReducer,
-    aiChat: aiChatReducer,
-});
+// Create root reducer factory function
+const createRootReducer = (schema: AutomationTableStructure) => {
+    const tableReducers = createAutomationTableReducers(schema);
 
-export const makeStore = (initialState?: ReturnType<typeof rootReducer>) => {
+    return combineReducers({
+        ...featureReducers,
+        ...moduleReducers,
+        ...tableReducers,
+        layout: layoutReducer,
+        theme: themeReducer,
+        form: formReducer,
+        user: userReducer,
+        userPreferences: userPreferencesReducer,
+        testRoutes: testRoutesReducer,
+        flashcardChat: flashcardChatReducer,
+        aiChat: aiChatReducer,
+    });
+};
+
+export const makeStore = (initialState?: any) => {
+    if (!initialState?.schema?.schema) {
+        throw new Error('Schema must be provided to create store');
+    }
+
+    const rootReducer = createRootReducer(initialState.schema.schema);
+
     const store = configureStore({
         reducer: rootReducer,
         preloadedState: initialState,
-        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleware),
+        middleware: (getDefaultMiddleware) =>
+            getDefaultMiddleware({
+                serializableCheck: {
+                    ignoredPaths: ['schema.schema']
+                }
+            }).concat(sagaMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
 
-    sagaMiddleware.run(rootSaga);
+    const rootSagaInstance = createRootSaga(initialState.schema.schema);
+    sagaMiddleware.run(rootSagaInstance);
 
     return store;
 };

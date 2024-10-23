@@ -2,21 +2,15 @@
 
 import {v4 as uuidv4} from "uuid";
 
-// These have been replaced or need to be updated.
-// import {getSchema, globalSchemaRegistry} from "@/utils/schema/schemaRegistry";
-// import {initialSchemas} from "@/utils/schema/initialSchemas";
-// import {TableSchema} from "@/types/tableSchemaTypes";
-
 
 
 export function resolveTableName<T extends keyof typeof initialSchemas>(
     table: FrontendTableNames,
-    variant: keyof typeof initialSchemas[T]['name']
+    variant: keyof typeof globalSchemaCache[T]['name']
 ): string {
-    const tableSchema = globalSchemaRegistry[table as string];
+    const tableSchema = globalSchemaCache[table as string];
     return <string>tableSchema.name[variant as keyof AltOptions];
 }
-
 
 
 

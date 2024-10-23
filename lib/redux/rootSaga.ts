@@ -1,13 +1,17 @@
-// File Location: lib/redux/sagas/rootSaga.ts
+// lib/redux/sagas/rootSaga.ts
 
 import { all } from 'redux-saga/effects';
-import {initialSchemas} from "@/utils/schema/initialSchemas";
-import {createTableSaga} from "@/lib/redux/tables/dynamicSagas";
+import { createTableSaga } from "@/lib/redux/tables/dynamicSagas";
+import { AutomationTableStructure, TableNames } from '@/types/automationTableTypes';
 
-export function* rootSaga() {
-    const tableSagas = Object.keys(initialSchemas).map(tableName => createTableSaga(tableName as keyof typeof initialSchemas)());
+export function createRootSaga(schema: AutomationTableStructure) {
+    return function* rootSaga() {
+        const tableSagas = Object.keys(schema).map(tableName =>
+            createTableSaga(tableName as TableNames, schema[tableName as TableNames])()
+        );
 
-    yield all([
-        ...tableSagas,
-    ]);
+        yield all([
+            ...tableSagas,
+        ]);
+    };
 }

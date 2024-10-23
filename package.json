@@ -130,6 +130,7 @@
     "react-wrap-balancer": "latest",
     "recharts": "latest",
     "recoil": "latest",
+    "redis": "^4.7.0",
     "redux": "latest",
     "redux-orm": "latest",
     "redux-saga": "latest",

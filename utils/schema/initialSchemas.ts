@@ -1,8 +1,10 @@
 // File: lib/initialSchemas.ts
 
-import {AutomationSchema, TableSchemaStructure, TypeBrand, ViewSchemaStructure} from '@/types/AutomationTypes';
+import {TableSchemaStructure, TypeBrand} from "@/types/automationTableTypes";
 
-export const automationTableSchema: TableSchemaStructure = {
+
+
+export const initialAutomationTableSchema: TableSchemaStructure = {
     action: {
         entityNameVariations: {
             frontend: 'action',
@@ -173,6 +175,7 @@ export const automationTableSchema: TableSchemaStructure = {
                     pretty: 'Automation Matrix Reference',
                     component: 'AutomationMatrixReference',
                     kebab: 'automation-matrixReference',
+                    somethingElse: 'something',
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -186,7 +189,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['automationMatrix'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
                 databaseTable: 'automation_matrix',
             },
             transformerReference: {
@@ -211,7 +214,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['transformer'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
                 databaseTable: 'transformer',
             },
         },
@@ -706,7 +709,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeModel'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
                 databaseTable: 'recipe_model',
             },
         },
@@ -936,7 +939,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['registeredFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
                 databaseTable: 'registered_function',
             },
         },
@@ -1109,7 +1112,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['broker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 databaseTable: 'broker',
             },
             automationMatrixReference: {
@@ -1134,7 +1137,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['automationMatrix'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
                 databaseTable: 'automation_matrix',
             },
         },
@@ -1339,7 +1342,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['action'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
                 databaseTable: 'action',
             },
             automationBoundaryBrokerReference: {
@@ -1364,7 +1367,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['automationBoundaryBroker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
                 databaseTable: 'automation_boundary_broker',
             },
         },
@@ -1858,7 +1861,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['dataInputComponent'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
                 databaseTable: 'data_input_component',
             },
             recipeBrokerReference: {
@@ -1883,7 +1886,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeBroker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
                 databaseTable: 'recipe_broker',
             },
             registeredFunctionReference: {
@@ -1908,7 +1911,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['registeredFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
                 databaseTable: 'registered_function',
             },
             automationBoundaryBrokerReference: {
@@ -1933,7 +1936,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['automationBoundaryBroker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
                 databaseTable: 'automation_boundary_broker',
             },
         },
@@ -2341,7 +2344,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['broker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 databaseTable: 'broker',
             },
         },
@@ -2654,7 +2657,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeDisplay'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
                 databaseTable: 'recipe_display',
             },
         },
@@ -2919,7 +2922,9 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultValue: "" as const,
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: [
+                    'checkForSpecialChars',
+                ],
                 exclusionRules: [],
                 defaultComponent: 'textarea:5' as const,
                 structure: 'single' as const,
@@ -2944,8 +2949,13 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultValue: "" as const,
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
-                exclusionRules: [],
+                validationFunctions: [
+                    'isProperEnum',
+                    'isCompatibleWithRecipe'
+                ],
+                exclusionRules: [
+                    "hideFromUser",
+                ],
                 defaultComponent: 'select:enum' as const,
                 structure: 'single' as const,
                 isNative: true,
@@ -3439,7 +3449,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardHistory'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardHistory'][]>,
                 databaseTable: 'flashcard_history',
             },
             flashcardSetRelationsReference: {
@@ -3464,7 +3474,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardSetRelations'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
                 databaseTable: 'flashcard_set_relations',
             },
             flashcardImagesReference: {
@@ -3489,7 +3499,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardImages'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardImages'][]>,
                 databaseTable: 'flashcard_images',
             },
         },
@@ -3758,7 +3768,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardData'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
                 databaseTable: 'flashcard_data',
             },
         },
@@ -3981,7 +3991,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardData'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
                 databaseTable: 'flashcard_data',
             },
         },
@@ -4104,7 +4114,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardData'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
                 databaseTable: 'flashcard_data',
             },
             flashcardSetsReference: {
@@ -4129,7 +4139,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardSets'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSets'][]>,
                 databaseTable: 'flashcard_sets',
             },
         },
@@ -4459,7 +4469,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['flashcardSetRelations'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
                 databaseTable: 'flashcard_set_relations',
             },
         },
@@ -4639,7 +4649,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['processor'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
                 databaseTable: 'processor',
             },
             recipeProcessorReference: {
@@ -4664,7 +4674,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeProcessor'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
                 databaseTable: 'recipe_processor',
             },
         },
@@ -4976,7 +4986,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeBroker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
                 databaseTable: 'recipe_broker',
             },
             recipeProcessorReference: {
@@ -5001,7 +5011,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeProcessor'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
                 databaseTable: 'recipe_processor',
             },
             recipeModelReference: {
@@ -5026,7 +5036,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeModel'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
                 databaseTable: 'recipe_model',
             },
             recipeDisplayReference: {
@@ -5051,7 +5061,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeDisplay'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
                 databaseTable: 'recipe_display',
             },
             recipeFunctionReference: {
@@ -5076,7 +5086,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
                 databaseTable: 'recipe_function',
             },
             recipeToolReference: {
@@ -5101,7 +5111,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeTool'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
                 databaseTable: 'recipe_tool',
             },
         },
@@ -5351,7 +5361,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['broker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 databaseTable: 'broker',
             },
             recipeReference: {
@@ -5376,7 +5386,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipe'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 databaseTable: 'recipe',
             },
         },
@@ -5556,7 +5566,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['displayOption'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['displayOption'][]>,
                 databaseTable: 'display_option',
             },
             recipeReference: {
@@ -5581,7 +5591,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipe'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 databaseTable: 'recipe',
             },
         },
@@ -5761,7 +5771,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['systemFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
                 databaseTable: 'system_function',
             },
             recipeReference: {
@@ -5786,7 +5796,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipe'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 databaseTable: 'recipe',
             },
         },
@@ -5966,7 +5976,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['aiModel'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
                 databaseTable: 'ai_model',
             },
             recipeReference: {
@@ -5991,7 +6001,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipe'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 databaseTable: 'recipe',
             },
         },
@@ -6146,7 +6156,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['processor'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
                 databaseTable: 'processor',
             },
             recipeReference: {
@@ -6171,7 +6181,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipe'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 databaseTable: 'recipe',
             },
         },
@@ -6326,7 +6336,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipe'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 databaseTable: 'recipe',
             },
             toolReference: {
@@ -6351,7 +6361,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['tool'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
                 databaseTable: 'tool',
             },
         },
@@ -6556,7 +6566,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['broker'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 databaseTable: 'broker',
             },
             systemFunctionReference: {
@@ -6581,7 +6591,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['systemFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
                 databaseTable: 'system_function',
             },
             argReference: {
@@ -6606,7 +6616,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['arg'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
                 databaseTable: 'arg',
             },
         },
@@ -6843,7 +6853,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['registeredFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
                 databaseTable: 'registered_function',
             },
             toolReference: {
@@ -6868,7 +6878,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['tool'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
                 databaseTable: 'tool',
             },
             recipeFunctionReference: {
@@ -6893,7 +6903,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
                 databaseTable: 'recipe_function',
             },
         },
@@ -7162,7 +7172,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['systemFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
                 databaseTable: 'system_function',
             },
             recipeToolReference: {
@@ -7187,7 +7197,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['recipeTool'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
                 databaseTable: 'recipe_tool',
             },
         },
@@ -7349,7 +7359,7 @@ export const automationTableSchema: TableSchemaStructure = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<AutomationSchema['action'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
                 databaseTable: 'action',
             },
         },
@@ -7489,106 +7499,383 @@ export const automationTableSchema: TableSchemaStructure = {
 };
 
 
-export const automationviewSchemas: ViewSchemaStructure = {
-    viewRegisteredFunction: {
-        entityNameVariations: {
-            frontend: 'viewRegisteredFunction',
-            backend: 'viewRegisteredFunction',
-            database: 'view_registered_function',
-            pretty: 'Registered Function View',
-            component: 'RegisteredFunctionView',
-            kebab: 'view-registered-function',
-        },
-        schemaType: 'view',
-        entityFields: {
-            id: {
-                fieldNameVariations: {
-                    frontend: 'id',
-                    backend: 'id',
-                    database: 'id',
-                    sqlFunctionRef: 'p_id',
-                    pretty: 'Id',
-                    component: 'Id',
-                    kebab: 'id',
-                } as const,
-                dataType: 'string' as const,
-                isArray: false,
-                defaultComponent: 'input' as const,
-                structure: 'single' as const,
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                databaseTable: 'action',
-            },
-            name: {
-                fieldNameVariations: {
-                    frontend: 'name',
-                    backend: 'name',
-                    database: 'name',
-                    sqlFunctionRef: 'p_name',
-                    pretty: 'Name',
-                    component: 'Name',
-                    kebab: 'name',
-                } as const,
-                dataType: 'string' as const,
-                isArray: false,
-                defaultComponent: 'textarea:5' as const,
-                structure: 'single' as const,
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                databaseTable: 'action',
-            },
-        },
-        defaultFetchStrategy: 'simple',
-    },
-    viewRegisteredFunctionAllRels: {
-        entityNameVariations: {
-            frontend: 'viewRegisteredFunction',
-            backend: 'viewRegisteredFunction',
-            database: 'view_registered_function',
-            pretty: 'Registered Function View',
-            component: 'RegisteredFunctionView',
-            kebab: 'view-registered-function',
-        },
-        schemaType: 'view',
-        entityFields: {
-            id: {
-                fieldNameVariations: {
-                    frontend: 'id',
-                    backend: 'id',
-                    database: 'id',
-                    sqlFunctionRef: 'p_id',
-                    pretty: 'Id',
-                    component: 'Id',
-                    kebab: 'id',
-                } as const,
-                dataType: 'string' as const,
-                isArray: false,
-                defaultComponent: 'input' as const,
-                structure: 'single' as const,
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                databaseTable: 'action',
-            },
-            name: {
-                fieldNameVariations: {
-                    frontend: 'name',
-                    backend: 'name',
-                    database: 'name',
-                    sqlFunctionRef: 'p_name',
-                    pretty: 'Name',
-                    component: 'Name',
-                    kebab: 'name',
-                } as const,
-                dataType: 'string' as const,
-                isArray: false,
-                defaultComponent: 'textarea:5' as const,
-                structure: 'single' as const,
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                databaseTable: 'action',
-            },
-        },
-        defaultFetchStrategy: 'simple',
-    },
-};
+// export const automationViewSchemas: ViewSchemaStructure = {
+//     viewRegisteredFunction: {
+//         entityNameVariations: {
+//             frontend: 'viewRegisteredFunction',
+//             backend: 'viewRegisteredFunction',
+//             database: 'view_registered_function',
+//             pretty: 'Registered Function View',
+//             component: 'RegisteredFunctionView',
+//             kebab: 'view-registered-function',
+//         },
+//         schemaType: 'view',
+//         entityFields: {
+//             id: {
+//                 fieldNameVariations: {
+//                     frontend: 'id',
+//                     backend: 'id',
+//                     database: 'id',
+//                     sqlFunctionRef: 'p_id',
+//                     pretty: 'Id',
+//                     component: 'Id',
+//                     kebab: 'id',
+//                 } as const,
+//                 dataType: 'string' as const,
+//                 isArray: false,
+//                 defaultComponent: 'input' as const,
+//                 structure: 'single' as const,
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<string>,
+//                 databaseTable: 'action',
+//             },
+//             name: {
+//                 fieldNameVariations: {
+//                     frontend: 'name',
+//                     backend: 'name',
+//                     database: 'name',
+//                     sqlFunctionRef: 'p_name',
+//                     pretty: 'Name',
+//                     component: 'Name',
+//                     kebab: 'name',
+//                 } as const,
+//                 dataType: 'string' as const,
+//                 isArray: false,
+//                 defaultComponent: 'textarea:5' as const,
+//                 structure: 'single' as const,
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<string>,
+//                 databaseTable: 'action',
+//             },
+//         },
+//         defaultFetchStrategy: 'simple',
+//     },
+//     viewRegisteredFunctionAllRels: {
+//         entityNameVariations: {
+//             frontend: 'viewRegisteredFunction',
+//             backend: 'viewRegisteredFunction',
+//             database: 'view_registered_function',
+//             pretty: 'Registered Function View',
+//             component: 'RegisteredFunctionView',
+//             kebab: 'view-registered-function',
+//         },
+//         schemaType: 'view',
+//         entityFields: {
+//             id: {
+//                 fieldNameVariations: {
+//                     frontend: 'id',
+//                     backend: 'id',
+//                     database: 'id',
+//                     sqlFunctionRef: 'p_id',
+//                     pretty: 'Id',
+//                     component: 'Id',
+//                     kebab: 'id',
+//                 } as const,
+//                 dataType: 'string' as const,
+//                 isArray: false,
+//                 defaultComponent: 'input' as const,
+//                 structure: 'single' as const,
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<string>,
+//                 databaseTable: 'action',
+//             },
+//             name: {
+//                 fieldNameVariations: {
+//                     frontend: 'name',
+//                     backend: 'name',
+//                     database: 'name',
+//                     sqlFunctionRef: 'p_name',
+//                     pretty: 'Name',
+//                     component: 'Name',
+//                     kebab: 'name',
+//                 } as const,
+//                 dataType: 'string' as const,
+//                 isArray: false,
+//                 defaultComponent: 'textarea:5' as const,
+//                 structure: 'single' as const,
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<string>,
+//                 databaseTable: 'action',
+//             },
+//         },
+//         defaultFetchStrategy: 'simple',
+//     },
+// };
+//
+// export const dynamicOpenAiSchema: DynamicSchema<'openai'> = {
+//     schemaType: 'dynamic',
+//     entityFields: {
+//         prompt: {
+//             fieldNameVariations: {singular: 'Prompt', plural: 'Prompts'},
+//             dataType: 'string',
+//             isArray: false,
+//             structure: 'scalar',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'openai'>,
+//             defaultComponent: 'TextInput',
+//             componentProps: {placeholder: 'Enter prompt', maxLength: 1000},
+//         },
+//         tokens: {
+//             fieldNameVariations: {singular: 'Token', plural: 'Tokens'},
+//             dataType: 'number',
+//             isArray: true,
+//             structure: 'array',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'openai'>,
+//             componentProps: {minValue: 1, maxValue: 1000},
+//         }
+//     },
+//     defaultFetchStrategy: 'none',
+//     entityNameVariations: {
+//         frontend: 'OpenAI API',
+//         backend: 'OpenAIService',
+//         database: 'openai_table',
+//         pretty: 'OpenAI Prompt Handler',
+//         component: 'OpenAiComponent',
+//     },
+// };
+//
+// export const dynamicAnthropicSchema: DynamicSchema<'anthropic'> = {
+//     schemaType: 'dynamic',
+//     entityFields: {
+//         query: {
+//             fieldNameVariations: {singular: 'Query', plural: 'Queries'},
+//             dataType: 'string',
+//             isArray: false,
+//             structure: 'scalar',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'anthropic'>,
+//             defaultComponent: 'TextInput',
+//             componentProps: {placeholder: 'Enter query', maxLength: 2000},
+//         },
+//         confidence: {
+//             fieldNameVariations: {singular: 'Confidence Score', plural: 'Confidence Scores'},
+//             dataType: 'number',
+//             isArray: false,
+//             structure: 'scalar',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'anthropic'>,
+//             componentProps: {minValue: 0, maxValue: 1},
+//         }
+//     },
+//     defaultFetchStrategy: 'none',
+//     entityNameVariations: {
+//         frontend: 'Anthropic API',
+//         backend: 'AnthropicService',
+//         database: 'anthropic_table',
+//         pretty: 'Anthropic Query Handler',
+//         component: 'AnthropicComponent',
+//     },
+// };
+//
+// export const customFlashcardSchema: CustomSchema<'flashcard'> = {
+//     schemaType: 'custom',
+//     entityFields: {
+//         front: {
+//             fieldNameVariations: {singular: 'Front Text', plural: 'Front Texts'},
+//             dataType: 'string',
+//             isArray: false,
+//             structure: 'scalar',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'flashcard'>,
+//             defaultComponent: 'TextInput',
+//             componentProps: {placeholder: 'Enter front side', maxLength: 500},
+//         },
+//         back: {
+//             fieldNameVariations: {singular: 'Back Text', plural: 'Back Texts'},
+//             dataType: 'string',
+//             isArray: false,
+//             structure: 'scalar',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'flashcard'>,
+//             defaultComponent: 'TextInput',
+//             componentProps: {placeholder: 'Enter back side', maxLength: 500},
+//         }
+//     },
+//     defaultFetchStrategy: 'none',
+//     entityNameVariations: {
+//         frontend: 'Flashcard Frontend',
+//         backend: 'FlashcardService',
+//         database: 'flashcard_table',
+//         pretty: 'Flashcard System',
+//         component: 'FlashcardComponent',
+//     },
+// };
+//
+// export const customMathTutorSchema: CustomSchema<'mathTutor'> = {
+//     schemaType: 'custom',
+//     entityFields: {
+//         question: {
+//             fieldNameVariations: {singular: 'Math Question', plural: 'Math Questions'},
+//             dataType: 'text',
+//             isArray: false,
+//             structure: 'scalar',
+//             isNative: true,
+//             typeReference: {} as TypeBrand<'mathTutor'>,
+//             defaultComponent: 'TextArea',
+//             componentProps: {rows: 5, cols: 50},
+//         },
+//         solution: {
+//             fieldNameVariations: {singular: 'Solution', plural: 'Solutions'},
+//             dataType: 'json',
+//             isArray: false,
+//             structure: 'complex',
+//             isNative: false,
+//             typeReference: {} as TypeBrand<'mathTutor'>,
+//             componentProps: {collapsible: true, theme: 'dark'},
+//         }
+//     },
+//     defaultFetchStrategy: 'none',
+//     entityNameVariations: {
+//         frontend: 'MathTutor Frontend',
+//         backend: 'MathTutorService',
+//         database: 'mathtutor_table',
+//         pretty: 'MathTutor System',
+//         component: 'MathTutorComponent',
+//     },
+// };
+//
+// export const combinedSchema = {
+//     openai: {
+//         schemaType: 'dynamic',
+//         entityFields: {
+//             prompt: {
+//                 fieldNameVariations: {singular: 'Prompt', plural: 'Prompts'},
+//                 dataType: 'string',
+//                 isArray: false,
+//                 structure: 'scalar',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'openai'>,
+//                 defaultComponent: 'TextInput',
+//                 componentProps: {placeholder: 'Enter prompt', maxLength: 1000},
+//             },
+//             tokens: {
+//                 fieldNameVariations: {singular: 'Token', plural: 'Tokens'},
+//                 dataType: 'number',
+//                 isArray: true,
+//                 structure: 'array',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'openai'>,
+//                 componentProps: {minValue: 1, maxValue: 1000},
+//             }
+//         },
+//         defaultFetchStrategy: 'none',
+//         entityNameVariations: {
+//             frontend: 'OpenAI API',
+//             backend: 'OpenAIService',
+//             database: 'openai_table',
+//             pretty: 'OpenAI Prompt Handler',
+//             component: 'OpenAiComponent',
+//         },
+//     },
+//     anthropic: {
+//         schemaType: 'dynamic',
+//         entityFields: {
+//             query: {
+//                 fieldNameVariations: {singular: 'Query', plural: 'Queries'},
+//                 dataType: 'string',
+//                 isArray: false,
+//                 structure: 'scalar',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'anthropic'>,
+//                 defaultComponent: 'TextInput',
+//                 componentProps: {placeholder: 'Enter query', maxLength: 2000},
+//             },
+//             confidence: {
+//                 fieldNameVariations: {singular: 'Confidence Score', plural: 'Confidence Scores'},
+//                 dataType: 'number',
+//                 isArray: false,
+//                 structure: 'scalar',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'anthropic'>,
+//                 componentProps: {minValue: 0, maxValue: 1},
+//             }
+//         },
+//         defaultFetchStrategy: 'none',
+//         entityNameVariations: {
+//             frontend: 'Anthropic API',
+//             backend: 'AnthropicService',
+//             database: 'anthropic_table',
+//             pretty: 'Anthropic Query Handler',
+//             component: 'AnthropicComponent',
+//         },
+//     },
+//     flashcard: {
+//         schemaType: 'custom',
+//         entityFields: {
+//             front: {
+//                 fieldNameVariations: {singular: 'Front Text', plural: 'Front Texts'},
+//                 dataType: 'string',
+//                 isArray: false,
+//                 structure: 'scalar',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'flashcard'>,
+//                 defaultComponent: 'TextInput',
+//                 componentProps: {placeholder: 'Enter front side', maxLength: 500},
+//             },
+//             back: {
+//                 fieldNameVariations: {singular: 'Back Text', plural: 'Back Texts'},
+//                 dataType: 'string',
+//                 isArray: false,
+//                 structure: 'scalar',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'flashcard'>,
+//                 defaultComponent: 'TextInput',
+//                 componentProps: {placeholder: 'Enter back side', maxLength: 500},
+//             }
+//         },
+//         defaultFetchStrategy: 'none',
+//         entityNameVariations: {
+//             frontend: 'Flashcard Frontend',
+//             backend: 'FlashcardService',
+//             database: 'flashcard_table',
+//             pretty: 'Flashcard System',
+//             component: 'FlashcardComponent',
+//         },
+//     },
+//     mathTutor: {
+//         schemaType: 'custom',
+//         entityFields: {
+//             question: {
+//                 fieldNameVariations: {singular: 'Math Question', plural: 'Math Questions'},
+//                 dataType: 'text',
+//                 isArray: false,
+//                 structure: 'scalar',
+//                 isNative: true,
+//                 typeReference: {} as TypeBrand<'mathTutor'>,
+//                 defaultComponent: 'TextArea',
+//                 componentProps: {rows: 5, cols: 50},
+//             },
+//             solution: {
+//                 fieldNameVariations: {singular: 'Solution', plural: 'Solutions'},
+//                 dataType: 'json',
+//                 isArray: false,
+//                 structure: 'complex',
+//                 isNative: false,
+//                 typeReference: {} as TypeBrand<'mathTutor'>,
+//                 componentProps: {collapsible: true, theme: 'dark'},
+//             }
+//         },
+//         defaultFetchStrategy: 'none',
+//         entityNameVariations: {
+//             frontend: 'MathTutor Frontend',
+//             backend: 'MathTutorService',
+//             database: 'mathtutor_table',
+//             pretty: 'MathTutor System',
+//             component: 'MathTutorComponent',
+//         },
+//     }
+// };
 
+
+
+
+
+export type TableType<T extends keyof TableSchemaStructure> = TableSchemaStructure[T];
+
+type Expand<T> = { [K in keyof T]: T[K] };
+
+export type ExpandedTableType<T extends keyof TableSchemaStructure> = Expand<TableType<T>>;
+
+
+export type ActionType = ExpandedTableType<'action'>;

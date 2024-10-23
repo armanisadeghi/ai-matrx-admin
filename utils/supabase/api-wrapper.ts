@@ -76,7 +76,6 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         if (!primaryKeyEntry) {
             throw new Error(`Primary key not found for table '${this.requestTableName}'.`);
         }
-
         return primaryKeyEntry[0] as keyof TableFieldSchema;
     }
 

@@ -1,5 +1,4 @@
 // File: app/Providers.tsx
-
 'use client';
 
 import React from 'react';
@@ -10,9 +9,12 @@ import {ThemeProvider} from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
 import {TooltipProvider} from "@/components/ui/tooltip";
 
-export function Providers({children, initialReduxState}: { children: React.ReactNode, initialReduxState?: any }) {
+export function Providers({children, initialReduxState}: {
+    children: React.ReactNode,
+    initialReduxState?: any
+}) {
     return (
-        <SchemaProvider>
+        <SchemaProvider initialSchema={initialReduxState?.schema}>
             <StoreProvider initialState={initialReduxState}>
                 <ThemeProvider defaultTheme="dark" enableSystem={false}>
                     <NextUIProvider>
@@ -26,4 +28,3 @@ export function Providers({children, initialReduxState}: { children: React.React
         </SchemaProvider>
     );
 }
-

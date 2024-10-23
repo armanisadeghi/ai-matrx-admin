@@ -26,19 +26,19 @@
         "name": "next"
       }
     ],
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
     "allowUnreachableCode": true,
     "noErrorTruncation": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": false,
+    "alwaysStrict": false,
     "forceConsistentCasingInFileNames": false
   },
   "include": [

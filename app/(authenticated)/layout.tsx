@@ -8,6 +8,11 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { LayoutWithSidebar } from "@/components/layout/MatrixLayout";
 import {appSidebarLinks, adminSidebarLinks} from "@/constants";
+import { generateClientSchema, initializeSchemaSystem } from '@/utils/schema/precomputeUtil';
+
+// Initialize schema at module level for caching across requests
+const schemaSystem = initializeSchemaSystem();
+const clientSchema = generateClientSchema();
 
 async function getTestDirectories(): Promise<string[]> {
     const currentDir = path.dirname(new URL(import.meta.url).pathname.slice(1));
@@ -23,7 +28,11 @@ async function getTestDirectories(): Promise<string[]> {
     }
 }
 
-export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthenticatedLayout({
+    children
+}: {
+    children: React.ReactNode
+}) {
     const supabase = createClient();
     const layoutProps = { primaryLinks: appSidebarLinks, secondaryLinks: adminSidebarLinks, initialOpen: false };
 
@@ -53,7 +62,8 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         <Providers initialReduxState={{
             user: userData,
             testRoutes: testDirectories,
-            userPreferences: preferences?.preferences || {}
+            userPreferences: preferences?.preferences || {},
+            schema: clientSchema
         }}>
             <LayoutWithSidebar {...layoutProps}>
                     {children}
