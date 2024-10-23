@@ -15,6 +15,7 @@ import { themeReducer } from '@/styles/themes';
 import {createTableSlice} from "@/lib/redux/tables/tableSliceCreator";
 import { TableNames, AutomationTableStructure } from '@/types/automationTableTypes';
 import {createRootSaga} from "@/lib/redux/rootSaga";
+import { loggerMiddleware } from '@/lib/logger/redux-middleware';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -42,7 +43,6 @@ function createAutomationTableReducers(schema: AutomationTableStructure): TableR
     }, {} as TableReducers);
 }
 
-// Create root reducer factory function
 const createRootReducer = (schema: AutomationTableStructure) => {
     const tableReducers = createAutomationTableReducers(schema);
 
@@ -76,7 +76,7 @@ export const makeStore = (initialState?: any) => {
                 serializableCheck: {
                     ignoredPaths: ['schema.schema']
                 }
-            }).concat(sagaMiddleware),
+            }).concat(sagaMiddleware, loggerMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
 
@@ -90,19 +90,3 @@ export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];
 export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>;
-
-
-
-
-
-/*
-    ...initializedViewSchemas,
-
-// Initialize all view schemas similarly
-const initializedViewSchemas = Object.keys(automationviewSchemas).reduce((acc, viewName) => {
-    const viewSchema = automationviewSchemas[viewName as keyof typeof automationviewSchemas];
-    acc[viewName] = initializeViewSchema(viewSchema as ViewSchema); // Create this similar to initializeTableSchema
-    return acc;
-}, {} as Record<string, ViewSchema>);
-
- */

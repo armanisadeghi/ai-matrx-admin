@@ -1,8 +1,7 @@
 // File: types/AutomationSchemaTypes.ts
 
 import {AutomationTableStructure} from "@/types/automationTableTypes";
-import {initializeSchema, initializeTableSchema} from "@/utils/schema/precomputeUtil";
-import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
+import {initializeSchemaSystem, initializeTableSchema} from "@/utils/schema/precomputeUtil";
 
 export type TypeBrand<T> = { _typeBrand: T };
 
@@ -120,31 +119,34 @@ export type AutomationViewName =
 export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
 
-// Create a type from the initial schema
-export type InitialSchema = typeof initialAutomationTableSchema;
 
-// Create a type for the processed schema
+// processed schema: Loaded into Cache (The real schema)
 export type ProcessedSchema = ReturnType<typeof initializeTableSchema>;
 
-// We can now create a type for the unified cache
+// Global schema cache, which includes mappings as well
+/*
 export type UnifiedSchemaCache = {
-    schema: ProcessedSchema;
+    schema: AutomationTableStructure;
     tableNameMap: Map<string, string>;
     fieldNameMap: Map<string, Map<string, string>>;
 };
+ */
+export type UnifiedSchemaCache = ReturnType<typeof initializeSchemaSystem>
 
-// Type helpers that work with the actual schema
+// This should return the names of all tables, but it's not working TODO: Not working: Gets "Initial type: string"
 export type SchemaEntityKeys = keyof ProcessedSchema;
 
-// Get all fields for a specific entity
+// Should get a list of the fields, but TODO: ERROR! Type Hints say "Expanded: never"
 export type EntityFields<K extends SchemaEntityKeys> =
     keyof ProcessedSchema[K]['entityFields'];
 
-// Get available name formats for an entity
+
+
+// Get available name formats for an entity TODO: ERROR! Type Hints say "Expanded: never"
 export type EntityNameFormats<K extends SchemaEntityKeys> =
     keyof ProcessedSchema[K]['entityNameMappings'];
 
-// Get field name formats for a specific field
+// Get field name formats for a specific field TODO: ERROR! Type Hints say "Expanded: never"
 export type FieldNameFormats<
     K extends SchemaEntityKeys,
     F extends EntityFields<K>
@@ -186,35 +188,6 @@ export function isSchemaInitialized(
 
 
 
-// Helper type to extract available name formats for a specific entity
-export type AvailableEntityFormats<T extends AutomationTableStructure, K extends keyof T> =
-    keyof T[K]['entityNameMappings'];
-
-// Helper type to extract field names from an entity
-export type EntityFieldNames<T extends AutomationTableStructure, K extends keyof T> =
-    keyof T[K]['entityFields'];
-
-// Helper type to get available formats for a specific field
-export type AvailableFieldFormats<
-    T extends AutomationTableStructure,
-    EntityKey extends keyof T,
-    FieldKey extends EntityFieldNames<T, EntityKey>
-> = keyof T[EntityKey]['entityFields'][FieldKey]['fieldNameMappings'][string];
-
-// Type-safe accessor for entity name variations
-export type EntityNameVariationAccessor<
-    T extends AutomationTableStructure,
-    EntityKey extends keyof T,
-    Format extends AvailableEntityFormats<T, EntityKey>
-> = T[EntityKey]['entityNameMappings'][Format];
-
-// Type-safe accessor for field name variations
-export type FieldNameVariationAccessor<
-    T extends AutomationTableStructure,
-    EntityKey extends keyof T,
-    FieldKey extends EntityFieldNames<T, EntityKey>,
-    Format extends keyof T[EntityKey]['entityFields'][FieldKey]['fieldNameMappings'][string]
-> = T[EntityKey]['entityFields'][FieldKey]['fieldNameMappings'][string][Format];
 
 // Known field characteristics from AutomationTable type
 type FieldCharacteristic =
@@ -249,13 +222,57 @@ export function isCustomFormat(format: string): boolean {
     return !isStandardNameFormat(format);
 }
 
-// Helper type for extracting relationships
+
+
+
+
+// Helper type to extract available name formats for a specific entity
+export type AvailableEntityFormats<T extends AutomationTableStructure, K extends keyof T> =
+    keyof T[K]['entityNameMappings'];
+
+// Helper type to extract field names from an entity
+export type EntityFieldNames<T extends AutomationTableStructure, K extends keyof T> =
+    keyof T[K]['entityFields'];
+
+// Helper type to get available formats for a specific field
+export type AvailableFieldFormats<
+    T extends AutomationTableStructure,
+    EntityKey extends keyof T,
+    FieldKey extends EntityFieldNames<T, EntityKey>
+> = keyof T[EntityKey]['entityFields'][FieldKey]['fieldNameMappings'][string];
+
+// Type-safe accessor for entity name variations
+export type EntityNameVariationAccessor<
+    T extends AutomationTableStructure,
+    EntityKey extends keyof T,
+    Format extends AvailableEntityFormats<T, EntityKey>
+> = T[EntityKey]['entityNameMappings'][Format];
+
+// Type-safe accessor for field name variations
+export type FieldNameVariationAccessor<
+    T extends AutomationTableStructure,
+    EntityKey extends keyof T,
+    FieldKey extends EntityFieldNames<T, EntityKey>,
+    Format extends keyof T[EntityKey]['entityFields'][FieldKey]['fieldNameMappings'][string]
+> = T[EntityKey]['entityFields'][FieldKey]['fieldNameMappings'][string][Format];
+
+
+// Example Usage
+
+// Get formats available for an entity
+type EntityFormats = AvailableEntityFormats<AutomationTableStructure, 'registeredFunction'>;  // TODO: Not working!
+
+// Get field names for an entity
+type registeredFunctionFields = EntityFieldNames<AutomationTableStructure, 'registeredFunction'>;  // TODO: Not working!
+
+
+// Helper type for extracting relationships TODO: ERROR: TS2536: Type "relationships" cannot be used to index type T[EntityKey]
 export type TableRelationships<
     T extends AutomationTableStructure,
     EntityKey extends keyof T
 > = T[EntityKey]['relationships'];
 
-// Helper type for getting related tables
+// Helper type for getting related tables TODO: ERROR:
 export type RelatedTables<
     T extends AutomationTableStructure,
     EntityKey extends keyof T
@@ -263,15 +280,7 @@ export type RelatedTables<
 
 
 
-// Get formats available for an entity
-type EntityFormats = AvailableEntityFormats<AutomationTableStructure, 'action'>;
-
-// Get field names for an entity
-type ActionFields = EntityFieldNames<AutomationTableStructure, 'action'>;
-
-
-
-// Type-safe name variation access
+// Type-safe name variation access TODO: ERROR:
 function getEntityName<
     EntityKey extends keyof AutomationTableStructure,
     Format extends AvailableEntityFormats<AutomationTableStructure, EntityKey>
@@ -283,7 +292,7 @@ function getEntityName<
     return globalSchemaCache[entityKey].entityNameMappings[format];
 }
 
-// Type-safe field name variation access
+// Type-safe field name variation access TODO: ERROR:
 function getFieldName<
     EntityKey extends keyof AutomationTableStructure,
     FieldKey extends EntityFieldNames<AutomationTableStructure, EntityKey>,

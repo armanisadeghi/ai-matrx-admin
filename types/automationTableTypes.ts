@@ -2,6 +2,8 @@ import {DataStructure, FetchStrategy, FieldDataType, NameFormat} from "@/types/A
 
 
 export type TypeBrand<DataType> = { _typeBrand: DataType };
+export type EnumValues<T> = T extends TypeBrand<infer U> ? U : never;
+
 
 export type InitialTableSchema = {
     schemaType: 'table';
@@ -83,6 +85,7 @@ export type AutomationTable = {
             structure: DataStructure;
             isNative: boolean;
             typeReference: TypeBrand<any>;
+            enumValues: EnumValues<any>[] | null;
             defaultComponent?: string;
             componentProps?: Record<string, unknown>;
             isRequired: boolean;
@@ -139,9 +142,6 @@ export type TransformerType = AutomationTableStructure["transformer"];
 export type UserPreferencesType = AutomationTableStructure["userPreferences"];
 
 
-
-
-
 export type EntityData = Record<string, any>;
 
 export type EntitySliceState = {
@@ -158,8 +158,6 @@ export type EntitySliceState = {
     backups: Record<string, EntityData[]>; // Backup of previous data states
     selectedItem: EntityData | null; // Currently selected item
 };
-
-
 
 
 export type AutomationView = {
@@ -215,8 +213,6 @@ export type AutomationView = {
         junctionTable: string | null;
     }>;
 };
-
-
 
 
 

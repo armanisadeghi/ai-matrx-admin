@@ -509,7 +509,7 @@ export function processDataForInsert(tableName: TableName, dbData: Record<string
     let hasInverseForeignKey = false;
 
     for (const [fieldName, fieldSchema] of Object.entries(schema.fields)) {
-        const dbKey = fieldSchema.alts['databaseName'];
+        const dbKey = fieldSchema.fieldNameVariations['databaseName'];
 
         if (cleanedData.hasOwnProperty(dbKey)) {
             const value = cleanedData[dbKey];
@@ -598,29 +598,6 @@ export async function getRelationships(tableName: TableName, format: NameFormat 
 }
 
 
-type EnumValues<T> = T extends TypeBrand<infer U> ? U : never;
-
-function extractEnumValues<T extends keyof SchemaRegistry>(
-    tableName: T,
-    fieldName: keyof SchemaRegistry[T]['tableFields']
-): EnumValues<SchemaRegistry[T]['tableFields'][typeof fieldName]['typeReference']>[] | undefined {
-    const schema = initialSchemas[tableName];
-    if (!schema) return undefined;
-
-    const field = schema.tableFields[fieldName as string];
-    if (!field) return undefined;
-
-    const typeReference = field.typeReference;
-
-    // Check if typeReference is a union type (enum-like)
-    if (typeof typeReference === 'object' && Object.keys(typeReference).length === 0) {
-        // This is a TypeBrand with a union type
-        // We need to use a type assertion here because TypeScript can't infer the type correctly
-        return (Object.keys(typeReference) as EnumValues<typeof typeReference>[]).filter(key => key !== 'undefined');
-    }
-
-    return undefined;
-}
 
 
 
