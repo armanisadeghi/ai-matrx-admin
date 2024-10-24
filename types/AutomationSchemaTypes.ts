@@ -116,6 +116,12 @@ export type AutomationViewName =
     'viewRegisteredFunction'
     | 'viewRegisteredFunctionAllRels';
 
+
+
+
+
+
+
 export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
 export type ProcessedSchema = ReturnType<typeof initializeTableSchema>;

@@ -1,4 +1,25 @@
-export const tableNameLookup: Record<string, string> = {
+// Type definitions for lookups (without changing the objects themselves)
+import {AutomationTableName} from "@/types/AutomationSchemaTypes";
+import {AllTableNameVariations} from "@/utils/schema/precomputeUtil";
+import {AnyTableName, TableFields} from "@/types/automationTableTypes";
+
+export type TableNameLookupType = {
+    [K: string]: AutomationTableName;
+} & {
+    [K in AllTableNameVariations]: Extract<
+        AutomationTableName,
+        { [T in AutomationTableName]: AnyTableName<T> extends K ? T : never }[AutomationTableName]
+    >;
+};
+
+export type FieldNameLookupType = {
+    [T in AutomationTableName]: {
+        [K: string]: keyof TableFields<T>;
+    };
+};
+
+
+export const tableNameLookup: TableNameLookupType = {
     p_action: "action",
     Action: "action",
     action: "action",
@@ -169,7 +190,7 @@ export const viewNameLookup: Record<string, string> = {
     ViewRegisteredFunctionAllRels: "viewRegisteredFunctionAllRels",
 };
 
-export const fieldNameLookup: Record<string, Record<string, string>> = {
+export const fieldNameLookup: FieldNameLookupType = {
     action: {
         Id: "id",
         id: "id",

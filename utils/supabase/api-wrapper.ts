@@ -1,83 +1,100 @@
-/*
 // utils/supabase/api-wrapper.ts
 
 import {SupabaseClient} from '@supabase/supabase-js';
 import {supabase} from '@/utils/supabase/client';
 import {PostgrestError} from '@supabase/postgrest-js';
+import {AutomationTableName} from "@/types/AutomationSchemaTypes";
 import {
-    convertData,
-    getApiWrapperSchemaFormats,
-    getPrimaryKeyField,
-    getSchema,
-    processDataForInsert,
-} from '../schema/schemaRegistry';
+    getFieldNameMapping,
+    resolveFieldKey,
+    resolveTableKey,
+    StringFieldKey,
+    TableNameVariant
+} from "@/utils/schema/precomputeUtil";
 import {
-    AnyTableName,
-    DatabaseFieldName,
-    DatabaseTableSchema,
-    FrontendTableSchema,
+    AutomationTableStructure,
     ResolveDatabaseTableName,
-    ResolveFrontendTableName,
-    SchemaRegistry,
-    TableFieldSchema,
-    TableSchema
-} from "@/lib/redux/concepts/tableSchemaTypes";
+    ResolveFrontendTableName
+} from '@/types/automationTableTypes';
+import {convertData} from "@/utils/schema/schemaRegistry";
 
-export type QueryOptions<T extends TableSchema> = {
-    filters?: Partial<Record<keyof TableSchema['fields'], any>>;
-    sorts?: Array<{ column: DatabaseFieldName; ascending?: boolean }>;
+export type QueryOptions<T extends AutomationTableName> = {
+    filters?: Partial<Record<StringFieldKey<T>, unknown>>;
+    sorts?: Array<{
+        column: StringFieldKey<T>;
+        ascending?: boolean;
+    }>;
     limit?: number;
     offset?: number;
-    columns?: Array<DatabaseFieldName>;
+    columns?: Array<StringFieldKey<T>>;
 };
 
-type SubscriptionCallback = (data: any[]) => void;
+type SubscriptionCallback = (data: unknown[]) => void;
 
-
-export interface ApiWrapperSchemaFormats {
-    schema: TableSchema;
-    frontend: FrontendTableSchema;
-    database: DatabaseTableSchema;
+// Schema format interfaces
+export interface ApiWrapperSchemaFormats<T extends AutomationTableName> {
+    schema: AutomationTableStructure[T];
+    frontendName: ResolveFrontendTableName<T>;
+    databaseName: ResolveDatabaseTableName<T>;
 }
 
-class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
+// Helper function to get schema formats
+function getApiWrapperSchemaFormats<T extends AutomationTableName>(
+    requestTableName: TableNameVariant
+): ApiWrapperSchemaFormats<T> {
+    let globalCache;
+    if (!globalCache) throw new Error('Schema system not initialized');
+
+    const tableKey = resolveTableKey(requestTableName) as T;
+    const table = globalCache.schema[tableKey];
+
+    if (!table) {
+        throw new Error(`Schema not found for table '${requestTableName}'`);
+    }
+
+    return {
+        schema: table,
+        frontendName: table.entityNameMappings.frontend as ResolveFrontendTableName<T>,
+        databaseName: table.entityNameMappings.database as ResolveDatabaseTableName<T>
+    };
+}
+
+class DatabaseApiWrapper<T extends AutomationTableName> {
     private client: SupabaseClient;
-    private requestTableName: AnyTableName<T>;
-    private fullSchema: TableSchema;
-    private frontendSchema: FrontendTableSchema;
-    private databaseSchema: DatabaseTableSchema;
+    private requestTableName: TableNameVariant;
+    private fullSchema: AutomationTableStructure[T];
     private frontendTableName: ResolveFrontendTableName<T>;
     private databaseTableName: ResolveDatabaseTableName<T>;
-    private primaryKeyField: keyof TableFieldSchema;
+    private primaryKeyField: StringFieldKey<T>;
 
-    private subscriptions: Map<string, any> = new Map();
-    private queryBuilders: Map<string, QueryBuilder> = new Map();
+    private subscriptions: Map<string, unknown> = new Map();
+    private queryBuilders: Map<string, unknown> = new Map();
 
-    constructor(requestTableName: AnyTableName<T>) {
+
+    constructor(requestTableName: TableNameVariant) {
         this.client = supabase;
         this.requestTableName = requestTableName;
 
-        // const {schema, frontend, database} = getApiWrapperSchemaFormats(requestTableName);
-        // // if (!schema) {
-        // //     throw new Error(`Schema not found for table '${requestTableName}'.`);
-        // // }
-        //
-        // console.error('schema', schema);
-        //
-        // this.fullSchema = schema;
-        // this.frontendSchema = frontend;
-        // this.databaseSchema = database;
-        // this.frontendTableName = frontend.frontendTableName;
-        // this.databaseTableName = database.databaseTableName;
-        // this.primaryKeyField = this.findPrimaryKeyField();
+        const { schema, frontendName, databaseName } = getApiWrapperSchemaFormats<T>(requestTableName);
+
+        this.fullSchema = schema;
+        this.frontendTableName = frontendName;
+        this.databaseTableName = databaseName;
+        this.primaryKeyField = this.findPrimaryKeyField();
     }
 
-    private findPrimaryKeyField(): keyof TableFieldSchema {
-        const primaryKeyEntry = Object.entries(this.fullSchema.fields).find(([_, field]) => field.isPrimaryKey);
+
+    private findPrimaryKeyField(): StringFieldKey<T> {
+        const fields = this.fullSchema.entityFields;
+        const primaryKeyEntry = Object.entries(fields).find(
+            ([_, field]) => field.isPrimaryKey
+        );
+
         if (!primaryKeyEntry) {
-            throw new Error(`Primary key not found for table '${this.requestTableName}'.`);
+            throw new Error(`Primary key not found for table '${this.requestTableName}'`);
         }
-        return primaryKeyEntry[0] as keyof TableFieldSchema;
+
+        return primaryKeyEntry[0] as StringFieldKey<T>;
     }
 
 
@@ -100,7 +117,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         };
     }
 
-    private convertRequest(data: any): any {
+    private convertRequest(data: unknown): unknown {
         return convertData({
             data,
             sourceFormat: 'frontend',
@@ -111,7 +128,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         });
     }
 
-    private convertResponse(data: any): any {
+    private convertResponse(data: unknown): unknown {
         return convertData({
             data,
             sourceFormat: 'database',
@@ -122,26 +139,34 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         });
     }
 
-    private applyQueryOptions<T extends keyof SchemaRegistry>(
+    private applyQueryOptions(
         query: any,
-        options: QueryOptions<T>,
-        tableSchema: TableSchema
+        options: QueryOptions<T>
     ): any {
-        // Apply filters, sorts, limit, etc., with database field names
         if (options.filters) {
             for (const [key, value] of Object.entries(options.filters)) {
-                const dbField = tableSchema.fields[key as DatabaseFieldName]?.alts.database;
-                if (dbField) {
-                    query = query.eq(dbField, value);
+                const dbField = resolveFieldKey(this.requestTableName as T, key);
+                const dbFieldName = getFieldNameMapping(
+                    this.requestTableName as T,
+                    dbField,
+                    'database'
+                );
+                if (dbFieldName) {
+                    query = query.eq(dbFieldName, value);
                 }
             }
         }
 
         if (options.sorts) {
             for (const sort of options.sorts) {
-                const dbField = tableSchema.fields[sort.column as DatabaseFieldName]?.alts.database;
-                if (dbField) {
-                    query = query.order(dbField, {ascending: sort.ascending ?? true});
+                const dbField = resolveFieldKey(this.requestTableName as T, sort.column);
+                const dbFieldName = getFieldNameMapping(
+                    this.requestTableName as T,
+                    dbField,
+                    'database'
+                );
+                if (dbFieldName) {
+                    query = query.order(dbFieldName, { ascending: sort.ascending ?? true });
                 }
             }
         }
@@ -155,9 +180,14 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         }
 
         if (options.columns) {
-            const dbColumns = options.columns
-                .map((col) => tableSchema.fields[col as DatabaseFieldName]?.alts.database)
-                .filter(Boolean);
+            const dbColumns = options.columns.map(col => {
+                const dbField = resolveFieldKey(this.requestTableName as T, col);
+                return getFieldNameMapping(
+                    this.requestTableName as T,
+                    dbField,
+                    'database'
+                );
+            }).filter(Boolean);
             query = query.select(dbColumns.join(', '));
         }
 
@@ -165,54 +195,62 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async fetchByPrimaryKey<T extends keyof SchemaRegistry>(
+    async fetchByPrimaryKey(
         primaryKeyValue: string | number,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
-    ): Promise<any> {
-        const {fieldName, message} = getPrimaryKeyField(this.requestTableName);
-
-        if (message) {
-            console.warn(message);
-        }
+        options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
+    ): Promise<Record<StringFieldKey<T>, unknown> | null> {
+        const primaryKeyField = this.primaryKeyField;
+        const dbFieldName = getFieldNameMapping(
+            this.requestTableName as T,
+            primaryKeyField,
+            'database'
+        );
 
         let query = this.client
-            .from(this.requestTableName)
+            .from(this.databaseTableName)
             .select('*')
-            .eq(fieldName, primaryKeyValue);
+            .eq(dbFieldName, primaryKeyValue);
 
-        query = this.applyQueryOptions(query, options, getSchema(this.requestTableName, 'database')!);
+        query = this.applyQueryOptions(query, options);
 
         try {
-            const {data, error} = await query.single();
-            if (error) {
-                throw error;
-            }
-            return this.convertResponse(data);
+            const { data, error } = await query.single();
+            if (error) throw error;
+            return data ? this.convertResponse(data) : null;
         } catch (error) {
             return this.handleError(error, `fetchByPrimaryKey for ${this.requestTableName}`);
         }
     }
 
-    async fetchByField<T extends keyof SchemaRegistry>(
-        dbTableName: DatabaseTableName,
-        fieldName: string,
-        fieldValue: string | number,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
-    ): Promise<any[]> {
-        let query = this.client.from(dbTableName).select('*').eq(fieldName, fieldValue);
-        query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
+    async fetchByField<F extends StringFieldKey<T>>(
+        fieldName: F,
+        fieldValue: unknown,
+        options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
+    ): Promise<Record<StringFieldKey<T>, unknown>[]> {
+        const dbFieldName = getFieldNameMapping(
+            this.requestTableName as T,
+            fieldName,
+            'database'
+        );
 
-        const {data, error} = await query;
+        let query = this.client
+            .from(this.databaseTableName)
+            .select('*')
+            .eq(dbFieldName, fieldValue);
 
-        if (error) {
-            console.error(`Error fetching data from ${dbTableName} where ${fieldName}=${fieldValue}: ${error.message}`);
+        query = this.applyQueryOptions(query, options);
+
+        try {
+            const { data, error } = await query;
+            if (error) throw error;
+            return data ? data.map(item => this.convertResponse(item)) : [];
+        } catch (error) {
+            console.error(`Error fetching data by field ${fieldName}: ${error}`);
             return [];
         }
-
-        return data;
     }
 
-    async fetchById<T extends keyof SchemaRegistry>(
+    async fetchById<T extends keyof AutomationTableName>(
         dbTableName: DatabaseTableName,
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
@@ -228,85 +266,106 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async fetchSimple<T extends keyof SchemaRegistry>(
-        dbTableName: DatabaseTableName,
+    private async fetchSimple(
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'>
-    ): Promise<any> {
-        let query = this.client.from(dbTableName).select('*').eq('id', id);
-        query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
-        const {data, error} = await query.single();
-        if (error) {
-            console.error(`Error fetching data for ${dbTableName}: ${error.message}`);
+    ): Promise<unknown | null> {
+        const idField = getFieldNameMapping(
+            this.requestTableName as T,
+            'id' as StringFieldKey<T>,
+            'database'
+        );
+
+        let query = this.client
+            .from(this.databaseTableName)
+            .select('*')
+            .eq(idField, id);
+
+        query = this.applyQueryOptions(query, options);
+
+        try {
+            const { data, error } = await query.single();
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error(`Error in fetchSimple: ${error}`);
             return null;
         }
-        return data;
     }
 
-    async fetchOne<T extends keyof SchemaRegistry>(
-        tableName: TableName,
+    async fetchOne(
         id: string,
         options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
-    ): Promise<any> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
-        const fetchStrategy = tableSchema.relationships.fetchStrategy;
+    ): Promise<Record<StringFieldKey<T>, unknown> | null> {
+        const fetchStrategy = this.fullSchema.defaultFetchStrategy;
+        let result = await this.fetchSimple(id, options);
 
-        let result = await this.fetchSimple(dbTableName, id, options);
         if (!result) return null;
 
-        switch (fetchStrategy) {
-            case 'simple':
-                return this.convertResponse(result, tableName);
+        try {
+            switch (fetchStrategy) {
+                case 'simple':
+                    return this.convertResponse(result);
 
-            case 'fk':
-                result = await this.fetchFk(dbTableName, result, tableSchema);
-                break;
+                case 'fk':
+                    result = await this.fetchFk(result);
+                    break;
 
-            case 'ifk':
-                result = await this.fetchIfk(dbTableName, result, tableSchema);
-                break;
+                case 'ifk':
+                    result = await this.fetchIfk(result);
+                    break;
 
-            case 'm2m':
-                result = await this.fetchM2m(dbTableName, result, tableSchema);
-                break;
+                case 'm2m':
+                    result = await this.fetchM2m(result);
+                    break;
 
-            case 'fkAndIfk':
-                result = await this.fetchFk(dbTableName, result, tableSchema);
-                result = await this.fetchIfk(dbTableName, result, tableSchema);
-                break;
+                case 'fkAndIfk':
+                    result = await this.fetchFk(result);
+                    result = await this.fetchIfk(result);
+                    break;
 
-            case 'm2mAndFk':
-                result = await this.fetchFk(dbTableName, result, tableSchema);
-                result = await this.fetchM2m(dbTableName, result, tableSchema);
-                break;
+                case 'm2mAndFk':
+                    result = await this.fetchFk(result);
+                    result = await this.fetchM2m(result);
+                    break;
 
-            case 'm2mAndIfk':
-                result = await this.fetchIfk(dbTableName, result, tableSchema);
-                result = await this.fetchM2m(dbTableName, result, tableSchema);
-                break;
+                case 'm2mAndIfk':
+                    result = await this.fetchIfk(result);
+                    result = await this.fetchM2m(result);
+                    break;
 
-            case 'fkIfkAndM2M':
-                result = await this.fetchFk(dbTableName, result, tableSchema);
-                result = await this.fetchIfk(dbTableName, result, tableSchema);
-                result = await this.fetchM2m(dbTableName, result, tableSchema);
-                break;
+                case 'fkIfkAndM2M':
+                    result = await this.fetchFk(result);
+                    result = await this.fetchIfk(result);
+                    result = await this.fetchM2m(result);
+                    break;
 
-            default:
-                console.error(`Invalid fetch strategy: ${fetchStrategy}`);
-                return null;
+                default:
+                    console.error(`Invalid fetch strategy: ${fetchStrategy}`);
+                    return null;
+            }
+
+            return this.convertResponse(result);
+        } catch (error) {
+            console.error(`Error in fetchOne with strategy ${fetchStrategy}: ${error}`);
+            return null;
         }
-
-        return this.convertResponse(result, tableName);
     }
 
-    async fetchFk<T extends keyof SchemaRegistry>(
-        dbTableName: DatabaseTableName,
-        data: any,
-        tableSchema: TableSchema
-    ): Promise<any> {
-        const foreignKeyQueries = tableSchema.relationships.foreignKeys.map(fk => {
-            const mainTableColumn = tableSchema.fields[fk.column].alts.database;
+    private async fetchFk(
+        data: Record<string, unknown>,
+    ): Promise<Record<string, unknown>> {
+        const relationships = this.fullSchema.relationships;
+        const foreignKeyRelationships = relationships.filter(
+            rel => rel.relationshipType === 'foreignKey'
+        );
+
+        const foreignKeyQueries = foreignKeyRelationships.map(fk => {
+            const mainTableColumn = getFieldNameMapping(
+                this.requestTableName as T,
+                fk.column as StringFieldKey<T>,
+                'database'
+            );
             const relatedTable = fk.relatedTable;
             const relatedColumn = fk.relatedColumn;
 
@@ -321,24 +380,33 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         foreignKeyResults.forEach((result, index) => {
             const {data: relatedData, error} = result;
             if (error) {
-                console.error(`Error fetching FK data for ${tableSchema.relationships.foreignKeys[index].relatedTable}: ${error.message}`);
+                console.error(
+                    `Error fetching FK data for ${foreignKeyRelationships[index].relatedTable}: ${error.message}`
+                );
                 return;
             }
-            data[tableSchema.relationships.foreignKeys[index].relatedTable] = relatedData;
+            data[foreignKeyRelationships[index].relatedTable] = relatedData;
         });
 
         return data;
     }
 
-    async fetchIfk<T extends keyof SchemaRegistry>(
-        dbTableName: DatabaseTableName,
-        data: any,
-        tableSchema: TableSchema
-    ): Promise<any> {
-        const inverseForeignKeyQueries = tableSchema.relationships.inverseForeignKeys.map(ifk => {
+    private async fetchIfk(
+        data: Record<string, unknown>
+    ): Promise<Record<string, unknown>> {
+        const relationships = this.fullSchema.relationships;
+        const inverseForeignKeyRelationships = relationships.filter(
+            rel => rel.relationshipType === 'inverseForeignKey'
+        );
+
+        const inverseForeignKeyQueries = inverseForeignKeyRelationships.map(ifk => {
             const relatedTable = ifk.relatedTable;
             const relatedColumn = ifk.relatedColumn;
-            const mainTableColumn = ifk.mainTableColumn;
+            const mainTableColumn = getFieldNameMapping(
+                this.requestTableName as T,
+                ifk.column as StringFieldKey<T>,
+                'database'
+            );
 
             return this.client
                 .from(relatedTable)
@@ -351,29 +419,40 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         inverseForeignKeyResults.forEach((result, index) => {
             const {data: relatedData, error} = result;
             if (error) {
-                console.error(`Error fetching IFK data for ${tableSchema.relationships.inverseForeignKeys[index].relatedTable}: ${error.message}`);
+                console.error(
+                    `Error fetching IFK data for ${inverseForeignKeyRelationships[index].relatedTable}: ${error.message}`
+                );
                 return;
             }
-            data[tableSchema.relationships.inverseForeignKeys[index].relatedTable] = relatedData;
+            data[inverseForeignKeyRelationships[index].relatedTable] = relatedData;
         });
 
         return data;
     }
 
-    async fetchM2m<T extends keyof SchemaRegistry>(
-        dbTableName: DatabaseTableName,
-        data: any,
-        tableSchema: TableSchema
-    ): Promise<any> {
-        const manyToManyQueries = tableSchema.relationships.manyToMany.map(m2m => {
-            const junctionTable = m2m.junctionTable;
-            const mainTableColumn = m2m.mainTableColumn;
-            const relatedTableColumn = m2m.relatedTableColumn;
+    private async fetchM2m(
+        data: Record<string, unknown>
+    ): Promise<Record<string, unknown>> {
+        const relationships = this.fullSchema.relationships;
+        const manyToManyRelationships = relationships.filter(
+            rel => rel.relationshipType === 'manyToMany'
+        );
+
+        const manyToManyQueries = manyToManyRelationships.map(m2m => {
+            const idField = getFieldNameMapping(
+                this.requestTableName as T,
+                'id' as StringFieldKey<T>,
+                'database'
+            );
+
+            if (!m2m.junctionTable) {
+                throw new Error(`Junction table not defined for M2M relationship in ${this.requestTableName}`);
+            }
 
             return this.client
-                .from(junctionTable)
+                .from(m2m.junctionTable)
                 .select('*')
-                .eq(mainTableColumn, data[tableSchema.fields['id'].alts.database]);
+                .eq(m2m.column, data[idField]);
         });
 
         const manyToManyResults = await Promise.all(manyToManyQueries);
@@ -382,42 +461,48 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
             manyToManyResults.map(async (result, index) => {
                 const {data: junctionData, error} = result;
                 if (error) {
-                    console.error(`Error fetching M2M junction table data for ${tableSchema.relationships.manyToMany[index].junctionTable}: ${error.message}`);
+                    console.error(
+                        `Error fetching M2M junction table data for ${manyToManyRelationships[index].junctionTable}: ${error.message}`
+                    );
                     return;
                 }
 
+                const m2m = manyToManyRelationships[index];
                 const relatedDataQueries = junctionData.map(junctionRecord => {
-                    const relatedTable = tableSchema.relationships.manyToMany[index].relatedTable;
-                    const relatedTableColumn = tableSchema.relationships.manyToMany[index].relatedTableColumn;
-
                     return this.client
-                        .from(relatedTable)
+                        .from(m2m.relatedTable)
                         .select('*')
-                        .eq('id', junctionRecord[relatedTableColumn]);
+                        .eq('id', junctionRecord[m2m.relatedColumn]);
                 });
 
                 const relatedDataResults = await Promise.all(relatedDataQueries);
-                data[tableSchema.relationships.manyToMany[index].relatedTable] = relatedDataResults.map(res => res.data);
+                data[m2m.relatedTable] = relatedDataResults
+                    .filter(res => !res.error)
+                    .map(res => res.data);
             })
         );
 
         return data;
     }
 
-    async fetchAll<T extends keyof SchemaRegistry>(
-        tableName: TableName,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
-    ): Promise<any[]> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
+    async fetchAll(
+        options: QueryOptions<T> = {}
+    ): Promise<Record<StringFieldKey<T>, unknown>[]> {
+        let query = this.client
+            .from(this.databaseTableName)
+            .select('*');
 
-        let query = this.client.from(dbTableName).select('*');
-        query = this.applyQueryOptions(query, options, tableSchema);
+        query = this.applyQueryOptions(query, options);
 
+        try {
         const {data, error} = await query;
 
         if (error) throw error;
-        return data.map(item => this.convertResponse(item, tableName));
+            return data.map(item => this.convertResponse(item));
+        } catch (error) {
+            console.error(`Error in fetchAll: ${error}`);
+            return [];
+        }
     }
 
     async fetchPaginated<T extends DatabaseTableOrView>(
@@ -489,7 +574,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         };
     }
 
-    async create<T extends keyof SchemaRegistry>(tableName: TableName, data: Partial<any>): Promise<any> {
+    async create<T extends keyof AutomationTableName>(tableName: TableName, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -580,7 +665,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
     }
 
 
-    async update<T extends keyof SchemaRegistry>(tableName: TableName, id: string, data: Partial<any>): Promise<any> {
+    async update<T extends keyof AutomationTableName>(tableName: TableName, id: string, data: Partial<any>): Promise<any> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
         const dbData = convertData(data, 'frontend', 'database', tableName);
@@ -596,7 +681,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return this.convertResponse(result, tableName);
     }
 
-    async delete<T extends keyof SchemaRegistry>(tableName: TableName, id: string): Promise<void> {
+    async delete<T extends keyof AutomationTableName>(tableName: TableName, id: string): Promise<void> {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -609,7 +694,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         if (error) throw error;
     }
 
-    async executeCustomQuery<T extends keyof SchemaRegistry>(
+    async executeCustomQuery<T extends keyof AutomationTableName>(
         tableName: TableName,
         query: (baseQuery: any) => any
     ): Promise<any[]> {
@@ -623,7 +708,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         return data.map(item => this.convertResponse(item, tableName));
     }
 
-    subscribeToChanges<T extends keyof SchemaRegistry>(tableName: TableName, callback: SubscriptionCallback): void {
+    subscribeToChanges<T extends keyof AutomationTableName>(tableName: TableName, callback: SubscriptionCallback): void {
         const dbTableName = this.getDatabaseTableName(tableName);
         const tableSchema = getSchema(tableName, 'database')!;
 
@@ -659,7 +744,7 @@ class DatabaseApiWrapper<T extends keyof SchemaRegistry> {
         this.subscriptions.clear();
     }
 
-    convertToFrontendFormat<T extends keyof SchemaRegistry>(tableName: TableName, data: any): any {
+    convertToFrontendFormat<T extends keyof AutomationTableName>(tableName: TableName, data: any): any {
         if (Array.isArray(data)) {
             return data.map(item => this.convertResponse(item, tableName));
         } else {
@@ -933,4 +1018,3 @@ type QueryBuilder<T extends Record<string, any> = any> = {
 
 type PostgrestList = Array<Record<string, any>>;
 type PostgrestMap = Record<string, any>;
-*/
