@@ -6,6 +6,7 @@ import {
     NameFormat, UnifiedSchemaCache
 } from "@/types/AutomationSchemaTypes";
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
+import {initializeSchemaSystem} from "@/utils/schema/precomputeUtil";
 
 
 export type TypeBrand<DataType> = { _typeBrand: DataType };
@@ -58,18 +59,12 @@ export type TableSchemaStructure = {
 };
 
 
-// Shared mapping type that can be used for both table and field name mappings
+
 export type EntityNameMappings = {
-    frontend: string;
-    backend: string;
-    database: string;
-    pretty: string;
-    component: string;
-    sqlFunctionRef: string;
-    [key: string]: string;
+    [key in NameFormat]: string;
 };
 
-// Relationship type pulled out for clarity
+
 export type TableRelationship = {
     relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
     column: string;
@@ -119,7 +114,9 @@ export type AutomationTable = {
 };
 
 
-export type initialSchema = typeof initialAutomationTableSchema;
+export type UnifiedSchemaCache = ReturnType<typeof initializeSchemaSystem>
+export type ProcessedSchema = UnifiedSchemaCache['schema'];
+export type TableNames = keyof ProcessedSchema;
 
 
 

@@ -4,10 +4,7 @@ const webpack = require('webpack');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-        after: true,
-    },
-    async headers() {
+    headers() {
         return [
             {
                 source: "/(.*)",

@@ -1,14 +1,14 @@
 // Type definitions for lookups (without changing the objects themselves)
-import {AutomationTableName} from "@/types/AutomationSchemaTypes";
+import {AutomationTableName, SchemaEntityKeys} from "@/types/AutomationSchemaTypes";
 import {AllTableNameVariations} from "@/utils/schema/precomputeUtil";
 import {AnyTableName, TableFields} from "@/types/automationTableTypes";
 
 export type TableNameLookupType = {
-    [K: string]: AutomationTableName;
+    [K: string]: SchemaEntityKeys;
 } & {
     [K in AllTableNameVariations]: Extract<
         AutomationTableName,
-        { [T in AutomationTableName]: AnyTableName<T> extends K ? T : never }[AutomationTableName]
+        { [T in AutomationTableName]: AnyTableName<T> extends K ? T : never }[SchemaEntityKeys]
     >;
 };
 
@@ -1155,4 +1155,5 @@ export const fieldNameLookup: FieldNameLookupType = {
         p_updated_at: "updatedAt"
     },
 };
+
 

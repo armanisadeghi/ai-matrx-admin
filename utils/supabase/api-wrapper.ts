@@ -5,7 +5,8 @@ import {supabase} from '@/utils/supabase/client';
 import {PostgrestError} from '@supabase/postgrest-js';
 import {AutomationTableName} from "@/types/AutomationSchemaTypes";
 import {
-    getFieldNameMapping,
+    convertData,
+    getFieldNameMapping, getGlobalCache, initializeSchemaSystem,
     resolveFieldKey,
     resolveTableKey,
     StringFieldKey,
@@ -16,7 +17,11 @@ import {
     ResolveDatabaseTableName,
     ResolveFrontendTableName
 } from '@/types/automationTableTypes';
-import {convertData} from "@/utils/schema/schemaRegistry";
+
+const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
+
+const trace: string[] = ['anotherFile'];
+
 
 export type QueryOptions<T extends AutomationTableName> = {
     filters?: Partial<Record<StringFieldKey<T>, unknown>>;
@@ -42,11 +47,20 @@ export interface ApiWrapperSchemaFormats<T extends AutomationTableName> {
 function getApiWrapperSchemaFormats<T extends AutomationTableName>(
     requestTableName: TableNameVariant
 ): ApiWrapperSchemaFormats<T> {
-    let globalCache;
+    let globalCache = getGlobalCache(trace);
+
+    console.log('getApiWrapperSchemaFormats RequestTableName:', requestTableName);
+
+    if (!globalCache) {
+        globalCache = initializeSchemaSystem(trace);
+    }
+
     if (!globalCache) throw new Error('Schema system not initialized');
 
     const tableKey = resolveTableKey(requestTableName) as T;
+    console.log('getApiWrapperSchemaFormats TableKey:', tableKey);
     const table = globalCache.schema[tableKey];
+    console.log('getApiWrapperSchemaFormats Table:', table);
 
     if (!table) {
         throw new Error(`Schema not found for table '${requestTableName}'`);
@@ -997,24 +1011,24 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
 
 }
 
-export const databaseApi = new DatabaseApiWrapper(supabase);
-
-
-type FilterOperator =
-    | 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike'
-    | 'is' | 'in' | 'cs' | 'cd' | 'sl' | 'sr' | 'nxl' | 'nxr'
-    | 'adj' | 'ov' | 'fts' | 'plfts' | 'phfts' | 'wfts';
-
-type QueryBuilder<T extends Record<string, any> = any> = {
-    from: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
-    select: (columns: DatabaseFieldName | DatabaseFieldName[]) => QueryBuilder<T>;
-    filter: (column: DatabaseFieldName, operator: FilterOperator, value: any) => QueryBuilder<T>;
-    order: (column: DatabaseFieldName, ascending?: boolean) => QueryBuilder<T>;
-    limit: (count: number) => QueryBuilder<T>;
-    offset: (count: number) => QueryBuilder<T>;
-    joinRelated: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
-    execute: () => Promise<{ data: T[] | null; error: PostgrestError | null }>;
-};
-
-type PostgrestList = Array<Record<string, any>>;
-type PostgrestMap = Record<string, any>;
+// export const databaseApi = new DatabaseApiWrapper(supabase);
+//
+//
+// type FilterOperator =
+//     | 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike'
+//     | 'is' | 'in' | 'cs' | 'cd' | 'sl' | 'sr' | 'nxl' | 'nxr'
+//     | 'adj' | 'ov' | 'fts' | 'plfts' | 'phfts' | 'wfts';
+//
+// type QueryBuilder<T extends Record<string, any> = any> = {
+//     from: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
+//     select: (columns: DatabaseFieldName | DatabaseFieldName[]) => QueryBuilder<T>;
+//     filter: (column: DatabaseFieldName, operator: FilterOperator, value: any) => QueryBuilder<T>;
+//     order: (column: DatabaseFieldName, ascending?: boolean) => QueryBuilder<T>;
+//     limit: (count: number) => QueryBuilder<T>;
+//     offset: (count: number) => QueryBuilder<T>;
+//     joinRelated: (table: ResolveDatabaseTableName) => QueryBuilder<T>;
+//     execute: () => Promise<{ data: T[] | null; error: PostgrestError | null }>;
+// };
+//
+// type PostgrestList = Array<Record<string, any>>;
+// type PostgrestMap = Record<string, any>;
