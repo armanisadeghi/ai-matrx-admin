@@ -9,13 +9,18 @@ import {
     getFieldNameMapping, getGlobalCache, initializeSchemaSystem,
     resolveFieldKey,
     resolveTableKey,
-    StringFieldKey,
-    TableNameVariant
 } from "@/utils/schema/precomputeUtil";
 import {
     AutomationTableStructure,
     TableNameFrontend,
-    TableNameDatabase
+    TableNameDatabase,
+    FieldName,
+    TableNameVariant,
+    TableKeys,
+    TableName,
+    TableFields,
+    EntityNameMappings,
+    FieldNameMappings,
 } from '@/types/automationTableTypes';
 
 const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
@@ -23,31 +28,36 @@ const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Nod
 const trace: string[] = ['anotherFile'];
 
 
-export type QueryOptions<T extends AutomationTableName> = {
-    filters?: Partial<Record<StringFieldKey<T>, unknown>>;
+export type QueryOptions<TTable extends TableKeys> = {
+    filters?: Partial<Record<TableFields<TTable>, any>>,
     sorts?: Array<{
-        column: StringFieldKey<T>;
-        ascending?: boolean;
-    }>;
-    limit?: number;
-    offset?: number;
-    columns?: Array<StringFieldKey<T>>;
+        column: TableFields<TTable>,
+        ascending?: boolean
+    }>,
+    limit?: number,
+    offset?: number,
+    columns?: Array<TableFields<TTable>>
 };
 
 type SubscriptionCallback = (data: unknown[]) => void;
 
-// Schema format interfaces
 export interface ApiWrapperSchemaFormats<T extends AutomationTableName> {
     schema: AutomationTableStructure[T];
     frontendName: TableNameFrontend<T>;
     databaseName: TableNameDatabase<T>;
 }
 
-// Helper function to get schema formats
+
 function getApiWrapperSchemaFormats<T extends AutomationTableName>(
     requestTableName: TableNameVariant
 ): ApiWrapperSchemaFormats<T> {
-    let globalCache = getGlobalCache(trace);
+    let globalCache: {
+        schema: AutomationTableStructure;
+        tableNameMap: Map<TableNameVariant, TableName>;
+        fieldNameMap: Map<TableName, Map<string, FieldName<TableName>>>;
+        reverseTableNameMap: Map<TableName, EntityNameMappings<TableName>>;
+        reverseFieldNameMap: Map<TableName, Map<FieldName<TableName>, FieldNameMappings<TableName, FieldName<TableName>>>>;
+    } | undefined = getGlobalCache(trace);
 
     console.log('getApiWrapperSchemaFormats RequestTableName:', requestTableName);
 
@@ -73,6 +83,7 @@ function getApiWrapperSchemaFormats<T extends AutomationTableName>(
     };
 }
 
+
 class DatabaseApiWrapper<T extends AutomationTableName> {
     private client: SupabaseClient;
     private requestTableName: TableNameVariant;
@@ -89,12 +100,12 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
         this.client = supabase;
         this.requestTableName = requestTableName;
 
-        const { schema, frontendName, databaseName, primaryKey } = getApiWrapperSchemaFormats<T>(requestTableName);
+        const { schema, frontendName, databaseName } = getApiWrapperSchemaFormats<T>(requestTableName);
 
         this.fullSchema = schema;
         this.frontendTableName = frontendName;
         this.databaseTableName = databaseName;
-        this.primaryKeyField = primaryKey;
+        this.primaryKeyField = this.findPrimaryKeyField();
     }
 
 
@@ -1011,7 +1022,7 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
 
 }
 
-// export const databaseApi = new DatabaseApiWrapper(supabase);
+export const databaseApi = new DatabaseApiWrapper(supabase);
 //
 //
 // type FilterOperator =
