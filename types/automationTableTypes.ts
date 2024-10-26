@@ -221,18 +221,27 @@ export type AllFieldNameVariations<TTable extends TableKeys> = {
     [TField in TableFields<TTable>]: FieldNameVariations<TTable, TField>
 }[TableFields<TTable>];
 
+export type FieldVariationToKeyMap<TTable extends TableKeys> = {
+    [K in AllFieldNameVariations<TTable>]: Extract<TableFields<TTable>, string>;
+};
+
+// Then redefine our lookup type
+export type FieldNameLookupType = {
+    [TTable in TableKeys]: Partial<FieldVariationToKeyMap<TTable>>;
+};
+
+// // Or alternatively, we could try this approach:
+// export type FieldNameLookupType = {
+//     [TTable in TableKeys]: {
+//         [K: string]: TableFields<TTable>;
+//     };
+// };
 
 // Table name lookup
 export type TableNameLookupType = {
     [K in AllTableNameVariations]: TableKeys;
 };
 
-// Field name lookup
-export type FieldNameLookupType = {
-    [TTable in TableKeys]: {
-        [K in AllFieldNameVariations<TTable>]: TableFields<TTable>;
-    };
-};
 
 // Reverse table lookup
 export type ReverseTableLookupType = {
@@ -246,23 +255,6 @@ export type ReverseFieldLookupType = {
     };
 };
 
-// // For Tables
-// export type TableNameFormat<
-// TTable extends TableKeys,
-//     TFormat extends keyof EntityNameMappings<TTable>
-// > = EntityNameMappings<TTable>[TFormat];
-//
-// // Common shortcuts for Tables
-// export type TableNameFrontend<T extends TableKeys> = TableNameFormat<T, 'frontend'>;
-// export type TableNameBackend<T extends TableKeys> = TableNameFormat<T, 'backend'>;
-// export type TableNameDatabase<T extends TableKeys> = TableNameFormat<T, 'database'>;
-// export type TableNamePretty<T extends TableKeys> = TableNameFormat<T, 'pretty'>;
-// export type TableNameComponent<T extends TableKeys> = TableNameFormat<T, 'component'>;
-// export type TableNameKebab<T extends TableKeys> = TableNameFormat<T, 'kebab'>;
-// export type TableNameSqlFunctionRef<T extends TableKeys> = TableNameFormat<T, 'sqlFunctionRef'>;
-// export type TableNameRestAPI<T extends TableKeys> = TableNameFormat<T, 'RestAPI'>;
-// export type TableNameGraphQL<T extends TableKeys> = TableNameFormat<T, 'GraphQL'>;
-// export type TableNameCustom<T extends TableKeys> = TableNameFormat<T, 'custom'>;
 
 export type TableNameVariation<
     TTable extends TableKeys,
@@ -299,7 +291,6 @@ export type TableNameGraphQL<TTable extends TableKeys> =
 
 export type TableNameCustom<TTable extends TableKeys> =
     TableNameVariation<TTable, 'custom'>;
-
 
 
 export type FieldNameVariation<
@@ -361,6 +352,39 @@ export type FieldNameCustom<
 > = FieldNameVariation<TTable, TField, 'custom'>;
 
 
+export type UnifiedSchemaCache = {
+    schema: AutomationTableStructure;
+    tableNameMap: Map<TableNameVariant, TableName>;
+    fieldNameMap: Map<TableName, Map<string, FieldName<TableName>>>;
+    reverseTableNameMap: Map<TableName, EntityNameMappings<TableName>>;
+    reverseFieldNameMap: Map<TableName, Map<FieldName<TableName>, FieldNameMappings<TableName, FieldName<TableName>>>>;
+};
+
+export type ProcessedSchema = UnifiedSchemaCache['schema'];
+
+export type TableNames = keyof ProcessedSchema;
+
+
+export type TableNameMap = ReadonlyMap<AllTableNameVariations, AutomationTableName>;
+
+export type FieldNameMap = ReadonlyMap<
+    AutomationTableName,
+    ReadonlyMap<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
+>;
+export type ReverseTableNameMap = ReadonlyMap<AutomationTableName, ReadonlySet<AllTableNameVariations>>;
+export type ReverseFieldNameMap = ReadonlyMap<
+    AutomationTableName,
+    ReadonlyMap<keyof TableFields<AutomationTableName>, ReadonlySet<AllFieldNameVariations<AutomationTableName>>>
+>;
+
+export type TableName = TableKeys;
+export type FieldName<T extends TableName> = TableFields<T>;
+export type TableNameVariant = AllTableNameVariations;
+export type FieldNameVariant<T extends TableName> = AllFieldNameVariations<T>;
+export type NameFormatType = keyof EntityNameMappings<TableName>;
+
+
+
 type RegisteredFunctionTest2 = AutomationTableStructure['registeredFunction'];
 type RegisteredFunctionTest3 = AutomationTableStructure['registeredFunction']['entityFields'];
 type RegisteredFunctionTest4 = AutomationTableStructure['registeredFunction']['entityFields']['id'];
@@ -384,350 +408,62 @@ type RegisteredFunctionFrontendName = TableNameFrontend<'registeredFunction'>;
 type RegisteredFunctionDatabaseName = TableNameDatabase<'registeredFunction'>;
 
 
-export type UnifiedSchemaCache = Readonly<{
-    schema: Readonly<AutomationTableStructure>;
-    tableNameMap: TableNameMap;
-    fieldNameMap: FieldNameMap;
-    reverseTableNameMap: ReverseTableNameMap;
-    reverseFieldNameMap: ReverseFieldNameMap;
-}>;
+//export type TableFieldNames<T extends AutomationTableName> = keyof AutomationTableStructure[T]['entityFields'];
 
-export type ProcessedSchema = UnifiedSchemaCache['schema'];
-
-export type TableNames = keyof ProcessedSchema;
-
-
-export type TableFieldNames<T extends AutomationTableName> = keyof AutomationTableStructure[T]['entityFields'];
-
-
-// export type AllTableNameVariations = {
-//     readonly [T in AutomationTableName]: AnyTableName<T>;
-// }[AutomationTableName];
-
-// export type AllFieldNameVariations<T extends AutomationTableName> = {
-//     readonly [F in keyof TableFields<T>]: FieldNameResolver<T, F, keyof EntityNameMappings>;
-// }[keyof TableFields<T>];
-
-
-// export type TableNameLookupType = {
-//     readonly [K: string]: AutomationTableName;
-// } & {
-//     readonly [K in AllTableNameVariations]: Extract<
-//         AutomationTableName,
-//         { [T in AutomationTableName]: AnyTableName<T> extends K ? T : never }[AutomationTableName]
-//     >;
-// };
+// export type FieldVariantMap<T extends AutomationTableName> = ReadonlyMap<
+//     AllFieldNameVariations<T>,
+//     keyof TableFields<T>
+// >;
 //
-// export type FieldNameLookupType = {
-//     readonly [T in AutomationTableName]: {
-//         readonly [K: string]: keyof TableFields<T>;
-//     };
-// };
+// export function fieldName<
+//     T extends AutomationTableName,
+//     F extends keyof AutomationTableStructure[T]['entityFields']
+// >(table: T, field: F): F {
+//     return field;
+// }
 //
-// export type ReverseTableLookupType = {
-//     readonly [T in AutomationTableName]: Readonly<EntityNameMappings>;
-// };
+// export function tableName<T extends AutomationTableName>(table: T): T {
+//     return table;
+// }
 //
-// export type ReverseFieldLookupType = {
-//     readonly [T in AutomationTableName]: {
-//         readonly [F in keyof TableFields<T>]: Readonly<EntityNameMappings>;
-//     };
-// };
-
-
-export type TableNameMap = ReadonlyMap<AllTableNameVariations, AutomationTableName>;
-
-export type FieldNameMap = ReadonlyMap<
-    AutomationTableName,
-    ReadonlyMap<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
->;
-export type ReverseTableNameMap = ReadonlyMap<AutomationTableName, ReadonlySet<AllTableNameVariations>>;
-export type ReverseFieldNameMap = ReadonlyMap<
-    AutomationTableName,
-    ReadonlyMap<keyof TableFields<AutomationTableName>, ReadonlySet<AllFieldNameVariations<AutomationTableName>>>
->;
-
-
-export type FieldVariantMap<T extends AutomationTableName> = ReadonlyMap<
-    AllFieldNameVariations<T>,
-    keyof TableFields<T>
->;
-
-export function fieldName<
-    T extends AutomationTableName,
-    F extends keyof AutomationTableStructure[T]['entityFields']
->(table: T, field: F): F {
-    return field;
-}
-
-export function tableName<T extends AutomationTableName>(table: T): T {
-    return table;
-}
-
-
-export type TableField<
-    T extends AutomationTableName,
-    F extends TableFieldNames<T>
-> = AutomationTableStructure[T]['entityFields'][F];
-
-
-export type InferFieldType<F extends EntityField> = F['value'];
-
-// Field type inference for entire tables
-// export type InferTableFieldTypes<T extends AutomationTable> = {
-//     [K in keyof T['entityFields']]: InferFieldType<T['entityFields'][K]>;
-// };
-
-// Comprehensive table field types
-// export type TableFieldTypes = {
-//     [K in AutomationTableName]: InferTableFieldTypes<AutomationTableStructure[K]>;
+//
+// export type TableField<
+//     T extends AutomationTableName,
+//     F extends TableFieldNames<T>
+// > = AutomationTableStructure[T]['entityFields'][F];
+//
+//
+//
+// // Cache-aware type utilities
+// export type CachedTableName = UnifiedSchemaCache['tableNameMap'] extends Map<infer K, any> ? K : never;
+// export type CachedFieldName<T extends AutomationTableName> =
+//     UnifiedSchemaCache['fieldNameMap'] extends Map<T, Map<infer F, any>> ? F : never;
+//
+// // Type guard utilities
+// export type TypeGuardedTable<T extends AutomationTableName> = {
+//     readonly [K in keyof AutomationTableStructure[T]]: AutomationTableStructure[T][K];
 // };
 //
 //
-// export type FieldType<
-//     T extends AutomationTableName,
-//     F extends keyof TableFields<T>
-// > = TableFields<T>[F];
-
-
-// Name resolution types
-// export type NameMappingKey = keyof EntityNameMappings;
 //
-// export type TableNameResolver<
-//     T extends AutomationTableName,
-//     V extends NameMappingKey
-// > = AutomationTableStructure[T]['entityNameMappings'][V];
-
-// Specific name resolution types
-export type ResolveFrontendTableName<T extends AutomationTableName> =
-    TableNameResolver<T, 'frontend'>;
-
-export type ResolveDatabaseTableName<T extends AutomationTableName> =
-    TableNameResolver<T, 'database'>;
-
-export type ResolveBackendTableName<T extends AutomationTableName> =
-    TableNameResolver<T, 'backend'>;
-
-export type ResolvePrettyTableName<T extends AutomationTableName> =
-    TableNameResolver<T, 'pretty'>;
-
-
-// // Field name resolution types
-// export type FieldNameResolver<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields'],
-//     V extends NameMappingKey
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings'][V];
-
-
-// Cache-aware type utilities
-export type CachedTableName = UnifiedSchemaCache['tableNameMap'] extends Map<infer K, any> ? K : never;
-export type CachedFieldName<T extends AutomationTableName> =
-    UnifiedSchemaCache['fieldNameMap'] extends Map<T, Map<infer F, any>> ? F : never;
-
-// Type guard utilities
-export type TypeGuardedTable<T extends AutomationTableName> = {
-    readonly [K in keyof AutomationTableStructure[T]]: AutomationTableStructure[T][K];
-};
-
-
-// // Required name format types for tables
-// export type TableNameFrontend<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['frontend'];
+// // Combined table name types
+// export type RequiredTableNames<T extends AutomationTableName> =
+//     | TableNameFrontend<T>
+//     | TableNameBackend<T>
+//     | TableNameDatabase<T>
+//     | TableNamePretty<T>
+//     | TableNameComponent<T>
+//     | TableNameKebab<T>
+//     | TableNameSqlFunctionRef<T>;
 //
-// export type TableNameBackend<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['backend'];
+// export type OptionalTableNames<T extends AutomationTableName> =
+//     | TableNameRestAPI<T>
+//     | TableNameGraphQL<T>
+//     | TableNameCustom<T>;
 //
-// export type TableNameDatabase<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['database'];
-//
-// export type TableNamePretty<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['pretty'];
-//
-// export type TableNameComponent<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['component'];
-//
-// export type TableNameKebab<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['kebab'];
-//
-// export type TableNameSqlFunctionRef<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['sqlFunctionRef'];
-//
-// // Optional name format types for tables
-// export type TableNameRestAPI<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['RestAPI'];
-//
-// export type TableNameGraphQL<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['GraphQL'];
-//
-// export type TableNameCustom<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['entityNameMappings']['custom'];
-
-// Combined table name types
-export type RequiredTableNames<T extends AutomationTableName> =
-    | TableNameFrontend<T>
-    | TableNameBackend<T>
-    | TableNameDatabase<T>
-    | TableNamePretty<T>
-    | TableNameComponent<T>
-    | TableNameKebab<T>
-    | TableNameSqlFunctionRef<T>;
-
-export type OptionalTableNames<T extends AutomationTableName> =
-    | TableNameRestAPI<T>
-    | TableNameGraphQL<T>
-    | TableNameCustom<T>;
-
-export type AnyTableName<T extends AutomationTableName> =
-    | RequiredTableNames<T>
-    | OptionalTableNames<T>;
-
-// // Required name format types for fields
-// export type FieldNameFrontend<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['frontend'];
-//
-// export type FieldNameBackend<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['backend'];
-//
-// export type FieldNameDatabase<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['database'];
-//
-// export type FieldNamePretty<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['pretty'];
-//
-// export type FieldNameComponent<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['component'];
-//
-// export type FieldNameKebab<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['kebab'];
-//
-// export type FieldNameSqlFunctionRef<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['sqlFunctionRef'];
-//
-// // Optional name format types for fields
-// export type FieldNameRestAPI<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['RestAPI'];
-//
-// export type FieldNameGraphQL<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['GraphQL'];
-//
-// export type FieldNameCustom<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings']['custom'];
-//
-// // Combined field name types
-// export type RequiredFieldNames<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > =
-//     | FieldNameFrontend<T, F>
-//     | FieldNameBackend<T, F>
-//     | FieldNameDatabase<T, F>
-//     | FieldNamePretty<T, F>
-//     | FieldNameComponent<T, F>
-//     | FieldNameKebab<T, F>
-//     | FieldNameSqlFunctionRef<T, F>;
-//
-// export type OptionalFieldNames<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > =
-//     | FieldNameRestAPI<T, F>
-//     | FieldNameGraphQL<T, F>
-//     | FieldNameCustom<T, F>;
-//
-// export type AnyFieldName<
-//     T extends AutomationTableName,
-//     F extends keyof AutomationTableStructure[T]['entityFields']
-// > =
-//     | RequiredFieldNames<T, F>
-//     | OptionalFieldNames<T, F>;
-//
-//
-// // Relationship utility types
-// export type TableRelationships<T extends AutomationTableName> =
-//     AutomationTableStructure[T]['relationships'];
-//
-// export type RelatedTables<T extends AutomationTableName> =
-//     TableRelationships<T>[number]['relatedTable'];
-//
-// // Field constraint types
-// export type RequiredFields<T extends AutomationTableName> = {
-//     [K in keyof TableFields<T>]: AutomationTableStructure[T]['entityFields'][K & string]['isRequired'] extends true
-//         ? K
-//         : never
-// }[keyof TableFields<T>];
-//
-// export type OptionalFields<T extends AutomationTableName> = {
-//     [K in keyof TableFields<T>]: AutomationTableStructure[T]['entityFields'][K & string]['isRequired'] extends false
-//         ? K
-//         : never
-// }[keyof TableFields<T>];
-//
-// // Component-related types
-// export type FieldWithComponent<T extends AutomationTableName> = {
-//     [K in keyof TableFields<T>]: AutomationTableStructure[T]['entityFields'][K & string]['defaultComponent'] extends string
-//         ? K
-//         : never
-// }[keyof TableFields<T>];
-//
-// // Validation-related types
-// export type FieldsWithValidation<T extends AutomationTableName> = {
-//     [K in keyof TableFields<T>]: AutomationTableStructure[T]['entityFields'][K & string]['validationFunctions']['length'] extends 0
-//         ? never
-//         : K
-// }[keyof TableFields<T>];
-
-
-export type ActionType = AutomationTableStructure["action"];
-export type AiEndpointType = AutomationTableStructure["aiEndpoint"];
-export type AiModelType = AutomationTableStructure["aiModel"];
-export type ArgType = AutomationTableStructure["arg"];
-export type AutomationBoundaryBrokerType = AutomationTableStructure["automationBoundaryBroker"];
-export type AutomationMatrixType = AutomationTableStructure["automationMatrix"];
-export type BrokerType = AutomationTableStructure["broker"];
-export type DataInputComponentType = AutomationTableStructure["dataInputComponent"];
-export type DataOutputComponentType = AutomationTableStructure["dataOutputComponent"];
-export type DisplayOptionType = AutomationTableStructure["displayOption"];
-export type EmailsType = AutomationTableStructure["emails"];
-export type ExtractorType = AutomationTableStructure["extractor"];
-export type FlashcardDataType = AutomationTableStructure["flashcardData"];
-export type FlashcardHistoryType = AutomationTableStructure["flashcardHistory"];
-export type FlashcardImagesType = AutomationTableStructure["flashcardImages"];
-export type FlashcardSetRelationsType = AutomationTableStructure["flashcardSetRelations"];
-export type FlashcardSetsType = AutomationTableStructure["flashcardSets"];
-export type ProcessorType = AutomationTableStructure["processor"];
-export type RecipeType = AutomationTableStructure["recipe"];
-export type RecipeBrokerType = AutomationTableStructure["recipeBroker"];
-export type RecipeDisplayType = AutomationTableStructure["recipeDisplay"];
-export type RecipeFunctionType = AutomationTableStructure["recipeFunction"];
-export type RecipeModelType = AutomationTableStructure["recipeModel"];
-export type RecipeProcessorType = AutomationTableStructure["recipeProcessor"];
-export type RecipeToolType = AutomationTableStructure["recipeTool"];
-export type RegisteredFunctionType = AutomationTableStructure["registeredFunction"];
-export type SystemFunctionType = AutomationTableStructure["systemFunction"];
-export type ToolType = AutomationTableStructure["tool"];
-export type TransformerType = AutomationTableStructure["transformer"];
-export type UserPreferencesType = AutomationTableStructure["userPreferences"];
+// export type AnyTableName<T extends AutomationTableName> =
+//     | RequiredTableNames<T>
+//     | OptionalTableNames<T>;
 
 
 export type EntityData = Record<string, any>;

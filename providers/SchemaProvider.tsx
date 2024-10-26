@@ -1,17 +1,15 @@
-// First, let's define our core types for the lookups
-import { createContext, useContext, useRef } from 'react';
-import {
-    AutomationTableStructure,
-    TableFields,
-    TableNameMap,
-    FieldNameMap,
-    ReverseTableNameMap,
-    ReverseFieldNameMap,
-    AllTableNameVariations,
-    AllFieldNameVariations,
-    UnifiedSchemaCache
+import {createContext, useContext, useRef} from 'react';
+import type {
+    TableKeys,
+    FieldName,
+    UnifiedSchemaCache,
+    TableNameVariant,
+    TableName,
+    NameFormatType,
+    FieldNameVariant,
+    EntityNameMappings,
+    FieldNameMappings,
 } from '@/types/automationTableTypes';
-import { AutomationTableName, NameFormat } from '@/types/AutomationSchemaTypes';
 
 
 type SchemaContextType = UnifiedSchemaCache;
@@ -23,7 +21,7 @@ interface SchemaProviderProps {
     initialSchema: SchemaContextType;
 }
 
-export function SchemaProvider({ children, initialSchema }: SchemaProviderProps) {
+export function SchemaProvider({children, initialSchema}: SchemaProviderProps) {
     const schemaRef = useRef<SchemaContextType>(initialSchema);
 
     if (!initialSchema) {
@@ -45,73 +43,71 @@ export function useSchema() {
     return context;
 }
 
-
 export function useNameResolution() {
     const { tableNameMap, fieldNameMap, reverseTableNameMap, reverseFieldNameMap } = useSchema();
 
-    const resolveTableKey = <T extends AutomationTableName>(
-        tableName: AllTableNameVariations
-    ): T => {
+    const resolveTableKey = (
+        tableName: TableNameVariant
+    ): TableName => {
         const key = tableNameMap.get(tableName);
         if (!key) {
             throw new Error(`Unable to resolve table key for name: ${tableName}`);
         }
-        return key as T;
+        return key;
     };
 
-    const resolveFieldKey = <T extends AutomationTableName>(
+    const resolveFieldKey = <T extends TableName>(
         tableKey: T,
-        fieldName: AllFieldNameVariations<T>
-    ): keyof TableFields<T> => {
+        fieldName: FieldNameVariant<T>
+    ): FieldName<T> => {
         const fieldMap = fieldNameMap.get(tableKey);
-        const fieldKey = fieldMap?.get(fieldName);
+        const fieldKey = fieldMap?.get(fieldName as string);
         if (!fieldKey) {
             throw new Error(`Unable to resolve field key for table ${tableKey}, field: ${fieldName}`);
         }
-        return fieldKey;
+        return fieldKey as FieldName<T>;
     };
 
-    const resolveTableAndFieldKeys = <T extends AutomationTableName>(
-        tableName: AllTableNameVariations,
-        fieldName: AllFieldNameVariations<T>
+    const resolveTableAndFieldKeys = <T extends TableName>(
+        tableName: TableNameVariant,
+        fieldName: FieldNameVariant<T>
     ): {
         tableKey: T;
-        fieldKey: keyof TableFields<T>;
+        fieldKey: FieldName<T>;
     } => {
-        const tableKey = resolveTableKey<T>(tableName);
+        const tableKey = resolveTableKey(tableName) as T;
         const fieldKey = resolveFieldKey(tableKey, fieldName);
         return { tableKey, fieldKey };
     };
 
-    const getTableNameInFormat = <T extends AutomationTableName>(
+    const getTableNameInFormat = <T extends TableName>(
         tableKey: T,
-        format: NameFormat
-    ): AllTableNameVariations => {
+        format: NameFormatType
+    ): EntityNameMappings<T>[typeof format] => {
         const formatMap = reverseTableNameMap.get(tableKey);
         if (!formatMap) {
             throw new Error(`No format map found for table: ${tableKey}`);
         }
-        const names = formatMap.values();
-        const name = Array.from(names).find(n => n);
+        const name = formatMap[format];
         if (!name) {
             throw new Error(`Unable to get ${format} name for table ${tableKey}`);
         }
-        return name as AllTableNameVariations;
+        return name;
     };
 
-    const resolveTableNameInFormat = <T extends AutomationTableName>(
-        tableName: AllTableNameVariations,
-        format: NameFormat
-    ): AllTableNameVariations => {
-        const tableKey = resolveTableKey<T>(tableName);
+    const resolveTableNameInFormat = <T extends TableName>(
+        tableName: TableNameVariant,
+        format: NameFormatType
+    ): EntityNameMappings<T>[typeof format] => {
+        const tableKey = resolveTableKey(tableName) as T;
         return getTableNameInFormat(tableKey, format);
     };
 
-    const getFieldNameInFormat = <T extends AutomationTableName>(
+    const getFieldNameInFormat = <T extends TableName, F extends FieldName<T>>(
         tableKey: T,
-        fieldKey: keyof TableFields<T>,
-        format: NameFormat
-    ): AllFieldNameVariations<T> => {
+        fieldKey: F,
+        format: NameFormatType
+    ): FieldNameMappings<T, F>[typeof format] => {
         const tableMap = reverseFieldNameMap.get(tableKey);
         if (!tableMap) {
             throw new Error(`No field map found for table: ${tableKey}`);
@@ -120,20 +116,19 @@ export function useNameResolution() {
         if (!fieldMap) {
             throw new Error(`No field map found for field: ${String(fieldKey)}`);
         }
-        const names = fieldMap.values();
-        const name = Array.from(names).find(n => n);
+        const name = fieldMap[format];
         if (!name) {
             throw new Error(`Unable to get ${format} name for field ${String(fieldKey)} in table ${tableKey}`);
         }
-        return name as AllFieldNameVariations<T>;
+        return name;
     };
 
-    const resolveFieldNameInFormat = <T extends AutomationTableName>(
-        tableName: AllTableNameVariations,
-        fieldName: AllFieldNameVariations<T>,
-        format: NameFormat
-    ): AllFieldNameVariations<T> => {
-        const { tableKey, fieldKey } = resolveTableAndFieldKeys<T>(tableName, fieldName);
+    const resolveFieldNameInFormat = <T extends TableName>(
+        tableName: TableNameVariant,
+        fieldName: FieldNameVariant<T>,
+        format: NameFormatType
+    ): FieldNameVariant<T> => {
+        const { tableKey, fieldKey } = resolveTableAndFieldKeys(tableName, fieldName);
         return getFieldNameInFormat(tableKey, fieldKey, format);
     };
 
@@ -148,11 +143,9 @@ export function useNameResolution() {
     } as const;
 }
 
-
-// Schema access hook
-export function useTableSchema<T extends AutomationTableName>(tableVariant: string) {
-    const { schema } = useSchema();
-    const { resolveTableKey } = useNameResolution();
-    const tableKey = resolveTableKey<T>(tableVariant);
+export function useTableSchema(tableVariant: TableNameVariant) {
+    const {schema} = useSchema();
+    const {resolveTableKey} = useNameResolution();
+    const tableKey = resolveTableKey(tableVariant);
     return schema[tableKey];
 }

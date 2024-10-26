@@ -1,7 +1,7 @@
 // File: types/AutomationSchemaTypes.ts
 
-import {initializeSchemaSystem} from '@/utils/schema/precomputeUtil';
-import {AutomationTableStructure} from '@/types/automationTableTypes';
+
+import {AutomationTableStructure} from "@/types/automationTableTypes";
 
 export type TypeBrand<T> = { _typeBrand: T };
 
@@ -116,51 +116,15 @@ export type AutomationViewName =
     'viewRegisteredFunction'
     | 'viewRegisteredFunctionAllRels';
 
-
-export type SchemaType = 'table' | 'view' | 'function' | 'procedure';
-
-
-
-
 export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
+// export type ProcessedSchema = ReturnType<typeof initializeTableSchema>;
 
-export type UnifiedSchemaCache = ReturnType<typeof initializeSchemaSystem>
-export type ProcessedSchema = UnifiedSchemaCache['schema'];
-export type SchemaEntityKeys = keyof ProcessedSchema;
+// export type UnifiedSchemaCache = ReturnType<typeof initializeSchemaSystem>
 
-export type EntityFields = ProcessedSchema[SchemaEntityKeys]['entityFields'];
+// export type SchemaEntityKeys = keyof ProcessedSchema;
 
-export type EntityFieldNames = keyof ProcessedSchema["action"]['entityFields'];
-
-export type EntityFieldDetails = EntityFields[keyof EntityFields];
-
-
-export type NameVariationValues = {
-    [K in NameFormat]: string;
-};
-
-export type FrontendName = NameVariationValues['frontend'];
-export type BackendName = NameVariationValues['backend'];
-export type DatabaseName = NameVariationValues['database'];
-export type PrettyName = NameVariationValues['pretty'];
-export type ComponentName = NameVariationValues['component'];
-export type KebabName = NameVariationValues['kebab'];
-export type SqlFunctionRefName = NameVariationValues['sqlFunctionRef'];
-export type RestAPIName = NameVariationValues['RestAPI'];
-export type GraphQLName = NameVariationValues['GraphQL'];
-export type CustomName = NameVariationValues['custom'];
-
-export type AllNameVariations = NameVariationValues[NameFormat];
-
-export type NameMap = {
-    [K in NameFormat]: NameVariationValues[K];
-};
-
-
-
-
-export type ActionType = ProcessedSchema["action"];
+export type ActionType = AutomationTableStructure["action"];
 export type AiEndpointType = AutomationTableStructure["aiEndpoint"];
 export type AiModelType = AutomationTableStructure["aiModel"];
 export type ArgType = AutomationTableStructure["arg"];
