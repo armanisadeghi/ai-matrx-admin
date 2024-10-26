@@ -10,7 +10,6 @@ import { LayoutWithSidebar } from "@/components/layout/MatrixLayout";
 import {appSidebarLinks, adminSidebarLinks} from "@/constants";
 import { generateClientSchema, initializeSchemaSystem } from '@/utils/schema/precomputeUtil';
 
-// Initialize schema at module level for caching across requests
 const schemaSystem = initializeSchemaSystem();
 const clientSchema = generateClientSchema();
 
@@ -47,7 +46,6 @@ export default async function AuthenticatedLayout({
     const userData = mapUserData(user);
     const testDirectories = await getTestDirectories();
 
-    // Load user preferences
     const { data: preferences, error } = await supabase
         .from('user_preferences')
         .select('preferences')

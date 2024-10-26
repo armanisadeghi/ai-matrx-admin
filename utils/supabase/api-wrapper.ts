@@ -14,8 +14,8 @@ import {
 } from "@/utils/schema/precomputeUtil";
 import {
     AutomationTableStructure,
-    ResolveDatabaseTableName,
-    ResolveFrontendTableName
+    TableNameFrontend,
+    TableNameDatabase
 } from '@/types/automationTableTypes';
 
 const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
@@ -39,8 +39,8 @@ type SubscriptionCallback = (data: unknown[]) => void;
 // Schema format interfaces
 export interface ApiWrapperSchemaFormats<T extends AutomationTableName> {
     schema: AutomationTableStructure[T];
-    frontendName: ResolveFrontendTableName<T>;
-    databaseName: ResolveDatabaseTableName<T>;
+    frontendName: TableNameFrontend<T>;
+    databaseName: TableNameDatabase<T>;
 }
 
 // Helper function to get schema formats
@@ -68,8 +68,8 @@ function getApiWrapperSchemaFormats<T extends AutomationTableName>(
 
     return {
         schema: table,
-        frontendName: table.entityNameMappings.frontend as ResolveFrontendTableName<T>,
-        databaseName: table.entityNameMappings.database as ResolveDatabaseTableName<T>
+        frontendName: table.entityNameMappings.frontend as TableNameFrontend<T>,
+        databaseName: table.entityNameMappings.database as TableNameDatabase<T>
     };
 }
 
@@ -77,8 +77,8 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
     private client: SupabaseClient;
     private requestTableName: TableNameVariant;
     private fullSchema: AutomationTableStructure[T];
-    private frontendTableName: ResolveFrontendTableName<T>;
-    private databaseTableName: ResolveDatabaseTableName<T>;
+    private frontendTableName: TableNameFrontend<T>;
+    private databaseTableName: TableNameDatabase<T>;
     private primaryKeyField: StringFieldKey<T>;
 
     private subscriptions: Map<string, unknown> = new Map();
@@ -89,12 +89,12 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
         this.client = supabase;
         this.requestTableName = requestTableName;
 
-        const { schema, frontendName, databaseName } = getApiWrapperSchemaFormats<T>(requestTableName);
+        const { schema, frontendName, databaseName, primaryKey } = getApiWrapperSchemaFormats<T>(requestTableName);
 
         this.fullSchema = schema;
         this.frontendTableName = frontendName;
         this.databaseTableName = databaseName;
-        this.primaryKeyField = this.findPrimaryKeyField();
+        this.primaryKeyField = primaryKey;
     }
 
 

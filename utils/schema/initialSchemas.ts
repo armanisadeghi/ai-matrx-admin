@@ -1,39 +1,29 @@
-// File: lib/initialSchemas.ts
+// File: lib/initialSchemas.ts AutomationTableStructure
 
-import {EnumValues, TableSchemaStructure, TypeBrand} from '@/types/automationTableTypes';
-import {AutomationTableName} from "@/types/AutomationSchemaTypes";
+import {
+    AutomationTableName,
+    DataStructure,
+    FetchStrategy,
+    NameFormat,
+    FieldDataType
+} from "@/types/AutomationSchemaTypes";
 
-export const initialAutomationTableSchema: TableSchemaStructure = {
+export type TypeBrand<DataType> = { _typeBrand: DataType };
+export type EnumValues<T> = T extends TypeBrand<infer U> ? U : never;
+
+export const initialAutomationTableSchema = {
     action: {
-        entityNameVariations: {
-            frontend: 'action',
-            backend: 'action',
-            database: 'action',
-            pretty: 'Action',
-            component: 'Action',
-            kebab: 'action',
-        },
-        schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
-                    frontend: 'id',
-                    backend: 'id',
-                    database: 'id',
-                    sqlFunctionRef: 'p_id',
-                    pretty: 'Id',
-                    component: 'Id',
-                    kebab: 'id',
-                } as const,
+                defaultGeneratorFunction: null,
+                validationFunctions: [],
+                exclusionRules: [],
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: true,
-                defaultGeneratorFunction: null,
-                validationFunctions: [],
-                exclusionRules: [],
                 defaultComponent: 'input' as const,
                 componentProps: {
                     variant: "default",
@@ -46,6 +36,16 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
                     type: "default",
                     onChange: "default",
                 },
+                fieldNameVariations: {
+                    frontend: 'id',
+                    backend: 'id',
+                    database: 'id',
+                    sqlFunctionRef: 'p_id',
+                    pretty: 'Id',
+                    component: 'Id',
+                    kebab: 'id',
+                } as const,
+
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
@@ -282,6 +282,16 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
                 databaseTable: 'transformer',
             },
         },
+        entityNameVariations: {
+            frontend: 'action',
+            backend: 'action',
+            database: 'action',
+            pretty: 'Action',
+            component: 'Action',
+            kebab: 'action',
+        },
+        schemaType: 'table' as const,
+
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             variant: 'default',
@@ -1247,10 +1257,11 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
                     frontend: 'registeredFunction',
                     backend: 'registered_function',
                     database: 'registered_function',
-                    sqlFunctionRef: 'p_registered_function',
+                    sqlFunctionRef: 'p_registered_function_7',
                     pretty: 'Registered Function',
                     component: 'RegisteredFunction',
                     kebab: 'registered-function',
+                    armaniType: 'registeredFunction',
                 } as const,
                 dataType: 'string' as const,
                 isRequired: false,
@@ -8413,6 +8424,11 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
             pretty: 'Recipe Tool',
             component: 'RecipeTool',
             kebab: 'recipe-tool',
+            sqlFunctionRef: 'p_recipe_tool',
+            RestAPI: 'RecipeTool',
+            custom: 'RecipeTool',
+            GraphQL: 'RecipeTool',
+
         },
         schemaType: 'table' as const,
         entityFields: {
@@ -8642,12 +8658,17 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
     },
     registeredFunction: {
         entityNameVariations: {
-            frontend: 'registeredFunction',
+            frontend: 'registeredFunctionFront',
             backend: 'registered_function',
             database: 'registered_function',
             pretty: 'Registered Function',
             component: 'RegisteredFunction',
             kebab: 'registered-function',
+            myStyle: 'MyRegisteredFunction',
+            sqlFunctionRef: 'p_registered_function',
+            RestAPI: 'RegisteredFunction',
+            custom: 'RegisteredFunction',
+            GraphQL: 'RegisteredFunction',
         },
         schemaType: 'table' as const,
         entityFields: {
@@ -8986,6 +9007,10 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
             database: 'system_function',
             pretty: 'System Function',
             component: 'SystemFunction',
+            sqlFunctionRef: 'p_system_function',
+            RestAPI: 'SystemFunction',
+            custom: 'CustomSystemFunction',
+            GraphQL: 'SystemFunction',
             kebab: 'system-function',
         },
         schemaType: 'table' as const,
@@ -10127,274 +10152,343 @@ export const initialAutomationTableSchema: TableSchemaStructure = {
         },
         relationships: [],
     }
-} as const satisfies TableSchemaStructure;
+} as const;
 
 
-export type InitialTableType<T extends AutomationTableName> = TableSchemaStructure[T];
-type Expand<T> = { [K in keyof T]: T[K] };
-export type ExpandedInitialTableType<T extends AutomationTableName> = Expand<InitialTableType<T>>;
-
-
-const action = {
+export type InitialTableSchema = {
+    schemaType: 'table';
     entityNameVariations: {
-        frontend: 'action',
-        backend: 'action',
-        database: 'action',
-        pretty: 'Action',
-        component: 'Action',
-        kebab: 'action',
-    },
-    schemaType: 'table' as const,
-    actionAddedFields: {
-        id: true,
-        name: true,
-        testField: true,
-    } as const,
+        [key in NameFormat]?: string;
+    };
     entityFields: {
-        id: {
+        [fieldName: string]: {
             fieldNameVariations: {
-                frontend: 'id',
-                backend: 'id',
-                database: 'id',
-                sqlFunctionRef: 'p_id',
-                pretty: 'Id',
-                component: 'Id',
-                kebab: 'id',
-            } as const,
-            dataType: 'string' as const,
-            isRequired: true,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: true,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'input' as const,
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            databaseTable: 'action',
-        },
-        name: {
-            fieldNameVariations: {
-                frontend: 'name',
-                backend: 'name',
-                database: 'name',
-                sqlFunctionRef: 'p_name',
-                pretty: 'Name',
-                component: 'Name',
-                kebab: 'name',
-            } as const,
-            dataType: 'string' as const,
-            isRequired: true,
-            maxLength: 255,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'textarea:3' as const,
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            databaseTable: 'action',
-        },
-        matrix: {
-            fieldNameVariations: {
-                frontend: 'matrix',
-                backend: 'matrix',
-                database: 'matrix',
-                sqlFunctionRef: 'p_matrix',
-                pretty: 'Matrix',
-                component: 'Matrix',
-                kebab: 'matrix',
-            } as const,
-            dataType: 'string' as const,
-            isRequired: true,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'input' as const,
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            databaseTable: 'action',
-        },
-        transformer: {
-            fieldNameVariations: {
-                frontend: 'transformer',
-                backend: 'transformer',
-                database: 'transformer',
-                sqlFunctionRef: 'p_transformer',
-                pretty: 'Transformer',
-                component: 'Transformer',
-                kebab: 'transformer',
-            } as const,
-            dataType: 'string' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'input' as const,
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            databaseTable: 'action',
-        },
-        nodeType: {
-            fieldNameVariations: {
-                frontend: 'nodeType',
-                backend: 'node_type',
-                database: 'node_type',
-                sqlFunctionRef: 'p_node_type',
-                pretty: 'Node Type',
-                component: 'NodeType',
-                kebab: 'node-type',
-            } as const,
-            dataType: 'string' as const,
-            isRequired: true,
-            maxLength: 50,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'input:50' as const,
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            databaseTable: 'action',
-        },
-        referenceId: {
-            fieldNameVariations: {
-                frontend: 'referenceId',
-                backend: 'reference_id',
-                database: 'reference_id',
-                sqlFunctionRef: 'p_reference_id',
-                pretty: 'Reference Id',
-                component: 'ReferenceId',
-                kebab: 'reference-id',
-            } as const,
-            dataType: 'string' as const,
-            isRequired: true,
-            maxLength: null,
-            isArray: false,
-            defaultValue: "" as const,
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'input' as const,
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<string>,
-            databaseTable: 'action',
-        },
-        automationMatrixReference: {
-            fieldNameVariations: {
-                frontend: 'automationMatrixReference',
-                backend: 'automation_matrix_reference',
-                database: 'ref_automation_matrix',
-                sqlFunctionRef: 'p_ref_automation_matrix',
-                pretty: 'Automation Matrix Reference',
-                component: 'AutomationMatrixReference',
-                kebab: 'automation-matrixReference',
-                somethingElse: 'something',
-            } as const,
-            dataType: 'object' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: true,
-            defaultValue: [],
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: ['notCoreField'],
-            defaultComponent: 'inline-form:1' as const,
-            structure: 'foreignKey' as const,
-            isNative: false,
-            typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
-            databaseTable: 'automation_matrix',
-        },
-        transformerReference: {
-            fieldNameVariations: {
-                frontend: 'transformerReference',
-                backend: 'transformer_reference',
-                database: 'ref_transformer',
-                sqlFunctionRef: 'p_ref_transformer',
-                pretty: 'Transformer Reference',
-                component: 'TransformerReference',
-                kebab: 'transformerReference',
-            } as const,
-            dataType: 'object' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: true,
-            defaultValue: [],
-            isPrimaryKey: false,
-            defaultGeneratorFunction: null,
-            validationFunctions: [],
-            exclusionRules: ['notCoreField'],
-            defaultComponent: 'inline-form:1' as const,
-            structure: 'foreignKey' as const,
-            isNative: false,
-            typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
-            databaseTable: 'transformer',
-        },
-    },
-    defaultFetchStrategy: 'm2mAndFk',
-    relationships: [
-        {
-            relationshipType: 'foreignKey',
-            column: 'matrix',
-            relatedTable: 'automation_matrix',
-            relatedColumn: 'id',
-            junctionTable: null
-        },
-        {
-            relationshipType: 'foreignKey',
-            column: 'transformer',
-            relatedTable: 'transformer',
-            relatedColumn: 'id',
-            junctionTable: null
-        }
-    ],
-} as const;
+                [key in NameFormat]?: string;
+            };
+            dataType: FieldDataType;
+            isArray: boolean;
+            structure: DataStructure;
+            isNative: boolean;
+            typeReference: TypeBrand<any>;
+            defaultComponent?: string;
+            componentProps?: Record<string, unknown>;
+            isRequired: boolean;
+            maxLength: number | null;
+            defaultValue: any;
+            isPrimaryKey: boolean;
+            isDisplayField?: boolean;
+            defaultGeneratorFunction: string | null;
+            validationFunctions: readonly string[];
+            exclusionRules: readonly string[];
+            databaseTable: string;
+        };
+    };
+    defaultFetchStrategy: FetchStrategy;
+    componentProps: Record<string, any>;
+    relationships: Array<{
+        relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
+        column: string;
+        relatedTable: string;
+        relatedColumn: string;
+        junctionTable: string | null;
+    }>;
+};
 
 
-export type DirectActionSchemaType = typeof action;
-export type ActionFields = keyof DirectActionSchemaType['entityFields'];
-export type ActionFieldDetails = DirectActionSchemaType['entityFields'];
-export type ActionFieldNodeType = DirectActionSchemaType['entityFields']['nodeType'];
-export type ActionFieldNodeTypeTypes = DirectActionSchemaType['entityFields']['nodeType']['typeReference'];
-export type ActionEntityNameVariations = DirectActionSchemaType['entityNameVariations'][keyof DirectActionSchemaType['entityNameVariations']];
+export type TableSchemaStructure = {
+    [entityName in AutomationTableName]: InitialTableSchema;
+};
 
 
-export type schema = typeof initialAutomationTableSchema;
+// export type InitialTableType<T extends AutomationTableName> = TableSchemaStructure[T];
+//
+//
+// const action = {
+//     entityNameVariations: {
+//         frontend: 'action',
+//         backend: 'action',
+//         database: 'action',
+//         pretty: 'Action',
+//         component: 'Action',
+//         kebab: 'action',
+//     },
+//     schemaType: 'table' as const,
+//     actionAddedFields: {
+//         id: true,
+//         name: true,
+//         testField: true,
+//     } as const,
+//     entityFields: {
+//         id: {
+//             fieldNameVariations: {
+//                 frontend: 'id',
+//                 backend: 'id',
+//                 database: 'id',
+//                 sqlFunctionRef: 'p_id',
+//                 pretty: 'Id',
+//                 component: 'Id',
+//                 kebab: 'id',
+//             } as const,
+//             dataType: 'string' as const,
+//             isRequired: true,
+//             maxLength: null,
+//             isArray: false,
+//             defaultValue: "" as const,
+//             isPrimaryKey: true,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: [],
+//             defaultComponent: 'input' as const,
+//             structure: 'single' as const,
+//             isNative: true,
+//             typeReference: {} as TypeBrand<string>,
+//             databaseTable: 'action',
+//         },
+//         name: {
+//             fieldNameVariations: {
+//                 frontend: 'name',
+//                 backend: 'name',
+//                 database: 'name',
+//                 sqlFunctionRef: 'p_name',
+//                 pretty: 'Name',
+//                 component: 'Name',
+//                 kebab: 'name',
+//             } as const,
+//             dataType: 'string' as const,
+//             isRequired: true,
+//             maxLength: 255,
+//             isArray: false,
+//             defaultValue: "" as const,
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: [],
+//             defaultComponent: 'textarea:3' as const,
+//             structure: 'single' as const,
+//             isNative: true,
+//             typeReference: {} as TypeBrand<string>,
+//             databaseTable: 'action',
+//         },
+//         matrix: {
+//             fieldNameVariations: {
+//                 frontend: 'matrix',
+//                 backend: 'matrix',
+//                 database: 'matrix',
+//                 sqlFunctionRef: 'p_matrix',
+//                 pretty: 'Matrix',
+//                 component: 'Matrix',
+//                 kebab: 'matrix',
+//             } as const,
+//             dataType: 'string' as const,
+//             isRequired: true,
+//             maxLength: null,
+//             isArray: false,
+//             defaultValue: "" as const,
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: [],
+//             defaultComponent: 'input' as const,
+//             structure: 'single' as const,
+//             isNative: true,
+//             typeReference: {} as TypeBrand<string>,
+//             databaseTable: 'action',
+//         },
+//         transformer: {
+//             fieldNameVariations: {
+//                 frontend: 'transformer',
+//                 backend: 'transformer',
+//                 database: 'transformer',
+//                 sqlFunctionRef: 'p_transformer',
+//                 pretty: 'Transformer',
+//                 component: 'Transformer',
+//                 kebab: 'transformer',
+//             } as const,
+//             dataType: 'string' as const,
+//             isRequired: false,
+//             maxLength: null,
+//             isArray: false,
+//             defaultValue: "" as const,
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: [],
+//             defaultComponent: 'input' as const,
+//             structure: 'single' as const,
+//             isNative: true,
+//             typeReference: {} as TypeBrand<string>,
+//             databaseTable: 'action',
+//         },
+//         nodeType: {
+//             fieldNameVariations: {
+//                 frontend: 'nodeType',
+//                 backend: 'node_type',
+//                 database: 'node_type',
+//                 sqlFunctionRef: 'p_node_type',
+//                 pretty: 'Node Type',
+//                 component: 'NodeType',
+//                 kebab: 'node-type',
+//             } as const,
+//             dataType: 'string' as const,
+//             isRequired: true,
+//             maxLength: 50,
+//             isArray: false,
+//             defaultValue: "" as const,
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: [],
+//             defaultComponent: 'input:50' as const,
+//             structure: 'single' as const,
+//             isNative: true,
+//             typeReference: {} as TypeBrand<string>,
+//             databaseTable: 'action',
+//         },
+//         referenceId: {
+//             fieldNameVariations: {
+//                 frontend: 'referenceId',
+//                 backend: 'reference_id',
+//                 database: 'reference_id',
+//                 sqlFunctionRef: 'p_reference_id',
+//                 pretty: 'Reference Id',
+//                 component: 'ReferenceId',
+//                 kebab: 'reference-id',
+//             } as const,
+//             dataType: 'string' as const,
+//             isRequired: true,
+//             maxLength: null,
+//             isArray: false,
+//             defaultValue: "" as const,
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: [],
+//             defaultComponent: 'input' as const,
+//             structure: 'single' as const,
+//             isNative: true,
+//             typeReference: {} as TypeBrand<string>,
+//             databaseTable: 'action',
+//         },
+//         automationMatrixReference: {
+//             fieldNameVariations: {
+//                 frontend: 'automationMatrixReference',
+//                 backend: 'automation_matrix_reference',
+//                 database: 'ref_automation_matrix',
+//                 sqlFunctionRef: 'p_ref_automation_matrix',
+//                 pretty: 'Automation Matrix Reference',
+//                 component: 'AutomationMatrixReference',
+//                 kebab: 'automation-matrixReference',
+//                 somethingElse: 'something',
+//             } as const,
+//             dataType: 'object' as const,
+//             isRequired: false,
+//             maxLength: null,
+//             isArray: true,
+//             defaultValue: [],
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: ['notCoreField'],
+//             defaultComponent: 'inline-form:1' as const,
+//             structure: 'foreignKey' as const,
+//             isNative: false,
+//             typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+//             databaseTable: 'automation_matrix',
+//         },
+//         transformerReference: {
+//             fieldNameVariations: {
+//                 frontend: 'transformerReference',
+//                 backend: 'transformer_reference',
+//                 database: 'ref_transformer',
+//                 sqlFunctionRef: 'p_ref_transformer',
+//                 pretty: 'Transformer Reference',
+//                 component: 'TransformerReference',
+//                 kebab: 'transformerReference',
+//             } as const,
+//             dataType: 'object' as const,
+//             isRequired: false,
+//             maxLength: null,
+//             isArray: true,
+//             defaultValue: [],
+//             isPrimaryKey: false,
+//             defaultGeneratorFunction: null,
+//             validationFunctions: [],
+//             exclusionRules: ['notCoreField'],
+//             defaultComponent: 'inline-form:1' as const,
+//             structure: 'foreignKey' as const,
+//             isNative: false,
+//             typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
+//             databaseTable: 'transformer',
+//         },
+//     },
+//     defaultFetchStrategy: 'm2mAndFk',
+//     relationships: [
+//         {
+//             relationshipType: 'foreignKey',
+//             column: 'matrix',
+//             relatedTable: 'automation_matrix',
+//             relatedColumn: 'id',
+//             junctionTable: null
+//         },
+//         {
+//             relationshipType: 'foreignKey',
+//             column: 'transformer',
+//             relatedTable: 'transformer',
+//             relatedColumn: 'id',
+//             junctionTable: null
+//         }
+//     ],
+// } as const;
+//
+//
+// export type DirectActionSchemaType = typeof action;
+// export type ActionFields = keyof DirectActionSchemaType['entityFields'];
+// export type ActionFieldDetails = DirectActionSchemaType['entityFields'];
+// export type ActionFieldNodeType = DirectActionSchemaType['entityFields']['nodeType'];
+// export type ActionFieldNodeTypeTypes = DirectActionSchemaType['entityFields']['nodeType']['typeReference'];
+// export type ActionEntityNameVariations = DirectActionSchemaType['entityNameVariations'][keyof DirectActionSchemaType['entityNameVariations']];
+//
+//
+// type InitialSchema = typeof initialAutomationTableSchema;
+// type TableKeys = keyof InitialSchema;
+// type TableSchema = InitialSchema[keyof InitialSchema];
+// type TableSchemaType = TableSchema['schemaType'];
+// type TableEntityNameVariations = TableSchema['entityNameVariations'];
+// type TableEntityNameVariationsValues = TableEntityNameVariations[keyof TableEntityNameVariations];
+// type IndividualTableKeys = keyof TableSchema;
+// type EntityFields = TableSchema['entityFields'];
+//
+// type EntityFieldKeys = InitialSchema[keyof InitialSchema] extends infer T
+//     ? T extends { entityFields: any }
+//         ? keyof T['entityFields']
+//         : never
+//     : never;
+//
+// type EntityFieldKeysForTable<TTable extends keyof InitialSchema> = InitialSchema[TTable] extends infer T
+//     ? T extends { entityFields: any }
+//         ? keyof T['entityFields']
+//         : never
+//     : never;
+//
+// // Usage:
+// type ActionFieldsTest = EntityFieldKeysForTable<'action'>;
+// type AiEndpointFields = EntityFieldKeysForTable<'aiEndpoint'>;
+//
+//
+//
+// type ActionSchema = InitialSchema['action'];
+// type ActionSchemaType = ActionSchema['schemaType'];
+// type ActionNameVariations = keyof ActionSchema['entityNameVariations'];
+// type ActionNameVariationsValues = ActionSchema['entityNameVariations'][keyof ActionSchema['entityNameVariations']];
+// type ActionFieldKeys<T extends keyof typeof tables> = keyof typeof tables[T]['entityFields'];
 
-export type ActionSchema = schema['action'];
-export type ActionSchemaType = ActionSchema['schemaType'];
-export type ActionNameVariations = keyof ActionSchema['entityNameVariations'];
-export type ActionNameVariationsValues = ActionSchema['entityNameVariations'][keyof ActionSchema['entityNameVariations']];
-
-
-export const tables = {
-    action,
-    // ... other tables
-} as const;
-
-export type TableFieldKeys<T extends keyof typeof tables> = keyof typeof tables[T]['entityFields'];
-export type TableFieldDetails<T extends keyof typeof tables> = typeof tables[T]['entityFields'];
-export type TableEntityNameVariations<T extends keyof typeof tables> =
-    typeof tables[T]['entityNameVariations'][keyof typeof tables[T]['entityNameVariations']];
+//
+// const tables = {
+//     action,
+//     // ... other tables
+// } as const;
+//
+// type TableFieldKeys<T extends keyof typeof tables> = keyof typeof tables[T]['entityFields'];
+// type TableFieldDetails<T extends keyof typeof tables> = typeof tables[T]['entityFields'];
+// type TableEntityNameVariations<T extends keyof typeof tables> =
+//     typeof tables[T]['entityNameVariations'][keyof typeof tables[T]['entityNameVariations']];

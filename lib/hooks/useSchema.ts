@@ -2,12 +2,24 @@
 'use client';
 
 import {useContext, useCallback, useMemo} from 'react';
-import {useSchema as useBaseSchema} from '@/providers/SchemaProvider';
-import type {AutomationTableStructure, AutomationTable, TableNames} from '@/types/automationTableTypes';
+import {useNameResolution, useSchema as useBaseSchema} from '@/providers/SchemaProvider';
+import type {
+    AutomationTableStructure,
+    AutomationTable,
+    TableNames,
+    AllTableNameVariations,
+    AllFieldNameVariations,
+    TableFields,
+    TableNameBackend,
+    TableNameFrontend,
+    TableNameDatabase,
+    FieldNameFrontend, FieldNameBackend, FieldNameDatabase
+} from '@/types/automationTableTypes';
 import {v4 as uuidv4} from 'uuid';
 
 
-import type {NameFormat} from '@/types/AutomationSchemaTypes';
+import type {AutomationTableName, NameFormat} from '@/types/AutomationSchemaTypes';
+import {resolveTableName} from "@/utils/schema/precomputeUtil";
 
 interface FormattedSchema extends AutomationTable {
     formattedNames: Record<string, string>;
@@ -34,75 +46,152 @@ interface FieldConverter<T> {
 export type DataWithOptionalId = { id?: string; [key: string]: any };
 export type DataWithId = { id: string; [key: string]: any };
 type ValidationFunction = (value: any) => boolean | void;
+type GetFieldValueOptions = {
+    returnOriginal?: boolean;
+    warnOnMissing?: boolean;
+};
+type RemoveEmptyConfig = {
+    removeEmpty: boolean;
+    removeNull: boolean;
+    removeUndefined: boolean;
+    removeEmptyArrays: boolean;
+    removeEmptyObjects: boolean;
+};
+type ConvertedData<T extends AutomationTableName> = {
+    [K in keyof TableFields<T>]: any;
+};
+
+const defaultRemoveConfig: RemoveEmptyConfig = {
+    removeEmpty: true,
+    removeNull: true,
+    removeUndefined: true,
+    removeEmptyArrays: true,
+    removeEmptyObjects: true
+};
+type WithId = { id: string; };
+type WithOptionalId = { id?: string; };
 
 
 interface UseSchemaResult {
     // Schema Access
     schema: AutomationTableStructure;
-    getTableSchema: (tableVariant: string) => AutomationTable | undefined;
-    getAllTableNames: () => TableNames[];
+    getTableSchema: <T extends AutomationTableName>(tableVariant: AllTableNameVariations) => AutomationTableStructure[T] | undefined;
+    getAllTableNames: () => AutomationTableName[];
 
     // Name Resolution
-    resolveTableName: (variant: string) => string;
-    resolveFieldName: (tableKey: string, fieldVariant: string) => string;
+    resolveTableName: (variant: AllTableNameVariations) => AutomationTableName;
+    resolveFieldName: <T extends AutomationTableName>(
+        tableName: T,
+        fieldVariant: AllFieldNameVariations<T>
+    ) => keyof TableFields<T>;
 
     // Field Operations
-    getFieldSchema: (tableVariant: string, fieldVariant: string) => AutomationTable['entityFields'][string] | undefined;
-    getPrimaryKey: (tableVariant: string) => string | undefined;
-    getDisplayFields: (tableVariant: string) => string[];
+    getFieldSchema: <T extends AutomationTableName>(
+        tableVariant: AllTableNameVariations,
+        fieldVariant: AllFieldNameVariations<T>
+    ) => AutomationTableStructure[T]['entityFields'][keyof AutomationTableStructure[T]['entityFields']] | undefined;
 
-    // Relationship Operations
-    getTableRelationships: (tableVariant: string) => AutomationTable['relationships'] | undefined;
-    getForeignKeyFields: (tableVariant: string) => string[];
+    getPrimaryKey: <T extends AutomationTableName>(tableVariant: AllTableNameVariations) => keyof TableFields<T> | undefined;
+    getDisplayFields: <T extends AutomationTableName>(tableVariant: AllTableNameVariations) => Array<keyof TableFields<T>>;
 
-    // Lookup Operations
-    lookups: {
-        tables: Record<string, string>;
-        fields: Record<string, Record<string, string>>;
-    };
+    // Format conversion helpers
+    getSchemaInFormat: <T extends AutomationTableName>(
+        tableVariant: AllTableNameVariations,
+        format?: NameFormat
+    ) => AutomationTableStructure[T] | undefined;
 
-    // Utility Functions
-    getFieldValue: <T>(tableVariant: string, fieldVariant: string, format: 'frontend' | 'backend' | 'database' | 'pretty' | 'component') => T | undefined;
-    validateFieldValue: (tableVariant: string, fieldVariant: string, value: any) => boolean;
+    getFieldNameInFormat: <T extends AutomationTableName>(
+        tableVariant: AllTableNameVariations,
+        fieldVariant: AllFieldNameVariations<T>,
+        format: NameFormat
+    ) => keyof TableFields<T>;
 
-    getSchemaInFormat: (tableVariant: string, format?: NameFormat) => AutomationTable | undefined;
-    getFieldNameInFormat: (tableVariant: string, fieldVariant: string, format: NameFormat) => string;
-    getApiWrapperSchema: (tableVariant: string) => ApiWrapperSchema | undefined;
-
-    processDataForInsert: (tableVariant: string, data: Record<string, any>) => {
-        callMethod: 'simple' | 'fk' | 'ifk' | 'fkAndIfk',
-        processedData: Record<string, any>
-    };
-    getRelationshipType: (tableVariant: string, format?: NameFormat) => Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null>;
-    removeEmptyFields: (obj: Record<string, any>) => Record<string, any>;
-
-    convertDataFormatSimple: <T extends Record<string, any>>(tableVariant: string, data: T, fromFormat: NameFormat, toFormat: NameFormat) => Record<string, any>;
-    convertDataFormatValidated: <T extends Record<string, any>>(tableVariant: string, data: T, fromFormat: NameFormat, toFormat: NameFormat) => Record<string, any>;
-
-    convertDataFormat: <T extends Record<string, any>>(
-        tableVariant: string,
-        data: T,
+    // Data conversion methods
+    convertDataFormat: <T extends AutomationTableName, TData extends Record<string, any>>(
+        tableVariant: AllTableNameVariations,
+        data: TData,
         fromFormat: NameFormat,
         toFormat: NameFormat
-    ) => Record<string, any>;
+    ) => Record<keyof TableFields<T>, any>;
+
+    getFrontendTableName: <T extends AutomationTableName>(tableKey: T) => TableNameFrontend<T>;
+    getBackendTableName: <T extends AutomationTableName>(tableKey: T) => TableNameBackend<T>;
+    getDatabaseTableName: <T extends AutomationTableName>(tableKey: T) => TableNameDatabase<T>;
+
+    getFrontendFieldName: <T extends AutomationTableName>(
+        tableKey: T,
+        fieldKey: keyof TableFields<T>
+    ) => FieldNameFrontend<T, typeof fieldKey>;
+    getBackendFieldName: <T extends AutomationTableName>(
+        tableKey: T,
+        fieldKey: keyof TableFields<T>
+    ) => FieldNameBackend<T, typeof fieldKey>;
+    getDatabaseFieldName: <T extends AutomationTableName>(
+        tableKey: T,
+        fieldKey: keyof TableFields<T>
+    ) => FieldNameDatabase<T, typeof fieldKey>;
 
 }
 
 export function useSchema(): UseSchemaResult {
-    const baseSchema = useBaseSchema(); // Use the base hook from SchemaProvider
-    const {schema, lookups, resolveTableName, resolveFieldName} = baseSchema;
+    const baseSchema = useBaseSchema();
+    const { schema } = baseSchema;
+    const {
+        getTableNameInFormat,
+        getFieldNameInFormat,
+        resolveTableKey,
+        resolveFieldKey
+    } = useNameResolution();
 
-    // Memoized table names
     const allTableNames = useMemo(() =>
             Object.keys(schema) as TableNames[],
         [schema]
     );
 
-    const getSchemaInFormat = useCallback((
+    const getFrontendTableName = useCallback(<T extends AutomationTableName>(
+        tableKey: T
+    ): TableNameFrontend<T> => {
+        return getTableNameInFormat(tableKey, 'frontend') as TableNameFrontend<T>;
+    }, [getTableNameInFormat]);
+
+    const getBackendTableName = useCallback(<T extends AutomationTableName>(
+        tableKey: T
+    ): TableNameBackend<T> => {
+        return getTableNameInFormat(tableKey, 'backend') as TableNameBackend<T>;
+    }, [getTableNameInFormat]);
+
+    const getDatabaseTableName = useCallback(<T extends AutomationTableName>(
+        tableKey: T
+    ): TableNameDatabase<T> => {
+        return getTableNameInFormat(tableKey, 'database') as TableNameDatabase<T>;
+    }, [getTableNameInFormat]);
+
+    const getFrontendFieldName = useCallback(<T extends AutomationTableName>(
+        tableKey: T,
+        fieldKey: keyof TableFields<T>
+    ): FieldNameFrontend<T, typeof fieldKey> => {
+        return getFieldNameInFormat(tableKey, fieldKey, 'frontend') as FieldNameFrontend<T, typeof fieldKey>;
+    }, [getFieldNameInFormat]);
+
+    const getBackendFieldName = useCallback(<T extends AutomationTableName>(
+        tableKey: T,
+        fieldKey: keyof TableFields<T>
+    ): FieldNameBackend<T, typeof fieldKey> => {
+        return getFieldNameInFormat(tableKey, fieldKey, 'backend') as FieldNameBackend<T, typeof fieldKey>;
+    }, [getFieldNameInFormat]);
+
+    const getDatabaseFieldName = useCallback(<T extends AutomationTableName>(
+        tableKey: T,
+        fieldKey: keyof TableFields<T>
+    ): FieldNameDatabase<T, typeof fieldKey> => {
+        return getFieldNameInFormat(tableKey, fieldKey, 'database') as FieldNameDatabase<T, typeof fieldKey>;
+    }, [getFieldNameInFormat]);
+
+    const getSchemaInFormat = useCallback(<T extends AutomationTableName>(
         tableVariant: string,
         format: NameFormat = 'frontend'
-    ): AutomationTable | undefined => {
-        const tableKey = resolveTableName(tableVariant);
+    ): AutomationTableStructure[T] | undefined => {
+        const tableKey = resolveTableKey(tableVariant) as T;
         const tableSchema = schema[tableKey];
 
         if (!tableSchema) {
@@ -110,15 +199,19 @@ export function useSchema(): UseSchemaResult {
             return undefined;
         }
 
+        const formattedName = getTableNameInFormat(tableKey, format);
+
         // Create formatted version of the schema
         const formattedSchema = {
             ...tableSchema,
             entityNameMappings: {
                 ...tableSchema.entityNameMappings,
-                current: tableSchema.entityNameMappings[format]
+                current: formattedName
             },
             entityFields: Object.entries(tableSchema.entityFields).reduce((acc, [fieldKey, field]) => {
-                const formattedFieldName = field.fieldNameMappings[fieldKey]?.[format] || fieldKey;
+                const resolvedFieldKey = resolveFieldKey(tableKey, fieldKey);
+                const formattedFieldName = getFieldNameInFormat(tableKey, resolvedFieldKey, format);
+
                 acc[formattedFieldName] = {
                     ...field,
                     currentName: formattedFieldName
@@ -127,154 +220,254 @@ export function useSchema(): UseSchemaResult {
             }, {} as Record<string, any>)
         };
 
-        return formattedSchema;
-    }, [schema, resolveTableName]);
+        return formattedSchema as AutomationTableStructure[T];
 
-    // Get multiple format versions of the schema
-    const getApiWrapperSchema = useCallback((
-        tableVariant: string
-    ): ApiWrapperSchema | undefined => {
-        const tableKey = resolveTableName(tableVariant);
-        const baseTableSchema = schema[tableKey];
+        const getApiWrapperSchema = useCallback(<T extends AutomationTableName>(
+            tableVariant: string
+        ): ApiWrapperSchema | undefined => {
+            const tableKey = resolveTableKey(tableVariant) as T;
+            const baseTableSchema = schema[tableKey];
 
-        if (!baseTableSchema) {
-            console.warn(`No schema found for table name: ${tableVariant}`);
-            return undefined;
-        }
-
-        return {
-            schema: baseTableSchema,
-            frontend: getSchemaInFormat(tableVariant, 'frontend') as FormattedSchema,
-            database: getSchemaInFormat(tableVariant, 'database') as FormattedSchema
-        };
-    }, [schema, resolveTableName, getSchemaInFormat]);
-
-    // Get field name in specific format
-    const getFieldNameInFormat = useCallback((
-        tableVariant: string,
-        fieldVariant: string,
-        format: NameFormat = 'frontend'
-    ): string => {
-        const tableKey = resolveTableName(tableVariant);
-        const fieldKey = resolveFieldName(tableKey, fieldVariant);
-        const tableSchema = schema[tableKey];
-
-        if (!tableSchema) {
-            return fieldVariant;
-        }
-
-        const field = tableSchema.entityFields[fieldKey];
-        return field?.fieldNameMappings[fieldKey]?.[format] || fieldVariant;
-    }, [schema, resolveTableName, resolveFieldName]);
-
-    const convertDataFormatSimple = useCallback(<T extends Record<string, any>>(
-        tableVariant: string,
-        data: T,
-        fromFormat: NameFormat,
-        toFormat: NameFormat
-    ): Record<string, any> => {
-        const tableKey = resolveTableName(tableVariant);
-        const tableSchema = schema[tableKey];
-
-        if (!tableSchema) {
-            return data;
-        }
-
-        return Object.entries(data).reduce((acc, [key, value]) => {
-            const fieldKey = resolveFieldName(tableKey, key);
-            const field = tableSchema.entityFields[fieldKey];
-            if (field) {
-                const newKey = field.fieldNameMappings[fieldKey]?.[toFormat] || key;
-                acc[newKey] = value;
-            } else {
-                acc[key] = value;
+            if (!baseTableSchema) {
+                console.warn(`No schema found for table name: ${tableVariant}`);
+                return undefined;
             }
-            return acc;
-        }, {} as Record<string, any>);
-    }, [schema, resolveTableName, resolveFieldName]);
+
+            return {
+                schema: baseTableSchema,
+                frontend: getSchemaInFormat<T>(tableVariant, 'frontend') as FormattedSchema,
+                database: getSchemaInFormat<T>(tableVariant, 'database') as FormattedSchema
+            };
+        }, [schema, resolveTableKey, getSchemaInFormat]);
 
 
-    const convertDataFormatValidated = useCallback(<T extends Record<string, any>>(
-        tableVariant: string,
-        data: T,
+        const convertDataFormatSimple = useCallback(<T extends AutomationTableName>(
+            tableVariant: string,
+            data: Record<string, any>,
+            fromFormat: NameFormat,
+            toFormat: NameFormat
+        ): Record<string, any> => {
+            try {
+                const tableKey = resolveTableKey(tableVariant) as T;
+                const tableSchema = schema[tableKey];
+
+                if (!tableSchema) {
+                    console.warn(`No schema found for table ${tableVariant}, returning original data`);
+                    return data;
+                }
+
+                return Object.entries(data).reduce((acc, [key, value]) => {
+                    try {
+                        const fieldKey = resolveFieldKey(tableKey, key);
+                        // Use type assertion here since we know fieldKey is valid
+                        const field = tableSchema.entityFields[fieldKey as keyof typeof tableSchema.entityFields];
+
+                        if (field) {
+                            const newKey = getFieldNameInFormat(tableKey, fieldKey, toFormat);
+                            acc[newKey] = value;
+                        } else {
+                            console.log(`Unrecognized field key ${key} in table ${tableVariant}, keeping original`);
+                            acc[key] = value;
+                        }
+                    } catch (error) {
+                        console.log(`Unable to convert field ${key} in table ${tableVariant}: ${error.message}`);
+                        acc[key] = value;
+                    }
+                    return acc;
+                }, {} as Record<string, any>);
+            } catch (error) {
+                console.error(`Error converting data format for table ${tableVariant}: ${error.message}`);
+                return data;
+            }
+        }, [schema, resolveTableKey, resolveFieldKey, getFieldNameInFormat]);
+
+
+        const getFieldValue = useCallback(<T extends unknown>(
+            tableVariant: string,
+            fieldVariant: string,
+            format: NameFormat,
+            options: GetFieldValueOptions = {}
+        ): T | undefined => {
+            try {
+                const tableKey = resolveTableKey(tableVariant);
+                const fieldKey = resolveFieldKey(tableKey, fieldVariant);
+                const formattedName = getFieldNameInFormat(tableKey, fieldKey, format);
+
+                return formattedName as T;
+            } catch (error) {
+                if (options.warnOnMissing) {
+                    console.warn(`Unable to get ${format} value for field ${fieldVariant} in table ${tableVariant}: ${error.message}`);
+                }
+                return options.returnOriginal ? fieldVariant as T : undefined;
+            }
+        }, [resolveTableKey, resolveFieldKey, getFieldNameInFormat]);
+
+
+        const removeEmptyFields = useCallback(<T extends Record<string, any>>(
+            obj: T,
+            config: Partial<RemoveEmptyConfig> = defaultRemoveConfig
+        ): Partial<T> => {
+            const finalConfig = { ...defaultRemoveConfig, ...config };
+
+            return Object.entries(obj).reduce((acc, [key, value]) => {
+                const shouldKeep = (() => {
+                    if (value === null) return !finalConfig.removeNull;
+                    if (value === undefined) return !finalConfig.removeUndefined;
+                    if (value === '') return !finalConfig.removeEmpty;
+
+                    if (Array.isArray(value)) {
+                        return !finalConfig.removeEmptyArrays || value.length > 0;
+                    }
+
+                    if (typeof value === 'object') {
+                        return !finalConfig.removeEmptyObjects || Object.keys(value).length > 0;
+                    }
+
+                    return true;
+                })();
+
+                if (shouldKeep) {
+                    acc[key as keyof T] = value;
+                }
+                return acc;
+            }, {} as Partial<T>);
+        }, []);
+
+
+        const ensureId = useCallback(<T extends Record<string, any>>(
+            input: T | T[]
+        ): T extends T[] ? (T[number] & WithId)[] : T & WithId => {
+            if (Array.isArray(input)) {
+                return input.map(item => ({
+                    ...item,
+                    id: ('id' in item && typeof item.id === 'string') ?
+                        item.id :
+                        uuidv4()
+                })) as T extends T[] ? (T[number] & WithId)[] : never;
+            }
+
+            if ('id' in input && typeof input.id === 'string') {
+                return input as T & WithId;
+            }
+
+            return {
+                ...input,
+                id: uuidv4()
+            } as T extends T[] ? never : T & WithId;
+        }, []);
+
+
+
+
+
+
+    const convertDataFormatValidated = useCallback(<T extends AutomationTableName>(
+        tableVariant: AllTableNameVariations,
+        data: Partial<Record<AllFieldNameVariations<T>, any>>,
         fromFormat: NameFormat,
         toFormat: NameFormat
-    ): Record<string, any> => {
-        const validatedData = validateAndTransformData(tableVariant, data, fromFormat);
-        const tableKey = resolveTableName(tableVariant);
+    ): Partial<Record<keyof TableFields<T>, any>> => {
+        const validatedData = validateAndTransformData<T>(tableVariant, data, fromFormat);
+        const tableKey = resolveTableName(tableVariant) as T;
 
-        return Object.entries(validatedData).reduce((acc, [key, value]) => {
-            const fieldKey = resolveFieldName(tableKey, key);
-            const newKey = getFieldNameInFormat(tableKey, fieldKey, toFormat);
+        return Object.entries(validatedData).reduce<Partial<Record<keyof TableFields<T>, any>>>((acc, [key, value]) => {
+            const fieldKey = resolveFieldName(
+                tableKey,
+                key as AllFieldNameVariations<T>
+            );
+
+            // Use the FieldVariantMap type for the new key
+            const newKey = getFieldNameInFormat(
+                tableKey,
+                fieldKey,
+                toFormat
+            ) as keyof TableFields<T>;
+
             acc[newKey] = value;
             return acc;
-        }, {} as Record<string, any>);
+        }, {});
     }, [resolveTableName, resolveFieldName, getFieldNameInFormat]);
 
 
-    // Get table schema with name resolution
-    const getTableSchema = useCallback((tableVariant: string): AutomationTable | undefined => {
-        const tableKey = resolveTableName(tableVariant);
-        return schema[tableKey];
-    }, [schema, resolveTableName]);
 
-    // Get field schema with name resolution
-    const getFieldSchema = useCallback((tableVariant: string, fieldVariant: string) => {
-        const tableKey = resolveTableName(tableVariant);
-        const fieldKey = resolveFieldName(tableKey, fieldVariant);
-        return schema[tableKey]?.entityFields[fieldKey];
-    }, [schema, resolveTableName, resolveFieldName]);
 
-    // Get primary key field
-    const getPrimaryKey = useCallback((tableVariant: string): string | undefined => {
-        const tableSchema = getTableSchema(tableVariant);
-        if (!tableSchema) return undefined;
+        const resolveTableSchema = useCallback(<T extends AutomationTableName>(
+            tableVariant: string
+        ): AutomationTableStructure[T] | undefined => {
+            try {
+                const tableKey = resolveTableKey(tableVariant) as T;
+                return schema[tableKey];
+            } catch (error) {
+                console.warn(`Unable to resolve schema for table ${tableVariant}: ${error.message}`);
+                return undefined;
+            }
+        }, [schema, resolveTableKey]);
 
-        return Object.entries(tableSchema.entityFields)
-            .find(([_, field]) => field.isPrimaryKey)?.[0];
-    }, [getTableSchema]);
+        const getFieldSchema = useCallback(<T extends AutomationTableName>(
+            tableVariant: string,
+            fieldVariant: string
+        ): AutomationTableStructure[T]['entityFields'][keyof TableFields<T>] | undefined => {
+            const tableSchema = resolveTableSchema<T>(tableVariant);
+            if (!tableSchema) return undefined;
 
-    // Get display fields
-    const getDisplayFields = useCallback((tableVariant: string): string[] => {
-        const tableSchema = getTableSchema(tableVariant);
-        if (!tableSchema) return [];
+            try {
+                const tableKey = resolveTableKey(tableVariant) as T;
+                const fieldKey = resolveFieldKey(tableKey, fieldVariant);
+                return tableSchema.entityFields[fieldKey];
+            } catch (error) {
+                console.warn(`Unable to resolve field schema for ${fieldVariant} in table ${tableVariant}: ${error.message}`);
+                return undefined;
+            }
+        }, [resolveTableSchema, resolveTableKey, resolveFieldKey]);
 
-        return Object.entries(tableSchema.entityFields)
-            .filter(([_, field]) => field.isDisplayField)
-            .map(([fieldName]) => fieldName);
-    }, [getTableSchema]);
+        const getPrimaryKey = useCallback(<T extends AutomationTableName>(
+            tableVariant: string
+        ): keyof TableFields<T> | undefined => {
+            const tableSchema = resolveTableSchema<T>(tableVariant);
+            if (!tableSchema) return undefined;
 
-    // Get table relationships
-    const getTableRelationships = useCallback((tableVariant: string) => {
-        const tableSchema = getTableSchema(tableVariant);
-        return tableSchema?.relationships;
-    }, [getTableSchema]);
+            const primaryField = Object.entries(tableSchema.entityFields)
+                .find(([_, field]) => field.isPrimaryKey);
 
-    // Get foreign key fields
-    const getForeignKeyFields = useCallback((tableVariant: string): string[] => {
-        const relationships = getTableRelationships(tableVariant);
-        if (!relationships) return [];
+            return primaryField?.[0] as keyof TableFields<T>;
+        }, [resolveTableSchema]);
 
-        return relationships
-            .filter(rel => rel.relationshipType === 'foreignKey')
-            .map(rel => rel.column);
-    }, [getTableRelationships]);
+        const getDisplayFields = useCallback(<T extends AutomationTableName>(
+            tableVariant: string
+        ): Array<keyof TableFields<T>> => {
+            const tableSchema = resolveTableSchema<T>(tableVariant);
+            if (!tableSchema) return [];
 
-    // Get field value in specific format
-    const getFieldValue = useCallback(<T>(
-        tableVariant: string,
-        fieldVariant: string,
-        format: 'frontend' | 'backend' | 'database' | 'pretty' | 'component'
-    ): T | undefined => {
-        const fieldSchema = getFieldSchema(tableVariant, fieldVariant);
-        if (!fieldSchema) return undefined;
+            return Object.entries(tableSchema.entityFields)
+                .filter(([_, field]) => field.isDisplayField)
+                .map(([fieldName]) => fieldName as keyof TableFields<T>);
+        }, [resolveTableSchema]);
 
-        const fieldKey = resolveFieldName(resolveTableName(tableVariant), fieldVariant);
-        return fieldSchema.fieldNameMappings[fieldKey]?.[format] as T;
-    }, [getFieldSchema, resolveTableName, resolveFieldName]);
+        const getTableRelationships = useCallback(<T extends AutomationTableName>(
+            tableVariant: string
+        ) => {
+            const tableSchema = resolveTableSchema<T>(tableVariant);
+            return tableSchema?.relationships;
+        }, [resolveTableSchema]);
 
-    // Validate field value
-    const validateFieldValue = useCallback((
+        const getForeignKeyFields = useCallback(<T extends AutomationTableName>(
+            tableVariant: string
+        ): Array<keyof TableFields<T>> => {
+            const relationships = getTableRelationships<T>(tableVariant);
+            if (!relationships) return [];
+
+            return relationships
+                .filter(rel => rel.relationshipType === 'foreignKey')
+                .map(rel => rel.column as keyof TableFields<T>);
+        }, [getTableRelationships]);
+
+
+
+
+
+
+
+        const validateFieldValue = useCallback((
         tableVariant: string,
         fieldVariant: string,
         value: any
@@ -282,8 +475,12 @@ export function useSchema(): UseSchemaResult {
         const fieldSchema = getFieldSchema(tableVariant, fieldVariant);
         if (!fieldSchema) return false;
 
+
+        // TODO: validate data type for now.
         // Add your validation logic here based on fieldSchema.validationFunctions
         // This is a basic example
+
+
         if (fieldSchema.isRequired && (value === null || value === undefined)) {
             return false;
         }
@@ -292,20 +489,8 @@ export function useSchema(): UseSchemaResult {
     }, [getFieldSchema]);
 
 
-    const removeEmptyFields = useCallback((obj: Record<string, any>): Record<string, any> => {
-        return Object.fromEntries(
-            Object.entries(obj).filter(([_, value]) => {
-                if (value === null || value === undefined || value === '' ||
-                    (typeof value === 'object' && Object.keys(value).length === 0)) {
-                    return false;
-                }
-                if (Array.isArray(value)) {
-                    return value.length > 0;
-                }
-                return true;
-            })
-        );
-    }, []);
+
+
 
     const handleRelationshipField = useCallback((
         fieldName: string,
@@ -493,25 +678,8 @@ export function useSchema(): UseSchemaResult {
         }
     }, []);
 
-    // Ensure IDs exist in data
-    const ensureId = useCallback(<T extends DataWithOptionalId | DataWithOptionalId[]>(
-        input: T
-    ): T extends DataWithOptionalId[] ? DataWithId[] : DataWithId => {
-        if (Array.isArray(input)) {
-            return input.map((item) => ({
-                ...item,
-                id: item.id ?? uuidv4(),
-            })) as any;
-        }
 
-        if ('id' in input && typeof input.id === 'string') {
-            return input as any;
-        }
 
-        return {...input, id: uuidv4()} as any;
-    }, []);
-
-    // Initialize data based on schema
     const initializeDataFromSchema = useCallback((
         tableVariant: string,
         format: NameFormat = 'frontend'
@@ -543,38 +711,34 @@ export function useSchema(): UseSchemaResult {
         return convertDataFormatValidated(tableVariant, data, fromFormat, toFormat);
     }, [convertDataFormatValidated]);
 
-    // Validate and transform data based on schema
-    const validateAndTransformData = useCallback((
-        tableVariant: string,
-        data: Record<string, any>,
+    const validateAndTransformData = useCallback(<T extends AutomationTableName>(
+        tableVariant: AllTableNameVariations,
+        data: Partial<Record<AllFieldNameVariations<T>, any>>,
         format: NameFormat = 'frontend'
-    ): Record<string, any> => {
+    ): Record<keyof TableFields<T>, any> => {
         const tableKey = resolveTableName(tableVariant);
-        const tableSchema = schema[tableKey];
+        const tableSchema = schema[tableKey as T];
 
         if (!tableSchema) {
             throw new Error(`No schema found for table: ${tableVariant}`);
         }
 
-        const result = { ...data };
+        const result = { ...data } as Record<keyof TableFields<T>, any>;
 
         for (const [fieldName, field] of Object.entries(tableSchema.entityFields)) {
-            const value = result[fieldName];
+            const value = result[fieldName as keyof TableFields<T>];
             const converter: FieldConverter<any> = {
                 type: field.dataType.toLowerCase() as FieldType
             };
 
-            // If value is undefined or null and field is required, initialize it
             if ((value === undefined || value === null) && field.isRequired) {
-                result[fieldName] = initializeFieldValue(converter);
+                result[fieldName as keyof TableFields<T>] = initializeFieldValue(converter);
                 continue;
             }
 
-            // Validate value if validator exists
             if (field.validationFunctions?.length) {
                 try {
                     field.validationFunctions.forEach(validationFnName => {
-                        // Assume validationFunctions is an array of function names or actual functions
                         const validationFn = typeof validationFnName === 'string'
                             ? (globalValidations as Record<string, ValidationFunction>)[validationFnName]
                             : validationFnName;
@@ -585,7 +749,7 @@ export function useSchema(): UseSchemaResult {
                     });
                 } catch (error) {
                     console.error(`Validation failed for field ${fieldName}:`, error);
-                    result[fieldName] = initializeFieldValue(converter);
+                    result[fieldName as keyof TableFields<T>] = initializeFieldValue(converter);
                 }
             }
         }
@@ -596,10 +760,17 @@ export function useSchema(): UseSchemaResult {
 
     return {
         schema,
+        resolveTableName,
+        getFrontendTableName,
+        getBackendTableName,
+        getDatabaseTableName,
+        getFrontendFieldName,
+        getBackendFieldName,
+        getDatabaseFieldName,
+        getTableNameInFormat,
+        getFieldNameInFormat,
         getTableSchema,
         getAllTableNames: () => allTableNames,
-        resolveTableName,
-        resolveFieldName,
         getFieldSchema,
         getPrimaryKey,
         getDisplayFields,
@@ -607,16 +778,21 @@ export function useSchema(): UseSchemaResult {
         getForeignKeyFields,
         getSchemaInFormat,
         getApiWrapperSchema,
-        getFieldNameInFormat,
         convertDataFormatSimple,
         convertDataFormatValidated,
         convertDataFormat,
-        lookups,
         getFieldValue,
         validateFieldValue,
         processDataForInsert,
         getRelationshipType,
         removeEmptyFields,
+        getFrontendTableName,
+        getBackendTableName,
+        getDatabaseTableName,
+        getFrontendFieldName,
+        getBackendFieldName,
+        getDatabaseFieldName,
+        getSchemaInFormat,
 
     };
 }

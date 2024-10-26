@@ -1,65 +1,16 @@
-import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
+// lib/redux/store.ts
+
+import {configureStore, ThunkAction, Action} from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import { featureSchemas } from './dynamic/featureSchema';
-import { createFeatureSlice } from './slices/featureSliceCreator';
-import { createModuleSlice } from './slices/moduleSliceCreator';
-import { moduleSchemas, ModuleName } from './dynamic/moduleSchema';
-import layoutReducer from './slices/layoutSlice';
-import formReducer from './slices/formSlice';
-import userReducer from './slices/userSlice';
-import aiChatReducer from './slices/aiChatSlice';
-import userPreferencesReducer from './slices/userPreferencesSlice';
-import testRoutesReducer from './slices/testRoutesSlice';
-import flashcardChatReducer from './slices/flashcardChatSlice';
-import { themeReducer } from '@/styles/themes';
-import {createTableSlice} from "@/lib/redux/tables/tableSliceCreator";
-import { TableNames, AutomationTableStructure } from '@/types/automationTableTypes';
-import {createRootSaga} from "@/lib/redux/rootSaga";
-import { loggerMiddleware } from '@/lib/logger/redux-middleware';
+import {moduleSchemas, ModuleName} from './dynamic/moduleSchema';
+import {TableNames, AutomationTableStructure} from '@/types/automationTableTypes';
+import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
+import {loggerMiddleware} from '@/lib/logger/redux-middleware';
+import {createRootReducer} from "@/lib/redux/rootReducer";
+
 
 const sagaMiddleware = createSagaMiddleware();
 
-const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
-    const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
-    const featureSlice = createFeatureSlice(featureName as any, featureSchema);
-    acc[featureName] = featureSlice.reducer;
-    return acc;
-}, {} as Record<string, any>);
-
-const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
-    const moduleSchema = moduleSchemas[moduleName as keyof typeof moduleSchemas];
-    const moduleSlice = createModuleSlice(moduleName as ModuleName, moduleSchema);
-    acc[moduleName] = moduleSlice.reducer;
-    return acc;
-}, {} as Record<string, any>);
-
-type TableReducers = Record<TableNames, ReturnType<typeof createTableSlice>['reducer']>;
-
-function createAutomationTableReducers(schema: AutomationTableStructure): TableReducers {
-    return Object.entries(schema).reduce((acc, [tableName, tableSchema]) => {
-        const tableSlice = createTableSlice(tableName as TableNames, tableSchema);
-        acc[tableName as TableNames] = tableSlice.reducer;
-        return acc;
-    }, {} as TableReducers);
-}
-
-const createRootReducer = (schema: AutomationTableStructure) => {
-    const tableReducers = createAutomationTableReducers(schema);
-
-    return combineReducers({
-        ...featureReducers,
-        ...moduleReducers,
-        ...tableReducers,
-        layout: layoutReducer,
-        theme: themeReducer,
-        form: formReducer,
-        user: userReducer,
-        userPreferences: userPreferencesReducer,
-        testRoutes: testRoutesReducer,
-        flashcardChat: flashcardChatReducer,
-        aiChat: aiChatReducer,
-    });
-};
 
 export const makeStore = (initialState?: any) => {
     if (!initialState?.schema?.schema) {

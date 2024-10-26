@@ -1,11 +1,38 @@
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
-import {tableNameLookup, fieldNameLookup} from "@/utils/schema/lookupSchema";
+import {
+    tableNameLookup,
+    fieldNameLookup,
+    reverseTableNameLookup,
+    reverseFieldNameLookup
+} from "@/utils/schema/lookupSchema";
 import {
     AutomationTable,
     TableSchemaStructure,
-    AutomationTableStructure, AnyTableName, TableFields, FieldNameResolver, EntityNameMappings, InitialTableSchema,
+    AutomationTableStructure,
+    AnyTableName,
+    TableFields,
+    FieldNameResolver,
+    EntityNameMappings,
+    InitialTableSchema,
+    TableNameMap,
+    AllTableNameVariations,
+    TableNameLookupType,
+    FieldNameMap,
+    AllFieldNameVariations,
+    FieldNameLookupType,
+    ReverseTableNameMap,
+    ReverseTableLookupType,
+    ReverseFieldNameMap,
+    ReverseFieldLookupType,
+    UnifiedSchemaCache,
 } from "@/types/automationTableTypes";
-import {AutomationTableName, NameFormat, OptionalNameFormats, RequiredNameFormats, SchemaEntityKeys} from "@/types/AutomationSchemaTypes";
+import {
+    AutomationTableName,
+    NameFormat,
+    OptionalNameFormats,
+    RequiredNameFormats,
+    SchemaEntityKeys
+} from "@/types/AutomationSchemaTypes";
 import {schemaLogger} from '@/lib/logger/schema-logger';
 
 function initializeTableSchema(
@@ -37,7 +64,7 @@ function initializeTableSchema(
             });
 
             let enumValues: string[] | null = null;
-            const { typeReference } = field;
+            const {typeReference} = field;
 
             if (typeof typeReference === 'object' && Object.keys(typeReference).length > 0) {
                 enumValues = Object.keys(typeReference).filter(key => key !== '_typeBrand');
@@ -66,131 +93,38 @@ function initializeTableSchema(
 }
 
 
+function createTableNameMap(): TableNameMap {
+    const map = new Map<AllTableNameVariations, AutomationTableName>();
+    const strictLookup = tableNameLookup as TableNameLookupType;
 
-export type AllTableNameVariations = {
-    [T in AutomationTableName]: AnyTableName<T>;
-}[AutomationTableName];
-
-// Type to represent any possible field name variation for a specific table
-export type AllFieldNameVariations<T extends AutomationTableName> = {
-    [F in keyof TableFields<T>]: FieldNameResolver<T, F, keyof EntityNameMappings>;
-}[keyof TableFields<T>];
-
-// Strongly typed lookup tables
-export type TableNameLookupType = {
-    [K: string]: AutomationTableName;
-} & {
-    [K in AllTableNameVariations]: Extract<
-        AutomationTableName,
-        { [T in AutomationTableName]: AnyTableName<T> extends K ? T : never }[AutomationTableName]
-    >;
-};
-
-export type FieldNameLookupType = {
-    [T in AutomationTableName]: {
-    [K: string]: keyof TableFields<T>;
-} & {
-    [K in AllFieldNameVariations<T>]: Extract<
-        keyof TableFields<T>,
-        { [F in keyof TableFields<T>]: FieldNameResolver<T, F, keyof EntityNameMappings> extends K ? F : never }[keyof TableFields<T>]
-    >;
-};
-};
-
-type FieldNameLookupEntries = {
-    [T in AutomationTableName]: [
-        T,
-        {
-            [K: string]: keyof TableFields<T>;
-        }
-    ]
-}[AutomationTableName];
-
-type FieldVariantMap<T extends AutomationTableName> = Map<
-    AllFieldNameVariations<T>,
-    keyof TableFields<T>
->;
-
-
-// Strongly typed cache structure
-export type UnifiedSchemaCache = {
-    schema: AutomationTableStructure;
-    tableNameMap: Map<AllTableNameVariations, AutomationTableName>;
-    fieldNameMap: Map<
-        AutomationTableName,
-        Map<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
-    >;
-};
-
-
-
-
-/**
- * Initializes the entire schema system with efficient caching
- */
-/**
- * Initializes the entire schema system with efficient caching.
- * This will log and set the global cache.
- */
-export function createFieldNameMap(): Map<
-    AutomationTableName,
-    Map<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
-> {
-    const fieldMap = new Map<
-        AutomationTableName,
-        FieldVariantMap<AutomationTableName>
-    >();
-
-    (Object.keys(fieldNameLookup) as Array<AutomationTableName>).forEach((tableName) => {
-        const fields = fieldNameLookup[tableName];
-        const fieldVariants: FieldVariantMap<typeof tableName> = new Map();
-
-        // Use type assertion to maintain string literal types
-        Object.entries(fields as Record<string, keyof TableFields<typeof tableName>>)
-            .forEach(([variant, key]) => {
-                fieldVariants.set(
-                    variant.toLowerCase() as AllFieldNameVariations<typeof tableName>,
-                    key
-                );
-            });
-
-        fieldMap.set(tableName, fieldVariants);
+    Object.entries(strictLookup).forEach(([variant, tableName]) => {
+        map.set(variant as AllTableNameVariations, tableName);
     });
 
-    return fieldMap as Map<
-        AutomationTableName,
-        Map<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
-    >;
+    return map;
 }
 
-// Alternative approach using a more explicit typing structure
-type StrictFieldNameLookup = {
-    readonly [T in AutomationTableName]: {
-        readonly [K: string]: keyof TableFields<T>;
-    };
-};
-
-export function createStrictFieldNameMap(): Map<
-    AutomationTableName,
-    Map<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
-> {
+function createFieldNameMap(): FieldNameMap {
     const fieldMap = new Map<
         AutomationTableName,
-        FieldVariantMap<AutomationTableName>
+        Map<AllFieldNameVariations<AutomationTableName>, keyof TableFields<AutomationTableName>>
     >();
 
-    const strictLookup = fieldNameLookup as StrictFieldNameLookup;
+    const strictLookup = fieldNameLookup as FieldNameLookupType;
 
     (Object.keys(strictLookup) as Array<AutomationTableName>).forEach((tableName) => {
         const fields = strictLookup[tableName];
-        const fieldVariants: FieldVariantMap<typeof tableName> = new Map();
+        const fieldVariants = new Map<
+            AllFieldNameVariations<typeof tableName>,
+            keyof TableFields<typeof tableName>
+        >();
 
-        for (const [variant, key] of Object.entries(fields)) {
+        Object.entries(fields).forEach(([variant, canonicalName]) => {
             fieldVariants.set(
-                variant.toLowerCase() as AllFieldNameVariations<typeof tableName>,
-                key
+                variant as AllFieldNameVariations<typeof tableName>,
+                canonicalName
             );
-        }
+        });
 
         fieldMap.set(tableName, fieldVariants);
     });
@@ -198,7 +132,53 @@ export function createStrictFieldNameMap(): Map<
     return fieldMap;
 }
 
-// Global cache instance
+function createReverseTableNameMap(): ReverseTableNameMap {
+    const map = new Map<AutomationTableName, Set<AllTableNameVariations>>();
+    const strictLookup = reverseTableNameLookup as ReverseTableLookupType;
+
+    Object.entries(strictLookup).forEach(([tableName, mappings]) => {
+        const variants = new Set<AllTableNameVariations>();
+
+        Object.values(mappings).forEach((variant) => {
+            variants.add(variant as AllTableNameVariations);
+        });
+
+        map.set(tableName as AutomationTableName, variants);
+    });
+
+    return map;
+}
+
+function createReverseFieldNameMap(): ReverseFieldNameMap {
+    const map = new Map<
+        AutomationTableName,
+        Map<keyof TableFields<AutomationTableName>, Set<AllFieldNameVariations<AutomationTableName>>>
+    >();
+    const strictLookup = reverseFieldNameLookup as ReverseFieldLookupType;
+
+    Object.entries(strictLookup).forEach(([tableName, fields]) => {
+        const tableFields = new Map<
+            keyof TableFields<AutomationTableName>,
+            Set<AllFieldNameVariations<AutomationTableName>>
+        >();
+
+        Object.entries(fields).forEach(([fieldName, mappings]) => {
+            const variants = new Set<AllFieldNameVariations<AutomationTableName>>();
+
+            Object.values(mappings).forEach((variant) => {
+                variants.add(variant as AllFieldNameVariations<AutomationTableName>);
+            });
+
+            tableFields.set(fieldName as keyof TableFields<AutomationTableName>, variants);
+        });
+
+        map.set(tableName as AutomationTableName, tableFields);
+    });
+
+    return map;
+}
+
+
 let globalCache: UnifiedSchemaCache | null = null;
 
 export function initializeSchemaSystem(trace: string[] = ['unknownCaller']): UnifiedSchemaCache {
@@ -211,20 +191,17 @@ export function initializeSchemaSystem(trace: string[] = ['unknownCaller']): Uni
 
     try {
         const initializedSchema = initializeTableSchema(initialAutomationTableSchema);
-
-        // Table name map creation
-        const tableMap = new Map<AllTableNameVariations, AutomationTableName>();
-        Object.entries(tableNameLookup as TableNameLookupType).forEach(([variant, key]) => {
-            tableMap.set(variant.toLowerCase() as AllTableNameVariations, key);
-        });
-
-        // Create field map with strict typing
-        const fieldMap = createStrictFieldNameMap();
+        const tableMap = createTableNameMap();
+        const fieldMap = createFieldNameMap();
+        const reverseTableMap = createReverseTableNameMap();
+        const reverseFieldMap = createReverseFieldNameMap();
 
         globalCache = {
             schema: initializedSchema,
             tableNameMap: tableMap,
-            fieldNameMap: fieldMap
+            fieldNameMap: fieldMap,
+            reverseTableNameMap: reverseTableMap,
+            reverseFieldNameMap: reverseFieldMap
         };
 
         console.log('Schema system initialized. New global cache created.');
@@ -263,67 +240,6 @@ export function resetCache(): void {
 }
 
 
-export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
-    if (!globalCache) {
-        console.warn('Global cache is not initialized. Cannot generate schema report.');
-        return;
-    }
-
-    console.log('Schema Cache Status:');
-
-    // Loaded Tables Count
-    const schemaKeys = Object.keys(globalCache.schema);
-    console.log('Loaded Tables Count:', schemaKeys.length);
-
-    // == Table Name Map ==
-    const tableNameMap = globalCache.tableNameMap;
-    console.log('==Table Name Map==');
-    console.log('Table Count:', tableNameMap.size);
-
-    // List all table names in the schema
-    console.log('Tables in Schema:', schemaKeys.join(', '));
-
-    // == Field Name Map ==
-    const fieldNameMap = globalCache.fieldNameMap;
-    const fieldNameMapKeys = Object.keys(fieldNameMap);
-    const totalFieldCount = fieldNameMapKeys.reduce((acc, tableName) => acc + Object.keys(fieldNameMap[tableName]).length, 0);
-
-    console.log('== Field Name Map ==');
-    console.log('Table Count:', fieldNameMapKeys.length);
-    console.log('Field Count:', totalFieldCount);
-
-    // Example Schema Entry for "registeredFunction" Table
-    const registeredFunctionTable = globalCache.schema['registeredFunction'];
-
-    if (registeredFunctionTable) {
-        console.log('\nExample Schema Entry for "registeredFunction" Table:');
-
-        // Print schema type
-        console.log('Schema Type:', registeredFunctionTable.schemaType);
-
-        // Print entity name mappings
-        console.log('Entity Name Mappings:', JSON.stringify(registeredFunctionTable.entityNameMappings, null, 2));
-
-        // Print entity fields one by one
-        console.log('Entity Fields:');
-        Object.entries(registeredFunctionTable.entityFields).forEach(([fieldName, fieldInfo]) => {
-            console.log(`Field Name: ${fieldName}, Field Info: ${JSON.stringify(fieldInfo, null, 2)}`);
-        });
-
-        // Print default fetch strategy
-        console.log('Default Fetch Strategy:', registeredFunctionTable.defaultFetchStrategy);
-
-        // Print component props
-        console.log('Component Props:', JSON.stringify(registeredFunctionTable.componentProps, null, 2));
-
-        // Print relationships
-        console.log('Relationships:', JSON.stringify(registeredFunctionTable.relationships, null, 2));
-    } else {
-        console.warn('No schema found for "registeredFunction" table.');
-    }
-}
-
-
 /**
  * Retrieves the global cache, ensuring no errors are thrown.
  * Logs a warning if the cache is not initialized.
@@ -349,27 +265,10 @@ export function getGlobalCache(trace: string[] = ['unknownCaller']): UnifiedSche
 }
 
 
-
-
-
-
-
-
-// RECORD ALL RESOLUTIONS WITH LOGGING MIDDLEWARE: logResolution - lib/logger/schema-logger.ts ==============================================================================
-
-// Refined EntityNameMappings without the index signature
-export type StrictEntityNameMappings = {
-    [K in RequiredNameFormats]: string;
-} & Partial<{
-    [K in OptionalNameFormats]: string;
-}>;
-
-// Type for all possible name variations of a field
 export type FieldNameVariations<T extends AutomationTableName, F extends keyof TableFields<T>> = {
     [K in NameFormat]: AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings'][K];
 }[NameFormat];
 
-// Enhanced table name variations type
 export type TableNameVariations<T extends AutomationTableName> = {
     [K in NameFormat]: AutomationTableStructure[T]['entityNameMappings'][K];
 }[NameFormat];
@@ -415,7 +314,7 @@ export function isValidFieldName<T extends AutomationTableName>(
         fieldName in (globalCache?.schema[table]?.entityFields ?? {});
 }
 
-// Updated resolution functions with stricter typing
+
 export function resolveTableName(
     tableNameVariant: TableNameVariant,
     trace: string[] = ['unknownCaller']
@@ -509,14 +408,14 @@ export function resolveFieldName<T extends AutomationTableName>(
     return resolvedFieldName as StringFieldKey<T>;
 }
 
-// Helper type to ensure consistent field name handling
+
 export type ResolvedField<T extends AutomationTableName> = {
     original: string;
     resolved: StringFieldKey<T>;
     table: T;
 };
 
-// Optional wrapper function for more type-safe field resolution
+
 export function resolveFieldNameSafe<T extends AutomationTableName>(
     tableKey: T,
     fieldNameVariant: FieldNameVariant<T>,
@@ -531,6 +430,7 @@ export function resolveFieldNameSafe<T extends AutomationTableName>(
         table: tableKey
     };
 }
+
 // Helper to get a table key, falling back to resolution if needed
 export function getTableKey(
     tableNameVariant: TableNameVariant,
@@ -914,7 +814,6 @@ export function resolveTableKeyStrict(
 }
 
 
-
 export function getSchema(
     tableName: string,
     responseFormat?: keyof AutomationTable['entityNameMappings'],
@@ -1056,7 +955,6 @@ export function createBatchOperations<T extends AutomationTableName>(tableKey: T
         }
     };
 }
-
 
 
 /**
@@ -1242,7 +1140,7 @@ export function generateClientSchema(): ClientSchema {
 
     return {
         schema: globalCache.schema,
-        lookups: { tables, fields }
+        lookups: {tables, fields}
     };
 }
 
@@ -1463,7 +1361,40 @@ export function getRegisteredSchemaNames(
 }
 
 
-
+export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
+    if (!globalCache) {
+        console.warn('Global cache is not initialized. Cannot generate schema report.');
+        return;
+    }
+    console.log('Schema Cache Status:');
+    const schemaKeys = Object.keys(globalCache.schema);
+    console.log('Loaded Tables Count:', schemaKeys.length);
+    const tableNameMap = globalCache.tableNameMap;
+    console.log('==Table Name Map==');
+    console.log('Table Count:', tableNameMap.size);
+    console.log('Tables in Schema:', schemaKeys.join(', '));
+    const fieldNameMap = globalCache.fieldNameMap;
+    const fieldNameMapKeys = Object.keys(fieldNameMap);
+    const totalFieldCount = fieldNameMapKeys.reduce((acc, tableName) => acc + Object.keys(fieldNameMap[tableName]).length, 0);
+    console.log('== Field Name Map ==');
+    console.log('Table Count:', fieldNameMapKeys.length);
+    console.log('Field Count:', totalFieldCount);
+    const registeredFunctionTable = globalCache.schema['registeredFunction'];
+    if (registeredFunctionTable) {
+        console.log('\nExample Schema Entry for "registeredFunction" Table:');
+        console.log('Schema Type:', registeredFunctionTable.schemaType);
+        console.log('Entity Name Mappings:', JSON.stringify(registeredFunctionTable.entityNameMappings, null, 2));
+        console.log('Entity Fields:');
+        Object.entries(registeredFunctionTable.entityFields).forEach(([fieldName, fieldInfo]) => {
+            console.log(`Field Name: ${fieldName}, Field Info: ${JSON.stringify(fieldInfo, null, 2)}`);
+        });
+        console.log('Default Fetch Strategy:', registeredFunctionTable.defaultFetchStrategy);
+        console.log('Component Props:', JSON.stringify(registeredFunctionTable.componentProps, null, 2));
+        console.log('Relationships:', JSON.stringify(registeredFunctionTable.relationships, null, 2));
+    } else {
+        console.warn('No schema found for "registeredFunction" table.');
+    }
+}
 
 
 /*
@@ -1561,3 +1492,4 @@ export function initializeTableSchema(
     return schemaMapping;
 }
 */
+
