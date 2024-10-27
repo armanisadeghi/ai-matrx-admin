@@ -1,26 +1,382 @@
-import {
-    FieldNameLookupType,
-    ReverseFieldLookupType,
-    ReverseTableLookupType,
-    TableNameLookupType
-} from '@/types/automationTableTypes';
+import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 
-export const viewNameLookup: Record<string, string> = {
-    view_registered_function: "viewRegisteredFunction",
-    ViewRegisteredFunction: "viewRegisteredFunction",
-    p_view_registered_function: "viewRegisteredFunction",
-    "View Registered Function": "viewRegisteredFunction",
-    "view-registered-function": "viewRegisteredFunction",
-    viewRegisteredFunction: "viewRegisteredFunction",
-    viewRegisteredFunctionAllRels: "viewRegisteredFunctionAllRels",
-    "View Registered Function All Rels": "viewRegisteredFunctionAllRels",
-    ViewRegisteredFunctionAllRels: "viewRegisteredFunctionAllRels",
-    "view-registered-function-all-rels": "viewRegisteredFunctionAllRels",
-    view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
-    p_view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
+export type TypeBrand<T> = { _typeBrand: T };
+export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
+
+
+/**
+ * The complete automation schema containing all entities and their configurations
+ */
+type AutomationSchema = typeof initialAutomationTableSchema;
+
+/**
+ * All valid entity names in the schema (e.g., 'registeredFunction', 'user', etc.)
+ */
+type EntityKeys = keyof AutomationSchema;
+
+// Entity Name Format Mappings
+/**
+ * Maps an entity name to its various format variations (frontend, backend, database, etc.)
+ * @example EntityNameFormats<'registeredFunction'> might return:
+ * {
+ *   frontend: "registeredFunction",
+ *   backend: "registered_function",
+ *   database: "registered_function",
+ *   pretty: "Registered Function"
+ * }
+ */
+type EntityNameFormats<TEntity extends EntityKeys> =
+    AutomationSchema[TEntity]['entityNameVariations'];
+
+/**
+ * Gets a specific format variation for an entity
+ * @example EntityNameFormat<'registeredFunction', 'database'> might return 'registered_function'
+ */
+type EntityNameFormat<
+    TEntity extends EntityKeys,
+    TFormat extends keyof EntityNameFormats<TEntity>
+> = EntityNameFormats<TEntity>[TFormat];
+
+/**
+ * All possible format variations for an entity, including its original key
+ */
+type EntityNameVariations<TEntity extends EntityKeys> =
+    | TEntity
+    | EntityNameFormats<TEntity>[keyof EntityNameFormats<TEntity>];
+
+/**
+ * Union of all possible entity name variations across all entities
+ */
+type AllEntityNameVariations = {
+    [TEntity in EntityKeys]: EntityNameVariations<TEntity>
+}[EntityKeys];
+
+// Field Keys
+/**
+ * All possible field keys across all entities
+ */
+type AllEntityFieldKeys = AutomationSchema[EntityKeys] extends infer TField
+      ? TField extends { entityFields: any }
+        ? keyof TField["entityFields"]
+        : never
+      : never;
+
+/**
+ * All field keys for a specific entity
+ */
+type EntityFieldKeys<TEntity extends keyof AutomationSchema> =
+    AutomationSchema[TEntity] extends infer TField
+    ? TField extends { entityFields: any }
+      ? keyof TField["entityFields"]
+      : never
+    : never;
+
+// Field Name Format Mappings
+/**
+ * Maps a field name to its various format variations
+ * @example For field 'dataType':
+ * {
+ *   frontend: "dataType",
+ *   backend: "data_type",
+ *   database: "data_type",
+ *   pretty: "Data Type",
+ *   component: "DataType",
+ *   ...
+ * }
+ */
+type FieldNameFormats<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['fieldNameVariations'];
+
+/**
+ * Gets a specific format variation for a field
+ * @example FieldNameFormat<'registeredFunction', 'dataType', 'database'> might return 'data_type'
+ */
+type FieldNameFormat<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>,
+    TFormat extends keyof FieldNameFormats<TEntity, TField>
+> = FieldNameFormats<TEntity, TField>[TFormat];
+
+/**
+ * Available format types for a field (e.g., 'frontend', 'backend', 'database', etc.)
+ */
+type FieldFormatTypes<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = keyof FieldNameFormats<TEntity, TField>;
+
+/**
+ * All possible format variations for a field, including its original key
+ */
+type AllFieldNameVariations<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> =
+    | TField
+    | FieldNameFormats<TEntity, TField>[keyof FieldNameFormats<TEntity, TField>];
+
+/**
+ * Gets all field name variations for all fields of an entity
+ */
+type AllEntityFieldVariations<TEntity extends EntityKeys> = {
+    [TField in EntityFieldKeys<TEntity>]: AllFieldNameVariations<TEntity, TField>
+}[EntityFieldKeys<TEntity>];
+
+
+/**
+ * Represents any single canonical field name for an entity
+ */
+type CanonicalFieldKey<TEntity extends EntityKeys> = EntityFieldKeys<TEntity> extends infer K
+     ? K extends string
+       ? K
+       : never
+     : never;
+
+
+
+// Basic types
+type test01 = EntityKeys; // Should show 'registeredFunction' as one of the options
+
+// Entity Name related
+type test02 = EntityNameFormats<'registeredFunction'>;  // Shows the mapping structure
+type test03 = EntityNameFormat<'registeredFunction', 'database'>; // Shows specific variation
+type test04 = EntityNameVariations<'registeredFunction'>; // Shows all variations including the key
+type test05 = AllEntityNameVariations; // Shows all variations across all entities
+
+// Entity Field related
+type test06 = AllEntityFieldKeys; // Shows all possible field keys across all entities
+type test07 = EntityFieldKeys<'registeredFunction'>; // Shows fields for specific entity
+type test13 = CanonicalFieldKey<'registeredFunction'>; // Shows a single canonical field name for an entity
+
+// Field Name related
+type test08 = FieldNameFormats<'registeredFunction', 'modulePath'>; // Shows mapping structure
+type test09 = FieldNameFormat<'registeredFunction', 'modulePath', 'database'>; // Shows specific variation
+type test10 = FieldFormatTypes<'registeredFunction', 'modulePath'>; // Shows possible variation keys
+type test11 = AllFieldNameVariations<'registeredFunction', 'modulePath'>; // Shows all variations including the key
+type test12 = AllEntityFieldVariations<'registeredFunction'>; // Shows all variations for all fields of an entity
+
+
+type FieldDataType<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['dataType'];
+
+type FieldEnumValues<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['enumValues'];
+
+type FieldIsArray<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['isArray'];
+
+type FieldStructure<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['structure'];
+
+type FieldIsNative<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['isNative'];
+
+type FieldTypeReference<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = ExtractType<AutomationSchema[TEntity]['entityFields'][TField]['typeReference']>;
+
+type FieldDefaultComponent<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['defaultComponent'];
+
+type FieldComponentProps<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['componentProps'];
+
+type FieldIsRequired<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['isRequired'];
+
+type FieldMaxLength<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['maxLength'];
+
+type FieldDefaultValue<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['defaultValue'];
+
+type FieldIsPrimaryKey<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['isPrimaryKey'];
+
+type FieldIsDisplayField<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['isDisplayField'];
+
+type FieldDefaultGeneratorFunction<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['defaultGeneratorFunction'];
+
+type FieldValidationFunctions<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['validationFunctions'];
+
+/**
+ * Field-level type definitions
+ */
+type FieldExclusionRules<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['exclusionRules'];
+
+type FieldDatabaseTable<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = AutomationSchema[TEntity]['entityFields'][TField]['databaseTable'];
+
+/**
+ * Comprehensive field configuration type containing all field-level settings
+ */
+type EntityField<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = {
+    fieldNameFormats: FieldNameFormats<TEntity, TField>;
+    value: any;
+    dataType: FieldDataType<TEntity, TField>;
+    enumValues: FieldEnumValues<TEntity, TField>;
+    isArray: FieldIsArray<TEntity, TField>;
+    structure: FieldStructure<TEntity, TField>;
+    isNative: FieldIsNative<TEntity, TField>;
+    typeReference: FieldTypeReference<TEntity, TField>;
+    defaultComponent?: FieldDefaultComponent<TEntity, TField>;
+    componentProps?: FieldComponentProps<TEntity, TField>;
+    isRequired: FieldIsRequired<TEntity, TField>;
+    maxLength: FieldMaxLength<TEntity, TField>;
+    defaultValue: FieldDefaultValue<TEntity, TField>;
+    isPrimaryKey: FieldIsPrimaryKey<TEntity, TField>;
+    isDisplayField: FieldIsDisplayField<TEntity, TField>;
+    defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
+    validationFunctions: FieldValidationFunctions<TEntity, TField>;
+    exclusionRules: FieldExclusionRules<TEntity, TField>;
+    databaseTable: FieldDatabaseTable<TEntity, TField>;
 };
 
-export const tableNameLookup: TableNameLookupType = {
+/**
+ * Entity-level type definitions
+ */
+type EntityRelationships<TEntity extends EntityKeys> =
+    AutomationSchema[TEntity]['relationships'];
+
+type EntitySchemaType<TEntity extends EntityKeys> =
+    AutomationSchema[TEntity]['schemaType'];
+
+type EntityDefaultFetchStrategy<TEntity extends EntityKeys> =
+    AutomationSchema[TEntity]['defaultFetchStrategy'];
+
+type EntityComponentProps<TEntity extends EntityKeys> =
+    AutomationSchema[TEntity]['componentProps'];
+
+/**
+ * Complete entity configuration type containing all entity-level settings
+ */
+type AutomationEntity<TEntity extends EntityKeys> = {
+    schemaType: EntitySchemaType<TEntity>;
+    defaultFetchStrategy: EntityDefaultFetchStrategy<TEntity>;
+    componentProps: EntityComponentProps<TEntity>;
+    entityNameFormats: EntityNameFormats<TEntity>;
+    relationships: EntityRelationships<TEntity>;
+    entityFields: {
+        [TField in EntityFieldKeys<TEntity>]: EntityField<TEntity, TField>;
+    };
+};
+
+/**
+ * Complete automation schema containing all entities
+ */
+type AutomationEntities = {
+    [TEntity in EntityKeys]: AutomationEntity<TEntity>;
+};
+
+
+
+type UnifiedSchemaCache = {
+    schema: AutomationEntities;
+    tableNameLookup: EntityNameToCanonicalMap
+    fieldNameLookup: FieldNameToCanonicalMap
+    reverseTableNameLookup: EntityNameFormatMap
+    reverseFieldNameLookup: FieldNameFormatMap
+};
+
+
+
+
+/**
+ * Maps any entity name variation to its canonical (official) name
+ * @example { "registered_function": "registeredFunction", "RegisteredFunction": "registeredFunction" }
+ */
+type EntityNameToCanonicalMap = {
+    [variation in AllEntityNameVariations]: EntityKeys;
+};
+
+/**
+ * Maps any field name variation to a single canonical field name, organized by entity
+ */
+type FieldNameToCanonicalMap = {
+    [TEntity in EntityKeys]: {
+        [variation: string]: CanonicalFieldKey<TEntity>;
+    };
+};
+/**
+ * Maps an entity's canonical name to its format-specific variations
+ * @example {
+ *   registeredFunction: {
+ *     frontend: "registeredFunction",
+ *     backend: "registered_function",
+ *     database: "registered_function"
+ *   }
+ * }
+ */
+type EntityNameFormatMap = {
+    [TEntity in EntityKeys]: {
+        [TFormat in keyof EntityNameFormats<TEntity>]: EntityNameFormat<TEntity, TFormat>;
+    };
+};
+
+/**
+ * Maps a field's canonical name to its format-specific variations, organized by entity
+ * @example {
+ *   registeredFunction: {
+ *     dataType: {
+ *       frontend: "dataType",
+ *       backend: "data_type",
+ *       database: "data_type"
+ *     }
+ *   }
+ * }
+ */
+type FieldNameFormatMap = {
+    [TEntity in EntityKeys]: {
+        [TField in EntityFieldKeys<TEntity>]: {
+            [TFormat in keyof FieldNameFormats<TEntity, TField>]: FieldNameFormat<TEntity, TField, TFormat>;
+        };
+    };
+};
+
+
+const entityNameToCanonical: EntityNameToCanonicalMap = {
     p_action: "action",
     Action: "action",
     action: "action",
@@ -176,7 +532,7 @@ export const tableNameLookup: TableNameLookupType = {
     "User Preferences": "userPreferences",
 };
 
-export const fieldNameLookup: FieldNameLookupType = {
+const fieldNameToCanonical: FieldNameToCanonicalMap = {
     action: {
         Id: "id",
         id: "id",
@@ -1142,7 +1498,7 @@ export const fieldNameLookup: FieldNameLookupType = {
     },
 };
 
-export const reverseTableNameLookup: ReverseTableLookupType = {
+const entityNameFormats: EntityNameFormatMap = {
     action: {
         "frontend": "action",
         "backend": "action",
@@ -1505,7 +1861,7 @@ export const reverseTableNameLookup: ReverseTableLookupType = {
     },
 };
 
-export const reverseFieldNameLookup: ReverseFieldLookupType = {
+const fieldNameFormats: FieldNameFormatMap = {
     action: {
         "id": {
             "frontend": "id",
@@ -4699,4 +5055,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
         }
     },
 };
+
+
+
 
