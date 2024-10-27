@@ -7,12 +7,12 @@ export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 /**
  * The complete automation schema containing all entities and their configurations
  */
-type AutomationSchema = typeof initialAutomationTableSchema;
+export type AutomationSchema = typeof initialAutomationTableSchema;
 
 /**
  * All valid entity names in the schema (e.g., 'registeredFunction', 'user', etc.)
  */
-type EntityKeys = keyof AutomationSchema;
+export type EntityKeys = keyof AutomationSchema;
 
 // Entity Name Format Mappings
 /**
@@ -25,14 +25,14 @@ type EntityKeys = keyof AutomationSchema;
  *   pretty: "Registered Function"
  * }
  */
-type EntityNameFormats<TEntity extends EntityKeys> =
+export type EntityNameFormats<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['entityNameVariations'];
 
 /**
  * Gets a specific format variation for an entity
  * @example EntityNameFormat<'registeredFunction', 'database'> might return 'registered_function'
  */
-type EntityNameFormat<
+export type EntityNameFormat<
     TEntity extends EntityKeys,
     TFormat extends keyof EntityNameFormats<TEntity>
 > = EntityNameFormats<TEntity>[TFormat];
@@ -40,14 +40,14 @@ type EntityNameFormat<
 /**
  * All possible format variations for an entity, including its original key
  */
-type EntityNameVariations<TEntity extends EntityKeys> =
+export type EntityNameVariations<TEntity extends EntityKeys> =
     | TEntity
     | EntityNameFormats<TEntity>[keyof EntityNameFormats<TEntity>];
 
 /**
  * Union of all possible entity name variations across all entities
  */
-type AllEntityNameVariations = {
+export type AllEntityNameVariations = {
     [TEntity in EntityKeys]: EntityNameVariations<TEntity>
 }[EntityKeys];
 
@@ -55,16 +55,16 @@ type AllEntityNameVariations = {
 /**
  * All possible field keys across all entities
  */
-type AllEntityFieldKeys = AutomationSchema[EntityKeys] extends infer TField
-      ? TField extends { entityFields: any }
-        ? keyof TField["entityFields"]
-        : never
-      : never;
+export type AllEntityFieldKeys = AutomationSchema[EntityKeys] extends infer TField
+                          ? TField extends { entityFields: any }
+                            ? keyof TField["entityFields"]
+                            : never
+                          : never;
 
 /**
  * All field keys for a specific entity
  */
-type EntityFieldKeys<TEntity extends keyof AutomationSchema> =
+export type EntityFieldKeys<TEntity extends keyof AutomationSchema> =
     AutomationSchema[TEntity] extends infer TField
     ? TField extends { entityFields: any }
       ? keyof TField["entityFields"]
@@ -84,7 +84,7 @@ type EntityFieldKeys<TEntity extends keyof AutomationSchema> =
  *   ...
  * }
  */
-type FieldNameFormats<
+export type FieldNameFormats<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['fieldNameVariations'];
@@ -93,7 +93,7 @@ type FieldNameFormats<
  * Gets a specific format variation for a field
  * @example FieldNameFormat<'registeredFunction', 'dataType', 'database'> might return 'data_type'
  */
-type FieldNameFormat<
+export type FieldNameFormat<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>,
     TFormat extends keyof FieldNameFormats<TEntity, TField>
@@ -102,7 +102,7 @@ type FieldNameFormat<
 /**
  * Available format types for a field (e.g., 'frontend', 'backend', 'database', etc.)
  */
-type FieldFormatTypes<
+export type FieldFormatTypes<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = keyof FieldNameFormats<TEntity, TField>;
@@ -110,7 +110,7 @@ type FieldFormatTypes<
 /**
  * All possible format variations for a field, including its original key
  */
-type AllFieldNameVariations<
+export type AllFieldNameVariations<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > =
@@ -120,7 +120,7 @@ type AllFieldNameVariations<
 /**
  * Gets all field name variations for all fields of an entity
  */
-type AllEntityFieldVariations<TEntity extends EntityKeys> = {
+export type AllEntityFieldVariations<TEntity extends EntityKeys> = {
     [TField in EntityFieldKeys<TEntity>]: AllFieldNameVariations<TEntity, TField>
 }[EntityFieldKeys<TEntity>];
 
@@ -128,12 +128,11 @@ type AllEntityFieldVariations<TEntity extends EntityKeys> = {
 /**
  * Represents any single canonical field name for an entity
  */
-type CanonicalFieldKey<TEntity extends EntityKeys> = EntityFieldKeys<TEntity> extends infer K
-     ? K extends string
-       ? K
-       : never
-     : never;
-
+export type CanonicalFieldKey<TEntity extends EntityKeys> = EntityFieldKeys<TEntity> extends infer K
+                                                     ? K extends string
+                                                       ? K
+                                                       : never
+                                                     : never;
 
 
 // Basic types
@@ -158,77 +157,77 @@ type test11 = AllFieldNameVariations<'registeredFunction', 'modulePath'>; // Sho
 type test12 = AllEntityFieldVariations<'registeredFunction'>; // Shows all variations for all fields of an entity
 
 
-type FieldDataType<
+export type FieldDataType<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['dataType'];
 
-type FieldEnumValues<
+export type FieldEnumValues<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['enumValues'];
 
-type FieldIsArray<
+export type FieldIsArray<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['isArray'];
 
-type FieldStructure<
+export type FieldStructure<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['structure'];
 
-type FieldIsNative<
+export type FieldIsNative<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['isNative'];
 
-type FieldTypeReference<
+export type FieldTypeReference<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = ExtractType<AutomationSchema[TEntity]['entityFields'][TField]['typeReference']>;
 
-type FieldDefaultComponent<
+export type FieldDefaultComponent<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['defaultComponent'];
 
-type FieldComponentProps<
+export type FieldComponentProps<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['componentProps'];
 
-type FieldIsRequired<
+export type FieldIsRequired<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['isRequired'];
 
-type FieldMaxLength<
+export type FieldMaxLength<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['maxLength'];
 
-type FieldDefaultValue<
+export type FieldDefaultValue<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['defaultValue'];
 
-type FieldIsPrimaryKey<
+export type FieldIsPrimaryKey<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['isPrimaryKey'];
 
-type FieldIsDisplayField<
+export type FieldIsDisplayField<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['isDisplayField'];
 
-type FieldDefaultGeneratorFunction<
+export type FieldDefaultGeneratorFunction<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['defaultGeneratorFunction'];
 
-type FieldValidationFunctions<
+export type FieldValidationFunctions<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['validationFunctions'];
@@ -236,12 +235,12 @@ type FieldValidationFunctions<
 /**
  * Field-level type definitions
  */
-type FieldExclusionRules<
+export type FieldExclusionRules<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['exclusionRules'];
 
-type FieldDatabaseTable<
+export type FieldDatabaseTable<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = AutomationSchema[TEntity]['entityFields'][TField]['databaseTable'];
@@ -249,7 +248,7 @@ type FieldDatabaseTable<
 /**
  * Comprehensive field configuration type containing all field-level settings
  */
-type EntityField<
+export type EntityField<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
 > = {
@@ -277,22 +276,22 @@ type EntityField<
 /**
  * Entity-level type definitions
  */
-type EntityRelationships<TEntity extends EntityKeys> =
+export type EntityRelationships<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['relationships'];
 
-type EntitySchemaType<TEntity extends EntityKeys> =
+export type EntitySchemaType<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['schemaType'];
 
-type EntityDefaultFetchStrategy<TEntity extends EntityKeys> =
+export type EntityDefaultFetchStrategy<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['defaultFetchStrategy'];
 
-type EntityComponentProps<TEntity extends EntityKeys> =
+export type EntityComponentProps<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['componentProps'];
 
 /**
  * Complete entity configuration type containing all entity-level settings
  */
-type AutomationEntity<TEntity extends EntityKeys> = {
+export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
     defaultFetchStrategy: EntityDefaultFetchStrategy<TEntity>;
     componentProps: EntityComponentProps<TEntity>;
@@ -306,35 +305,32 @@ type AutomationEntity<TEntity extends EntityKeys> = {
 /**
  * Complete automation schema containing all entities
  */
-type AutomationEntities = {
+export type AutomationEntities = {
     [TEntity in EntityKeys]: AutomationEntity<TEntity>;
 };
 
 
-
-type UnifiedSchemaCache = {
+export type UnifiedSchemaCache = {
     schema: AutomationEntities;
-    tableNameLookup: EntityNameToCanonicalMap
-    fieldNameLookup: FieldNameToCanonicalMap
-    reverseTableNameLookup: EntityNameFormatMap
-    reverseFieldNameLookup: FieldNameFormatMap
+    entityNameToCanonical: EntityNameToCanonicalMap
+    fieldNameToCanonical: FieldNameToCanonicalMap
+    entityNameFormats: EntityNameFormatMap
+    fieldNameFormats: FieldNameFormatMap
 };
-
-
 
 
 /**
  * Maps any entity name variation to its canonical (official) name
  * @example { "registered_function": "registeredFunction", "RegisteredFunction": "registeredFunction" }
  */
-type EntityNameToCanonicalMap = {
+export type EntityNameToCanonicalMap = {
     [variation in AllEntityNameVariations]: EntityKeys;
 };
 
 /**
  * Maps any field name variation to a single canonical field name, organized by entity
  */
-type FieldNameToCanonicalMap = {
+export type FieldNameToCanonicalMap = {
     [TEntity in EntityKeys]: {
         [variation: string]: CanonicalFieldKey<TEntity>;
     };
@@ -349,7 +345,7 @@ type FieldNameToCanonicalMap = {
  *   }
  * }
  */
-type EntityNameFormatMap = {
+export type EntityNameFormatMap = {
     [TEntity in EntityKeys]: {
         [TFormat in keyof EntityNameFormats<TEntity>]: EntityNameFormat<TEntity, TFormat>;
     };
@@ -367,7 +363,7 @@ type EntityNameFormatMap = {
  *   }
  * }
  */
-type FieldNameFormatMap = {
+export type FieldNameFormatMap = {
     [TEntity in EntityKeys]: {
         [TField in EntityFieldKeys<TEntity>]: {
             [TFormat in keyof FieldNameFormats<TEntity, TField>]: FieldNameFormat<TEntity, TField, TFormat>;
@@ -375,8 +371,45 @@ type FieldNameFormatMap = {
     };
 };
 
+/**
+ * Helper type to safely get formatted field names
+ */
+export type FormattedFieldName<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>,
+    TFormat extends DataFormat
+> = TFormat extends keyof FieldNameFormats<TEntity, TField>
+    ? FieldNameFormat<TEntity, TField, TFormat>
+    : string;
 
-const entityNameToCanonical: EntityNameToCanonicalMap = {
+/**
+ * Represents a formatted entity schema with field names in a specific format
+ */
+export type FormattedEntitySchema<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat
+> = Omit<AutomationEntity<TEntity>, 'entityFields'> & {
+    entityFields: {
+        [TField in EntityFieldKeys<TEntity> as FormattedFieldName<
+            TEntity,
+            TField,
+            TFormat
+        >]: EntityField<TEntity, TField>;
+    };
+};
+
+/**
+ * Available default generator functions
+ */
+export type DefaultGeneratorFunction = () => unknown;
+
+export type DefaultGenerators = {
+    generateUUID: () => string;
+};
+
+
+
+export const entityNameToCanonical: EntityNameToCanonicalMap = {
     p_action: "action",
     Action: "action",
     action: "action",
@@ -532,7 +565,7 @@ const entityNameToCanonical: EntityNameToCanonicalMap = {
     "User Preferences": "userPreferences",
 };
 
-const fieldNameToCanonical: FieldNameToCanonicalMap = {
+export const fieldNameToCanonical: FieldNameToCanonicalMap = {
     action: {
         Id: "id",
         id: "id",
@@ -1498,7 +1531,7 @@ const fieldNameToCanonical: FieldNameToCanonicalMap = {
     },
 };
 
-const entityNameFormats: EntityNameFormatMap = {
+export const entityNameFormats: EntityNameFormatMap = {
     action: {
         "frontend": "action",
         "backend": "action",
@@ -1861,7 +1894,7 @@ const entityNameFormats: EntityNameFormatMap = {
     },
 };
 
-const fieldNameFormats: FieldNameFormatMap = {
+export const fieldNameFormats: FieldNameFormatMap = {
     action: {
         "id": {
             "frontend": "id",
@@ -5057,5 +5090,317 @@ const fieldNameFormats: FieldNameFormatMap = {
 };
 
 
+// 1. Format Definitions and Branding
+export const FORMAT_KEYS = [
+    'frontend',
+    'backend',
+    'database',
+    'pretty',
+    'component',
+    'kebab',
+    'sqlFunctionRef',
+    'RestAPI',
+    'GraphQL',
+    'custom'
+] as const;
+
+export type DataFormat = typeof FORMAT_KEYS[number];
+
+/**
+ * Brand interface for format-specific types
+ */
+export interface FormatBrand<T extends Record<string, unknown>, F extends DataFormat> {
+    readonly __format: F;
+    readonly data: T;
+}
+
+/**
+ * Strongly typed entity record types for different formats
+ */
+export type EntityRecord<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat
+> = {
+    [K in EntityFieldKeys<TEntity> as EntityNameFormat<TEntity, TFormat>]:
+    FieldTypeReference<TEntity, K> extends undefined
+    ? never
+    : FieldTypeReference<TEntity, K>
+} & FormatBrand<Record<string, unknown>, TFormat>;  // Fixed: Changed unknown to Record<string, unknown>
+
+// 2. Type Guards and Assertions
+export const isFormat = <T extends Record<string, unknown>, F extends DataFormat>(
+    value: unknown,
+    format: F
+): value is FormatBrand<T, F> => {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        '__format' in value &&
+        (value as FormatBrand<T, F>).__format === format
+    );
+};
+
+export function assertFormat<T extends Record<string, unknown>, F extends DataFormat>(
+    value: T,
+    format: F
+): asserts value is T & FormatBrand<T, F> {  // Fixed: Changed return type to include original type T
+    const formattedValue = value as T & FormatBrand<T, F>;
+    Object.defineProperty(formattedValue, 'data', {
+        value,
+        enumerable: true,
+        writable: false
+    });
+    Object.defineProperty(formattedValue, '__format', {
+        value: format,
+        enumerable: false,
+        writable: false
+    });
+}
+
+// 3. Type-Safe Data Conversion Functions
+/**
+ * Converts field names to a specific format
+ */
+export function convertFieldNames<
+    TEntity extends EntityKeys,
+    TSourceFormat extends DataFormat,
+    TTargetFormat extends DataFormat
+>(
+    entity: TEntity,
+    data: Record<string, unknown>,
+    sourceFormat: TSourceFormat,
+    targetFormat: TTargetFormat
+): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+
+// Implementation would use your field name mappings
+    return result;
+}
+
+/**
+ * Ensures values match their field type references
+ */
+export function enforceFieldTypes<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat
+>(
+    entity: TEntity,
+    data: Record<string, unknown>
+): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+
+// Implementation would use your FieldTypeReference
+    return result;
+}
+
+/**
+ * Ensures all required fields are present with defaults
+ */
+export function ensureRequiredFields<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat
+>(
+    entity: TEntity,
+    data: Record<string, unknown>
+): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+
+// Implementation would use your field requirements and defaults
+    return result;
+}
+
+// 4. Main Conversion Functions
+/**
+ * Creates a new formatted record with type enforcement
+ */
+export function createFormattedRecord<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat
+>(
+    entity: TEntity,
+    data: Record<string, unknown>,
+    format: TFormat
+): EntityRecord<TEntity, TFormat> {
+    // Ensure all required fields are present
+    const withRequired = ensureRequiredFields(entity, data);
+
+    // Enforce correct field types
+    const withTypes = enforceFieldTypes(entity, withRequired);
+
+    // Create the formatted record
+    const formattedData = withTypes as Record<string, unknown>;
+    assertFormat(formattedData, format);
+
+    return formattedData as EntityRecord<TEntity, TFormat>;
+}
+
+/**
+ * Converts between formats with full type safety
+ */
+export function convertFormat<
+    TEntity extends EntityKeys,
+    TSourceFormat extends DataFormat,
+    TTargetFormat extends DataFormat
+>(
+    entity: TEntity,
+    data: FormatBrand<Record<string, unknown>, TSourceFormat>,
+    targetFormat: TTargetFormat
+): EntityRecord<TEntity, TTargetFormat> {
+    // Convert field names to target format
+    const convertedNames = convertFieldNames(
+        entity,
+        data.data,
+        data.__format,
+        targetFormat
+    );
+
+    // Create new formatted record
+    return createFormattedRecord(entity, convertedNames, targetFormat);
+}
+
+// // Usage example:
+// const example = () => {
+//     // Get a schema in database format
+//     const dbSchema = getEntitySchemaInFormat('users', 'database');
+//
+//     // Create a record in frontend format
+//     const frontendRecord = createFormattedEntityRecord(
+//         'users',
+//         { id: 1, first_name: "John" },
+//         'frontend'
+//     );
+//
+//     // TypeScript now knows the exact shape of both objects
+//     // and their format brands
+// };
 
 
+// // 5. Usage Examples
+// function exampleUsage() {
+//     // Example data
+//     const dbData = {
+//         user_id: 1,
+//         first_name: "John",
+//         last_name: "Doe"
+//     };
+//
+//     // Create database-formatted record
+//     const dbRecord = createFormattedRecord(
+//         "user",
+//         dbData,
+//         "database"
+//     );
+//
+//     // Convert to frontend format
+//     const frontendRecord = convertFormat(
+//         "user",
+//         dbRecord,
+//         "frontend"
+//     );
+//
+//     // Type-safe access
+//     if (isFormat(frontendRecord, "frontend")) {
+//         console.log(frontendRecord.data.userId);  // Properly formatted field name
+//     }
+// }
+//
+// // 6. React Hooks Integration
+// function useEntityData<TEntity extends EntityKeys>(
+//     entity: TEntity,
+//     initialFormat: DataFormat = "frontend"
+// ) {
+//     const [data, setData] = useState<EntityRecord<TEntity, typeof initialFormat> | null>(null);
+//
+//     const updateData = useCallback((
+//         newData: Record<string, unknown>,
+//         format: DataFormat = initialFormat
+//     ) => {
+//         const formatted = createFormattedRecord(entity, newData, format);
+//         setData(formatted as any); // Type assertion needed due to format variation
+//     }, [entity, initialFormat]);
+//
+//     const convertTo = useCallback((
+//         targetFormat: DataFormat
+//     ) => {
+//         if (!data) return null;
+//         return convertFormat(entity, data as any, targetFormat);
+//     }, [data, entity]);
+//
+//     return { data, updateData, convertTo };
+// }
+//
+// // 7. Redux Integration
+// const entityActions = {
+//     fetchEntity: <TEntity extends EntityKeys>(
+//         entity: TEntity
+//     ) => ({
+//         type: "FETCH_ENTITY" as const,
+//         payload: { entity }
+//     }),
+//
+//     setEntityData: <TEntity extends EntityKeys>(
+//         entity: TEntity,
+//         data: EntityRecord<TEntity, "frontend">
+//     ) => ({
+//         type: "SET_ENTITY_DATA" as const,
+//         payload: { entity, data }
+//     })
+// };
+
+
+// // 5. Usage Examples
+// type Example = {
+//     // Create a new record
+//     createExample: () => {
+//         const data = { name: "test" };
+// const dbRecord = createFormattedRecord("registeredFunction", data, "database");
+// const frontendRecord = convertFormat("registeredFunction", dbRecord, "frontend");
+//
+// // Type checking ensures format safety
+// if (isFormat(frontendRecord, "frontend")) {
+//     console.log(frontendRecord.data);
+// }
+// };
+//
+// // Redux example
+// reduxExample: () => {
+//     const actions = {
+//         fetchEntity: <TEntity extends EntityKeys>(
+//             entity: TEntity
+//         ) => ({
+//             type: "FETCH_ENTITY" as const,
+//             payload: { entity }
+//         }),
+//
+//         setEntityData: <TEntity extends EntityKeys>(
+//             entity: TEntity,
+//             data: CompleteEntityRecord<TEntity, "frontend">
+//         ) => ({
+//             type: "SET_ENTITY_DATA" as const,
+//             payload: { entity, data }
+//         })
+//     };
+//
+//     return actions;
+// };
+//
+// // React Hook example
+// hookExample: () => {
+//     function useEntityData<TEntity extends EntityKeys>(
+//         entity: TEntity
+//     ) {
+//         const [data, setData] = useState<EntityRecord<TEntity, "frontend"> | null>(null);
+//
+//         const updateData = useCallback((
+//             newData: Record<string, unknown>
+//         ) => {
+//             const formatted = createFormattedRecord(entity, newData, "frontend");
+//             setData(formatted);
+//         }, [entity]);
+//
+//         return { data, updateData };
+//     }
+//
+//     return useEntityData;
+// };
+// };

@@ -1,158 +1,136 @@
 // utils/supabase/api-wrapper.ts
-
-
 import {PostgrestError, PostgrestFilterBuilder} from '@supabase/postgrest-js';
 import {SupabaseClient} from "@supabase/supabase-js";
-import {
-    AutomationTableStructure,
-    TableNameFrontend,
-    TableNameDatabase,
-    TableName,
-    TableNameVariation,
-    FieldKey,
-    TableNameVariant,
-    TableKeys,
-    GenerateTableType,
-    AutomationTable,
-    GenerateDatabaseTableType,
-    GenerateFrontendTableType,
-    SingleStructureFields
-} from '@/types/automationTableTypes';
-import {useSchema} from "@/lib/hooks/useSchema";
-import {useSchemaResolution} from "@/providers/SchemaProvider";
-import {useSchemaTransform} from "@/lib/hooks/useSchemaTransformers";
+import {useSchemaResolution, useTableSchema} from "@/providers/SchemaProvider";
 import {supabase} from "@/utils/supabase/client";
+import {
+    AllEntityNameVariations, AutomationEntity,
+    convertFormat, createFormattedRecord,
+    EntityFieldKeys,
+    EntityKeys,
+    EntityNameFormat,
+    EntityRecord
+} from "@/types/entityTypes";
 
 const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
-
 const trace: string[] = ['anotherFile'];
 
 type QueryBuilder = PostgrestFilterBuilder<any, any, any>;
 
-export type ConvertToDatabase<TTable extends TableKeys> = {
-    [K in keyof GenerateFrontendTableType<TTable>]: GenerateDatabaseTableType<TTable>[keyof GenerateDatabaseTableType<TTable>];
-};
-
-export type ConvertToFrontend<TTable extends TableKeys> = {
-    [K in keyof GenerateDatabaseTableType<TTable>]: GenerateFrontendTableType<TTable>[keyof GenerateFrontendTableType<TTable>];
-};
-
-export type QueryOptions<TTable extends TableKeys> = {
-    filters?: Partial<GenerateFrontendTableType<TTable>>;
+type QueryOptions<TEntity extends EntityKeys> = {
+    filters?: Partial<EntityRecord<TEntity, 'database'>>;
     sorts?: Array<{
-        column: keyof GenerateFrontendTableType<TTable>;
+        column: EntityFieldKeys<TEntity>;
         ascending?: boolean;
     }>;
     limit?: number;
     offset?: number;
-    columns?: Array<keyof GenerateFrontendTableType<TTable>>;
+    columns?: Array<EntityFieldKeys<TEntity>>;
 };
 
-// Hook to initialize the wrapper with strictly typed schema information
-export function useTableWrapper(requestTableName: TableNameVariant) {
-    const {schema} = useSchema();
-    const {
-        resolveTableKey,
-        resolveFieldKey,
-        resolveTableAndFieldKeys,
-        getTableNameInFormat,
-        resolveTableNameInFormat,
-        getFieldNameInFormat,
-        resolveFieldNameInFormat,
-        findPrimaryKeyFieldKey,
-        findDisplayFieldKey,
-        getFieldData,
-        findFieldsByCondition,
-        findFieldsWithDefaultGeneratorFunction,
-        getFieldsWithAttribute,
-    } = useSchemaResolution();  // Importing all for now, just to know what we have available.
-    const {formatTransformers} = useSchemaTransform();
 
-    const tableKey = resolveTableKey(requestTableName);
-    const tableSchema = schema[tableKey];
-    const primaryKeyField = findPrimaryKeyFieldKey(tableKey);
-    const tableNameDbFormat = getTableNameInFormat(tableKey, 'database');
-
-    if (!primaryKeyField) {
-        throw new Error(`No primary key found for table ${requestTableName}`);
-    }
-
-    return {
-        schema: tableSchema,
-        tableNameDbFormat,
-        primaryKeyField,
-        formatTransformers
-    } as const;
-}
-
-export class DatabaseApiWrapper<TTable extends TableKeys> {
-    private readonly client: SupabaseClient;
-    private readonly requestTableName: TableNameVariant;
-    private readonly tableNameDbFormat: TableNameDatabase<TTable>;
-    private readonly tableSchema: AutomationTable<TTable>;
-    private readonly primaryKeyField: FieldKey<TTable>;
-    private readonly formatTransformers: ReturnType<typeof useSchemaTransform>['formatTransformers'];
+export class DatabaseApiWrapper<TEntity extends EntityKeys> {
+    private client?: SupabaseClient;  // Client is optional during initialization
+    private readonly entityVariant: AllEntityNameVariations;
+    private readonly tableSchema: AutomationEntity<TEntity>;
+    private readonly entityKey: TEntity;
+    private readonly databaseName: EntityNameFormat<TEntity, 'database'>;
+    private readonly primaryKeyField: EntityFieldKeys<TEntity>;
+    private readonly formatTransformers: ReturnType<typeof useSchemaResolution>['formatTransformers'];
+    private readonly resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat'];
     private readonly subscriptions: Map<string, unknown> = new Map();
     private readonly queryBuilders: Map<string, unknown> = new Map();
 
+    // Constructor does not expect a client, it can be injected later
     constructor(
-        requestTableName: TableNameVariant,
-        tableNameDbFormat: TableNameDatabase<TTable>,
-        schema: AutomationTable<TTable>,
-        primaryKeyField: FieldKey<TTable>,
-        formatTransformers: ReturnType<typeof useSchemaTransform>['formatTransformers']
+        entityVariant: AllEntityNameVariations,
+        schema: AutomationEntity<TEntity>,
+        entityKey: TEntity,
+        databaseName: EntityNameFormat<TEntity, 'database'>,
+        primaryKeyField: EntityFieldKeys<TEntity>,
+        formatTransformers: ReturnType<typeof useSchemaResolution>['formatTransformers'],
+        resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat']
     ) {
-        this.client = supabase;
-        this.requestTableName = requestTableName;
-        this.tableNameDbFormat = tableNameDbFormat;
+        this.entityVariant = entityVariant;
         this.tableSchema = schema;
+        this.entityKey = entityKey;
+        this.databaseName = databaseName;
         this.primaryKeyField = primaryKeyField;
         this.formatTransformers = formatTransformers;
+        this.resolveFieldNameInFormat = resolveFieldNameInFormat;
     }
 
-    private buildBaseQuery(): QueryBuilder {
-        return this.client.from(this.tableNameDbFormat).select('*');
-    }
+    // Static factory method for initialization without client
+    static create<TEntity extends EntityKeys>(entityVariant: AllEntityNameVariations): DatabaseApiWrapper<TEntity> {
+        const {
+            schema,
+            resolveEntityKey,
+            getEntityNameInFormat,
+            findPrimaryKeyFieldKey,
+            resolveFieldNameInFormat,
+            formatTransformers
+        } = useSchemaResolution();  // Fetch everything from the schema resolution system
 
-    private convertToDatabase(
-        frontendData: Partial<GenerateFrontendTableType<TTable>>
-    ): GenerateDatabaseTableType<TTable> {
-        return this.formatTransformers.toDatabase(
-            this.requestTableName,
-            frontendData as unknown as Partial<GenerateTableType<TTable>>
+        const entityKey = resolveEntityKey(entityVariant) as TEntity;
+        const tableSchema = schema[entityKey] as AutomationEntity<TEntity>;
+        const primaryKeyField = findPrimaryKeyFieldKey(entityKey);
+        const tableNameDbFormat = getEntityNameInFormat(entityKey, 'database');
+
+        if (!primaryKeyField) {
+            throw new Error(`No primary key found for entity ${entityVariant}`);
+        }
+
+        // Initialize and return the instance of DatabaseApiWrapper (without client)
+        return new DatabaseApiWrapper<TEntity>(
+            entityVariant,
+            tableSchema,
+            entityKey,
+            tableNameDbFormat as EntityNameFormat<TEntity, 'database'>,
+            primaryKeyField as EntityFieldKeys<TEntity>,
+            formatTransformers,
+            resolveFieldNameInFormat
         );
     }
 
-    private convertToFrontend(
-        databaseData: GenerateDatabaseTableType<TTable>
-    ): GenerateFrontendTableType<TTable> {
-        return this.formatTransformers.toFrontend(
-            this.requestTableName,
-            databaseData as unknown as Partial<GenerateTableType<TTable>>
-        );
+    // Inject client (used for client-side or server-side)
+    setClient(client: SupabaseClient) {
+        this.client = client;
     }
 
+    // Example query method that uses the injected client
+    private buildBaseQuery(): PostgrestFilterBuilder<any, any, any> {
+        if (!this.client) {
+            throw new Error('Supabase client not initialized');
+        }
+        return this.client.from(this.databaseName).select('*');
+    }
+
+    /**
+     * Apply query options like filters and sorts to a query
+     */
     private applyQueryOptions(
-        query: QueryBuilder,
-        options: QueryOptions<TTable>
-    ): QueryBuilder {
+        query: PostgrestFilterBuilder<any, any, any>,
+        options: QueryOptions<TEntity>
+    ): PostgrestFilterBuilder<any, any, any> {
         if (options.filters) {
-            for (const [key, value] of Object.entries(options.filters) as [keyof GenerateFrontendTableType<TTable>, any][]) {
-                const dbFieldName = this.formatTransformers.toDatabase(
-                    this.requestTableName,
-                    { [key]: undefined }
+            for (const [key, value] of Object.entries(options.filters)) {
+                const dbFieldName = this.resolveFieldNameInFormat(
+                    this.entityKey,
+                    key as EntityFieldKeys<TEntity>,
+                    'database'
                 );
-                query = query.eq(Object.keys(dbFieldName)[0], value);
+                query = query.eq(dbFieldName, value);
             }
         }
 
         if (options.sorts) {
-            for (const { column, ascending = true } of options.sorts) {
-                const dbFieldName = this.formatTransformers.toDatabase(
-                    this.requestTableName,
-                    { [column]: undefined }
+            for (const {column, ascending = true} of options.sorts) {
+                const dbFieldName = this.resolveFieldNameInFormat(
+                    this.entityKey,
+                    column,
+                    'database'
                 );
-                query = query.order(Object.keys(dbFieldName)[0], { ascending });
+                query = query.order(dbFieldName, {ascending});
             }
         }
 
@@ -168,85 +146,148 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
         }
 
         if (options.columns?.length) {
-            const dbColumnNames = options.columns.map(column => {
-                const dbFieldName = this.formatTransformers.toDatabase(
-                    this.requestTableName,
-                    { [column]: undefined }
-                );
-                return Object.keys(dbFieldName)[0];
-            });
-            // Using the base query's select to maintain proper typing
+            const dbColumnNames = options.columns.map(column =>
+                this.resolveFieldNameInFormat(this.entityKey, column, 'database')
+            );
             query = this.client
-                .from(this.tableNameDbFormat)
-                .select(dbColumnNames.join(',')) as QueryBuilder;
+                .from(this.databaseName)
+                .select(dbColumnNames.join(','));
         }
 
         return query;
     }
 
-    private isPostgrestError(error: unknown): error is PostgrestError {
-        return Boolean(
-            error &&
-            typeof error === 'object' &&
-            'message' in error &&
-            'code' in error &&
-            typeof (error as any).message === 'string' &&
-            typeof (error as any).code === 'string'
+    private convertToDatabase(
+        frontendData: EntityRecord<TEntity, 'frontend'>
+    ): EntityRecord<TEntity, 'database'> {
+        return convertFormat(
+            this.entityKey,
+            frontendData,
+            'database'
         );
     }
 
+    /**
+     * Converts database data to frontend format
+     */
+    private convertToFrontend(
+        databaseData: EntityRecord<TEntity, 'database'>
+    ): EntityRecord<TEntity, 'frontend'> {
+        return convertFormat(
+            this.entityKey,
+            databaseData,
+            'frontend'
+        );
+    }
+
+    /**
+     * Converts array of records
+     */
+    private convertArrayToFrontend(
+        databaseData: EntityRecord<TEntity, 'database'>[]
+    ): EntityRecord<TEntity, 'frontend'>[] {
+        return databaseData.map(record =>
+            this.convertToFrontend(record)
+        );
+    }
+
+    /**
+     * Example query method with full type safety
+     */
+    async getById(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        const {data, error} = await this.buildBaseQuery()
+            .eq(this.primaryKeyField, id)
+            .single();
+
+        if (error || !data) return null;
+
+        // Ensure that data is typed as Record<string, unknown>
+        const dbRecord = createFormattedRecord(
+            this.entityKey,
+            data as Record<string, unknown>,
+            'database'
+        );
+
+        return this.convertToFrontend(dbRecord);
+    }
+
+    /**
+     * Example insert method with full type safety
+     */
+    async insert(
+        frontendData: EntityRecord<TEntity, 'frontend'>
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        // Convert the frontend data to database format
+        const dbData = this.convertToDatabase(frontendData);
+
+        // Insert the data using correct typing and method
+        const {data, error} = await this.client
+            .from(this.databaseName)
+            .insert(dbData)
+            .single();
+
+        if (error || !data) return null;
+
+        // Ensure that data is typed as Record<string, unknown>
+        const dbRecord = createFormattedRecord(
+            this.entityKey,
+            data as Record<string, unknown>,
+            'database'
+        );
+
+        return this.convertToFrontend(dbRecord);
+    }
+
+    /**
+     * Fetch a single record with type safety and full format conversion
+     */
     protected async fetchSingle(
-        query: QueryBuilder
-    ): Promise<GenerateFrontendTableType<TTable> | null> {
-        const { data, error } = await query.single();
+        query: PostgrestFilterBuilder<any, any, any>
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        const {data, error} = await query.single();
 
-        if (error || !data) {
-            return null;
-        }
+        if (error || !data) return null;
 
-        return this.formatTransformers.toFrontend(
-            this.requestTableName,
-            data
+        // Ensure that data is typed as Record<string, unknown>
+        const dbRecord = createFormattedRecord(
+            this.entityKey,
+            data as Record<string, unknown>,
+            'database'
         );
+
+        return this.convertToFrontend(dbRecord);
     }
 
+    /**
+     * Fetch a record by its primary key with flexible query options
+     */
     async fetchByPrimaryKey(
         primaryKeyValue: string | number,
-        options: Omit<QueryOptions<TTable>, 'limit' | 'offset'> = {}
-    ): Promise<GenerateFrontendTableType<TTable> | null> {
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        // Get the primary key field name in 'database' format
         const primaryKeyDbName = Object.keys(
             this.formatTransformers.toDatabase(
-                this.requestTableName,
-                { [this.primaryKeyField]: undefined }
+                this.entityVariant,
+                {[this.primaryKeyField]: undefined}
             )
         )[0];
 
+        // Build the base query, filtering by primary key
         let query = this.buildBaseQuery().eq(primaryKeyDbName, primaryKeyValue);
 
+        // Apply additional query options, if provided
         if (Object.keys(options).length > 0) {
             query = this.applyQueryOptions(query, options);
         }
 
+        // Fetch the single record
         return this.fetchSingle(query);
     }
 
 
-    static create<TTable extends TableKeys>(requestTableName: TableNameVariant): DatabaseApiWrapper<TTable> {
-        const {schema, primaryKeyField, formatTransformers} = useTableWrapper(requestTableName);
-        return new DatabaseApiWrapper<TTable>(
-            requestTableName,
-            tableNameDbFormat as TableNameDatabase<TTable>,
-            schema as AutomationTable<TTable>,
-            primaryKeyField as FieldKey<TTable>,
-            formatTransformers
-        );
-    }
-
-    async findOne(id: string | number): Promise<GenerateFrontendTableType<TTable> | null> {
-        const databaseTableName = this.convertToDatabase({});
-        const {data, error} = await this.client
-            .from(Object.keys(databaseTableName)[0])
-            .select('*')
+    async findOne(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        const {data, error} = await this.buildBaseQuery()
             .eq(this.primaryKeyField, id)
             .single();
 
@@ -254,75 +295,90 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
             return null;
         }
 
-        return this.convertToFrontend(data as GenerateDatabaseTableType<TTable>);
+        // Convert the fetched data from 'database' to 'frontend' format
+        const dbRecord = createFormattedRecord(
+            this.entityKey,
+            data as Record<string, unknown>,
+            'database'
+        );
+
+        return this.convertToFrontend(dbRecord);
     }
 
 
-    async fetchByField<F extends StringFieldKey<T>>(
-        fieldName: F,
+    async fetchByField<TField extends EntityFieldKeys<TEntity>>(
+        fieldName: TField,
         fieldValue: unknown,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
-    ): Promise<Record<StringFieldKey<T>, unknown>[]> {
-        const dbFieldName = getFieldNameMapping(
-            this.requestTableName as T,
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
+        const dbFieldName = this.resolveFieldNameInFormat(
+            this.entityKey,
             fieldName,
             'database'
         );
 
-        let query = this.client
-            .from(this.databaseTableName)
-            .select('*')
-            .eq(dbFieldName, fieldValue);
+        let query = this.buildBaseQuery().eq(dbFieldName, fieldValue);  // Correct usage of fieldName
 
         query = this.applyQueryOptions(query, options);
 
         try {
             const {data, error} = await query;
             if (error) throw error;
-            return data ? data.map(item => this.convertResponse(item)) : [];
+
+            // Ensure data is converted to 'frontend' format
+            return data ? this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]) : [];
         } catch (error) {
             console.error(`Error fetching data by field ${fieldName}: ${error}`);
             return [];
         }
     }
 
-    async fetchById<T extends keyof AutomationTableName>(
-        dbTableName: DatabaseTableName,
-        id: string,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
-    ): Promise<any> {
-        let query = this.client.from(dbTableName).select('*').eq('id', id);
-        query = this.applyQueryOptions(query, options, getSchema(dbTableName, 'database')!);
+    async fetchById(
+        dbTableName: EntityNameFormat<TEntity, 'database'>,
+        id: string | number,
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        let query = this.client.from(dbTableName).select('*').eq(this.primaryKeyField, id);
+
+        query = this.applyQueryOptions(query, options);
+
         const {data, error} = await query.single();
+
         if (error) {
             console.error(`Error fetching data for ${dbTableName}: ${error.message}`);
             return null;
         }
-        return data;
+        const dbRecord = createFormattedRecord(
+            this.entityKey,
+            data as Record<string, unknown>,
+            'database'
+        );
+
+        return this.convertToFrontend(dbRecord);
     }
 
 
     private async fetchSimple(
         id: string,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'>
-    ): Promise<unknown | null> {
-        const idField = getFieldNameMapping(
-            this.requestTableName as T,
-            'id' as StringFieldKey<T>,
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'>
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        const idField = this.resolveFieldNameInFormat(
+            this.entityKey,
+            'id' as EntityFieldKeys<TEntity>,
             'database'
         );
 
-        let query = this.client
-            .from(this.databaseTableName)
-            .select('*')
-            .eq(idField, id);
+        let query = this.buildBaseQuery().eq(idField, id);
 
         query = this.applyQueryOptions(query, options);
 
         try {
             const {data, error} = await query.single();
             if (error) throw error;
-            return data;
+
+            return this.convertToFrontend(
+                createFormattedRecord(this.entityKey, data as Record<string, unknown>, 'database')
+            );
         } catch (error) {
             console.error(`Error in fetchSimple: ${error}`);
             return null;
@@ -330,50 +386,54 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
     }
 
     async fetchOne(
-        id: string,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
-    ): Promise<Record<StringFieldKey<T>, unknown> | null> {
-        const fetchStrategy = this.fullSchema.defaultFetchStrategy;
+        id: string | number,
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        // Fetch strategy from the schema (e.g., 'fk', 'ifk', 'm2m', etc.)
+        const fetchStrategy = this.tableSchema.defaultFetchStrategy;
+
+        // Fetch the primary record using `fetchSimple`
         let result = await this.fetchSimple(id, options);
 
         if (!result) return null;
 
         try {
+            // Apply the fetch strategy based on relationships (FK, IFK, M2M, etc.)
             switch (fetchStrategy) {
                 case 'simple':
-                    return this.convertResponse(result);
+                    return this.convertToFrontend(result);  // Convert and return simple result
 
                 case 'fk':
-                    result = await this.fetchFk(result);
+                    result = await this.fetchFk(result);  // Fetch related FK data
                     break;
 
                 case 'ifk':
-                    result = await this.fetchIfk(result);
+                    result = await this.fetchIfk(result);  // Fetch related IFK data
                     break;
 
                 case 'm2m':
-                    result = await this.fetchM2m(result);
+                    result = await this.fetchM2m(result);  // Fetch related M2M data
                     break;
 
                 case 'fkAndIfk':
-                    result = await this.fetchFk(result);
-                    result = await this.fetchIfk(result);
+                    result = await this.fetchFk(result);  // Fetch FK data
+                    result = await this.fetchIfk(result);  // Fetch IFK data
                     break;
 
                 case 'm2mAndFk':
-                    result = await this.fetchFk(result);
-                    result = await this.fetchM2m(result);
+                    result = await this.fetchFk(result);  // Fetch FK data
+                    result = await this.fetchM2m(result);  // Fetch M2M data
                     break;
 
                 case 'm2mAndIfk':
-                    result = await this.fetchIfk(result);
-                    result = await this.fetchM2m(result);
+                    result = await this.fetchIfk(result);  // Fetch IFK data
+                    result = await this.fetchM2m(result);  // Fetch M2M data
                     break;
 
                 case 'fkIfkAndM2M':
-                    result = await this.fetchFk(result);
-                    result = await this.fetchIfk(result);
-                    result = await this.fetchM2m(result);
+                    result = await this.fetchFk(result);  // Fetch FK data
+                    result = await this.fetchIfk(result);  // Fetch IFK data
+                    result = await this.fetchM2m(result);  // Fetch M2M data
                     break;
 
                 default:
@@ -381,7 +441,8 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
                     return null;
             }
 
-            return this.convertResponse(result);
+            // Convert the final result back to frontend format
+            return this.convertToFrontend(result);
         } catch (error) {
             console.error(`Error in fetchOne with strategy ${fetchStrategy}: ${error}`);
             return null;
@@ -389,17 +450,17 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
     }
 
     private async fetchFk(
-        data: Record<string, unknown>,
+        data: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
-        const relationships = this.fullSchema.relationships;
+        const relationships = this.tableSchema.relationships;
         const foreignKeyRelationships = relationships.filter(
             rel => rel.relationshipType === 'foreignKey'
         );
 
         const foreignKeyQueries = foreignKeyRelationships.map(fk => {
-            const mainTableColumn = getFieldNameMapping(
-                this.requestTableName as T,
-                fk.column as StringFieldKey<T>,
+            const mainTableColumn = this.resolveFieldNameInFormat(
+                this.entityKey,
+                fk.column as EntityFieldKeys<TEntity>,
                 'database'
             );
             const relatedTable = fk.relatedTable;
@@ -430,7 +491,7 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
     private async fetchIfk(
         data: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
-        const relationships = this.fullSchema.relationships;
+        const relationships = this.tableSchema.relationships;
         const inverseForeignKeyRelationships = relationships.filter(
             rel => rel.relationshipType === 'inverseForeignKey'
         );
@@ -438,9 +499,9 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
         const inverseForeignKeyQueries = inverseForeignKeyRelationships.map(ifk => {
             const relatedTable = ifk.relatedTable;
             const relatedColumn = ifk.relatedColumn;
-            const mainTableColumn = getFieldNameMapping(
-                this.requestTableName as T,
-                ifk.column as StringFieldKey<T>,
+            const mainTableColumn = this.resolveFieldNameInFormat(
+                this.entityKey,
+                ifk.column as EntityFieldKeys<TEntity>,
                 'database'
             );
 
@@ -469,20 +530,20 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
     private async fetchM2m(
         data: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
-        const relationships = this.fullSchema.relationships;
+        const relationships = this.tableSchema.relationships;
         const manyToManyRelationships = relationships.filter(
             rel => rel.relationshipType === 'manyToMany'
         );
 
         const manyToManyQueries = manyToManyRelationships.map(m2m => {
-            const idField = getFieldNameMapping(
-                this.requestTableName as T,
-                'id' as StringFieldKey<T>,
+            const idField = this.resolveFieldNameInFormat(
+                this.entityKey,
+                'id' as EntityFieldKeys<TEntity>,  // Ensure this maps to the primary key
                 'database'
             );
 
             if (!m2m.junctionTable) {
-                throw new Error(`Junction table not defined for M2M relationship in ${this.requestTableName}`);
+                throw new Error(`Junction table not defined for M2M relationship in ${this.entityKey}`);
             }
 
             return this.client
@@ -508,7 +569,7 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
                     return this.client
                         .from(m2m.relatedTable)
                         .select('*')
-                        .eq('id', junctionRecord[m2m.relatedColumn]);
+                        .eq(m2m.relatedColumn, junctionRecord[m2m.relatedColumn]);
                 });
 
                 const relatedDataResults = await Promise.all(relatedDataQueries);
@@ -522,11 +583,9 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
     }
 
     async fetchAll(
-        options: QueryOptions<T> = {}
-    ): Promise<Record<StringFieldKey<T>, unknown>[]> {
-        let query = this.client
-            .from(this.databaseTableName)
-            .select('*');
+        options: QueryOptions<TEntity> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
+        let query = this.buildBaseQuery();
 
         query = this.applyQueryOptions(query, options);
 
@@ -534,14 +593,58 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
             const {data, error} = await query;
 
             if (error) throw error;
-            return data.map(item => this.convertResponse(item));
+
+            return data ? this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]) : [];
         } catch (error) {
             console.error(`Error in fetchAll: ${error}`);
             return [];
         }
     }
 
-    async fetchPaginated<T extends DatabaseTableOrView>(
+    async fetchPaginated(
+        options: QueryOptions<TEntity>,
+        page: number = 1,
+        pageSize: number = 10,
+        maxCount: number = 10000
+    ): Promise<{
+        page: number;
+        pageSize: number;
+        totalCount: number;
+        maxCount: number;
+        data: EntityRecord<TEntity, 'frontend'>[];
+    }> {
+        const fullOptions = {
+            ...options,
+            limit: pageSize,
+            offset: (page - 1) * pageSize
+        };
+
+        let query = this.buildBaseQuery();
+        query = this.applyQueryOptions(query, fullOptions);
+
+        const {data, error, count} = await query;
+
+        if (error) throw error;
+
+        const formattedData = data.map(item =>
+            createFormattedRecord(this.entityKey, item, 'database')
+        );
+
+        const frontendData = formattedData.map(record =>
+            convertFormat(this.entityKey, record, 'frontend')
+        );
+
+        return {
+            page,
+            pageSize,
+            totalCount: count ?? 0,
+            data: frontendData,
+            maxCount
+        };
+    }
+
+
+    async fetchPaginatedOld<T extends DatabaseTableOrView>(
         tableName: TableName,
         options: QueryOptions<T>,
         page: number = 1,
@@ -610,184 +713,260 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
         };
     }
 
-    async create<T extends keyof AutomationTableName>(tableName: TableName, data: Partial<any>): Promise<any> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
-        const dbData = convertData(data, 'frontend', 'database', tableName);
-        const response = processDataForInsert(dbTableName, dbData);
+    async create<TEntity extends EntityKeys>(
+        data: Partial<EntityRecord<TEntity, 'frontend'>>
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        // Convert the frontend data to database format
+        const dbData = this.convertToDatabase(data as EntityRecord<TEntity, 'frontend'>);
+
+        // Determine the correct insertion method based on schema and relationships
+        const response = this.processDataForInsert(this.entityKey, dbData);
         const processedData = response.processedData;
         const requiredMethod = response.callMethod;
 
         let result;
 
-        // Delegate to the appropriate handler based on `requiredMethod`
+        // Delegate to the appropriate handler based on the `requiredMethod`
         switch (requiredMethod) {
             case 'simple':
-                result = await this.insertSimple(dbTableName, processedData);
+                result = await this.insertSimple(this.databaseName, processedData);
                 break;
-            case 'fk': // This will handle both one and many FK cases
-                result = await this.insertWithFk(dbTableName, processedData);
+            case 'fk':
+                result = await this.insertWithFk(this.databaseName, processedData);
                 break;
-            case 'ifk': // This will handle both one and many IFK cases
-                result = await this.insertWithIfk(dbTableName, processedData);
+            case 'ifk':
+                result = await this.insertWithIfk(this.databaseName, processedData);
                 break;
-            case 'fkAndIfk': // This will handle combinations of FK and IFK (both one or many)
-                result = await this.insertWithFkAndIfk(dbTableName, processedData);
+            case 'fkAndIfk':
+                result = await this.insertWithFkAndIfk(this.databaseName, processedData);
                 break;
             default:
                 throw new Error('Invalid method for insertion');
         }
 
-        return this.convertResponse(result, tableName);
+        // Convert the result back to frontend format
+        return this.convertToFrontend(result);
     }
 
-    async insertSimple(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
-        const {data: result, error} = await this.client.from(dbTableName).insert(processedData).select().single();
-        if (error) throw error;
-        return result;
-    }
-
-    async insertWithFk(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
-        const {data: result, error} = await this.client.from(dbTableName).insert(processedData).select().single();
-        if (error) throw error;
-        return result;
-    }
-
-    async insertWithIfk(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
-        const {data: primaryResult, error: primaryError} = await this.client
+    /**
+     * Insert method for simple inserts without FK or IFK relationships.
+     */
+    async insertSimple(
+        dbTableName: EntityNameFormat<TEntity, 'database'>,
+        processedData: EntityRecord<TEntity, 'database'>
+    ): Promise<EntityRecord<TEntity, 'database'> | null> {
+        const {data, error} = await this.client
             .from(dbTableName)
             .insert(processedData)
             .select()
             .single();
 
-        if (primaryError) throw primaryError;
-
-        for (const relatedTable of processedData.relatedTables) {
-            const relatedInsertData = {...relatedTable.data, related_column: primaryResult.id};
-            const {error: relatedError} = await this.client
-                .from(relatedTable.table)
-                .insert(relatedInsertData)
-                .select()
-                .single();
-
-            if (relatedError) throw relatedError;
-        }
-
-        return primaryResult;
+        if (error) throw error;
+        return data as EntityRecord<TEntity, 'database'>;
     }
 
-
-    async insertWithFkAndIfk(dbTableName: DatabaseTableName, processedData: any): Promise<any> {
-        const {data: primaryResult, error: primaryError} = await this.client
-            .from(dbTableName)
-            .insert(processedData)
-            .select()
-            .single();
-
-        if (primaryError) throw primaryError;
-
-        for (const relatedTable of processedData.relatedTables) {
-            const relatedInsertData = {...relatedTable.data, related_column: primaryResult.id};
-            const {error: relatedError} = await this.client
-                .from(relatedTable.table)
-                .insert(relatedInsertData)
-                .select()
-                .single();
-
-            if (relatedError) throw relatedError;
-        }
-
-        return primaryResult;
-    }
-
-
-    async update<T extends keyof AutomationTableName>(tableName: TableName, id: string, data: Partial<any>): Promise<any> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
-        const dbData = convertData(data, 'frontend', 'database', tableName);
-
+    /**
+     * Insert method for inserts that involve foreign key (FK) relationships.
+     */
+    async insertWithFk(
+        dbTableName: EntityNameFormat<TEntity, 'database'>,
+        processedData: EntityRecord<TEntity, 'database'>
+    ): Promise<EntityRecord<TEntity, 'database'> | null> {
+        // Insert the primary data
         const {data: result, error} = await this.client
             .from(dbTableName)
-            .update(dbData)
-            .eq('id', id)
+            .insert(processedData)
             .select()
             .single();
 
         if (error) throw error;
-        return this.convertResponse(result, tableName);
+
+        // Handle related tables (FK relationships)
+        // Placeholder: Related table inserts based on FK relationships.
+        await this.handleForeignKeyRelations(result);
+
+        return result;
     }
 
-    async delete<T extends keyof AutomationTableName>(tableName: TableName, id: string): Promise<void> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
+    /**
+     * Insert method for inserts that involve intermediate foreign key (IFK) relationships.
+     */
+    async insertWithIfk(
+        dbTableName: EntityNameFormat<TEntity, 'database'>,
+        processedData: any
+    ): Promise<EntityRecord<TEntity, 'database'> | null> {
+        const {data: primaryResult, error: primaryError} = await this.client
+            .from(dbTableName)
+            .insert(processedData)
+            .select()
+            .single();
 
-        if (tableSchema.schemaType === 'view') {
-            throw new Error(`Cannot delete from view: ${tableName}`);
+        if (primaryError) throw primaryError;
+
+        // Handle related tables with IFK relationships
+        for (const relatedTable of processedData.relatedTables) {
+            const relatedInsertData = {...relatedTable.data, related_column: primaryResult.id};
+            const {error: relatedError} = await this.client
+                .from(relatedTable.table)
+                .insert(relatedInsertData)
+                .select()
+                .single();
+
+            if (relatedError) throw relatedError;
         }
 
-        const {error} = await this.client.from(dbTableName).delete().eq('id', id);
+        return primaryResult;
+    }
+
+    /**
+     * Insert method that handles both FK and IFK relationships.
+     */
+    async insertWithFkAndIfk(
+        dbTableName: EntityNameFormat<TEntity, 'database'>,
+        processedData: any
+    ): Promise<EntityRecord<TEntity, 'database'> | null> {
+        const {data: primaryResult, error: primaryError} = await this.client
+            .from(dbTableName)
+            .insert(processedData)
+            .select()
+            .single();
+
+        if (primaryError) throw primaryError;
+
+        // Handle related tables with both FK and IFK relationships
+        for (const relatedTable of processedData.relatedTables) {
+            const relatedInsertData = {...relatedTable.data, related_column: primaryResult.id};
+            const {error: relatedError} = await this.client
+                .from(relatedTable.table)
+                .insert(relatedInsertData)
+                .select()
+                .single();
+
+            if (relatedError) throw relatedError;
+        }
+
+        return primaryResult;
+    }
+
+    /**
+     * Placeholder method to handle related tables based on foreign key (FK) relationships.
+     * You need to implement the logic that fetches the correct related tables and handles inserts.
+     */
+    private async handleForeignKeyRelations(result: EntityRecord<TEntity, 'database'>) {
+        // Placeholder: Implement logic to fetch related tables based on FK relationships
+        // and perform necessary inserts or updates in the related tables.
+    }
+
+
+    async update(
+        id: string | number,
+        data: Partial<EntityRecord<TEntity, 'frontend'>>
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        // Convert frontend data to database format
+        const dbData = this.convertToDatabase(data as EntityRecord<TEntity, 'frontend'>);
+
+        // Build the query
+        const query = this.buildBaseQuery()
+            .eq(this.primaryKeyField, id)  // Use the primary key field dynamically
+            .update(dbData);
+
+        const { data: result, error } = await query.select().single();
+
+        if (error) throw error;
+
+        // Convert the result back to frontend format and return
+        return this.convertToFrontend(result as EntityRecord<TEntity, 'database'>);
+    }
+
+    async delete(id: string | number): Promise<void> {
+        // Ensure the table is not a view
+        if (this.tableSchema.schemaType === 'view') {
+            throw new Error(`Cannot delete from view: ${this.databaseName}`);
+        }
+
+        // Build the delete query
+        const query = this.buildBaseQuery()
+            .eq(this.primaryKeyField, id)
+            .delete();
+
+        const { error } = await query;
 
         if (error) throw error;
     }
 
-    async executeCustomQuery<T extends keyof AutomationTableName>(
-        tableName: TableName,
-        query: (baseQuery: any) => any
-    ): Promise<any[]> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const baseQuery = this.client.from(dbTableName).select('*');
+    private isPostgrestError(error: unknown): error is PostgrestError {
+        return Boolean(
+            error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            'code' in error &&
+            typeof (error as any).message === 'string' &&
+            typeof (error as any).code === 'string'
+        );
+    }
+
+
+    async executeCustomQuery(
+        query: (baseQuery: PostgrestFilterBuilder<any, any, any>) => any
+    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
+        // Start with a base query
+        const baseQuery = this.buildBaseQuery();
+
+        // Apply the custom query
         const customQuery = query(baseQuery);
 
-        const {data, error} = await customQuery;
+        const { data, error } = await customQuery;
 
         if (error) throw error;
-        return data.map(item => this.convertResponse(item, tableName));
+
+        // Convert results to frontend format
+        return this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]);
     }
 
-    subscribeToChanges<T extends keyof AutomationTableName>(tableName: TableName, callback: SubscriptionCallback): void {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
-
+    subscribeToChanges(callback: SubscriptionCallback): void {
         // Unsubscribe from existing subscription if any
-        this.unsubscribeFromChanges(tableName);
+        this.unsubscribeFromChanges();
 
+        // Create a subscription to changes on this table
         const subscription = this.client
-            .channel(`public:${dbTableName}`)
-            .on('postgres_changes', {event: '*', schema: 'public', table: dbTableName}, payload => {
-                this.fetchAll(tableName).then(data => {
+            .channel(`public:${this.databaseName}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: this.databaseName }, async () => {
+                try {
+                    const data = await this.fetchAll();
                     callback(data);
-                }).catch(error => {
+                } catch (error) {
                     console.error('Error fetching updated data:', error);
-                });
+                }
             })
             .subscribe();
 
-        this.subscriptions.set(tableName, subscription);
+        // Store the subscription
+        this.subscriptions.set(this.entityKey, subscription);
     }
 
-    unsubscribeFromChanges(tableName: TableName): void {
-        const subscription = this.subscriptions.get(tableName);
+    unsubscribeFromChanges(): void {
+        const subscription = this.subscriptions.get(this.entityKey);
         if (subscription) {
             this.client.removeChannel(subscription);
-            this.subscriptions.delete(tableName);
+            this.subscriptions.delete(this.entityKey);
         }
     }
 
     unsubscribeFromAllChanges(): void {
-        this.subscriptions.forEach((subscription, name) => {
+        this.subscriptions.forEach((subscription) => {
             this.client.removeChannel(subscription);
         });
         this.subscriptions.clear();
     }
 
-    convertToFrontendFormat<T extends keyof AutomationTableName>(tableName: TableName, data: any): any {
+    convertToFrontendFormat(data: any): any {
         if (Array.isArray(data)) {
-            return data.map(item => this.convertResponse(item, tableName));
+            return this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]);
         } else {
-            return this.convertResponse(data, tableName);
+            return this.convertToFrontend(data as EntityRecord<TEntity, 'database'>);
         }
     }
-
+}
 
     // buildQuery<T extends Record<string, any> = any>(queryName: string, table: string): PostgrestQueryBuilder<T> {
     //     const builder = this.client.from(table);
@@ -1029,9 +1208,14 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
     //
     //     return data;
     // }
-
-
-}
+//
+//
+// }
+//
+//
+// function getFieldNameInFormat(entityKey: string, arg1: EntityFieldKeys<TEntity>, arg2: string) {
+//     throw new Error('Function not implemented.');
+// }
 
 // export const databaseApi = new DatabaseApiWrapper(supabase);
 //
@@ -1084,3 +1268,38 @@ export class DatabaseApiWrapper<TTable extends TableKeys> {
 //         databaseName: table.entityNameMappings.database as TableNameDatabase<T>
 //     };
 // }
+// export function useTableWrapper(entityVariant: AllEntityNameVariations) {
+//     // Get schema-related information using useTableSchema
+//     const {
+//         tableKey,
+//         tableSchema,
+//         primaryKeyField,
+//         tableNameDbFormat
+//     } = useTableSchema(entityVariant);  // Pass entityVariant to useTableSchema
+//
+//     // Get additional schema resolution helpers
+//     const {
+//         resolveEntityKey,
+//         getEntityNameInFormat,
+//         findPrimaryKeyFieldKey,
+//         getFieldNameInFormat,
+//         resolveFieldNameInFormat,
+//         formatTransformers
+//     } = useSchemaResolution();
+//
+//     // Return all necessary data for use in the DatabaseApiWrapper
+//     return {
+//         tableKey, // The resolved table key (TEntity)
+//         schema: tableSchema, // The table schema
+//         primaryKeyField, // The primary key field
+//         tableNameDbFormat, // The name of the table in the database format
+//         resolveEntityKey, // Helper function to resolve entity keys
+//         getEntityNameInFormat, // Helper function to get the name of the entity in different formats
+//         findPrimaryKeyFieldKey, // Helper function to find the primary key field key
+//         getFieldNameInFormat, // Helper function to get field names in different formats
+//         resolveFieldNameInFormat, // Helper function to resolve field names in different formats
+//         formatTransformers // Formatting helpers for conversion between formats
+//     } as const;
+// }
+//
+

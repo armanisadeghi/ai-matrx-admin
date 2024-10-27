@@ -1,56 +1,12 @@
 import {createContext, useContext, useRef} from 'react';
+import {v4 as uuidv4} from 'uuid';
 import {
-    TableKeys,
-    UnifiedSchemaCache,
-    TableNameVariant,
-    TableName,
-    NameFormatType,
-    EntityNameMappings,
-    FieldKey,
-    AnyFieldNameVariant,
-    TableNameFrontend,
-    TableNameBackend,
-    TableNameDatabase,
-    TableNamePretty,
-    TableNameComponent,
-    TableNameKebab,
-    TableNameSqlFunctionRef,
-    TableNameRestAPI,
-    TableNameGraphQL,
-    TableNameCustom,
-    TableNameVariation,
-    AnyFieldKey,
-    AnyTableKey,
-    FieldNameFrontend,
-    FieldNameBackend,
-    FieldNameDatabase,
-    FieldNamePretty,
-    FieldNameComponent,
-    FieldNameKebab,
-    FieldNameSqlFunctionRef,
-    FieldNameRestAPI,
-    FieldNameGraphQL,
-    FieldNameCustom,
-    FieldNameFormatType,
-    AnyTableNameVariant,
-    TableFields,
-    FieldNameVariation,
-    FieldFormatVariation,
-    AutomationTable,
-    EntityField,
-    FormattedTableSchema,
-    GenerateFormattedTableType,
-    CustomTableType,
-    GraphQLTableType,
-    RestAPITableType,
-    SqlFunctionRefTableType,
-    KebabTableType,
-    ComponentTableType,
-    PrettyTableType,
-    DatabaseTableType,
-    BackendTableType, FrontendTableType, FieldNameFormats
-} from '@/types/automationTableTypes';
-import { v4 as uuidv4 } from 'uuid';
+    AllEntityNameVariations, AllFieldNameVariations, assertFormat,
+    AutomationEntity, createFormattedRecord,
+    DataFormat, DefaultGenerators, EntityField, EntityFieldKeys,
+    EntityKeys, EntityNameFormat, EntityRecord, FieldNameFormat, FieldNameFormats, FormattedEntitySchema,
+    UnifiedSchemaCache
+} from "@/types/entityTypes";
 
 type SchemaContextType = UnifiedSchemaCache;
 
@@ -83,317 +39,577 @@ export function useSchema() {
     return context;
 }
 
-export function useSchemaResolution() {
-    const {schema, tableNameMap, fieldNameMap, reverseTableNameMap, reverseFieldNameMap} = useSchema();
 
-    const resolveTableKey = (tableName: TableNameVariant): AnyTableKey => {
-        if (!(tableName in tableNameMap)) {
-            throw new Error(`Invalid table name: ${tableName}`);
+export function useSchemaResolution() {
+    const {
+        schema,
+        entityNameToCanonical,
+        fieldNameToCanonical,
+        entityNameFormats,
+        fieldNameFormats
+    } = useSchema();
+
+    /**
+     * Resolves any entity name variation to its canonical key
+     */
+    const resolveEntityKey = (entityVariant: AllEntityNameVariations): EntityKeys => {
+        if (!(entityVariant in entityNameToCanonical)) {
+            throw new Error(`Invalid entity name: ${entityVariant}`);
         }
-        return tableNameMap[tableName] as AnyTableKey;
+        return entityNameToCanonical[entityVariant];
     };
 
-    const getTableSchema = (tableName: TableNameVariant) => {
-        const tableKey = resolveTableKey(tableName);
-        const tableSchema = schema[tableKey] as AutomationTable<TableKeys>;
-        if (!tableSchema) {
-            throw new Error(`No table found for key: ${tableKey}`);
+    /**
+     * Gets the complete entity schema for a given entity variation
+     */
+    const getEntitySchema = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations
+    ): AutomationEntity<TEntity> => {
+        const entityKey = resolveEntityKey(entityVariant);
+        const entitySchema = schema[entityKey] as AutomationEntity<TEntity>;
+        if (!entitySchema) {
+            throw new Error(`No entity found for key: ${entityKey}`);
         }
-        return tableSchema as AutomationTable<TableKeys>;
-    }
+        return entitySchema;
+    };
 
+    /**
+     * Gets an entity name in a specific format
+     */
+    const getEntityNameInFormat = <
+        TEntity extends EntityKeys,
+        TFormat extends DataFormat
+    >(
+        entityKey: TEntity,
+        format: TFormat
+    ): EntityNameFormat<TEntity, TFormat> => {
+        if (
+            !(entityKey in entityNameFormats) ||
+            !(format in entityNameFormats[entityKey])
+        ) {
+            throw new Error(`Invalid entity key or format: ${entityKey}, ${format}`);
+        }
+        return entityNameFormats[entityKey][format] as EntityNameFormat<TEntity, TFormat>;
+    };
 
-    const findPrimaryKeyFieldKey = (tableName: TableNameVariant): AnyFieldKey | null => {
-        const table = getTableSchema(tableName);
-        const entityFields = table.entityFields;
-        for (const fieldKey in entityFields) {
-            const field = entityFields[fieldKey as keyof typeof entityFields];
-            if (field.isPrimaryKey) {
-                return fieldKey as AnyFieldKey;
+    /**
+     * Resolves any entity name variation to a specific format
+     */
+    const resolveEntityNameInFormat = <
+        TEntity extends EntityKeys,
+        TFormat extends DataFormat
+    >(
+        entityVariant: AllEntityNameVariations,
+        format: TFormat
+    ): EntityNameFormat<TEntity, TFormat> => {
+        const entityKey = resolveEntityKey(entityVariant) as TEntity;
+        return getEntityNameInFormat(entityKey, format);
+    };
+
+    /**
+     * Resolves any field name variation to its canonical key
+     */
+    const resolveFieldKey = <TEntity extends EntityKeys>(
+        entityKey: TEntity,
+        fieldVariant: AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>
+    ): EntityFieldKeys<TEntity> => {
+        if (
+            !(entityKey in fieldNameToCanonical) ||
+            !(fieldVariant in fieldNameToCanonical[entityKey])
+        ) {
+            throw new Error(`Invalid entity key or field name: ${entityKey}, ${fieldVariant}`);
+        }
+        return fieldNameToCanonical[entityKey][fieldVariant] as EntityFieldKeys<TEntity>;
+    };
+
+    /**
+     * Resolves both entity and field variations to their canonical keys
+     */
+    const resolveEntityAndFieldKeys = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations,
+        fieldVariant: AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>
+    ): {
+        entityKey: TEntity;
+        fieldKey: EntityFieldKeys<TEntity>;
+    } => {
+        const entityKey = resolveEntityKey(entityVariant) as TEntity;
+        const fieldKey = resolveFieldKey(entityKey, fieldVariant);
+        return {entityKey, fieldKey};
+    };
+
+    /**
+     * Gets a field name in a specific format using canonical keys
+     */
+    const getFieldNameInFormat = <
+        TEntity extends EntityKeys,
+        TField extends EntityFieldKeys<TEntity>,
+        TFormat extends keyof FieldNameFormats<TEntity, TField>
+    >(
+        entityKey: TEntity,
+        fieldKey: TField,
+        format: TFormat
+    ): FieldNameFormat<TEntity, TField, TFormat> => {
+        if (
+            !(entityKey in fieldNameFormats) ||
+            !(fieldKey in fieldNameFormats[entityKey]) ||
+            !(format in fieldNameFormats[entityKey][fieldKey])
+        ) {
+            throw new Error(
+                `Invalid entity key, field key or format: ${entityKey}, ${fieldKey}, ${String(format)}`
+            );
+        }
+
+        return fieldNameFormats[entityKey][fieldKey][format];
+    };
+
+    /**
+     * Resolves any field name variation to a specific format
+     */
+    const resolveFieldNameInFormat = <
+        TEntity extends EntityKeys,
+        TField extends EntityFieldKeys<TEntity>,
+        TFormat extends keyof FieldNameFormats<TEntity, TField>
+    >(
+        entityVariant: AllEntityNameVariations,
+        fieldVariant: AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>,
+        format: TFormat
+    ): FieldNameFormat<TEntity, TField, TFormat> => {
+        const {entityKey, fieldKey} = resolveEntityAndFieldKeys<TEntity>(
+            entityVariant,
+            fieldVariant
+        );
+        return getFieldNameInFormat(
+            entityKey as TEntity,
+            fieldKey as TField,
+            format
+        );
+    };
+
+    /**
+     * Gets complete field data for any field name variation
+     */
+    const getFieldData = <
+        TEntity extends EntityKeys,
+        TField extends EntityFieldKeys<TEntity>
+    >(
+        entityVariant: AllEntityNameVariations,
+        fieldVariant: AllFieldNameVariations<TEntity, TField>
+    ): EntityField<TEntity, TField> => {
+        const {entityKey, fieldKey} = resolveEntityAndFieldKeys<TEntity>(entityVariant, fieldVariant);
+        const entitySchema = getEntitySchema<TEntity>(entityKey);
+        const fieldData = entitySchema.entityFields[fieldKey];
+
+        if (!fieldData) {
+            throw new Error(`Field data not found for field: ${fieldKey}`);
+        }
+        return fieldData as EntityField<TEntity, TField>;
+    };
+
+    /**
+     * Finds the primary key field for an entity
+     */
+    const findPrimaryKeyFieldKey = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations
+    ): EntityFieldKeys<TEntity> => {
+        const entitySchema = getEntitySchema<TEntity>(entityVariant);
+        const fields = entitySchema.entityFields;
+
+        for (const fieldKey in fields) {
+            if (fields[fieldKey].isPrimaryKey) {
+                return fieldKey as EntityFieldKeys<TEntity>;
             }
         }
-        throw new Error(`No primary key found for table: ${tableName}`);
+        throw new Error(`No primary key found for entity: ${entityVariant}`);
     };
 
-    const findDisplayFieldKey = (tableName: TableNameVariant): AnyFieldKey | null => {
-        const table = getTableSchema(tableName);
-        const entityFields = table.entityFields;
+    /**
+     * Finds the display field for an entity
+     */
+    const findDisplayFieldKey = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations
+    ): EntityFieldKeys<TEntity> | null => {
+        const entitySchema = getEntitySchema<TEntity>(entityVariant);
+        const fields = entitySchema.entityFields;
 
-        for (const fieldKey in entityFields) {
-            const field = entityFields[fieldKey as keyof typeof entityFields];
-            if (field.isDisplayField) {
-                return fieldKey as AnyFieldKey;
+        for (const fieldKey in fields) {
+            if (fields[fieldKey].isDisplayField) {
+                return fieldKey as EntityFieldKeys<TEntity>;
             }
         }
         return null;
     };
 
-    const getFieldData = (tableName: TableNameVariant, fieldName: AnyFieldNameVariant): EntityField<TableKeys, TableFields<TableKeys>> => {
-        const { tableKey, fieldKey } = resolveTableAndFieldKeys(tableName, fieldName);
-        const table = getTableSchema(tableKey);
-        const entityFields = table.entityFields;
-        const fieldData = entityFields[fieldKey as keyof typeof entityFields];
-        if (!fieldData) {
-            throw new Error(`Field data not found for field: ${fieldKey}`);
-        }
-        return fieldData as EntityField<TableKeys, TableFields<TableKeys>>;
-    };
+    /**
+     * Gets all fields with a specific attribute
+     */
+    const getFieldsWithAttribute = <
+        TEntity extends EntityKeys,
+        TAttribute extends keyof EntityField<TEntity, EntityFieldKeys<TEntity>>
+    >(
+        entityVariant: AllEntityNameVariations,
+        attributeName: TAttribute
+    ): Record<EntityFieldKeys<TEntity>, EntityField<TEntity, EntityFieldKeys<TEntity>>[TAttribute]> => {
+        const entitySchema = getEntitySchema<TEntity>(entityVariant);
+        const fields = entitySchema.entityFields;
 
-    const findFieldsByCondition = (
-        tableName: TableNameVariant,
-        conditionCallback: (field: EntityField<TableKeys, TableFields<TableKeys>>) => boolean
-    ): AnyFieldKey[] => {
-        const table = getTableSchema(tableName);
-        const entityFields = table.entityFields;
-
-        const matchingFields: AnyFieldKey[] = [];
-        for (const currentFieldKey in entityFields) {
-            const field = entityFields[currentFieldKey as keyof typeof entityFields];
-            if (conditionCallback(field)) {
-                matchingFields.push(currentFieldKey as AnyFieldKey);
-            }
-        }
-        return matchingFields.length > 0 ? matchingFields : [];
-    };
-
-    const findFieldsWithDefaultGeneratorFunction = (tableName: TableNameVariant): AnyFieldKey[] => {
-        return findFieldsByCondition(tableName, (field) => field.defaultGeneratorFunction !== null);
-    };
-
-    const getFieldsWithAttribute = (
-        tableName: TableNameVariant,
-        attributeName: keyof EntityField<TableKeys, TableFields<TableKeys>>
-    ): { [key: string]: any } => {
-        const table = getTableSchema(tableName);
-        const entityFields = table.entityFields;
-
-        const result: { [key: string]: any } = {};
-        for (const fieldKey in entityFields) {
-            const field = entityFields[fieldKey as keyof typeof entityFields];
-            if (field && attributeName in field) {
+        const result: Record<string, unknown> = {};
+        for (const fieldKey in fields) {
+            const field = fields[fieldKey];
+            if (attributeName in field) {
                 result[fieldKey] = field[attributeName];
             }
         }
-        return result;
+        return result as Record<
+            EntityFieldKeys<TEntity>,
+            EntityField<TEntity, EntityFieldKeys<TEntity>> [TAttribute]
+        >;
     };
 
-    const getTableNameInFormat = (tableKey: AnyTableKey, format: NameFormatType): TableNameVariation<TableName, NameFormatType> => {
-        if (!(tableKey in reverseTableNameMap) || !(format in reverseTableNameMap[tableKey])) {
-            throw new Error(`Invalid table key or format: ${tableKey}, ${format}`);
+    /**
+     * Finds fields that match a condition
+     */
+    const findFieldsByCondition = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations,
+        conditionCallback: (
+            field: EntityField<TEntity, EntityFieldKeys<TEntity>>,
+            fieldKey: EntityFieldKeys<TEntity>
+        ) => boolean
+    ): EntityFieldKeys<TEntity>[] => {
+        const entitySchema = getEntitySchema<TEntity>(entityVariant);
+        const fields = entitySchema.entityFields;
+
+        const matchingFields: EntityFieldKeys<TEntity>[] = [];
+        for (const fieldKey in fields) {
+            const field = fields[fieldKey];
+            if (conditionCallback(field, fieldKey as EntityFieldKeys<TEntity>)) {
+                matchingFields.push(fieldKey as EntityFieldKeys<TEntity>);
+            }
         }
-
-        switch (format) {
-            case 'frontend':
-                return reverseTableNameMap[tableKey][format] as TableNameFrontend<TableName>;
-            case 'backend':
-                return reverseTableNameMap[tableKey][format] as TableNameBackend<TableName>;
-            case 'database':
-                return reverseTableNameMap[tableKey][format] as TableNameDatabase<TableName>;
-            case 'pretty':
-                return reverseTableNameMap[tableKey][format] as TableNamePretty<TableName>;
-            case 'component':
-                return reverseTableNameMap[tableKey][format] as TableNameComponent<TableName>;
-            case 'kebab':
-                return reverseTableNameMap[tableKey][format] as TableNameKebab<TableName>;
-            case 'sqlFunctionRef':
-                return reverseTableNameMap[tableKey][format] as TableNameSqlFunctionRef<TableName>;
-            case 'RestAPI':
-                return reverseTableNameMap[tableKey][format] as TableNameRestAPI<TableName>;
-            case 'GraphQL':
-                return reverseTableNameMap[tableKey][format] as TableNameGraphQL<TableName>;
-            case 'custom':
-                return reverseTableNameMap[tableKey][format] as TableNameCustom<TableName>;
-            default:
-                return reverseTableNameMap[tableKey][format] as TableNameVariation<TableName, NameFormatType>;
-        }
+        return matchingFields;
     };
 
-    const resolveFieldKey = (tableKey: TableName, fieldName: AnyFieldNameVariant): AnyFieldKey => {
-        if (!(tableKey in fieldNameMap) || !(fieldName in fieldNameMap[tableKey])) {
-            throw new Error(`Invalid table key or field name: ${tableKey}, ${fieldName}`);
-        }
-        return fieldNameMap[tableKey][fieldName];
-    };
-
-    const resolveTableAndFieldKeys = (tableName: AnyTableNameVariant, fieldName: AnyFieldNameVariant): {
-        tableKey: AnyTableKey;
-        fieldKey: AnyFieldKey
-    } => {
-        const tableKey = resolveTableKey(tableName);
-        const fieldKey = resolveFieldKey(tableKey, fieldName);
-        return {tableKey, fieldKey};
+    /**
+     * Finds all fields that have a default generator function
+     */
+    const findFieldsWithDefaultGeneratorFunction = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations
+    ): EntityFieldKeys<TEntity>[] => {
+        return findFieldsByCondition<TEntity>(
+            entityVariant,
+            (field) => field.defaultGeneratorFunction !== null
+        );
     };
 
 
-    const resolveTableNameInFormat = (tableName: AnyTableNameVariant, format: NameFormatType): EntityNameMappings<TableName>[typeof format] => {
-        const tableKey = tableNameMap[tableName] as TableKeys;
-        return getTableNameInFormat[tableKey][format];
-    };
-
-    const getTableObjectInFormat = <
-        AnyTableKey extends TableKeys
-    >(
-        tableName: TableNameVariant,
-        format: NameFormatType
-    ) => {
-        const tableSchema = getTableSchema(tableName);
-        const tableKey = resolveTableKey(tableName);
-
-        if (!(format in reverseTableNameMap[tableKey])) {
-            throw new Error(`Invalid format for table: ${format}`);
-        }
-
-        const transformedFields: { [key: string]: any } = {};
-        Object.entries(tableSchema.entityFields).forEach(([fieldKey, fieldValue]) => {
-            const formattedFieldKey = getFieldNameInFormat(
-                tableKey as AnyTableKey,
-                fieldKey as TableFields<AnyTableKey>,
-                format as NameFormatType
-            );
-            transformedFields[formattedFieldKey] = fieldValue;
-        });
-
-        switch (format) {
-            case 'frontend':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as FrontendTableType<AnyTableKey>;
-            case 'backend':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as BackendTableType<AnyTableKey>;
-            case 'database':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as DatabaseTableType<AnyTableKey>;
-            case 'pretty':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as PrettyTableType<AnyTableKey>;
-            case 'component':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as ComponentTableType<AnyTableKey>;
-            case 'kebab':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as KebabTableType<AnyTableKey>;
-            case 'sqlFunctionRef':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as SqlFunctionRefTableType<AnyTableKey>;
-            case 'RestAPI':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as RestAPITableType<AnyTableKey>;
-            case 'GraphQL':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as GraphQLTableType<AnyTableKey>;
-            case 'custom':
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as CustomTableType<AnyTableKey>;
-            default:
-                return {
-                    ...tableSchema,
-                    entityFields: transformedFields
-                } as GenerateFormattedTableType<AnyTableKey, NameFormatType>;
-        }
-    };
-
-
-    const getFieldNameInFormat =<
-        AnyTableKey extends TableKeys,
-        AnyFieldKey extends TableFields<AnyTableKey>,
-        Format extends NameFormatType
-    >(
-        tableKey: AnyTableKey,
-        fieldKey: AnyFieldKey,
-        format: Format
-): Format extends keyof FieldNameFormats<AnyTableKey, AnyFieldKey>
-        ? FieldNameFormats<AnyTableKey, AnyFieldKey>[Format]
-: never => {
-        if (!(tableKey in reverseFieldNameMap) ||
-            !(fieldKey in reverseFieldNameMap[tableKey]) ||
-            !(format in reverseFieldNameMap[tableKey][fieldKey])) {
-            throw new Error(`Invalid table key, field key or format: ${tableKey}, ${fieldKey}, ${String(format)}`);
-        }
-
-        return reverseFieldNameMap[tableKey][fieldKey][format] as FieldNameFormats<AnyTableKey, AnyFieldKey>[Format];
-    };
-
-    const resolveFieldNameInFormat =<
-        Format extends NameFormatType
-    >(
-        tableName: TableNameVariant,
-        fieldName: AnyFieldNameVariant,
-        format: Format
-) => {
-        const {tableKey, fieldKey} = resolveTableAndFieldKeys(tableName, fieldName);
-        return getFieldNameInFormat(tableKey, fieldKey, format);
-    };
-
-    const defaultGeneratorFunctions = {
+    const defaultGeneratorFunctions: DefaultGenerators = {
         generateUUID: () => uuidv4(),
+        // Add more generator implementations
     };
 
-    // 2. Helper function to call default generator functions if defined
-    const generateDefaultValue = (generatorName: string | null) => {
+    /**
+     * Generates a default value using a named generator function
+     */
+    const generateDefaultValue = (
+        generatorName: keyof DefaultGenerators | null
+    ): string | null => {
         if (generatorName && generatorName in defaultGeneratorFunctions) {
-            return defaultGeneratorFunctions[generatorName as keyof typeof defaultGeneratorFunctions]();
+            return defaultGeneratorFunctions[generatorName]();
         }
-        return null; // No generator, return null
+        return null;
     };
 
-    // 3. Function to get fields marked as 'single' and set their default value
-    const setSingleFieldsToDefault = (tableName: TableNameVariant): { [key: string]: any } => {
-        const table = getTableSchema(tableName);
-        const entityFields = table.entityFields;
+    /**
+     * Sets default values for all single-field structures
+     */
+    const setSingleFieldsToDefault = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations
+    ): Record<EntityFieldKeys<TEntity>, unknown> => {
+        const entitySchema = getEntitySchema<TEntity>(entityVariant);
+        const fields = entitySchema.entityFields;
 
-        const fieldValues: { [key: string]: any } = {};
+        const fieldValues: Record<string, unknown> = {};
 
-        for (const fieldKey in entityFields) {
-            const field = entityFields[fieldKey as keyof typeof entityFields];
+        for (const fieldKey in fields) {
+            const field = fields[fieldKey];
 
             if (field.structure === 'single') {
-                let value;
+                let value: unknown;
 
-                // Check if a defaultGeneratorFunction is defined and is a string
                 if (typeof field.defaultGeneratorFunction === 'string') {
-                    value = generateDefaultValue(field.defaultGeneratorFunction);
+                    value = generateDefaultValue(
+                        field.defaultGeneratorFunction as keyof DefaultGenerators
+                    );
                 } else {
-                    // Use the defaultValue if no valid generator function is defined
                     value = field.defaultValue;
                 }
 
-                // Set the field value to the generated or default value
                 fieldValues[fieldKey] = value;
             }
         }
 
-        return fieldValues; // Return an object with the field keys and their corresponding values
+        return fieldValues as Record<EntityFieldKeys<TEntity>, unknown>;
     };
 
 
+    const getEntitySchemaInFormat = <
+        TEntity extends EntityKeys,
+        TFormat extends DataFormat
+    >(
+        entityVariant: AllEntityNameVariations,
+        format: TFormat
+    ): FormattedEntitySchema<TEntity, TFormat> => {
+        const entitySchema = getEntitySchema<TEntity>(entityVariant);
+        const entityKey = resolveEntityKey(entityVariant) as TEntity;
+
+        if (!(format in entityNameFormats[entityKey])) {
+            throw new Error(`Invalid format for entity: ${format}`);
+        }
+
+        // Create formatted fields object
+        const formattedFields: Record<string, EntityField<TEntity, EntityFieldKeys<TEntity>>> = {};
+
+        // Transform each field
+        for (const fieldKey of Object.keys(entitySchema.entityFields)) {
+            const typedFieldKey = fieldKey as EntityFieldKeys<TEntity>;
+            const fieldValue = entitySchema.entityFields[typedFieldKey];
+
+            // Get formatted field name
+            const formattedFieldKey = getFieldNameInFormat(
+                entityKey,
+                typedFieldKey,
+                format
+            );
+
+            formattedFields[formattedFieldKey] = fieldValue;
+        }
+
+        // Create the formatted schema
+        const formattedSchema: FormattedEntitySchema<TEntity, TFormat> = {
+            ...entitySchema,
+            entityFields: formattedFields as FormattedEntitySchema<TEntity, TFormat>['entityFields']
+        };
+
+        // Brand the schema with its format
+        assertFormat(formattedSchema, format);
+
+        return formattedSchema;
+    };
+
+    /**
+     * Create a new entity record with properly formatted field names
+     */
+    const createFormattedEntityRecord = <
+        TEntity extends EntityKeys,
+        TFormat extends DataFormat
+    >(
+        entityVariant: AllEntityNameVariations,
+        data: Record<string, unknown>,
+        format: TFormat
+    ): EntityRecord<TEntity, TFormat> => {
+        const entityKey = resolveEntityKey(entityVariant) as TEntity;
+        const formattedSchema = getEntitySchemaInFormat<TEntity, TFormat>(entityVariant, format);
+
+        const formattedData: Record<string, unknown> = {};
+
+        for (const [key, value] of Object.entries(data)) {
+            const canonicalKey = resolveFieldKey(entityKey, key as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>);
+            const formattedKey = getFieldNameInFormat(
+                entityKey,
+                canonicalKey,
+                format
+            );
+            formattedData[formattedKey] = value;
+        }
+
+        // Create and brand the record
+        const record = createFormattedRecord(
+            entityKey,
+            formattedData,
+            format
+        );
+
+        return record;
+    };
+
+
+    /**
+     * Basic object transformation without format branding
+     */
+    const transformObjectBasic = <
+        TEntity extends EntityKeys,
+        TFormat extends DataFormat
+    >(
+        entityVariant: AllEntityNameVariations,
+        object: Record<string, unknown>,
+        format: TFormat
+    ): Record<string, unknown> => {
+        const entityKey = resolveEntityKey(entityVariant) as TEntity;
+
+        return Object.entries(object).reduce<Record<string, unknown>>((acc, [fieldName, value]) => {
+            const fieldKey = resolveFieldKey(entityKey, fieldName as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>);
+            const newKey = getFieldNameInFormat(entityKey, fieldKey, format);
+            acc[newKey] = value;
+            return acc;
+        }, {});
+    };
+
+    /**
+     * Type-safe object transformation with format branding
+     */
+    const transformObject = <
+        TEntity extends EntityKeys,
+        TFormat extends DataFormat
+    >(
+        entityVariant: AllEntityNameVariations,
+        object: Record<string, unknown>,
+        format: TFormat
+    ): EntityRecord<TEntity, TFormat> => {
+        const transformed = transformObjectBasic<TEntity, TFormat>(
+            entityVariant,
+            object,
+            format
+        );
+
+        return createFormattedRecord(
+            resolveEntityKey(entityVariant) as TEntity,
+            transformed,
+            format
+        );
+    };
+
+    /**
+     * Format-specific transformers with proper typing
+     */
+    const formatTransformers = {
+        toFrontend: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'frontend'> =>
+            transformObject<TEntity, 'frontend'>(
+                entityVariant,
+                object,
+                'frontend'
+            ),
+
+        toBackend: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'backend'> =>
+            transformObject<TEntity, 'backend'>(
+                entityVariant,
+                object,
+                'backend'
+            ),
+
+        toDatabase: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'database'> =>
+            transformObject<TEntity, 'database'>(
+                entityVariant,
+                object,
+                'database'
+            ),
+
+        toPretty: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'pretty'> =>
+            transformObject<TEntity, 'pretty'>(
+                entityVariant,
+                object,
+                'pretty'
+            ),
+
+        toComponent: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'component'> =>
+            transformObject<TEntity, 'component'>(
+                entityVariant,
+                object,
+                'component'
+            ),
+
+        toKebab: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'kebab'> =>
+            transformObject<TEntity, 'kebab'>(
+                entityVariant,
+                object,
+                'kebab'
+            ),
+
+        toSqlFunctionRef: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'sqlFunctionRef'> =>
+            transformObject<TEntity, 'sqlFunctionRef'>(
+                entityVariant,
+                object,
+                'sqlFunctionRef'
+            ),
+
+        toRestAPI: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'RestAPI'> =>
+            transformObject<TEntity, 'RestAPI'>(
+                entityVariant,
+                object,
+                'RestAPI'
+            ),
+
+        toGraphQL: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'GraphQL'> =>
+            transformObject<TEntity, 'GraphQL'>(
+                entityVariant,
+                object,
+                'GraphQL'
+            ),
+
+        toCustom: <TEntity extends EntityKeys>(
+            entityVariant: AllEntityNameVariations,
+            object: Record<string, unknown>
+        ): EntityRecord<TEntity, 'custom'> =>
+            transformObject<TEntity, 'custom'>(
+                entityVariant,
+                object,
+                'custom'
+            )
+    } as const;
+
+
+    /**
+     * Type-safe format conversion utility
+     */
+    const convertFormat = <
+        TEntity extends EntityKeys,
+        TSourceFormat extends DataFormat,
+        TTargetFormat extends DataFormat
+    >(
+        entityKey: TEntity,
+        data: EntityRecord<TEntity, TSourceFormat>,
+        targetFormat: TTargetFormat
+    ): EntityRecord<TEntity, TTargetFormat> => {
+        return transformObject<TEntity, TTargetFormat>(
+            entityKey,
+            data.data,
+            targetFormat
+        );
+    };
+
     return {
-        resolveTableKey,
+        resolveEntityKey,
         setSingleFieldsToDefault,
         resolveFieldKey,
-        resolveTableAndFieldKeys,
-        getTableNameInFormat,
-        getTableSchema,
-        resolveTableNameInFormat,
+        resolveEntityAndFieldKeys,
+        getEntityNameInFormat,
+        getEntitySchema,
+        resolveEntityNameInFormat,
         getFieldNameInFormat,
         resolveFieldNameInFormat,
         findPrimaryKeyFieldKey,
@@ -402,15 +618,38 @@ export function useSchemaResolution() {
         findFieldsByCondition,
         findFieldsWithDefaultGeneratorFunction,
         getFieldsWithAttribute,
+        createFormattedEntityRecord,
+        getEntitySchemaInFormat,
+        formatTransformers,
+        generateDefaultValue,
+        transformObjectBasic,
+        transformObject,
+        schema,
+        entityNameToCanonical,
+        fieldNameToCanonical,
+        entityNameFormats,
+        fieldNameFormats
     } as const;
 }
 
 
+export function useTableSchema<TEntity extends EntityKeys>(tableVariant: AllEntityNameVariations) {
+    const { schema } = useSchema();
+    const { resolveEntityKey, getEntityNameInFormat, findPrimaryKeyFieldKey } = useSchemaResolution();
+    const tableKey = resolveEntityKey(tableVariant) as TEntity;
+    const tableSchema = schema[tableKey] as AutomationEntity<TEntity>;
+    const primaryKeyField = findPrimaryKeyFieldKey(tableKey);
+    const tableNameDbFormat = getEntityNameInFormat(tableKey, 'database');
 
-export function useTableSchema(tableVariant: TableNameVariant) {
-    const {schema} = useSchema();
-    const {resolveTableKey} = useSchemaResolution();
-    const tableKey = resolveTableKey(tableVariant);
-    return schema[tableKey];
+    if (!primaryKeyField) {
+        throw new Error(`No primary key found for table ${tableVariant}`);
+    }
+
+    return {
+        tableKey,
+        tableSchema,
+        primaryKeyField,
+        tableNameDbFormat
+    };
 }
 
