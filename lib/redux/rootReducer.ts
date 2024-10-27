@@ -15,7 +15,7 @@ import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
 import {createTableSlice} from "@/lib/redux/tables/tableSliceCreator";
-import { TableNames, AutomationTableStructure } from '@/types/automationTableTypes';
+import {AutomationTableStructure, TableKeys} from '@/types/automationTableTypes';
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -31,12 +31,12 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-type TableReducers = Record<TableNames, ReturnType<typeof createTableSlice>['reducer']>;
+type TableReducers = Record<TableKeys, ReturnType<typeof createTableSlice>['reducer']>;
 
 function createAutomationTableReducers(schema: AutomationTableStructure): TableReducers {
     return Object.entries(schema).reduce((acc, [tableName, tableSchema]) => {
-        const tableSlice = createTableSlice(tableName as TableNames, tableSchema);
-        acc[tableName as TableNames] = tableSlice.reducer;
+        const tableSlice = createTableSlice(tableName as TableKeys, tableSchema);
+        acc[tableName as TableKeys] = tableSlice.reducer;
         return acc;
     }, {} as TableReducers);
 }

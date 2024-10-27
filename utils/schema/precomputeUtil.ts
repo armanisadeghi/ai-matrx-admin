@@ -1,4 +1,4 @@
-import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
+import {initialAutomationTableSchema, InitialTableSchema, TableSchemaStructure} from "@/utils/schema/initialSchemas";
 import {
     tableNameLookup,
     fieldNameLookup,
@@ -7,13 +7,9 @@ import {
 } from "@/utils/schema/lookupSchema";
 import {
     AutomationTable,
-    TableSchemaStructure,
     AutomationTableStructure,
-    AnyTableName,
     TableFields,
-    FieldNameResolver,
     EntityNameMappings,
-    InitialTableSchema,
     TableNameMap,
     AllTableNameVariations,
     TableNameLookupType,
@@ -24,21 +20,24 @@ import {
     ReverseTableLookupType,
     ReverseFieldNameMap,
     ReverseFieldLookupType,
-    UnifiedSchemaCache,
+    UnifiedSchemaCache, TableNameVariant, FieldNameVariations,
 } from "@/types/automationTableTypes";
 import {
     AutomationTableName,
     NameFormat,
     OptionalNameFormats,
     RequiredNameFormats,
-    SchemaEntityKeys
 } from "@/types/AutomationSchemaTypes";
 import {schemaLogger} from '@/lib/logger/schema-logger';
 
+export type ProcessedSchema = ReturnType<typeof initializeTableSchema>;
+export type SchemaEntityKeys = keyof ProcessedSchema;
+
+
 function initializeTableSchema(
     initialAutomationTableSchema: TableSchemaStructure
-): Record<AutomationTableName, AutomationTable> {
-    const schemaMapping = {} as Record<AutomationTableName, AutomationTable>;
+): Record<AutomationTableName, AutomationTableStructure> {
+    const schemaMapping = {} as Record<AutomationTableName, AutomationTableStructure>;
 
     for (const [entityKey, entity] of Object.entries(initialAutomationTableSchema) as [SchemaEntityKeys, InitialTableSchema][]) {
 
@@ -265,32 +264,6 @@ export function getGlobalCache(trace: string[] = ['unknownCaller']): UnifiedSche
 }
 
 
-export type FieldNameVariations<T extends AutomationTableName, F extends keyof TableFields<T>> = {
-    [K in NameFormat]: AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings'][K];
-}[NameFormat];
-
-export type TableNameVariations<T extends AutomationTableName> = {
-    [K in NameFormat]: AutomationTableStructure[T]['entityNameMappings'][K];
-}[NameFormat];
-
-// Refined table name variant type
-export type TableNameVariant =
-    | AutomationTableName
-    | TableNameVariations<AutomationTableName>;
-
-// Helper type to get all possible field names for a table
-export type AllPossibleFieldNames<T extends AutomationTableName> =
-    | keyof TableFields<T>
-    | {
-    [F in keyof TableFields<T>]: FieldNameVariations<T, F>;
-}[keyof TableFields<T>];
-
-// Enhanced field name resolver
-export type EnhancedFieldNameResolver<
-    T extends AutomationTableName,
-    F extends keyof TableFields<T>,
-    V extends NameFormat
-> = AutomationTableStructure[T]['entityFields'][F]['fieldNameMappings'][V];
 
 
 export type StringFieldKey<T extends AutomationTableName> =
@@ -301,18 +274,6 @@ export type FieldNameVariant<T extends AutomationTableName> =
     | StringFieldKey<T>
     | FieldNameVariations<T, StringFieldKey<T>>;
 
-// Type guard functions
-export function isValidTableName(name: string): name is AutomationTableName {
-    return name in (globalCache?.schema ?? {});
-}
-
-export function isValidFieldName<T extends AutomationTableName>(
-    table: T,
-    fieldName: string
-): fieldName is StringFieldKey<T> {
-    return typeof fieldName === 'string' &&
-        fieldName in (globalCache?.schema[table]?.entityFields ?? {});
-}
 
 
 export function resolveTableName(
@@ -1144,22 +1105,6 @@ export function generateClientSchema(): ClientSchema {
     };
 }
 
-// Example usage in getServerSideProps:
-/*
-export async function getServerSideProps() {
-    const schemaSystem = initializeSchemaSystem();
-    const clientSchema = generateClientSchema();
-
-    return {
-        props: {
-            schema: clientSchema
-        }
-    };
-}
-*/
-
-
-// ==================================== Database Interactions =============================================================
 
 export function removeEmptyFields(obj: Record<string, any>): Record<string, any> {
     return Object.fromEntries(
@@ -1295,7 +1240,7 @@ export function processDataForInsert(
 
 export async function getRelationships(
     tableName: string,
-    format: keyof AutomationTable['entityNameMappings'] = 'frontend',
+    format: string = 'frontend',
     trace: string[] = ['unknownCaller']
 ): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     trace = [...trace, 'getRelationships'];
