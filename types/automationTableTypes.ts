@@ -1,13 +1,62 @@
 import {
     AutomationTableName,
     DataStructure,
-    FetchStrategy,
+    FetchStrategy, FieldDataOptionsType,
     NameFormat, TypeBrand,
 } from "@/types/AutomationSchemaTypes";
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 
 export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 
+
+// ========== TS Lenient Types ========== https://claude.ai/chat/192336c5-86d5-40ad-88cf-4ced076fe9e5
+
+// First, let's create a type that allows for safe type assertion
+type Ensure<T, K extends T> = T;
+
+// A utility type to make all nested properties optional
+type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+// A utility type that preserves the structure but makes type checking more lenient
+type Lenient<T> = {
+    [P in keyof T]: unknown extends T[P] ? any : T[P] extends object ? Lenient<T[P]> : T[P];
+};
+
+type Trust<T> = T extends object ? {
+    [K in keyof T]: any;
+} : any;
+
+// Make everything optional and any
+type PermissiveSchema<T> = {
+    [K in keyof T]?: any;
+};
+
+// A simple assertion function to shut up TypeScript
+export function assertType<T>(value: any): T {
+    return value as T;
+}
+
+// Helper for field name resolution that tells TypeScript to trust your runtime system
+export function resolveFieldName<
+    TTable extends TableKeys,
+    TField extends TableFields<TTable>
+>(table: TTable, field: any): TField {
+    return field as TField;
+}
+
+// Helper for table name resolution
+export function resolveTableName<T extends TableKeys>(name: any): T {
+    return name as T;
+}
+
+// For when you need to work with the schema but don't want type checking
+export type AnySchema = {
+    [key: string]: any;
+};
+
+// ======================================================================
 
 export type EntityFieldKeysForTable<TTable extends keyof InitialSchema> = InitialSchema[TTable] extends infer T
     ? T extends { entityFields: any }
@@ -42,6 +91,9 @@ export type TableFields<TTable extends keyof InitialSchema> = InitialSchema[TTab
         ? keyof T['entityFields']
         : never
     : never;
+
+export type FieldKey<T extends TableName> = TableFields<T>;
+
 
 export type FieldNameMappings<
     TTable extends TableKeys,
@@ -198,6 +250,25 @@ export type AutomationTableStructure = {
     [K in TableKeys]: AutomationTable<K>;
 };
 
+export type FlexibleEntityField<
+    TTable extends TableKeys,
+    TField extends TableFields<TTable>
+> = Partial<EntityField<TTable, TField>> & {
+    dataType: FieldDataType<TTable, TField>;
+};
+
+export type FlexibleAutomationTable<TTable extends TableKeys> = {
+    schemaType: SchemaType<TTable>;
+    entityNameMappings: EntityNameMappings<TTable>;
+    entityFields: Partial<{
+        [K in TableFields<TTable>]: FlexibleEntityField<TTable, K>;
+    }>;
+    defaultFetchStrategy?: DefaultFetchStrategy<TTable>;
+    componentProps?: ComponentProps<TTable>;
+    relationships?: Lenient<Relationships<TTable>>;
+};
+
+
 // Get all name variations for a specific table
 export type TableNameVariations<TTable extends TableKeys> =
     | TTable
@@ -225,22 +296,27 @@ export type FieldVariationToKeyMap<TTable extends TableKeys> = {
     [K in AllFieldNameVariations<TTable>]: Extract<TableFields<TTable>, string>;
 };
 
-// Then redefine our lookup type
-export type FieldNameLookupType = {
-    [TTable in TableKeys]: Partial<FieldVariationToKeyMap<TTable>>;
-};
-
-// // Or alternatively, we could try this approach:
+// // Then redefine our lookup type
 // export type FieldNameLookupType = {
-//     [TTable in TableKeys]: {
-//         [K: string]: TableFields<TTable>;
-//     };
+//     [TTable in TableKeys]: Partial<FieldVariationToKeyMap<TTable>>;
 // };
+//
+// // Or alternatively, we could try this approach:
+export type FieldNameLookupType = {
+    [TTable in TableKeys]: {
+        [K: string]: TableFields<TTable>;
+    };
+};
 
 // Table name lookup
 export type TableNameLookupType = {
     [K in AllTableNameVariations]: TableKeys;
 };
+
+// Consider if PARTIAL is the way to go.
+// export type TableNameLookupType = Partial<{
+//     [K in AllTableNameVariations]: TableKeys;
+// }>;
 
 
 // Reverse table lookup
@@ -248,11 +324,16 @@ export type ReverseTableLookupType = {
     [TTable in TableKeys]: EntityNameMappings<TTable>;
 };
 
+// export type ReverseTableLookupType = Partial<{
+//     [TTable in TableKeys]: Partial<EntityNameMappings<TTable>>;
+// }>;
+
+
 // Reverse field lookup
 export type ReverseFieldLookupType = {
     [TTable in TableKeys]: {
-        [TField in TableFields<TTable>]: FieldNameMappings<TTable, TField>;
-    };
+        [TField in TableFields<TTable>]: FieldNameMappings<TTable, TField>
+    }
 };
 
 
@@ -299,16 +380,30 @@ export type FieldNameVariation<
     TVariation extends keyof FieldNameMappings<TTable, TField>
 > = FieldNameMappings<TTable, TField>[TVariation];
 
+export type FieldFormatVariation<
+    TTable extends TableKeys,
+    TField extends TableFields<TTable>
+> = keyof FieldNameMappings<TTable, TField>;
+
+type test6 = FieldNameVariation<'arg', 'registeredFunction', 'frontend'>;
+type test5 = FieldFormatVariation<'arg', 'registeredFunction'>;
+
 
 export type FieldNameFrontend<
     TTable extends TableKeys,
     TField extends TableFields<TTable>
 > = FieldNameVariation<TTable, TField, 'frontend'>;
 
+type test7 = FieldNameFrontend<'arg', 'registeredFunction'>;
+
+
 export type FieldNameBackend<
     TTable extends TableKeys,
     TField extends TableFields<TTable>
 > = FieldNameVariation<TTable, TField, 'backend'>;
+
+type test8 = FieldNameBackend<'arg', 'registeredFunction'>;
+
 
 export type FieldNameDatabase<
     TTable extends TableKeys,
@@ -351,13 +446,59 @@ export type FieldNameCustom<
     TField extends TableFields<TTable>
 > = FieldNameVariation<TTable, TField, 'custom'>;
 
+export type TableNameFormats<TTable extends TableKeys> = {
+    frontend: TableNameFrontend<TTable>;
+    backend: TableNameBackend<TTable>;
+    database: TableNameDatabase<TTable>;
+    pretty: TableNamePretty<TTable>;
+    component: TableNameComponent<TTable>;
+    kebab: TableNameKebab<TTable>;
+    sqlFunctionRef: TableNameSqlFunctionRef<TTable>;
+    RestAPI?: TableNameRestAPI<TTable>;
+    GraphQL?: TableNameGraphQL<TTable>;
+    custom?: TableNameCustom<TTable>;
+};
+
+// Object containing all variations of a field name
+export type FieldNameFormats<
+    TTable extends TableKeys,
+    TField extends TableFields<TTable>
+> = {
+    frontend: FieldNameFrontend<TTable, TField>;
+    backend: FieldNameBackend<TTable, TField>;
+    database: FieldNameDatabase<TTable, TField>;
+    pretty: FieldNamePretty<TTable, TField>;
+    component: FieldNameComponent<TTable, TField>;
+    kebab: FieldNameKebab<TTable, TField>;
+    sqlFunctionRef: FieldNameSqlFunctionRef<TTable, TField>;
+    RestAPI?: FieldNameRestAPI<TTable, TField>;
+    GraphQL?: FieldNameGraphQL<TTable, TField>;
+    custom?: FieldNameCustom<TTable, TField>;
+};
+
+// Combined type that represents both table and field name formats
+export type TableFieldNameFormats<
+    TTable extends TableKeys,
+    TField extends TableFields<TTable>
+> = {
+    table: TableNameFormats<TTable>;
+    field: FieldNameFormats<TTable, TField>;
+};
+
+// Example usage:
+type test2 = TableFieldNameFormats<'arg', 'registeredFunction'>;
+
 
 export type UnifiedSchemaCache = {
     schema: AutomationTableStructure;
     tableNameMap: Map<TableNameVariant, TableName>;
     fieldNameMap: Map<TableName, Map<string, FieldName<TableName>>>;
     reverseTableNameMap: Map<TableName, EntityNameMappings<TableName>>;
-    reverseFieldNameMap: Map<TableName, Map<FieldName<TableName>, FieldNameMappings<TableName, FieldName<TableName>>>>;
+    reverseFieldNameMap: {
+        [TTable in TableKeys]: {
+            [TField in TableFields<TTable>]: FieldNameMappings<TTable, TField>
+        }
+    };
 };
 
 export type ProcessedSchema = UnifiedSchemaCache['schema'];
@@ -378,11 +519,26 @@ export type ReverseFieldNameMap = ReadonlyMap<
 >;
 
 export type TableName = TableKeys;
-export type FieldName<T extends TableName> = TableFields<T>;
-export type TableNameVariant = AllTableNameVariations;
-export type FieldNameVariant<T extends TableName> = AllFieldNameVariations<T>;
-export type NameFormatType = keyof EntityNameMappings<TableName>;
+export type AnyTableKey = TableKeys;
 
+export type FieldName<T extends TableName> = TableFields<T>;
+export type AnyFieldKey = FieldName<AnyTableKey>;
+
+export type TableNameVariant = AllTableNameVariations;
+export type AnyTableNameVariant = TableNameVariant;
+
+export type FieldNameVariant<T extends TableName> = AllFieldNameVariations<T>;
+export type AnyFieldNameVariant = FieldNameVariant<TableName>;
+
+export type NameFormatType = keyof EntityNameMappings<TableName>;
+export type TableNameFormat = NameFormatType;
+
+export type FieldNameFormatType<T extends TableKeys, F extends FieldKey<T>> = keyof FieldNameMappings<T, F>;
+
+export type testFieldFormat = FieldNameFormatType<'registeredFunction', 'modulePath'>;
+
+
+type test1 = FieldNameMappings<'arg', 'registeredFunction'>;
 
 
 type RegisteredFunctionTest2 = AutomationTableStructure['registeredFunction'];
@@ -393,7 +549,7 @@ type RegisteredFunctionTest6 = AutomationTableStructure['registeredFunction']['e
 type RegisteredFunctionTest7 = AutomationTableStructure['registeredFunction']['entityFields']['modulePath']['fieldNameMappings'];
 type RegisteredFunctionTest8 = AutomationTableStructure['registeredFunction']['entityFields']['modulePath']['fieldNameMappings']['frontend'];
 type RegisteredFunctionTest9 = AutomationTableStructure['action']['defaultFetchStrategy']
-type TestTableFieldNameMappings = FieldNameMappings<'arg', 'registeredFunction'>;
+
 type testEntityNameMappings = EntityNameMappings<'registeredFunction'>;
 type relationshipTest = AutomationTableStructure['registeredFunction']['relationships']
 type NameVariationTest = AllTableNameVariations;
@@ -406,6 +562,178 @@ type ModulePathFrontendName = FieldNameFrontend<'registeredFunction', 'modulePat
 type ModulePathDatabaseName = FieldNameDatabase<'registeredFunction', 'modulePath'>;
 type RegisteredFunctionFrontendName = TableNameFrontend<'registeredFunction'>;
 type RegisteredFunctionDatabaseName = TableNameDatabase<'registeredFunction'>;
+
+
+
+
+// Type to extract only single-structure fields
+export type SingleStructureFields<TTable extends TableKeys> = {
+    [K in TableFields<TTable>]: FieldStructure<TTable, K> extends 'single' ? K : never
+}[TableFields<TTable>];
+
+// Type for the field information we want to keep
+type FilteredEntityField<
+    TTable extends TableKeys,
+    TField extends TableFields<TTable>
+> = {
+    fieldNameMappings: FieldNameMappings<TTable, TField>;
+    typeReference: FieldTypeReference<TTable, TField>;
+};
+
+// Filtered table structure that only includes single-structure fields
+export type FilteredAutomationTable<TTable extends TableKeys> = {
+    entityNameMappings: EntityNameMappings<TTable>;
+    entityFields: {
+        [K in SingleStructureFields<TTable>]: FilteredEntityField<TTable, K>;
+    };
+};
+
+// The complete structure
+export type FilteredAutomationTableStructure = {
+    [K in TableKeys]: FilteredAutomationTable<K>;
+};
+
+// Helper type to extract the type reference for a specific field
+export type ExtractFieldTypeReference<
+    TTable extends TableKeys,
+    TField extends SingleStructureFields<TTable>
+> = FilteredAutomationTableStructure[TTable]['entityFields'][TField]['typeReference'];
+
+
+// Generate table types
+export type GenerateTableType<TTable extends TableKeys> = {
+    [K in SingleStructureFields<TTable>]: ExtractType<
+        ExtractFieldTypeReference<TTable, K>
+    >
+};
+
+
+
+// Generate all table types
+export type GenerateAllTableTypes = {
+    [K in TableKeys]: GenerateTableType<K>
+};
+
+
+
+// Example usage types
+type testA1 = FilteredAutomationTableStructure;
+type testA2<T extends TableKeys> = SingleStructureFields<T>;
+type testA3<T extends TableKeys, F extends SingleStructureFields<T>> = ExtractFieldTypeReference<T, F>;
+type testA1A = SingleStructureFields<'registeredFunction'>;
+type testA2A = FilteredAutomationTable<'registeredFunction'>;
+type testA3A = ExtractFieldTypeReference<'registeredFunction', 'modulePath'>;
+
+type RegisteredFunction = GenerateTableType<'registeredFunction'>;
+type Broker = GenerateTableType<'broker'>;
+type Action = GenerateTableType<'action'>;
+type AiEndpoint = GenerateTableType<'aiEndpoint'>;
+type AiModel = GenerateTableType<'aiModel'>;
+type Arg = GenerateTableType<'arg'>;
+type AutomationBoundaryBroker = GenerateTableType<'automationBoundaryBroker'>;
+type AllTableTypes = GenerateAllTableTypes;
+
+
+// Type to map a field to its formatted name for a specific variation
+type FormattedFieldName<
+    TTable extends TableKeys,
+    TField extends SingleStructureFields<TTable>,
+    TVariation extends keyof FieldNameFormats<TTable, TField>
+> = FieldNameVariation<TTable, TField, TVariation>;
+
+// Generate table type with specific name formatting
+export type GenerateFormattedTableType<
+    TTable extends TableKeys,
+    TVariation extends keyof FieldNameFormats<TTable, SingleStructureFields<TTable>>
+> = {
+    [K in SingleStructureFields<TTable> as FormattedFieldName<TTable, K, TVariation>]: ExtractType<
+        ExtractFieldTypeReference<TTable, K>
+    >
+};
+
+// Specific format types
+export type FrontendTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'frontend'>;
+export type BackendTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'backend'>;
+export type DatabaseTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'database'>;
+export type PrettyTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'pretty'>;
+export type ComponentTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'component'>;
+export type KebabTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'kebab'>;
+export type SqlFunctionRefTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'sqlFunctionRef'>;
+export type RestAPITableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'RestAPI'>;
+export type GraphQLTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'GraphQL'>;
+export type CustomTableType<TTable extends TableKeys> = GenerateFormattedTableType<TTable, 'custom'>;
+
+export type FormattedTableSchema<
+    TTable extends TableKeys,
+    TFormat extends NameFormatType
+> = TFormat extends 'frontend'
+    ? FrontendTableType<TTable>
+    : TFormat extends 'backend'
+    ? BackendTableType<TTable>
+    : TFormat extends 'database'
+    ? DatabaseTableType<TTable>
+    : TFormat extends 'pretty'
+    ? PrettyTableType<TTable>
+    : TFormat extends 'component'
+    ? ComponentTableType<TTable>
+    : TFormat extends 'kebab'
+    ? KebabTableType<TTable>
+    : TFormat extends 'sqlFunctionRef'
+    ? SqlFunctionRefTableType<TTable>
+    : TFormat extends 'RestAPI'
+    ? RestAPITableType<TTable>
+    : TFormat extends 'GraphQL'
+    ? GraphQLTableType<TTable>
+    : TFormat extends 'custom'
+    ? CustomTableType<TTable>
+    : never;
+
+
+// Generate all tables with specific formatting
+export type GenerateAllFrontendTableTypes = {
+    [K in TableKeys as TableNameFrontend<K>]: FrontendTableType<K>
+};
+export type GenerateAllBackendTableTypes = {
+    [K in TableKeys as TableNameBackend<K>]: BackendTableType<K>
+};
+export type GenerateAllDatabaseTableTypes = {
+    [K in TableKeys as TableNameDatabase<K>]: DatabaseTableType<K>
+};
+export type GenerateAllPrettyTableTypes = {
+    [K in TableKeys as TableNamePretty<K>]: PrettyTableType<K>
+};
+export type GenerateAllComponentTableTypes = {
+    [K in TableKeys as TableNameComponent<K>]: ComponentTableType<K>
+};
+export type GenerateAllKebabTableTypes = {
+    [K in TableKeys as TableNameKebab<K>]: KebabTableType<K>
+};
+export type GenerateAllSqlFunctionRefTableTypes = {
+    [K in TableKeys as TableNameSqlFunctionRef<K>]: SqlFunctionRefTableType<K>
+};
+export type GenerateAllRestAPITableTypes = {
+    [K in TableKeys as TableNameRestAPI<K>]: RestAPITableType<K>
+};
+export type GenerateAllGraphQLTableTypes = {
+    [K in TableKeys as TableNameGraphQL<K>]: GraphQLTableType<K>
+};
+export type GenerateAllCustomTableTypes = {
+    [K in TableKeys as TableNameCustom<K>]: CustomTableType<K>
+};
+
+// Example usage:
+type RegisteredFunctionFrontend = FrontendTableType<'registeredFunction'>;
+type RegisteredFunctionDatabase = DatabaseTableType<'registeredFunction'>;
+type AllFrontendTypes = GenerateAllFrontendTableTypes;
+type AllDatabaseTypes = GenerateAllDatabaseTableTypes;
+
+
+
+
+
+
+
+
 
 
 //export type TableFieldNames<T extends AutomationTableName> = keyof AutomationTableStructure[T]['entityFields'];
@@ -509,7 +837,7 @@ export type AutomationView = {
                 };
             };
             value: any;
-            dataType: FieldDataType;
+            dataType: FieldDataOptionsType;
             isArray: boolean;
             structure: DataStructure;
             isNative: boolean;

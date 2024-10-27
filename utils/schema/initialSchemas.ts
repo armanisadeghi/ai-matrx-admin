@@ -5,7 +5,7 @@ import {
     DataStructure,
     FetchStrategy,
     NameFormat,
-    FieldDataType
+    FieldDataOptionsType
 } from '@/types/AutomationSchemaTypes';
 
 export const initialAutomationTableSchema = {
@@ -263,10 +263,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "automationMatrixReference",
                     "backend": "automation_matrix_reference",
                     "database": "ref_automation_matrix",
-                    "sqlFunctionRef": "p_ref_automation_matrix",
                     "pretty": "Automation Matrix Reference",
                     "component": "AutomationMatrixReference",
-                    "kebab": "automation-matrixReference"
+                    "kebab": "automation-matrixReference",
+                    "sqlFunctionRef": "p_ref_automation_matrix",
+                    "RestAPI": "automationMatrixReference",
+                    "GraphQL": "automationMatrixReference",
+                    "custom": "automationMatrixReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -288,10 +291,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "transformerReference",
                     "backend": "transformer_reference",
                     "database": "ref_transformer",
-                    "sqlFunctionRef": "p_ref_transformer",
                     "pretty": "Transformer Reference",
                     "component": "TransformerReference",
-                    "kebab": "transformerReference"
+                    "kebab": "transformerReference",
+                    "sqlFunctionRef": "p_ref_transformer",
+                    "RestAPI": "transformerReference",
+                    "GraphQL": "transformerReference",
+                    "custom": "transformerReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -1051,10 +1057,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeModelInverse",
                     "backend": "recipe_model_Inverse",
                     "database": "ifk_recipe_model",
-                    "sqlFunctionRef": "p_ifk_recipe_model",
                     "pretty": "Recipe Model Inverse",
                     "component": "RecipeModelInverse",
-                    "kebab": "recipe-modelInverse"
+                    "kebab": "recipe-modelInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_model",
+                    "RestAPI": "recipeModelInverse",
+                    "GraphQL": "recipeModelInverse",
+                    "custom": "recipeModelInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -1394,10 +1403,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "registeredFunctionReference",
                     "backend": "registered_function_reference",
                     "database": "ref_registered_function",
-                    "sqlFunctionRef": "p_ref_registered_function",
                     "pretty": "Registered Function Reference",
                     "component": "RegisteredFunctionReference",
-                    "kebab": "registered-functionReference"
+                    "kebab": "registered-functionReference",
+                    "sqlFunctionRef": "p_ref_registered_function",
+                    "RestAPI": "registeredFunctionReference",
+                    "GraphQL": "registeredFunctionReference",
+                    "custom": "registeredFunctionReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -1652,10 +1664,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "brokerReference",
                     "backend": "broker_reference",
                     "database": "ref_broker",
-                    "sqlFunctionRef": "p_ref_broker",
                     "pretty": "Broker Reference",
                     "component": "BrokerReference",
-                    "kebab": "brokerReference"
+                    "kebab": "brokerReference",
+                    "sqlFunctionRef": "p_ref_broker",
+                    "RestAPI": "brokerReference",
+                    "GraphQL": "brokerReference",
+                    "custom": "brokerReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -1677,10 +1692,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "automationMatrixReference",
                     "backend": "automation_matrix_reference",
                     "database": "ref_automation_matrix",
-                    "sqlFunctionRef": "p_ref_automation_matrix",
                     "pretty": "Automation Matrix Reference",
                     "component": "AutomationMatrixReference",
-                    "kebab": "automation-matrixReference"
+                    "kebab": "automation-matrixReference",
+                    "sqlFunctionRef": "p_ref_automation_matrix",
+                    "RestAPI": "automationMatrixReference",
+                    "GraphQL": "automationMatrixReference",
+                    "custom": "automationMatrixReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -1981,10 +1999,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "actionInverse",
                     "backend": "action_Inverse",
                     "database": "ifk_action",
-                    "sqlFunctionRef": "p_ifk_action",
                     "pretty": "Action Inverse",
                     "component": "ActionInverse",
-                    "kebab": "actionInverse"
+                    "kebab": "actionInverse",
+                    "sqlFunctionRef": "p_ifk_action",
+                    "RestAPI": "actionInverse",
+                    "GraphQL": "actionInverse",
+                    "custom": "actionInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -2006,10 +2027,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "automationBoundaryBrokerInverse",
                     "backend": "automation_boundary_broker_Inverse",
                     "database": "ifk_automation_boundary_broker",
-                    "sqlFunctionRef": "p_ifk_automation_boundary_broker",
                     "pretty": "Automation Boundary Broker Inverse",
                     "component": "AutomationBoundaryBrokerInverse",
-                    "kebab": "automation-boundary-brokerInverse"
+                    "kebab": "automation-boundary-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_automation_boundary_broker",
+                    "RestAPI": "automationBoundaryBrokerInverse",
+                    "GraphQL": "automationBoundaryBrokerInverse",
+                    "custom": "automationBoundaryBrokerInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -2753,10 +2777,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "dataInputComponentReference",
                     "backend": "data_input_component_reference",
                     "database": "ref_data_input_component",
-                    "sqlFunctionRef": "p_ref_data_input_component",
                     "pretty": "Data Input Component Reference",
                     "component": "DataInputComponentReference",
-                    "kebab": "data-input-componentReference"
+                    "kebab": "data-input-componentReference",
+                    "sqlFunctionRef": "p_ref_data_input_component",
+                    "RestAPI": "dataInputComponentReference",
+                    "GraphQL": "dataInputComponentReference",
+                    "custom": "dataInputComponentReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -2778,10 +2805,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeBrokerInverse",
                     "backend": "recipe_broker_Inverse",
                     "database": "ifk_recipe_broker",
-                    "sqlFunctionRef": "p_ifk_recipe_broker",
                     "pretty": "Recipe Broker Inverse",
                     "component": "RecipeBrokerInverse",
-                    "kebab": "recipe-brokerInverse"
+                    "kebab": "recipe-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_broker",
+                    "RestAPI": "recipeBrokerInverse",
+                    "GraphQL": "recipeBrokerInverse",
+                    "custom": "recipeBrokerInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -2803,10 +2833,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "registeredFunctionInverse",
                     "backend": "registered_function_Inverse",
                     "database": "ifk_registered_function",
-                    "sqlFunctionRef": "p_ifk_registered_function",
                     "pretty": "Registered Function Inverse",
                     "component": "RegisteredFunctionInverse",
-                    "kebab": "registered-functionInverse"
+                    "kebab": "registered-functionInverse",
+                    "sqlFunctionRef": "p_ifk_registered_function",
+                    "RestAPI": "registeredFunctionInverse",
+                    "GraphQL": "registeredFunctionInverse",
+                    "custom": "registeredFunctionInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -2828,10 +2861,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "automationBoundaryBrokerInverse",
                     "backend": "automation_boundary_broker_Inverse",
                     "database": "ifk_automation_boundary_broker",
-                    "sqlFunctionRef": "p_ifk_automation_boundary_broker",
                     "pretty": "Automation Boundary Broker Inverse",
                     "component": "AutomationBoundaryBrokerInverse",
-                    "kebab": "automation-boundary-brokerInverse"
+                    "kebab": "automation-boundary-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_automation_boundary_broker",
+                    "RestAPI": "automationBoundaryBrokerInverse",
+                    "GraphQL": "automationBoundaryBrokerInverse",
+                    "custom": "automationBoundaryBrokerInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -3433,10 +3469,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "brokerInverse",
                     "backend": "broker_Inverse",
                     "database": "ifk_broker",
-                    "sqlFunctionRef": "p_ifk_broker",
                     "pretty": "Broker Inverse",
                     "component": "BrokerInverse",
-                    "kebab": "brokerInverse"
+                    "kebab": "brokerInverse",
+                    "sqlFunctionRef": "p_ifk_broker",
+                    "RestAPI": "brokerInverse",
+                    "GraphQL": "brokerInverse",
+                    "custom": "brokerInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -3916,10 +3955,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeDisplayInverse",
                     "backend": "recipe_display_Inverse",
                     "database": "ifk_recipe_display",
-                    "sqlFunctionRef": "p_ifk_recipe_display",
                     "pretty": "Recipe Display Inverse",
                     "component": "RecipeDisplayInverse",
-                    "kebab": "recipe-displayInverse"
+                    "kebab": "recipe-displayInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_display",
+                    "RestAPI": "recipeDisplayInverse",
+                    "GraphQL": "recipeDisplayInverse",
+                    "custom": "recipeDisplayInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -5138,10 +5180,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardHistoryInverse",
                     "backend": "flashcard_history_Inverse",
                     "database": "ifk_flashcard_history",
-                    "sqlFunctionRef": "p_ifk_flashcard_history",
                     "pretty": "Flashcard History Inverse",
                     "component": "FlashcardHistoryInverse",
-                    "kebab": "flashcard-historyInverse"
+                    "kebab": "flashcard-historyInverse",
+                    "sqlFunctionRef": "p_ifk_flashcard_history",
+                    "RestAPI": "flashcardHistoryInverse",
+                    "GraphQL": "flashcardHistoryInverse",
+                    "custom": "flashcardHistoryInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -5163,10 +5208,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardSetRelationsInverse",
                     "backend": "flashcard_set_relations_Inverse",
                     "database": "ifk_flashcard_set_relations",
-                    "sqlFunctionRef": "p_ifk_flashcard_set_relations",
                     "pretty": "Flashcard Set Relations Inverse",
                     "component": "FlashcardSetRelationsInverse",
-                    "kebab": "flashcard-set-relationsInverse"
+                    "kebab": "flashcard-set-relationsInverse",
+                    "sqlFunctionRef": "p_ifk_flashcard_set_relations",
+                    "RestAPI": "flashcardSetRelationsInverse",
+                    "GraphQL": "flashcardSetRelationsInverse",
+                    "custom": "flashcardSetRelationsInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -5188,10 +5236,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardImagesInverse",
                     "backend": "flashcard_images_Inverse",
                     "database": "ifk_flashcard_images",
-                    "sqlFunctionRef": "p_ifk_flashcard_images",
                     "pretty": "Flashcard Images Inverse",
                     "component": "FlashcardImagesInverse",
-                    "kebab": "flashcard-imagesInverse"
+                    "kebab": "flashcard-imagesInverse",
+                    "sqlFunctionRef": "p_ifk_flashcard_images",
+                    "RestAPI": "flashcardImagesInverse",
+                    "GraphQL": "flashcardImagesInverse",
+                    "custom": "flashcardImagesInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -5584,10 +5635,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardDataReference",
                     "backend": "flashcard_data_reference",
                     "database": "ref_flashcard_data",
-                    "sqlFunctionRef": "p_ref_flashcard_data",
                     "pretty": "Flashcard Data Reference",
                     "component": "FlashcardDataReference",
-                    "kebab": "flashcard-dataReference"
+                    "kebab": "flashcard-dataReference",
+                    "sqlFunctionRef": "p_ref_flashcard_data",
+                    "RestAPI": "flashcardDataReference",
+                    "GraphQL": "flashcardDataReference",
+                    "custom": "flashcardDataReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -5920,10 +5974,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardDataReference",
                     "backend": "flashcard_data_reference",
                     "database": "ref_flashcard_data",
-                    "sqlFunctionRef": "p_ref_flashcard_data",
                     "pretty": "Flashcard Data Reference",
                     "component": "FlashcardDataReference",
-                    "kebab": "flashcard-dataReference"
+                    "kebab": "flashcard-dataReference",
+                    "sqlFunctionRef": "p_ref_flashcard_data",
+                    "RestAPI": "flashcardDataReference",
+                    "GraphQL": "flashcardDataReference",
+                    "custom": "flashcardDataReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -6100,10 +6157,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardDataReference",
                     "backend": "flashcard_data_reference",
                     "database": "ref_flashcard_data",
-                    "sqlFunctionRef": "p_ref_flashcard_data",
                     "pretty": "Flashcard Data Reference",
                     "component": "FlashcardDataReference",
-                    "kebab": "flashcard-dataReference"
+                    "kebab": "flashcard-dataReference",
+                    "sqlFunctionRef": "p_ref_flashcard_data",
+                    "RestAPI": "flashcardDataReference",
+                    "GraphQL": "flashcardDataReference",
+                    "custom": "flashcardDataReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -6125,10 +6185,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardSetsReference",
                     "backend": "flashcard_sets_reference",
                     "database": "ref_flashcard_sets",
-                    "sqlFunctionRef": "p_ref_flashcard_sets",
                     "pretty": "Flashcard Sets Reference",
                     "component": "FlashcardSetsReference",
-                    "kebab": "flashcard-setsReference"
+                    "kebab": "flashcard-setsReference",
+                    "sqlFunctionRef": "p_ref_flashcard_sets",
+                    "RestAPI": "flashcardSetsReference",
+                    "GraphQL": "flashcardSetsReference",
+                    "custom": "flashcardSetsReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -6624,10 +6687,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "flashcardSetRelationsInverse",
                     "backend": "flashcard_set_relations_Inverse",
                     "database": "ifk_flashcard_set_relations",
-                    "sqlFunctionRef": "p_ifk_flashcard_set_relations",
                     "pretty": "Flashcard Set Relations Inverse",
                     "component": "FlashcardSetRelationsInverse",
-                    "kebab": "flashcard-set-relationsInverse"
+                    "kebab": "flashcard-set-relationsInverse",
+                    "sqlFunctionRef": "p_ifk_flashcard_set_relations",
+                    "RestAPI": "flashcardSetRelationsInverse",
+                    "GraphQL": "flashcardSetRelationsInverse",
+                    "custom": "flashcardSetRelationsInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -6889,10 +6955,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "processorReference",
                     "backend": "processor_reference",
                     "database": "ref_processor",
-                    "sqlFunctionRef": "p_ref_processor",
                     "pretty": "Processor Reference",
                     "component": "ProcessorReference",
-                    "kebab": "processorReference"
+                    "kebab": "processorReference",
+                    "sqlFunctionRef": "p_ref_processor",
+                    "RestAPI": "processorReference",
+                    "GraphQL": "processorReference",
+                    "custom": "processorReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -6914,10 +6983,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeProcessorInverse",
                     "backend": "recipe_processor_Inverse",
                     "database": "ifk_recipe_processor",
-                    "sqlFunctionRef": "p_ifk_recipe_processor",
                     "pretty": "Recipe Processor Inverse",
                     "component": "RecipeProcessorInverse",
-                    "kebab": "recipe-processorInverse"
+                    "kebab": "recipe-processorInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_processor",
+                    "RestAPI": "recipeProcessorInverse",
+                    "GraphQL": "recipeProcessorInverse",
+                    "custom": "recipeProcessorInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7381,10 +7453,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeBrokerInverse",
                     "backend": "recipe_broker_Inverse",
                     "database": "ifk_recipe_broker",
-                    "sqlFunctionRef": "p_ifk_recipe_broker",
                     "pretty": "Recipe Broker Inverse",
                     "component": "RecipeBrokerInverse",
-                    "kebab": "recipe-brokerInverse"
+                    "kebab": "recipe-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_broker",
+                    "RestAPI": "recipeBrokerInverse",
+                    "GraphQL": "recipeBrokerInverse",
+                    "custom": "recipeBrokerInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7406,10 +7481,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeProcessorInverse",
                     "backend": "recipe_processor_Inverse",
                     "database": "ifk_recipe_processor",
-                    "sqlFunctionRef": "p_ifk_recipe_processor",
                     "pretty": "Recipe Processor Inverse",
                     "component": "RecipeProcessorInverse",
-                    "kebab": "recipe-processorInverse"
+                    "kebab": "recipe-processorInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_processor",
+                    "RestAPI": "recipeProcessorInverse",
+                    "GraphQL": "recipeProcessorInverse",
+                    "custom": "recipeProcessorInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7431,10 +7509,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeModelInverse",
                     "backend": "recipe_model_Inverse",
                     "database": "ifk_recipe_model",
-                    "sqlFunctionRef": "p_ifk_recipe_model",
                     "pretty": "Recipe Model Inverse",
                     "component": "RecipeModelInverse",
-                    "kebab": "recipe-modelInverse"
+                    "kebab": "recipe-modelInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_model",
+                    "RestAPI": "recipeModelInverse",
+                    "GraphQL": "recipeModelInverse",
+                    "custom": "recipeModelInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7456,10 +7537,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeDisplayInverse",
                     "backend": "recipe_display_Inverse",
                     "database": "ifk_recipe_display",
-                    "sqlFunctionRef": "p_ifk_recipe_display",
                     "pretty": "Recipe Display Inverse",
                     "component": "RecipeDisplayInverse",
-                    "kebab": "recipe-displayInverse"
+                    "kebab": "recipe-displayInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_display",
+                    "RestAPI": "recipeDisplayInverse",
+                    "GraphQL": "recipeDisplayInverse",
+                    "custom": "recipeDisplayInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7481,10 +7565,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeFunctionInverse",
                     "backend": "recipe_function_Inverse",
                     "database": "ifk_recipe_function",
-                    "sqlFunctionRef": "p_ifk_recipe_function",
                     "pretty": "Recipe Function Inverse",
                     "component": "RecipeFunctionInverse",
-                    "kebab": "recipe-functionInverse"
+                    "kebab": "recipe-functionInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_function",
+                    "RestAPI": "recipeFunctionInverse",
+                    "GraphQL": "recipeFunctionInverse",
+                    "custom": "recipeFunctionInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7506,10 +7593,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeToolInverse",
                     "backend": "recipe_tool_Inverse",
                     "database": "ifk_recipe_tool",
-                    "sqlFunctionRef": "p_ifk_recipe_tool",
                     "pretty": "Recipe Tool Inverse",
                     "component": "RecipeToolInverse",
-                    "kebab": "recipe-toolInverse"
+                    "kebab": "recipe-toolInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_tool",
+                    "RestAPI": "recipeToolInverse",
+                    "GraphQL": "recipeToolInverse",
+                    "custom": "recipeToolInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7841,10 +7931,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "brokerReference",
                     "backend": "broker_reference",
                     "database": "ref_broker",
-                    "sqlFunctionRef": "p_ref_broker",
                     "pretty": "Broker Reference",
                     "component": "BrokerReference",
-                    "kebab": "brokerReference"
+                    "kebab": "brokerReference",
+                    "sqlFunctionRef": "p_ref_broker",
+                    "RestAPI": "brokerReference",
+                    "GraphQL": "brokerReference",
+                    "custom": "brokerReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -7866,10 +7959,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
-                    "sqlFunctionRef": "p_ref_recipe",
                     "pretty": "Recipe Reference",
                     "component": "RecipeReference",
-                    "kebab": "recipeReference"
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8131,10 +8227,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "displayOptionReference",
                     "backend": "display_option_reference",
                     "database": "ref_display_option",
-                    "sqlFunctionRef": "p_ref_display_option",
                     "pretty": "Display Option Reference",
                     "component": "DisplayOptionReference",
-                    "kebab": "display-optionReference"
+                    "kebab": "display-optionReference",
+                    "sqlFunctionRef": "p_ref_display_option",
+                    "RestAPI": "displayOptionReference",
+                    "GraphQL": "displayOptionReference",
+                    "custom": "displayOptionReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8156,10 +8255,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
-                    "sqlFunctionRef": "p_ref_recipe",
                     "pretty": "Recipe Reference",
                     "component": "RecipeReference",
-                    "kebab": "recipeReference"
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8421,10 +8523,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "systemFunctionReference",
                     "backend": "system_function_reference",
                     "database": "ref_system_function",
-                    "sqlFunctionRef": "p_ref_system_function",
                     "pretty": "System Function Reference",
                     "component": "SystemFunctionReference",
-                    "kebab": "system-functionReference"
+                    "kebab": "system-functionReference",
+                    "sqlFunctionRef": "p_ref_system_function",
+                    "RestAPI": "systemFunctionReference",
+                    "GraphQL": "systemFunctionReference",
+                    "custom": "systemFunctionReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8446,10 +8551,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
-                    "sqlFunctionRef": "p_ref_recipe",
                     "pretty": "Recipe Reference",
                     "component": "RecipeReference",
-                    "kebab": "recipeReference"
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8711,10 +8819,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "aiModelReference",
                     "backend": "ai_model_reference",
                     "database": "ref_ai_model",
-                    "sqlFunctionRef": "p_ref_ai_model",
                     "pretty": "Ai Model Reference",
                     "component": "AiModelReference",
-                    "kebab": "ai-modelReference"
+                    "kebab": "ai-modelReference",
+                    "sqlFunctionRef": "p_ref_ai_model",
+                    "RestAPI": "aiModelReference",
+                    "GraphQL": "aiModelReference",
+                    "custom": "aiModelReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8736,10 +8847,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
-                    "sqlFunctionRef": "p_ref_recipe",
                     "pretty": "Recipe Reference",
                     "component": "RecipeReference",
-                    "kebab": "recipeReference"
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8962,10 +9076,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "processorReference",
                     "backend": "processor_reference",
                     "database": "ref_processor",
-                    "sqlFunctionRef": "p_ref_processor",
                     "pretty": "Processor Reference",
                     "component": "ProcessorReference",
-                    "kebab": "processorReference"
+                    "kebab": "processorReference",
+                    "sqlFunctionRef": "p_ref_processor",
+                    "RestAPI": "processorReference",
+                    "GraphQL": "processorReference",
+                    "custom": "processorReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -8987,10 +9104,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
-                    "sqlFunctionRef": "p_ref_recipe",
                     "pretty": "Recipe Reference",
                     "component": "RecipeReference",
-                    "kebab": "recipeReference"
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9213,10 +9333,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
-                    "sqlFunctionRef": "p_ref_recipe",
                     "pretty": "Recipe Reference",
                     "component": "RecipeReference",
-                    "kebab": "recipeReference"
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9238,10 +9361,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "toolReference",
                     "backend": "tool_reference",
                     "database": "ref_tool",
-                    "sqlFunctionRef": "p_ref_tool",
                     "pretty": "Tool Reference",
                     "component": "ToolReference",
-                    "kebab": "toolReference"
+                    "kebab": "toolReference",
+                    "sqlFunctionRef": "p_ref_tool",
+                    "RestAPI": "toolReference",
+                    "GraphQL": "toolReference",
+                    "custom": "toolReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9542,10 +9668,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "brokerReference",
                     "backend": "broker_reference",
                     "database": "ref_broker",
-                    "sqlFunctionRef": "p_ref_broker",
                     "pretty": "Broker Reference",
                     "component": "BrokerReference",
-                    "kebab": "brokerReference"
+                    "kebab": "brokerReference",
+                    "sqlFunctionRef": "p_ref_broker",
+                    "RestAPI": "brokerReference",
+                    "GraphQL": "brokerReference",
+                    "custom": "brokerReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9567,10 +9696,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "systemFunctionInverse",
                     "backend": "system_function_Inverse",
                     "database": "ifk_system_function",
-                    "sqlFunctionRef": "p_ifk_system_function",
                     "pretty": "System Function Inverse",
                     "component": "SystemFunctionInverse",
-                    "kebab": "system-functionInverse"
+                    "kebab": "system-functionInverse",
+                    "sqlFunctionRef": "p_ifk_system_function",
+                    "RestAPI": "systemFunctionInverse",
+                    "GraphQL": "systemFunctionInverse",
+                    "custom": "systemFunctionInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9592,10 +9724,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "argInverse",
                     "backend": "arg_Inverse",
                     "database": "ifk_arg",
-                    "sqlFunctionRef": "p_ifk_arg",
                     "pretty": "Arg Inverse",
                     "component": "ArgInverse",
-                    "kebab": "argInverse"
+                    "kebab": "argInverse",
+                    "sqlFunctionRef": "p_ifk_arg",
+                    "RestAPI": "argInverse",
+                    "GraphQL": "argInverse",
+                    "custom": "argInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9609,7 +9744,7 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
                 databaseTable: 'arg',
             },
         },
@@ -9942,10 +10077,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "registeredFunctionReference",
                     "backend": "registered_function_reference",
                     "database": "ref_registered_function",
-                    "sqlFunctionRef": "p_ref_registered_function",
                     "pretty": "Registered Function Reference",
                     "component": "RegisteredFunctionReference",
-                    "kebab": "registered-functionReference"
+                    "kebab": "registered-functionReference",
+                    "sqlFunctionRef": "p_ref_registered_function",
+                    "RestAPI": "registeredFunctionReference",
+                    "GraphQL": "registeredFunctionReference",
+                    "custom": "registeredFunctionReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9967,10 +10105,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "toolInverse",
                     "backend": "tool_Inverse",
                     "database": "ifk_tool",
-                    "sqlFunctionRef": "p_ifk_tool",
                     "pretty": "Tool Inverse",
                     "component": "ToolInverse",
-                    "kebab": "toolInverse"
+                    "kebab": "toolInverse",
+                    "sqlFunctionRef": "p_ifk_tool",
+                    "RestAPI": "toolInverse",
+                    "GraphQL": "toolInverse",
+                    "custom": "toolInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -9992,10 +10133,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeFunctionInverse",
                     "backend": "recipe_function_Inverse",
                     "database": "ifk_recipe_function",
-                    "sqlFunctionRef": "p_ifk_recipe_function",
                     "pretty": "Recipe Function Inverse",
                     "component": "RecipeFunctionInverse",
-                    "kebab": "recipe-functionInverse"
+                    "kebab": "recipe-functionInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_function",
+                    "RestAPI": "recipeFunctionInverse",
+                    "GraphQL": "recipeFunctionInverse",
+                    "custom": "recipeFunctionInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -10388,10 +10532,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "systemFunctionReference",
                     "backend": "system_function_reference",
                     "database": "ref_system_function",
-                    "sqlFunctionRef": "p_ref_system_function",
                     "pretty": "System Function Reference",
                     "component": "SystemFunctionReference",
-                    "kebab": "system-functionReference"
+                    "kebab": "system-functionReference",
+                    "sqlFunctionRef": "p_ref_system_function",
+                    "RestAPI": "systemFunctionReference",
+                    "GraphQL": "systemFunctionReference",
+                    "custom": "systemFunctionReference"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -10413,10 +10560,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "recipeToolInverse",
                     "backend": "recipe_tool_Inverse",
                     "database": "ifk_recipe_tool",
-                    "sqlFunctionRef": "p_ifk_recipe_tool",
                     "pretty": "Recipe Tool Inverse",
                     "component": "RecipeToolInverse",
-                    "kebab": "recipe-toolInverse"
+                    "kebab": "recipe-toolInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_tool",
+                    "RestAPI": "recipeToolInverse",
+                    "GraphQL": "recipeToolInverse",
+                    "custom": "recipeToolInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -10646,10 +10796,13 @@ export const initialAutomationTableSchema = {
                     "frontend": "actionInverse",
                     "backend": "action_Inverse",
                     "database": "ifk_action",
-                    "sqlFunctionRef": "p_ifk_action",
                     "pretty": "Action Inverse",
                     "component": "ActionInverse",
-                    "kebab": "actionInverse"
+                    "kebab": "actionInverse",
+                    "sqlFunctionRef": "p_ifk_action",
+                    "RestAPI": "actionInverse",
+                    "GraphQL": "actionInverse",
+                    "custom": "actionInverse"
                 } as const,
                 dataType: 'object' as const,
                 isRequired: false,
@@ -10898,7 +11051,7 @@ export type InitialTableSchema = {
             fieldNameVariations: {
                 [key in NameFormat]?: string;
             };
-            dataType: FieldDataType;
+            dataType: FieldDataOptionsType;
             isArray: boolean;
             structure: DataStructure;
             isNative: boolean;

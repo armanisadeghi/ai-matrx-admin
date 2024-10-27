@@ -1,187 +1,158 @@
 // utils/supabase/api-wrapper.ts
 
-import {SupabaseClient} from '@supabase/supabase-js';
-import {supabase} from '@/utils/supabase/client';
-import {PostgrestError} from '@supabase/postgrest-js';
-import {AutomationTableName} from "@/types/AutomationSchemaTypes";
-import {
-    convertData,
-    getFieldNameMapping, getGlobalCache, initializeSchemaSystem,
-    resolveFieldKey,
-    resolveTableKey,
-    StringFieldKey,
-    TableNameVariant
-} from "@/utils/schema/precomputeUtil";
+
+import {PostgrestError, PostgrestFilterBuilder} from '@supabase/postgrest-js';
+import {SupabaseClient} from "@supabase/supabase-js";
 import {
     AutomationTableStructure,
     TableNameFrontend,
-    TableNameDatabase
+    TableNameDatabase,
+    TableName,
+    TableNameVariation,
+    FieldKey,
+    TableNameVariant,
+    TableKeys,
+    GenerateTableType,
+    AutomationTable,
+    GenerateDatabaseTableType,
+    GenerateFrontendTableType,
+    SingleStructureFields
 } from '@/types/automationTableTypes';
+import {useSchema} from "@/lib/hooks/useSchema";
+import {useSchemaResolution} from "@/providers/SchemaProvider";
+import {useSchemaTransform} from "@/lib/hooks/useSchemaTransformers";
+import {supabase} from "@/utils/supabase/client";
 
 const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
 
 const trace: string[] = ['anotherFile'];
 
+type QueryBuilder = PostgrestFilterBuilder<any, any, any>;
 
-export type QueryOptions<T extends AutomationTableName> = {
-    filters?: Partial<Record<StringFieldKey<T>, unknown>>;
+export type ConvertToDatabase<TTable extends TableKeys> = {
+    [K in keyof GenerateFrontendTableType<TTable>]: GenerateDatabaseTableType<TTable>[keyof GenerateDatabaseTableType<TTable>];
+};
+
+export type ConvertToFrontend<TTable extends TableKeys> = {
+    [K in keyof GenerateDatabaseTableType<TTable>]: GenerateFrontendTableType<TTable>[keyof GenerateFrontendTableType<TTable>];
+};
+
+export type QueryOptions<TTable extends TableKeys> = {
+    filters?: Partial<GenerateFrontendTableType<TTable>>;
     sorts?: Array<{
-        column: StringFieldKey<T>;
+        column: keyof GenerateFrontendTableType<TTable>;
         ascending?: boolean;
     }>;
     limit?: number;
     offset?: number;
-    columns?: Array<StringFieldKey<T>>;
+    columns?: Array<keyof GenerateFrontendTableType<TTable>>;
 };
 
-type SubscriptionCallback = (data: unknown[]) => void;
+// Hook to initialize the wrapper with strictly typed schema information
+export function useTableWrapper(requestTableName: TableNameVariant) {
+    const {schema} = useSchema();
+    const {
+        resolveTableKey,
+        resolveFieldKey,
+        resolveTableAndFieldKeys,
+        getTableNameInFormat,
+        resolveTableNameInFormat,
+        getFieldNameInFormat,
+        resolveFieldNameInFormat,
+        findPrimaryKeyFieldKey,
+        findDisplayFieldKey,
+        getFieldData,
+        findFieldsByCondition,
+        findFieldsWithDefaultGeneratorFunction,
+        getFieldsWithAttribute,
+    } = useSchemaResolution();  // Importing all for now, just to know what we have available.
+    const {formatTransformers} = useSchemaTransform();
 
-// Schema format interfaces
-export interface ApiWrapperSchemaFormats<T extends AutomationTableName> {
-    schema: AutomationTableStructure[T];
-    frontendName: TableNameFrontend<T>;
-    databaseName: TableNameDatabase<T>;
-}
+    const tableKey = resolveTableKey(requestTableName);
+    const tableSchema = schema[tableKey];
+    const primaryKeyField = findPrimaryKeyFieldKey(tableKey);
+    const tableNameDbFormat = getTableNameInFormat(tableKey, 'database');
 
-// Helper function to get schema formats
-function getApiWrapperSchemaFormats<T extends AutomationTableName>(
-    requestTableName: TableNameVariant
-): ApiWrapperSchemaFormats<T> {
-    let globalCache = getGlobalCache(trace);
-
-    console.log('getApiWrapperSchemaFormats RequestTableName:', requestTableName);
-
-    if (!globalCache) {
-        globalCache = initializeSchemaSystem(trace);
-    }
-
-    if (!globalCache) throw new Error('Schema system not initialized');
-
-    const tableKey = resolveTableKey(requestTableName) as T;
-    console.log('getApiWrapperSchemaFormats TableKey:', tableKey);
-    const table = globalCache.schema[tableKey];
-    console.log('getApiWrapperSchemaFormats Table:', table);
-
-    if (!table) {
-        throw new Error(`Schema not found for table '${requestTableName}'`);
+    if (!primaryKeyField) {
+        throw new Error(`No primary key found for table ${requestTableName}`);
     }
 
     return {
-        schema: table,
-        frontendName: table.entityNameMappings.frontend as TableNameFrontend<T>,
-        databaseName: table.entityNameMappings.database as TableNameDatabase<T>
-    };
+        schema: tableSchema,
+        tableNameDbFormat,
+        primaryKeyField,
+        formatTransformers
+    } as const;
 }
 
-class DatabaseApiWrapper<T extends AutomationTableName> {
-    private client: SupabaseClient;
-    private requestTableName: TableNameVariant;
-    private fullSchema: AutomationTableStructure[T];
-    private frontendTableName: TableNameFrontend<T>;
-    private databaseTableName: TableNameDatabase<T>;
-    private primaryKeyField: StringFieldKey<T>;
+export class DatabaseApiWrapper<TTable extends TableKeys> {
+    private readonly client: SupabaseClient;
+    private readonly requestTableName: TableNameVariant;
+    private readonly tableNameDbFormat: TableNameDatabase<TTable>;
+    private readonly tableSchema: AutomationTable<TTable>;
+    private readonly primaryKeyField: FieldKey<TTable>;
+    private readonly formatTransformers: ReturnType<typeof useSchemaTransform>['formatTransformers'];
+    private readonly subscriptions: Map<string, unknown> = new Map();
+    private readonly queryBuilders: Map<string, unknown> = new Map();
 
-    private subscriptions: Map<string, unknown> = new Map();
-    private queryBuilders: Map<string, unknown> = new Map();
-
-
-    constructor(requestTableName: TableNameVariant) {
+    constructor(
+        requestTableName: TableNameVariant,
+        tableNameDbFormat: TableNameDatabase<TTable>,
+        schema: AutomationTable<TTable>,
+        primaryKeyField: FieldKey<TTable>,
+        formatTransformers: ReturnType<typeof useSchemaTransform>['formatTransformers']
+    ) {
         this.client = supabase;
         this.requestTableName = requestTableName;
-
-        const { schema, frontendName, databaseName, primaryKey } = getApiWrapperSchemaFormats<T>(requestTableName);
-
-        this.fullSchema = schema;
-        this.frontendTableName = frontendName;
-        this.databaseTableName = databaseName;
-        this.primaryKeyField = primaryKey;
+        this.tableNameDbFormat = tableNameDbFormat;
+        this.tableSchema = schema;
+        this.primaryKeyField = primaryKeyField;
+        this.formatTransformers = formatTransformers;
     }
 
+    private buildBaseQuery(): QueryBuilder {
+        return this.client.from(this.tableNameDbFormat).select('*');
+    }
 
-    private findPrimaryKeyField(): StringFieldKey<T> {
-        const fields = this.fullSchema.entityFields;
-        const primaryKeyEntry = Object.entries(fields).find(
-            ([_, field]) => field.isPrimaryKey
+    private convertToDatabase(
+        frontendData: Partial<GenerateFrontendTableType<TTable>>
+    ): GenerateDatabaseTableType<TTable> {
+        return this.formatTransformers.toDatabase(
+            this.requestTableName,
+            frontendData as unknown as Partial<GenerateTableType<TTable>>
         );
-
-        if (!primaryKeyEntry) {
-            throw new Error(`Primary key not found for table '${this.requestTableName}'`);
-        }
-
-        return primaryKeyEntry[0] as StringFieldKey<T>;
     }
 
-
-    private isPostgrestError(error: any): error is PostgrestError {
-        return error && typeof error.message === 'string' && typeof error.code === 'string';
-    }
-
-    private handleError(error: any, context: string): any {
-        if (this.isPostgrestError(error)) {
-            console.error(`PostgrestError in ${context}: ${error.message}`);
-        } else if (error instanceof Error) {
-            console.error(`Error in ${context}: ${error.message}`);
-        } else {
-            console.error(`Unknown error in ${context}: ${error}`);
-        }
-
-        return {
-            error: true,
-            message: `An error occurred while processing your request in ${context}.`,
-        };
-    }
-
-    private convertRequest(data: unknown): unknown {
-        return convertData({
-            data,
-            sourceFormat: 'frontend',
-            targetFormat: 'database',
-            tableName: this.requestTableName,
-            options: undefined,
-            processedEntities: undefined,
-        });
-    }
-
-    private convertResponse(data: unknown): unknown {
-        return convertData({
-            data,
-            sourceFormat: 'database',
-            targetFormat: 'frontend',
-            tableName: this.requestTableName,
-            options: undefined,
-            processedEntities: undefined,
-        });
+    private convertToFrontend(
+        databaseData: GenerateDatabaseTableType<TTable>
+    ): GenerateFrontendTableType<TTable> {
+        return this.formatTransformers.toFrontend(
+            this.requestTableName,
+            databaseData as unknown as Partial<GenerateTableType<TTable>>
+        );
     }
 
     private applyQueryOptions(
-        query: any,
-        options: QueryOptions<T>
-    ): any {
+        query: QueryBuilder,
+        options: QueryOptions<TTable>
+    ): QueryBuilder {
         if (options.filters) {
-            for (const [key, value] of Object.entries(options.filters)) {
-                const dbField = resolveFieldKey(this.requestTableName as T, key);
-                const dbFieldName = getFieldNameMapping(
-                    this.requestTableName as T,
-                    dbField,
-                    'database'
+            for (const [key, value] of Object.entries(options.filters) as [keyof GenerateFrontendTableType<TTable>, any][]) {
+                const dbFieldName = this.formatTransformers.toDatabase(
+                    this.requestTableName,
+                    { [key]: undefined }
                 );
-                if (dbFieldName) {
-                    query = query.eq(dbFieldName, value);
-                }
+                query = query.eq(Object.keys(dbFieldName)[0], value);
             }
         }
 
         if (options.sorts) {
-            for (const sort of options.sorts) {
-                const dbField = resolveFieldKey(this.requestTableName as T, sort.column);
-                const dbFieldName = getFieldNameMapping(
-                    this.requestTableName as T,
-                    dbField,
-                    'database'
+            for (const { column, ascending = true } of options.sorts) {
+                const dbFieldName = this.formatTransformers.toDatabase(
+                    this.requestTableName,
+                    { [column]: undefined }
                 );
-                if (dbFieldName) {
-                    query = query.order(dbFieldName, { ascending: sort.ascending ?? true });
-                }
+                query = query.order(Object.keys(dbFieldName)[0], { ascending });
             }
         }
 
@@ -190,51 +161,102 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
         }
 
         if (options.offset) {
-            query = query.range(options.offset, options.offset + (options.limit || 0) - 1);
+            query = query.range(
+                options.offset,
+                options.offset + (options.limit || 0) - 1
+            );
         }
 
-        if (options.columns) {
-            const dbColumns = options.columns.map(col => {
-                const dbField = resolveFieldKey(this.requestTableName as T, col);
-                return getFieldNameMapping(
-                    this.requestTableName as T,
-                    dbField,
-                    'database'
+        if (options.columns?.length) {
+            const dbColumnNames = options.columns.map(column => {
+                const dbFieldName = this.formatTransformers.toDatabase(
+                    this.requestTableName,
+                    { [column]: undefined }
                 );
-            }).filter(Boolean);
-            query = query.select(dbColumns.join(', '));
+                return Object.keys(dbFieldName)[0];
+            });
+            // Using the base query's select to maintain proper typing
+            query = this.client
+                .from(this.tableNameDbFormat)
+                .select(dbColumnNames.join(',')) as QueryBuilder;
         }
 
         return query;
     }
 
+    private isPostgrestError(error: unknown): error is PostgrestError {
+        return Boolean(
+            error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            'code' in error &&
+            typeof (error as any).message === 'string' &&
+            typeof (error as any).code === 'string'
+        );
+    }
+
+    protected async fetchSingle(
+        query: QueryBuilder
+    ): Promise<GenerateFrontendTableType<TTable> | null> {
+        const { data, error } = await query.single();
+
+        if (error || !data) {
+            return null;
+        }
+
+        return this.formatTransformers.toFrontend(
+            this.requestTableName,
+            data
+        );
+    }
 
     async fetchByPrimaryKey(
         primaryKeyValue: string | number,
-        options: Omit<QueryOptions<T>, 'limit' | 'offset'> = {}
-    ): Promise<Record<StringFieldKey<T>, unknown> | null> {
-        const primaryKeyField = this.primaryKeyField;
-        const dbFieldName = getFieldNameMapping(
-            this.requestTableName as T,
-            primaryKeyField,
-            'database'
-        );
+        options: Omit<QueryOptions<TTable>, 'limit' | 'offset'> = {}
+    ): Promise<GenerateFrontendTableType<TTable> | null> {
+        const primaryKeyDbName = Object.keys(
+            this.formatTransformers.toDatabase(
+                this.requestTableName,
+                { [this.primaryKeyField]: undefined }
+            )
+        )[0];
 
-        let query = this.client
-            .from(this.databaseTableName)
-            .select('*')
-            .eq(dbFieldName, primaryKeyValue);
+        let query = this.buildBaseQuery().eq(primaryKeyDbName, primaryKeyValue);
 
-        query = this.applyQueryOptions(query, options);
-
-        try {
-            const { data, error } = await query.single();
-            if (error) throw error;
-            return data ? this.convertResponse(data) : null;
-        } catch (error) {
-            return this.handleError(error, `fetchByPrimaryKey for ${this.requestTableName}`);
+        if (Object.keys(options).length > 0) {
+            query = this.applyQueryOptions(query, options);
         }
+
+        return this.fetchSingle(query);
     }
+
+
+    static create<TTable extends TableKeys>(requestTableName: TableNameVariant): DatabaseApiWrapper<TTable> {
+        const {schema, primaryKeyField, formatTransformers} = useTableWrapper(requestTableName);
+        return new DatabaseApiWrapper<TTable>(
+            requestTableName,
+            tableNameDbFormat as TableNameDatabase<TTable>,
+            schema as AutomationTable<TTable>,
+            primaryKeyField as FieldKey<TTable>,
+            formatTransformers
+        );
+    }
+
+    async findOne(id: string | number): Promise<GenerateFrontendTableType<TTable> | null> {
+        const databaseTableName = this.convertToDatabase({});
+        const {data, error} = await this.client
+            .from(Object.keys(databaseTableName)[0])
+            .select('*')
+            .eq(this.primaryKeyField, id)
+            .single();
+
+        if (error || !data) {
+            return null;
+        }
+
+        return this.convertToFrontend(data as GenerateDatabaseTableType<TTable>);
+    }
+
 
     async fetchByField<F extends StringFieldKey<T>>(
         fieldName: F,
@@ -255,7 +277,7 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
         query = this.applyQueryOptions(query, options);
 
         try {
-            const { data, error } = await query;
+            const {data, error} = await query;
             if (error) throw error;
             return data ? data.map(item => this.convertResponse(item)) : [];
         } catch (error) {
@@ -298,7 +320,7 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
         query = this.applyQueryOptions(query, options);
 
         try {
-            const { data, error } = await query.single();
+            const {data, error} = await query.single();
             if (error) throw error;
             return data;
         } catch (error) {
@@ -509,9 +531,9 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
         query = this.applyQueryOptions(query, options);
 
         try {
-        const {data, error} = await query;
+            const {data, error} = await query;
 
-        if (error) throw error;
+            if (error) throw error;
             return data.map(item => this.convertResponse(item));
         } catch (error) {
             console.error(`Error in fetchAll: ${error}`);
@@ -1032,3 +1054,33 @@ class DatabaseApiWrapper<T extends AutomationTableName> {
 //
 // type PostgrestList = Array<Record<string, any>>;
 // type PostgrestMap = Record<string, any>;
+
+
+// function getApiWrapperSchemaFormats<T extends TableNameFrontend<TableName>>(
+//     requestTableName: TableNameVariant
+// ): ApiWrapperSchemaFormats<T> {
+//     let globalCache = getGlobalCache(trace);
+//
+//     console.log('getApiWrapperSchemaFormats RequestTableName:', requestTableName);
+//
+//     if (!globalCache) {
+//         globalCache = initializeSchemaSystem(trace);
+//     }
+//
+//     if (!globalCache) throw new Error('Schema system not initialized');
+//
+//     const tableKey = resolveTableKey(requestTableName) as T;
+//     console.log('getApiWrapperSchemaFormats TableKey:', tableKey);
+//     const table = globalCache.schema[tableKey];
+//     console.log('getApiWrapperSchemaFormats Table:', table);
+//
+//     if (!table) {
+//         throw new Error(`Schema not found for table '${requestTableName}'`);
+//     }
+//
+//     return {
+//         schema: table,
+//         frontendName: table.entityNameMappings.frontend as TableNameFrontend<T>,
+//         databaseName: table.entityNameMappings.database as TableNameDatabase<T>
+//     };
+// }

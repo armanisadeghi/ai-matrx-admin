@@ -2,13 +2,12 @@
 
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {
-    TableNameMap,
+    AutomationTableStructure,
     FieldNameMap,
-    ReverseTableNameMap,
     ReverseFieldNameMap,
-    UnifiedSchemaCache
-} from '@/utils/schema/precomputeUtil';
-import {AutomationTableStructure} from "@/types/automationTableTypes";
+    ReverseTableNameMap,
+    TableNameMap, UnifiedSchemaCache
+} from "@/types/automationTableTypes";
 
 interface SchemaState {
     automationSchema: Readonly<AutomationTableStructure> | null;

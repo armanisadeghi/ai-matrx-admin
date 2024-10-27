@@ -5,7 +5,7 @@ import {AutomationTableStructure} from "@/types/automationTableTypes";
 
 export type TypeBrand<T> = { _typeBrand: T };
 
-export type FieldDataType =
+export type FieldDataOptionsType =
     | 'string'
     | 'number'
     | 'boolean'

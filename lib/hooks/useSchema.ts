@@ -2,7 +2,7 @@
 'use client';
 
 import {useContext, useCallback, useMemo} from 'react';
-import {useNameResolution, useSchema as useBaseSchema} from '@/providers/SchemaProvider';
+import {useSchemaResolution, useSchema as useBaseSchema} from '@/providers/SchemaProvider';
 import type {
     AutomationTableStructure,
     AutomationTable,
@@ -141,7 +141,7 @@ export function useSchema(): UseSchemaResult {
         getFieldNameInFormat,
         resolveTableKey,
         resolveFieldKey
-    } = useNameResolution();
+    } = useSchemaResolution();
 
     const allTableNames = useMemo(() =>
             Object.keys(schema) as TableNames[],
@@ -221,6 +221,8 @@ export function useSchema(): UseSchemaResult {
         };
 
         return formattedSchema as AutomationTableStructure[T];
+    }, [schema, resolveTableKey, getFieldNameInFormat, getTableNameInFormat]);
+
 
         const getApiWrapperSchema = useCallback(<T extends AutomationTableName>(
             tableVariant: string
@@ -307,7 +309,7 @@ export function useSchema(): UseSchemaResult {
             obj: T,
             config: Partial<RemoveEmptyConfig> = defaultRemoveConfig
         ): Partial<T> => {
-            const finalConfig = { ...defaultRemoveConfig, ...config };
+            const finalConfig = {...defaultRemoveConfig, ...config};
 
             return Object.entries(obj).reduce((acc, [key, value]) => {
                 const shouldKeep = (() => {
@@ -357,38 +359,32 @@ export function useSchema(): UseSchemaResult {
         }, []);
 
 
+        const convertDataFormatValidated = useCallback(<T extends AutomationTableName>(
+            tableVariant: AllTableNameVariations,
+            data: Partial<Record<AllFieldNameVariations<T>, any>>,
+            fromFormat: NameFormat,
+            toFormat: NameFormat
+        ): Partial<Record<keyof TableFields<T>, any>> => {
+            const validatedData = validateAndTransformData<T>(tableVariant, data, fromFormat);
+            const tableKey = resolveTableName(tableVariant) as T;
 
+            return Object.entries(validatedData).reduce<Partial<Record<keyof TableFields<T>, any>>>((acc, [key, value]) => {
+                const fieldKey = resolveFieldName(
+                    tableKey,
+                    key as AllFieldNameVariations<T>
+                );
 
+                // Use the FieldVariantMap type for the new key
+                const newKey = getFieldNameInFormat(
+                    tableKey,
+                    fieldKey,
+                    toFormat
+                ) as keyof TableFields<T>;
 
-
-    const convertDataFormatValidated = useCallback(<T extends AutomationTableName>(
-        tableVariant: AllTableNameVariations,
-        data: Partial<Record<AllFieldNameVariations<T>, any>>,
-        fromFormat: NameFormat,
-        toFormat: NameFormat
-    ): Partial<Record<keyof TableFields<T>, any>> => {
-        const validatedData = validateAndTransformData<T>(tableVariant, data, fromFormat);
-        const tableKey = resolveTableName(tableVariant) as T;
-
-        return Object.entries(validatedData).reduce<Partial<Record<keyof TableFields<T>, any>>>((acc, [key, value]) => {
-            const fieldKey = resolveFieldName(
-                tableKey,
-                key as AllFieldNameVariations<T>
-            );
-
-            // Use the FieldVariantMap type for the new key
-            const newKey = getFieldNameInFormat(
-                tableKey,
-                fieldKey,
-                toFormat
-            ) as keyof TableFields<T>;
-
-            acc[newKey] = value;
-            return acc;
-        }, {});
-    }, [resolveTableName, resolveFieldName, getFieldNameInFormat]);
-
-
+                acc[newKey] = value;
+                return acc;
+            }, {});
+        }, [resolveTableName, resolveFieldName, getFieldNameInFormat]);
 
 
         const resolveTableSchema = useCallback(<T extends AutomationTableName>(
@@ -420,28 +416,28 @@ export function useSchema(): UseSchemaResult {
             }
         }, [resolveTableSchema, resolveTableKey, resolveFieldKey]);
 
-        const getPrimaryKey = useCallback(<T extends AutomationTableName>(
-            tableVariant: string
-        ): keyof TableFields<T> | undefined => {
-            const tableSchema = resolveTableSchema<T>(tableVariant);
-            if (!tableSchema) return undefined;
-
-            const primaryField = Object.entries(tableSchema.entityFields)
-                .find(([_, field]) => field.isPrimaryKey);
-
-            return primaryField?.[0] as keyof TableFields<T>;
-        }, [resolveTableSchema]);
-
-        const getDisplayFields = useCallback(<T extends AutomationTableName>(
-            tableVariant: string
-        ): Array<keyof TableFields<T>> => {
-            const tableSchema = resolveTableSchema<T>(tableVariant);
-            if (!tableSchema) return [];
-
-            return Object.entries(tableSchema.entityFields)
-                .filter(([_, field]) => field.isDisplayField)
-                .map(([fieldName]) => fieldName as keyof TableFields<T>);
-        }, [resolveTableSchema]);
+        // const getPrimaryKey = useCallback(<T extends AutomationTableName>(
+        //     tableVariant: string
+        // ): keyof TableFields<T> | undefined => {
+        //     const tableSchema = resolveTableSchema<T>(tableVariant);
+        //     if (!tableSchema) return undefined;
+        //
+        //     const primaryField = Object.entries(tableSchema.entityFields)
+        //         .find(([_, field]) => field.isPrimaryKey);
+        //
+        //     return primaryField?.[0] as keyof TableFields<T>;
+        // }, [resolveTableSchema]);
+        //
+        // const getDisplayFields = useCallback(<T extends AutomationTableName>(
+        //     tableVariant: string
+        // ): Array<keyof TableFields<T>> => {
+        //     const tableSchema = resolveTableSchema<T>(tableVariant);
+        //     if (!tableSchema) return [];
+        //
+        //     return Object.entries(tableSchema.entityFields)
+        //         .filter(([_, field]) => field.isDisplayField)
+        //         .map(([fieldName]) => fieldName as keyof TableFields<T>);
+        // }, [resolveTableSchema]);
 
         const getTableRelationships = useCallback(<T extends AutomationTableName>(
             tableVariant: string
@@ -462,300 +458,291 @@ export function useSchema(): UseSchemaResult {
         }, [getTableRelationships]);
 
 
-
-
-
-
-
         const validateFieldValue = useCallback((
-        tableVariant: string,
-        fieldVariant: string,
-        value: any
-    ): boolean => {
-        const fieldSchema = getFieldSchema(tableVariant, fieldVariant);
-        if (!fieldSchema) return false;
+            tableVariant: string,
+            fieldVariant: string,
+            value: any
+        ): boolean => {
+            const fieldSchema = getFieldSchema(tableVariant, fieldVariant);
+            if (!fieldSchema) return false;
 
 
-        // TODO: validate data type for now.
-        // Add your validation logic here based on fieldSchema.validationFunctions
-        // This is a basic example
+            // TODO: validate data type for now.
+            // Add your validation logic here based on fieldSchema.validationFunctions
+            // This is a basic example
 
 
-        if (fieldSchema.isRequired && (value === null || value === undefined)) {
-            return false;
-        }
+            if (fieldSchema.isRequired && (value === null || value === undefined)) {
+                return false;
+            }
 
-        return true;
-    }, [getFieldSchema]);
-
-
+            return true;
+        }, [getFieldSchema]);
 
 
+        const handleRelationshipField = useCallback((
+            fieldName: string,
+            value: any,
+            fieldSchema: AutomationTable['entityFields'][string],
+            tableName: string
+        ) => {
+            const relatedTable = fieldSchema.databaseTable;
+            const relationshipType = fieldSchema.structure;
 
-    const handleRelationshipField = useCallback((
-        fieldName: string,
-        value: any,
-        fieldSchema: AutomationTable['entityFields'][string],
-        tableName: string
-    ) => {
-        const relatedTable = fieldSchema.databaseTable;
-        const relationshipType = fieldSchema.structure;
+            if (relationshipType === 'foreignKey') {
+                if (typeof value === 'string' || typeof value === 'number') {
+                    return {
+                        type: 'fk',
+                        data: {[fieldName]: value},
+                        appData: {[`${fieldName}Fk`]: value},
+                        table: relatedTable
+                    };
+                } else if (typeof value === 'object' && 'id' in value) {
+                    return {
+                        type: 'fk',
+                        data: {[fieldName]: value.id},
+                        appData: {[`${fieldName}Object`]: value},
+                        table: relatedTable
+                    };
+                }
+                throw new Error(`Invalid value for foreign key field: ${fieldName}`);
+            }
 
-        if (relationshipType === 'foreignKey') {
-            if (typeof value === 'string' || typeof value === 'number') {
+            if (relationshipType === 'inverseForeignKey') {
                 return {
-                    type: 'fk',
-                    data: {[fieldName]: value},
-                    appData: {[`${fieldName}Fk`]: value},
-                    table: relatedTable
-                };
-            } else if (typeof value === 'object' && 'id' in value) {
-                return {
-                    type: 'fk',
-                    data: {[fieldName]: value.id},
-                    appData: {[`${fieldName}Object`]: value},
-                    table: relatedTable
+                    type: 'ifk',
+                    table: relatedTable,
+                    data: value,
+                    related_column: `${fieldName}_id`
                 };
             }
-            throw new Error(`Invalid value for foreign key field: ${fieldName}`);
-        }
 
-        if (relationshipType === 'inverseForeignKey') {
-            return {
-                type: 'ifk',
-                table: relatedTable,
-                data: value,
-                related_column: `${fieldName}_id`
-            };
-        }
+            throw new Error(`Unsupported structure type: ${relationshipType}`);
+        }, []);
 
-        throw new Error(`Unsupported structure type: ${relationshipType}`);
-    }, []);
+        const processDataForInsert = useCallback((
+            tableVariant: string,
+            data: Record<string, any>
+        ): { callMethod: 'simple' | 'fk' | 'ifk' | 'fkAndIfk', processedData: Record<string, any> } => {
+            const tableKey = resolveTableName(tableVariant);
+            const tableSchema = getSchemaInFormat(tableKey, 'database');
 
-    const processDataForInsert = useCallback((
-        tableVariant: string,
-        data: Record<string, any>
-    ): { callMethod: 'simple' | 'fk' | 'ifk' | 'fkAndIfk', processedData: Record<string, any> } => {
-        const tableKey = resolveTableName(tableVariant);
-        const tableSchema = getSchemaInFormat(tableKey, 'database');
+            if (!tableSchema) {
+                console.warn(`No schema found for table: ${tableVariant}. Returning original data.`);
+                return {
+                    callMethod: 'simple',
+                    processedData: data
+                };
+            }
 
-        if (!tableSchema) {
-            console.warn(`No schema found for table: ${tableVariant}. Returning original data.`);
-            return {
-                callMethod: 'simple',
-                processedData: data
-            };
-        }
+            const cleanedData = removeEmptyFields(data);
+            let result: Record<string, any> = {};
+            const relatedTables: Array<Record<string, any>> = [];
+            let hasForeignKey = false;
+            let hasInverseForeignKey = false;
 
-        const cleanedData = removeEmptyFields(data);
-        let result: Record<string, any> = {};
-        const relatedTables: Array<Record<string, any>> = [];
-        let hasForeignKey = false;
-        let hasInverseForeignKey = false;
+            for (const [fieldName, field] of Object.entries(tableSchema.entityFields)) {
+                const dbFieldName = getFieldNameInFormat(tableKey, fieldName, 'database');
 
-        for (const [fieldName, field] of Object.entries(tableSchema.entityFields)) {
-            const dbFieldName = getFieldNameInFormat(tableKey, fieldName, 'database');
+                if (cleanedData.hasOwnProperty(dbFieldName)) {
+                    const value = cleanedData[dbFieldName];
 
-            if (cleanedData.hasOwnProperty(dbFieldName)) {
-                const value = cleanedData[dbFieldName];
+                    if (field.structure === 'single') {
+                        result[dbFieldName] = value;
+                    } else if (['foreignKey', 'inverseForeignKey'].includes(field.structure)) {
+                        const relationship = handleRelationshipField(
+                            dbFieldName,
+                            value,
+                            field,
+                            tableKey
+                        );
 
-                if (field.structure === 'single') {
-                    result[dbFieldName] = value;
-                } else if (['foreignKey', 'inverseForeignKey'].includes(field.structure)) {
-                    const relationship = handleRelationshipField(
-                        dbFieldName,
-                        value,
-                        field,
-                        tableKey
-                    );
-
-                    if (relationship.type === 'fk') {
-                        hasForeignKey = true;
-                        result = {...result, ...relationship.data, ...relationship.appData};
-                    } else if (relationship.type === 'ifk') {
-                        hasInverseForeignKey = true;
-                        relatedTables.push({
-                            table: relationship.table,
-                            data: relationship.data,
-                            related_column: relationship.related_column
-                        });
+                        if (relationship.type === 'fk') {
+                            hasForeignKey = true;
+                            result = {...result, ...relationship.data, ...relationship.appData};
+                        } else if (relationship.type === 'ifk') {
+                            hasInverseForeignKey = true;
+                            relatedTables.push({
+                                table: relationship.table,
+                                data: relationship.data,
+                                related_column: relationship.related_column
+                            });
+                        }
                     }
                 }
             }
-        }
 
-        // Explicitly typing the callMethod to satisfy TypeScript
-        const callMethod: 'simple' | 'fk' | 'ifk' | 'fkAndIfk' = !hasForeignKey && !hasInverseForeignKey ? 'simple'
-            : hasForeignKey && !hasInverseForeignKey ? 'fk'
-                : !hasForeignKey && hasInverseForeignKey ? 'ifk'
-                    : 'fkAndIfk';
+            // Explicitly typing the callMethod to satisfy TypeScript
+            const callMethod: 'simple' | 'fk' | 'ifk' | 'fkAndIfk' = !hasForeignKey && !hasInverseForeignKey ? 'simple'
+                : hasForeignKey && !hasInverseForeignKey ? 'fk'
+                    : !hasForeignKey && hasInverseForeignKey ? 'ifk'
+                        : 'fkAndIfk';
 
-        if (relatedTables.length > 0) {
-            result.relatedTables = relatedTables;
-        }
-
-        return {
-            callMethod,
-            processedData: result
-        };
-    }, [resolveTableName, getSchemaInFormat, getFieldNameInFormat]);
-
-    const getRelationshipType = useCallback(async (
-        tableVariant: string,
-        format: NameFormat = 'frontend'
-    ): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> => {
-        const tableKey = resolveTableName(tableVariant);
-        const tableSchema = getSchemaInFormat(tableKey, format);
-
-        if (!tableSchema) {
-            console.error(`Schema not found for table: ${tableVariant}`);
-            return null;
-        }
-
-        let hasForeignKey = false;
-        let hasInverseForeignKey = false;
-
-        for (const field of Object.values(tableSchema.entityFields)) {
-            if (field.structure === 'foreignKey') {
-                hasForeignKey = true;
-            } else if (field.structure === 'inverseForeignKey') {
-                hasInverseForeignKey = true;
+            if (relatedTables.length > 0) {
+                result.relatedTables = relatedTables;
             }
 
-            if (hasForeignKey && hasInverseForeignKey) {
-                return 'fkAndIfk';
-            }
-        }
-
-        return hasForeignKey ? 'fk'
-            : hasInverseForeignKey ? 'ifk'
-                : 'simple';
-    }, [resolveTableName, getSchemaInFormat]);
-
-
-    const initializeFieldValue = useCallback((converter: FieldConverter<any>): any => {
-        switch (converter.type) {
-            case 'string':
-                return '';
-            case 'number':
-                return 0;
-            case 'boolean':
-                return false;
-            case 'array':
-                return [];
-            case 'object':
-                return {};
-            case 'null':
-                return null;
-            case 'undefined':
-                return undefined;
-            case 'function':
-                return () => {
-                };
-            case 'symbol':
-                return Symbol();
-            case 'bigint':
-                return BigInt(0);
-            case 'date':
-                return new Date();
-            case 'map':
-                return new Map();
-            case 'set':
-                return new Set();
-            case 'tuple':
-                return [];
-            case 'enum':
-            case 'union':
-            case 'intersection':
-            case 'literal':
-            case 'void':
-            case 'any':
-                return null;
-            case 'never':
-                throw new Error('Cannot initialize a value for "never" type');
-            default:
-                return null;
-        }
-    }, []);
-
-
-
-    const initializeDataFromSchema = useCallback((
-        tableVariant: string,
-        format: NameFormat = 'frontend'
-    ): Record<string, any> => {
-        const tableKey = resolveTableName(tableVariant);
-        const tableSchema = getSchemaInFormat(tableKey, format);
-
-        if (!tableSchema) {
-            throw new Error(`No schema found for table: ${tableVariant}`);
-        }
-
-        return Object.entries(tableSchema.entityFields).reduce((acc, [fieldName, field]) => {
-            const converter: FieldConverter<any> = {
-                type: field.dataType.toLowerCase() as FieldType
+            return {
+                callMethod,
+                processedData: result
             };
+        }, [resolveTableName, getSchemaInFormat, getFieldNameInFormat]);
 
-            acc[fieldName] = initializeFieldValue(converter);
-            return acc;
-        }, {} as Record<string, any>);
-    }, [resolveTableName, getSchemaInFormat, initializeFieldValue]);
+        const getRelationshipType = useCallback(async (
+            tableVariant: string,
+            format: NameFormat = 'frontend'
+        ): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> => {
+            const tableKey = resolveTableName(tableVariant);
+            const tableSchema = getSchemaInFormat(tableKey, format);
 
-
-    const convertDataFormat = useCallback(<T extends Record<string, any>>(
-        tableVariant: string,
-        data: T,
-        fromFormat: NameFormat,
-        toFormat: NameFormat
-    ): Record<string, any> => {
-        return convertDataFormatValidated(tableVariant, data, fromFormat, toFormat);
-    }, [convertDataFormatValidated]);
-
-    const validateAndTransformData = useCallback(<T extends AutomationTableName>(
-        tableVariant: AllTableNameVariations,
-        data: Partial<Record<AllFieldNameVariations<T>, any>>,
-        format: NameFormat = 'frontend'
-    ): Record<keyof TableFields<T>, any> => {
-        const tableKey = resolveTableName(tableVariant);
-        const tableSchema = schema[tableKey as T];
-
-        if (!tableSchema) {
-            throw new Error(`No schema found for table: ${tableVariant}`);
-        }
-
-        const result = { ...data } as Record<keyof TableFields<T>, any>;
-
-        for (const [fieldName, field] of Object.entries(tableSchema.entityFields)) {
-            const value = result[fieldName as keyof TableFields<T>];
-            const converter: FieldConverter<any> = {
-                type: field.dataType.toLowerCase() as FieldType
-            };
-
-            if ((value === undefined || value === null) && field.isRequired) {
-                result[fieldName as keyof TableFields<T>] = initializeFieldValue(converter);
-                continue;
+            if (!tableSchema) {
+                console.error(`Schema not found for table: ${tableVariant}`);
+                return null;
             }
 
-            if (field.validationFunctions?.length) {
-                try {
-                    field.validationFunctions.forEach(validationFnName => {
-                        const validationFn = typeof validationFnName === 'string'
-                            ? (globalValidations as Record<string, ValidationFunction>)[validationFnName]
-                            : validationFnName;
+            let hasForeignKey = false;
+            let hasInverseForeignKey = false;
 
-                        if (typeof validationFn === 'function') {
-                            validationFn(value);
-                        }
-                    });
-                } catch (error) {
-                    console.error(`Validation failed for field ${fieldName}:`, error);
-                    result[fieldName as keyof TableFields<T>] = initializeFieldValue(converter);
+            for (const field of Object.values(tableSchema.entityFields)) {
+                if (field.structure === 'foreignKey') {
+                    hasForeignKey = true;
+                } else if (field.structure === 'inverseForeignKey') {
+                    hasInverseForeignKey = true;
+                }
+
+                if (hasForeignKey && hasInverseForeignKey) {
+                    return 'fkAndIfk';
                 }
             }
-        }
 
-        return ensureId(result);
-    }, [resolveTableName, schema]);
+            return hasForeignKey ? 'fk'
+                : hasInverseForeignKey ? 'ifk'
+                    : 'simple';
+        }, [resolveTableName, getSchemaInFormat]);
+
+
+        const initializeFieldValue = useCallback((converter: FieldConverter<any>): any => {
+            switch (converter.type) {
+                case 'string':
+                    return '';
+                case 'number':
+                    return 0;
+                case 'boolean':
+                    return false;
+                case 'array':
+                    return [];
+                case 'object':
+                    return {};
+                case 'null':
+                    return null;
+                case 'undefined':
+                    return undefined;
+                case 'function':
+                    return () => {
+                    };
+                case 'symbol':
+                    return Symbol();
+                case 'bigint':
+                    return BigInt(0);
+                case 'date':
+                    return new Date();
+                case 'map':
+                    return new Map();
+                case 'set':
+                    return new Set();
+                case 'tuple':
+                    return [];
+                case 'enum':
+                case 'union':
+                case 'intersection':
+                case 'literal':
+                case 'void':
+                case 'any':
+                    return null;
+                case 'never':
+                    throw new Error('Cannot initialize a value for "never" type');
+                default:
+                    return null;
+            }
+        }, []);
+
+
+        const initializeDataFromSchema = useCallback((
+            tableVariant: string,
+            format: NameFormat = 'frontend'
+        ): Record<string, any> => {
+            const tableKey = resolveTableName(tableVariant);
+            const tableSchema = getSchemaInFormat(tableKey, format);
+
+            if (!tableSchema) {
+                throw new Error(`No schema found for table: ${tableVariant}`);
+            }
+
+            return Object.entries(tableSchema.entityFields).reduce((acc, [fieldName, field]) => {
+                const converter: FieldConverter<any> = {
+                    type: field.dataType.toLowerCase() as FieldType
+                };
+
+                acc[fieldName] = initializeFieldValue(converter);
+                return acc;
+            }, {} as Record<string, any>);
+        }, [resolveTableName, getSchemaInFormat, initializeFieldValue]);
+
+
+        const convertDataFormat = useCallback(<T extends Record<string, any>>(
+            tableVariant: string,
+            data: T,
+            fromFormat: NameFormat,
+            toFormat: NameFormat
+        ): Record<string, any> => {
+            return convertDataFormatValidated(tableVariant, data, fromFormat, toFormat);
+        }, [convertDataFormatValidated]);
+
+        const validateAndTransformData = useCallback(<T extends AutomationTableName>(
+            tableVariant: AllTableNameVariations,
+            data: Partial<Record<AllFieldNameVariations<T>, any>>,
+            format: NameFormat = 'frontend'
+        ): Record<keyof TableFields<T>, any> => {
+            const tableKey = resolveTableName(tableVariant);
+            const tableSchema = schema[tableKey as T];
+
+            if (!tableSchema) {
+                throw new Error(`No schema found for table: ${tableVariant}`);
+            }
+
+            const result = {...data} as Record<keyof TableFields<T>, any>;
+
+            for (const [fieldName, field] of Object.entries(tableSchema.entityFields)) {
+                const value = result[fieldName as keyof TableFields<T>];
+                const converter: FieldConverter<any> = {
+                    type: field.dataType.toLowerCase() as FieldType
+                };
+
+                if ((value === undefined || value === null) && field.isRequired) {
+                    result[fieldName as keyof TableFields<T>] = initializeFieldValue(converter);
+                    continue;
+                }
+
+                if (field.validationFunctions?.length) {
+                    try {
+                        field.validationFunctions.forEach(validationFnName => {
+                            const validationFn = typeof validationFnName === 'string'
+                                ? (globalValidations as Record<string, ValidationFunction>)[validationFnName]
+                                : validationFnName;
+
+                            if (typeof validationFn === 'function') {
+                                validationFn(value);
+                            }
+                        });
+                    } catch (error) {
+                        console.error(`Validation failed for field ${fieldName}:`, error);
+                        result[fieldName as keyof TableFields<T>] = initializeFieldValue(converter);
+                    }
+                }
+            }
+
+            return ensureId(result);
+        }, [resolveTableName, schema]);
 
 
     return {
@@ -769,11 +756,8 @@ export function useSchema(): UseSchemaResult {
         getDatabaseFieldName,
         getTableNameInFormat,
         getFieldNameInFormat,
-        getTableSchema,
         getAllTableNames: () => allTableNames,
         getFieldSchema,
-        getPrimaryKey,
-        getDisplayFields,
         getTableRelationships,
         getForeignKeyFields,
         getSchemaInFormat,

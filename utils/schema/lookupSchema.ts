@@ -3,177 +3,177 @@ import {
     ReverseFieldLookupType,
     ReverseTableLookupType,
     TableNameLookupType
-} from "@/types/automationTableTypes";
+} from '@/types/automationTableTypes';
 
 export const tableNameLookup: TableNameLookupType = {
-    Action: "action",
     p_action: "action",
+    Action: "action",
     action: "action",
     p_ai_endpoint: "aiEndpoint",
+    ai_endpoint: "aiEndpoint",
+    "Ai Endpoint": "aiEndpoint",
+    AiEndpoint: "aiEndpoint",
     "ai-endpoint": "aiEndpoint",
     aiEndpoint: "aiEndpoint",
-    "Ai Endpoint": "aiEndpoint",
-    ai_endpoint: "aiEndpoint",
-    AiEndpoint: "aiEndpoint",
-    ai_model: "aiModel",
-    AiModel: "aiModel",
     p_ai_model: "aiModel",
-    "ai-model": "aiModel",
-    "Ai Model": "aiModel",
+    ai_model: "aiModel",
     aiModel: "aiModel",
+    "Ai Model": "aiModel",
+    AiModel: "aiModel",
+    "ai-model": "aiModel",
     Arg: "arg",
-    arg: "arg",
     p_arg: "arg",
-    automation_boundary_broker: "automationBoundaryBroker",
+    arg: "arg",
     "Automation Boundary Broker": "automationBoundaryBroker",
-    AutomationBoundaryBroker: "automationBoundaryBroker",
-    p_automation_boundary_broker: "automationBoundaryBroker",
     automationBoundaryBroker: "automationBoundaryBroker",
+    p_automation_boundary_broker: "automationBoundaryBroker",
+    AutomationBoundaryBroker: "automationBoundaryBroker",
+    automation_boundary_broker: "automationBoundaryBroker",
     "automation-boundary-broker": "automationBoundaryBroker",
-    AutomationMatrix: "automationMatrix",
-    automationMatrix: "automationMatrix",
-    "automation-matrix": "automationMatrix",
-    p_automation_matrix: "automationMatrix",
     "Automation Matrix": "automationMatrix",
     automation_matrix: "automationMatrix",
-    Broker: "broker",
+    p_automation_matrix: "automationMatrix",
+    AutomationMatrix: "automationMatrix",
+    "automation-matrix": "automationMatrix",
+    automationMatrix: "automationMatrix",
     p_broker: "broker",
+    Broker: "broker",
     broker: "broker",
-    dataInputComponent: "dataInputComponent",
-    p_data_input_component: "dataInputComponent",
     "data-input-component": "dataInputComponent",
-    data_input_component: "dataInputComponent",
-    "Data Input Component": "dataInputComponent",
+    p_data_input_component: "dataInputComponent",
+    dataInputComponent: "dataInputComponent",
     DataInputComponent: "dataInputComponent",
-    dataOutputComponent: "dataOutputComponent",
-    data_output_component: "dataOutputComponent",
-    DataOutputComponent: "dataOutputComponent",
+    "Data Input Component": "dataInputComponent",
+    data_input_component: "dataInputComponent",
     "data-output-component": "dataOutputComponent",
+    DataOutputComponent: "dataOutputComponent",
     p_data_output_component: "dataOutputComponent",
     "Data Output Component": "dataOutputComponent",
-    "display-option": "displayOption",
-    displayOption: "displayOption",
+    dataOutputComponent: "dataOutputComponent",
+    data_output_component: "dataOutputComponent",
     p_display_option: "displayOption",
-    "Display Option": "displayOption",
     display_option: "displayOption",
+    "Display Option": "displayOption",
+    displayOption: "displayOption",
     DisplayOption: "displayOption",
+    "display-option": "displayOption",
     Emails: "emails",
-    emails: "emails",
     p_emails: "emails",
+    emails: "emails",
+    p_extractor: "extractor",
     Extractor: "extractor",
     extractor: "extractor",
-    p_extractor: "extractor",
-    flashcardData: "flashcardData",
     p_flashcard_data: "flashcardData",
-    "Flashcard Data": "flashcardData",
-    FlashcardData: "flashcardData",
     "flashcard-data": "flashcardData",
     flashcard_data: "flashcardData",
-    "Flashcard History": "flashcardHistory",
-    flashcardHistory: "flashcardHistory",
-    FlashcardHistory: "flashcardHistory",
-    p_flashcard_history: "flashcardHistory",
+    "Flashcard Data": "flashcardData",
+    flashcardData: "flashcardData",
+    FlashcardData: "flashcardData",
     flashcard_history: "flashcardHistory",
     "flashcard-history": "flashcardHistory",
-    FlashcardImages: "flashcardImages",
+    "Flashcard History": "flashcardHistory",
+    p_flashcard_history: "flashcardHistory",
+    flashcardHistory: "flashcardHistory",
+    FlashcardHistory: "flashcardHistory",
+    flashcardImages: "flashcardImages",
     "Flashcard Images": "flashcardImages",
     p_flashcard_images: "flashcardImages",
-    flashcard_images: "flashcardImages",
     "flashcard-images": "flashcardImages",
-    flashcardImages: "flashcardImages",
-    "flashcard-set-relations": "flashcardSetRelations",
-    FlashcardSetRelations: "flashcardSetRelations",
+    FlashcardImages: "flashcardImages",
+    flashcard_images: "flashcardImages",
+    flashcard_set_relations: "flashcardSetRelations",
     "Flashcard Set Relations": "flashcardSetRelations",
     p_flashcard_set_relations: "flashcardSetRelations",
-    flashcard_set_relations: "flashcardSetRelations",
+    "flashcard-set-relations": "flashcardSetRelations",
+    FlashcardSetRelations: "flashcardSetRelations",
     flashcardSetRelations: "flashcardSetRelations",
-    p_flashcard_sets: "flashcardSets",
-    flashcard_sets: "flashcardSets",
-    FlashcardSets: "flashcardSets",
-    "flashcard-sets": "flashcardSets",
     "Flashcard Sets": "flashcardSets",
+    "flashcard-sets": "flashcardSets",
     flashcardSets: "flashcardSets",
-    processor: "processor",
-    Processor: "processor",
+    flashcard_sets: "flashcardSets",
+    p_flashcard_sets: "flashcardSets",
+    FlashcardSets: "flashcardSets",
     p_processor: "processor",
-    p_recipe: "recipe",
+    Processor: "processor",
+    processor: "processor",
     Recipe: "recipe",
+    p_recipe: "recipe",
     recipe: "recipe",
+    recipeBroker: "recipeBroker",
+    RecipeBroker: "recipeBroker",
+    "recipe-broker": "recipeBroker",
     p_recipe_broker: "recipeBroker",
     recipe_broker: "recipeBroker",
-    "recipe-broker": "recipeBroker",
-    RecipeBroker: "recipeBroker",
-    recipeBroker: "recipeBroker",
     "Recipe Broker": "recipeBroker",
-    RecipeDisplay: "recipeDisplay",
-    "recipe-display": "recipeDisplay",
-    recipe_display: "recipeDisplay",
-    p_recipe_display: "recipeDisplay",
     recipeDisplay: "recipeDisplay",
+    "recipe-display": "recipeDisplay",
+    p_recipe_display: "recipeDisplay",
     "Recipe Display": "recipeDisplay",
+    recipe_display: "recipeDisplay",
+    RecipeDisplay: "recipeDisplay",
     recipeFunction: "recipeFunction",
-    p_recipe_function: "recipeFunction",
     "Recipe Function": "recipeFunction",
     RecipeFunction: "recipeFunction",
     "recipe-function": "recipeFunction",
     recipe_function: "recipeFunction",
-    recipeModel: "recipeModel",
-    "Recipe Model": "recipeModel",
-    "recipe-model": "recipeModel",
-    recipe_model: "recipeModel",
+    p_recipe_function: "recipeFunction",
     p_recipe_model: "recipeModel",
     RecipeModel: "recipeModel",
-    "recipe-processor": "recipeProcessor",
-    RecipeProcessor: "recipeProcessor",
+    "recipe-model": "recipeModel",
+    recipe_model: "recipeModel",
+    "Recipe Model": "recipeModel",
+    recipeModel: "recipeModel",
     "Recipe Processor": "recipeProcessor",
     recipeProcessor: "recipeProcessor",
+    "recipe-processor": "recipeProcessor",
     recipe_processor: "recipeProcessor",
     p_recipe_processor: "recipeProcessor",
-    "recipe-tool": "recipeTool",
+    RecipeProcessor: "recipeProcessor",
     recipeTool: "recipeTool",
-    RecipeTool: "recipeTool",
     recipe_tool: "recipeTool",
+    "recipe-tool": "recipeTool",
     p_recipe_tool: "recipeTool",
     "Recipe Tool": "recipeTool",
-    p_registered_function: "registeredFunction",
-    RegisteredFunction: "registeredFunction",
-    "Registered Function": "registeredFunction",
-    registered_function: "registeredFunction",
-    registeredFunction: "registeredFunction",
+    RecipeTool: "recipeTool",
     "registered-function": "registeredFunction",
-    SystemFunction: "systemFunction",
-    "system-function": "systemFunction",
+    RegisteredFunction: "registeredFunction",
+    registered_function: "registeredFunction",
+    "Registered Function": "registeredFunction",
+    registeredFunction: "registeredFunction",
+    p_registered_function: "registeredFunction",
     system_function: "systemFunction",
     systemFunction: "systemFunction",
+    "system-function": "systemFunction",
     p_system_function: "systemFunction",
     "System Function": "systemFunction",
-    p_tool: "tool",
+    SystemFunction: "systemFunction",
     Tool: "tool",
     tool: "tool",
-    transformer: "transformer",
+    p_tool: "tool",
     Transformer: "transformer",
+    transformer: "transformer",
     p_transformer: "transformer",
-    UserPreferences: "userPreferences",
-    "user-preferences": "userPreferences",
-    p_user_preferences: "userPreferences",
-    userPreferences: "userPreferences",
-    "User Preferences": "userPreferences",
     user_preferences: "userPreferences",
+    userPreferences: "userPreferences",
+    p_user_preferences: "userPreferences",
+    "user-preferences": "userPreferences",
+    UserPreferences: "userPreferences",
+    "User Preferences": "userPreferences",
 };
 
 export const viewNameLookup: Record<string, string> = {
-    viewRegisteredFunction: "viewRegisteredFunction",
-    "view-registered-function": "viewRegisteredFunction",
     view_registered_function: "viewRegisteredFunction",
+    ViewRegisteredFunction: "viewRegisteredFunction",
     p_view_registered_function: "viewRegisteredFunction",
     "View Registered Function": "viewRegisteredFunction",
-    ViewRegisteredFunction: "viewRegisteredFunction",
-    ViewRegisteredFunctionAllRels: "viewRegisteredFunctionAllRels",
+    "view-registered-function": "viewRegisteredFunction",
+    viewRegisteredFunction: "viewRegisteredFunction",
     viewRegisteredFunctionAllRels: "viewRegisteredFunctionAllRels",
-    p_view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
-    view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
     "View Registered Function All Rels": "viewRegisteredFunctionAllRels",
+    ViewRegisteredFunctionAllRels: "viewRegisteredFunctionAllRels",
     "view-registered-function-all-rels": "viewRegisteredFunctionAllRels",
+    view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
+    p_view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
 };
 
 export const fieldNameLookup: FieldNameLookupType = {
@@ -181,123 +181,123 @@ export const fieldNameLookup: FieldNameLookupType = {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
+        Name: "name",
+        p_name: "name",
+        Matrix: "matrix",
         matrix: "matrix",
         p_matrix: "matrix",
-        Matrix: "matrix",
-        transformer: "transformer",
         Transformer: "transformer",
+        transformer: "transformer",
         p_transformer: "transformer",
+        "node-type": "nodeType",
         p_node_type: "nodeType",
+        node_type: "nodeType",
         nodeType: "nodeType",
         NodeType: "nodeType",
-        "node-type": "nodeType",
         "Node Type": "nodeType",
-        node_type: "nodeType",
-        ReferenceId: "referenceId",
-        reference_id: "referenceId",
-        "reference-id": "referenceId",
         referenceId: "referenceId",
+        p_reference_id: "referenceId",
         "Reference Id": "referenceId",
-        p_reference_id: "referenceId"
+        reference_id: "referenceId",
+        ReferenceId: "referenceId",
+        "reference-id": "referenceId"
     },
     aiEndpoint: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        p_provider: "provider",
-        provider: "provider",
+        Name: "name",
+        p_name: "name",
         Provider: "provider",
-        description: "description",
+        provider: "provider",
+        p_provider: "provider",
         Description: "description",
         p_description: "description",
-        additionalCost: "additionalCost",
-        p_additional_cost: "additionalCost",
-        AdditionalCost: "additionalCost",
+        description: "description",
         "Additional Cost": "additionalCost",
         "additional-cost": "additionalCost",
+        additionalCost: "additionalCost",
+        p_additional_cost: "additionalCost",
         additional_cost: "additionalCost",
+        AdditionalCost: "additionalCost",
         "cost-details": "costDetails",
-        "Cost Details": "costDetails",
+        CostDetails: "costDetails",
         costDetails: "costDetails",
         p_cost_details: "costDetails",
-        CostDetails: "costDetails",
         cost_details: "costDetails",
-        p_params: "params",
+        "Cost Details": "costDetails",
         params: "params",
-        Params: "params"
+        Params: "params",
+        p_params: "params"
     },
     aiModel: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
+        Name: "name",
+        p_name: "name",
+        p_common_name: "commonName",
         "Common Name": "commonName",
         common_name: "commonName",
+        "common-name": "commonName",
         commonName: "commonName",
         CommonName: "commonName",
-        "common-name": "commonName",
-        p_common_name: "commonName",
         model_class: "modelClass",
-        "Model Class": "modelClass",
         p_model_class: "modelClass",
         "model-class": "modelClass",
-        modelClass: "modelClass",
         ModelClass: "modelClass",
-        p_provider: "provider",
-        provider: "provider",
+        "Model Class": "modelClass",
+        modelClass: "modelClass",
         Provider: "provider",
-        p_endpoints: "endpoints",
+        provider: "provider",
+        p_provider: "provider",
         Endpoints: "endpoints",
+        p_endpoints: "endpoints",
         endpoints: "endpoints",
-        "Context Window": "contextWindow",
-        p_context_window: "contextWindow",
-        contextWindow: "contextWindow",
-        "context-window": "contextWindow",
         ContextWindow: "contextWindow",
+        "Context Window": "contextWindow",
+        contextWindow: "contextWindow",
+        p_context_window: "contextWindow",
         context_window: "contextWindow",
-        maxTokens: "maxTokens",
-        "Max Tokens": "maxTokens",
+        "context-window": "contextWindow",
         max_tokens: "maxTokens",
-        p_max_tokens: "maxTokens",
-        "max-tokens": "maxTokens",
         MaxTokens: "maxTokens",
-        p_capabilities: "capabilities",
-        Capabilities: "capabilities",
+        maxTokens: "maxTokens",
+        "max-tokens": "maxTokens",
+        p_max_tokens: "maxTokens",
+        "Max Tokens": "maxTokens",
         capabilities: "capabilities",
-        controls: "controls",
+        Capabilities: "capabilities",
+        p_capabilities: "capabilities",
+        p_controls: "controls",
         Controls: "controls",
-        p_controls: "controls"
+        controls: "controls"
     },
     arg: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
+        Name: "name",
+        p_name: "name",
         p_required: "required",
-        required: "required",
         Required: "required",
+        required: "required",
         p_default: "default",
         Default: "default",
         default: "default",
-        dataType: "dataType",
         DataType: "dataType",
-        p_data_type: "dataType",
-        "data-type": "dataType",
-        data_type: "dataType",
         "Data Type": "dataType",
-        ready: "ready",
+        dataType: "dataType",
+        p_data_type: "dataType",
+        data_type: "dataType",
+        "data-type": "dataType",
         Ready: "ready",
         p_ready: "ready",
+        ready: "ready",
         "registered-function": "registeredFunction",
         RegisteredFunction: "registeredFunction",
         registered_function: "registeredFunction",
@@ -309,836 +309,836 @@ export const fieldNameLookup: FieldNameLookupType = {
         Id: "id",
         id: "id",
         p_id: "id",
+        Matrix: "matrix",
         matrix: "matrix",
         p_matrix: "matrix",
-        Matrix: "matrix",
-        Broker: "broker",
         p_broker: "broker",
+        Broker: "broker",
         broker: "broker",
         "Spark Source": "sparkSource",
-        spark_source: "sparkSource",
-        p_spark_source: "sparkSource",
         sparkSource: "sparkSource",
-        SparkSource: "sparkSource",
         "spark-source": "sparkSource",
-        "beacon-destination": "beaconDestination",
-        beaconDestination: "beaconDestination",
-        beacon_destination: "beaconDestination",
+        p_spark_source: "sparkSource",
+        SparkSource: "sparkSource",
+        spark_source: "sparkSource",
         BeaconDestination: "beaconDestination",
+        beacon_destination: "beaconDestination",
         "Beacon Destination": "beaconDestination",
-        p_beacon_destination: "beaconDestination"
+        p_beacon_destination: "beaconDestination",
+        "beacon-destination": "beaconDestination",
+        beaconDestination: "beaconDestination"
     },
     automationMatrix: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        description: "description",
+        Name: "name",
+        p_name: "name",
         Description: "description",
         p_description: "description",
-        averageSeconds: "averageSeconds",
+        description: "description",
         average_seconds: "averageSeconds",
-        "Average Seconds": "averageSeconds",
         p_average_seconds: "averageSeconds",
-        AverageSeconds: "averageSeconds",
         "average-seconds": "averageSeconds",
+        AverageSeconds: "averageSeconds",
+        "Average Seconds": "averageSeconds",
+        averageSeconds: "averageSeconds",
         p_is_automated: "isAutomated",
-        "Is Automated": "isAutomated",
         isAutomated: "isAutomated",
         is_automated: "isAutomated",
-        IsAutomated: "isAutomated",
         "is-automated": "isAutomated",
-        "Cognition Matrices": "cognitionMatrices",
-        cognition_matrices: "cognitionMatrices",
-        cognitionMatrices: "cognitionMatrices",
-        p_cognition_matrices: "cognitionMatrices",
+        IsAutomated: "isAutomated",
+        "Is Automated": "isAutomated",
+        CognitionMatrices: "cognitionMatrices",
         "cognition-matrices": "cognitionMatrices",
-        CognitionMatrices: "cognitionMatrices"
+        p_cognition_matrices: "cognitionMatrices",
+        "Cognition Matrices": "cognitionMatrices",
+        cognitionMatrices: "cognitionMatrices",
+        cognition_matrices: "cognitionMatrices"
     },
     broker: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        p_value: "value",
-        value: "value",
+        Name: "name",
+        p_name: "name",
         Value: "value",
-        dataType: "dataType",
+        value: "value",
+        p_value: "value",
         DataType: "dataType",
-        p_data_type: "dataType",
-        "data-type": "dataType",
-        data_type: "dataType",
         "Data Type": "dataType",
-        ready: "ready",
+        dataType: "dataType",
+        p_data_type: "dataType",
+        data_type: "dataType",
+        "data-type": "dataType",
         Ready: "ready",
         p_ready: "ready",
-        p_default_source: "defaultSource",
-        "Default Source": "defaultSource",
-        "default-source": "defaultSource",
-        default_source: "defaultSource",
-        defaultSource: "defaultSource",
+        ready: "ready",
         DefaultSource: "defaultSource",
-        "display-name": "displayName",
-        display_name: "displayName",
-        p_display_name: "displayName",
-        displayName: "displayName",
+        "Default Source": "defaultSource",
+        default_source: "defaultSource",
+        p_default_source: "defaultSource",
+        defaultSource: "defaultSource",
+        "default-source": "defaultSource",
         DisplayName: "displayName",
+        p_display_name: "displayName",
+        display_name: "displayName",
+        "display-name": "displayName",
         "Display Name": "displayName",
-        description: "description",
+        displayName: "displayName",
         Description: "description",
         p_description: "description",
-        p_tooltip: "tooltip",
-        tooltip: "tooltip",
+        description: "description",
         Tooltip: "tooltip",
+        tooltip: "tooltip",
+        p_tooltip: "tooltip",
         validation_rules: "validationRules",
-        ValidationRules: "validationRules",
         "Validation Rules": "validationRules",
         p_validation_rules: "validationRules",
         validationRules: "validationRules",
         "validation-rules": "validationRules",
-        "sample-entries": "sampleEntries",
+        ValidationRules: "validationRules",
         SampleEntries: "sampleEntries",
+        "sample-entries": "sampleEntries",
         sampleEntries: "sampleEntries",
-        sample_entries: "sampleEntries",
         "Sample Entries": "sampleEntries",
+        sample_entries: "sampleEntries",
         p_sample_entries: "sampleEntries",
-        "Custom Source Component": "customSourceComponent",
+        customSourceComponent: "customSourceComponent",
         p_custom_source_component: "customSourceComponent",
         CustomSourceComponent: "customSourceComponent",
-        customSourceComponent: "customSourceComponent",
         "custom-source-component": "customSourceComponent",
+        "Custom Source Component": "customSourceComponent",
         custom_source_component: "customSourceComponent",
-        additional_params: "additionalParams",
         "Additional Params": "additionalParams",
         "additional-params": "additionalParams",
         additionalParams: "additionalParams",
-        p_additional_params: "additionalParams",
         AdditionalParams: "additionalParams",
+        additional_params: "additionalParams",
+        p_additional_params: "additionalParams",
+        p_other_source_params: "otherSourceParams",
+        otherSourceParams: "otherSourceParams",
+        "other-source-params": "otherSourceParams",
+        other_source_params: "otherSourceParams",
         "Other Source Params": "otherSourceParams",
         OtherSourceParams: "otherSourceParams",
-        "other-source-params": "otherSourceParams",
-        otherSourceParams: "otherSourceParams",
-        other_source_params: "otherSourceParams",
-        p_other_source_params: "otherSourceParams",
-        defaultDestination: "defaultDestination",
-        "default-destination": "defaultDestination",
         p_default_destination: "defaultDestination",
+        "default-destination": "defaultDestination",
+        DefaultDestination: "defaultDestination",
+        defaultDestination: "defaultDestination",
         default_destination: "defaultDestination",
         "Default Destination": "defaultDestination",
-        DefaultDestination: "defaultDestination",
         p_output_component: "outputComponent",
+        OutputComponent: "outputComponent",
         output_component: "outputComponent",
         "output-component": "outputComponent",
         outputComponent: "outputComponent",
         "Output Component": "outputComponent",
-        OutputComponent: "outputComponent",
+        p_tags: "tags",
         Tags: "tags",
-        tags: "tags",
-        p_tags: "tags"
+        tags: "tags"
     },
     dataInputComponent: {
         Id: "id",
         id: "id",
         p_id: "id",
-        options: "options",
         p_options: "options",
+        options: "options",
         Options: "options",
-        IncludeOther: "includeOther",
-        "include-other": "includeOther",
         p_include_other: "includeOther",
         include_other: "includeOther",
+        "include-other": "includeOther",
         includeOther: "includeOther",
         "Include Other": "includeOther",
+        IncludeOther: "includeOther",
         min: "min",
-        Min: "min",
         p_min: "min",
+        Min: "min",
         Max: "max",
         max: "max",
         p_max: "max",
-        Step: "step",
-        p_step: "step",
         step: "step",
-        min_rows: "minRows",
-        "min-rows": "minRows",
-        MinRows: "minRows",
-        p_min_rows: "minRows",
-        minRows: "minRows",
+        p_step: "step",
+        Step: "step",
         "Min Rows": "minRows",
-        p_max_rows: "maxRows",
-        maxRows: "maxRows",
+        minRows: "minRows",
+        "min-rows": "minRows",
+        p_min_rows: "minRows",
+        min_rows: "minRows",
+        MinRows: "minRows",
         MaxRows: "maxRows",
-        max_rows: "maxRows",
-        "Max Rows": "maxRows",
         "max-rows": "maxRows",
-        "acceptable-filetypes": "acceptableFiletypes",
-        "Acceptable Filetypes": "acceptableFiletypes",
-        acceptableFiletypes: "acceptableFiletypes",
+        p_max_rows: "maxRows",
+        "Max Rows": "maxRows",
+        maxRows: "maxRows",
+        max_rows: "maxRows",
         acceptable_filetypes: "acceptableFiletypes",
+        acceptableFiletypes: "acceptableFiletypes",
         AcceptableFiletypes: "acceptableFiletypes",
+        "Acceptable Filetypes": "acceptableFiletypes",
         p_acceptable_filetypes: "acceptableFiletypes",
-        p_src: "src",
+        "acceptable-filetypes": "acceptableFiletypes",
         src: "src",
         Src: "src",
+        p_src: "src",
         p_classes: "classes",
         classes: "classes",
         Classes: "classes",
-        color_overrides: "colorOverrides",
-        "Color Overrides": "colorOverrides",
         colorOverrides: "colorOverrides",
         p_color_overrides: "colorOverrides",
+        "Color Overrides": "colorOverrides",
         ColorOverrides: "colorOverrides",
         "color-overrides": "colorOverrides",
-        additional_params: "additionalParams",
+        color_overrides: "colorOverrides",
         "Additional Params": "additionalParams",
         "additional-params": "additionalParams",
         additionalParams: "additionalParams",
-        p_additional_params: "additionalParams",
-        AdditionalParams: "additionalParams"
+        AdditionalParams: "additionalParams",
+        additional_params: "additionalParams",
+        p_additional_params: "additionalParams"
     },
     dataOutputComponent: {
         Id: "id",
         id: "id",
         p_id: "id",
-        component_type: "componentType",
-        ComponentType: "componentType",
-        p_component_type: "componentType",
-        "component-type": "componentType",
         componentType: "componentType",
+        p_component_type: "componentType",
+        component_type: "componentType",
         "Component Type": "componentType",
-        UiComponent: "uiComponent",
-        p_ui_component: "uiComponent",
-        "ui-component": "uiComponent",
+        "component-type": "componentType",
+        ComponentType: "componentType",
         ui_component: "uiComponent",
         uiComponent: "uiComponent",
+        UiComponent: "uiComponent",
         "Ui Component": "uiComponent",
-        Props: "props",
-        p_props: "props",
+        "ui-component": "uiComponent",
+        p_ui_component: "uiComponent",
         props: "props",
-        additional_params: "additionalParams",
+        p_props: "props",
+        Props: "props",
         "Additional Params": "additionalParams",
         "additional-params": "additionalParams",
         additionalParams: "additionalParams",
-        p_additional_params: "additionalParams",
-        AdditionalParams: "additionalParams"
+        AdditionalParams: "additionalParams",
+        additional_params: "additionalParams",
+        p_additional_params: "additionalParams"
     },
     displayOption: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        default_params: "defaultParams",
-        "Default Params": "defaultParams",
-        DefaultParams: "defaultParams",
-        "default-params": "defaultParams",
-        p_default_params: "defaultParams",
+        Name: "name",
+        p_name: "name",
         defaultParams: "defaultParams",
-        "Customizable Params": "customizableParams",
+        default_params: "defaultParams",
+        p_default_params: "defaultParams",
+        "Default Params": "defaultParams",
+        "default-params": "defaultParams",
+        DefaultParams: "defaultParams",
         "customizable-params": "customizableParams",
-        customizableParams: "customizableParams",
-        CustomizableParams: "customizableParams",
         customizable_params: "customizableParams",
+        "Customizable Params": "customizableParams",
         p_customizable_params: "customizableParams",
-        additional_params: "additionalParams",
+        CustomizableParams: "customizableParams",
+        customizableParams: "customizableParams",
         "Additional Params": "additionalParams",
         "additional-params": "additionalParams",
         additionalParams: "additionalParams",
-        p_additional_params: "additionalParams",
-        AdditionalParams: "additionalParams"
+        AdditionalParams: "additionalParams",
+        additional_params: "additionalParams",
+        p_additional_params: "additionalParams"
     },
     emails: {
         Id: "id",
         id: "id",
         p_id: "id",
+        sender: "sender",
         p_sender: "sender",
         Sender: "sender",
-        sender: "sender",
-        p_recipient: "recipient",
         Recipient: "recipient",
+        p_recipient: "recipient",
         recipient: "recipient",
+        Subject: "subject",
         subject: "subject",
         p_subject: "subject",
-        Subject: "subject",
+        body: "body",
         Body: "body",
         p_body: "body",
-        body: "body",
-        timestamp: "timestamp",
-        p_timestamp: "timestamp",
         Timestamp: "timestamp",
-        isRead: "isRead",
-        IsRead: "isRead",
+        p_timestamp: "timestamp",
+        timestamp: "timestamp",
         is_read: "isRead",
         p_is_read: "isRead",
+        "Is Read": "isRead",
+        IsRead: "isRead",
         "is-read": "isRead",
-        "Is Read": "isRead"
+        isRead: "isRead"
     },
     extractor: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        outputType: "outputType",
-        OutputType: "outputType",
-        output_type: "outputType",
-        p_output_type: "outputType",
-        "Output Type": "outputType",
+        Name: "name",
+        p_name: "name",
         "output-type": "outputType",
-        default_identifier: "defaultIdentifier",
-        "Default Identifier": "defaultIdentifier",
-        defaultIdentifier: "defaultIdentifier",
-        "default-identifier": "defaultIdentifier",
+        output_type: "outputType",
+        OutputType: "outputType",
+        "Output Type": "outputType",
+        outputType: "outputType",
+        p_output_type: "outputType",
         p_default_identifier: "defaultIdentifier",
+        "Default Identifier": "defaultIdentifier",
+        "default-identifier": "defaultIdentifier",
+        default_identifier: "defaultIdentifier",
+        defaultIdentifier: "defaultIdentifier",
         DefaultIdentifier: "defaultIdentifier",
-        DefaultIndex: "defaultIndex",
-        "Default Index": "defaultIndex",
         defaultIndex: "defaultIndex",
         default_index: "defaultIndex",
+        p_default_index: "defaultIndex",
+        "Default Index": "defaultIndex",
         "default-index": "defaultIndex",
-        p_default_index: "defaultIndex"
+        DefaultIndex: "defaultIndex"
     },
     flashcardData: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_user_id: "userId",
-        "user-id": "userId",
-        userId: "userId",
         "User Id": "userId",
         user_id: "userId",
+        p_user_id: "userId",
         UserId: "userId",
-        Topic: "topic",
+        "user-id": "userId",
+        userId: "userId",
         p_topic: "topic",
         topic: "topic",
+        Topic: "topic",
         p_lesson: "lesson",
-        Lesson: "lesson",
         lesson: "lesson",
-        Difficulty: "difficulty",
+        Lesson: "lesson",
         p_difficulty: "difficulty",
         difficulty: "difficulty",
+        Difficulty: "difficulty",
         front: "front",
         p_front: "front",
         Front: "front",
+        p_back: "back",
         back: "back",
         Back: "back",
-        p_back: "back",
         example: "example",
-        p_example: "example",
         Example: "example",
-        detailed_explanation: "detailedExplanation",
+        p_example: "example",
         "detailed-explanation": "detailedExplanation",
-        "Detailed Explanation": "detailedExplanation",
-        DetailedExplanation: "detailedExplanation",
         detailedExplanation: "detailedExplanation",
         p_detailed_explanation: "detailedExplanation",
-        p_audio_explanation: "audioExplanation",
+        detailed_explanation: "detailedExplanation",
+        DetailedExplanation: "detailedExplanation",
+        "Detailed Explanation": "detailedExplanation",
         "audio-explanation": "audioExplanation",
-        audio_explanation: "audioExplanation",
+        p_audio_explanation: "audioExplanation",
         AudioExplanation: "audioExplanation",
         audioExplanation: "audioExplanation",
+        audio_explanation: "audioExplanation",
         "Audio Explanation": "audioExplanation",
-        "personal-notes": "personalNotes",
         p_personal_notes: "personalNotes",
-        "Personal Notes": "personalNotes",
-        PersonalNotes: "personalNotes",
-        personalNotes: "personalNotes",
         personal_notes: "personalNotes",
-        is_deleted: "isDeleted",
-        IsDeleted: "isDeleted",
-        isDeleted: "isDeleted",
+        "personal-notes": "personalNotes",
+        personalNotes: "personalNotes",
+        PersonalNotes: "personalNotes",
+        "Personal Notes": "personalNotes",
         "Is Deleted": "isDeleted",
-        p_is_deleted: "isDeleted",
+        is_deleted: "isDeleted",
         "is-deleted": "isDeleted",
+        isDeleted: "isDeleted",
+        IsDeleted: "isDeleted",
+        p_is_deleted: "isDeleted",
         public: "public",
-        Public: "public",
         p_public: "public",
-        SharedWith: "sharedWith",
+        Public: "public",
         shared_with: "sharedWith",
+        "Shared With": "sharedWith",
         p_shared_with: "sharedWith",
         sharedWith: "sharedWith",
         "shared-with": "sharedWith",
-        "Shared With": "sharedWith",
-        "created-at": "createdAt",
-        "Created At": "createdAt",
-        p_created_at: "createdAt",
-        CreatedAt: "createdAt",
-        createdAt: "createdAt",
+        SharedWith: "sharedWith",
         created_at: "createdAt",
-        updatedAt: "updatedAt",
-        "updated-at": "updatedAt",
-        "Updated At": "updatedAt",
+        "created-at": "createdAt",
+        CreatedAt: "createdAt",
+        "Created At": "createdAt",
+        createdAt: "createdAt",
+        p_created_at: "createdAt",
+        updated_at: "updatedAt",
         UpdatedAt: "updatedAt",
+        "updated-at": "updatedAt",
         p_updated_at: "updatedAt",
-        updated_at: "updatedAt"
+        "Updated At": "updatedAt",
+        updatedAt: "updatedAt"
     },
     flashcardHistory: {
         Id: "id",
         id: "id",
         p_id: "id",
-        "Flashcard Id": "flashcardId",
-        p_flashcard_id: "flashcardId",
         flashcard_id: "flashcardId",
-        flashcardId: "flashcardId",
-        FlashcardId: "flashcardId",
+        p_flashcard_id: "flashcardId",
         "flashcard-id": "flashcardId",
-        p_user_id: "userId",
-        "user-id": "userId",
-        userId: "userId",
+        FlashcardId: "flashcardId",
+        flashcardId: "flashcardId",
+        "Flashcard Id": "flashcardId",
         "User Id": "userId",
         user_id: "userId",
+        p_user_id: "userId",
         UserId: "userId",
+        "user-id": "userId",
+        userId: "userId",
+        "review-count": "reviewCount",
+        reviewCount: "reviewCount",
+        ReviewCount: "reviewCount",
         review_count: "reviewCount",
         "Review Count": "reviewCount",
         p_review_count: "reviewCount",
-        reviewCount: "reviewCount",
-        ReviewCount: "reviewCount",
-        "review-count": "reviewCount",
-        "correct-count": "correctCount",
         correct_count: "correctCount",
-        "Correct Count": "correctCount",
         correctCount: "correctCount",
-        p_correct_count: "correctCount",
         CorrectCount: "correctCount",
+        p_correct_count: "correctCount",
+        "correct-count": "correctCount",
+        "Correct Count": "correctCount",
         incorrect_count: "incorrectCount",
-        p_incorrect_count: "incorrectCount",
-        "Incorrect Count": "incorrectCount",
-        IncorrectCount: "incorrectCount",
-        incorrectCount: "incorrectCount",
         "incorrect-count": "incorrectCount",
-        "created-at": "createdAt",
-        "Created At": "createdAt",
-        p_created_at: "createdAt",
-        CreatedAt: "createdAt",
-        createdAt: "createdAt",
+        incorrectCount: "incorrectCount",
+        p_incorrect_count: "incorrectCount",
+        IncorrectCount: "incorrectCount",
+        "Incorrect Count": "incorrectCount",
         created_at: "createdAt",
-        updatedAt: "updatedAt",
-        "updated-at": "updatedAt",
-        "Updated At": "updatedAt",
+        "created-at": "createdAt",
+        CreatedAt: "createdAt",
+        "Created At": "createdAt",
+        createdAt: "createdAt",
+        p_created_at: "createdAt",
+        updated_at: "updatedAt",
         UpdatedAt: "updatedAt",
+        "updated-at": "updatedAt",
         p_updated_at: "updatedAt",
-        updated_at: "updatedAt"
+        "Updated At": "updatedAt",
+        updatedAt: "updatedAt"
     },
     flashcardImages: {
         Id: "id",
         id: "id",
         p_id: "id",
-        "Flashcard Id": "flashcardId",
-        p_flashcard_id: "flashcardId",
         flashcard_id: "flashcardId",
-        flashcardId: "flashcardId",
-        FlashcardId: "flashcardId",
+        p_flashcard_id: "flashcardId",
         "flashcard-id": "flashcardId",
-        filePath: "filePath",
+        FlashcardId: "flashcardId",
+        flashcardId: "flashcardId",
+        "Flashcard Id": "flashcardId",
+        FilePath: "filePath",
         "File Path": "filePath",
         p_file_path: "filePath",
-        FilePath: "filePath",
-        file_path: "filePath",
+        filePath: "filePath",
         "file-path": "filePath",
-        "File Name": "fileName",
-        fileName: "fileName",
-        file_name: "fileName",
-        "file-name": "fileName",
+        file_path: "filePath",
         FileName: "fileName",
+        "file-name": "fileName",
+        fileName: "fileName",
+        "File Name": "fileName",
         p_file_name: "fileName",
-        mime_type: "mimeType",
-        "Mime Type": "mimeType",
+        file_name: "fileName",
         mimeType: "mimeType",
-        p_mime_type: "mimeType",
-        MimeType: "mimeType",
         "mime-type": "mimeType",
+        MimeType: "mimeType",
+        "Mime Type": "mimeType",
+        mime_type: "mimeType",
+        p_mime_type: "mimeType",
         p_size: "size",
         Size: "size",
         size: "size",
+        created_at: "createdAt",
         "created-at": "createdAt",
-        "Created At": "createdAt",
-        p_created_at: "createdAt",
         CreatedAt: "createdAt",
+        "Created At": "createdAt",
         createdAt: "createdAt",
-        created_at: "createdAt"
+        p_created_at: "createdAt"
     },
     flashcardSetRelations: {
-        "Flashcard Id": "flashcardId",
-        p_flashcard_id: "flashcardId",
         flashcard_id: "flashcardId",
-        flashcardId: "flashcardId",
-        FlashcardId: "flashcardId",
+        p_flashcard_id: "flashcardId",
         "flashcard-id": "flashcardId",
-        p_set_id: "setId",
+        FlashcardId: "flashcardId",
+        flashcardId: "flashcardId",
+        "Flashcard Id": "flashcardId",
         setId: "setId",
+        "Set Id": "setId",
         set_id: "setId",
         "set-id": "setId",
+        p_set_id: "setId",
         SetId: "setId",
-        "Set Id": "setId",
-        Order: "order",
+        p_order: "order",
         order: "order",
-        p_order: "order"
+        Order: "order"
     },
     flashcardSets: {
-        p_set_id: "setId",
         setId: "setId",
+        "Set Id": "setId",
         set_id: "setId",
         "set-id": "setId",
+        p_set_id: "setId",
         SetId: "setId",
-        "Set Id": "setId",
-        p_user_id: "userId",
-        "user-id": "userId",
-        userId: "userId",
         "User Id": "userId",
         user_id: "userId",
+        p_user_id: "userId",
         UserId: "userId",
-        p_name: "name",
-        Name: "name",
+        "user-id": "userId",
+        userId: "userId",
         name: "name",
-        "created-at": "createdAt",
-        "Created At": "createdAt",
-        p_created_at: "createdAt",
-        CreatedAt: "createdAt",
-        createdAt: "createdAt",
+        Name: "name",
+        p_name: "name",
         created_at: "createdAt",
-        updatedAt: "updatedAt",
-        "updated-at": "updatedAt",
-        "Updated At": "updatedAt",
-        UpdatedAt: "updatedAt",
-        p_updated_at: "updatedAt",
+        "created-at": "createdAt",
+        CreatedAt: "createdAt",
+        "Created At": "createdAt",
+        createdAt: "createdAt",
+        p_created_at: "createdAt",
         updated_at: "updatedAt",
-        SharedWith: "sharedWith",
+        UpdatedAt: "updatedAt",
+        "updated-at": "updatedAt",
+        p_updated_at: "updatedAt",
+        "Updated At": "updatedAt",
+        updatedAt: "updatedAt",
         shared_with: "sharedWith",
+        "Shared With": "sharedWith",
         p_shared_with: "sharedWith",
         sharedWith: "sharedWith",
         "shared-with": "sharedWith",
-        "Shared With": "sharedWith",
+        SharedWith: "sharedWith",
         public: "public",
-        Public: "public",
         p_public: "public",
-        Topic: "topic",
+        Public: "public",
         p_topic: "topic",
         topic: "topic",
+        Topic: "topic",
         p_lesson: "lesson",
-        Lesson: "lesson",
         lesson: "lesson",
-        Difficulty: "difficulty",
+        Lesson: "lesson",
         p_difficulty: "difficulty",
         difficulty: "difficulty",
-        "audio-overview": "audioOverview",
+        Difficulty: "difficulty",
+        AudioOverview: "audioOverview",
+        audio_overview: "audioOverview",
+        p_audio_overview: "audioOverview",
         audioOverview: "audioOverview",
         "Audio Overview": "audioOverview",
-        AudioOverview: "audioOverview",
-        p_audio_overview: "audioOverview",
-        audio_overview: "audioOverview"
+        "audio-overview": "audioOverview"
     },
     processor: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        dependsDefault: "dependsDefault",
-        p_depends_default: "dependsDefault",
-        DependsDefault: "dependsDefault",
-        "depends-default": "dependsDefault",
-        "Depends Default": "dependsDefault",
+        Name: "name",
+        p_name: "name",
         depends_default: "dependsDefault",
-        DefaultExtractors: "defaultExtractors",
-        "Default Extractors": "defaultExtractors",
-        defaultExtractors: "defaultExtractors",
+        "depends-default": "dependsDefault",
+        p_depends_default: "dependsDefault",
+        dependsDefault: "dependsDefault",
+        DependsDefault: "dependsDefault",
+        "Depends Default": "dependsDefault",
         default_extractors: "defaultExtractors",
+        defaultExtractors: "defaultExtractors",
         "default-extractors": "defaultExtractors",
         p_default_extractors: "defaultExtractors",
-        p_params: "params",
+        DefaultExtractors: "defaultExtractors",
+        "Default Extractors": "defaultExtractors",
         params: "params",
-        Params: "params"
+        Params: "params",
+        p_params: "params"
     },
     recipe: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        description: "description",
+        Name: "name",
+        p_name: "name",
         Description: "description",
         p_description: "description",
+        description: "description",
+        p_tags: "tags",
         Tags: "tags",
         tags: "tags",
-        p_tags: "tags",
         "Sample Output": "sampleOutput",
-        p_sample_output: "sampleOutput",
-        sample_output: "sampleOutput",
-        sampleOutput: "sampleOutput",
-        "sample-output": "sampleOutput",
         SampleOutput: "sampleOutput",
-        is_public: "isPublic",
-        "Is Public": "isPublic",
-        "is-public": "isPublic",
+        sampleOutput: "sampleOutput",
+        sample_output: "sampleOutput",
+        "sample-output": "sampleOutput",
+        p_sample_output: "sampleOutput",
         IsPublic: "isPublic",
         p_is_public: "isPublic",
+        "Is Public": "isPublic",
+        "is-public": "isPublic",
+        is_public: "isPublic",
         isPublic: "isPublic",
-        status: "status",
         p_status: "status",
+        status: "status",
         Status: "status",
-        p_version: "version",
         version: "version",
         Version: "version",
-        p_messages: "messages",
-        messages: "messages",
+        p_version: "version",
         Messages: "messages",
-        postResultOptions: "postResultOptions",
-        "Post Result Options": "postResultOptions",
-        post_result_options: "postResultOptions",
+        messages: "messages",
+        p_messages: "messages",
         p_post_result_options: "postResultOptions",
-        PostResultOptions: "postResultOptions",
-        "post-result-options": "postResultOptions"
+        "Post Result Options": "postResultOptions",
+        "post-result-options": "postResultOptions",
+        post_result_options: "postResultOptions",
+        postResultOptions: "postResultOptions",
+        PostResultOptions: "postResultOptions"
     },
     recipeBroker: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_recipe: "recipe",
         Recipe: "recipe",
+        p_recipe: "recipe",
         recipe: "recipe",
-        Broker: "broker",
         p_broker: "broker",
+        Broker: "broker",
         broker: "broker",
-        broker_role: "brokerRole",
-        BrokerRole: "brokerRole",
-        p_broker_role: "brokerRole",
         brokerRole: "brokerRole",
         "Broker Role": "brokerRole",
+        p_broker_role: "brokerRole",
+        broker_role: "brokerRole",
         "broker-role": "brokerRole",
+        BrokerRole: "brokerRole",
         p_required: "required",
-        required: "required",
-        Required: "required"
+        Required: "required",
+        required: "required"
     },
     recipeDisplay: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_recipe: "recipe",
         Recipe: "recipe",
+        p_recipe: "recipe",
         recipe: "recipe",
-        Display: "display",
         p_display: "display",
+        Display: "display",
         display: "display",
         Priority: "priority",
-        priority: "priority",
         p_priority: "priority",
+        priority: "priority",
         displaySettings: "displaySettings",
-        display_settings: "displaySettings",
         p_display_settings: "displaySettings",
         DisplaySettings: "displaySettings",
-        "Display Settings": "displaySettings",
-        "display-settings": "displaySettings"
+        display_settings: "displaySettings",
+        "display-settings": "displaySettings",
+        "Display Settings": "displaySettings"
     },
     recipeFunction: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_recipe: "recipe",
         Recipe: "recipe",
+        p_recipe: "recipe",
         recipe: "recipe",
         function: "function",
-        Function: "function",
         p_function: "function",
-        p_role: "role",
+        Function: "function",
         role: "role",
         Role: "role",
-        p_params: "params",
+        p_role: "role",
         params: "params",
-        Params: "params"
+        Params: "params",
+        p_params: "params"
     },
     recipeModel: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_recipe: "recipe",
         Recipe: "recipe",
+        p_recipe: "recipe",
         recipe: "recipe",
-        ai_model: "aiModel",
-        "ai-model": "aiModel",
-        "Ai Model": "aiModel",
-        aiModel: "aiModel",
-        AiModel: "aiModel",
         p_ai_model: "aiModel",
-        p_role: "role",
+        "Ai Model": "aiModel",
+        AiModel: "aiModel",
+        "ai-model": "aiModel",
+        ai_model: "aiModel",
+        aiModel: "aiModel",
         role: "role",
         Role: "role",
+        p_role: "role",
         Priority: "priority",
-        priority: "priority",
-        p_priority: "priority"
+        p_priority: "priority",
+        priority: "priority"
     },
     recipeProcessor: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_recipe: "recipe",
         Recipe: "recipe",
+        p_recipe: "recipe",
         recipe: "recipe",
-        processor: "processor",
-        Processor: "processor",
         p_processor: "processor",
-        p_params: "params",
+        Processor: "processor",
+        processor: "processor",
         params: "params",
-        Params: "params"
+        Params: "params",
+        p_params: "params"
     },
     recipeTool: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_recipe: "recipe",
         Recipe: "recipe",
+        p_recipe: "recipe",
         recipe: "recipe",
-        p_tool: "tool",
         Tool: "tool",
         tool: "tool",
-        p_params: "params",
+        p_tool: "tool",
         params: "params",
-        Params: "params"
+        Params: "params",
+        p_params: "params"
     },
     registeredFunction: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        module_path: "modulePath",
-        ModulePath: "modulePath",
+        Name: "name",
+        p_name: "name",
+        p_module_path: "modulePath",
         modulePath: "modulePath",
         "Module Path": "modulePath",
-        p_module_path: "modulePath",
+        module_path: "modulePath",
+        ModulePath: "modulePath",
         "module-path": "modulePath",
-        p_class_name: "className",
-        className: "className",
-        "class-name": "className",
-        ClassName: "className",
         "Class Name": "className",
+        "class-name": "className",
+        p_class_name: "className",
         class_name: "className",
-        description: "description",
+        className: "className",
+        ClassName: "className",
         Description: "description",
         p_description: "description",
-        "return-broker": "returnBroker",
+        description: "description",
+        "Return Broker": "returnBroker",
+        return_broker: "returnBroker",
         returnBroker: "returnBroker",
         p_return_broker: "returnBroker",
-        "Return Broker": "returnBroker",
-        ReturnBroker: "returnBroker",
-        return_broker: "returnBroker"
+        "return-broker": "returnBroker",
+        ReturnBroker: "returnBroker"
     },
     systemFunction: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        description: "description",
+        Name: "name",
+        p_name: "name",
         Description: "description",
         p_description: "description",
-        sample: "sample",
+        description: "description",
         p_sample: "sample",
+        sample: "sample",
         Sample: "sample",
-        input_params: "inputParams",
-        InputParams: "inputParams",
-        inputParams: "inputParams",
-        "input-params": "inputParams",
-        "Input Params": "inputParams",
         p_input_params: "inputParams",
+        InputParams: "inputParams",
+        "input-params": "inputParams",
+        inputParams: "inputParams",
+        "Input Params": "inputParams",
+        input_params: "inputParams",
         outputOptions: "outputOptions",
         OutputOptions: "outputOptions",
-        p_output_options: "outputOptions",
         "Output Options": "outputOptions",
-        "output-options": "outputOptions",
         output_options: "outputOptions",
+        p_output_options: "outputOptions",
+        "output-options": "outputOptions",
         RfId: "rfId",
-        rf_id: "rfId",
-        p_rf_id: "rfId",
+        rfId: "rfId",
         "Rf Id": "rfId",
-        "rf-id": "rfId",
-        rfId: "rfId"
+        p_rf_id: "rfId",
+        rf_id: "rfId",
+        "rf-id": "rfId"
     },
     tool: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
+        Name: "name",
+        p_name: "name",
         source: "source",
         Source: "source",
         p_source: "source",
-        description: "description",
         Description: "description",
         p_description: "description",
-        Parameters: "parameters",
-        parameters: "parameters",
+        description: "description",
         p_parameters: "parameters",
+        parameters: "parameters",
+        Parameters: "parameters",
+        RequiredArgs: "requiredArgs",
+        "Required Args": "requiredArgs",
+        requiredArgs: "requiredArgs",
         required_args: "requiredArgs",
         "required-args": "requiredArgs",
-        RequiredArgs: "requiredArgs",
-        requiredArgs: "requiredArgs",
-        "Required Args": "requiredArgs",
         p_required_args: "requiredArgs",
         systemFunction: "systemFunction",
-        SystemFunction: "systemFunction",
-        p_system_function: "systemFunction",
-        "system-function": "systemFunction",
         "System Function": "systemFunction",
+        "system-function": "systemFunction",
+        p_system_function: "systemFunction",
         system_function: "systemFunction",
-        additional_params: "additionalParams",
+        SystemFunction: "systemFunction",
         "Additional Params": "additionalParams",
         "additional-params": "additionalParams",
         additionalParams: "additionalParams",
-        p_additional_params: "additionalParams",
-        AdditionalParams: "additionalParams"
+        AdditionalParams: "additionalParams",
+        additional_params: "additionalParams",
+        p_additional_params: "additionalParams"
     },
     transformer: {
         Id: "id",
         id: "id",
         p_id: "id",
-        p_name: "name",
-        Name: "name",
         name: "name",
-        input_params: "inputParams",
-        InputParams: "inputParams",
-        inputParams: "inputParams",
-        "input-params": "inputParams",
-        "Input Params": "inputParams",
+        Name: "name",
+        p_name: "name",
         p_input_params: "inputParams",
-        output_params: "outputParams",
-        "output-params": "outputParams",
-        outputParams: "outputParams",
+        InputParams: "inputParams",
+        "input-params": "inputParams",
+        inputParams: "inputParams",
+        "Input Params": "inputParams",
+        input_params: "inputParams",
         p_output_params: "outputParams",
-        OutputParams: "outputParams",
-        "Output Params": "outputParams"
+        outputParams: "outputParams",
+        output_params: "outputParams",
+        "Output Params": "outputParams",
+        "output-params": "outputParams",
+        OutputParams: "outputParams"
     },
     userPreferences: {
-        p_user_id: "userId",
-        "user-id": "userId",
-        userId: "userId",
         "User Id": "userId",
         user_id: "userId",
+        p_user_id: "userId",
         UserId: "userId",
-        Preferences: "preferences",
+        "user-id": "userId",
+        userId: "userId",
         p_preferences: "preferences",
         preferences: "preferences",
-        "created-at": "createdAt",
-        "Created At": "createdAt",
-        p_created_at: "createdAt",
-        CreatedAt: "createdAt",
-        createdAt: "createdAt",
+        Preferences: "preferences",
         created_at: "createdAt",
-        updatedAt: "updatedAt",
-        "updated-at": "updatedAt",
-        "Updated At": "updatedAt",
+        "created-at": "createdAt",
+        CreatedAt: "createdAt",
+        "Created At": "createdAt",
+        createdAt: "createdAt",
+        p_created_at: "createdAt",
+        updated_at: "updatedAt",
         UpdatedAt: "updatedAt",
+        "updated-at": "updatedAt",
         p_updated_at: "updatedAt",
-        updated_at: "updatedAt"
+        "Updated At": "updatedAt",
+        updatedAt: "updatedAt"
     },
 };
 
@@ -1555,7 +1555,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "transformer",
             "custom": "transformer"
         },
-        "node_type": {
+        "nodeType": {
             "frontend": "nodeType",
             "backend": "node_type",
             "database": "node_type",
@@ -1567,7 +1567,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "nodeType",
             "custom": "nodeType"
         },
-        "reference_id": {
+        "referenceId": {
             "frontend": "referenceId",
             "backend": "reference_id",
             "database": "reference_id",
@@ -1578,6 +1578,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "referenceId",
             "GraphQL": "referenceId",
             "custom": "referenceId"
+        },
+        "automationMatrixReference": {
+            "frontend": "automationMatrixReference",
+            "backend": "automation_matrix_reference",
+            "database": "ref_automation_matrix",
+            "pretty": "Automation Matrix Reference",
+            "component": "AutomationMatrixReference",
+            "kebab": "automation-matrixReference",
+            "sqlFunctionRef": "p_ref_automation_matrix",
+            "RestAPI": "automationMatrixReference",
+            "GraphQL": "automationMatrixReference",
+            "custom": "automationMatrixReference"
+        },
+        "transformerReference": {
+            "frontend": "transformerReference",
+            "backend": "transformer_reference",
+            "database": "ref_transformer",
+            "pretty": "Transformer Reference",
+            "component": "TransformerReference",
+            "kebab": "transformerReference",
+            "sqlFunctionRef": "p_ref_transformer",
+            "RestAPI": "transformerReference",
+            "GraphQL": "transformerReference",
+            "custom": "transformerReference"
         }
     },
     aiEndpoint: {
@@ -1629,7 +1653,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "description",
             "custom": "description"
         },
-        "additional_cost": {
+        "additionalCost": {
             "frontend": "additionalCost",
             "backend": "additional_cost",
             "database": "additional_cost",
@@ -1641,7 +1665,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "additionalCost",
             "custom": "additionalCost"
         },
-        "cost_details": {
+        "costDetails": {
             "frontend": "costDetails",
             "backend": "cost_details",
             "database": "cost_details",
@@ -1691,7 +1715,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "common_name": {
+        "commonName": {
             "frontend": "commonName",
             "backend": "common_name",
             "database": "common_name",
@@ -1703,7 +1727,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "commonName",
             "custom": "commonName"
         },
-        "model_class": {
+        "modelClass": {
             "frontend": "modelClass",
             "backend": "model_class",
             "database": "model_class",
@@ -1739,7 +1763,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "endpoints",
             "custom": "endpoints"
         },
-        "context_window": {
+        "contextWindow": {
             "frontend": "contextWindow",
             "backend": "context_window",
             "database": "context_window",
@@ -1751,7 +1775,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "contextWindow",
             "custom": "contextWindow"
         },
-        "max_tokens": {
+        "maxTokens": {
             "frontend": "maxTokens",
             "backend": "max_tokens",
             "database": "max_tokens",
@@ -1786,6 +1810,18 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "controls",
             "GraphQL": "controls",
             "custom": "controls"
+        },
+        "recipeModelInverse": {
+            "frontend": "recipeModelInverse",
+            "backend": "recipe_model_Inverse",
+            "database": "ifk_recipe_model",
+            "pretty": "Recipe Model Inverse",
+            "component": "RecipeModelInverse",
+            "kebab": "recipe-modelInverse",
+            "sqlFunctionRef": "p_ifk_recipe_model",
+            "RestAPI": "recipeModelInverse",
+            "GraphQL": "recipeModelInverse",
+            "custom": "recipeModelInverse"
         }
     },
     arg: {
@@ -1837,7 +1873,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "default",
             "custom": "default"
         },
-        "data_type": {
+        "dataType": {
             "frontend": "dataType",
             "backend": "data_type",
             "database": "data_type",
@@ -1861,7 +1897,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "ready",
             "custom": "ready"
         },
-        "registered_function": {
+        "registeredFunction": {
             "frontend": "registeredFunction",
             "backend": "registered_function",
             "database": "registered_function",
@@ -1872,6 +1908,18 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "registeredFunction",
             "GraphQL": "registeredFunction",
             "custom": "registeredFunction"
+        },
+        "registeredFunctionReference": {
+            "frontend": "registeredFunctionReference",
+            "backend": "registered_function_reference",
+            "database": "ref_registered_function",
+            "pretty": "Registered Function Reference",
+            "component": "RegisteredFunctionReference",
+            "kebab": "registered-functionReference",
+            "sqlFunctionRef": "p_ref_registered_function",
+            "RestAPI": "registeredFunctionReference",
+            "GraphQL": "registeredFunctionReference",
+            "custom": "registeredFunctionReference"
         }
     },
     automationBoundaryBroker: {
@@ -1911,7 +1959,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "broker",
             "custom": "broker"
         },
-        "spark_source": {
+        "sparkSource": {
             "frontend": "sparkSource",
             "backend": "spark_source",
             "database": "spark_source",
@@ -1923,7 +1971,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "sparkSource",
             "custom": "sparkSource"
         },
-        "beacon_destination": {
+        "beaconDestination": {
             "frontend": "beaconDestination",
             "backend": "beacon_destination",
             "database": "beacon_destination",
@@ -1934,6 +1982,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "beaconDestination",
             "GraphQL": "beaconDestination",
             "custom": "beaconDestination"
+        },
+        "brokerReference": {
+            "frontend": "brokerReference",
+            "backend": "broker_reference",
+            "database": "ref_broker",
+            "pretty": "Broker Reference",
+            "component": "BrokerReference",
+            "kebab": "brokerReference",
+            "sqlFunctionRef": "p_ref_broker",
+            "RestAPI": "brokerReference",
+            "GraphQL": "brokerReference",
+            "custom": "brokerReference"
+        },
+        "automationMatrixReference": {
+            "frontend": "automationMatrixReference",
+            "backend": "automation_matrix_reference",
+            "database": "ref_automation_matrix",
+            "pretty": "Automation Matrix Reference",
+            "component": "AutomationMatrixReference",
+            "kebab": "automation-matrixReference",
+            "sqlFunctionRef": "p_ref_automation_matrix",
+            "RestAPI": "automationMatrixReference",
+            "GraphQL": "automationMatrixReference",
+            "custom": "automationMatrixReference"
         }
     },
     automationMatrix: {
@@ -1973,7 +2045,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "description",
             "custom": "description"
         },
-        "average_seconds": {
+        "averageSeconds": {
             "frontend": "averageSeconds",
             "backend": "average_seconds",
             "database": "average_seconds",
@@ -1985,7 +2057,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "averageSeconds",
             "custom": "averageSeconds"
         },
-        "is_automated": {
+        "isAutomated": {
             "frontend": "isAutomated",
             "backend": "is_automated",
             "database": "is_automated",
@@ -1997,7 +2069,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "isAutomated",
             "custom": "isAutomated"
         },
-        "cognition_matrices": {
+        "cognitionMatrices": {
             "frontend": "cognitionMatrices",
             "backend": "cognition_matrices",
             "database": "cognition_matrices",
@@ -2008,6 +2080,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "cognitionMatrices",
             "GraphQL": "cognitionMatrices",
             "custom": "cognitionMatrices"
+        },
+        "actionInverse": {
+            "frontend": "actionInverse",
+            "backend": "action_Inverse",
+            "database": "ifk_action",
+            "pretty": "Action Inverse",
+            "component": "ActionInverse",
+            "kebab": "actionInverse",
+            "sqlFunctionRef": "p_ifk_action",
+            "RestAPI": "actionInverse",
+            "GraphQL": "actionInverse",
+            "custom": "actionInverse"
+        },
+        "automationBoundaryBrokerInverse": {
+            "frontend": "automationBoundaryBrokerInverse",
+            "backend": "automation_boundary_broker_Inverse",
+            "database": "ifk_automation_boundary_broker",
+            "pretty": "Automation Boundary Broker Inverse",
+            "component": "AutomationBoundaryBrokerInverse",
+            "kebab": "automation-boundary-brokerInverse",
+            "sqlFunctionRef": "p_ifk_automation_boundary_broker",
+            "RestAPI": "automationBoundaryBrokerInverse",
+            "GraphQL": "automationBoundaryBrokerInverse",
+            "custom": "automationBoundaryBrokerInverse"
         }
     },
     broker: {
@@ -2047,7 +2143,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "value",
             "custom": "value"
         },
-        "data_type": {
+        "dataType": {
             "frontend": "dataType",
             "backend": "data_type",
             "database": "data_type",
@@ -2071,7 +2167,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "ready",
             "custom": "ready"
         },
-        "default_source": {
+        "defaultSource": {
             "frontend": "defaultSource",
             "backend": "default_source",
             "database": "default_source",
@@ -2083,7 +2179,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "defaultSource",
             "custom": "defaultSource"
         },
-        "display_name": {
+        "displayName": {
             "frontend": "displayName",
             "backend": "display_name",
             "database": "display_name",
@@ -2119,7 +2215,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "tooltip",
             "custom": "tooltip"
         },
-        "validation_rules": {
+        "validationRules": {
             "frontend": "validationRules",
             "backend": "validation_rules",
             "database": "validation_rules",
@@ -2131,7 +2227,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "validationRules",
             "custom": "validationRules"
         },
-        "sample_entries": {
+        "sampleEntries": {
             "frontend": "sampleEntries",
             "backend": "sample_entries",
             "database": "sample_entries",
@@ -2143,7 +2239,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "sampleEntries",
             "custom": "sampleEntries"
         },
-        "custom_source_component": {
+        "customSourceComponent": {
             "frontend": "customSourceComponent",
             "backend": "custom_source_component",
             "database": "custom_source_component",
@@ -2155,7 +2251,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "customSourceComponent",
             "custom": "customSourceComponent"
         },
-        "additional_params": {
+        "additionalParams": {
             "frontend": "additionalParams",
             "backend": "additional_params",
             "database": "additional_params",
@@ -2167,7 +2263,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "additionalParams",
             "custom": "additionalParams"
         },
-        "other_source_params": {
+        "otherSourceParams": {
             "frontend": "otherSourceParams",
             "backend": "other_source_params",
             "database": "other_source_params",
@@ -2179,7 +2275,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "otherSourceParams",
             "custom": "otherSourceParams"
         },
-        "default_destination": {
+        "defaultDestination": {
             "frontend": "defaultDestination",
             "backend": "default_destination",
             "database": "default_destination",
@@ -2191,7 +2287,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "defaultDestination",
             "custom": "defaultDestination"
         },
-        "output_component": {
+        "outputComponent": {
             "frontend": "outputComponent",
             "backend": "output_component",
             "database": "output_component",
@@ -2214,6 +2310,54 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "tags",
             "GraphQL": "tags",
             "custom": "tags"
+        },
+        "dataInputComponentReference": {
+            "frontend": "dataInputComponentReference",
+            "backend": "data_input_component_reference",
+            "database": "ref_data_input_component",
+            "pretty": "Data Input Component Reference",
+            "component": "DataInputComponentReference",
+            "kebab": "data-input-componentReference",
+            "sqlFunctionRef": "p_ref_data_input_component",
+            "RestAPI": "dataInputComponentReference",
+            "GraphQL": "dataInputComponentReference",
+            "custom": "dataInputComponentReference"
+        },
+        "recipeBrokerInverse": {
+            "frontend": "recipeBrokerInverse",
+            "backend": "recipe_broker_Inverse",
+            "database": "ifk_recipe_broker",
+            "pretty": "Recipe Broker Inverse",
+            "component": "RecipeBrokerInverse",
+            "kebab": "recipe-brokerInverse",
+            "sqlFunctionRef": "p_ifk_recipe_broker",
+            "RestAPI": "recipeBrokerInverse",
+            "GraphQL": "recipeBrokerInverse",
+            "custom": "recipeBrokerInverse"
+        },
+        "registeredFunctionInverse": {
+            "frontend": "registeredFunctionInverse",
+            "backend": "registered_function_Inverse",
+            "database": "ifk_registered_function",
+            "pretty": "Registered Function Inverse",
+            "component": "RegisteredFunctionInverse",
+            "kebab": "registered-functionInverse",
+            "sqlFunctionRef": "p_ifk_registered_function",
+            "RestAPI": "registeredFunctionInverse",
+            "GraphQL": "registeredFunctionInverse",
+            "custom": "registeredFunctionInverse"
+        },
+        "automationBoundaryBrokerInverse": {
+            "frontend": "automationBoundaryBrokerInverse",
+            "backend": "automation_boundary_broker_Inverse",
+            "database": "ifk_automation_boundary_broker",
+            "pretty": "Automation Boundary Broker Inverse",
+            "component": "AutomationBoundaryBrokerInverse",
+            "kebab": "automation-boundary-brokerInverse",
+            "sqlFunctionRef": "p_ifk_automation_boundary_broker",
+            "RestAPI": "automationBoundaryBrokerInverse",
+            "GraphQL": "automationBoundaryBrokerInverse",
+            "custom": "automationBoundaryBrokerInverse"
         }
     },
     dataInputComponent: {
@@ -2241,7 +2385,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "options",
             "custom": "options"
         },
-        "include_other": {
+        "includeOther": {
             "frontend": "includeOther",
             "backend": "include_other",
             "database": "include_other",
@@ -2289,7 +2433,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "step",
             "custom": "step"
         },
-        "min_rows": {
+        "minRows": {
             "frontend": "minRows",
             "backend": "min_rows",
             "database": "min_rows",
@@ -2301,7 +2445,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "minRows",
             "custom": "minRows"
         },
-        "max_rows": {
+        "maxRows": {
             "frontend": "maxRows",
             "backend": "max_rows",
             "database": "max_rows",
@@ -2313,7 +2457,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "maxRows",
             "custom": "maxRows"
         },
-        "acceptable_filetypes": {
+        "acceptableFiletypes": {
             "frontend": "acceptableFiletypes",
             "backend": "acceptable_filetypes",
             "database": "acceptable_filetypes",
@@ -2349,7 +2493,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "classes",
             "custom": "classes"
         },
-        "color_overrides": {
+        "colorOverrides": {
             "frontend": "colorOverrides",
             "backend": "color_overrides",
             "database": "color_overrides",
@@ -2361,7 +2505,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "colorOverrides",
             "custom": "colorOverrides"
         },
-        "additional_params": {
+        "additionalParams": {
             "frontend": "additionalParams",
             "backend": "additional_params",
             "database": "additional_params",
@@ -2372,6 +2516,18 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "additionalParams",
             "GraphQL": "additionalParams",
             "custom": "additionalParams"
+        },
+        "brokerInverse": {
+            "frontend": "brokerInverse",
+            "backend": "broker_Inverse",
+            "database": "ifk_broker",
+            "pretty": "Broker Inverse",
+            "component": "BrokerInverse",
+            "kebab": "brokerInverse",
+            "sqlFunctionRef": "p_ifk_broker",
+            "RestAPI": "brokerInverse",
+            "GraphQL": "brokerInverse",
+            "custom": "brokerInverse"
         }
     },
     dataOutputComponent: {
@@ -2387,7 +2543,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "id",
             "custom": "id"
         },
-        "component_type": {
+        "componentType": {
             "frontend": "componentType",
             "backend": "component_type",
             "database": "component_type",
@@ -2399,7 +2555,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "componentType",
             "custom": "componentType"
         },
-        "ui_component": {
+        "uiComponent": {
             "frontend": "uiComponent",
             "backend": "ui_component",
             "database": "ui_component",
@@ -2423,7 +2579,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "props",
             "custom": "props"
         },
-        "additional_params": {
+        "additionalParams": {
             "frontend": "additionalParams",
             "backend": "additional_params",
             "database": "additional_params",
@@ -2461,7 +2617,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "default_params": {
+        "defaultParams": {
             "frontend": "defaultParams",
             "backend": "default_params",
             "database": "default_params",
@@ -2473,7 +2629,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "defaultParams",
             "custom": "defaultParams"
         },
-        "customizable_params": {
+        "customizableParams": {
             "frontend": "customizableParams",
             "backend": "customizable_params",
             "database": "customizable_params",
@@ -2485,7 +2641,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "customizableParams",
             "custom": "customizableParams"
         },
-        "additional_params": {
+        "additionalParams": {
             "frontend": "additionalParams",
             "backend": "additional_params",
             "database": "additional_params",
@@ -2496,6 +2652,18 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "additionalParams",
             "GraphQL": "additionalParams",
             "custom": "additionalParams"
+        },
+        "recipeDisplayInverse": {
+            "frontend": "recipeDisplayInverse",
+            "backend": "recipe_display_Inverse",
+            "database": "ifk_recipe_display",
+            "pretty": "Recipe Display Inverse",
+            "component": "RecipeDisplayInverse",
+            "kebab": "recipe-displayInverse",
+            "sqlFunctionRef": "p_ifk_recipe_display",
+            "RestAPI": "recipeDisplayInverse",
+            "GraphQL": "recipeDisplayInverse",
+            "custom": "recipeDisplayInverse"
         }
     },
     emails: {
@@ -2571,7 +2739,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "timestamp",
             "custom": "timestamp"
         },
-        "is_read": {
+        "isRead": {
             "frontend": "isRead",
             "backend": "is_read",
             "database": "is_read",
@@ -2609,7 +2777,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "output_type": {
+        "outputType": {
             "frontend": "outputType",
             "backend": "output_type",
             "database": "output_type",
@@ -2621,7 +2789,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "outputType",
             "custom": "outputType"
         },
-        "default_identifier": {
+        "defaultIdentifier": {
             "frontend": "defaultIdentifier",
             "backend": "default_identifier",
             "database": "default_identifier",
@@ -2633,7 +2801,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "defaultIdentifier",
             "custom": "defaultIdentifier"
         },
-        "default_index": {
+        "defaultIndex": {
             "frontend": "defaultIndex",
             "backend": "default_index",
             "database": "default_index",
@@ -2659,7 +2827,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "id",
             "custom": "id"
         },
-        "user_id": {
+        "userId": {
             "frontend": "userId",
             "backend": "user_id",
             "database": "user_id",
@@ -2743,7 +2911,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "example",
             "custom": "example"
         },
-        "detailed_explanation": {
+        "detailedExplanation": {
             "frontend": "detailedExplanation",
             "backend": "detailed_explanation",
             "database": "detailed_explanation",
@@ -2755,7 +2923,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "detailedExplanation",
             "custom": "detailedExplanation"
         },
-        "audio_explanation": {
+        "audioExplanation": {
             "frontend": "audioExplanation",
             "backend": "audio_explanation",
             "database": "audio_explanation",
@@ -2767,7 +2935,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "audioExplanation",
             "custom": "audioExplanation"
         },
-        "personal_notes": {
+        "personalNotes": {
             "frontend": "personalNotes",
             "backend": "personal_notes",
             "database": "personal_notes",
@@ -2779,7 +2947,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "personalNotes",
             "custom": "personalNotes"
         },
-        "is_deleted": {
+        "isDeleted": {
             "frontend": "isDeleted",
             "backend": "is_deleted",
             "database": "is_deleted",
@@ -2803,7 +2971,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "public",
             "custom": "public"
         },
-        "shared_with": {
+        "sharedWith": {
             "frontend": "sharedWith",
             "backend": "shared_with",
             "database": "shared_with",
@@ -2815,7 +2983,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "sharedWith",
             "custom": "sharedWith"
         },
-        "created_at": {
+        "createdAt": {
             "frontend": "createdAt",
             "backend": "created_at",
             "database": "created_at",
@@ -2827,7 +2995,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "createdAt",
             "custom": "createdAt"
         },
-        "updated_at": {
+        "updatedAt": {
             "frontend": "updatedAt",
             "backend": "updated_at",
             "database": "updated_at",
@@ -2838,6 +3006,42 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "updatedAt",
             "GraphQL": "updatedAt",
             "custom": "updatedAt"
+        },
+        "flashcardHistoryInverse": {
+            "frontend": "flashcardHistoryInverse",
+            "backend": "flashcard_history_Inverse",
+            "database": "ifk_flashcard_history",
+            "pretty": "Flashcard History Inverse",
+            "component": "FlashcardHistoryInverse",
+            "kebab": "flashcard-historyInverse",
+            "sqlFunctionRef": "p_ifk_flashcard_history",
+            "RestAPI": "flashcardHistoryInverse",
+            "GraphQL": "flashcardHistoryInverse",
+            "custom": "flashcardHistoryInverse"
+        },
+        "flashcardSetRelationsInverse": {
+            "frontend": "flashcardSetRelationsInverse",
+            "backend": "flashcard_set_relations_Inverse",
+            "database": "ifk_flashcard_set_relations",
+            "pretty": "Flashcard Set Relations Inverse",
+            "component": "FlashcardSetRelationsInverse",
+            "kebab": "flashcard-set-relationsInverse",
+            "sqlFunctionRef": "p_ifk_flashcard_set_relations",
+            "RestAPI": "flashcardSetRelationsInverse",
+            "GraphQL": "flashcardSetRelationsInverse",
+            "custom": "flashcardSetRelationsInverse"
+        },
+        "flashcardImagesInverse": {
+            "frontend": "flashcardImagesInverse",
+            "backend": "flashcard_images_Inverse",
+            "database": "ifk_flashcard_images",
+            "pretty": "Flashcard Images Inverse",
+            "component": "FlashcardImagesInverse",
+            "kebab": "flashcard-imagesInverse",
+            "sqlFunctionRef": "p_ifk_flashcard_images",
+            "RestAPI": "flashcardImagesInverse",
+            "GraphQL": "flashcardImagesInverse",
+            "custom": "flashcardImagesInverse"
         }
     },
     flashcardHistory: {
@@ -2853,7 +3057,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "id",
             "custom": "id"
         },
-        "flashcard_id": {
+        "flashcardId": {
             "frontend": "flashcardId",
             "backend": "flashcard_id",
             "database": "flashcard_id",
@@ -2865,7 +3069,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "flashcardId",
             "custom": "flashcardId"
         },
-        "user_id": {
+        "userId": {
             "frontend": "userId",
             "backend": "user_id",
             "database": "user_id",
@@ -2877,7 +3081,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "userId",
             "custom": "userId"
         },
-        "review_count": {
+        "reviewCount": {
             "frontend": "reviewCount",
             "backend": "review_count",
             "database": "review_count",
@@ -2889,7 +3093,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "reviewCount",
             "custom": "reviewCount"
         },
-        "correct_count": {
+        "correctCount": {
             "frontend": "correctCount",
             "backend": "correct_count",
             "database": "correct_count",
@@ -2901,7 +3105,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "correctCount",
             "custom": "correctCount"
         },
-        "incorrect_count": {
+        "incorrectCount": {
             "frontend": "incorrectCount",
             "backend": "incorrect_count",
             "database": "incorrect_count",
@@ -2913,7 +3117,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "incorrectCount",
             "custom": "incorrectCount"
         },
-        "created_at": {
+        "createdAt": {
             "frontend": "createdAt",
             "backend": "created_at",
             "database": "created_at",
@@ -2925,7 +3129,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "createdAt",
             "custom": "createdAt"
         },
-        "updated_at": {
+        "updatedAt": {
             "frontend": "updatedAt",
             "backend": "updated_at",
             "database": "updated_at",
@@ -2936,6 +3140,18 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "updatedAt",
             "GraphQL": "updatedAt",
             "custom": "updatedAt"
+        },
+        "flashcardDataReference": {
+            "frontend": "flashcardDataReference",
+            "backend": "flashcard_data_reference",
+            "database": "ref_flashcard_data",
+            "pretty": "Flashcard Data Reference",
+            "component": "FlashcardDataReference",
+            "kebab": "flashcard-dataReference",
+            "sqlFunctionRef": "p_ref_flashcard_data",
+            "RestAPI": "flashcardDataReference",
+            "GraphQL": "flashcardDataReference",
+            "custom": "flashcardDataReference"
         }
     },
     flashcardImages: {
@@ -2951,7 +3167,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "id",
             "custom": "id"
         },
-        "flashcard_id": {
+        "flashcardId": {
             "frontend": "flashcardId",
             "backend": "flashcard_id",
             "database": "flashcard_id",
@@ -2963,7 +3179,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "flashcardId",
             "custom": "flashcardId"
         },
-        "file_path": {
+        "filePath": {
             "frontend": "filePath",
             "backend": "file_path",
             "database": "file_path",
@@ -2975,7 +3191,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "filePath",
             "custom": "filePath"
         },
-        "file_name": {
+        "fileName": {
             "frontend": "fileName",
             "backend": "file_name",
             "database": "file_name",
@@ -2987,7 +3203,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "fileName",
             "custom": "fileName"
         },
-        "mime_type": {
+        "mimeType": {
             "frontend": "mimeType",
             "backend": "mime_type",
             "database": "mime_type",
@@ -3011,7 +3227,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "size",
             "custom": "size"
         },
-        "created_at": {
+        "createdAt": {
             "frontend": "createdAt",
             "backend": "created_at",
             "database": "created_at",
@@ -3022,10 +3238,22 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "createdAt",
             "GraphQL": "createdAt",
             "custom": "createdAt"
+        },
+        "flashcardDataReference": {
+            "frontend": "flashcardDataReference",
+            "backend": "flashcard_data_reference",
+            "database": "ref_flashcard_data",
+            "pretty": "Flashcard Data Reference",
+            "component": "FlashcardDataReference",
+            "kebab": "flashcard-dataReference",
+            "sqlFunctionRef": "p_ref_flashcard_data",
+            "RestAPI": "flashcardDataReference",
+            "GraphQL": "flashcardDataReference",
+            "custom": "flashcardDataReference"
         }
     },
     flashcardSetRelations: {
-        "flashcard_id": {
+        "flashcardId": {
             "frontend": "flashcardId",
             "backend": "flashcard_id",
             "database": "flashcard_id",
@@ -3037,7 +3265,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "flashcardId",
             "custom": "flashcardId"
         },
-        "set_id": {
+        "setId": {
             "frontend": "setId",
             "backend": "set_id",
             "database": "set_id",
@@ -3060,10 +3288,34 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "order",
             "GraphQL": "order",
             "custom": "order"
+        },
+        "flashcardDataReference": {
+            "frontend": "flashcardDataReference",
+            "backend": "flashcard_data_reference",
+            "database": "ref_flashcard_data",
+            "pretty": "Flashcard Data Reference",
+            "component": "FlashcardDataReference",
+            "kebab": "flashcard-dataReference",
+            "sqlFunctionRef": "p_ref_flashcard_data",
+            "RestAPI": "flashcardDataReference",
+            "GraphQL": "flashcardDataReference",
+            "custom": "flashcardDataReference"
+        },
+        "flashcardSetsReference": {
+            "frontend": "flashcardSetsReference",
+            "backend": "flashcard_sets_reference",
+            "database": "ref_flashcard_sets",
+            "pretty": "Flashcard Sets Reference",
+            "component": "FlashcardSetsReference",
+            "kebab": "flashcard-setsReference",
+            "sqlFunctionRef": "p_ref_flashcard_sets",
+            "RestAPI": "flashcardSetsReference",
+            "GraphQL": "flashcardSetsReference",
+            "custom": "flashcardSetsReference"
         }
     },
     flashcardSets: {
-        "set_id": {
+        "setId": {
             "frontend": "setId",
             "backend": "set_id",
             "database": "set_id",
@@ -3075,7 +3327,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "setId",
             "custom": "setId"
         },
-        "user_id": {
+        "userId": {
             "frontend": "userId",
             "backend": "user_id",
             "database": "user_id",
@@ -3099,7 +3351,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "created_at": {
+        "createdAt": {
             "frontend": "createdAt",
             "backend": "created_at",
             "database": "created_at",
@@ -3111,7 +3363,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "createdAt",
             "custom": "createdAt"
         },
-        "updated_at": {
+        "updatedAt": {
             "frontend": "updatedAt",
             "backend": "updated_at",
             "database": "updated_at",
@@ -3123,7 +3375,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "updatedAt",
             "custom": "updatedAt"
         },
-        "shared_with": {
+        "sharedWith": {
             "frontend": "sharedWith",
             "backend": "shared_with",
             "database": "shared_with",
@@ -3183,7 +3435,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "difficulty",
             "custom": "difficulty"
         },
-        "audio_overview": {
+        "audioOverview": {
             "frontend": "audioOverview",
             "backend": "audio_overview",
             "database": "audio_overview",
@@ -3194,6 +3446,18 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "audioOverview",
             "GraphQL": "audioOverview",
             "custom": "audioOverview"
+        },
+        "flashcardSetRelationsInverse": {
+            "frontend": "flashcardSetRelationsInverse",
+            "backend": "flashcard_set_relations_Inverse",
+            "database": "ifk_flashcard_set_relations",
+            "pretty": "Flashcard Set Relations Inverse",
+            "component": "FlashcardSetRelationsInverse",
+            "kebab": "flashcard-set-relationsInverse",
+            "sqlFunctionRef": "p_ifk_flashcard_set_relations",
+            "RestAPI": "flashcardSetRelationsInverse",
+            "GraphQL": "flashcardSetRelationsInverse",
+            "custom": "flashcardSetRelationsInverse"
         }
     },
     processor: {
@@ -3221,7 +3485,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "depends_default": {
+        "dependsDefault": {
             "frontend": "dependsDefault",
             "backend": "depends_default",
             "database": "depends_default",
@@ -3233,7 +3497,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "dependsDefault",
             "custom": "dependsDefault"
         },
-        "default_extractors": {
+        "defaultExtractors": {
             "frontend": "defaultExtractors",
             "backend": "default_extractors",
             "database": "default_extractors",
@@ -3256,6 +3520,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "params",
             "GraphQL": "params",
             "custom": "params"
+        },
+        "processorReference": {
+            "frontend": "processorReference",
+            "backend": "processor_reference",
+            "database": "ref_processor",
+            "pretty": "Processor Reference",
+            "component": "ProcessorReference",
+            "kebab": "processorReference",
+            "sqlFunctionRef": "p_ref_processor",
+            "RestAPI": "processorReference",
+            "GraphQL": "processorReference",
+            "custom": "processorReference"
+        },
+        "recipeProcessorInverse": {
+            "frontend": "recipeProcessorInverse",
+            "backend": "recipe_processor_Inverse",
+            "database": "ifk_recipe_processor",
+            "pretty": "Recipe Processor Inverse",
+            "component": "RecipeProcessorInverse",
+            "kebab": "recipe-processorInverse",
+            "sqlFunctionRef": "p_ifk_recipe_processor",
+            "RestAPI": "recipeProcessorInverse",
+            "GraphQL": "recipeProcessorInverse",
+            "custom": "recipeProcessorInverse"
         }
     },
     recipe: {
@@ -3307,7 +3595,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "tags",
             "custom": "tags"
         },
-        "sample_output": {
+        "sampleOutput": {
             "frontend": "sampleOutput",
             "backend": "sample_output",
             "database": "sample_output",
@@ -3319,7 +3607,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "sampleOutput",
             "custom": "sampleOutput"
         },
-        "is_public": {
+        "isPublic": {
             "frontend": "isPublic",
             "backend": "is_public",
             "database": "is_public",
@@ -3367,7 +3655,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "messages",
             "custom": "messages"
         },
-        "post_result_options": {
+        "postResultOptions": {
             "frontend": "postResultOptions",
             "backend": "post_result_options",
             "database": "post_result_options",
@@ -3378,6 +3666,78 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "postResultOptions",
             "GraphQL": "postResultOptions",
             "custom": "postResultOptions"
+        },
+        "recipeBrokerInverse": {
+            "frontend": "recipeBrokerInverse",
+            "backend": "recipe_broker_Inverse",
+            "database": "ifk_recipe_broker",
+            "pretty": "Recipe Broker Inverse",
+            "component": "RecipeBrokerInverse",
+            "kebab": "recipe-brokerInverse",
+            "sqlFunctionRef": "p_ifk_recipe_broker",
+            "RestAPI": "recipeBrokerInverse",
+            "GraphQL": "recipeBrokerInverse",
+            "custom": "recipeBrokerInverse"
+        },
+        "recipeProcessorInverse": {
+            "frontend": "recipeProcessorInverse",
+            "backend": "recipe_processor_Inverse",
+            "database": "ifk_recipe_processor",
+            "pretty": "Recipe Processor Inverse",
+            "component": "RecipeProcessorInverse",
+            "kebab": "recipe-processorInverse",
+            "sqlFunctionRef": "p_ifk_recipe_processor",
+            "RestAPI": "recipeProcessorInverse",
+            "GraphQL": "recipeProcessorInverse",
+            "custom": "recipeProcessorInverse"
+        },
+        "recipeModelInverse": {
+            "frontend": "recipeModelInverse",
+            "backend": "recipe_model_Inverse",
+            "database": "ifk_recipe_model",
+            "pretty": "Recipe Model Inverse",
+            "component": "RecipeModelInverse",
+            "kebab": "recipe-modelInverse",
+            "sqlFunctionRef": "p_ifk_recipe_model",
+            "RestAPI": "recipeModelInverse",
+            "GraphQL": "recipeModelInverse",
+            "custom": "recipeModelInverse"
+        },
+        "recipeDisplayInverse": {
+            "frontend": "recipeDisplayInverse",
+            "backend": "recipe_display_Inverse",
+            "database": "ifk_recipe_display",
+            "pretty": "Recipe Display Inverse",
+            "component": "RecipeDisplayInverse",
+            "kebab": "recipe-displayInverse",
+            "sqlFunctionRef": "p_ifk_recipe_display",
+            "RestAPI": "recipeDisplayInverse",
+            "GraphQL": "recipeDisplayInverse",
+            "custom": "recipeDisplayInverse"
+        },
+        "recipeFunctionInverse": {
+            "frontend": "recipeFunctionInverse",
+            "backend": "recipe_function_Inverse",
+            "database": "ifk_recipe_function",
+            "pretty": "Recipe Function Inverse",
+            "component": "RecipeFunctionInverse",
+            "kebab": "recipe-functionInverse",
+            "sqlFunctionRef": "p_ifk_recipe_function",
+            "RestAPI": "recipeFunctionInverse",
+            "GraphQL": "recipeFunctionInverse",
+            "custom": "recipeFunctionInverse"
+        },
+        "recipeToolInverse": {
+            "frontend": "recipeToolInverse",
+            "backend": "recipe_tool_Inverse",
+            "database": "ifk_recipe_tool",
+            "pretty": "Recipe Tool Inverse",
+            "component": "RecipeToolInverse",
+            "kebab": "recipe-toolInverse",
+            "sqlFunctionRef": "p_ifk_recipe_tool",
+            "RestAPI": "recipeToolInverse",
+            "GraphQL": "recipeToolInverse",
+            "custom": "recipeToolInverse"
         }
     },
     recipeBroker: {
@@ -3417,7 +3777,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "broker",
             "custom": "broker"
         },
-        "broker_role": {
+        "brokerRole": {
             "frontend": "brokerRole",
             "backend": "broker_role",
             "database": "broker_role",
@@ -3440,6 +3800,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "required",
             "GraphQL": "required",
             "custom": "required"
+        },
+        "brokerReference": {
+            "frontend": "brokerReference",
+            "backend": "broker_reference",
+            "database": "ref_broker",
+            "pretty": "Broker Reference",
+            "component": "BrokerReference",
+            "kebab": "brokerReference",
+            "sqlFunctionRef": "p_ref_broker",
+            "RestAPI": "brokerReference",
+            "GraphQL": "brokerReference",
+            "custom": "brokerReference"
+        },
+        "recipeReference": {
+            "frontend": "recipeReference",
+            "backend": "recipe_reference",
+            "database": "ref_recipe",
+            "pretty": "Recipe Reference",
+            "component": "RecipeReference",
+            "kebab": "recipeReference",
+            "sqlFunctionRef": "p_ref_recipe",
+            "RestAPI": "recipeReference",
+            "GraphQL": "recipeReference",
+            "custom": "recipeReference"
         }
     },
     recipeDisplay: {
@@ -3491,7 +3875,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "priority",
             "custom": "priority"
         },
-        "display_settings": {
+        "displaySettings": {
             "frontend": "displaySettings",
             "backend": "display_settings",
             "database": "display_settings",
@@ -3502,6 +3886,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "displaySettings",
             "GraphQL": "displaySettings",
             "custom": "displaySettings"
+        },
+        "displayOptionReference": {
+            "frontend": "displayOptionReference",
+            "backend": "display_option_reference",
+            "database": "ref_display_option",
+            "pretty": "Display Option Reference",
+            "component": "DisplayOptionReference",
+            "kebab": "display-optionReference",
+            "sqlFunctionRef": "p_ref_display_option",
+            "RestAPI": "displayOptionReference",
+            "GraphQL": "displayOptionReference",
+            "custom": "displayOptionReference"
+        },
+        "recipeReference": {
+            "frontend": "recipeReference",
+            "backend": "recipe_reference",
+            "database": "ref_recipe",
+            "pretty": "Recipe Reference",
+            "component": "RecipeReference",
+            "kebab": "recipeReference",
+            "sqlFunctionRef": "p_ref_recipe",
+            "RestAPI": "recipeReference",
+            "GraphQL": "recipeReference",
+            "custom": "recipeReference"
         }
     },
     recipeFunction: {
@@ -3564,6 +3972,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "params",
             "GraphQL": "params",
             "custom": "params"
+        },
+        "systemFunctionReference": {
+            "frontend": "systemFunctionReference",
+            "backend": "system_function_reference",
+            "database": "ref_system_function",
+            "pretty": "System Function Reference",
+            "component": "SystemFunctionReference",
+            "kebab": "system-functionReference",
+            "sqlFunctionRef": "p_ref_system_function",
+            "RestAPI": "systemFunctionReference",
+            "GraphQL": "systemFunctionReference",
+            "custom": "systemFunctionReference"
+        },
+        "recipeReference": {
+            "frontend": "recipeReference",
+            "backend": "recipe_reference",
+            "database": "ref_recipe",
+            "pretty": "Recipe Reference",
+            "component": "RecipeReference",
+            "kebab": "recipeReference",
+            "sqlFunctionRef": "p_ref_recipe",
+            "RestAPI": "recipeReference",
+            "GraphQL": "recipeReference",
+            "custom": "recipeReference"
         }
     },
     recipeModel: {
@@ -3591,7 +4023,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "recipe",
             "custom": "recipe"
         },
-        "ai_model": {
+        "aiModel": {
             "frontend": "aiModel",
             "backend": "ai_model",
             "database": "ai_model",
@@ -3626,6 +4058,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "priority",
             "GraphQL": "priority",
             "custom": "priority"
+        },
+        "aiModelReference": {
+            "frontend": "aiModelReference",
+            "backend": "ai_model_reference",
+            "database": "ref_ai_model",
+            "pretty": "Ai Model Reference",
+            "component": "AiModelReference",
+            "kebab": "ai-modelReference",
+            "sqlFunctionRef": "p_ref_ai_model",
+            "RestAPI": "aiModelReference",
+            "GraphQL": "aiModelReference",
+            "custom": "aiModelReference"
+        },
+        "recipeReference": {
+            "frontend": "recipeReference",
+            "backend": "recipe_reference",
+            "database": "ref_recipe",
+            "pretty": "Recipe Reference",
+            "component": "RecipeReference",
+            "kebab": "recipeReference",
+            "sqlFunctionRef": "p_ref_recipe",
+            "RestAPI": "recipeReference",
+            "GraphQL": "recipeReference",
+            "custom": "recipeReference"
         }
     },
     recipeProcessor: {
@@ -3676,6 +4132,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "params",
             "GraphQL": "params",
             "custom": "params"
+        },
+        "processorReference": {
+            "frontend": "processorReference",
+            "backend": "processor_reference",
+            "database": "ref_processor",
+            "pretty": "Processor Reference",
+            "component": "ProcessorReference",
+            "kebab": "processorReference",
+            "sqlFunctionRef": "p_ref_processor",
+            "RestAPI": "processorReference",
+            "GraphQL": "processorReference",
+            "custom": "processorReference"
+        },
+        "recipeReference": {
+            "frontend": "recipeReference",
+            "backend": "recipe_reference",
+            "database": "ref_recipe",
+            "pretty": "Recipe Reference",
+            "component": "RecipeReference",
+            "kebab": "recipeReference",
+            "sqlFunctionRef": "p_ref_recipe",
+            "RestAPI": "recipeReference",
+            "GraphQL": "recipeReference",
+            "custom": "recipeReference"
         }
     },
     recipeTool: {
@@ -3726,6 +4206,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "params",
             "GraphQL": "params",
             "custom": "params"
+        },
+        "recipeReference": {
+            "frontend": "recipeReference",
+            "backend": "recipe_reference",
+            "database": "ref_recipe",
+            "pretty": "Recipe Reference",
+            "component": "RecipeReference",
+            "kebab": "recipeReference",
+            "sqlFunctionRef": "p_ref_recipe",
+            "RestAPI": "recipeReference",
+            "GraphQL": "recipeReference",
+            "custom": "recipeReference"
+        },
+        "toolReference": {
+            "frontend": "toolReference",
+            "backend": "tool_reference",
+            "database": "ref_tool",
+            "pretty": "Tool Reference",
+            "component": "ToolReference",
+            "kebab": "toolReference",
+            "sqlFunctionRef": "p_ref_tool",
+            "RestAPI": "toolReference",
+            "GraphQL": "toolReference",
+            "custom": "toolReference"
         }
     },
     registeredFunction: {
@@ -3753,7 +4257,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "module_path": {
+        "modulePath": {
             "frontend": "modulePath",
             "backend": "module_path",
             "database": "module_path",
@@ -3765,7 +4269,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "modulePath",
             "custom": "modulePath"
         },
-        "class_name": {
+        "className": {
             "frontend": "className",
             "backend": "class_name",
             "database": "class_name",
@@ -3789,7 +4293,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "description",
             "custom": "description"
         },
-        "return_broker": {
+        "returnBroker": {
             "frontend": "returnBroker",
             "backend": "return_broker",
             "database": "return_broker",
@@ -3800,6 +4304,42 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "returnBroker",
             "GraphQL": "returnBroker",
             "custom": "returnBroker"
+        },
+        "brokerReference": {
+            "frontend": "brokerReference",
+            "backend": "broker_reference",
+            "database": "ref_broker",
+            "pretty": "Broker Reference",
+            "component": "BrokerReference",
+            "kebab": "brokerReference",
+            "sqlFunctionRef": "p_ref_broker",
+            "RestAPI": "brokerReference",
+            "GraphQL": "brokerReference",
+            "custom": "brokerReference"
+        },
+        "systemFunctionInverse": {
+            "frontend": "systemFunctionInverse",
+            "backend": "system_function_Inverse",
+            "database": "ifk_system_function",
+            "pretty": "System Function Inverse",
+            "component": "SystemFunctionInverse",
+            "kebab": "system-functionInverse",
+            "sqlFunctionRef": "p_ifk_system_function",
+            "RestAPI": "systemFunctionInverse",
+            "GraphQL": "systemFunctionInverse",
+            "custom": "systemFunctionInverse"
+        },
+        "argInverse": {
+            "frontend": "argInverse",
+            "backend": "arg_Inverse",
+            "database": "ifk_arg",
+            "pretty": "Arg Inverse",
+            "component": "ArgInverse",
+            "kebab": "argInverse",
+            "sqlFunctionRef": "p_ifk_arg",
+            "RestAPI": "argInverse",
+            "GraphQL": "argInverse",
+            "custom": "argInverse"
         }
     },
     systemFunction: {
@@ -3851,7 +4391,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "sample",
             "custom": "sample"
         },
-        "input_params": {
+        "inputParams": {
             "frontend": "inputParams",
             "backend": "input_params",
             "database": "input_params",
@@ -3863,7 +4403,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "inputParams",
             "custom": "inputParams"
         },
-        "output_options": {
+        "outputOptions": {
             "frontend": "outputOptions",
             "backend": "output_options",
             "database": "output_options",
@@ -3875,7 +4415,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "outputOptions",
             "custom": "outputOptions"
         },
-        "rf_id": {
+        "rfId": {
             "frontend": "rfId",
             "backend": "rf_id",
             "database": "rf_id",
@@ -3886,6 +4426,42 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "rfId",
             "GraphQL": "rfId",
             "custom": "rfId"
+        },
+        "registeredFunctionReference": {
+            "frontend": "registeredFunctionReference",
+            "backend": "registered_function_reference",
+            "database": "ref_registered_function",
+            "pretty": "Registered Function Reference",
+            "component": "RegisteredFunctionReference",
+            "kebab": "registered-functionReference",
+            "sqlFunctionRef": "p_ref_registered_function",
+            "RestAPI": "registeredFunctionReference",
+            "GraphQL": "registeredFunctionReference",
+            "custom": "registeredFunctionReference"
+        },
+        "toolInverse": {
+            "frontend": "toolInverse",
+            "backend": "tool_Inverse",
+            "database": "ifk_tool",
+            "pretty": "Tool Inverse",
+            "component": "ToolInverse",
+            "kebab": "toolInverse",
+            "sqlFunctionRef": "p_ifk_tool",
+            "RestAPI": "toolInverse",
+            "GraphQL": "toolInverse",
+            "custom": "toolInverse"
+        },
+        "recipeFunctionInverse": {
+            "frontend": "recipeFunctionInverse",
+            "backend": "recipe_function_Inverse",
+            "database": "ifk_recipe_function",
+            "pretty": "Recipe Function Inverse",
+            "component": "RecipeFunctionInverse",
+            "kebab": "recipe-functionInverse",
+            "sqlFunctionRef": "p_ifk_recipe_function",
+            "RestAPI": "recipeFunctionInverse",
+            "GraphQL": "recipeFunctionInverse",
+            "custom": "recipeFunctionInverse"
         }
     },
     tool: {
@@ -3949,7 +4525,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "parameters",
             "custom": "parameters"
         },
-        "required_args": {
+        "requiredArgs": {
             "frontend": "requiredArgs",
             "backend": "required_args",
             "database": "required_args",
@@ -3961,7 +4537,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "requiredArgs",
             "custom": "requiredArgs"
         },
-        "system_function": {
+        "systemFunction": {
             "frontend": "systemFunction",
             "backend": "system_function",
             "database": "system_function",
@@ -3973,7 +4549,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "systemFunction",
             "custom": "systemFunction"
         },
-        "additional_params": {
+        "additionalParams": {
             "frontend": "additionalParams",
             "backend": "additional_params",
             "database": "additional_params",
@@ -3984,6 +4560,30 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "additionalParams",
             "GraphQL": "additionalParams",
             "custom": "additionalParams"
+        },
+        "systemFunctionReference": {
+            "frontend": "systemFunctionReference",
+            "backend": "system_function_reference",
+            "database": "ref_system_function",
+            "pretty": "System Function Reference",
+            "component": "SystemFunctionReference",
+            "kebab": "system-functionReference",
+            "sqlFunctionRef": "p_ref_system_function",
+            "RestAPI": "systemFunctionReference",
+            "GraphQL": "systemFunctionReference",
+            "custom": "systemFunctionReference"
+        },
+        "recipeToolInverse": {
+            "frontend": "recipeToolInverse",
+            "backend": "recipe_tool_Inverse",
+            "database": "ifk_recipe_tool",
+            "pretty": "Recipe Tool Inverse",
+            "component": "RecipeToolInverse",
+            "kebab": "recipe-toolInverse",
+            "sqlFunctionRef": "p_ifk_recipe_tool",
+            "RestAPI": "recipeToolInverse",
+            "GraphQL": "recipeToolInverse",
+            "custom": "recipeToolInverse"
         }
     },
     transformer: {
@@ -4011,7 +4611,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "name",
             "custom": "name"
         },
-        "input_params": {
+        "inputParams": {
             "frontend": "inputParams",
             "backend": "input_params",
             "database": "input_params",
@@ -4023,7 +4623,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "inputParams",
             "custom": "inputParams"
         },
-        "output_params": {
+        "outputParams": {
             "frontend": "outputParams",
             "backend": "output_params",
             "database": "output_params",
@@ -4034,10 +4634,22 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "RestAPI": "outputParams",
             "GraphQL": "outputParams",
             "custom": "outputParams"
+        },
+        "actionInverse": {
+            "frontend": "actionInverse",
+            "backend": "action_Inverse",
+            "database": "ifk_action",
+            "pretty": "Action Inverse",
+            "component": "ActionInverse",
+            "kebab": "actionInverse",
+            "sqlFunctionRef": "p_ifk_action",
+            "RestAPI": "actionInverse",
+            "GraphQL": "actionInverse",
+            "custom": "actionInverse"
         }
     },
     userPreferences: {
-        "user_id": {
+        "userId": {
             "frontend": "userId",
             "backend": "user_id",
             "database": "user_id",
@@ -4061,7 +4673,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "preferences",
             "custom": "preferences"
         },
-        "created_at": {
+        "createdAt": {
             "frontend": "createdAt",
             "backend": "created_at",
             "database": "created_at",
@@ -4073,7 +4685,7 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
             "GraphQL": "createdAt",
             "custom": "createdAt"
         },
-        "updated_at": {
+        "updatedAt": {
             "frontend": "updatedAt",
             "backend": "updated_at",
             "database": "updated_at",
