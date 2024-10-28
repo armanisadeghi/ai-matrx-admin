@@ -1,8 +1,7 @@
 // utils/supabase/api-wrapper.ts
 import {PostgrestError, PostgrestFilterBuilder} from '@supabase/postgrest-js';
 import {SupabaseClient} from "@supabase/supabase-js";
-import {useSchemaResolution, useTableSchema} from "@/providers/SchemaProvider";
-import {supabase} from "@/utils/supabase/client";
+import {useSchemaResolution} from "@/providers/SchemaProvider";
 import {
     AllEntityNameVariations, AutomationEntity,
     convertFormat, createFormattedRecord,
@@ -11,13 +10,21 @@ import {
     EntityNameFormat,
     EntityRecord
 } from "@/types/entityTypes";
+import {schemaLogger} from "@/lib/logger/schema-logger";
+import {RealtimeChannel} from "@supabase/realtime-js";
+type PostgrestResult<T> = {
+    data: T | null;
+    error: PostgrestError | null;
+    count?: number;
+};
+
 
 const defaultTrace = [__filename.split('/').pop() || 'unknownFile']; // In a Node.js environment
-const trace: string[] = ['anotherFile'];
+const trace: string[] = ['api-wrapper.ts'];
 
 type QueryBuilder = PostgrestFilterBuilder<any, any, any>;
 
-type QueryOptions<TEntity extends EntityKeys> = {
+export type QueryOptions<TEntity extends EntityKeys> = {
     filters?: Partial<EntityRecord<TEntity, 'database'>>;
     sorts?: Array<{
         column: EntityFieldKeys<TEntity>;
@@ -28,9 +35,12 @@ type QueryOptions<TEntity extends EntityKeys> = {
     columns?: Array<EntityFieldKeys<TEntity>>;
 };
 
+type SubscriptionCallback<TEntity extends EntityKeys> = (
+    data: EntityRecord<TEntity, 'frontend'>[]
+) => void;
 
 export class DatabaseApiWrapper<TEntity extends EntityKeys> {
-    private client?: SupabaseClient;  // Client is optional during initialization
+    private client?: SupabaseClient;
     private readonly entityVariant: AllEntityNameVariations;
     private readonly tableSchema: AutomationEntity<TEntity>;
     private readonly entityKey: TEntity;
@@ -38,10 +48,12 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
     private readonly primaryKeyField: EntityFieldKeys<TEntity>;
     private readonly formatTransformers: ReturnType<typeof useSchemaResolution>['formatTransformers'];
     private readonly resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat'];
-    private readonly subscriptions: Map<string, unknown> = new Map();
+    private readonly databaseFields: ReturnType<typeof useSchemaResolution>['databaseFields'];
+    private readonly enhancedDatabaseValidation: ReturnType<typeof useSchemaResolution>['enhancedDatabaseValidation'];
+    private readonly subscriptions:  Map<string, RealtimeChannel> = new Map();
     private readonly queryBuilders: Map<string, unknown> = new Map();
+    private readonly trace: string[];
 
-    // Constructor does not expect a client, it can be injected later
     constructor(
         entityVariant: AllEntityNameVariations,
         schema: AutomationEntity<TEntity>,
@@ -49,7 +61,10 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         databaseName: EntityNameFormat<TEntity, 'database'>,
         primaryKeyField: EntityFieldKeys<TEntity>,
         formatTransformers: ReturnType<typeof useSchemaResolution>['formatTransformers'],
-        resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat']
+        resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat'],
+        enhancedDatabaseValidation: ReturnType<typeof useSchemaResolution>['enhancedDatabaseValidation'],
+        databaseFields: ReturnType<typeof useSchemaResolution>['databaseFields'],
+        trace: string[] = [__filename.split('/').pop() || 'unknownFile'] // Use default trace
     ) {
         this.entityVariant = entityVariant;
         this.tableSchema = schema;
@@ -58,21 +73,26 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         this.primaryKeyField = primaryKeyField;
         this.formatTransformers = formatTransformers;
         this.resolveFieldNameInFormat = resolveFieldNameInFormat;
+        this.enhancedDatabaseValidation = enhancedDatabaseValidation;
+        this.databaseFields = databaseFields;
+        this.trace = trace;  // Initialize trace
     }
 
-    // Static factory method for initialization without client
-    static create<TEntity extends EntityKeys>(entityVariant: AllEntityNameVariations): DatabaseApiWrapper<TEntity> {
+    static create(entityVariant: AllEntityNameVariations, trace: string[] = [__filename.split('/').pop() || 'unknownFile']): DatabaseApiWrapper<any> {
         const {
             schema,
             resolveEntityKey,
+            getEntitySchema,
             getEntityNameInFormat,
             findPrimaryKeyFieldKey,
+            formatTransformers,
             resolveFieldNameInFormat,
-            formatTransformers
-        } = useSchemaResolution();  // Fetch everything from the schema resolution system
+            enhancedDatabaseValidation,
+            databaseFields,
+        } = useSchemaResolution();
 
-        const entityKey = resolveEntityKey(entityVariant) as TEntity;
-        const tableSchema = schema[entityKey] as AutomationEntity<TEntity>;
+        const entityKey = resolveEntityKey(entityVariant);
+        const tableSchema = getEntitySchema(entityVariant);
         const primaryKeyField = findPrimaryKeyFieldKey(entityKey);
         const tableNameDbFormat = getEntityNameInFormat(entityKey, 'database');
 
@@ -80,26 +100,27 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             throw new Error(`No primary key found for entity ${entityVariant}`);
         }
 
-        // Initialize and return the instance of DatabaseApiWrapper (without client)
-        return new DatabaseApiWrapper<TEntity>(
+        return new DatabaseApiWrapper<any>(
             entityVariant,
             tableSchema,
             entityKey,
-            tableNameDbFormat as EntityNameFormat<TEntity, 'database'>,
-            primaryKeyField as EntityFieldKeys<TEntity>,
+            tableNameDbFormat as EntityNameFormat<typeof entityKey, 'database'>,
+            primaryKeyField as EntityFieldKeys<typeof entityKey>,
             formatTransformers,
-            resolveFieldNameInFormat
+            resolveFieldNameInFormat,
+            enhancedDatabaseValidation,
+            databaseFields,
+            trace
         );
     }
 
-    // Inject client (used for client-side or server-side)
     setClient(client: SupabaseClient) {
         this.client = client;
     }
 
-    // Example query method that uses the injected client
-    private buildBaseQuery(): PostgrestFilterBuilder<any, any, any> {
+    private buildBaseQuery(trace: string[] = [...this.trace, 'buildBaseQuery']): PostgrestFilterBuilder<any, any, any> {
         if (!this.client) {
+            this.handleError(new Error('Supabase client not initialized'), trace);
             throw new Error('Supabase client not initialized');
         }
         return this.client.from(this.databaseName).select('*');
@@ -157,25 +178,38 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return query;
     }
 
+    /**
+     * Base conversion and validation methods
+     */
+    private validateAndConvertToDatabase(
+        frontendData: EntityRecord<TEntity, 'frontend'>
+    ): EntityRecord<TEntity, 'database'> {
+        try {
+            // Validate the data
+            if (!this.enhancedDatabaseValidation.validateFieldTypes(this.entityKey, frontendData)) {
+                throw new Error(`Invalid field types in data for entity: ${this.entityKey}`);
+            }
+            if (!this.enhancedDatabaseValidation.validateRequiredFields(this.entityKey, frontendData)) {
+                throw new Error(`Missing required fields for entity: ${this.entityKey}`);
+            }
+
+            // Convert to database format
+            return this.formatTransformers.toDatabase(
+                this.entityKey,
+                frontendData as Record<string, unknown>,
+                'frontend'
+            );
+        } catch (error) {
+            throw new Error(`Failed to validate and convert data: ${error.message}`);
+        }
+    }
+
     private convertToDatabase(
         frontendData: EntityRecord<TEntity, 'frontend'>
     ): EntityRecord<TEntity, 'database'> {
-        return convertFormat(
+        return this.formatTransformers.toDatabase(
             this.entityKey,
-            frontendData,
-            'database'
-        );
-    }
-
-    /**
-     * Converts database data to frontend format
-     */
-    private convertToFrontend(
-        databaseData: EntityRecord<TEntity, 'database'>
-    ): EntityRecord<TEntity, 'frontend'> {
-        return convertFormat(
-            this.entityKey,
-            databaseData,
+            frontendData as Record<string, unknown>,
             'frontend'
         );
     }
@@ -192,24 +226,26 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
     }
 
     /**
-     * Example query method with full type safety
+     * Converts database data to frontend format
      */
-    async getById(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        const {data, error} = await this.buildBaseQuery()
-            .eq(this.primaryKeyField, id)
-            .single();
-
-        if (error || !data) return null;
-
-        // Ensure that data is typed as Record<string, unknown>
-        const dbRecord = createFormattedRecord(
+    private convertToFrontend(
+        databaseData: EntityRecord<TEntity, 'database'>
+    ): EntityRecord<TEntity, 'frontend'> {
+        // Create a safe intermediate record
+        const safeData = createFormattedRecord(
             this.entityKey,
-            data as Record<string, unknown>,
+            databaseData.data, // Access the data property from FormatBrand
             'database'
         );
 
-        return this.convertToFrontend(dbRecord);
+        // Convert to frontend format
+        return convertFormat(
+            this.entityKey,
+            safeData,
+            'frontend'
+        );
     }
+
 
     /**
      * Example insert method with full type safety
@@ -217,26 +253,182 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
     async insert(
         frontendData: EntityRecord<TEntity, 'frontend'>
     ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        // Convert the frontend data to database format
-        const dbData = this.convertToDatabase(frontendData);
+        try {
+            // Convert to database format
+            const dbData = this.validateAndConvertToDatabase(frontendData);
 
-        // Insert the data using correct typing and method
-        const {data, error} = await this.client
-            .from(this.databaseName)
-            .insert(dbData)
-            .single();
+            // Ensure we're working with the raw data for the database
+            const rawDbData = dbData.data;
 
-        if (error || !data) return null;
+            const { data, error } = await this.client
+                .from(this.databaseName)
+                .insert(rawDbData)
+                .single();
 
-        // Ensure that data is typed as Record<string, unknown>
-        const dbRecord = createFormattedRecord(
-            this.entityKey,
-            data as Record<string, unknown>,
-            'database'
-        );
+            if (error || !data) return null;
 
-        return this.convertToFrontend(dbRecord);
+            // Create a properly formatted database record
+            const dbRecord = createFormattedRecord(
+                this.entityKey,
+                data as Record<string, unknown>,
+                'database'
+            );
+
+            // Convert to frontend format
+            return convertFormat(
+                this.entityKey,
+                dbRecord,
+                'frontend'
+            );
+        } catch (error) {
+            console.error(`Error inserting record for ${this.entityKey}:`, error);
+            return null;
+        }
     }
+
+    /**
+     * Fetch a record by its primary key with flexible query options
+     */
+    async fetchByPrimaryKey(
+        primaryKeyValue: string | number,
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        try {
+            // Create a primary key object in frontend format
+            const frontendRecord = createFormattedRecord(
+                this.entityKey,
+                { [this.primaryKeyField]: primaryKeyValue },
+                'frontend'
+            );
+
+            // Convert to database format
+            const dbRecord = convertFormat(
+                this.entityKey,
+                frontendRecord,
+                'database'
+            );
+
+            // Get the database field name from the converted record
+            const primaryKeyDbName = Object.keys(dbRecord.data)[0];
+
+            // Build and execute query
+            let query = this.buildBaseQuery().eq(primaryKeyDbName, primaryKeyValue);
+
+            if (Object.keys(options).length > 0) {
+                query = this.applyQueryOptions(query, options);
+            }
+
+            // Fetch the record
+            const { data, error } = await query.single();
+
+            if (error || !data) return null;
+
+            // Create a properly formatted database record
+            const resultDbRecord = createFormattedRecord(
+                this.entityKey,
+                data as Record<string, unknown>,
+                'database'
+            );
+
+            // Convert to frontend format
+            return convertFormat(
+                this.entityKey,
+                resultDbRecord,
+                'frontend'
+            );
+        } catch (error) {
+            console.error(`Error fetching record by primary key for ${this.entityKey}:`, error);
+            return null;
+        }
+    }
+
+
+
+    /**
+     * Fetch methods
+     */
+    async fetchByField<TField extends EntityFieldKeys<TEntity>>(
+        fieldName: TField,
+        fieldValue: unknown,
+        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
+        try {
+            // Get the database field name
+            const dbFieldName = this.databaseFields.getFieldName(
+                this.entityKey,
+                fieldName
+            );
+
+            // Build and execute query
+            let query = this.buildBaseQuery().eq(dbFieldName, fieldValue);
+            query = this.applyQueryOptions(query, options);
+
+            const {data, error} = await query;
+            if (error) throw error;
+
+            // Convert results to frontend format
+            if (!data) return [];
+
+            const dbRecords = data.map(item =>
+                createFormattedRecord(this.entityKey, item, 'database')
+            );
+
+            return this.convertArrayToFrontend(dbRecords);
+        } catch (error) {
+            console.error(`Error in fetchByField for ${this.entityKey}.${fieldName}:`, error);
+            throw error;
+        }
+    }
+
+    async fetchPaginated(
+        options: QueryOptions<TEntity>,
+        page: number = 1,
+        pageSize: number = 10,
+        maxCount: number = 10000
+    ): Promise<{
+        page: number;
+        pageSize: number;
+        totalCount: number;
+        maxCount: number;
+        data: EntityRecord<TEntity, 'frontend'>[];
+    }> {
+        try {
+            // Apply pagination options
+            const fullOptions = {
+                ...options,
+                limit: Math.min(pageSize, maxCount),
+                offset: (page - 1) * pageSize
+            };
+
+            // Build and execute query
+            let query = this.buildBaseQuery();
+            query = this.applyQueryOptions(query, fullOptions);
+
+            const {data, error, count} = await query;
+
+            if (error) throw error;
+            if (!data) return {page, pageSize, totalCount: 0, maxCount, data: []};
+
+            // Convert data to frontend format
+            const dbRecords = data.map(item =>
+                createFormattedRecord(this.entityKey, item, 'database')
+            );
+
+            const frontendData = this.convertArrayToFrontend(dbRecords);
+
+            return {
+                page,
+                pageSize,
+                totalCount: Math.min(count ?? 0, maxCount),
+                maxCount,
+                data: frontendData
+            };
+        } catch (error) {
+            console.error(`Error in fetchPaginated for ${this.entityKey}:`, error);
+            throw error;
+        }
+    }
+
 
     /**
      * Fetch a single record with type safety and full format conversion
@@ -258,32 +450,32 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return this.convertToFrontend(dbRecord);
     }
 
+
+
+
+
     /**
-     * Fetch a record by its primary key with flexible query options
+     * Example query method with full type safety
      */
-    async fetchByPrimaryKey(
-        primaryKeyValue: string | number,
-        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
-    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        // Get the primary key field name in 'database' format
-        const primaryKeyDbName = Object.keys(
-            this.formatTransformers.toDatabase(
-                this.entityVariant,
-                {[this.primaryKeyField]: undefined}
-            )
-        )[0];
+    async getById(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        const {data, error} = await this.buildBaseQuery()
+            .eq(this.primaryKeyField, id)
+            .single();
 
-        // Build the base query, filtering by primary key
-        let query = this.buildBaseQuery().eq(primaryKeyDbName, primaryKeyValue);
+        if (error || !data) return null;
 
-        // Apply additional query options, if provided
-        if (Object.keys(options).length > 0) {
-            query = this.applyQueryOptions(query, options);
-        }
+        // Ensure that data is typed as Record<string, unknown>
+        const dbRecord = createFormattedRecord(
+            this.entityKey,
+            data as Record<string, unknown>,
+            'database'
+        );
 
-        // Fetch the single record
-        return this.fetchSingle(query);
+        return this.convertToFrontend(dbRecord);
     }
+
+
+
 
 
     async findOne(id: string | number): Promise<EntityRecord<TEntity, 'frontend'> | null> {
@@ -306,32 +498,6 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
     }
 
 
-    async fetchByField<TField extends EntityFieldKeys<TEntity>>(
-        fieldName: TField,
-        fieldValue: unknown,
-        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
-    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
-        const dbFieldName = this.resolveFieldNameInFormat(
-            this.entityKey,
-            fieldName,
-            'database'
-        );
-
-        let query = this.buildBaseQuery().eq(dbFieldName, fieldValue);  // Correct usage of fieldName
-
-        query = this.applyQueryOptions(query, options);
-
-        try {
-            const {data, error} = await query;
-            if (error) throw error;
-
-            // Ensure data is converted to 'frontend' format
-            return data ? this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]) : [];
-        } catch (error) {
-            console.error(`Error fetching data by field ${fieldName}: ${error}`);
-            return [];
-        }
-    }
 
     async fetchById(
         dbTableName: EntityNameFormat<TEntity, 'database'>,
@@ -385,202 +551,6 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         }
     }
 
-    async fetchOne(
-        id: string | number,
-        options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
-    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        // Fetch strategy from the schema (e.g., 'fk', 'ifk', 'm2m', etc.)
-        const fetchStrategy = this.tableSchema.defaultFetchStrategy;
-
-        // Fetch the primary record using `fetchSimple`
-        let result = await this.fetchSimple(id, options);
-
-        if (!result) return null;
-
-        try {
-            // Apply the fetch strategy based on relationships (FK, IFK, M2M, etc.)
-            switch (fetchStrategy) {
-                case 'simple':
-                    return this.convertToFrontend(result);  // Convert and return simple result
-
-                case 'fk':
-                    result = await this.fetchFk(result);  // Fetch related FK data
-                    break;
-
-                case 'ifk':
-                    result = await this.fetchIfk(result);  // Fetch related IFK data
-                    break;
-
-                case 'm2m':
-                    result = await this.fetchM2m(result);  // Fetch related M2M data
-                    break;
-
-                case 'fkAndIfk':
-                    result = await this.fetchFk(result);  // Fetch FK data
-                    result = await this.fetchIfk(result);  // Fetch IFK data
-                    break;
-
-                case 'm2mAndFk':
-                    result = await this.fetchFk(result);  // Fetch FK data
-                    result = await this.fetchM2m(result);  // Fetch M2M data
-                    break;
-
-                case 'm2mAndIfk':
-                    result = await this.fetchIfk(result);  // Fetch IFK data
-                    result = await this.fetchM2m(result);  // Fetch M2M data
-                    break;
-
-                case 'fkIfkAndM2M':
-                    result = await this.fetchFk(result);  // Fetch FK data
-                    result = await this.fetchIfk(result);  // Fetch IFK data
-                    result = await this.fetchM2m(result);  // Fetch M2M data
-                    break;
-
-                default:
-                    console.error(`Invalid fetch strategy: ${fetchStrategy}`);
-                    return null;
-            }
-
-            // Convert the final result back to frontend format
-            return this.convertToFrontend(result);
-        } catch (error) {
-            console.error(`Error in fetchOne with strategy ${fetchStrategy}: ${error}`);
-            return null;
-        }
-    }
-
-    private async fetchFk(
-        data: Record<string, unknown>
-    ): Promise<Record<string, unknown>> {
-        const relationships = this.tableSchema.relationships;
-        const foreignKeyRelationships = relationships.filter(
-            rel => rel.relationshipType === 'foreignKey'
-        );
-
-        const foreignKeyQueries = foreignKeyRelationships.map(fk => {
-            const mainTableColumn = this.resolveFieldNameInFormat(
-                this.entityKey,
-                fk.column as EntityFieldKeys<TEntity>,
-                'database'
-            );
-            const relatedTable = fk.relatedTable;
-            const relatedColumn = fk.relatedColumn;
-
-            return this.client
-                .from(relatedTable)
-                .select('*')
-                .eq(relatedColumn, data[mainTableColumn]);
-        });
-
-        const foreignKeyResults = await Promise.all(foreignKeyQueries);
-
-        foreignKeyResults.forEach((result, index) => {
-            const {data: relatedData, error} = result;
-            if (error) {
-                console.error(
-                    `Error fetching FK data for ${foreignKeyRelationships[index].relatedTable}: ${error.message}`
-                );
-                return;
-            }
-            data[foreignKeyRelationships[index].relatedTable] = relatedData;
-        });
-
-        return data;
-    }
-
-    private async fetchIfk(
-        data: Record<string, unknown>
-    ): Promise<Record<string, unknown>> {
-        const relationships = this.tableSchema.relationships;
-        const inverseForeignKeyRelationships = relationships.filter(
-            rel => rel.relationshipType === 'inverseForeignKey'
-        );
-
-        const inverseForeignKeyQueries = inverseForeignKeyRelationships.map(ifk => {
-            const relatedTable = ifk.relatedTable;
-            const relatedColumn = ifk.relatedColumn;
-            const mainTableColumn = this.resolveFieldNameInFormat(
-                this.entityKey,
-                ifk.column as EntityFieldKeys<TEntity>,
-                'database'
-            );
-
-            return this.client
-                .from(relatedTable)
-                .select('*')
-                .eq(relatedColumn, data[mainTableColumn]);
-        });
-
-        const inverseForeignKeyResults = await Promise.all(inverseForeignKeyQueries);
-
-        inverseForeignKeyResults.forEach((result, index) => {
-            const {data: relatedData, error} = result;
-            if (error) {
-                console.error(
-                    `Error fetching IFK data for ${inverseForeignKeyRelationships[index].relatedTable}: ${error.message}`
-                );
-                return;
-            }
-            data[inverseForeignKeyRelationships[index].relatedTable] = relatedData;
-        });
-
-        return data;
-    }
-
-    private async fetchM2m(
-        data: Record<string, unknown>
-    ): Promise<Record<string, unknown>> {
-        const relationships = this.tableSchema.relationships;
-        const manyToManyRelationships = relationships.filter(
-            rel => rel.relationshipType === 'manyToMany'
-        );
-
-        const manyToManyQueries = manyToManyRelationships.map(m2m => {
-            const idField = this.resolveFieldNameInFormat(
-                this.entityKey,
-                'id' as EntityFieldKeys<TEntity>,  // Ensure this maps to the primary key
-                'database'
-            );
-
-            if (!m2m.junctionTable) {
-                throw new Error(`Junction table not defined for M2M relationship in ${this.entityKey}`);
-            }
-
-            return this.client
-                .from(m2m.junctionTable)
-                .select('*')
-                .eq(m2m.column, data[idField]);
-        });
-
-        const manyToManyResults = await Promise.all(manyToManyQueries);
-
-        await Promise.all(
-            manyToManyResults.map(async (result, index) => {
-                const {data: junctionData, error} = result;
-                if (error) {
-                    console.error(
-                        `Error fetching M2M junction table data for ${manyToManyRelationships[index].junctionTable}: ${error.message}`
-                    );
-                    return;
-                }
-
-                const m2m = manyToManyRelationships[index];
-                const relatedDataQueries = junctionData.map(junctionRecord => {
-                    return this.client
-                        .from(m2m.relatedTable)
-                        .select('*')
-                        .eq(m2m.relatedColumn, junctionRecord[m2m.relatedColumn]);
-                });
-
-                const relatedDataResults = await Promise.all(relatedDataQueries);
-                data[m2m.relatedTable] = relatedDataResults
-                    .filter(res => !res.error)
-                    .map(res => res.data);
-            })
-        );
-
-        return data;
-    }
 
     async fetchAll(
         options: QueryOptions<TEntity> = {}
@@ -601,126 +571,455 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         }
     }
 
-    async fetchPaginated(
-        options: QueryOptions<TEntity>,
-        page: number = 1,
-        pageSize: number = 10,
-        maxCount: number = 10000
-    ): Promise<{
-        page: number;
-        pageSize: number;
-        totalCount: number;
-        maxCount: number;
-        data: EntityRecord<TEntity, 'frontend'>[];
-    }> {
-        const fullOptions = {
-            ...options,
-            limit: pageSize,
-            offset: (page - 1) * pageSize
-        };
+    async executeCustomQuery(
+        query: (baseQuery: PostgrestFilterBuilder<any, any, any>) => any
+    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
+        // Start with a base query
+        const baseQuery = this.buildBaseQuery();
 
-        let query = this.buildBaseQuery();
-        query = this.applyQueryOptions(query, fullOptions);
+        // Apply the custom query
+        const customQuery = query(baseQuery);
 
-        const {data, error, count} = await query;
+        const { data, error } = await customQuery;
 
         if (error) throw error;
 
-        const formattedData = data.map(item =>
-            createFormattedRecord(this.entityKey, item, 'database')
-        );
-
-        const frontendData = formattedData.map(record =>
-            convertFormat(this.entityKey, record, 'frontend')
-        );
-
-        return {
-            page,
-            pageSize,
-            totalCount: count ?? 0,
-            data: frontendData,
-            maxCount
-        };
+        // Convert results to frontend format
+        return this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]);
     }
 
+    async update(
+        id: string | number,
+        data: Partial<EntityRecord<TEntity, 'frontend'>>
+    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+        try {
+            // Convert frontend data to database format
+            const dbData = this.convertToDatabase(data as EntityRecord<TEntity, 'frontend'>);
 
-    async fetchPaginatedOld<T extends DatabaseTableOrView>(
-        tableName: TableName,
-        options: QueryOptions<T>,
-        page: number = 1,
-        pageSize: number = 10,
-        maxCount: number = 10000
-    ): Promise<{
-        page: number;
-        allNamesAndIds?: { id: string; name: string }[];
-        pageSize: number;
-        totalCount: number;
-        paginatedData: any[];
-    }> {
-        const dbTableName = this.getDatabaseTableName(tableName);
-        const tableSchema = getSchema(tableName, 'database')!;
+            // Get the primary key field name in database format
+            const dbPrimaryKey = this.databaseFields.getFieldName(
+                this.entityKey,
+                this.primaryKeyField
+            );
 
-        options.limit = pageSize;
-        options.offset = (page - 1) * pageSize;
+            // Build and execute the update query
+            const { data: result, error } = await this.client
+                .from(this.databaseName)
+                .update(dbData.data)
+                .eq(dbPrimaryKey, id)
+                .select()
+                .single();
 
-        let query = this.client.from(dbTableName).select('*', {count: 'exact'});
-        query = this.applyQueryOptions(query, options, tableSchema);
-
-        const {data, error, count} = await query;
-        if (error) {
-            console.error(`Error fetching data: ${error.message}`);
-            return {
-                page,
-                pageSize,
-                totalCount: 0,
-                paginatedData: []
-            };
-        }
-
-        let allNamesAndIds: { id: string; name: string }[] | undefined;
-        if (maxCount !== 0) {
-            const idNameQuery = this.client.from(dbTableName).select('id, name').limit(maxCount);
-            const {data: idNameData, error: idNameError} = await idNameQuery;
-            if (idNameError) {
-                console.error(`Error fetching names and IDs: ${idNameError.message}`);
-            } else {
-                allNamesAndIds = idNameData as { id: string; name: string }[];
+            if (error) {
+                this.handleError(error, [...this.trace, 'update']);
             }
+
+            if (!result) return null;
+
+            // Convert the result back to frontend format
+            return this.convertToFrontend(
+                createFormattedRecord(this.entityKey, result, 'database')
+            );
+        } catch (error) {
+            this.handleError(error, [...this.trace, 'update']);
+            return null;
+        }
+    }
+
+    /**
+     * Delete method with proper typing
+     */
+    async delete(id: string | number): Promise<boolean> {
+        try {
+            // Check if the schema type allows deletion
+            if (this.tableSchema.schemaType.toLowerCase() === 'view') {
+                throw new Error(`Cannot delete from view: ${this.databaseName}`);
+            }
+
+            // Get the primary key field name in database format
+            const dbPrimaryKey = this.databaseFields.getFieldName(
+                this.entityKey,
+                this.primaryKeyField
+            );
+
+            // Execute the delete query
+            const { error } = await this.client
+                .from(this.databaseName)
+                .delete()
+                .eq(dbPrimaryKey, id);
+
+            if (error) {
+                this.handleError(error, [...this.trace, 'delete']);
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            this.handleError(error, [...this.trace, 'delete']);
+            return false;
+        }
+    }
+    /**
+     * Updated subscription method
+     */
+    subscribeToChanges(callback: SubscriptionCallback<TEntity>): void {
+        try {
+            // Unsubscribe from existing subscription
+            this.unsubscribeFromChanges();
+
+            // Create new subscription
+            const channel = this.client
+                .channel(`public:${this.databaseName}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: this.databaseName
+                    },
+                    async (payload) => {
+                        try {
+                            // Fetch updated data
+                            const { data: result, error } = await this.client
+                                .from(this.databaseName)
+                                .select('*');
+
+                            if (error) {
+                                this.handleError(error, [...this.trace, 'subscribeToChanges.callback']);
+                                return;
+                            }
+
+                            // Convert and send data to callback - now always an array
+                            const frontendData = this.convertToFrontendFormat(result);
+                            callback(frontendData);
+                        } catch (error) {
+                            this.handleError(error, [...this.trace, 'subscribeToChanges.callback']);
+                        }
+                    }
+                );
+
+            // Subscribe and store the channel
+            channel.subscribe((status) => {
+                if (status !== 'SUBSCRIBED') {
+                    this.handleError(
+                        new Error(`Subscription failed: ${status}`),
+                        [...this.trace, 'subscribeToChanges.subscribe']
+                    );
+                }
+            });
+
+            this.subscriptions.set(this.entityKey, channel);
+        } catch (error) {
+            this.handleError(error, [...this.trace, 'subscribeToChanges']);
+        }
+    }
+
+    unsubscribeFromChanges(): void {
+        try {
+            const channel = this.subscriptions.get(this.entityKey);
+            if (channel && channel instanceof RealtimeChannel) {
+                this.client.removeChannel(channel);
+                this.subscriptions.delete(this.entityKey);
+            }
+        } catch (error) {
+            this.handleError(error, [...this.trace, 'unsubscribeFromChanges']);
+        }
+    }
+
+    unsubscribeFromAllChanges(): void {
+        try {
+            this.subscriptions.forEach((channel) => {
+                if (channel instanceof RealtimeChannel) {
+                    this.client.removeChannel(channel);
+                }
+            });
+            this.subscriptions.clear();
+        } catch (error) {
+            this.handleError(error, [...this.trace, 'unsubscribeFromAllChanges']);
+        }
+    }
+
+    /**
+     * Update the conversion method to always return an array
+     */
+    convertToFrontendFormat(
+        data: unknown
+    ): EntityRecord<TEntity, 'frontend'>[] {
+        try {
+            if (Array.isArray(data)) {
+                return data.map(item =>
+                    this.convertToFrontend(
+                        createFormattedRecord(this.entityKey, item, 'database')
+                    )
+                );
+            }
+            // Single item - wrap in array
+            return [
+                this.convertToFrontend(
+                    createFormattedRecord(this.entityKey, data as Record<string, unknown>, 'database')
+                )
+            ];
+        } catch (error) {
+            this.handleError(error, [...this.trace, 'convertToFrontendFormat']);
+            throw error;
+        }
+    }
+
+    private handleError(error: unknown, trace: string[] = this.trace): void {
+        trace = [...trace, 'DatabaseApiWrapper.handleError'];
+
+        if (this.isPostgrestError(error)) {
+            schemaLogger.logResolution({
+                resolutionType: 'database',
+                original: 'Postgrest',
+                resolved: 'error',
+                message: `Postgrest Error: ${error.message} (Code: ${error.code})`,
+                level: 'error',
+                trace
+            });
+            console.error(`Postgrest Error: ${error.message} (Code: ${error.code})`);
+        } else if (error instanceof Error) {
+            schemaLogger.logResolution({
+                resolutionType: 'database',
+                original: 'genericError',
+                resolved: 'error',
+                message: `Error: ${error.message}`,
+                level: 'error',
+                trace
+            });
+            console.error(`Error: ${error.message}`);
+        } else {
+            const errorMessage = typeof error === 'string' ? error : 'Unknown error occurred';
+            schemaLogger.logResolution({
+                resolutionType: 'database',
+                original: 'unknownError',
+                resolved: 'error',
+                message: `Unknown error: ${errorMessage}`,
+                level: 'error',
+                trace
+            });
+            console.error(`Unknown error: ${errorMessage}`);
         }
 
-        const paginatedData = data.map(item => {
-            if (typeof item === 'string') {
-                try {
-                    return JSON.parse(item);
-                } catch (parseError: any) {
-                    console.error(`Failed to parse JSON string: ${parseError.message}`, item);
-                    return null;
+        throw error;
+    }
+
+    private isPostgrestError(error: unknown): error is PostgrestError {
+        return Boolean(
+            error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            'code' in error &&
+            typeof (error as any).message === 'string' &&
+            typeof (error as any).code === 'string'
+        );
+    }
+}
+
+
+    /*    async fetchOne(
+            id: string | number,
+            options: Omit<QueryOptions<TEntity>, 'limit' | 'offset'> = {}
+        ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
+            // Fetch strategy from the schema (e.g., 'fk', 'ifk', 'm2m', etc.)
+            const fetchStrategy = this.tableSchema.defaultFetchStrategy;
+
+            // Fetch the primary record using `fetchSimple`
+            let result = await this.fetchSimple(id, options);
+
+            if (!result) return null;
+
+            try {
+                // Apply the fetch strategy based on relationships (FK, IFK, M2M, etc.)
+                switch (fetchStrategy) {
+                    case 'simple':
+                        return this.convertToFrontend(result);  // Convert and return simple result
+
+                    case 'fk':
+                        result = await this.fetchFk(result);  // Fetch related FK data
+                        break;
+
+                    case 'ifk':
+                        result = await this.fetchIfk(result);  // Fetch related IFK data
+                        break;
+
+                    case 'm2m':
+                        result = await this.fetchM2m(result);  // Fetch related M2M data
+                        break;
+
+                    case 'fkAndIfk':
+                        result = await this.fetchFk(result);  // Fetch FK data
+                        result = await this.fetchIfk(result);  // Fetch IFK data
+                        break;
+
+                    case 'm2mAndFk':
+                        result = await this.fetchFk(result);  // Fetch FK data
+                        result = await this.fetchM2m(result);  // Fetch M2M data
+                        break;
+
+                    case 'm2mAndIfk':
+                        result = await this.fetchIfk(result);  // Fetch IFK data
+                        result = await this.fetchM2m(result);  // Fetch M2M data
+                        break;
+
+                    case 'fkIfkAndM2M':
+                        result = await this.fetchFk(result);  // Fetch FK data
+                        result = await this.fetchIfk(result);  // Fetch IFK data
+                        result = await this.fetchM2m(result);  // Fetch M2M data
+                        break;
+
+                    default:
+                        console.error(`Invalid fetch strategy: ${fetchStrategy}`);
+                        return null;
                 }
-            } else if (typeof item === 'object' && item !== null) {
-                return this.convertResponse(item, tableName);
-            } else {
-                console.warn('Unexpected item type:', typeof item, item);
+
+                // Convert the final result back to frontend format
+                return this.convertToFrontend(result);
+            } catch (error) {
+                console.error(`Error in fetchOne with strategy ${fetchStrategy}: ${error}`);
                 return null;
             }
-        });
+        }
 
-        return {
-            page,
-            allNamesAndIds,
-            pageSize,
-            totalCount: count ?? 0,
-            paginatedData
-        };
-    }
+        private async fetchFk(
+            data: Record<string, unknown>
+        ): Promise<Record<string, unknown>> {
+            const relationships = this.tableSchema.relationships;
+            const foreignKeyRelationships = relationships.filter(
+                rel => rel.relationshipType === 'foreignKey'
+            );
+
+            const foreignKeyQueries = foreignKeyRelationships.map(fk => {
+                const mainTableColumn = this.resolveFieldNameInFormat(
+                    this.entityKey,
+                    fk.column as EntityFieldKeys<TEntity>,
+                    'database'
+                );
+                const relatedTable = fk.relatedTable;
+                const relatedColumn = fk.relatedColumn;
+
+                return this.client
+                    .from(relatedTable)
+                    .select('*')
+                    .eq(relatedColumn, data[mainTableColumn]);
+            });
+
+            const foreignKeyResults = await Promise.all(foreignKeyQueries);
+
+            foreignKeyResults.forEach((result, index) => {
+                const {data: relatedData, error} = result;
+                if (error) {
+                    console.error(
+                        `Error fetching FK data for ${foreignKeyRelationships[index].relatedTable}: ${error.message}`
+                    );
+                    return;
+                }
+                data[foreignKeyRelationships[index].relatedTable] = relatedData;
+            });
+
+            return data;
+        }
+
+        private async fetchIfk(
+            data: Record<string, unknown>
+        ): Promise<Record<string, unknown>> {
+            const relationships = this.tableSchema.relationships;
+            const inverseForeignKeyRelationships = relationships.filter(
+                rel => rel.relationshipType === 'inverseForeignKey'
+            );
+
+            const inverseForeignKeyQueries = inverseForeignKeyRelationships.map(ifk => {
+                const relatedTable = ifk.relatedTable;
+                const relatedColumn = ifk.relatedColumn;
+                const mainTableColumn = this.resolveFieldNameInFormat(
+                    this.entityKey,
+                    ifk.column as EntityFieldKeys<TEntity>,
+                    'database'
+                );
+
+                return this.client
+                    .from(relatedTable)
+                    .select('*')
+                    .eq(relatedColumn, data[mainTableColumn]);
+            });
+
+            const inverseForeignKeyResults = await Promise.all(inverseForeignKeyQueries);
+
+            inverseForeignKeyResults.forEach((result, index) => {
+                const {data: relatedData, error} = result;
+                if (error) {
+                    console.error(
+                        `Error fetching IFK data for ${inverseForeignKeyRelationships[index].relatedTable}: ${error.message}`
+                    );
+                    return;
+                }
+                data[inverseForeignKeyRelationships[index].relatedTable] = relatedData;
+            });
+
+            return data;
+        }
+
+        private async fetchM2m(
+            data: Record<string, unknown>
+        ): Promise<Record<string, unknown>> {
+            const relationships = this.tableSchema.relationships;
+            const manyToManyRelationships = relationships.filter(
+                rel => rel.relationshipType === 'manyToMany'
+            );
+
+            const manyToManyQueries = manyToManyRelationships.map(m2m => {
+                const idField = this.resolveFieldNameInFormat(
+                    this.entityKey,
+                    'id' as EntityFieldKeys<TEntity>,  // Ensure this maps to the primary key
+                    'database'
+                );
+
+                if (!m2m.junctionTable) {
+                    throw new Error(`Junction table not defined for M2M relationship in ${this.entityKey}`);
+                }
+
+                return this.client
+                    .from(m2m.junctionTable)
+                    .select('*')
+                    .eq(m2m.column, data[idField]);
+            });
+
+            const manyToManyResults = await Promise.all(manyToManyQueries);
+
+            await Promise.all(
+                manyToManyResults.map(async (result, index) => {
+                    const {data: junctionData, error} = result;
+                    if (error) {
+                        console.error(
+                            `Error fetching M2M junction table data for ${manyToManyRelationships[index].junctionTable}: ${error.message}`
+                        );
+                        return;
+                    }
+
+                    const m2m = manyToManyRelationships[index];
+                    const relatedDataQueries = junctionData.map(junctionRecord => {
+                        return this.client
+                            .from(m2m.relatedTable)
+                            .select('*')
+                            .eq(m2m.relatedColumn, junctionRecord[m2m.relatedColumn]);
+                    });
+
+                    const relatedDataResults = await Promise.all(relatedDataQueries);
+                    data[m2m.relatedTable] = relatedDataResults
+                        .filter(res => !res.error)
+                        .map(res => res.data);
+                })
+            );
+
+            return data;
+        }
 
     async create<TEntity extends EntityKeys>(
         data: Partial<EntityRecord<TEntity, 'frontend'>>
     ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        // Convert the frontend data to database format
         const dbData = this.convertToDatabase(data as EntityRecord<TEntity, 'frontend'>);
 
-        // Determine the correct insertion method based on schema and relationships
-        const response = this.processDataForInsert(this.entityKey, dbData);
+        const response = this.convertToFrontend(this.entityKey, dbData);
         const processedData = response.processedData;
         const requiredMethod = response.callMethod;
 
@@ -748,9 +1047,9 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return this.convertToFrontend(result);
     }
 
-    /**
+    /!**
      * Insert method for simple inserts without FK or IFK relationships.
-     */
+     *!/
     async insertSimple(
         dbTableName: EntityNameFormat<TEntity, 'database'>,
         processedData: EntityRecord<TEntity, 'database'>
@@ -765,9 +1064,9 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return data as EntityRecord<TEntity, 'database'>;
     }
 
-    /**
+    /!**
      * Insert method for inserts that involve foreign key (FK) relationships.
-     */
+     *!/
     async insertWithFk(
         dbTableName: EntityNameFormat<TEntity, 'database'>,
         processedData: EntityRecord<TEntity, 'database'>
@@ -788,9 +1087,9 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return result;
     }
 
-    /**
+    /!**
      * Insert method for inserts that involve intermediate foreign key (IFK) relationships.
-     */
+     *!/
     async insertWithIfk(
         dbTableName: EntityNameFormat<TEntity, 'database'>,
         processedData: any
@@ -818,9 +1117,9 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return primaryResult;
     }
 
-    /**
+    /!**
      * Insert method that handles both FK and IFK relationships.
-     */
+     *!/
     async insertWithFkAndIfk(
         dbTableName: EntityNameFormat<TEntity, 'database'>,
         processedData: any
@@ -848,125 +1147,90 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         return primaryResult;
     }
 
-    /**
+    /!**
      * Placeholder method to handle related tables based on foreign key (FK) relationships.
      * You need to implement the logic that fetches the correct related tables and handles inserts.
-     */
+     *!/
     private async handleForeignKeyRelations(result: EntityRecord<TEntity, 'database'>) {
         // Placeholder: Implement logic to fetch related tables based on FK relationships
         // and perform necessary inserts or updates in the related tables.
     }
+*/
 
 
-    async update(
-        id: string | number,
-        data: Partial<EntityRecord<TEntity, 'frontend'>>
-    ): Promise<EntityRecord<TEntity, 'frontend'> | null> {
-        // Convert frontend data to database format
-        const dbData = this.convertToDatabase(data as EntityRecord<TEntity, 'frontend'>);
-
-        // Build the query
-        const query = this.buildBaseQuery()
-            .eq(this.primaryKeyField, id)  // Use the primary key field dynamically
-            .update(dbData);
-
-        const { data: result, error } = await query.select().single();
-
-        if (error) throw error;
-
-        // Convert the result back to frontend format and return
-        return this.convertToFrontend(result as EntityRecord<TEntity, 'database'>);
-    }
-
-    async delete(id: string | number): Promise<void> {
-        // Ensure the table is not a view
-        if (this.tableSchema.schemaType === 'view') {
-            throw new Error(`Cannot delete from view: ${this.databaseName}`);
-        }
-
-        // Build the delete query
-        const query = this.buildBaseQuery()
-            .eq(this.primaryKeyField, id)
-            .delete();
-
-        const { error } = await query;
-
-        if (error) throw error;
-    }
-
-    private isPostgrestError(error: unknown): error is PostgrestError {
-        return Boolean(
-            error &&
-            typeof error === 'object' &&
-            'message' in error &&
-            'code' in error &&
-            typeof (error as any).message === 'string' &&
-            typeof (error as any).code === 'string'
-        );
-    }
 
 
-    async executeCustomQuery(
-        query: (baseQuery: PostgrestFilterBuilder<any, any, any>) => any
-    ): Promise<EntityRecord<TEntity, 'frontend'>[]> {
-        // Start with a base query
-        const baseQuery = this.buildBaseQuery();
 
-        // Apply the custom query
-        const customQuery = query(baseQuery);
 
-        const { data, error } = await customQuery;
-
-        if (error) throw error;
-
-        // Convert results to frontend format
-        return this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]);
-    }
-
-    subscribeToChanges(callback: SubscriptionCallback): void {
-        // Unsubscribe from existing subscription if any
-        this.unsubscribeFromChanges();
-
-        // Create a subscription to changes on this table
-        const subscription = this.client
-            .channel(`public:${this.databaseName}`)
-            .on('postgres_changes', { event: '*', schema: 'public', table: this.databaseName }, async () => {
-                try {
-                    const data = await this.fetchAll();
-                    callback(data);
-                } catch (error) {
-                    console.error('Error fetching updated data:', error);
-                }
-            })
-            .subscribe();
-
-        // Store the subscription
-        this.subscriptions.set(this.entityKey, subscription);
-    }
-
-    unsubscribeFromChanges(): void {
-        const subscription = this.subscriptions.get(this.entityKey);
-        if (subscription) {
-            this.client.removeChannel(subscription);
-            this.subscriptions.delete(this.entityKey);
-        }
-    }
-
-    unsubscribeFromAllChanges(): void {
-        this.subscriptions.forEach((subscription) => {
-            this.client.removeChannel(subscription);
-        });
-        this.subscriptions.clear();
-    }
-
-    convertToFrontendFormat(data: any): any {
-        if (Array.isArray(data)) {
-            return this.convertArrayToFrontend(data as EntityRecord<TEntity, 'database'>[]);
-        } else {
-            return this.convertToFrontend(data as EntityRecord<TEntity, 'database'>);
-        }
-    }
-}
+//
+// async fetchPaginatedOld<T extends DatabaseTableOrView>(
+//     tableName: TableName,
+//     options: QueryOptions<T>,
+//     page: number = 1,
+//     pageSize: number = 10,
+//     maxCount: number = 10000
+// ): Promise<{
+//     page: number;
+//     allNamesAndIds?: { id: string; name: string }[];
+//     pageSize: number;
+//     totalCount: number;
+//     paginatedData: any[];
+// }> {
+//     const dbTableName = this.getDatabaseTableName(tableName);
+//     const tableSchema = getSchema(tableName, 'database')!;
+//
+//     options.limit = pageSize;
+//     options.offset = (page - 1) * pageSize;
+//
+//     let query = this.client.from(dbTableName).select('*', {count: 'exact'});
+//     query = this.applyQueryOptions(query, options, tableSchema);
+//
+//     const {data, error, count} = await query;
+//     if (error) {
+//         console.error(`Error fetching data: ${error.message}`);
+//         return {
+//             page,
+//             pageSize,
+//             totalCount: 0,
+//             paginatedData: []
+//         };
+//     }
+//
+//     let allNamesAndIds: { id: string; name: string }[] | undefined;
+// if (maxCount !== 0) {
+//     const idNameQuery = this.client.from(dbTableName).select('id, name').limit(maxCount);
+//     const {data: idNameData, error: idNameError} = await idNameQuery;
+//     if (idNameError) {
+//         console.error(`Error fetching names and IDs: ${idNameError.message}`);
+//     } else {
+//         allNamesAndIds = idNameData as { id: string; name: string }[];
+//     }
+// }
+//
+// const paginatedData = data.map(item => {
+//     if (typeof item === 'string') {
+//         try {
+//             return JSON.parse(item);
+//         } catch (parseError: any) {
+//             console.error(`Failed to parse JSON string: ${parseError.message}`, item);
+//             return null;
+//         }
+//     } else if (typeof item === 'object' && item !== null) {
+//         return this.convertResponse(item, tableName);
+//     } else {
+//         console.warn('Unexpected item type:', typeof item, item);
+//         return null;
+//     }
+// });
+//
+// return {
+//     page,
+//     allNamesAndIds,
+//     pageSize,
+//     totalCount: count ?? 0,
+//     paginatedData
+// };
+// }
 
     // buildQuery<T extends Record<string, any> = any>(queryName: string, table: string): PostgrestQueryBuilder<T> {
     //     const builder = this.client.from(table);

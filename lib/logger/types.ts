@@ -1,5 +1,5 @@
-// lib/logger/types.ts
-// STATUS: Modified version of your existing file - REPLACE
+// Enhanced Log Types for Comprehensive Error Tracking
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export type LogContext = {
@@ -14,6 +14,8 @@ export type LogContext = {
     userAgent?: string;
     route?: string;
     version?: string;
+    query?: string;  // For tracking SQL/API queries
+    trace?: string[];  // Detailed trace of function calls, etc.
 };
 
 export interface BaseLogEntry {
@@ -21,12 +23,13 @@ export interface BaseLogEntry {
     level: LogLevel;
     message: string;
     context: LogContext;
-    metadata?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;  // Additional meta-information
+    trace?: string[];  // Include this for stack tracing
 }
 
 export interface SchemaResolutionLog extends BaseLogEntry {
     category: 'schema_resolution';
-    resolutionType: 'table' | 'field' | 'cache';
+    resolutionType: 'table' | 'field' | 'cache' | 'database';
     original: string;
     resolved: string;
     trace: string[];
@@ -44,7 +47,9 @@ export interface ErrorLog extends BaseLogEntry {
         message: string;
         stack?: string;
         code?: string;
-        type?: string;
+        type?: string;  // e.g., 'PostgrestError', 'ValidationError'
+        query?: string;  // SQL query or API endpoint that triggered the error
+        trace?: string[];  // Stack trace or function call trace
     };
 }
 

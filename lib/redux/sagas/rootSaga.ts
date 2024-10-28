@@ -2,12 +2,14 @@
 
 import { all } from 'redux-saga/effects';
 import { createTableSaga } from "@/lib/redux/tables/dynamicTableSagas";
-import { AutomationTableStructure, TableNames } from '@/types/automationTableTypes';
+import {EntityKeys, AutomationEntities, UnifiedSchemaCache} from "@/types/entityTypes";
 
-export function createRootSaga(schema: AutomationTableStructure) {
+export function createRootSaga(unifiedSchemaCache: UnifiedSchemaCache) {
+    const schema = unifiedSchemaCache.schema as AutomationEntities;
+
     return function* rootSaga() {
         const tableSagas = Object.keys(schema).map(tableName =>
-            createTableSaga(tableName as TableNames, schema[tableName as TableNames])()
+            createTableSaga(tableName as EntityKeys, schema[tableName as EntityKeys])()
         );
 
         yield all([

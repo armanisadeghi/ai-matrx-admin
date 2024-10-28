@@ -1,264 +1,370 @@
-import {call, put, takeLatest, all, select} from 'redux-saga/effects';
-import {PayloadAction} from '@reduxjs/toolkit';
-import {databaseApi, QueryOptions} from '@/utils/supabase/api-wrapper';
+import { call, put, takeLatest, all, select } from 'redux-saga/effects';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { DatabaseApiWrapper, QueryOptions } from '@/utils/supabase/api-wrapper';
+import { createTableSlice } from "@/lib/redux/tables/tableSliceCreator";
 import {
-    AutomationTableStructure,
-    TableKeys,
-} from '@/types/automationTableTypes';
-import {createTableSlice} from "@/lib/redux/tables/tableSliceCreator";
+    AutomationEntities, createFormattedRecord,
+    EntityKeys,
+    EntityRecord
+} from "@/types/entityTypes";
+import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
+import { SupabaseClient } from '@supabase/supabase-js';
 
-type TableData<TTable extends TableKeys> = AutomationTableStructure[TTable];
+/**
+ * Initialize DatabaseApiWrapper for a given entity and dynamically inject the Supabase client
+ */
+function* initializeDatabaseApiWrapper<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient
+) {
+    const databaseApi = DatabaseApiWrapper.create(entityVariant);
+    databaseApi.setClient(client);  // Dynamically set the client (either from server or client-side)
+    return databaseApi;
+}
 
-function* MakeQuery<TTable extends TableKeys>(
-    tableName: TTable,
+
+/**
+ * Utility function to get primary key value from a record
+ */
+function* getPrimaryKeyInfo<TEntity extends EntityKeys>(
+    databaseApi: DatabaseApiWrapper<TEntity>,
+    record: EntityRecord<TEntity, 'frontend'>
+): Generator<any, { field: string; value: string | number }> {
+    const primaryKeyField = yield call([databaseApi, databaseApi.getPrimaryKeyField]);
+    const value = record[primaryKeyField];
+    return { field: primaryKeyField, value };
+}
+
+
+
+/**
+ * Handle paginated query for an entity
+ */
+function* MakeQuery<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient,
     actions: ReturnType<typeof createTableSlice>['actions'],
-    action: PayloadAction<QueryOptions<TTable> | undefined>
+    action: PayloadAction<{
+        options?: QueryOptions<TEntity>;
+        page?: number;
+        pageSize?: number;
+    }>
 ) {
     try {
         const state = yield select();
-        const tableState = state[tableName];
+        const entityState = state[entityVariant];
         const optionsKey = JSON.stringify(action.payload || {});
-        const lastFetchedTime = tableState.lastFetched[optionsKey];
+        const lastFetchedTime = entityState.lastFetched[optionsKey];
         const now = Date.now();
-        const isStale = !lastFetchedTime || (now - lastFetchedTime) > tableState.staleTime;
+        const isStale = !lastFetchedTime || (now - lastFetchedTime) > entityState.staleTime;
 
-        if (!isStale) {
+        if (!isStale) return;
+
+        const databaseApi = yield call(
+            initializeDatabaseApiWrapper<TEntity>,
+            entityVariant,
+            client
+        );
+
+        yield put(actions.setLoading(true));
+
+        // Use fetchPaginated with proper typing
+        const result: {
+            data: EntityRecord<TEntity, 'frontend'>[];
+            page: number;
+            pageSize: number;
+            totalCount: number;
+        } = yield call(
+            [databaseApi, databaseApi.fetchPaginated],
+            action.payload.options,
+            action.payload.page,
+            action.payload.pageSize
+        );
+
+        yield put(actions.setTableData(result.data));
+        yield put(actions.setPagination({
+            page: result.page,
+            pageSize: result.pageSize,
+            totalCount: result.totalCount
+        }));
+        yield put(actions.setLastFetched({ key: optionsKey, time: now }));
+    } catch (error: any) {
+        yield put(actions.setError(error.message));
+    } finally {
+        yield put(actions.setLoading(false));
+    }
+}
+
+/**
+ * Updated handlers using dynamic primary key
+ */
+function* handleFetchOne<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient,
+    actions: ReturnType<typeof createTableSlice>['actions'],
+    action: PayloadAction<{
+        primaryKeyValue: string | number;
+        options?: QueryOptions<TEntity>;
+    }>
+) {
+    try {
+        const databaseApi = yield call(
+            initializeDatabaseApiWrapper<TEntity>,
+            entityVariant,
+            client
+        );
+
+        const state = yield select();
+        const entityState = state[entityVariant];
+        const primaryKeyField = yield call([databaseApi, databaseApi.getPrimaryKeyField]);
+
+        const item = entityState.data.find(
+            (item: EntityRecord<TEntity, 'frontend'>) =>
+                item[primaryKeyField] === action.payload.primaryKeyValue
+        );
+
+        const lastFetchedTime = entityState.lastFetched[action.payload.primaryKeyValue];
+        const now = Date.now();
+        const isStale = !lastFetchedTime || (now - lastFetchedTime) > entityState.staleTime;
+
+        if (item && !isStale) {
+            yield put(actions.setSelectedItem(item));
             return;
         }
 
         yield put(actions.setLoading(true));
-        const data: TableData<TTable>[] = yield call(
-            [databaseApi, databaseApi.fetchAll],
-            tableName,
-            action.payload
+
+        const data: EntityRecord<TEntity, 'frontend'> = yield call(
+            [databaseApi, databaseApi.fetchByPrimaryKey],
+            action.payload.primaryKeyValue,
+            action.payload.options
         );
-        yield put(actions.setTableData(data));
-        yield put(actions.setLastFetched({key: optionsKey, time: now}));
+
+        if (data) {
+            yield put(actions.setSelectedItem(data));
+            yield put(actions.setLastFetched({
+                key: action.payload.primaryKeyValue.toString(),
+                time: now
+            }));
+        }
     } catch (error: any) {
         yield put(actions.setError(error.message));
+    } finally {
+        yield put(actions.setLoading(false));
     }
 }
-//
-//
-// function* handleFetchOne<T extends keyof AutomationTableStructure>(
-//     tableName: T,
-//     actions: ReturnType<typeof createTableSlice>['actions'],
-//     action: PayloadAction<{
-//         id: string;
-//         options?: Omit<QueryOptions<TableData<T>>, 'limit' | 'offset'>;
-//     }>
-// ) {
-//     try {
-//         const state = yield select();
-//         const tableState = state[tableName];
-//         const item = tableState.data.find(
-//             (item: TableData<T>) => item.id === action.payload.id
-//         );
-//
-//         const lastFetchedTime = tableState.lastFetched[action.payload.id];
-//         const now = Date.now();
-//         const isStale = !lastFetchedTime || (now - lastFetchedTime) > tableState.staleTime;
-//
-//         if (item && !isStale) {
-//             // Data is fresh, no need to fetch
-//             yield put(actions.setSelectedItem(item));
-//             return;
-//         }
-//
-//         yield put(actions.setLoading(true));
-//         const data: TableData<T> = yield call(
-//             [databaseApi, databaseApi.fetchOne],
-//             tableName,
-//             action.payload.id,
-//             action.payload.options
-//         );
-//         yield put(actions.setSelectedItem(data));
-//         yield put(actions.setLastFetched({key: action.payload.id, time: now}));
-//     } catch (error: any) {
-//         yield put(actions.setError(error.message));
-//     }
-// }
-//
-// function* handleCreate<T extends keyof AutomationTableStructure>(
-//     tableName: T,
-//     actions: ReturnType<typeof createTableSlice>['actions'],
-//     action: PayloadAction<Partial<TableData<T>>>
-// ) {
-//     try {
-//         yield put(actions.setLoading(true));
-//         const data: TableData<T> = yield call(
-//             [databaseApi, databaseApi.create],
-//             tableName,
-//             action.payload
-//         );
-//         const currentData = yield select((state) => state[tableName].data);
-//         yield put(actions.setTableData([...currentData, data]));
-//         yield put(actions.setLastFetched({key: data.id, time: Date.now()}));
-//     } catch (error: any) {
-//         yield put(actions.setError(error.message));
-//     }
-// }
-//
-// function* handleUpdate<T extends keyof AutomationTableStructure>(
-//     tableName: T,
-//     actions: ReturnType<typeof createTableSlice>['actions'],
-//     action: PayloadAction<{
-//         id: string;
-//         data: Partial<TableData<T>>;
-//     }>
-// ) {
-//     try {
-//         yield put(actions.setLoading(true));
-//         const data: TableData<T> = yield call(
-//             [databaseApi, databaseApi.update],
-//             tableName,
-//             action.payload.id,
-//             action.payload.data
-//         );
-//         const updatedData = yield select((state) =>
-//             state[tableName].data.map((item: TableData<T>) =>
-//                 item.id === action.payload.id ? data : item
-//             )
-//         );
-//         yield put(actions.setTableData(updatedData));
-//         yield put(actions.setLastFetched({key: action.payload.id, time: Date.now()}));
-//     } catch (error: any) {
-//         yield put(actions.setError(error.message));
-//     }
-// }
-//
-// function* handleDelete<T extends keyof AutomationTableStructure>(
-//     tableName: T,
-//     actions: ReturnType<typeof createTableSlice>['actions'],
-//     action: PayloadAction<string>
-// ) {
-//     try {
-//         yield put(actions.setLoading(true));
-//         yield call([databaseApi, databaseApi.delete], tableName, action.payload);
-//         const filteredData = yield select((state) =>
-//             state[tableName].data.filter((item: TableData<T>) => item.id !== action.payload)
-//         );
-//         yield put(actions.setTableData(filteredData));
-//         yield put(actions.removeLastFetchedKey(action.payload));
-//     } catch (error: any) {
-//         yield put(actions.setError(error.message));
-//     }
-// }
-//
-// function* handleExecuteCustomQuery<T extends keyof AutomationTableStructure>(
-//     tableName: T,
-//     actions: ReturnType<typeof createTableSlice>['actions'],
-//     action: PayloadAction<(baseQuery: any) => any>
-// ) {
-//     try {
-//         yield put(actions.setLoading(true));
-//         const data: TableData<T>[] = yield call(
-//             [databaseApi, databaseApi.executeCustomQuery],
-//             tableName,
-//             action.payload
-//         );
-//         yield put(actions.setTableData(data));
-//     } catch (error: any) {
-//         yield put(actions.setError(error.message));
-//     }
-// }
-//
-// function* handleFetchPaginated<T extends keyof AutomationTableStructure>(
-//     tableName: T,
-//     actions: ReturnType<typeof createTableSlice>['actions'],
-//     action: PayloadAction<{
-//         options: QueryOptions<TableData<T>>;
-//         page: number;
-//         pageSize: number;
-//     }>
-// ) {
-//     try {
-//         const state = yield select();
-//         const tableState = state[tableName];
-//         const optionsKey = JSON.stringify({...action.payload.options, page: action.payload.page});
-//         const lastFetchedTime = tableState.lastFetched[optionsKey];
-//         const now = Date.now();
-//         const isStale = !lastFetchedTime || (now - lastFetchedTime) > tableState.staleTime;
-//
-//         if (!isStale) {
-//             // Data is fresh, no need to fetch
-//             return;
-//         }
-//
-//         yield put(actions.setLoading(true));
-//         const {page, pageSize, options} = action.payload;
-//         const data = yield call(
-//             [databaseApi, databaseApi.fetchPaginated],
-//             tableName,
-//             options,
-//             page,
-//             pageSize
-//         );
-//         yield put(actions.setTableData(data.paginatedData));
-//         yield put(actions.setTotalCount(data.totalCount));
-//         yield put(actions.setLastFetched({key: optionsKey, time: now}));
-//     } catch (error: any) {
-//         yield put(actions.setError(error.message));
-//     }
-// }
-//
-// export function createTableSaga(tableName: TableNames, tableSchema: AutomationTable) {
-//     const { actions } = createTableSlice(tableName, tableSchema);
-//     const baseType = `table/${tableName}`;
-//
-//     return function* saga() {
-//         yield all([
-//             takeLatest(`${baseType}/fetch`, handleFetch.bind(null, tableName, actions)),
-//             takeLatest(`${baseType}/fetchOne`, handleFetchOne.bind(null, tableName, actions)),
-//             takeLatest(`${baseType}/create`, handleCreate.bind(null, tableName, actions)),
-//             takeLatest(`${baseType}/update`, handleUpdate.bind(null, tableName, actions)),
-//             takeLatest(`${baseType}/delete`, handleDelete.bind(null, tableName, actions)),
-//             takeLatest(`${baseType}/executeQuery`, handleExecuteCustomQuery.bind(null, tableName, actions)),
-//             takeLatest(`${baseType}/fetchPaginated`, handleFetchPaginated.bind(null, tableName, actions)),
-//             ...createCustomSagas(tableSchema, baseType, tableName, actions),
-//         ]);
-//     };
-// }
-//
-// function createCustomSagas(
-//     schema: AutomationTable,
-//     baseType: string,
-//     tableName: keyof AutomationTableStructure,
-//     actions: ReturnType<typeof createTableSlice>['actions']
-// ) {
-//     const customSagas: any[] = [];
-//
-//     if ('status' in schema.entityFields) {
-//         function* handleChangeStatus(
-//             action: PayloadAction<{
-//                 id: string;
-//                 status: any;
-//             }>
-//         ) {
-//             try {
-//                 yield put(actions.setLoading(true));
-//                 const data = yield call(
-//                     [databaseApi, databaseApi.update],
-//                     tableName,
-//                     action.payload.id,
-//                     {status: action.payload.status}
-//                 );
-//                 const updatedData = yield select((state) =>
-//                     state[tableName].data.map((item: any) =>
-//                         item.id === action.payload.id ? data : item
-//                     )
-//                 );
-//                 yield put(actions.setTableData(updatedData));
-//                 yield put(actions.setLastFetched({key: action.payload.id, time: Date.now()}));
-//             } catch (error: any) {
-//                 yield put(actions.setError(error.message));
-//             }
-//         }
-//
-//         customSagas.push(
-//             takeLatest(`${baseType}/changeStatus`, handleChangeStatus)
-//         );
-//     }
-//
-//     return customSagas;
-// }
+
+/**
+ * Handle creating a new record
+ */
+function* handleCreate<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient,
+    actions: ReturnType<typeof createTableSlice>['actions'],
+    action: PayloadAction<Partial<EntityRecord<TEntity, 'frontend'>>>
+) {
+    try {
+        yield put(actions.setLoading(true));
+
+        const databaseApi = yield call(
+            initializeDatabaseApiWrapper<TEntity>,
+            entityVariant,
+            client
+        );
+
+        const data: EntityRecord<TEntity, 'frontend'> = yield call(
+            [databaseApi, databaseApi.create],
+            action.payload
+        );
+
+        if (data) {
+            const currentData = yield select(
+                (state) => state[entityVariant].data
+            );
+            yield put(actions.setTableData([...currentData, data]));
+            yield put(actions.setLastFetched({
+                key: data.id.toString(),
+                time: Date.now()
+            }));
+        }
+    } catch (error: any) {
+        yield put(actions.setError(error.message));
+    } finally {
+        yield put(actions.setLoading(false));
+    }
+}
+
+/**
+ * Handle updating a record
+ */
+function* handleUpdate<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient,
+    actions: ReturnType<typeof createTableSlice>['actions'],
+    action: PayloadAction<{
+        id: string | number;
+        data: Partial<EntityRecord<TEntity, 'frontend'>>;
+    }>
+) {
+    try {
+        yield put(actions.setLoading(true));
+
+        const databaseApi = yield call(
+            initializeDatabaseApiWrapper<TEntity>,
+            entityVariant,
+            client
+        );
+
+        const updatedData: EntityRecord<TEntity, 'frontend'> | null = yield call(
+            [databaseApi, databaseApi.update],
+            action.payload.id,
+            action.payload.data
+        );
+
+        if (updatedData) {
+            const currentData: EntityRecord<TEntity, 'frontend'>[] = yield select(
+                (state) => state[entityVariant].data
+            );
+
+            const newData = currentData.map(item =>
+                item.id === action.payload.id ? updatedData : item
+            );
+
+            yield put(actions.setTableData(newData));
+            yield put(actions.setLastFetched({
+                key: action.payload.id.toString(),
+                time: Date.now()
+            }));
+        }
+    } catch (error: any) {
+        yield put(actions.setError(error.message));
+    } finally {
+        yield put(actions.setLoading(false));
+    }
+}
+
+/**
+ * Handle deleting a record
+ */
+function* handleDelete<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient,
+    actions: ReturnType<typeof createTableSlice>['actions'],
+    action: PayloadAction<string | number>
+) {
+    try {
+        yield put(actions.setLoading(true));
+
+        const databaseApi = yield call(
+            initializeDatabaseApiWrapper<TEntity>,
+            entityVariant,
+            client
+        );
+
+        const success: boolean = yield call(
+            [databaseApi, databaseApi.delete],
+            action.payload
+        );
+
+        if (success) {
+            const currentData: EntityRecord<TEntity, 'frontend'>[] = yield select(
+                (state) => state[entityVariant].data
+            );
+
+            const filteredData = currentData.filter(
+                item => item.id !== action.payload
+            );
+
+            yield put(actions.setTableData(filteredData));
+            yield put(actions.removeLastFetchedKey(action.payload.toString()));
+        }
+    } catch (error: any) {
+        yield put(actions.setError(error.message));
+    } finally {
+        yield put(actions.setLoading(false));
+    }
+}
+
+/**
+ * Handle custom query execution
+ */
+function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    client: SupabaseClient,
+    actions: ReturnType<typeof createTableSlice>['actions'],
+    action: PayloadAction<{
+        queryFn: (baseQuery: PostgrestFilterBuilder<any, any, any>) => Promise<any>;
+        format?: 'frontend' | 'database';
+    }>
+) {
+    try {
+        yield put(actions.setLoading(true));
+
+        const databaseApi = yield call(
+            initializeDatabaseApiWrapper<TEntity>,
+            entityVariant,
+            client
+        );
+
+        const rawData: unknown[] = yield call(
+            [databaseApi, databaseApi.executeCustomQuery],
+            action.payload.queryFn
+        );
+
+        const formattedData = action.payload.format === 'database'
+                              ? rawData
+                              : rawData.map(item =>
+                createFormattedRecord(entityVariant, item as Record<string, unknown>, 'frontend')
+            );
+
+        yield put(actions.setTableData(formattedData));
+    } catch (error: any) {
+        yield put(actions.setError(error.message));
+    } finally {
+        yield put(actions.setLoading(false));
+    }
+}
+
+type EntitySchemaType<TEntity extends EntityKeys> = AutomationEntities[TEntity];
+
+export function createEntitySaga<TEntity extends EntityKeys>(
+    entityVariant: TEntity,
+    entitySchema: EntitySchemaType<TEntity>,
+    client: SupabaseClient
+) {
+    const { actions } = createTableSlice<TEntity>(entityVariant, entitySchema);
+    const baseType = `entity/${entityVariant}`;
+
+    return function* saga() {
+        yield all([
+            takeLatest(
+                `${baseType}/fetch`,
+                MakeQuery.bind(null, entityVariant, client, actions)
+            ),
+            takeLatest(
+                `${baseType}/fetchOne`,
+                handleFetchOne.bind(null, entityVariant, client, actions)
+            ),
+            takeLatest(
+                `${baseType}/create`,
+                handleCreate.bind(null, entityVariant, client, actions)
+            ),
+            takeLatest(
+                `${baseType}/update`,
+                handleUpdate.bind(null, entityVariant, client, actions)
+            ),
+            takeLatest(
+                `${baseType}/delete`,
+                handleDelete.bind(null, entityVariant, client, actions)
+            ),
+            takeLatest(
+                `${baseType}/executeQuery`,
+                handleExecuteCustomQuery.bind(null, entityVariant, client, actions)
+            ),
+            takeLatest(
+                `${baseType}/fetchPaginated`,
+                MakeQuery.bind(null, entityVariant, client, actions)
+            )
+        ]);
+    };
+}

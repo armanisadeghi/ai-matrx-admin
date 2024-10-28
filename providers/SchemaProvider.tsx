@@ -501,15 +501,30 @@ export function useSchemaResolution() {
                 'backend'
             ),
 
+        /**
+         * Converts a record to database format
+         */
         toDatabase: <TEntity extends EntityKeys>(
-            entityVariant: AllEntityNameVariations,
-            object: Record<string, unknown>
-        ): EntityRecord<TEntity, 'database'> =>
-            transformObject<TEntity, 'database'>(
-                entityVariant,
-                object,
-                'database'
-            ),
+            entityKey: TEntity,
+            data: Record<string, unknown>,
+            sourceFormat: DataFormat
+        ): EntityRecord<TEntity, 'database'> => {
+            const formattedData = createFormattedRecord(entityKey, data, sourceFormat);
+            return convertFormat(entityKey, formattedData, 'database');
+        },
+
+        /**
+         * Converts a record from database format
+         */
+        fromDatabase: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            data: Record<string, unknown>,
+            targetFormat: DataFormat
+        ): EntityRecord<TEntity, typeof targetFormat> => {
+            const dbRecord = createFormattedRecord(entityKey, data, 'database');
+            return convertFormat(entityKey, dbRecord, targetFormat);
+        },
+
 
         toPretty: <TEntity extends EntityKeys>(
             entityVariant: AllEntityNameVariations,
@@ -602,6 +617,192 @@ export function useSchemaResolution() {
         );
     };
 
+
+    /**
+     * Database field resolution utilities
+     */
+    const databaseFields = {
+        /**
+         * Gets the database field name for any field variant
+         */
+        getFieldName: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            fieldVariant: AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>
+        ): FieldNameFormat<TEntity, EntityFieldKeys<TEntity>, 'database'> => {
+            const canonicalField = resolveFieldKey(entityKey, fieldVariant);
+            return getFieldNameInFormat(entityKey, canonicalField, 'database');
+        },
+
+        /**
+         * Converts an entire object's keys to database format
+         */
+        convertKeys: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            data: Record<string, unknown>
+        ): Record<string, unknown> => {
+            const result: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(data)) {
+                const dbKey = databaseFields.getFieldName(entityKey, key as any);
+                result[dbKey] = value;
+            }
+            return result;
+        }
+    };
+
+    /**
+     * Database validation utilities
+     */
+    const databaseValidation = {
+        /**
+         * Validates data against field types
+         */
+        validateFieldTypes: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            data: Record<string, unknown>
+        ): boolean => {
+            const entitySchema = getEntitySchema<TEntity>(entityKey);
+
+            try {
+                for (const [key, value] of Object.entries(data)) {
+                    // Create a properly typed field name variation
+                    const fieldNameVariation = createFormattedRecord(
+                        entityKey,
+                        {[key]: undefined},
+                        'frontend'
+                    );
+
+                    // Get the canonical field key
+                    const fieldKey = resolveFieldKey(
+                        entityKey,
+                        key as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>
+                    );
+
+                    const field = entitySchema.entityFields[fieldKey];
+
+                    // Add your type validation logic here
+                    if (!field) {
+                        return false;
+                    }
+
+                    // Example validation based on typeReference
+                    const typeRef = field.typeReference;
+                    if (typeRef) {
+                        // Add your specific type validation logic
+                    }
+                }
+                return true;
+            } catch (error) {
+                console.error('Field type validation failed:', error);
+                return false;
+            }
+        },
+
+        /**
+         * Ensures required fields are present
+         */
+        validateRequiredFields: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            data: Record<string, unknown>
+        ): boolean => {
+            try {
+                const entitySchema = getEntitySchema<TEntity>(entityKey);
+
+                for (const fieldKey in entitySchema.entityFields) {
+                    const field = entitySchema.entityFields[fieldKey as EntityFieldKeys<TEntity>];
+
+                    if (field.isRequired) {
+                        // Get the field name in the format of the incoming data
+                        const fieldName = databaseFields.getFieldName(
+                            entityKey,
+                            fieldKey as EntityFieldKeys<TEntity>
+                        );
+
+                        if (!(fieldName in data)) {
+                            console.error(`Required field missing: ${fieldName}`);
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            } catch (error) {
+                console.error('Required fields validation failed:', error);
+                return false;
+            }
+        }
+    };
+
+    /**
+     * Helper utilities for field resolution
+     */
+    const fieldResolution = {
+        /**
+         * Safely resolves a field key from any variation
+         */
+        safeResolveFieldKey: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            fieldVariant: string
+        ): EntityFieldKeys<TEntity> | null => {
+            try {
+                return resolveFieldKey(
+                    entityKey,
+                    fieldVariant as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>
+                );
+            } catch {
+                return null;
+            }
+        },
+
+        /**
+         * Validates if a field name is valid for an entity
+         */
+        isValidFieldName: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            fieldName: string
+        ): boolean => {
+            return !!fieldResolution.safeResolveFieldKey(entityKey, fieldName);
+        }
+    };
+
+    const enhancedDatabaseValidation = {
+        ...databaseValidation,
+
+        /**
+         * Comprehensive validation of data
+         */
+        validateData: <TEntity extends EntityKeys>(
+            entityKey: TEntity,
+            data: Record<string, unknown>
+        ): {
+            isValid: boolean;
+            errors: string[]
+        } => {
+            const errors: string[] = [];
+
+            // Validate field names
+            for (const fieldName of Object.keys(data)) {
+                if (!fieldResolution.isValidFieldName(entityKey, fieldName)) {
+                    errors.push(`Invalid field name: ${fieldName}`);
+                }
+            }
+
+            // Validate required fields
+            if (!databaseValidation.validateRequiredFields(entityKey, data)) {
+                errors.push('Missing required fields');
+            }
+
+            // Validate field types
+            if (!databaseValidation.validateFieldTypes(entityKey, data)) {
+                errors.push('Invalid field types');
+            }
+
+            return {
+                isValid: errors.length === 0,
+                errors
+            };
+        }
+    };
+
+
     return {
         resolveEntityKey,
         setSingleFieldsToDefault,
@@ -628,14 +829,16 @@ export function useSchemaResolution() {
         entityNameToCanonical,
         fieldNameToCanonical,
         entityNameFormats,
-        fieldNameFormats
+        fieldNameFormats,
+        databaseFields,
+        enhancedDatabaseValidation,
     } as const;
 }
 
 
 export function useTableSchema<TEntity extends EntityKeys>(tableVariant: AllEntityNameVariations) {
-    const { schema } = useSchema();
-    const { resolveEntityKey, getEntityNameInFormat, findPrimaryKeyFieldKey } = useSchemaResolution();
+    const {schema} = useSchema();
+    const {resolveEntityKey, getEntityNameInFormat, findPrimaryKeyFieldKey} = useSchemaResolution();
     const tableKey = resolveEntityKey(tableVariant) as TEntity;
     const tableSchema = schema[tableKey] as AutomationEntity<TEntity>;
     const primaryKeyField = findPrimaryKeyFieldKey(tableKey);

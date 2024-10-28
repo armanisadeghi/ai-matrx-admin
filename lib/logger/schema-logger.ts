@@ -1,7 +1,6 @@
 // lib/logger/schema-logger.ts
-// STATUS: Modified version of your utils/schema/schema-logger.ts - REPLACE
 import { v4 as uuidv4 } from 'uuid';
-import { SchemaResolutionLog } from './types';
+import { SchemaResolutionLog, LogLevel } from './types';
 import { BaseLogger } from './base-logger';
 import { LogStorage } from './storage';
 
@@ -19,20 +18,30 @@ export class SchemaLogger extends BaseLogger {
         return SchemaLogger.instance;
     }
 
+    /**
+     * Logs schema resolution events
+     * @param {Object} logDetails
+     */
     logResolution({
                       resolutionType,
                       original,
                       resolved,
                       message,
                       level,
-                      trace
+                      trace,
+                      tableMetrics = undefined,  // Optional table metrics
                   }: {
-        resolutionType: 'table' | 'field' | 'cache';
+        resolutionType: 'table' | 'field' | 'cache' | 'database';
         original: string;
         resolved: string;
         message: string;
-        level: 'info' | 'warn';
+        level: LogLevel;
         trace: string[];
+        tableMetrics?: {
+            fieldCount?: number;
+            variantCount?: number;
+            size?: number;
+        };
     }): void {
         const log: SchemaResolutionLog = {
             id: uuidv4(),
@@ -46,20 +55,27 @@ export class SchemaLogger extends BaseLogger {
             context: {
                 timestamp: new Date().toISOString(),
                 environment: process.env.NODE_ENV || 'development',
-            }
+                component: 'SchemaLogger',  // Optional
+                action: 'Resolution',       // Optional
+            },
+            // tableMetrics,  // Optionally include table metrics
         };
 
         this.processLog(log);
     }
 
+    /**
+     * Process the log: store it and optionally send it to external services
+     * @param {SchemaResolutionLog} log
+     */
     protected async processLog(log: SchemaResolutionLog): Promise<void> {
-        // Store schema logs separately
+        // Store schema logs separately in the schema log storage
         LogStorage.saveSchemaLogs([log]);
 
-        // Send to Datadog if enabled
+        // Optionally send logs to Datadog or any other monitoring service
         await this.sendToDatadog(log);
 
-        // Console output in development
+        // Output to the console in development environment
         if (process.env.NODE_ENV === 'development') {
             this.consoleOutput(log);
         }
