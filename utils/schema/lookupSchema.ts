@@ -1,9 +1,9 @@
 import {
-    FieldNameLookupType,
-    ReverseFieldLookupType,
-    ReverseTableLookupType,
-    TableNameLookupType
-} from '@/types/automationTableTypes';
+    EntityNameFormatMap,
+    EntityNameToCanonicalMap,
+    FieldNameFormatMap,
+    FieldNameToCanonicalMap
+} from "@/types/entityTypes";
 
 export const viewNameLookup: Record<string, string> = {
     view_registered_function: "viewRegisteredFunction",
@@ -20,7 +20,7 @@ export const viewNameLookup: Record<string, string> = {
     p_view_registered_function_all_rels: "viewRegisteredFunctionAllRels",
 };
 
-export const tableNameLookup: TableNameLookupType = {
+export const entityNameToCanonical: EntityNameToCanonicalMap = {
     p_action: "action",
     Action: "action",
     action: "action",
@@ -176,7 +176,7 @@ export const tableNameLookup: TableNameLookupType = {
     "User Preferences": "userPreferences",
 };
 
-export const fieldNameLookup: FieldNameLookupType = {
+export const fieldNameToCanonical: FieldNameToCanonicalMap = {
     action: {
         Id: "id",
         id: "id",
@@ -1142,7 +1142,7 @@ export const fieldNameLookup: FieldNameLookupType = {
     },
 };
 
-export const reverseTableNameLookup: ReverseTableLookupType = {
+export const entityNameFormats: EntityNameFormatMap = {
     action: {
         "frontend": "action",
         "backend": "action",
@@ -1505,7 +1505,7 @@ export const reverseTableNameLookup: ReverseTableLookupType = {
     },
 };
 
-export const reverseFieldNameLookup: ReverseFieldLookupType = {
+export const fieldNameFormats: FieldNameFormatMap = {
     action: {
         "id": {
             "frontend": "id",
@@ -4699,4 +4699,5 @@ export const reverseFieldNameLookup: ReverseFieldLookupType = {
         }
     },
 };
+
 

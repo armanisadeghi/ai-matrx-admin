@@ -1,8 +1,8 @@
 // lib/logger/schema-logger.ts
-import { v4 as uuidv4 } from 'uuid';
-import { SchemaResolutionLog, LogLevel } from './types';
-import { BaseLogger } from './base-logger';
-import { LogStorage } from './storage';
+import {v4 as uuidv4} from 'uuid';
+import {SchemaResolutionLog, LogLevel} from './types';
+import {BaseLogger} from './base-logger';
+import {LogStorage} from './storage';
 
 export class SchemaLogger extends BaseLogger {
     private static instance: SchemaLogger;
@@ -22,27 +22,28 @@ export class SchemaLogger extends BaseLogger {
      * Logs schema resolution events
      * @param {Object} logDetails
      */
-    logResolution({
-                      resolutionType,
-                      original,
-                      resolved,
-                      message,
-                      level,
-                      trace,
-                      tableMetrics = undefined,  // Optional table metrics
-                  }: {
-        resolutionType: 'table' | 'field' | 'cache' | 'database';
-        original: string;
-        resolved: string;
-        message: string;
-        level: LogLevel;
-        trace: string[];
-        tableMetrics?: {
-            fieldCount?: number;
-            variantCount?: number;
-            size?: number;
-        };
-    }): void {
+    logResolution(
+        {
+            resolutionType,
+            original,
+            resolved,
+            message,
+            level,
+            trace,
+            tableMetrics = undefined,  // Optional table metrics
+        }: {
+            resolutionType: 'table' | 'field' | 'cache' | 'database' | 'entity';
+            original: string;
+            resolved: string;
+            message: string;
+            level: LogLevel;
+            trace: string[];
+            tableMetrics?: {
+                fieldCount?: number;
+                variantCount?: number;
+                size?: number;
+            };
+        }): void {
         const log: SchemaResolutionLog = {
             id: uuidv4(),
             category: 'schema_resolution',

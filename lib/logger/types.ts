@@ -29,7 +29,7 @@ export interface BaseLogEntry {
 
 export interface SchemaResolutionLog extends BaseLogEntry {
     category: 'schema_resolution';
-    resolutionType: 'table' | 'field' | 'cache' | 'database';
+    resolutionType: 'table' | 'field' | 'cache' | 'database' | 'entity';
     original: string;
     resolved: string;
     trace: string[];
