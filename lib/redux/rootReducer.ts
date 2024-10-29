@@ -14,8 +14,8 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-import {createTableSlice} from "@/lib/redux/tables/tableSliceCreator";
-import {AutomationTableStructure, TableKeys} from '@/types/automationTableTypes';
+import {createEntitySlice} from "@/lib/redux/entity/entitySliceCreator";
+import {AutomationEntities, EntityKeys} from "@/types/entityTypes";
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -31,23 +31,23 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-type TableReducers = Record<TableKeys, ReturnType<typeof createTableSlice>['reducer']>;
+type EntityReducers = Record<EntityKeys, ReturnType<typeof createEntitySlice>['reducer']>;
 
-function createAutomationTableReducers(schema: AutomationTableStructure): TableReducers {
-    return Object.entries(schema).reduce((acc, [tableName, tableSchema]) => {
-        const tableSlice = createTableSlice(tableName as TableKeys, tableSchema);
-        acc[tableName as TableKeys] = tableSlice.reducer;
+function createAutomationEntityReducers(automationEntities: AutomationEntities): EntityReducers {
+    return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
+        const entitySlice = createEntitySlice(entityName as EntityKeys, entitySchema);
+        acc[entityName as EntityKeys] = entitySlice.reducer;
         return acc;
-    }, {} as TableReducers);
+    }, {} as EntityReducers);
 }
 
-export const createRootReducer = (schema: AutomationTableStructure) => {
-    const tableReducers = createAutomationTableReducers(schema);
+export const createRootReducer = (automationEntities: AutomationEntities) => {
+    const entityReducers = createAutomationEntityReducers(automationEntities);
 
     return combineReducers({
         ...featureReducers,
         ...moduleReducers,
-        ...tableReducers,
+        ...entityReducers,
         layout: layoutReducer,
         theme: themeReducer,
         form: formReducer,
@@ -59,4 +59,3 @@ export const createRootReducer = (schema: AutomationTableStructure) => {
         schema: schemaReducer,
     });
 };
-

@@ -2,68 +2,62 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { useSchema } from '@/lib/hooks/useSchema';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import {createTypeReference, TableSchema} from "@/lib/redux/concepts/tableSchemaTypes";
+import React, {useState, useCallback} from 'react';
+
+import {Card, CardHeader, CardContent, CardFooter} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Input} from '@/components/ui/input';
+import {useSchemaResolution} from "@/providers/SchemaProvider";
+import {AllEntityNameVariations, EntityField} from "@/types/entityTypes";
+
 
 export default function SchemaAdmin() {
-    const { schemaRegistry, getTableSchema, registerNewSchema, updateSchema, registeredSchemas } = useSchema();
+
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [newSchemaName, setNewSchemaName] = useState<string>('');
     const [newFieldName, setNewFieldName] = useState<string>('');
 
-    const handleSchemaSelect = useCallback((schemaName: string) => {
+    const handleSchemaSelect = useCallback((schemaName: AllEntityNameVariations) => {
         setSelectedSchema(schemaName);
     }, []);
 
-    const handleAddSchema = () => {
-        if (newSchemaName) {
-            const newSchema: TableSchema = {
-                name: {
-                    frontend: newSchemaName,
-                    backend: newSchemaName.toLowerCase(),
-                    database: newSchemaName.toLowerCase(),
-                    pretty: newSchemaName,
+    const {
+        resolveEntityKey,
+        setSingleFieldsToDefault,
+        resolveFieldKey,
+        resolveEntityAndFieldKeys,
+        getEntityNameInFormat,
+        resolveEntityNameInFormat,
+        getFieldNameInFormat,
+        resolveFieldNameInFormat,
+        findPrimaryKeyFieldKey,
+        findDisplayFieldKey,
+        getFieldData,
+        findFieldsByCondition,
+        findFieldsWithDefaultGeneratorFunction,
+        getFieldsWithAttribute,
+        createFormattedEntityRecord,
+        getEntitySchemaInFormat,
+        formatTransformers,
+        generateDefaultValue,
+        transformObjectBasic,
+        transformObject,
+        schema,
+        entityNameToCanonical,
+        fieldNameToCanonical,
+        entityNameFormats,
+        fieldNameFormats,
+        databaseFields,
+        enhancedDatabaseValidation,
+        getAllEntitiesWithPrettyName,
+        getAllEntityKeys,
+        getEntitySchema,
+    } = useSchemaResolution()
 
-                },
-                schemaType: 'table', // You can update this to the appropriate type ('table', 'view', etc.)
-                fields: {
-                    id: {
-                        alts: {
-                            frontend: 'id',
-                            backend: 'id',
-                            database: 'id',
-                            pretty: 'ID',
-                        },
-                        type: 'string', // Based on DataType defined in the types
-                        format: 'single', // Refers to DataStructure
-                        structure: {
-                            structure: 'simple', // Refers to StructureType ('simple', 'foreignKey', etc.)
-                            typeReference: createTypeReference<string>(), // Keeps the generic type reference structure
-                        },
-                    },
-                },
-                relationships: {
-                    fetchStrategy: 'simple', // Default fetch strategy, you can adjust based on actual need
-                    foreignKeys: [], // Array of foreign key relationships (empty by default)
-                    inverseForeignKeys: [], // Array of inverse foreign key relationships (empty by default)
-                    manyToMany: [], // Array of many-to-many relationships (empty by default)
-                },
-            };
+    const registeredSchemas = getAllEntitiesWithPrettyName();
 
-            // Register the new schema in the global registry
-            registerNewSchema(newSchemaName, newSchema);
-
-            // Clear the input field after adding the schema
-            setNewSchemaName('');
-        }
-    };
-
-    const selectedSchemaDetails = selectedSchema ? getTableSchema(selectedSchema) : null;
+    const selectedSchemaDetails = selectedSchema ? getEntitySchema(selectedSchema) : null;
 
     return (
         <div className="p-4 space-y-4">
@@ -79,9 +73,9 @@ export default function SchemaAdmin() {
                                 <SelectValue placeholder="Select a schema" />
                             </SelectTrigger>
                             <SelectContent>
-                                {registeredSchemas.map((schemaName) => (
-                                    <SelectItem key={schemaName} value={schemaName}>
-                                        {schemaName}
+                                {registeredSchemas.map(({ entityKey, pretty }) => (
+                                    <SelectItem key={entityKey} value={entityKey}>
+                                        {pretty}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -90,14 +84,16 @@ export default function SchemaAdmin() {
 
                     {selectedSchemaDetails && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Details for: {selectedSchemaDetails.name.pretty}</h3>
+                            <h3 className="text-lg font-semibold">
+                                Details for: {selectedSchemaDetails.entityNameFormats.pretty}
+                            </h3>
                             <div className="space-y-2">
                                 <h4 className="font-medium">Fields:</h4>
-                                {Object.entries(selectedSchemaDetails.fields).map(([fieldName, field]) => (
+                                {Object.entries(selectedSchemaDetails.entityFields).map(([fieldName, field]) => (
                                     <div key={fieldName} className="bg-card rounded p-2">
                                         <p><strong>Field Name:</strong> {fieldName}</p>
-                                        <p><strong>Type:</strong> {field.type}</p>
-                                        <p><strong>Database Field:</strong> {field.alts.database}</p>
+                                        <p><strong>Type:</strong> {field.dataType}</p>
+                                        <p><strong>Database Field:</strong> {field.fieldNameVariations.database}</p>
                                     </div>
                                 ))}
                             </div>
@@ -108,9 +104,9 @@ export default function SchemaAdmin() {
                     <Input
                         value={newSchemaName}
                         onChange={(e) => setNewSchemaName(e.target.value)}
-                        placeholder="New Schema Name"
+                        placeholder="PLACEHOLDER ONLY: New Schema Name"
                     />
-                    <Button onClick={handleAddSchema}>Add Schema</Button>
+                    {/*<Button onClick={handleAddSchema}>Add Schema</Button>*/}
                 </CardFooter>
             </Card>
         </div>

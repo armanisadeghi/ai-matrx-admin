@@ -590,6 +590,86 @@ export function convertFormat<
     return createFormattedRecord(entity, convertedNames, targetFormat);
 }
 
+
+
+
+type EntitySliceState<TEntity extends EntityKeys> = {
+    data: Array<EntityData<TEntity>>; // Object array of Record<FieldKey, TypeReference> (The actual data)
+    totalCount: number; // Total number must come from the first fetch operation.
+    allPkAndDisplayFields: Array<{  // Also fetched with the first fetch operation
+        pk: string;  // Derived from the primary key field of the entity (Must convert to string)
+        display?: string;  // Derived from the display field of the entity (Must convert to string)
+    }>;
+    initialized: boolean;
+    loading: boolean;
+    error: string | null;
+    lastFetched: Record<string, Date>;
+    staleTime: number;
+    backups: Record<string, EntityData<TEntity>[]>; // Backup of previous data states (When necessary and triggered)
+    selectedItem: EntityData<TEntity> | null;   // Tracks the ACTIVE row (record) in the entity
+    entitySchema: AutomationEntity<EntityKeys>;  // The only remaining thing about the entity schema system!
+    page: number; // Current page number for pagination
+    pageSize: number; // Number of records per page
+};
+
+// Redux Types:
+/**
+ * Builds the data structure type from entity fields
+ */
+export type EntityData<TEntity extends EntityKeys> = {
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
+      ? TField
+      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+} & {
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
+      ? TField
+      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+};
+
+export type registeredFunctionData = EntityData<'registeredFunction'>;
+export type userPreferencesData = EntityData<'userPreferences'>;
+
+
+
+type EntityDataOptional<TEntity extends EntityKeys> = {
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
+        ? TField
+        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+} & {
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
+        ? TField
+        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+};
+
+type registeredFunctionDataOptional = EntityDataOptional<'registeredFunction'>;
+type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
+
+
+
+import { Draft } from 'immer';
+
+type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
+        ? TField
+        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+} & {
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
+        ? TField
+        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+}>;
+
+type registeredFunctionDataDraft = EntityDataDraft<'registeredFunction'>;
+type userPreferencesDataDraft = EntityDataDraft<'userPreferences'>;
+
+
+
+
+
+
+
+
+
+
 // // Usage example:
 // const example = () => {
 //     // Get a schema in database format

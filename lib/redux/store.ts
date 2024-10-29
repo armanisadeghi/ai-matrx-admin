@@ -31,8 +31,12 @@ export const makeStore = (initialState?: any) => {
         devTools: process.env.NODE_ENV !== 'production',
     });
 
-    const rootSagaInstance = createRootSaga(initialState.schema.schema);
-    sagaMiddleware.run(rootSagaInstance);
+    if (initialState.schema.schema) {
+        const rootSagaInstance = createRootSaga(initialState.schema.schema);
+        sagaMiddleware.run(rootSagaInstance);
+    } else {
+        throw new Error('Schema must be provided to create store');
+    }
 
     return store;
 };

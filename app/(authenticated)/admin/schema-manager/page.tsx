@@ -31,6 +31,7 @@ import PaginatedFetch from "@/components/matrx/schema/ops/PaginatedFetch";
 import CustomQuery from "@/components/matrx/schema/ops/CustomQuery";
 import RealtimeSubscription from "@/components/matrx/schema/ops/RealtimeSubscription";
 import CreateOperation from "@/components/matrx/schema/ops/CreateOperation";
+import PaginatedFetchSagas from '@/components/matrx/schema/opsRedux/PaginatedFetch';
 
 
 export default function AdminPage() {
@@ -103,6 +104,13 @@ export default function AdminPage() {
             icon: <IconRefresh />,
             component: <RealtimeSubscription />,
         },
+        {
+            title: "Redux Paginated Ops",
+            description: "Test State Management with Redux Sagas.",
+            icon: <Layers3 />,
+            component: <PaginatedFetchSagas />,
+        },
+
     ];
 
     const handleSelectComponent = (title: string) => {

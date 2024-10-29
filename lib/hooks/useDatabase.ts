@@ -1,8 +1,7 @@
 // File: hooks/useDatabase.ts
 
 import { useState, useCallback, useEffect } from 'react';
-import { QueryOptions, databaseApi, TableOrView } from "@/utils/supabase/api-wrapper";
-import { TableData } from '@/types/tableTypes';
+import { QueryOptions } from "@/utils/supabase/api-wrapper";
 import { FlexibleId, flexibleIdToString, isValidFlexibleId } from '@/types/FlexibleId';
 import {
     getPrettyNameForTable,
@@ -14,7 +13,6 @@ import {
     generateJsonTemplate,
     ensureId
 } from "@/utils/schema/schemaUtils";
-import {TableName} from "@/lib/redux/concepts/tableSchemaTypes";
 
 interface PaginationInfo {
     currentPage: number;

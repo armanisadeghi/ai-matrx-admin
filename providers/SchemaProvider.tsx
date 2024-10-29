@@ -50,6 +50,26 @@ export function useSchemaResolution() {
     } = useSchema();
 
     /**
+     * Returns a list of all entity keys
+     */
+    const getAllEntityKeys = (): EntityKeys[] => {
+        return Object.keys(schema) as EntityKeys[];
+    };
+
+    /**
+     * Returns all entity keys with their pretty names
+     */
+    const getAllEntitiesWithPrettyName = (): { entityKey: EntityKeys; pretty: string }[] => {
+        return Object.keys(entityNameFormats).map((entityKey) => {
+            const prettyName = entityNameFormats[entityKey].pretty;
+            if (!prettyName) {
+                throw new Error(`Pretty name not found for entity key: ${entityKey}`);
+            }
+            return { entityKey: entityKey as EntityKeys, pretty: prettyName };
+        });
+    };
+
+    /**
      * Resolves any entity name variation to its canonical key
      */
     const resolveEntityKey = (entityVariant: AllEntityNameVariations): EntityKeys => {
@@ -832,6 +852,8 @@ export function useSchemaResolution() {
         fieldNameFormats,
         databaseFields,
         enhancedDatabaseValidation,
+        getAllEntitiesWithPrettyName,
+        getAllEntityKeys,
     } as const;
 }
 

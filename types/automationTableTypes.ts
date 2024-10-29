@@ -833,9 +833,9 @@ type AllDatabaseTypes = GenerateAllDatabaseTableTypes;
 //     | OptionalTableNames<T>;
 
 
-export type EntityData = Record<string, any>;
+type EntityData = Record<string, any>;
 
-export type EntitySliceState = {
+type EntitySliceState = {
     data: EntityData[]; // This holds the actual values, where each object represents a row (record) in the entity
     totalCount: number; // Total number of records in the entity (e.g., number of books)
     allPkAndDisplayFields: Array<{

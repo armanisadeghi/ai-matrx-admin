@@ -3,6 +3,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { createClient } from '@/utils/supabase/server';
+import {TableSchemaStructure} from "@/utils/schema/initialSchemas";
 
 const supabase = createClient();
 
@@ -189,7 +190,7 @@ function formatSchemaContent(schema: OutputSchema): string {
             const formattedFields = Object.entries(tableSchema.fields)
                 .map(([fieldName, fieldDetails]) => {
                     return `${fieldName}: {
-                        alts: {
+                        fieldNameVariations: {
                             frontend: '${fieldDetails.alts.frontend}',
                             backend: '${fieldDetails.alts.backend}',
                             database: '${fieldDetails.alts.database}',
@@ -218,6 +219,78 @@ function formatSchemaContent(schema: OutputSchema): string {
                 fields: {
                     ${formattedFields}
                 }
+            }`;
+        })
+        .join(',\n');
+}
+
+
+
+function formatSchemaContentNew(schema: TableSchemaStructure): string {
+    return Object.entries(schema)
+        .map(([entityName, entitySchema]) => {
+            const formattedFields = Object.entries(entitySchema.entityFields)
+                .map(([fieldName, fieldDetails]) => {
+                    return `${fieldName}: {
+                        fieldNameVariations: {
+                            frontend: '${fieldDetails.fieldNameVariations.frontend}',
+                            backend: '${fieldDetails.fieldNameVariations.backend}',
+                            database: '${fieldDetails.fieldNameVariations.database}',
+                            pretty: '${fieldDetails.fieldNameVariations.pretty}',
+                            component: '${fieldDetails.fieldNameVariations.component}',
+                            kebab: '${fieldDetails.fieldNameVariations.kebab}',
+                            sqlFunctionRef: '${fieldDetails.fieldNameVariations.sqlFunctionRef}',
+                            RestAPI: '${fieldDetails.fieldNameVariations.RestAPI}',
+                            GraphQL: '${fieldDetails.fieldNameVariations.GraphQL}',
+                            custom: '${fieldDetails.fieldNameVariations.custom}'
+                        },
+                        dataType: '${fieldDetails.dataType}',
+                        isArray: ${fieldDetails.isArray},
+                        structure: '${fieldDetails.structure}',  // Directly referencing 'structure' as a simple string
+                        isNative: ${fieldDetails.isNative},
+                        typeReference: ${JSON.stringify(fieldDetails.typeReference)},
+                        defaultComponent: '${fieldDetails.defaultComponent}',
+                        componentProps: ${JSON.stringify(fieldDetails.componentProps || {})},
+                        isRequired: ${fieldDetails.isRequired},
+                        maxLength: ${fieldDetails.maxLength},
+                        defaultValue: ${JSON.stringify(fieldDetails.defaultValue)},
+                        isPrimaryKey: ${fieldDetails.isPrimaryKey},
+                        defaultGeneratorFunction: '${fieldDetails.defaultGeneratorFunction || ''}',
+                        validationFunctions: [${fieldDetails.validationFunctions.map(fn => `'${fn}'`).join(', ')}],
+                        exclusionRules: [${fieldDetails.exclusionRules.map(rule => `'${rule}'`).join(', ')}],
+                        databaseTable: '${fieldDetails.databaseTable}'
+                    }`;
+                })
+                .join(',\n');
+
+            const formattedRelationships = entitySchema.relationships
+                .map(relationship => {
+                    return `{
+                        relationshipType: '${relationship.relationshipType}',
+                        column: '${relationship.column}',
+                        relatedTable: '${relationship.relatedTable}',
+                        relatedColumn: '${relationship.relatedColumn}',
+                        junctionTable: ${relationship.junctionTable ? `'${relationship.junctionTable}'` : 'null'}
+                    }`;
+                })
+                .join(',\n');
+
+            return `${entityName}: {
+                schemaType: '${entitySchema.schemaType}',
+                entityNameVariations: {
+                    frontend: '${entitySchema.entityNameVariations.frontend}',
+                    backend: '${entitySchema.entityNameVariations.backend}',
+                    database: '${entitySchema.entityNameVariations.database}',
+                    pretty: '${entitySchema.entityNameVariations.pretty}'
+                },
+                entityFields: {
+                    ${formattedFields}
+                },
+                defaultFetchStrategy: '${entitySchema.defaultFetchStrategy}',
+                componentProps: ${JSON.stringify(entitySchema.componentProps || {})},
+                relationships: [
+                    ${formattedRelationships}
+                ]
             }`;
         })
         .join(',\n');

@@ -11085,3 +11085,26 @@ export type TableSchemaStructure = {
 };
 
 
+// Types to support the flexible structure
+type PrimaryKeyMapping = {
+    actualField: string;     // The actual DB field name (e.g., 'id', 'user_id', 'order_number')
+    type: 'number' | 'string' | 'composite';
+    composer?: (entity: any) => string; // For composite keys
+};
+
+type RelationConfig = {
+    foreignTable: string;    // Name of the related table
+    foreignKey: string;      // Field in this table pointing to foreign table
+    type: 'oneToMany' | 'manyToOne' | 'manyToMany';
+    through?: string;        // For many-to-many, the junction table
+    displayField?: string;   // Field to use when displaying the related entity
+};
+
+type TableConfig = {
+    tableName: string;
+    primaryKey: PrimaryKeyMapping;
+    displayField?: string;
+    relations: Record<string, RelationConfig>;
+};
+
+

@@ -50,6 +50,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
     private readonly resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat'];
     private readonly databaseFields: ReturnType<typeof useSchemaResolution>['databaseFields'];
     private readonly enhancedDatabaseValidation: ReturnType<typeof useSchemaResolution>['enhancedDatabaseValidation'];
+    private readonly displayFieldKey: EntityFieldKeys<TEntity> | null;
     private readonly subscriptions:  Map<string, RealtimeChannel> = new Map();
     private readonly queryBuilders: Map<string, unknown> = new Map();
     private readonly trace: string[];
@@ -64,6 +65,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat'],
         enhancedDatabaseValidation: ReturnType<typeof useSchemaResolution>['enhancedDatabaseValidation'],
         databaseFields: ReturnType<typeof useSchemaResolution>['databaseFields'],
+        displayFieldKey: EntityFieldKeys<TEntity> | null = null,
         trace: string[] = [__filename.split('/').pop() || 'unknownFile'] // Use default trace
     ) {
         this.entityVariant = entityVariant;
@@ -74,6 +76,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         this.formatTransformers = formatTransformers;
         this.resolveFieldNameInFormat = resolveFieldNameInFormat;
         this.enhancedDatabaseValidation = enhancedDatabaseValidation;
+        this.displayFieldKey = displayFieldKey;  // Assigned correctly
         this.databaseFields = databaseFields;
         this.trace = trace;  // Initialize trace
     }
@@ -87,6 +90,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             findPrimaryKeyFieldKey,
             formatTransformers,
             resolveFieldNameInFormat,
+            findDisplayFieldKey,
             enhancedDatabaseValidation,
             databaseFields,
         } = useSchemaResolution();
@@ -95,6 +99,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         const tableSchema = getEntitySchema(entityVariant);
         const primaryKeyField = findPrimaryKeyFieldKey(entityKey);
         const tableNameDbFormat = getEntityNameInFormat(entityKey, 'database');
+        const displayFieldKey = findDisplayFieldKey(entityVariant);
 
         if (!primaryKeyField) {
             throw new Error(`No primary key found for entity ${entityVariant}`);
@@ -110,12 +115,21 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             resolveFieldNameInFormat,
             enhancedDatabaseValidation,
             databaseFields,
+            displayFieldKey,
             trace
         );
     }
 
     setClient(client: SupabaseClient) {
         this.client = client;
+    }
+
+    getPrimaryKeyField(): EntityFieldKeys<TEntity> {
+        return this.primaryKeyField;
+    }
+
+    getDisplayField(): EntityFieldKeys<TEntity> | null {
+        return this.displayFieldKey;
     }
 
     private buildBaseQuery(trace: string[] = [...this.trace, 'buildBaseQuery']): PostgrestFilterBuilder<any, any, any> {
@@ -286,6 +300,7 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         }
     }
 
+
     /**
      * Fetch a record by its primary key with flexible query options
      */
@@ -393,14 +408,12 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         data: EntityRecord<TEntity, 'frontend'>[];
     }> {
         try {
-            // Apply pagination options
             const fullOptions = {
                 ...options,
                 limit: Math.min(pageSize, maxCount),
                 offset: (page - 1) * pageSize
             };
 
-            // Build and execute query
             let query = this.buildBaseQuery();
             query = this.applyQueryOptions(query, fullOptions);
 
@@ -425,6 +438,50 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             };
         } catch (error) {
             console.error(`Error in fetchPaginated for ${this.entityKey}:`, error);
+            throw error;
+        }
+    }
+
+    async fetchPaginatedDirectly(
+        options: QueryOptions<TEntity>,
+        page: number = 1,
+        pageSize: number = 10,
+        maxCount: number = 10000
+    ): Promise<{
+        page: number;
+        pageSize: number;
+        totalCount: number;
+        maxCount: number;
+        data: EntityRecord<TEntity, 'frontend'>[];
+    }> {
+        try {
+            const limit = Math.min(pageSize, maxCount);
+            const offset = (page - 1) * pageSize;
+
+            const { data, error, count } = await this.client
+                .from(this.entityKey)
+                .select('*', { count: 'exact' })
+                .match(options)
+                .range(offset, offset + limit - 1);
+
+            if (error) throw error;
+            if (!data) return { page, pageSize, totalCount: 0, maxCount, data: [] };
+
+            const dbRecords = data.map(item =>
+                createFormattedRecord(this.entityKey, item, 'database')
+            );
+
+            const frontendData = this.convertArrayToFrontend(dbRecords);
+
+            return {
+                page,
+                pageSize,
+                totalCount: Math.min(count ?? 0, maxCount),
+                maxCount,
+                data: frontendData
+            };
+        } catch (error) {
+            console.error(`Error in fetchPaginatedDirectly for ${this.entityKey}:`, error);
             throw error;
         }
     }

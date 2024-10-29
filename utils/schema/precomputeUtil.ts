@@ -2,13 +2,21 @@ import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 
 import {schemaLogger} from '@/lib/logger/schema-logger';
 import {
-    AllEntityNameVariations, AllFieldNameVariations,
+    AllEntityNameVariations,
+    AllFieldNameVariations,
     AutomationEntities,
     AutomationEntity,
-    AutomationSchema,
+    AutomationSchema, createFormattedRecord,
     DataFormat,
-    EntityField, EntityFieldKeys,
-    EntityKeys, EntityNameFormats, FieldNameFormats,
+    EntityField,
+    EntityFieldKeys,
+    EntityKeys,
+    EntityNameFormat,
+    EntityNameFormats,
+    EntityNameVariations,
+    EntityRecord,
+    FieldNameFormat,
+    FieldNameFormats, TypeBrand,
     UnifiedSchemaCache
 } from "@/types/entityTypes";
 import {
@@ -17,6 +25,7 @@ import {
     fieldNameFormats,
     fieldNameToCanonical
 } from "@/utils/schema/lookupSchema";
+import {NameFormat} from "@/types/AutomationSchemaTypes";
 
 
 /**
@@ -80,6 +89,7 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
             };
         }
 
+        // @ts-ignore
         processedSchema[entityKey as TEntity] = {
             schemaType: entity.schemaType,
             defaultFetchStrategy: entity.defaultFetchStrategy,
@@ -92,6 +102,19 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
 
     return processedSchema;
 }
+
+
+/**
+ * Generates the client-side schema bundle
+ */
+export function generateClientSchema(): UnifiedSchemaCache {
+    if (!globalCache) throw new Error('Schema system not initialized');
+    logSchemaCacheReport(globalCache);
+    console.log('Client schema generated successfully');
+
+    return globalCache;
+}
+
 
 /**
  * Type guard to ensure schema is properly initialized
@@ -388,28 +411,62 @@ export type UnknownNameString = string;
  */
 
 /**
- * Check if name is a known entity variant
+ * Type guard for unknown entity name
  */
 export function isKnownEntityVariant(
-    name: UnknownNameString
-): name is AllEntityNameVariations {
+    unknownEntity: unknown
+): unknownEntity is AllEntityNameVariations {
+    if (typeof unknownEntity !== 'string') return false;
     if (!globalCache) return false;
-    return globalCache.entityNameMap.has(name.toLowerCase());
+
+    return unknownEntity in globalCache.entityNameToCanonical;
 }
 
-export type NestedObject = { [key: string]: any };
-
 /**
- * Check if value is a known field variant for an entity
+ * Type guard for unknown field name with known entity
  */
 export function isKnownFieldVariant<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    value: unknown
-): value is FieldNameVariant<TEntity> {
-    if (typeof value !== 'string') return false;
-    const fieldMap = globalCache?.fieldNameMap.get(entityKey);
-    return fieldMap?.has(value.toLowerCase()) ?? false;
+    unknownField: unknown
+): unknownField is AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>> {
+    if (typeof unknownField !== 'string') return false;
+    if (!globalCache) return false;
+
+    const entityFields = globalCache.fieldNameToCanonical[entityKey];
+    if (!entityFields) return false;
+
+    return unknownField in entityFields;
 }
+
+/**
+ * Combined type guard for entity and field
+ */
+export function isKnownEntityAndFieldVariant<TEntity extends EntityKeys>(
+    unknownEntity: unknown,
+    unknownField: unknown
+): unknownEntity is AllEntityNameVariations {
+    if (typeof unknownEntity !== 'string' || typeof unknownField !== 'string') {
+        return false;
+    }
+    if (!globalCache) return false;
+
+    // First check if the entity variant is valid and get its canonical form
+    if (!(unknownEntity in globalCache.entityNameToCanonical)) {
+        return false;
+    }
+
+    // Get the canonical entity key to check the field
+    const canonicalEntity = globalCache.entityNameToCanonical[unknownEntity];
+
+    // Now check if the field exists for this entity
+    const entityFields = globalCache.fieldNameToCanonical[canonicalEntity];
+    if (!entityFields) return false;
+
+    return unknownField in entityFields;
+}
+
+
+export type NestedObject = { [key: string]: any };
 
 /**
  * Check if field exists in schema
@@ -534,25 +591,40 @@ export function createFieldResolver() {
 /**
  * Convert entity and field names in an object structure
  */
-export function convertEntityAndFieldsInObject(
+export function convertEntityAndFieldsInObject<TEntity extends EntityKeys>(
     inputObject: unknown,
     entityNameVariant: AllEntityNameVariations,
     trace: string[] = ['unknownCaller']
-): unknown {
+): Record<string, unknown> | unknown[] {
     trace = [...trace, 'convertEntityAndFieldsInObject'];
 
-    const entityKey = getEntityKey(entityNameVariant, trace);
+    // Resolve the entity key with proper typing
+    const entityKey = getEntityKey(entityNameVariant, trace) as TEntity;
 
+    // Handle non-object cases
     if (typeof inputObject !== 'object' || inputObject === null) {
-        return inputObject;
+        return {};
     }
 
-    const result: Record<string, unknown> = Array.isArray(inputObject) ? [] : {};
+    // Handle arrays
+    if (Array.isArray(inputObject)) {
+        return inputObject.map(item =>
+            convertEntityAndFieldsInObject<TEntity>(item, entityNameVariant, trace)
+        );
+    }
+
+    // Handle objects
+    const result: Record<string, unknown> = {};
 
     for (const key in inputObject) {
         if (Object.prototype.hasOwnProperty.call(inputObject, key)) {
-            const fieldKey = getFieldKey(entityKey, key, trace);
-            result[fieldKey] = convertFieldsInNestedObject(
+            const fieldKey = getFieldKey<TEntity>(
+                entityKey,
+                key as UnknownNameString,
+                trace
+            );
+
+            result[fieldKey] = convertFieldsInNestedObject<TEntity>(
                 (inputObject as Record<string, unknown>)[key],
                 entityKey,
                 trace
@@ -570,25 +642,33 @@ export function convertFieldsInNestedObject<TEntity extends EntityKeys>(
     inputObject: unknown,
     entityKey: TEntity,
     trace: string[] = ['unknownCaller']
-): unknown {
+): Record<string, unknown> | unknown[] | unknown {
     trace = [...trace, 'convertFieldsInNestedObject'];
 
+    // Handle non-object cases
     if (typeof inputObject !== 'object' || inputObject === null) {
         return inputObject;
     }
 
+    // Handle arrays
     if (Array.isArray(inputObject)) {
         return inputObject.map(item =>
-            convertFieldsInNestedObject(item, entityKey, trace)
+            convertFieldsInNestedObject<TEntity>(item, entityKey, trace)
         );
     }
 
+    // Handle objects
     const result: Record<string, unknown> = {};
 
     for (const key in inputObject) {
         if (Object.prototype.hasOwnProperty.call(inputObject, key)) {
-            const fieldKey = getFieldKey(entityKey, key as UnknownNameString, trace);
-            result[fieldKey] = convertFieldsInNestedObject(
+            const fieldKey = getFieldKey<TEntity>(
+                entityKey,
+                key as UnknownNameString,
+                trace
+            );
+
+            result[fieldKey] = convertFieldsInNestedObject<TEntity>(
                 (inputObject as Record<string, unknown>)[key],
                 entityKey,
                 trace
@@ -599,8 +679,6 @@ export function convertFieldsInNestedObject<TEntity extends EntityKeys>(
     return result;
 }
 
-// =================================================================================================
-
 
 // ----------------------------
 /**
@@ -608,7 +686,13 @@ export function convertFieldsInNestedObject<TEntity extends EntityKeys>(
  */
 export function resolveEntityKey(entityNameVariant: AllEntityNameVariations): EntityKeys {
     if (!globalCache) throw new Error('Schema system not initialized');
-    return globalCache.entityNameToCanonical[entityNameVariant] || entityNameVariant;
+    const canonicalKey = globalCache.entityNameToCanonical[entityNameVariant];
+
+    if (!canonicalKey) {
+        throw new Error(`Invalid entity name variant: ${entityNameVariant}`);
+    }
+
+    return canonicalKey;
 }
 
 /**
@@ -703,341 +787,579 @@ export function getFieldNameStrict<
 
 ``
 
-// Helper function to safely access field name mappings
-export function getFieldNameMapping<T extends AutomationTableName>(
-    table: T,
-    field: StringFieldKey<T>,
-    format: keyof EntityNameMappings = 'frontend'
+/**
+ * Helper function to safely access field name mappings
+ */
+export function getFieldNameMapping<TEntity extends EntityKeys>(
+    entity: TEntity,
+    field: StringFieldKey<TEntity>,
+    format: keyof EntityNameFormats<TEntity> = 'frontend'
 ): string {
     if (!globalCache) throw new Error('Schema system not initialized');
 
-    const fieldInfo = globalCache.schema[table]?.entityFields[field];
-    return fieldInfo?.fieldNameMappings[format] || field;
+    const fieldInfo = globalCache.schema[entity]?.entityFields[field];
+    return fieldInfo?.fieldNameFormats[format] || field;
 }
 
-// Type guard to check if a table exists in the schema
-export function isValidTable(
-    tableKey: string
-): tableKey is AutomationTableName {
-    return tableKey in (globalCache?.schema ?? {});
+/**
+ * Type guard to check if an entity exists in the schema
+ */
+export function isValidEntity(
+    entityKey: string
+): entityKey is EntityKeys {
+    return entityKey in (globalCache?.schema ?? {});
 }
 
-// Safe wrapper around resolveTableKey
-export function resolveTableKeyStrict(
+/**
+ * Safe wrapper around resolveEntityKey
+ */
+export function resolveEntityKeyStrict(
     entityNameVariant: AllEntityNameVariations
-): AutomationTableName {
-    const resolved = resolveTableKey(entityNameVariant);
-    if (!isValidTable(resolved)) {
-        throw new Error(`Invalid table name: ${entityNameVariant}`);
+): EntityKeys {
+    const resolved = resolveEntityKey(entityNameVariant);
+    if (!isValidEntity(resolved)) {
+        throw new Error(`Invalid entity name: ${entityNameVariant}`);
     }
     return resolved;
 }
 
-
-export function getSchema(
-    entityName: string,
-    responseFormat?: keyof AutomationTable['entityNameMappings'],
+/**
+ * Get entity schema with optional format conversion
+ */
+export function getEntitySchema<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat = 'frontend'
+>(
+    entityNameVariant: AllEntityNameVariations,
+    format: TFormat = 'frontend' as TFormat,
     trace: string[] = ['unknownCaller']
-): AutomationTable | null {
-    trace = [...trace, 'getSchema'];
+): AutomationEntity<TEntity> | null {
+    trace = [...trace, 'getEntitySchema'];
 
-    const globalCache = getGlobalCache(trace);
-    if (!globalCache) return null;
+    try {
+        // Get cache and validate
+        const globalCache = getGlobalCache(trace);
+        if (!globalCache) return null;
 
-    const tableKey = getEntityKey(entityName, trace);
-    const table = globalCache.schema[tableKey];
-    if (!table) return null;
+        // Resolve entity key
+        const entityKey = resolveEntityKey(entityNameVariant) as TEntity;
+        const entitySchema = globalCache.schema[entityKey];
 
-    if (!responseFormat) {
-        return table;
+        if (!entitySchema) {
+            schemaLogger.logResolution({
+                resolutionType: 'entity',
+                original: entityNameVariant,
+                resolved: '',
+                message: `Entity schema not found: ${entityNameVariant}`,
+                level: 'error',
+                trace
+            });
+            return null;
+        }
+
+        return entitySchema;
+    } catch (error) {
+        schemaLogger.logResolution({
+            resolutionType: 'entity',
+            original: entityNameVariant,
+            resolved: '',
+            message: `Error getting entity schema: ${error}`,
+            level: 'error',
+            trace
+        });
+        return null;
     }
-
-    const rekeyedTable: AutomationTable = {
-        ...table,
-        entityNameMappings: {
-            ...table.entityNameMappings,
-            [responseFormat]: table.entityNameMappings[responseFormat],
-        },
-        entityFields: Object.fromEntries(
-            Object.entries(table.entityFields).map(([fieldKey, field]) => [
-                field.fieldNameMappings[responseFormat] || fieldKey,
-                field
-            ])
-        ),
-    };
-
-    return rekeyedTable;
 }
 
-
-export function convertData(
-    data: any,
-    responseFormat?: keyof AutomationTable['entityNameMappings'],
+/**
+ * Convert data to specified format
+ */
+export function convertData<
+    TEntity extends EntityKeys,
+    TFormat extends DataFormat = 'frontend'
+>(
+    data: unknown,
+    entityKey: TEntity,
+    format: TFormat = 'frontend' as TFormat,
     trace: string[] = ['unknownCaller']
-): any {
+): EntityRecord<TEntity, TFormat> | EntityRecord<TEntity, TFormat>[] | unknown {
     trace = [...trace, 'convertData'];
 
-    // If data is not an object or array, return it directly
-    if (typeof data !== 'object' || data === null) {
-        return data;
-    }
-
-    // Iterate through and rekey fields
-    const result: any = Array.isArray(data) ? [] : {};
-
-    for (const key in data) {
-        if (data.hasOwnProperty(key)) {
-            const convertedKey = getFieldKeyFromUnknown(key, key, trace);
-            result[convertedKey] = convertData(data[key], responseFormat, trace);  // Recursively convert nested data
+    try {
+        if (typeof data !== 'object' || data === null) {
+            return data;
         }
-    }
 
-    return result;
+        // Handle arrays
+        if (Array.isArray(data)) {
+            return data.map(item =>
+                convertData(item, entityKey, format, trace)
+            );
+        }
+
+        // Convert to formatted record
+        const formattedRecord = createFormattedRecord(
+            entityKey,
+            data as Record<string, unknown>,
+            format
+        );
+
+        // Convert nested fields
+        return convertEntityAndFieldsInObject<TEntity>(
+            formattedRecord,
+            entityKey,
+            trace
+        );
+
+    } catch (error) {
+        schemaLogger.logResolution({
+            resolutionType: 'entity',
+            original: JSON.stringify(data),
+            resolved: '',
+            message: `Error converting data: ${error}`,
+            level: 'error',
+            trace
+        });
+        return null;
+    }
+}
+
+/**
+ * Type definitions for type references
+ */
+type BasicTypeReference = "bool" | "dict" | "float" | "int" | "list" | "str" | "url";
+type ExtendedTypeReference = BasicTypeReference | "string" | "number" | "boolean" | "Date" | undefined;
+
+/**
+ * Validate and convert field value based on type reference
+ */
+export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
+    value: unknown,
+    typeRef: TypeBrand<T>,
+    trace: string[] = ['unknownCaller']
+): { isValid: boolean; convertedValue: unknown } {
+    try {
+        if (!typeRef || !('_typeBrand' in typeRef)) {
+            return {isValid: true, convertedValue: value};
+        }
+
+        const type = typeRef._typeBrand;
+
+        switch (type) {
+            case 'bool':
+            case 'boolean':
+                return {
+                    isValid: typeof value === 'boolean' || ['true', 'false', '0', '1'].includes(String(value)),
+                    convertedValue: Boolean(value)
+                };
+
+            case 'int':
+            case 'number':
+                const intValue = Number(value);
+                return {
+                    isValid: Number.isInteger(intValue),
+                    convertedValue: Number.isInteger(intValue) ? intValue : null
+                };
+
+            case 'float':
+                const floatValue = Number(value);
+                return {
+                    isValid: !isNaN(floatValue),
+                    convertedValue: !isNaN(floatValue) ? floatValue : null
+                };
+
+            case 'str':
+            case 'string':
+                return {
+                    isValid: true,
+                    convertedValue: String(value)
+                };
+
+            case 'url':
+                try {
+                    new URL(String(value));
+                    return {
+                        isValid: true,
+                        convertedValue: String(value)
+                    };
+                } catch {
+                    return {
+                        isValid: false,
+                        convertedValue: null
+                    };
+                }
+
+            case 'list':
+                return {
+                    isValid: Array.isArray(value),
+                    convertedValue: Array.isArray(value) ? value : [value]
+                };
+
+            case 'dict':
+                return {
+                    isValid: typeof value === 'object' && value !== null,
+                    convertedValue: typeof value === 'object' && value !== null ? value : {}
+                };
+
+            case 'Date':
+                const date = new Date(value as string | number | Date);
+                return {
+                    isValid: !isNaN(date.getTime()),
+                    convertedValue: !isNaN(date.getTime()) ? date : null
+                };
+
+            default:
+                return {
+                    isValid: true,
+                    convertedValue: value
+                };
+        }
+    } catch (error) {
+        schemaLogger.logResolution({
+            resolutionType: 'field',
+            original: String(value),
+            resolved: '',
+            message: `Type validation failed: ${error}`,
+            level: 'error',
+            trace
+        });
+        return {
+            isValid: false,
+            convertedValue: value
+        };
+    }
+}
+
+/**
+ * Convert type with validation
+ */
+export function convertType<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+>(
+    value: unknown,
+    entityKey: TEntity,
+    fieldKey: TField,
+    trace: string[] = ['unknownCaller']
+): unknown {
+    trace = [...trace, 'convertType'];
+
+    try {
+        const entitySchema = getEntitySchema(entityKey, 'frontend', trace);
+        if (!entitySchema) return value;
+
+        const field = entitySchema.entityFields[fieldKey];
+        if (!field) return value;
+
+        const {isValid, convertedValue} = validateAndConvertFieldType(
+            value,
+            field.typeReference as TypeBrand<ExtendedTypeReference>,
+            trace
+        );
+
+        if (!isValid) {
+            schemaLogger.logResolution({
+                resolutionType: 'field',
+                original: String(value),
+                resolved: String(convertedValue),
+                message: `Invalid value for field type ${
+                    field.typeReference
+                }`,
+                level: 'warn',
+                trace
+            });
+        }
+
+        return convertedValue;
+    } catch (error) {
+        schemaLogger.logResolution({
+            resolutionType: 'field',
+            original: String(value),
+            resolved: '',
+            message: `Type conversion failed: ${error}`,
+            level: 'error',
+            trace
+        });
+        return value;
+    }
+}
+
+/**
+ * Batch resolve fields with proper typing
+ */
+export function batchResolveFields<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    fieldVariants: string[],
+    trace: string[] = ['unknownCaller']
+): Record<string, EntityFieldKeys<TEntity>> {
+    trace = [...trace, 'batchResolveFields'];
+
+    try {
+        return Object.fromEntries(
+            fieldVariants.map(variant => [
+                variant,
+                resolveFieldKey(entityKey, variant as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>)
+            ])
+        ) as Record<string, EntityFieldKeys<TEntity>>;
+
+    } catch (error) {
+        schemaLogger.logResolution({
+            resolutionType: 'field',
+            original: fieldVariants.join(', '),
+            resolved: '',
+            message: `Error batch resolving fields: ${error}`,
+            level: 'error',
+            trace
+        });
+        return {};
+    }
 }
 
 
 /**
- * Additional utility functions can be added here based on specific needs
+ * Entity name validation
  */
-
-// Type conversion utilities
-export function convertType<T extends AutomationTableName>(
-    value: unknown,
-    table: string | T,
-    field: string,
-    targetFormat: NameFormat
-): unknown {
-    if (!globalCache) throw new Error('Schema system not initialized');
-
-    // Resolve table key with proper typing
-    const tableKey = resolveTableKey(table) as T;
-    const fieldKey = resolveFieldKey(tableKey, field);
-
-    const fieldInfo = globalCache.schema[tableKey]?.entityFields[fieldKey];
-    if (!fieldInfo) return value;
-
-    return value; // Placeholder for actual implementation
-}
-
-// Batch operations for performance
-export function batchResolveFields<T extends AutomationTableName>(
-    tableKey: T,
-    fieldVariants: string[]
-): Record<string, StringFieldKey<T>> {
-    if (!globalCache) throw new Error('Schema system not initialized');
-
-    return Object.fromEntries(
-        fieldVariants.map(variant => [
-            variant,
-            resolveFieldKey(tableKey, variant)
-        ])
-    ) as Record<string, StringFieldKey<T>>;
-}
-
-
-export function ensureTableName(table: string): AutomationTableName {
-    const resolved = resolveTableKey(table);
+export function ensureEntityName(entityName: AllEntityNameVariations): EntityKeys {
+    const resolved = resolveEntityKey(entityName);
     if (!globalCache?.schema[resolved]) {
-        throw new Error(`Invalid table name: ${table}`);
+        throw new Error(`Invalid entity name: ${entityName}`);
     }
-    return resolved as AutomationTableName;
+    return resolved;
 }
 
-// Helper function to ensure field name type safety
-export function ensureFieldName<T extends AutomationTableName>(
-    table: T,
+/**
+ * Field name validation
+ */
+export function ensureFieldName<TEntity extends EntityKeys>(
+    entity: TEntity,
     field: string
-): StringFieldKey<T> {
-    const resolved = resolveFieldKey(table, field);
-    if (!globalCache?.schema[table]?.entityFields[resolved]) {
-        throw new Error(`Invalid field name: ${field} for table ${table}`);
+): StringFieldKey<TEntity> {
+    const resolved = resolveFieldKey(entity, field);
+    if (!globalCache?.schema[entity]?.entityFields[resolved]) {
+        throw new Error(`Invalid field name: ${field} for entity ${entity}`);
     }
-    return resolved as StringFieldKey<T>;
+    return resolved;
 }
 
-// Type-safe batch operations
-export function createBatchOperations<T extends AutomationTableName>(tableKey: T) {
+/**
+ * Type-safe batch operations
+ */
+export function createBatchOperations<TEntity extends EntityKeys>(entityKey: TEntity) {
     return {
-        resolveFields(fieldVariants: string[]): Record<string, StringFieldKey<T>> {
-            return batchResolveFields(tableKey, fieldVariants);
+        resolveFields(fieldVariants: string[]): Record<string, StringFieldKey<TEntity>> {
+            return batchResolveFields(entityKey, fieldVariants);
         },
 
         convertTypes(
             fields: Record<string, unknown>,
-            targetFormat: NameFormat
+            trace: string[] = ['unknownCaller']
         ): Record<string, unknown> {
-            return Object.fromEntries(
-                Object.entries(fields).map(([field, value]) => [
-                    field,
-                    convertType(value, tableKey, field, targetFormat)
-                ])
-            );
+            try {
+                return Object.fromEntries(
+                    Object.entries(fields).map(([field, value]) => [
+                        field,
+                        convertType(
+                            value,
+                            entityKey,
+                            field as EntityFieldKeys<TEntity>,
+                            trace
+                        )
+                    ])
+                );
+            } catch (error) {
+                schemaLogger.logResolution({
+                    resolutionType: 'field',
+                    original: JSON.stringify(fields),
+                    resolved: '',
+                    message: `Batch conversion failed: ${error}`,
+                    level: 'error',
+                    trace
+                });
+                return fields;
+            }
         }
     };
 }
 
-
 /**
- * Retrieves the frontend table name from a given variant using the cached schema.
+ * Get frontend entity name
  */
-export function getFrontendTableName(entityName: string, trace: string[] = ['unknownCaller']): string {
-    trace = [...trace, 'getFrontendTableName'];
+export function getFrontendEntityName(
+    entityName: AllEntityNameVariations,
+    trace: string[] = ['unknownCaller']
+): string {
+    trace = [...trace, 'getFrontendEntityName'];
 
     const globalCache = getGlobalCache(trace);
-    if (!globalCache) return entityName;  // Return the original name if no cache
+    if (!globalCache) return entityName;
 
-    // Loop through the cached schema to find the matching frontend table name
     for (const [key, schema] of Object.entries(globalCache.schema)) {
-        if (Object.values(schema.entityNameMappings).includes(entityName)) {
-            return schema.entityNameMappings.frontend;  // Return the frontend name
+        if (Object.values(schema.entityNameFormats).includes(entityName)) {
+            return schema.entityNameFormats.frontend;
         }
     }
 
-    return entityName;  // Return original if no match is found
+    return entityName;
 }
 
 /**
- * Retrieves the table name in a specific format (e.g., frontend, backend) using the cached schema.
+ * Get entity name by format
  */
-export function getTableNameByFormat(entityName: string, nameFormat: string, trace: string[] = ['unknownCaller']): string {
-    trace = [...trace, 'getTableNameByFormat'];
+export function getEntityNameByFormat(
+    entityName: AllEntityNameVariations,
+    format: NameFormat,
+    trace: string[] = ['unknownCaller']
+): string {
+    trace = [...trace, 'getEntityNameByFormat'];
 
     const globalCache = getGlobalCache(trace);
-    if (!globalCache) return entityName;  // Return original if no cache available
+    if (!globalCache) return entityName;
 
-    // Iterate through the cached schema and find the table by its nameFormat
     for (const [key, schema] of Object.entries(globalCache.schema)) {
-        if (schema.entityNameMappings[nameFormat] === entityName) {
-            return key;  // Return the table key (primary name)
+        if (schema.entityNameFormats[format] === entityName) {
+            return key;
         }
     }
 
-    return entityName;  // Fallback to original if no match
+    return entityName;
 }
 
 /**
- * Retrieves complete table information from the cached schema.
+ * Get complete entity information
  */
-export function getTable(entityName: string, trace: string[] = ['unknownCaller']): AutomationTable | null {
-    trace = [...trace, 'getTable'];
+export function getEntity<TEntity extends EntityKeys>(
+    entityName: AllEntityNameVariations,
+    trace: string[] = ['unknownCaller']
+): AutomationEntity<TEntity> | null {
+    trace = [...trace, 'getEntity'];
 
     const globalCache = getGlobalCache(trace);
-    if (!globalCache) return null;  // Return null if cache not available
+    if (!globalCache) return null;
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    return globalCache.schema[tableKey] || null;  // Return the table schema
+    const entityKey = getEntityKey(entityName, trace);
+    return globalCache.schema[entityKey] as AutomationEntity<TEntity> || null;
 }
 
 /**
  * Retrieves complete field information from the cached schema.
  */
-export function getField(
-    entityName: string,
+/**
+ * Get field information
+ */
+export function getField<TEntity extends EntityKeys>(
+    entityName: AllEntityNameVariations,
     fieldName: string,
     trace: string[] = ['unknownCaller']
-): AutomationTable['entityFields'][string] | null {
+): EntityField<TEntity, EntityFieldKeys<TEntity>> | null {
     trace = [...trace, 'getField'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return null;
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    const table = globalCache.schema[tableKey];
-    if (!table) return null;
+    const entityKey = getEntityKey(entityName, trace);
+    const entity = globalCache.schema[entityKey];
+    if (!entity) return null;
 
-    const fieldKey = getFieldKey(tableKey, fieldName, trace);  // Resolve field key
-    return table.entityFields[fieldKey] || null;
+    const fieldKey = getFieldKey(entityKey, fieldName, trace);
+    return entity.entityFields[fieldKey] as EntityField<TEntity, EntityFieldKeys<TEntity>> || null;
 }
 
 /**
- * Retrieves all relationships for a table from the cached schema.
+ * Get entity relationships
  */
-export function getTableRelationships(entityName: string, trace: string[] = ['unknownCaller']): AutomationTable['relationships'] | null {
-    trace = [...trace, 'getTableRelationships'];
+export function getEntityRelationships<TEntity extends EntityKeys>(
+    entityName: AllEntityNameVariations,
+    trace: string[] = ['unknownCaller']
+): AutomationEntity<TEntity>['relationships'] | null {
+    trace = [...trace, 'getEntityRelationships'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return null;
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    const table = globalCache.schema[tableKey];
-    if (!table) return null;
+    const entityKey = getEntityKey(entityName, trace);
+    const entity = globalCache.schema[entityKey];
+    if (!entity) return null;
 
-    return table.relationships;
+    return entity.relationships;
 }
 
 /**
- * Checks if a field exists in a table from the cached schema.
+ * Check if field exists
  */
-export function fieldExists(entityName: string, fieldName: string, trace: string[] = ['unknownCaller']): boolean {
+export function fieldExists(
+    entityName: AllEntityNameVariations,
+    fieldName: string,
+    trace: string[] = ['unknownCaller']
+): boolean {
     trace = [...trace, 'fieldExists'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return false;
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    const table = globalCache.schema[tableKey];
-    if (!table) return false;
+    const entityKey = getEntityKey(entityName, trace);
+    const entity = globalCache.schema[entityKey];
+    if (!entity) return false;
 
-    const fieldKey = getFieldKey(tableKey, fieldName, trace);  // Resolve field key
-    return !!table.entityFields[fieldKey];
+    const fieldKey = getFieldKey(entityKey, fieldName, trace);
+    return !!entity.entityFields[fieldKey];
 }
 
 /**
- * Checks if a table exists in the cached schema.
+ * Check if entity exists
  */
-export function tableExists(entityName: string, trace: string[] = ['unknownCaller']): boolean {
-    trace = [...trace, 'tableExists'];
+export function entityExists(
+    entityName: AllEntityNameVariations,
+    trace: string[] = ['unknownCaller']
+): boolean {
+    trace = [...trace, 'entityExists'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return false;
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    return !!globalCache.schema[tableKey];
+    const entityKey = getEntityKey(entityName, trace);
+    return !!globalCache.schema[entityKey];
 }
 
 /**
- * Retrieves all primary key fields for a table from the cached schema.
+ * Get primary key fields
  */
-export function getPrimaryKeys(entityName: string, trace: string[] = ['unknownCaller']): string[] {
+export function getPrimaryKeys<TEntity extends EntityKeys>(
+    entityName: AllEntityNameVariations,
+    trace: string[] = ['unknownCaller']
+): EntityFieldKeys<TEntity>[] {
     trace = [...trace, 'getPrimaryKeys'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return [];
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    const table = globalCache.schema[tableKey];
-    if (!table) return [];
+    const entityKey = getEntityKey(entityName, trace);
+    const entity = globalCache.schema[entityKey];
+    if (!entity) return [];
 
-    return Object.entries(table.entityFields)
+    return Object.entries(entity.entityFields)
         .filter(([_, field]) => field.isPrimaryKey)
-        .map(([fieldName]) => fieldName);
+        .map(([fieldName]) => fieldName as EntityFieldKeys<TEntity>);
 }
 
 /**
- * Retrieves all display fields for a table from the cached schema.
+ * Get display fields
  */
-export function getDisplayFields(entityName: string, trace: string[] = ['unknownCaller']): string[] {
+export function getDisplayFields<TEntity extends EntityKeys>(
+    entityName: AllEntityNameVariations,
+    trace: string[] = ['unknownCaller']
+): EntityFieldKeys<TEntity>[] {
     trace = [...trace, 'getDisplayFields'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return [];
 
-    const tableKey = getEntityKey(entityName, trace);  // Resolve table key
-    const table = globalCache.schema[tableKey];
-    if (!table) return [];
+    const entityKey = getEntityKey(entityName, trace);
+    const entity = globalCache.schema[entityKey];
+    if (!entity) return [];
 
-    return Object.entries(table.entityFields)
+    return Object.entries(entity.entityFields)
         .filter(([_, field]) => field.isDisplayField)
-        .map(([fieldName]) => fieldName);
-}
-
-/**
- * Generates the client-side schema bundle
- */
-export function generateClientSchema(): UnifiedSchemaCache {
-    if (!globalCache) throw new Error('Schema system not initialized');
-
-    return globalCache;
+        .map(([fieldName]) => fieldName as EntityFieldKeys<TEntity>);
 }
 
 
@@ -1098,89 +1420,157 @@ function handleRelationshipField(
     throw new Error(`Unsupported structure type: ${structureType}`);
 }
 
-export function processDataForInsert(
-    entityName: string,
-    dbData: Record<string, any>,
+/**
+ * Process data for database insertion with relationship handling
+ */
+export function processDataForInsert<TEntity extends EntityKeys>(
+    entityNameVariant: AllEntityNameVariations,
+    frontendData: Partial<EntityRecord<TEntity, 'frontend'>>,
     trace: string[] = ['unknownCaller']
-) {
+): {
+    callMethod: 'simple' | 'fk' | 'ifk' | 'fkAndIfk';
+    processedData: Record<string, unknown>;
+} {
     trace = [...trace, 'processDataForInsert'];
 
-    // Get schema from the cache, rekeyed for 'databaseName' format
-    const schema = getSchema(entityName, 'database', trace);
-    if (!schema) {
-        console.warn(`No schema found for table: ${entityName}. Returning original data.`);
-        return {
-            callMethod: 'simple',
-            processedData: dbData
-        };
-    }
+    try {
+        // Resolve entity key and get schema
+        const entityKey = resolveEntityKey(entityNameVariant) as TEntity;
+        const entitySchema = getEntitySchema(entityKey, 'database', trace);
 
-    const cleanedData = removeEmptyFields(dbData); // Clean the input data
-    let result: Record<string, any> = {};
-    const relatedTables: Array<Record<string, any>> = [];
-    let hasForeignKey = false;
-    let hasInverseForeignKey = false;
+        if (!entitySchema) {
+            schemaLogger.logResolution({
+                resolutionType: 'entity',
+                original: entityNameVariant,
+                resolved: '',
+                message: `No schema found for entity: ${entityNameVariant}`,
+                level: 'warn',
+                trace
+            });
+            return {
+                callMethod: 'simple',
+                processedData: frontendData as Record<string, unknown>
+            };
+        }
 
-    for (const [fieldName, fieldSchema] of Object.entries(schema.entityFields)) {
-        const dbKey = fieldSchema.fieldNameMappings['database'];
+        // Convert frontend data to database format
+        const dbData = convertEntityAndFieldsInObject<TEntity>(
+            removeEmptyFields(frontendData),
+            entityKey,
+            trace
+        );
 
-        if (cleanedData.hasOwnProperty(dbKey)) {
-            const value = cleanedData[dbKey];
-            const structureType = fieldSchema.structure;
+        const result: Record<string, unknown> = {};
+        const relatedTables: Array<{
+            table: string;
+            data: Record<string, unknown>;
+            related_column: string;
+        }> = [];
 
-            if (structureType === 'single') {
-                result[dbKey] = value;
-            } else if (structureType === 'foreignKey' || structureType === 'inverseForeignKey') {
-                const relationship = handleRelationshipField(dbKey, value, structureType, entityName, fieldSchema, trace);
+        let hasForeignKey = false;
+        let hasInverseForeignKey = false;
 
-                if (relationship.type === 'fk') {
-                    hasForeignKey = true;
-                    result = {...result, ...relationship.data}; // Add exact db field
-                    result = {...result, ...relationship.appData}; // Add app-specific field
-                } else if (relationship.type === 'ifk') {
-                    hasInverseForeignKey = true;
-                    relatedTables.push({
-                        table: relationship.table,
-                        data: relationship.data,
-                        related_column: relationship.related_column
+        // Process each field
+        for (const fieldKey in entitySchema.entityFields) {
+            const field = entitySchema.entityFields[fieldKey as EntityFieldKeys<TEntity>];
+            const dbFieldName = getFieldNameInFormat(
+                entityKey,
+                fieldKey as EntityFieldKeys<TEntity>,
+                'database'
+            );
+
+            if (dbFieldName in dbData) {
+                const value = dbData[dbFieldName];
+
+                if (field.structure === 'single') {
+                    result[dbFieldName] = convertType(
+                        entityKey,
+                        fieldKey as EntityFieldKeys<TEntity>,
+                        value,
+                        trace
+                    );
+                } else if (
+                    field.structure === 'foreignKey' ||
+                    field.structure === 'inverseForeignKey'
+                ) {
+                    const relationship = handleRelationshipField(
+                        dbFieldName,
+                        value,
+                        field.structure,
+                        entityKey,
+                        field,
+                        trace
+                    );
+
+                    if (relationship.type === 'fk') {
+                        hasForeignKey = true;
+                        Object.assign(result, relationship.data);
+                        Object.assign(result, relationship.appData);
+                    } else if (relationship.type === 'ifk') {
+                        hasInverseForeignKey = true;
+                        relatedTables.push({
+                            table: relationship.table,
+                            data: relationship.data,
+                            related_column: relationship.related_column
+                        });
+                    }
+                } else {
+                    schemaLogger.logResolution({
+                        resolutionType: 'field',
+                        original: field.structure,
+                        resolved: '',
+                        message: `Unknown structure type for field ${fieldKey}`,
+                        level: 'warn',
+                        trace
                     });
                 }
-            } else {
-                console.warn(`Unknown structure type for field ${fieldName}: ${structureType}. Skipping field.`);
             }
         }
-    }
 
-    let callMethod: string;
-    if (!hasForeignKey && !hasInverseForeignKey) {
-        callMethod = 'simple';
-    } else if (hasForeignKey && !hasInverseForeignKey) {
-        callMethod = 'fk';
-    } else if (!hasForeignKey && hasInverseForeignKey) {
-        callMethod = 'ifk';
-    } else {
-        callMethod = 'fkAndIfk';
-    }
+        // Determine call method based on relationship types
+        const callMethod = !hasForeignKey && !hasInverseForeignKey
+                           ? 'simple'
+                           : hasForeignKey && !hasInverseForeignKey
+                             ? 'fk'
+                             : !hasForeignKey && hasInverseForeignKey
+                               ? 'ifk'
+                               : 'fkAndIfk';
 
-    if (relatedTables.length > 0) {
-        result.relatedTables = relatedTables;
-    }
+        if (relatedTables.length > 0) {
+            result.relatedTables = relatedTables;
+        }
 
-    return {
-        callMethod,
-        processedData: result
-    };
+        return {
+            callMethod,
+            processedData: result
+        };
+
+    } catch (error) {
+        schemaLogger.logResolution({
+            resolutionType: 'entity',
+            original: entityNameVariant,
+            resolved: '',
+            message: `Error processing data for insert: ${error}`,
+            level: 'error',
+            trace
+        });
+
+        return {
+            callMethod: 'simple',
+            processedData: frontendData as Record<string, unknown>
+        };
+    }
 }
 
-
 export async function getRelationships(
-    entityName: string,
-    format: string = 'frontend',
+    entityName: AllEntityNameVariations,
+    format: DataFormat = 'frontend',
     trace: string[] = ['unknownCaller']
 ): Promise<'simple' | 'fk' | 'ifk' | 'fkAndIfk' | null> {
     trace = [...trace, 'getRelationships'];
 
-    const schema = getSchema(entityName, format, trace);
+    const entityKey = resolveEntityKey(entityName);
+    const schema = getEntitySchema(entityKey, format, trace);
     if (!schema) {
         console.error(`Schema not found for table: ${entityName}`);
         return null;
@@ -1218,8 +1608,11 @@ export async function getRelationships(
     return 'simple';
 }
 
-export function getRegisteredSchemaNames(
-    format: keyof AutomationTable['entityNameMappings'] = 'database',
+/**
+ * Get list of all entity names in specified format
+ */
+export function getEntityListInFormat(
+    format: keyof EntityNameFormats<EntityKeys> = 'database',
     trace: string[] = ['unknownCaller']
 ): Array<string> {
     trace = [...trace, 'getRegisteredSchemaNames'];
@@ -1227,52 +1620,192 @@ export function getRegisteredSchemaNames(
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return [];
 
-    const schemaNames: Array<string> = [];
+    return Object.keys(globalCache.schema).map(entityKey => {
+        const entity = globalCache.schema[entityKey];
+        return getEntityNameInFormat(entityKey as EntityKeys, format);
+    });
+}
 
-    // Iterate over each schema in the global cache and get the name in the desired format
-    for (const table of Object.values(globalCache.schema)) {
-        const schemaName = table.entityNameMappings[format];
-        if (schemaName) {
-            schemaNames.push(schemaName);
-        }
+function getEntityNameInFormat<
+    TEntity extends EntityKeys,
+    TFormat extends keyof EntityNameFormats<TEntity>
+>(
+    entityKey: TEntity,
+    format: TFormat,
+    trace: string[] = ['unknownCaller']
+): EntityNameFormat<TEntity, TFormat> {
+    trace = [...trace, 'getEntityNameInFormat'];
+
+    if (!globalCache) {
+        throw new Error('Schema system not initialized');
     }
 
-    return schemaNames;
+    const entity = globalCache.schema[entityKey];
+    if (!entity) {
+        throw new Error(`Entity not found: ${entityKey}`);
+    }
+
+    const formattedName = entity.entityNameFormats[format];
+    if (!formattedName) {
+        throw new Error(`Format ${String(format)} not found for entity ${entityKey}`);
+    }
+
+    return formattedName as EntityNameFormat<TEntity, TFormat>;
+}
+
+/**
+ * Get field name in specific format
+ */
+function getFieldNameInFormat<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>,
+    TFormat extends keyof FieldNameFormats<TEntity, TField>
+>(
+    entityKey: TEntity,
+    fieldKey: TField,
+    format: TFormat,
+    trace: string[] = ['unknownCaller']
+): FieldNameFormat<TEntity, TField, TFormat> {
+    trace = [...trace, 'getFieldNameInFormat'];
+
+    if (!globalCache) {
+        throw new Error('Schema system not initialized');
+    }
+
+    const entity = globalCache.schema[entityKey];
+    if (!entity) {
+        throw new Error(`Entity not found: ${entityKey}`);
+    }
+
+    const field = entity.entityFields[fieldKey];
+    if (!field) {
+        throw new Error(`Field ${fieldKey} not found in entity ${entityKey}`);
+    }
+
+    const formattedName = field.fieldNameFormats[format];
+    if (!formattedName) {
+        throw new Error(`Format ${String(format)} not found for field ${fieldKey} in entity ${entityKey}`);
+    }
+
+    return formattedName as FieldNameFormat<TEntity, TField, TFormat>;
+}
+
+/**
+ * Get list of all field names for an entity in specified format
+ */
+export function getEntityFieldListInFormat<TEntity extends EntityKeys>(
+    entityName: AllEntityNameVariations,
+    format: keyof FieldNameFormats<TEntity, EntityFieldKeys<TEntity>> = 'database',
+    trace: string[] = ['unknownCaller']
+): Array<string> {
+    trace = [...trace, 'getEntityFieldListInFormat'];
+
+    const globalCache = getGlobalCache(trace);
+    if (!globalCache) return [];
+
+    const entityKey = resolveEntityKey(entityName);
+    const entity = globalCache.schema[entityKey];
+    if (!entity) return [];
+
+    return Object.keys(entity.entityFields).map(fieldKey =>
+        getFieldNameInFormat(
+            entityKey,
+            fieldKey as EntityFieldKeys<TEntity>,
+            format
+        )
+    );
 }
 
 
 export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     if (!globalCache) {
-        console.warn('Global cache is not initialized. Cannot generate schema report.');
+        console.warn('Global cache not initialized. Cannot generate schema report.');
         return;
     }
-    console.log('Schema Cache Status:');
+
+    console.log('=== Schema Cache Status Report ===\n');
+
+    // Schema Statistics
     const schemaKeys = Object.keys(globalCache.schema);
-    console.log('Loaded Tables Count:', schemaKeys.length);
-    const tableNameMap = globalCache.tableNameMap;
-    console.log('==Table Name Map==');
-    console.log('Table Count:', tableNameMap.size);
-    console.log('Tables in Schema:', schemaKeys.join(', '));
-    const fieldNameMap = globalCache.fieldNameMap;
-    const fieldNameMapKeys = Object.keys(fieldNameMap);
-    const totalFieldCount = fieldNameMapKeys.reduce((acc, entityName) => acc + Object.keys(fieldNameMap[entityName]).length, 0);
-    console.log('== Field Name Map ==');
-    console.log('Table Count:', fieldNameMapKeys.length);
-    console.log('Field Count:', totalFieldCount);
-    const registeredFunctionTable = globalCache.schema['registeredFunction'];
-    if (registeredFunctionTable) {
-        console.log('\nExample Schema Entry for "registeredFunction" Table:');
-        console.log('Schema Type:', registeredFunctionTable.schemaType);
-        console.log('Entity Name Mappings:', JSON.stringify(registeredFunctionTable.entityNameMappings, null, 2));
-        console.log('Entity Fields:');
-        Object.entries(registeredFunctionTable.entityFields).forEach(([fieldName, fieldInfo]) => {
-            console.log(`Field Name: ${fieldName}, Field Info: ${JSON.stringify(fieldInfo, null, 2)}`);
+    console.log('Basic Schema Stats:');
+    console.log(`Total Entities: ${schemaKeys.length}`);
+    console.log(`Entities: \n${schemaKeys.join(', ')}\n`);
+
+    // Entity Name Mapping Statistics
+    const entityNameMappings = globalCache.entityNameToCanonical;
+    const entityVariantCount = Object.keys(entityNameMappings).length;
+    console.log('Entity Name Mapping Stats:');
+
+    // Entity Format Statistics
+    const entityFormats = globalCache.entityNameFormats;
+    console.log('Entity Format Stats:');
+    Object.entries(entityFormats).forEach(([entityKey, formats]) => {
+        const fields = Object.keys(formats).join(', ');
+        console.log(`${entityKey}: ${fields}`);
+    });
+    console.log();
+
+    // Field Statistics
+    const fieldMappings = globalCache.fieldNameToCanonical;
+    console.log('Field Mapping Stats:');
+    let totalFieldVariants = 0;
+    let totalFields = 0;
+    Object.entries(fieldMappings).forEach(([entityKey, fields]) => {
+        const fieldCount = Object.keys(fields).length;
+        const variantCount = Object.values(fields).length;
+        totalFieldVariants += variantCount;
+        totalFields += fieldCount;
+        console.log(`${entityKey}: ${fieldCount} fields, ${variantCount} variants`);
+    });
+    console.log(`Total Fields: ${totalFields}`);
+    console.log(`Total Field Variants: ${totalFieldVariants}\n`);
+
+    // Field Format Statistics
+    const fieldFormats = globalCache.fieldNameFormats;
+    console.log('Field Format Stats:');
+    Object.entries(fieldFormats).forEach(([entityKey, fields]) => {
+        console.log(`\n${entityKey}:`);
+        Object.entries(fields).forEach(([fieldKey, formats]) => {
+            const formatCount = Object.keys(formats).length;
+            console.log(`  ${fieldKey}: ${formatCount} formats`);
         });
-        console.log('Default Fetch Strategy:', registeredFunctionTable.defaultFetchStrategy);
-        console.log('Component Props:', JSON.stringify(registeredFunctionTable.componentProps, null, 2));
-        console.log('Relationships:', JSON.stringify(registeredFunctionTable.relationships, null, 2));
-    } else {
-        console.warn('No schema found for "registeredFunction" table.');
+    });
+
+    // Example Entity Detail
+    console.log('\n=== Example Entity Detail: registeredFunction ===');
+    const exampleEntity = globalCache.schema['registeredFunction'];
+    if (exampleEntity) {
+        // Name variations
+        console.log('\nName Variations:');
+        const variants = Object.entries(entityNameMappings)
+            .filter(([_, canonical]) => canonical === 'registeredFunction')
+            .map(([variant]) => variant);
+        console.log('Variants:', variants.join(', '));
+
+        // Format examples
+        console.log('\nFormat Examples:');
+        const formats = entityFormats['registeredFunction'];
+        Object.entries(formats).forEach(([format, value]) => {
+            console.log(`${format}: ${value}`);
+        });
+
+        // Field summary
+        console.log('\nFields Summary:');
+        Object.entries(exampleEntity.entityFields).forEach(([fieldKey, field]) => {
+            const fieldVariants = Object.entries(fieldMappings['registeredFunction'])
+                .filter(([_, canonical]) => canonical === fieldKey)
+                .map(([variant]) => variant);
+
+            const fieldFormatsCount = Object.keys(
+                fieldFormats['registeredFunction'][fieldKey]
+            ).length;
+
+            console.log(`\n${fieldKey}:`);
+            console.log(`  Variants: ${fieldVariants.join(', ')}`);
+            console.log(`  Format Count: ${fieldFormatsCount}`);
+            console.log(`  Type: ${field.typeReference}`);
+            console.log(`  Required: ${field.isRequired}`);
+        });
     }
 }
 

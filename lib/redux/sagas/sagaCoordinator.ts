@@ -8,7 +8,7 @@ import {
     UnifiedSchemaCache
 } from "@/types/entityTypes";
 import { all, takeLatest } from 'redux-saga/effects';
-import { createEntitySaga } from '../tables/dynamicTableSagas';
+import { createEntitySaga } from '../entity/entitySagas';
 
 export class SagaCoordinator {
     private static instance: SagaCoordinator | null = null;

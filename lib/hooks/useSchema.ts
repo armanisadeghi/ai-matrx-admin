@@ -1,3 +1,4 @@
+/*
 // hooks/useSchema.ts
 'use client';
 
@@ -19,7 +20,6 @@ import {v4 as uuidv4} from 'uuid';
 
 
 import type {AutomationTableName, NameFormat} from '@/types/AutomationSchemaTypes';
-import {resolveTableName} from "@/utils/schema/precomputeUtil";
 
 interface FormattedSchema extends AutomationTable {
     formattedNames: Record<string, string>;
@@ -790,3 +790,4 @@ const globalValidations: Record<string, ValidationFunction> = {
     },
     // Add more validation functions as needed
 };
+*/
