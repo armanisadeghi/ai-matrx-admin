@@ -1,77 +1,107 @@
-import React, { Suspense, useCallback, useEffect, useState } from "react";
-import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
+'use client';
+
+import React, { Suspense, useCallback, useState } from "react";
+import SchemaSelect from "./SchemaSelect";
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import { useEntity } from "@/lib/redux/entity/useEntity";
-import { EntityKeys } from "@/types/entityTypes"; // Import the type for entity keys
-import { useSchemaResolution } from "@/providers/SchemaProvider";
+import { EntityKeys } from "@/types/entityTypes";
+import {TableData} from "@/types/tableTypes";
 
-const PaginatedFetchSaga: React.FC = () => {
-    const [selectedSchema, setSelectedSchema] = useState<EntityKeys | null>(null); // Ensure correct typing for entity key
+
+export default function PaginatedFetchSaga() {
+    const [selectedSchema, setSelectedSchema] = useState<EntityKeys | null>(null);
     const [page, setPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(10);
 
-    // Get list of entities with their pretty names
-    const { getAllEntitiesWithPrettyName } = useSchemaResolution();
-    const registeredSchemas = getAllEntitiesWithPrettyName(); // Ensure this returns an array of `{ entityKey: EntityKeys, pretty: string }`
-
-    // Initialize the useEntity hook with the selected entityKey for data fetching
-    const { data, loading, error, refetch } = useEntity({
-        entityKey: selectedSchema as EntityKeys | undefined, // Only pass entityKey if selected
+    // Only initialize useEntity when we have a schema selected
+    const {
+        data,
+        loading,
+        error,
+        refetch,
+        totalCount,
+        setSelectedItem
+    } = selectedSchema ? useEntity({
+        entityKey: selectedSchema,
         page,
-        pageSize,
-    });
-
-    // Handle schema selection
-    const handleSchemaSelect = useCallback((schemaKey: EntityKeys) => {
-        setSelectedSchema(schemaKey);
-        setPage(1); // Reset to the first page when schema changes
-    }, []);
-
-    // Refetch data whenever the selected schema, page, or pageSize changes
-    useEffect(() => {
-        if (selectedSchema) {
-            refetch();
-        }
-    }, [selectedSchema, page, pageSize, refetch]);
-
-    // Handle page change
-    const handlePageChange = (newPage: number, newPageSize: number) => {
-        setPage(newPage);
-        setPageSize(newPageSize);
+        pageSize
+    }) : {
+        data: null,
+        loading: false,
+        error: null,
+        refetch: () => {},
+        totalCount: 0,
+        setSelectedItem: () => {}
     };
 
+    const handleSchemaSelect = useCallback((selectedEntity: {
+        entityKey: EntityKeys;
+        pretty: string
+    }) => {
+        setSelectedSchema(selectedEntity.entityKey);
+        setPage(1); // Reset pagination
+    }, []);
+
+    const handlePageChange = useCallback((newPage: number, newPageSize: number) => {
+        setPage(newPage);
+        setPageSize(newPageSize);
+    }, []);
+
+    const handleAction = useCallback((actionName: string, rowData: TableData) => {
+        switch (actionName) {
+            case 'view':
+                setSelectedItem(rowData);
+                break;
+            case 'edit':
+                console.log('Edit:', rowData);
+                break;
+            case 'delete':
+                console.log('Delete:', rowData);
+                break;
+            default:
+                console.log(`Action ${actionName}:`, rowData);
+        }
+    }, [setSelectedItem]);
+
     return (
-        <div className="space-y-4">
-            {/* Pass registeredSchemas to SchemaSelect for selection */}
-            <SchemaSelect
-                onSchemaSelect={handleSchemaSelect}
-                selectedSchema={selectedSchema}
-                schemas={registeredSchemas.map(({ entityKey, pretty }) => ({
-                    value: entityKey,
-                    label: pretty,
-                }))}
-            />
-            {loading && <p>Loading...</p>}
-            {error && <p className="text-red-500">Error: {error}</p>}
-            {data && (
+        <div className="space-y-4 p-4">
+            <div className="space-y-2">
+                <SchemaSelect
+                    onSchemaSelect={handleSchemaSelect}
+                    onSchemaFetched={() => {}}
+                    selectedSchema={selectedSchema}
+                />
+            </div>
+
+            {loading && <MatrxTableLoading />}
+
+            {error && (
+                <div className="text-red-500 p-4 rounded bg-red-50">
+                    Error: {error}
+                </div>
+            )}
+
+            {selectedSchema && !loading && data && (
                 <Suspense fallback={<MatrxTableLoading />}>
                     <MatrxTable
                         data={data}
-                        actions={['view']}
-                        onAction={(actionName, rowData) => console.log(actionName, rowData)}
+                        actions={['view', 'edit', 'delete']}
+                        onAction={handleAction}
                         truncateAt={50}
                         customModalContent={(rowData) => (
-                            <pre>{JSON.stringify(rowData, null, 2)}</pre>
+                            <div className="p-4">
+                                <h3 className="text-lg font-bold mb-4">Row Details</h3>
+                                <pre className="p-4 rounded overflow-auto">
+                                    {JSON.stringify(rowData, null, 2)}
+                                </pre>
+                            </div>
                         )}
                         onPageChange={handlePageChange}
-                        currentPage={page}
-                        pageSize={pageSize}
+                        className="w-full"
                     />
                 </Suspense>
             )}
         </div>
     );
-};
-
-export default PaginatedFetchSaga;
+}

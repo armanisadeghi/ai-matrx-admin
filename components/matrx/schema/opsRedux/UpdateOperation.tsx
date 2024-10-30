@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import useDatabase from "@/lib/hooks/useDatabase";
+// import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {Button, Input} from "@/components/ui";
 
@@ -7,7 +7,7 @@ const UpdateOperation = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [id, setId] = useState('');
     const [updateData, setUpdateData] = useState('');
-    const {update, loading, error} = useDatabase();
+    // const {update, loading, error} = useDatabase();
 
     const handleUpdate = () => {
         if (selectedSchema && id) {

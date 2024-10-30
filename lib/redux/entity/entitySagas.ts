@@ -2,6 +2,8 @@ import {call, put, takeLatest, all, select} from 'redux-saga/effects';
 import {PayloadAction} from '@reduxjs/toolkit';
 import {DatabaseApiWrapper, QueryOptions} from '@/utils/supabase/api-wrapper';
 import {createEntitySlice} from "@/lib/redux/entity/entitySliceCreator";
+// import {useSchemaResolution} from "@/providers/SchemaProvider";
+
 import {
     AutomationEntities, createFormattedRecord,
     EntityKeys,
@@ -10,16 +12,32 @@ import {
 import {PostgrestFilterBuilder} from "@supabase/postgrest-js";
 import {supabase} from '@/utils/supabase/client';
 
+
+function* initializeDatabaseApi<TEntity extends EntityKeys>(entityVariant: TEntity) {
+
+    const { data, error } = yield supabase
+        .from("registered_function")  // assuming entityVariant is the table name
+        .select('*')
+        .limit(10);  // Hardcoded limit for testing
+
+    if (error) {
+        throw new Error(`Supabase fetch error: ${error.message}`);
+    }
+    return data;
+}
+
+
 /**
  * Initialize DatabaseApiWrapper for a given entity and dynamically inject the Supabase client
  */
-function* initializeDatabaseApi<TEntity extends EntityKeys>(
-    entityVariant: TEntity
-) {
-    const databaseApi = DatabaseApiWrapper.create(entityVariant);
-    databaseApi.setClient(supabase);
-    return databaseApi;
-}
+// function* initializeDatabaseApi<TEntity extends EntityKeys>(
+//     entityVariant: TEntity
+// ) {
+//     const schemaResolution = yield call(useSchemaResolution);
+//     const databaseApi = DatabaseApiWrapper.create(entityVariant, schemaResolution);
+//     databaseApi.setClient(supabase);
+//     return databaseApi;
+// }
 
 
 /**
@@ -532,6 +550,58 @@ function* handleFetchByPrimaryKey<TEntity extends EntityKeys>(
     }
 }
 
+// function* handleFetchPaginated<TEntity extends EntityKeys>(
+//     entityVariant: TEntity,
+//     actions: ReturnType<typeof createEntitySlice>['actions'],
+//     action: PayloadAction<{
+//         options?: QueryOptions<TEntity>;
+//         page: number;
+//         pageSize: number;
+//         maxCount?: number;
+//     }>
+// ) {
+//     try {
+//         yield put(actions.setLoading(true));
+//
+//         const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityVariant,);
+//
+//         const {
+//             page,
+//             pageSize,
+//             maxCount = 10000,
+//             options = {}
+//         } = action.payload;
+//
+//         const result: {
+//             page: number;
+//             pageSize: number;
+//             totalCount: number;
+//             maxCount: number;
+//             data: EntityRecord<TEntity, 'frontend'>[];
+//         } = yield call(
+//             [databaseApi, databaseApi.fetchPaginatedDirectly],
+//             options,
+//             page,
+//             pageSize,
+//             maxCount
+//         );
+//
+//         if (result && result.data) {
+//             yield put(actions.setPaginatedData({
+//                 data: result.data,
+//                 page: result.page,
+//                 pageSize: result.pageSize,
+//                 totalCount: result.totalCount,
+//                 maxCount: result.maxCount
+//             }));
+//         }
+//     } catch (error: any) {
+//         yield put(actions.setError(error.message));
+//     } finally {
+//         yield put(actions.setLoading(false));
+//     }
+// }
+
 function* handleFetchPaginated<TEntity extends EntityKeys>(
     entityVariant: TEntity,
     actions: ReturnType<typeof createEntitySlice>['actions'],
@@ -543,43 +613,34 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
     }>
 ) {
     try {
+        // Trigger loading state
         yield put(actions.setLoading(true));
 
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityVariant,);
+        // Use the simplified initializeDatabaseApi to fetch data
+        const resultData = yield call(initializeDatabaseApi, entityVariant);
 
-        const {
-            page,
-            pageSize,
-            maxCount = 10000,
-            options = {}
-        } = action.payload;
+        // Mock result structure to fit expected format for actions
+        const result = {
+            data: resultData,
+            page: action.payload.page,
+            pageSize: action.payload.pageSize,
+            totalCount: resultData ? resultData.length : 0,
+            maxCount: action.payload.maxCount || 10000
+        };
 
-        const result: {
-            page: number;
-            pageSize: number;
-            totalCount: number;
-            maxCount: number;
-            data: EntityRecord<TEntity, 'frontend'>[];
-        } = yield call(
-            [databaseApi, databaseApi.fetchPaginatedDirectly],
-            options,
-            page,
-            pageSize,
-            maxCount
-        );
-
-        if (result && result.data) {
-            yield put(actions.setPaginatedData({
-                data: result.data,
-                page: result.page,
-                pageSize: result.pageSize,
-                totalCount: result.totalCount,
-                maxCount: result.maxCount
-            }));
-        }
+        // Dispatch action with simplified result structure
+        yield put(actions.setPaginatedData({
+            data: result.data,
+            page: result.page,
+            pageSize: result.pageSize,
+            totalCount: result.totalCount,
+            maxCount: result.maxCount
+        }));
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        // Handle errors with a fallback message if none exists
+        yield put(actions.setError(error.message || 'An error occurred during fetch.'));
     } finally {
+        // Reset loading state
         yield put(actions.setLoading(false));
     }
 }
@@ -602,7 +663,7 @@ export function createEntitySaga<TEntity extends EntityKeys>(
                 MakeQuery.bind(null, entityVariant, actions)
             ),
             takeLatest(
-                'FETCH_PAGINATED_DIRECTLY',
+                `${baseType}_FETCH_PAGINATED_REQUEST`,
                 handleFetchPaginated.bind(null, entityVariant, actions)
             ),
             takeLatest(

@@ -1,63 +1,36 @@
-// File: components/admin/SchemaAdmin.tsx
+// /admin/schema-manager/components/SchemaAdmin.tsx
 
 'use client';
 
-import React, {useState, useCallback} from 'react';
-
-import {Card, CardHeader, CardContent, CardFooter} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {Input} from '@/components/ui/input';
-import {useSchemaResolution} from "@/providers/SchemaProvider";
-import {AllEntityNameVariations, EntityField} from "@/types/entityTypes";
-
+import React, { useState, useCallback } from 'react';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import SchemaSelect from "@/components/matrx/schema/opsRedux/SchemaSelect";
+import { EntityKeys, AutomationEntity } from "@/types/entityTypes";
 
 export default function SchemaAdmin() {
-
-    const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
+    const [selectedSchema, setSelectedSchema] = useState<EntityKeys | null>(null);
+    const [schemaDetails, setSchemaDetails] = useState<{
+        schema: AutomationEntity<EntityKeys>;
+        fieldsList: Array<Record<string, any>>;
+    } | null>(null);
     const [newSchemaName, setNewSchemaName] = useState<string>('');
-    const [newFieldName, setNewFieldName] = useState<string>('');
 
-    const handleSchemaSelect = useCallback((schemaName: AllEntityNameVariations) => {
-        setSelectedSchema(schemaName);
+    const handleSchemaSelect = useCallback((selectedEntity: {
+        entityKey: EntityKeys;
+        pretty: string
+    }) => {
+        setSelectedSchema(selectedEntity.entityKey);
     }, []);
 
-    const {
-        resolveEntityKey,
-        setSingleFieldsToDefault,
-        resolveFieldKey,
-        resolveEntityAndFieldKeys,
-        getEntityNameInFormat,
-        resolveEntityNameInFormat,
-        getFieldNameInFormat,
-        resolveFieldNameInFormat,
-        findPrimaryKeyFieldKey,
-        findDisplayFieldKey,
-        getFieldData,
-        findFieldsByCondition,
-        findFieldsWithDefaultGeneratorFunction,
-        getFieldsWithAttribute,
-        createFormattedEntityRecord,
-        getEntitySchemaInFormat,
-        formatTransformers,
-        generateDefaultValue,
-        transformObjectBasic,
-        transformObject,
-        schema,
-        entityNameToCanonical,
-        fieldNameToCanonical,
-        entityNameFormats,
-        fieldNameFormats,
-        databaseFields,
-        enhancedDatabaseValidation,
-        getAllEntitiesWithPrettyName,
-        getAllEntityKeys,
-        getEntitySchema,
-    } = useSchemaResolution()
-
-    const registeredSchemas = getAllEntitiesWithPrettyName();
-
-    const selectedSchemaDetails = selectedSchema ? getEntitySchema(selectedSchema) : null;
+    const handleSchemaFetched = useCallback(<TEntity extends EntityKeys>(
+        result: {
+            schema: AutomationEntity<TEntity>;
+            fieldsList: Array<Record<string, any>>;
+        }
+    ) => {
+        setSchemaDetails(result);
+    }, []);
 
     return (
         <div className="p-4 space-y-4">
@@ -68,32 +41,34 @@ export default function SchemaAdmin() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <label className="block text-sm font-medium">Registered Schemas</label>
-                        <Select onValueChange={handleSchemaSelect}>
-                            <SelectTrigger className="w-full bg-input">
-                                <SelectValue placeholder="Select a schema" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {registeredSchemas.map(({ entityKey, pretty }) => (
-                                    <SelectItem key={entityKey} value={entityKey}>
-                                        {pretty}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <SchemaSelect
+                            onSchemaSelect={handleSchemaSelect}
+                            onSchemaFetched={handleSchemaFetched}
+                            selectedSchema={selectedSchema}
+                        />
                     </div>
 
-                    {selectedSchemaDetails && (
+                    {schemaDetails && (
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">
-                                Details for: {selectedSchemaDetails.entityNameFormats.pretty}
+                                Details for: {schemaDetails.schema.entityNameFormats.pretty}
                             </h3>
                             <div className="space-y-2">
                                 <h4 className="font-medium">Fields:</h4>
-                                {Object.entries(selectedSchemaDetails.entityFields).map(([fieldName, field]) => (
-                                    <div key={fieldName} className="bg-card rounded p-2">
-                                        <p><strong>Field Name:</strong> {fieldName}</p>
-                                        <p><strong>Type:</strong> {field.dataType}</p>
-                                        <p><strong>Database Field:</strong> {field.fieldNameVariations.database}</p>
+                                {schemaDetails.fieldsList.map((field) => (
+                                    <div key={field.fieldName} className="bg-card rounded p-2 space-y-2">
+                                        {Object.entries(field).map(([key, value]) => (
+                                            <p key={key}>
+                                                <strong>{key}:</strong> {' '}
+                                                {typeof value === 'boolean'
+                                                 ? value.toString()
+                                                 : value === null
+                                                   ? 'null'
+                                                   : typeof value === 'object'
+                                                     ? JSON.stringify(value)
+                                                     : value}
+                                            </p>
+                                        ))}
                                     </div>
                                 ))}
                             </div>
@@ -106,7 +81,6 @@ export default function SchemaAdmin() {
                         onChange={(e) => setNewSchemaName(e.target.value)}
                         placeholder="PLACEHOLDER ONLY: New Schema Name"
                     />
-                    {/*<Button onClick={handleAddSchema}>Add Schema</Button>*/}
                 </CardFooter>
             </Card>
         </div>

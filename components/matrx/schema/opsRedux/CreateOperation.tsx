@@ -1,12 +1,12 @@
 import React, {useState} from "react";
-import useDatabase from "@/lib/hooks/useDatabase";
+// import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {Button} from "@/components/ui";
 
 const CreateOperation = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [newData, setNewData] = useState('');
-    const {create, loading, error} = useDatabase();
+    // const {create, loading, error} = useDatabase();
 
     const handleCreate = () => {
         if (selectedSchema) {

@@ -1,5 +1,5 @@
 import React, {Suspense, useState} from "react";
-import useDatabase from "@/lib/hooks/useDatabase";
+// import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {Button} from "@/components/ui";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
@@ -8,7 +8,7 @@ import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/Matrx
 const RealtimeSubscription = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [subscribed, setSubscribed] = useState(false);
-    const {data, subscribeToChanges, unsubscribeFromChanges} = useDatabase();
+    // const {data, subscribeToChanges, unsubscribeFromChanges} = useDatabase();
 
     const handleToggleSubscription = () => {
         if (selectedSchema) {

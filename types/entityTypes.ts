@@ -18,7 +18,6 @@ export type AutomationSchema = typeof initialAutomationTableSchema;
 export type EntityKeys = keyof AutomationSchema;
 
 
-
 // Add this somewhere in your code to verify the schema shape
 // const schemaTypeCheck: AutomationEntities = initialAutomationTableSchema;
 
@@ -64,10 +63,10 @@ export type AllEntityNameVariations = {
  * All possible field keys across all entities
  */
 export type AllEntityFieldKeys = AutomationSchema[EntityKeys] extends infer TField
-                          ? TField extends { entityFields: any }
-                            ? keyof TField["entityFields"]
-                            : never
-                          : never;
+                                 ? TField extends { entityFields: any }
+                                   ? keyof TField["entityFields"]
+                                   : never
+                                 : never;
 
 /**
  * All field keys for a specific entity
@@ -137,10 +136,10 @@ export type AllEntityFieldVariations<TEntity extends EntityKeys> = {
  * Represents any single canonical field name for an entity
  */
 export type CanonicalFieldKey<TEntity extends EntityKeys> = EntityFieldKeys<TEntity> extends infer K
-                                                     ? K extends string
-                                                       ? K
-                                                       : never
-                                                     : never;
+                                                            ? K extends string
+                                                              ? K
+                                                              : never
+                                                            : never;
 
 
 // Basic types
@@ -256,10 +255,7 @@ export type FieldDatabaseTable<
 /**
  * Comprehensive field configuration type containing all field-level settings
  */
-export type EntityField<
-    TEntity extends EntityKeys,
-    TField extends EntityFieldKeys<TEntity>
-> = {
+export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>> = {
     fieldNameFormats: FieldNameFormats<TEntity, TField>;
     value: any;
     dataType: FieldDataType<TEntity, TField>;
@@ -299,6 +295,41 @@ export type EntityComponentProps<TEntity extends EntityKeys> =
 
 type test14 = EntityDefaultFetchStrategy<'registeredFunction'>; // Shows default fetch strategy for an entity
 
+
+// ========== Potential Simplified Schema ==========
+
+export type SchemaCombined<TEntity extends EntityKeys> = {
+    schemaType: EntitySchemaType<TEntity>;
+    defaultFetchStrategy: FetchStrategy;
+    componentProps: EntityComponentProps<TEntity>;
+    entityNameFormats: EntityNameFormats<TEntity>;
+    relationships: EntityRelationships<TEntity>;
+    entityFields: {
+        [TField in EntityFieldKeys<TEntity>]: {
+            value: any;
+            dataType: FieldDataType<TEntity, TField>;
+            databaseTable: FieldDatabaseTable<TEntity, TField>;
+            enumValues: FieldEnumValues<TEntity, TField>;
+            isArray: FieldIsArray<TEntity, TField>;
+            structure: FieldStructure<TEntity, TField>;
+            isNative: FieldIsNative<TEntity, TField>;
+            typeReference: FieldTypeReference<TEntity, TField>;
+            defaultComponent?: FieldDefaultComponent<TEntity, TField>;
+            componentProps?: FieldComponentProps<TEntity, TField>;
+            isRequired: FieldIsRequired<TEntity, TField>;
+            maxLength: FieldMaxLength<TEntity, TField>;
+            defaultValue: FieldDefaultValue<TEntity, TField>;
+            isPrimaryKey: FieldIsPrimaryKey<TEntity, TField>;
+            isDisplayField: FieldIsDisplayField<TEntity, TField>;
+            validationFunctions: FieldValidationFunctions<TEntity, TField>;
+            exclusionRules: FieldExclusionRules<TEntity, TField>;
+            fieldNameFormats: FieldNameFormats<TEntity, TField>;
+            defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
+        };
+    };
+};
+
+// ==========  ==========
 
 
 /**
@@ -419,7 +450,6 @@ export type DefaultGeneratorFunction = () => unknown;
 export type DefaultGenerators = {
     generateUUID: () => string;
 };
-
 
 
 // 1. Format Definitions and Branding
@@ -591,8 +621,6 @@ export function convertFormat<
 }
 
 
-
-
 type EntitySliceState<TEntity extends EntityKeys> = {
     data: Array<EntityData<TEntity>>; // Object array of Record<FieldKey, TypeReference> (The actual data)
     totalCount: number; // Total number must come from the first fetch operation.
@@ -618,56 +646,46 @@ type EntitySliceState<TEntity extends EntityKeys> = {
  */
 export type EntityData<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-      ? TField
-      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+                                                                  ? TField
+                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-      ? TField
-      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+                                                                  ? TField
+                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;
 export type userPreferencesData = EntityData<'userPreferences'>;
 
 
-
 type EntityDataOptional<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-        ? TField
-        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+                                                                  ? TField
+                                                                  : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-        ? TField
-        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+                                                                  ? TField
+                                                                  : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
 };
 
 type registeredFunctionDataOptional = EntityDataOptional<'registeredFunction'>;
 type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 
-
-import { Draft } from 'immer';
+import {Draft} from 'immer';
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-        ? TField
-        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+                                                                  ? TField
+                                                                  : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-        ? TField
-        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+                                                                  ? TField
+                                                                  : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
 }>;
 
 type registeredFunctionDataDraft = EntityDataDraft<'registeredFunction'>;
 type userPreferencesDataDraft = EntityDataDraft<'userPreferences'>;
-
-
-
-
-
-
-
-
 
 
 // // Usage example:

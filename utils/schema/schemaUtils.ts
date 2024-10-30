@@ -1,9 +1,10 @@
 // File: lib/schemaUtils.ts
 
 import {v4 as uuidv4} from "uuid";
-import {AutomationTableName, FieldDataType, NameFormat} from "@/types/AutomationSchemaTypes";
-import {getGlobalCache, resolveTableName} from "@/utils/schema/precomputeUtil";
-import {AutomationTable} from "@/types/automationTableTypes";
+import {AutomationTableName, NameFormat} from "@/types/AutomationSchemaTypes";
+import {getGlobalCache} from "@/utils/schema/precomputeUtil";
+import {AutomationTable, resolveTableName} from "@/types/automationTableTypes";
+import {FieldDataType} from "@/types/entityTypes";
 // Types for the transformation system
 export type DataValue = any;
 export type DataObject = Record<string, DataValue>;
@@ -64,8 +65,8 @@ export function convertData<T extends AutomationTableName>(
 
     // Process fields based on schema
     Object.entries(schema.entityFields).forEach(([fieldName, field]) => {
-        const sourceKey = field.fieldNameMappings[sourceFormat];
-        const targetKey = field.fieldNameMappings[targetFormat];
+        const sourceKey = field.fieldNameVariations[sourceFormat];
+        const targetKey = field.fieldNameVariations[targetFormat];
 
         if (sourceKey && targetKey && sourceKey in data) {
             let value = data[sourceKey];
@@ -343,8 +344,8 @@ export function getNonFkFields(tableName: AutomationTableName): FieldInfo[] {
     return Object.entries(schema.entityFields)
         .filter(([_, field]) => field.structure === 'single')
         .map(([_, field]) => ({
-            name: field.fieldNameMappings.frontend,
-            pretty: field.fieldNameMappings.pretty,
+            name: field.fieldNameVariations.frontend,
+            pretty: field.fieldNameVariations.pretty,
             type: field.dataType
         }));
 }
@@ -357,8 +358,8 @@ export function getForeignKeys(tableName: AutomationTableName): FieldInfo[] {
     return Object.entries(schema.entityFields)
         .filter(([_, field]) => field.structure === 'foreignKey')
         .map(([_, field]) => ({
-            name: field.fieldNameMappings.frontend,
-            pretty: field.fieldNameMappings.pretty,
+            name: field.fieldNameVariations.frontend,
+            pretty: field.fieldNameVariations.pretty,
             type: field.dataType
         }));
 }
@@ -371,8 +372,8 @@ export function getInverseForeignKeys(tableName: AutomationTableName): FieldInfo
     return Object.entries(schema.entityFields)
         .filter(([_, field]) => field.structure === 'inverseForeignKey')
         .map(([_, field]) => ({
-            name: field.fieldNameMappings.frontend,
-            pretty: field.fieldNameMappings.pretty,
+            name: field.fieldNameVariations.frontend,
+            pretty: field.fieldNameVariations.pretty,
             type: field.dataType
         }));
 }
@@ -387,8 +388,8 @@ export function getAllKeys(tableName: AutomationTableName): FieldInfo[] {
             field.structure === 'foreignKey' || field.structure === 'inverseForeignKey'
         )
         .map(([_, field]) => ({
-            name: field.fieldNameMappings.frontend,
-            pretty: field.fieldNameMappings.pretty,
+            name: field.fieldNameVariations.frontend,
+            pretty: field.fieldNameVariations.pretty,
             type: field.dataType,
             structure: field.structure
         }));
@@ -400,8 +401,8 @@ export function getAllFields(tableName: AutomationTableName): FieldInfo[] {
     if (!schema) return [];
 
     return Object.entries(schema.entityFields).map(([_, field]) => ({
-        name: field.fieldNameMappings.frontend,
-        pretty: field.fieldNameMappings.pretty,
+        name: field.fieldNameVariations.frontend,
+        pretty: field.fieldNameVariations.pretty,
         type: field.dataType,
         structure: field.structure
     }));

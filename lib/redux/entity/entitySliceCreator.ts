@@ -44,6 +44,7 @@ export function createEntitySlice<TEntity extends EntityKeys>(
         pageSize: 10,
         maxCount: 1000
     };
+    console.log('createEntitySlice Created Entity Slice:', entityKey);
     const slice = createSlice({
         name: `entity/${entityKey.toUpperCase()}`,
         initialState,

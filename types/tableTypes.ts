@@ -13,7 +13,7 @@ import React from "react";
 import {FlexibleId} from './FlexibleId';
 
 export interface TableData {
-    id: FlexibleId;
+    id?: FlexibleId;
     [key: string]: any;
 }
 
@@ -29,16 +29,16 @@ export interface MatrxTableProps {
     onPageChange?: (pageIndex: number, pageSize: number) => void;
 }
 
-export type TableInstance = UseTableInstanceProps<TableData> &
-    UseGlobalFiltersInstanceProps<TableData> &
-    UsePaginationInstanceProps<TableData> &
-    UseSortByInstanceProps<TableData>;
-
 export interface ExtendedTableState extends TableState<TableData> {
     globalFilter: any;
     pageIndex: number;
     pageSize: number;
 }
+
+export type TableInstance = UseTableInstanceProps<TableData> &
+    UseGlobalFiltersInstanceProps<TableData> &
+    UsePaginationInstanceProps<TableData> &
+    UseSortByInstanceProps<TableData>;
 
 
 export interface ActionDefinition {

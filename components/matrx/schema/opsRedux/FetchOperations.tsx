@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from "react";
-import useDatabase from "@/lib/hooks/useDatabase";
+// import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import { Button, Input } from "@/components/ui";
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
@@ -8,7 +8,7 @@ import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/Matrx
 const FetchOperations = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [id, setId] = useState('');
-    const { data, loading, error, fetchOne, fetchAll, fetchPaginated, getForeignKeys, getInverseForeignKeys, getAllFields, getNonFkFields, fetchFk, fetchIfk, fetchM2m } = useDatabase();
+    // const { data, loading, error, fetchOne, fetchAll, fetchPaginated, getForeignKeys, getInverseForeignKeys, getAllFields, getNonFkFields, fetchFk, fetchIfk, fetchM2m } = useDatabase();
 
     const handleFetchOne = () => {
         if (selectedSchema && id) {

@@ -1,4 +1,5 @@
 // utils/supabase/api-wrapper.ts
+
 import {PostgrestError, PostgrestFilterBuilder} from '@supabase/postgrest-js';
 import {SupabaseClient} from "@supabase/supabase-js";
 import {useSchemaResolution} from "@/providers/SchemaProvider";
@@ -61,12 +62,12 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         entityKey: TEntity,
         databaseName: EntityNameFormat<TEntity, 'database'>,
         primaryKeyField: EntityFieldKeys<TEntity>,
-        formatTransformers: ReturnType<typeof useSchemaResolution>['formatTransformers'],
-        resolveFieldNameInFormat: ReturnType<typeof useSchemaResolution>['resolveFieldNameInFormat'],
-        enhancedDatabaseValidation: ReturnType<typeof useSchemaResolution>['enhancedDatabaseValidation'],
-        databaseFields: ReturnType<typeof useSchemaResolution>['databaseFields'],
+        formatTransformers: any,
+        resolveFieldNameInFormat: any,
+        enhancedDatabaseValidation: any,
+        databaseFields: any,
         displayFieldKey: EntityFieldKeys<TEntity> | null = null,
-        trace: string[] = [__filename.split('/').pop() || 'unknownFile'] // Use default trace
+        trace: string[] = [__filename.split('/').pop() || 'unknownFile']
     ) {
         this.entityVariant = entityVariant;
         this.tableSchema = schema;
@@ -81,9 +82,12 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
         this.trace = trace;  // Initialize trace
     }
 
-    static create(entityVariant: AllEntityNameVariations, trace: string[] = [__filename.split('/').pop() || 'unknownFile']): DatabaseApiWrapper<any> {
+    static create(
+        entityVariant: AllEntityNameVariations,
+        schemaResolution: ReturnType<typeof useSchemaResolution>, // Add as argument
+        trace: string[] = [__filename.split('/').pop() || 'unknownFile']
+    ): DatabaseApiWrapper<any> {
         const {
-            schema,
             resolveEntityKey,
             getEntitySchema,
             getEntityNameInFormat,
@@ -93,17 +97,13 @@ export class DatabaseApiWrapper<TEntity extends EntityKeys> {
             findDisplayFieldKey,
             enhancedDatabaseValidation,
             databaseFields,
-        } = useSchemaResolution();
+        } = schemaResolution;
 
         const entityKey = resolveEntityKey(entityVariant);
         const tableSchema = getEntitySchema(entityVariant);
         const primaryKeyField = findPrimaryKeyFieldKey(entityKey);
         const tableNameDbFormat = getEntityNameInFormat(entityKey, 'database');
         const displayFieldKey = findDisplayFieldKey(entityVariant);
-
-        if (!primaryKeyField) {
-            throw new Error(`No primary key found for entity ${entityVariant}`);
-        }
 
         return new DatabaseApiWrapper<any>(
             entityVariant,

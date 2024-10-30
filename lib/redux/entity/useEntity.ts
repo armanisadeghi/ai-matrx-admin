@@ -1,82 +1,97 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useCallback, useEffect } from 'react';
-import { EntityData, EntityKeys } from "@/types/entityTypes";
-import { QueryOptions } from "@/utils/supabase/api-wrapper";
-import { RootState } from '../store';
-import { createEntitySelectors } from "@/lib/redux/entity/entitySelectors";
-import { createEntityActions } from "@/lib/redux/entity/entityActionCreator";
+// lib/redux/entity/useEntity.ts
 
-interface UseEntityProps<TEntity extends EntityKeys> {
-    entityKey?: TEntity; // Make entityKey optional
-    queryOptions?: QueryOptions<TEntity>;
-    page?: number;
-    pageSize?: number;
-}
+import {useCallback, useEffect, useMemo} from 'react';
+import {EntityData, EntityKeys} from "@/types/entityTypes";
+import {QueryOptions} from "@/utils/supabase/api-wrapper";
+import {useAppDispatch, useAppSelector} from '../hooks';
+import {createEntitySelectors} from "@/lib/redux/entity/entitySelectors";
+import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
 
-export function useEntity<TEntity extends EntityKeys>({ entityKey, queryOptions, page = 1, pageSize = 10 }: UseEntityProps<TEntity>) {
-    const dispatch = useDispatch();
+// Placeholder selectors to prevent null and keep hooks consistent
+const defaultSelectors = {
+    getData: () => null,
+    getLoading: () => false,
+    getError: () => null,
+    getTotalCount: () => 0,
+    getInitialized: () => false,
+    getSelectedItem: () => null,
+    getSchema: () => null,
+    getStaleTime: () => 0,
+    getLastFetched: () => ({}),
+};
 
-    // Conditionally initialize actions and selectors only if entityKey is defined
-    const actions = entityKey ? createEntityActions(entityKey) : null;
-    const selectors = entityKey ? createEntitySelectors(entityKey) : null;
+export function useEntity(
+    {
+        entityKey,
+        queryOptions,
+        page = 1,
+        pageSize = 10
+    }: {
+        entityKey: EntityKeys | null;
+        queryOptions?: QueryOptions<EntityKeys>;
+        page?: number;
+        pageSize?: number;
+    }) {
+    const dispatch = useAppDispatch();
 
-    // Initialize state with default values if entityKey is not defined
-    const state = entityKey && selectors ? {
-        data: useSelector((state: RootState) => selectors.getData(state)),
-        loading: useSelector((state: RootState) => selectors.getLoading(state)),
-        error: useSelector((state: RootState) => selectors.getError(state)),
-        totalCount: useSelector((state: RootState) => selectors.getTotalCount(state)),
-        initialized: useSelector((state: RootState) => selectors.getInitialized(state)),
-        selectedItem: useSelector((state: RootState) => selectors.getSelectedItem(state)),
-        schema: useSelector((state: RootState) => selectors.getSchema(state)),
-        staleTime: useSelector((state: RootState) => selectors.getStaleTime(state)),
-        lastFetched: useSelector((state: RootState) => selectors.getLastFetched(state)),
-    } : {
-        data: null,
-        loading: false,
-        error: null,
-        totalCount: 0,
-        initialized: false,
-        selectedItem: null,
-        schema: null,
-        staleTime: 0,
-        lastFetched: {}
-    };
+    // Initialize selectors based on entityKey
+    const selectors = useMemo(
+        () => entityKey ? createEntitySelectors(entityKey) : defaultSelectors,
+        [entityKey]
+    );
 
-    // Check if data is stale
-    const isDataStale = () => {
+    // Initialize actions based on entityKey
+    const actions = useMemo(
+        () => entityKey ? createEntityActions(entityKey) : null,
+        [entityKey]
+    );
+
+    // Select data from state consistently, with defaults if `entityKey` is null
+    const data = useAppSelector(state => selectors.getData(state));
+    const loading = useAppSelector(state => selectors.getLoading(state));
+    const error = useAppSelector(state => selectors.getError(state));
+    const totalCount = useAppSelector(state => selectors.getTotalCount(state));
+    const initialized = useAppSelector(state => selectors.getInitialized(state));
+    const selectedItem = useAppSelector(state => selectors.getSelectedItem(state));
+    const schema = useAppSelector(state => selectors.getSchema(state));
+    const staleTime = useAppSelector(state => selectors.getStaleTime(state));
+    const lastFetched = useAppSelector(state => selectors.getLastFetched(state));
+
+    // Helper to check if data is stale
+    const isDataStale = useCallback(() => {
         const now = Date.now();
-        return !state.lastFetched['all'] || (now - (state.lastFetched['all']?.getTime() ?? 0) > state.staleTime);
-    };
+        return !lastFetched['all'] || (now - (lastFetched['all']?.getTime() ?? 0) > staleTime);
+    }, [lastFetched, staleTime]);
 
-    // Update selected item
-    const setSelectedItem = (item: EntityData<TEntity>) => {
-        if (actions) dispatch(actions.setSelectedItem(item));
-    };
+    // Set selected item action
+    const setSelectedItem = useCallback((item: EntityData<EntityKeys>) => {
+        if (actions) {
+            dispatch(actions.setSelectedItem(item));
+        }
+    }, [dispatch, actions]);
 
-    // Refetch function
+    // Refetch data action
     const refetch = useCallback(() => {
         if (actions) {
             dispatch(actions.fetchPaginatedRequest(page, pageSize, queryOptions));
         }
     }, [dispatch, actions, page, pageSize, queryOptions]);
 
-    // Initial fetch when entityKey becomes available
+    // Trigger initial fetch or refetch on mount or when data is stale
     useEffect(() => {
-        if (actions && !state.initialized) {
-            dispatch(actions.fetchPaginatedRequest(page, pageSize, queryOptions));
-        }
-    }, [state.initialized, dispatch, actions, page, pageSize, queryOptions]);
-
-    // Re-fetch if data becomes stale
-    useEffect(() => {
-        if (actions && state.initialized && isDataStale()) {
+        if (entityKey && (!initialized || isDataStale())) {
             refetch();
         }
-    }, [state.initialized, state.lastFetched, state.staleTime, refetch, actions]);
+    }, [entityKey, initialized, isDataStale, refetch]);
 
     return {
-        ...state,
+        data,
+        loading,
+        error,
+        totalCount,
+        initialized,
+        selectedItem,
+        schema,
         isDataStale: isDataStale(),
         setSelectedItem,
         refetch,

@@ -93,6 +93,75 @@ export function useSchemaResolution() {
         return entitySchema;
     };
 
+
+    const createTypedEntitySchema = <TEntity extends EntityKeys>(
+        entityVariant: AllEntityNameVariations
+    ) => {
+        const baseSchema = getEntitySchema<TEntity>(entityVariant);
+
+        // Create the flat array of field objects
+        const fieldsList = Object.entries(baseSchema.entityFields).map(([fieldKey, fieldData]) => {
+            const typedFieldData = fieldData as EntityField<TEntity, EntityFieldKeys<TEntity>>;
+
+            // Start with the base field properties
+            const baseFieldObject = {
+                fieldName: fieldKey,
+                value: typedFieldData.value,
+                dataType: typedFieldData.dataType,
+                enumValues: typedFieldData.enumValues,
+                isArray: typedFieldData.isArray,
+                structure: typedFieldData.structure,
+                isNative: typedFieldData.isNative,
+                typeReference: typedFieldData.typeReference,
+                defaultComponent: typedFieldData.defaultComponent,
+                componentProps: typedFieldData.componentProps,
+                isRequired: typedFieldData.isRequired,
+                maxLength: typedFieldData.maxLength,
+                defaultValue: typedFieldData.defaultValue,
+                isPrimaryKey: typedFieldData.isPrimaryKey,
+                isDisplayField: typedFieldData.isDisplayField,
+                defaultGeneratorFunction: typedFieldData.defaultGeneratorFunction,
+                validationFunctions: typedFieldData.validationFunctions,
+                exclusionRules: typedFieldData.exclusionRules,
+                databaseTable: typedFieldData.databaseTable,
+            };
+
+            const nameFormats = typedFieldData.fieldNameFormats;
+            const nameProperties = Object.entries(nameFormats).reduce((acc, [formatKey, formatValue]) => ({
+                ...acc,
+                [`${formatKey}Name`]: formatValue
+            }), {});
+
+            return {
+                ...baseFieldObject,
+                ...nameProperties
+            };
+        });
+
+        return {
+            schema: {
+                ...baseSchema,
+                entityFields: baseSchema.entityFields,
+            },
+            fieldsList
+        };
+    };
+
+    /**
+     * Type guard to check if a field exists in the entity schema
+     * This preserves both entity and field type information
+     */
+    const hasField = <
+        TEntity extends EntityKeys,
+        TField extends EntityFieldKeys<TEntity>
+    >(
+        schema: AutomationEntity<TEntity>,
+        fieldKey: TField
+    ): schema is AutomationEntity<TEntity> & {
+        entityFields: { [K in TField]: EntityField<TEntity, K> }
+    } => {
+        return fieldKey in schema.entityFields;
+    };
     /**
      * Gets an entity name in a specific format
      */
@@ -854,6 +923,7 @@ export function useSchemaResolution() {
         enhancedDatabaseValidation,
         getAllEntitiesWithPrettyName,
         getAllEntityKeys,
+        createTypedEntitySchema,
     } as const;
 }
 

@@ -11108,3 +11108,24 @@ type TableConfig = {
 };
 
 
+export type EntityFieldDetails = {
+    fieldNameVariations: {
+        [key in NameFormat]?: string;
+    };
+    dataType: FieldDataOptionsType;
+    isArray: boolean;
+    structure: DataStructure;
+    isNative: boolean;
+    typeReference: TypeBrand<any>;
+    defaultComponent?: string;
+    componentProps?: Record<string, unknown>;
+    isRequired: boolean;
+    maxLength: number | null;
+    defaultValue: any;
+    isPrimaryKey: boolean;
+    isDisplayField?: boolean;
+    defaultGeneratorFunction: string | null;
+    validationFunctions: readonly string[];
+    exclusionRules: readonly string[];
+    databaseTable: string;
+};

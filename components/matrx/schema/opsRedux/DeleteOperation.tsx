@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { FlexibleId } from '@/types/FlexibleId';
-import useDatabase from "@/lib/hooks/useDatabase";
+// import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
 const DeleteOperation = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
-    const { data, loading, error, delete: deleteRecord, fetchAll } = useDatabase();
+    // const { data, loading, error, delete: deleteRecord, fetchAll } = useDatabase();
 
     useEffect(() => {
         if (selectedSchema) {

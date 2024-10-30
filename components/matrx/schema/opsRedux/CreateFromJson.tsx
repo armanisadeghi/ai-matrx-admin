@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import useDatabase from '@/lib/hooks/useDatabase';
+// import useDatabase from '@/lib/hooks/useDatabase';
 import SchemaSelect from './SchemaSelect';
 import { SchemaBasedJsonEditor } from '@/components/ui/JsonComponents';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui";
 const CreateOperationJson: React.FC = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);
     const [jsonData, setJsonData] = useState<Record<string, any>>({});
-    const { create, loading, error } = useDatabase();
+    // const { create, loading, error } = useDatabase();
     const [showUuidPopup, setShowUuidPopup] = useState<boolean>(false);
     const [generatedUuid, setGeneratedUuid] = useState<string>('');
 

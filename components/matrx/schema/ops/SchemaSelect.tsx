@@ -1,6 +1,6 @@
 // SchemaSelect.tsx
 import React from 'react';
-import { useSchema } from '@/lib/hooks/useSchema';
+// import { useSchema } from '@/lib/hooks/useSchema';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SchemaSelectProps {
