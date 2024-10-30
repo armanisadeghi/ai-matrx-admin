@@ -2,28 +2,28 @@
 
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {
-    AutomationTableStructure,
-    FieldNameMap,
-    ReverseFieldNameMap,
-    ReverseTableNameMap,
-    TableNameMap, UnifiedSchemaCache
-} from "@/types/automationTableTypes";
+    EntityNameFormatMap,
+    EntityNameToCanonicalMap,
+    FieldNameFormatMap,
+    FieldNameToCanonicalMap, UnifiedSchemaCache
+} from "@/types/entityTypes";
+import {InitialTableSchema} from "@/utils/schema/initialSchemas";
 
 interface SchemaState {
-    automationSchema: Readonly<AutomationTableStructure> | null;
-    tableNameMap: TableNameMap | null;
-    fieldNameMap: FieldNameMap | null;
-    reverseTableNameMap: ReverseTableNameMap | null;
-    reverseFieldNameMap: ReverseFieldNameMap | null;
+    automationSchema: InitialTableSchema | null;
+    entityNameToCanonical: EntityNameToCanonicalMap | null;
+    fieldNameToCanonical: FieldNameToCanonicalMap | null;
+    entityNameFormats: EntityNameFormatMap | null;
+    fieldNameFormats: FieldNameFormatMap | null;
     isInitialized: boolean;
 }
 
 const initialState: SchemaState = {
     automationSchema: null,
-    tableNameMap: null,
-    fieldNameMap: null,
-    reverseTableNameMap: null,
-    reverseFieldNameMap: null,
+    entityNameToCanonical: null,
+    fieldNameToCanonical: null,
+    entityNameFormats: null,
+    fieldNameFormats: null,
     isInitialized: false
 };
 
@@ -31,27 +31,27 @@ const schemaSlice = createSlice({
     name: 'schema',
     initialState,
     reducers: {
-        setAutomationSchema: (state, action: PayloadAction<AutomationTableStructure>) => {
+        setAutomationSchema: (state, action: PayloadAction<InitialTableSchema>) => {
             state.automationSchema = action.payload;
         },
-        setTableNameMap: (state, action: PayloadAction<TableNameMap>) => {
-            state.tableNameMap = action.payload;
+        setTableNameMap: (state, action: PayloadAction<EntityNameToCanonicalMap>) => {
+            state.entityNameToCanonical = action.payload;
         },
-        setFieldNameMap: (state, action: PayloadAction<FieldNameMap>) => {
-            state.fieldNameMap = action.payload;
+        setFieldNameMap: (state, action: PayloadAction<FieldNameToCanonicalMap>) => {
+            state.fieldNameToCanonical = action.payload;
         },
-        setReverseTableNameMap: (state, action: PayloadAction<ReverseTableNameMap>) => {
-            state.reverseTableNameMap = action.payload;
+        setReverseTableNameMap: (state, action: PayloadAction<EntityNameFormatMap>) => {
+            state.entityNameFormats = action.payload;
         },
-        setReverseFieldNameMap: (state, action: PayloadAction<ReverseFieldNameMap>) => {
-            state.reverseFieldNameMap = action.payload;
+        setReverseFieldNameMap: (state, action: PayloadAction<FieldNameFormatMap>) => {
+            state.fieldNameFormats = action.payload;
         },
         initializeAllMaps: (state, action: PayloadAction<UnifiedSchemaCache>) => {
             state.automationSchema = action.payload.schema;
-            state.tableNameMap = action.payload.tableNameMap;
-            state.fieldNameMap = action.payload.fieldNameMap;
-            state.reverseTableNameMap = action.payload.reverseTableNameMap;
-            state.reverseFieldNameMap = action.payload.reverseFieldNameMap;
+            state.entityNameToCanonical = action.payload.entityNameToCanonical;
+            state.fieldNameToCanonical = action.payload.fieldNameToCanonical;
+            state.entityNameFormats = action.payload.entityNameFormats;
+            state.fieldNameFormats = action.payload.fieldNameFormats;
             state.isInitialized = true;
         },
         resetSchema: (state) => {

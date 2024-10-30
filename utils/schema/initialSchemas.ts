@@ -11044,12 +11044,12 @@ export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 export type InitialTableSchema = {
     schemaType: 'table';
     entityNameVariations: {
-        [key in NameFormat]?: string;
+        [key in NameFormat]: string;
     };
     entityFields: {
         [fieldName: string]: {
             fieldNameVariations: {
-                [key in NameFormat]?: string;
+                [key in NameFormat]: string;
             };
             dataType: FieldDataOptionsType;
             isArray: boolean;

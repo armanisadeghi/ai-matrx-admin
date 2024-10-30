@@ -20,7 +20,7 @@ export interface TableData {
 
 export interface MatrxTableProps {
     data: TableData[];
-    actions?: string[];
+    actions?: string[];  // TODO: Connect Actions Directly to Redux Actions in a pattern designed specifically for Redux Tables.
     onAction?: (actionName: string, rowData: TableData) => void;
     defaultVisibleColumns?: string[];
     truncateAt?: number;

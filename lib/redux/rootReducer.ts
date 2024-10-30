@@ -48,6 +48,7 @@ export const createRootReducer = (automationEntities: AutomationEntities) => {
         ...featureReducers,
         ...moduleReducers,
         ...entityReducers,
+        entities: combineReducers(entityReducers),
         layout: layoutReducer,
         theme: themeReducer,
         form: formReducer,

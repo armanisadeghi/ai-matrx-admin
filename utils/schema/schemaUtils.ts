@@ -5,6 +5,12 @@ import {AutomationTableName, NameFormat} from "@/types/AutomationSchemaTypes";
 import {getGlobalCache} from "@/utils/schema/precomputeUtil";
 import {AutomationTable, resolveTableName} from "@/types/automationTableTypes";
 import {FieldDataType} from "@/types/entityTypes";
+import {
+    entityNameFormats,
+    entityNameToCanonical,
+    fieldNameFormats,
+    fieldNameToCanonical
+} from "@/utils/schema/lookupSchema";
 // Types for the transformation system
 export type DataValue = any;
 export type DataObject = Record<string, DataValue>;
@@ -426,6 +432,7 @@ export function ensureId<T extends DataWithOptionalId | DataWithOptionalId[]>(in
     }
 }
 
+
 // Legacy table name resolution (for backward compatibility)
 export function resolveTableNameOld(
     table: AutomationTableName,
@@ -433,4 +440,130 @@ export function resolveTableNameOld(
 ): string | undefined {
     const schema = getSchemaForTable(table, ['resolveTableNameOld']);
     return schema?.entityNameMappings[variant];
+}
+
+
+
+type KeyMapping = { [oldKey: string]: string };
+
+/**
+ * Replaces keys in an object or array of objects based on a provided key mapping.
+ * @param data - The object or array of objects to transform.
+ * @param keyMapping - A mapping of old keys to new keys for replacement.
+ * @returns The transformed object or array with updated keys.
+ */
+function replaceKeysInObject<T extends Record<string, any>>(
+    data: T | T[],
+    keyMapping: KeyMapping
+): T | T[] {
+    const replaceKeys = (obj: T): T => {
+        return Object.keys(obj).reduce((acc, key) => {
+            const newKey = keyMapping[key] || key;
+            (acc as Record<string, any>)[newKey] = obj[key];
+            return acc;
+        }, {} as T);
+    };
+
+    if (Array.isArray(data)) {
+        return data.map(replaceKeys);
+    }
+
+    return replaceKeys(data);
+}
+
+/**
+ * Converts entity names in an object or array of objects to their canonical form.
+ * @param data - The object or array of objects to transform.
+ * @returns The transformed data with entity names in canonical format.
+ */
+export function convertEntityName<T extends Record<string, any>>(data: T | T[]): T | T[] {
+    return replaceKeysInObject(data, entityNameToCanonical);
+}
+
+/**
+ * Converts field names in an object or array of objects to their canonical form based on entity type.
+ * @param data - The object or array of objects to transform.
+ * @param entityName - The name of the entity to determine the correct field name mapping.
+ * @returns The transformed data with field names in canonical format for the specified entity.
+ */
+export function convertFieldNames<T extends Record<string, any>>(
+    data: T | T[],
+    entityName: string
+): T | T[] {
+    const keyMapping = fieldNameToCanonical[entityName];
+    if (!keyMapping) {
+        throw new Error(`No mapping found for entity: ${entityName}`);
+    }
+    return replaceKeysInObject(data, keyMapping);
+}
+
+/**
+ * Generates a mapping from canonical entity names to a specified format for all entities.
+ * @param format - The target format for the entity names.
+ * @returns An object mapping canonical entity names to the specified format.
+ */
+export function getEntityNameFormatMap(format: string): Record<string, string> {
+    const formatMap: Record<string, string> = {};
+
+    for (const [canonicalName, formats] of Object.entries(entityNameFormats)) {
+        if (formats[format]) {
+            formatMap[canonicalName] = formats[format];
+        } else {
+            console.warn(`Format "${format}" not found for entity "${canonicalName}".`);
+        }
+    }
+    return formatMap;
+}
+
+/**
+ * Converts entity names in an object or array of objects to a specified format.
+ * @param data - The object or array of objects to transform.
+ * @param format - The target format for entity names.
+ * @returns The transformed data with entity names in the specified format.
+ */
+export function convertEntityNameFormat<T extends Record<string, any>>(
+    data: T | T[],
+    format: string
+): T | T[] {
+    const formatMap = getEntityNameFormatMap(format);
+    return replaceKeysInObject(data, formatMap);
+}
+
+/**
+ * Generates a mapping from canonical field names to a specified format for a specific entity.
+ * @param entityName - The name of the entity to determine the correct field mappings.
+ * @param format - The target format for the field names.
+ * @returns An object mapping canonical field names to the specified format for the given entity.
+ */
+export function getFieldNameFormatMap(entityName: string, format: string): Record<string, string> {
+    const entityFormats = fieldNameFormats[entityName];
+    if (!entityFormats) {
+        throw new Error(`No field formats found for entity: ${entityName}`);
+    }
+
+    const formatMap: Record<string, string> = {};
+    for (const [canonicalField, formats] of Object.entries(entityFormats)) {
+        if (formats[format]) {
+            formatMap[canonicalField] = formats[format];
+        } else {
+            console.warn(`Format "${format}" not found for field "${canonicalField}" in entity "${entityName}".`);
+        }
+    }
+    return formatMap;
+}
+
+/**
+ * Converts field names in an object or array of objects to a specified format for a specific entity.
+ * @param data - The object or array of objects to transform.
+ * @param entityName - The name of the entity to determine the correct field mappings.
+ * @param format - The target format for the field names.
+ * @returns The transformed data with field names in the specified format for the given entity.
+ */
+export function convertFieldNameFormat<T extends Record<string, any>>(
+    data: T | T[],
+    entityName: string,
+    format: string
+): T | T[] {
+    const formatMap = getFieldNameFormatMap(entityName, format);
+    return replaceKeysInObject(data, formatMap);
 }

@@ -2,8 +2,6 @@
 
 import {configureStore, ThunkAction, Action} from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
-import {moduleSchemas, ModuleName} from './dynamic/moduleSchema';
-import {TableNames, AutomationTableStructure} from '@/types/automationTableTypes';
 import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
 import {loggerMiddleware} from '@/lib/logger/redux-middleware';
 import {createRootReducer} from "@/lib/redux/rootReducer";
