@@ -1,3 +1,4 @@
+/*
 import {
     AutomationTableName,
     DataStructure,
@@ -74,7 +75,7 @@ export type TableFieldKeys<TTable extends TableKeys> = keyof TableEntityFields<T
 
 
 export type TableSchemaType = TableSchema['schemaType'];
-export type TableEntityNameVariations = TableSchema['entityNameVariations'];
+export type TableEntityNameVariations = TableSchema['entityNameFormats'];
 export type TableEntityNameVariationsValues = TableEntityNameVariations[keyof TableEntityNameVariations];
 export type IndividualTableKeys = keyof TableSchema;
 export type EntityFields = TableSchema['entityFields'];
@@ -108,7 +109,7 @@ export type FieldNameMappings<
 > = InitialSchema[TTable]['entityFields'][TField]['fieldNameVariations'];
 
 export type EntityNameMappings<TTable extends TableKeys> =
-    InitialSchema[TTable]['entityNameVariations'];
+    InitialSchema[TTable]['entityNameFormats'];
 
 export type FieldDataType<
     TTable extends TableKeys,
@@ -968,3 +969,4 @@ type SampleTable = {
     }>;
 };
 
+*/

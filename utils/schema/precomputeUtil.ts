@@ -6,17 +6,19 @@ import {
     AllFieldNameVariations,
     AutomationEntities,
     AutomationEntity,
-    AutomationSchema, createFormattedRecord,
-    DataFormat,
+    AutomationSchema,
+    createFormattedRecord,
+    DataFormat, EntityComponentProps, EntityDefaultFetchStrategy,
     EntityField,
     EntityFieldKeys,
     EntityKeys,
     EntityNameFormat,
     EntityNameFormats,
-    EntityNameVariations,
-    EntityRecord,
+    EntityRecord, EntityRelationships, EntitySchemaType,
     FieldNameFormat,
-    FieldNameFormats, TypeBrand,
+    FieldNameFormats,
+    isFetchStrategy,
+    TypeBrand,
     UnifiedSchemaCache
 } from "@/types/entityTypes";
 import {
@@ -26,6 +28,7 @@ import {
     fieldNameToCanonical
 } from "@/utils/schema/lookupSchema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
+import {createFieldId, EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
 
 
 /**
@@ -34,80 +37,90 @@ import {NameFormat} from "@/types/AutomationSchemaTypes";
 function initializeAutomationSchema<TEntity extends EntityKeys>(
     initialSchema: AutomationSchema
 ): AutomationEntities {
-    const processedSchema = {} as AutomationEntities;
+    const processedSchema = {} as Record<EntityKeys, AutomationEntity<EntityKeys>>;
 
-    for (const [entityKey, entity] of Object.entries(initialSchema) as [EntityKeys, AutomationSchema[EntityKeys]][]) {
-        const entityNameFormats: Record<DataFormat, string> = {} as Record<DataFormat, string>;
+    for (const [entityKey, entity] of Object.entries(initialSchema)) {
+        const typedEntityKey = entityKey as TEntity;
 
-        Object.keys(entity.entityNameVariations).forEach((formatKey) => {
-            const format = formatKey as DataFormat;
-            if (entity.entityNameVariations[format]) {
-                entityNameFormats[format] = entity.entityNameVariations[format] || entityKey;
-            }
-        });
-
-        const processedFields: Record<string, EntityField<any, any>> = {};
-
+        // Process fields
+        const processedFields: Record<string, EntityField<TEntity, any>> = {};
         for (const [fieldKey, field] of Object.entries(entity.entityFields)) {
-            const fieldNameFormats: Record<DataFormat, string> = {} as Record<DataFormat, string>;
-
-            Object.keys(field.fieldNameVariations).forEach((formatKey) => {
-                const format = formatKey as DataFormat;
-                if (field.fieldNameVariations[format]) {
-                    fieldNameFormats[format] = field.fieldNameVariations[format] || fieldKey;
-                }
-            });
-
-            let enumValues: string[] | null = null;
-            const {typeReference} = field;
-
-            if (typeof typeReference === 'object' && Object.keys(typeReference).length > 0) {
-                enumValues = Object.keys(typeReference).filter(key => key !== '_typeBrand');
-            }
-
-            processedFields[fieldKey] = {
-                ...field,
-                fieldNameFormats,
-                enumValues,
-                value: field.value,
-                dataType: field.dataType,
-                isArray: field.isArray,
-                structure: field.structure,
-                isNative: field.isNative,
-                typeReference: field.typeReference,
-                defaultComponent: field.defaultComponent,
-                componentProps: field.componentProps,
-                isRequired: field.isRequired,
-                maxLength: field.maxLength,
-                defaultValue: field.defaultValue,
-                isPrimaryKey: field.isPrimaryKey,
-                isDisplayField: field.isDisplayField,
-                defaultGeneratorFunction: field.defaultGeneratorFunction,
-                validationFunctions: field.validationFunctions,
-                exclusionRules: field.exclusionRules,
-                databaseTable: field.databaseTable
-            };
+            processedFields[fieldKey] = {...field};
         }
 
-        // @ts-ignore
-        processedSchema[entityKey as TEntity] = {
-            schemaType: entity.schemaType,
-            defaultFetchStrategy: entity.defaultFetchStrategy,
-            componentProps: entity.componentProps,
-            entityNameFormats,
-            relationships: entity.relationships,
+        // Validate fetch strategy
+        if (!isFetchStrategy(entity.defaultFetchStrategy)) {
+            throw new Error(`Invalid fetch strategy for entity ${entityKey}: ${entity.defaultFetchStrategy}`);
+        }
+
+        // Create the processed entity
+        const processedEntity: AutomationEntity<TEntity> = {
+            schemaType: entity.schemaType as EntitySchemaType<TEntity>,
+            defaultFetchStrategy: entity.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
+            componentProps: entity.componentProps as EntityComponentProps<TEntity>,
+            entityNameFormats: entity.entityNameFormats as EntityNameFormats<TEntity>,
+            relationships: entity.relationships as EntityRelationships<TEntity>,
             entityFields: processedFields
-        } as AutomationEntity<TEntity>;
+        };
+
+        processedSchema[typedEntityKey] = processedEntity;
     }
 
-    return processedSchema;
+    return processedSchema as AutomationEntities;
 }
+
+
+// function normalizeSchema(originalSchema: AutomationEntities) {
+//     const entityNames: EntityNameOfficial[] = [];
+//     const entities: Partial<Record<EntityNameOfficial, SchemaEntity>> = {};
+//     const fields: Record<string, SchemaField> = {};
+//     const fieldsByEntity: Partial<Record<EntityNameOfficial, string[]>> = {};
+//
+//     Object.entries(originalSchema).forEach(([entityName, entityDef]) => {
+//         const entity: SchemaEntity = {
+//             entityName: entityName as EntityNameOfficial,
+//             schemaType: entityDef.schemaType,
+//             defaultFetchStrategy: entityDef.defaultFetchStrategy,
+//             componentProps: entityDef.componentProps,
+//             // Convert readonly array to mutable array
+//             relationships: Array.from(entityDef.relationships) as EntityRelationships<EntityNameOfficial>,
+//         };
+//
+//         entityNames.push(entityName as EntityNameOfficial);
+//         entities[entityName as EntityNameOfficial] = entity;
+//         fieldsByEntity[entityName as EntityNameOfficial] = [];
+//
+//         // Process fields
+//         Object.entries(entityDef.entityFields).forEach(([fieldName, fieldDef]) => {
+//             const fieldId = createFieldId(entityName as EntityNameOfficial, fieldName);
+//
+//             const field: SchemaField = {
+//                 fieldName,
+//                 entityName: entityName as EntityNameOfficial,
+//                 ...fieldDef,
+//                 // Convert readonly arrays to mutable arrays
+//                 validationFunctions: Array.from(fieldDef.validationFunctions),
+//                 exclusionRules: Array.from(fieldDef.exclusionRules),
+//             };
+//
+//             fields[fieldId] = field;
+//             fieldsByEntity[entityName as EntityNameOfficial]?.push(fieldId);
+//         });
+//     });
+//
+//     return {
+//         entityNames,
+//         entities,
+//         fields,
+//         fieldsByEntity,
+//     };
+// }
 
 
 /**
  * Generates the client-side schema bundle
  */
-export function generateClientSchema(): UnifiedSchemaCache {
+export function generateClientGlobalCache(): UnifiedSchemaCache {
     if (!globalCache) throw new Error('Schema system not initialized');
     logSchemaCacheReport(globalCache);
     console.log('Client schema generated successfully');
@@ -151,30 +164,122 @@ function deepCopy<T>(data: T): T {
 
 let globalCache: UnifiedSchemaCache | null = null;
 
-export function initializeSchemaSystem(trace: string[] = ['unknownCaller']): UnifiedSchemaCache {
+export function initializeSchemaSystem<TEntity extends EntityKeys>(
+    trace: string[] = ['unknownCaller']
+): UnifiedSchemaCache {
     trace = [...trace, 'initializeSchemaSystem'];
 
     if (globalCache) {
-        console.log('Reusing existing global cache instance');
         return globalCache;
     }
 
-    const processedSchema = initializeAutomationSchema(initialAutomationTableSchema);
-
-    if (!isInitializedSchema(processedSchema)) {
-        throw new Error('Schema initialization failed: invalid schema structure');
-    }
-
     try {
-        const cache: UnifiedSchemaCache = {
-            schema: processedSchema,
+        // Initialize all caches and mappings
+        const processedSchema: Partial<AutomationEntities> = {};
+        const entityNames: EntityKeys[] = [];
+        const entities: Partial<Record<EntityKeys, SchemaEntity>> = {};
+        const fields: Record<string, SchemaField> = {};
+        const fieldsByEntity: Partial<Record<EntityKeys, string[]>> = {};
+
+        // Initialize reverse mapping objects
+        const entityNameToDatabase = {} as Record<keyof AutomationSchema, string>;
+        const entityNameToBackend = {} as Record<keyof AutomationSchema, string>;
+        const fieldNameToDatabase = {} as Record<keyof AutomationSchema, Record<string, string>>;
+        const fieldNameToBackend = {} as Record<keyof AutomationSchema, Record<string, string>>;
+
+        // First pass: Build name mappings
+        Object.entries(entityNameFormats).forEach(([canonicalName, formats]) => {
+            const typedEntityName = canonicalName as EntityKeys;
+            entityNameToDatabase[typedEntityName] = formats.database;
+            entityNameToBackend[typedEntityName] = formats.backend;
+        });
+
+        Object.entries(fieldNameFormats).forEach(([entityName, fieldFormats]) => {
+            const typedEntityName = entityName as EntityKeys;
+            fieldNameToDatabase[typedEntityName] = {};
+            fieldNameToBackend[typedEntityName] = {};
+
+            Object.entries(fieldFormats).forEach(([fieldName, formats]) => {
+                fieldNameToDatabase[typedEntityName][fieldName] = formats.database;
+                fieldNameToBackend[typedEntityName][fieldName] = formats.backend;
+            });
+        });
+
+        // Second pass: Process schema
+        Object.entries(initialAutomationTableSchema).forEach(([entityName, entityDef]) => {
+            const typedEntityName = entityName as TEntity;
+
+            // Initialize entity level collections
+            entityNames.push(typedEntityName);
+            fieldsByEntity[typedEntityName] = [];
+
+            // Process fields with proper typing
+            const processedFields: Record<
+                EntityFieldKeys<TEntity>,
+                EntityField<TEntity, EntityFieldKeys<TEntity>>
+            > = {};
+
+            // Process entity fields
+            Object.entries(entityDef.entityFields).forEach(([fieldName, fieldDef]) => {
+                const typedFieldName = fieldName as EntityFieldKeys<TEntity>;
+
+                // Process field with complete typing
+                processedFields[typedFieldName] = {
+                    ...fieldDef,
+                    fieldNameFormats: fieldDef.fieldNameFormats as FieldNameFormats<TEntity, typeof typedFieldName>,
+                    validationFunctions: Array.from(fieldDef.validationFunctions),
+                    exclusionRules: Array.from(fieldDef.exclusionRules)
+                } as EntityField<TEntity, typeof typedFieldName>;
+
+                // Create and store normalized field structure
+                const fieldId = createFieldId(typedEntityName, typedFieldName);
+                fields[fieldId] = {
+                    fieldName: typedFieldName,
+                    entityName: typedEntityName,
+                    ...fieldDef,
+                    validationFunctions: Array.from(fieldDef.validationFunctions),
+                    exclusionRules: Array.from(fieldDef.exclusionRules)
+                };
+
+                fieldsByEntity[typedEntityName]?.push(fieldId);
+            });
+
+            // @ts-ignore Create fully typed entity definition
+            entities[typedEntityName] = {
+                entityName: typedEntityName,
+                schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,
+                defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
+                componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
+                relationships: entityDef.relationships as EntityRelationships<TEntity>
+            };
+
+            // @ts-ignore Store processed entity with complete typing
+            processedSchema[typedEntityName] = {
+                schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,
+                defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
+                componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
+                entityNameFormats: entityDef.entityNameFormats as EntityNameFormats<TEntity>,
+                relationships: entityDef.relationships as EntityRelationships<TEntity>,
+                entityFields: processedFields
+            } as AutomationEntity<TEntity>;
+        });
+
+        // Create and store global cache
+        globalCache = {
+            schema: processedSchema as AutomationEntities,
+            entityNames,
+            entities,
+            fields,
+            fieldsByEntity,
             entityNameToCanonical: {...entityNameToCanonical},
             fieldNameToCanonical: {...fieldNameToCanonical},
             entityNameFormats: deepCopy(entityNameFormats),
-            fieldNameFormats: deepCopy(fieldNameFormats)
+            fieldNameFormats: deepCopy(fieldNameFormats),
+            entityNameToDatabase,
+            entityNameToBackend,
+            fieldNameToDatabase,
+            fieldNameToBackend,
         };
-
-        globalCache = cache;
 
         schemaLogger.logResolution({
             resolutionType: 'cache',
@@ -185,7 +290,8 @@ export function initializeSchemaSystem(trace: string[] = ['unknownCaller']): Uni
             trace
         });
 
-        return cache;
+        return globalCache;
+
     } catch (error) {
         schemaLogger.logResolution({
             resolutionType: 'cache',
@@ -198,6 +304,7 @@ export function initializeSchemaSystem(trace: string[] = ['unknownCaller']): Uni
         throw error;
     }
 }
+
 
 /**
  * Force resets the entire cache system (useful for testing)
@@ -752,38 +859,38 @@ export function getEntityName(
 /**
  * Gets a field's name in a specific format
  */
-export function getFieldName(
-    entityNameVariant: AllEntityNameVariations,
-    fieldNameVariant: string,
-    format: keyof FieldNameFormats<EntityKeys, any> = 'frontend'
-): string {
-    if (!globalCache) throw new Error('Schema system not initialized');
-
-    const entityKey = resolveEntityKey(entityNameVariant);
-    const fieldKey = resolveFieldKey(entityKey, fieldNameVariant);
-
-    return globalCache.fieldNameFormats[entityKey]?.[fieldKey]?.[format] || fieldNameVariant;
-}
+// export function getFieldName(
+//     entityNameVariant: AllEntityNameVariations,
+//     fieldNameVariant: string,
+//     format: keyof FieldNameFormats<EntityKeys, any> = 'frontend'
+// ): string {
+//     if (!globalCache) throw new Error('Schema system not initialized');
+//
+//     const entityKey = resolveEntityKey(entityNameVariant);
+//     const fieldKey = resolveFieldKey(entityKey, fieldNameVariant);
+//
+//     return globalCache.fieldNameFormats[entityKey]?.[fieldKey]?.[format] || fieldNameVariant;
+// }
 
 
 /**
  * Strictly typed field name resolution
  */
-export function getFieldNameStrict<
-    TEntity extends EntityKeys,
-    TField extends EntityFieldKeys<TEntity>
->(
-    entityNameVariant: AllEntityNameVariations | TEntity,
-    fieldNameVariant: string,
-    format: keyof FieldNameFormats<TEntity, TField> = 'frontend'
-): string {
-    if (!globalCache) throw new Error('Schema system not initialized');
-
-    const entityKey = resolveEntityKey(entityNameVariant) as TEntity;
-    const fieldKey = resolveFieldKey(entityKey, fieldNameVariant) as TField;
-
-    return globalCache.fieldNameFormats[entityKey]?.[fieldKey]?.[format] || fieldNameVariant;
-}
+// export function getFieldNameStrict<
+//     TEntity extends EntityKeys,
+//     TField extends EntityFieldKeys<TEntity>
+// >(
+//     entityNameVariant: AllEntityNameVariations | TEntity,
+//     fieldNameVariant: string,
+//     format: keyof FieldNameFormats<TEntity, TField> = 'frontend'
+// ): string {
+//     if (!globalCache) throw new Error('Schema system not initialized');
+//
+//     const entityKey = resolveEntityKey(entityNameVariant) as TEntity;
+//     const fieldKey = resolveFieldKey(entityKey, fieldNameVariant) as TField;
+//
+//     return globalCache.fieldNameFormats[entityKey]?.[fieldKey]?.[format] || fieldNameVariant;
+// }
 
 ``
 
@@ -1267,21 +1374,21 @@ export function getField<TEntity extends EntityKeys>(
 /**
  * Get entity relationships
  */
-export function getEntityRelationships<TEntity extends EntityKeys>(
-    entityName: AllEntityNameVariations,
-    trace: string[] = ['unknownCaller']
-): AutomationEntity<TEntity>['relationships'] | null {
-    trace = [...trace, 'getEntityRelationships'];
-
-    const globalCache = getGlobalCache(trace);
-    if (!globalCache) return null;
-
-    const entityKey = getEntityKey(entityName, trace);
-    const entity = globalCache.schema[entityKey];
-    if (!entity) return null;
-
-    return entity.relationships;
-}
+// export function getEntityRelationships<TEntity extends EntityKeys>(
+//     entityName: AllEntityNameVariations,
+//     trace: string[] = ['unknownCaller']
+// ): AutomationEntity<TEntity>['relationships'] | null {
+//     trace = [...trace, 'getEntityRelationships'];
+//
+//     const globalCache = getGlobalCache(trace);
+//     if (!globalCache) return null;
+//
+//     const entityKey = getEntityKey(entityName, trace);
+//     const entity = globalCache.schema[entityKey];
+//     if (!entity) return null;
+//
+//     return entity.relationships;
+// }
 
 /**
  * Check if field exists
@@ -1718,191 +1825,118 @@ export function getEntityFieldListInFormat<TEntity extends EntityKeys>(
 
 
 export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
+    // Flags to control the output sections
+    const showEntities = false;
+    const showFields = false;
+    const showExample = false;
+    const showSummary = true;
+
+    // Flags for sample prints of specific parts of the schema
+    const showEntityNamesSample = false;
+    const showEntitiesSample = false;
+    const showFieldsSample = false;
+    const showFieldsByEntitySample = false;
+    const showEntityNameToCanonicalSample = false;
+    const showFieldNameToCanonicalSample = false;
+    const showEntityNameFormatsSample = false;
+    const showFieldNameFormatsSample = false;
+    const showEntityNameToDatabaseSample = false;
+    const showEntityNameToBackendSample = false;
+    const showFieldNameToDatabaseSample = false;
+    const showFieldNameToBackendSample = false;
+
     if (!globalCache) {
         console.warn('Global cache not initialized. Cannot generate schema report.');
         return;
     }
 
-    console.log('=== Schema Cache Status Report ===\n');
+    console.log('\n=== Schema Cache Report ===\n');
 
-    // Schema Statistics
-    const schemaKeys = Object.keys(globalCache.schema);
-    console.log('Basic Schema Stats:');
-    console.log(`Total Entities: ${schemaKeys.length}`);
-    console.log(`Entities: \n${schemaKeys.join(', ')}\n`);
-
-    // Entity Name Mapping Statistics
-    const entityNameMappings = globalCache.entityNameToCanonical;
-    const entityVariantCount = Object.keys(entityNameMappings).length;
-    console.log('Entity Name Mapping Stats:');
-
-    // Entity Format Statistics
-    const entityFormats = globalCache.entityNameFormats;
-    console.log('Entity Format Stats:');
-    Object.entries(entityFormats).forEach(([entityKey, formats]) => {
-        const fields = Object.keys(formats).join(', ');
-        console.log(`${entityKey}: ${fields}`);
-    });
-    console.log();
-
-    // Field Statistics
-    const fieldMappings = globalCache.fieldNameToCanonical;
-    console.log('Field Mapping Stats:');
-    let totalFieldVariants = 0;
-    let totalFields = 0;
-    Object.entries(fieldMappings).forEach(([entityKey, fields]) => {
-        const fieldCount = Object.keys(fields).length;
-        const variantCount = Object.values(fields).length;
-        totalFieldVariants += variantCount;
-        totalFields += fieldCount;
-        console.log(`${entityKey}: ${fieldCount} fields, ${variantCount} variants`);
-    });
-    console.log(`Total Fields: ${totalFields}`);
-    console.log(`Total Field Variants: ${totalFieldVariants}\n`);
-
-    // Field Format Statistics
-    const fieldFormats = globalCache.fieldNameFormats;
-    console.log('Field Format Stats:');
-    Object.entries(fieldFormats).forEach(([entityKey, fields]) => {
-        console.log(`\n${entityKey}:`);
-        Object.entries(fields).forEach(([fieldKey, formats]) => {
-            const formatCount = Object.keys(formats).length;
-            console.log(`  ${fieldKey}: ${formatCount} formats`);
-        });
-    });
-
-    // Example Entity Detail
-    console.log('\n=== Example Entity Detail: registeredFunction ===');
-    const exampleEntity = globalCache.schema['registeredFunction'];
-    if (exampleEntity) {
-        // Name variations
-        console.log('\nName Variations:');
-        const variants = Object.entries(entityNameMappings)
-            .filter(([_, canonical]) => canonical === 'registeredFunction')
-            .map(([variant]) => variant);
-        console.log('Variants:', variants.join(', '));
-
-        // Format examples
-        console.log('\nFormat Examples:');
-        const formats = entityFormats['registeredFunction'];
-        Object.entries(formats).forEach(([format, value]) => {
-            console.log(`${format}: ${value}`);
-        });
-
-        // Field summary
-        console.log('\nFields Summary:');
-        Object.entries(exampleEntity.entityFields).forEach(([fieldKey, field]) => {
-            const fieldVariants = Object.entries(fieldMappings['registeredFunction'])
-                .filter(([_, canonical]) => canonical === fieldKey)
-                .map(([variant]) => variant);
-
-            const fieldFormatsCount = Object.keys(
-                fieldFormats['registeredFunction'][fieldKey]
-            ).length;
-
-            console.log(`\n${fieldKey}:`);
-            console.log(`  Variants: ${fieldVariants.join(', ')}`);
-            console.log(`  Format Count: ${fieldFormatsCount}`);
-            console.log(`  Type: ${field.typeReference}`);
-            console.log(`  Required: ${field.isRequired}`);
-        });
-    }
-}
-
-
-/*
-export function initializeTableSchema(
-    initialAutomationTableSchema: TableSchemaStructure
-): Record<AutomationTableName, AutomationTable> {
-    const schemaMapping: Record<string, AutomationTable> = {};
-
-    for (const [entityKey, entity] of Object.entries(initialAutomationTableSchema)) {
-        const entityNameMappings: Record<NameFormat, string> = {
-            frontend: entity.entityNameVariations.frontend || entityKey,
-            backend: entity.entityNameVariations.backend || entityKey,
-            database: entity.entityNameVariations.database || entityKey,
-            pretty: entity.entityNameVariations.pretty || entityKey,
-            component: entity.entityNameVariations.component || entityKey,
-            sqlFunctionRef: entity.entityNameVariations.sqlFunctionRef || entityKey,
-            kebab: entity.entityNameVariations.kebab || entityKey,
-            ...(entity.entityNameVariations.RestAPI && {RestAPI: entity.entityNameVariations.RestAPI}),
-            ...(entity.entityNameVariations.GraphQL && {GraphQL: entity.entityNameVariations.GraphQL}),
-            ...(entity.entityNameVariations.custom && {custom: entity.entityNameVariations.custom})
-        };
-        for (const [key, value] of Object.entries(entity.entityNameVariations)) {
-            if (!entityNameMappings[key as NameFormat]) {
-                entityNameMappings[key] = value || entityKey;
-            }
+    // Example schema entry for 'registeredFunction'
+    if (showExample) {
+        const exampleEntity = globalCache.schema['registeredFunction'];
+        if (exampleEntity) {
+            console.log('\n=== Example Entity Detail: registeredFunction ===');
+            console.log(JSON.stringify(exampleEntity, null, 2));
+        } else {
+            console.log('\nNo entry found for entity: registeredFunction');
         }
+    }
 
-        const updatedFields: Record<string, any> = {};
+    // Print entities and their fields
+    if (showEntities || showFields) {
+        console.log('Entities and Fields:');
+        Object.entries(globalCache.schema).forEach(([entityName, entity]) => {
+            if (showEntities) {
+                console.log(`\n${entity.entityNameFormats.pretty} [${entityName}]`);
+            }
 
-        for (const [fieldKey, field] of Object.entries(entity.entityFields)) {
-            const fieldNameMappings: Record<NameFormat | string, string> = {
-                frontend: field.fieldNameVariations.frontend || fieldKey,
-                backend: field.fieldNameVariations.backend || fieldKey,
-                database: field.fieldNameVariations.database || fieldKey,
-                pretty: field.fieldNameVariations.pretty || fieldKey,
-                component: field.fieldNameVariations.component || fieldKey,
-                sqlFunctionRef: field.fieldNameVariations.sqlFunctionRef || fieldKey,
-                kebab: field.fieldNameVariations.kebab || fieldKey,
-                ...(field.fieldNameVariations.RestAPI && {RestAPI: field.fieldNameVariations.RestAPI}),
-                ...(field.fieldNameVariations.GraphQL && {GraphQL: field.fieldNameVariations.GraphQL}),
-                ...(field.fieldNameVariations.custom && {custom: field.fieldNameVariations.custom})
-            };
-
-            for (const [key, value] of Object.entries(field.fieldNameVariations)) {
-                if (!fieldNameMappings[key as NameFormat]) {
-                    fieldNameMappings[key] = value || fieldKey;
+            if (showFields && entity.entityFields) {
+                const fieldNames = Object.keys(entity.entityFields);
+                if (fieldNames.length > 0) {
+                    const prettyFieldNames = fieldNames.map(fieldName => {
+                        const field = entity.entityFields[fieldName];
+                        return `   - ${field.fieldNameFormats.pretty} [${fieldName}]`;
+                    });
+                    prettyFieldNames.forEach(prettyFieldName => console.log(prettyFieldName));
+                } else {
+                    console.log('   No fields available');
                 }
             }
-
-            let enumValues: string[] | null = null;
-            const {typeReference} = field;
-
-            if (typeof typeReference === 'object' && Object.keys(typeReference).length > 0) {
-                enumValues = (Object.keys(typeReference) as (keyof typeof typeReference)[]).filter(key => key !== '_typeBrand');
-            } else {
-                enumValues = null;
-            }
-
-
-            updatedFields[fieldKey] = {
-                fieldNameMappings: fieldNameMappings,
-                value: field.defaultValue,
-                dataType: field.dataType,
-                isArray: field.isArray,
-                structure: field.structure,
-                isNative: field.isNative,
-                typeReference: field.typeReference,
-                enumValues: enumValues,
-                defaultComponent: field.defaultComponent,
-                componentProps: field.componentProps,
-                isRequired: field.isRequired,
-                maxLength: field.maxLength,
-                defaultValue: field.defaultValue,
-                isPrimaryKey: field.isPrimaryKey,
-                isDisplayField: field.isDisplayField,
-                defaultGeneratorFunction: field.defaultGeneratorFunction,
-                validationFunctions: field.validationFunctions,
-                exclusionRules: field.exclusionRules,
-                databaseTable: field.databaseTable
-            };
-            console.log('Added field:', fieldKey, updatedFields[fieldKey]);
-        }
-
-        schemaMapping[entityKey] = {
-            schemaType: entity.schemaType,
-            entityNameMappings: entityNameMappings,
-            entityFields: updatedFields,
-            defaultFetchStrategy: entity.defaultFetchStrategy,
-            componentProps: entity.componentProps,
-            relationships: entity.relationships
-        };
-        // console.log('Added schema for:', entityKey, schemaMapping[entityKey]);
+        });
     }
 
-    return schemaMapping;
+    // Sample prints for each part of the schema
+    if (showEntityNamesSample) {
+        console.log('\nSample Entity Names:', JSON.stringify(globalCache.entityNames.slice(0, 5), null, 2));
+    }
+    if (showEntitiesSample) {
+        console.log('\nSample Entities:', JSON.stringify(Object.keys(globalCache.entities).slice(0, 5), null, 2));
+    }
+    if (showFieldsSample) {
+        console.log('\nSample Fields:', JSON.stringify(Object.keys(globalCache.fields).slice(0, 5), null, 2));
+    }
+    if (showFieldsByEntitySample) {
+        console.log('\nSample Fields by Entity:', JSON.stringify(Object.keys(globalCache.fieldsByEntity).slice(0, 5), null, 2));
+    }
+    if (showEntityNameToCanonicalSample) {
+        console.log('\nSample Entity Name to Canonical Mapping:', JSON.stringify(Object.entries(globalCache.entityNameToCanonical).slice(0, 5), null, 2));
+    }
+    if (showFieldNameToCanonicalSample) {
+        console.log('\nSample Field Name to Canonical Mapping:', JSON.stringify(Object.entries(globalCache.fieldNameToCanonical).slice(0, 5), null, 2));
+    }
+    if (showEntityNameFormatsSample) {
+        console.log('\nSample Entity Name Formats:', JSON.stringify(Object.entries(globalCache.entityNameFormats).slice(0, 5), null, 2));
+    }
+    if (showFieldNameFormatsSample) {
+        console.log('\nSample Field Name Formats:', JSON.stringify(Object.entries(globalCache.fieldNameFormats).slice(0, 5), null, 2));
+    }
+    if (showEntityNameToDatabaseSample) {
+        console.log('\nSample Entity Name to Database Mapping:', JSON.stringify(Object.entries(globalCache.entityNameToDatabase).slice(0, 5), null, 2));
+    }
+    if (showEntityNameToBackendSample) {
+        console.log('\nSample Entity Name to Backend Mapping:', JSON.stringify(Object.entries(globalCache.entityNameToBackend).slice(0, 5), null, 2));
+    }
+    if (showFieldNameToDatabaseSample) {
+        console.log('\nSample Field Name to Database Mapping:', JSON.stringify(Object.entries(globalCache.fieldNameToDatabase).slice(0, 5), null, 2));
+    }
+    if (showFieldNameToBackendSample) {
+        console.log('\nSample Field Name to Backend Mapping:', JSON.stringify(Object.entries(globalCache.fieldNameToBackend).slice(0, 5), null, 2));
+    }
+
+    // console.log('\nComplete entityNames:', JSON.stringify(globalCache.entityNames, null, 2));
+    // console.log('\nComplete entities:', JSON.stringify(globalCache.entities, null, 2));
+    // console.log('\nComplete fields:', JSON.stringify(globalCache.fields, null, 2));
+    // console.log('\nComplete fieldsByEntity:', JSON.stringify(globalCache.fieldsByEntity, null, 2));
+    // console.log('\nComplete entityNameToCanonical:', JSON.stringify(globalCache.entityNameToCanonical, null, 2));
+    // console.log('\nComplete fieldNameToCanonical:', JSON.stringify(globalCache.fieldNameToCanonical, null, 2));
+
+    if (showSummary) {
+        console.log();
+        console.log(`Total Schema Entries: ${Object.keys(globalCache.schema).length}`);
+        console.log(`Total Entity Names: ${globalCache.entityNames.length}`);
+        console.log(`Total Entities: ${Object.keys(globalCache.entities).length}`);
+        console.log(`Total Fields: ${Object.keys(globalCache.fields).length}\n`);
+    }
 }
-*/
 

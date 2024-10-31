@@ -1,6 +1,20 @@
-// features/combined_test/newRedux/reduxTypes.ts
-
+// types/reduxTypes.ts
 import { Database } from '@/types/matrixDb.types';
+import {TestDirectory} from "@/utils/directoryStructure";
+import {UnifiedSchemaCache} from "@/types/entityTypes";
+import {UserData} from "@/utils/userDataMapper";
+
+export interface InitialReduxState {
+    user: UserData;
+    testRoutes: TestDirectory[];
+    userPreferences: Record<string, any>;
+    globalCache: UnifiedSchemaCache;
+}
+
+
+
+
+
 
 export type Id = string;
 export type Page = number;

@@ -5,17 +5,17 @@ import createSagaMiddleware from 'redux-saga';
 import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
 import {loggerMiddleware} from '@/lib/logger/redux-middleware';
 import {createRootReducer} from "@/lib/redux/rootReducer";
+import {InitialReduxState} from "@/types/reduxTypes";
 
 
 const sagaMiddleware = createSagaMiddleware();
 
-
-export const makeStore = (initialState?: any) => {
-    if (!initialState?.schema?.schema) {
+export const makeStore = (initialState?: InitialReduxState) => {
+    if (!initialState?.globalCache?.schema) {
         throw new Error('Schema must be provided to create store');
     }
 
-    const rootReducer = createRootReducer(initialState.schema.schema);
+    const rootReducer = createRootReducer(initialState);
 
     const store = configureStore({
         reducer: rootReducer,
@@ -23,18 +23,14 @@ export const makeStore = (initialState?: any) => {
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
-                    ignoredPaths: ['schema.schema']
+                    ignoredPaths: ['globalCache.schema']
                 }
             }).concat(sagaMiddleware, loggerMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
 
-    if (initialState.schema.schema) {
-        const rootSagaInstance = createRootSaga(initialState.schema.schema);
-        sagaMiddleware.run(rootSagaInstance);
-    } else {
-        throw new Error('Schema must be provided to create store');
-    }
+    const rootSagaInstance = createRootSaga(initialState.globalCache.entityNames);
+    sagaMiddleware.run(rootSagaInstance);
 
     return store;
 };

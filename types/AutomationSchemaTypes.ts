@@ -1,7 +1,5 @@
 // File: types/AutomationSchemaTypes.ts
-
-
-import {AutomationTableStructure} from "@/types/automationTableTypes";
+import {AutomationEntity} from "@/types/entityTypes";
 
 export type TypeBrand<T> = { _typeBrand: T };
 
@@ -124,34 +122,34 @@ export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
 // export type SchemaEntityKeys = keyof ProcessedSchema;
 
-export type ActionType = AutomationTableStructure["action"];
-export type AiEndpointType = AutomationTableStructure["aiEndpoint"];
-export type AiModelType = AutomationTableStructure["aiModel"];
-export type ArgType = AutomationTableStructure["arg"];
-export type AutomationBoundaryBrokerType = AutomationTableStructure["automationBoundaryBroker"];
-export type AutomationMatrixType = AutomationTableStructure["automationMatrix"];
-export type BrokerType = AutomationTableStructure["broker"];
-export type DataInputComponentType = AutomationTableStructure["dataInputComponent"];
-export type DataOutputComponentType = AutomationTableStructure["dataOutputComponent"];
-export type DisplayOptionType = AutomationTableStructure["displayOption"];
-export type EmailsType = AutomationTableStructure["emails"];
-export type ExtractorType = AutomationTableStructure["extractor"];
-export type FlashcardDataType = AutomationTableStructure["flashcardData"];
-export type FlashcardHistoryType = AutomationTableStructure["flashcardHistory"];
-export type FlashcardImagesType = AutomationTableStructure["flashcardImages"];
-export type FlashcardSetRelationsType = AutomationTableStructure["flashcardSetRelations"];
-export type FlashcardSetsType = AutomationTableStructure["flashcardSets"];
-export type ProcessorType = AutomationTableStructure["processor"];
-export type RecipeType = AutomationTableStructure["recipe"];
-export type RecipeBrokerType = AutomationTableStructure["recipeBroker"];
-export type RecipeDisplayType = AutomationTableStructure["recipeDisplay"];
-export type RecipeFunctionType = AutomationTableStructure["recipeFunction"];
-export type RecipeModelType = AutomationTableStructure["recipeModel"];
-export type RecipeProcessorType = AutomationTableStructure["recipeProcessor"];
-export type RecipeToolType = AutomationTableStructure["recipeTool"];
-export type RegisteredFunctionType = AutomationTableStructure["registeredFunction"];
-export type SystemFunctionType = AutomationTableStructure["systemFunction"];
-export type ToolType = AutomationTableStructure["tool"];
-export type TransformerType = AutomationTableStructure["transformer"];
-export type UserPreferencesType = AutomationTableStructure["userPreferences"];
+export type ActionType = AutomationEntity<"action">;
+export type AiEndpointType = AutomationEntity<"aiEndpoint">;
+export type AiModelType = AutomationEntity<"aiModel">;
+export type ArgType = AutomationEntity<"arg">;
+export type AutomationBoundaryBrokerType = AutomationEntity<"automationBoundaryBroker">;
+export type AutomationMatrixType = AutomationEntity<"automationMatrix">;
+export type BrokerType = AutomationEntity<"broker">;
+export type DataInputComponentType = AutomationEntity<"dataInputComponent">;
+export type DataOutputComponentType = AutomationEntity<"dataOutputComponent">;
+export type DisplayOptionType = AutomationEntity<"displayOption">;
+export type EmailsType = AutomationEntity<"emails">;
+export type ExtractorType = AutomationEntity<"extractor">;
+export type FlashcardDataType = AutomationEntity<"flashcardData">;
+export type FlashcardHistoryType = AutomationEntity<"flashcardHistory">;
+export type FlashcardImagesType = AutomationEntity<"flashcardImages">;
+export type FlashcardSetRelationsType = AutomationEntity<"flashcardSetRelations">;
+export type FlashcardSetsType = AutomationEntity<"flashcardSets">;
+export type ProcessorType = AutomationEntity<"processor">;
+export type RecipeType = AutomationEntity<"recipe">;
+export type RecipeBrokerType = AutomationEntity<"recipeBroker">;
+export type RecipeDisplayType = AutomationEntity<"recipeDisplay">;
+export type RecipeFunctionType = AutomationEntity<"recipeFunction">;
+export type RecipeModelType = AutomationEntity<"recipeModel">;
+export type RecipeProcessorType = AutomationEntity<"recipeProcessor">;
+export type RecipeToolType = AutomationEntity<"recipeTool">;
+export type RegisteredFunctionType = AutomationEntity<"registeredFunction">;
+export type SystemFunctionType = AutomationEntity<"systemFunction">;
+export type ToolType = AutomationEntity<"tool">;
+export type TransformerType = AutomationEntity<"transformer">;
+export type UserPreferencesType = AutomationEntity<"userPreferences">;
 

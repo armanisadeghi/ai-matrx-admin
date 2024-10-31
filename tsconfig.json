@@ -16,8 +16,12 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "/*": ["public/*"]
+      "@/*": [
+        "./*"
+      ],
+      "/*": [
+        "public/*"
+      ]
     },
     "incremental": true,
     "isolatedModules": true,
@@ -46,6 +50,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "tests/**/*",
+    "scripts/**/*",
     "node_modules/flowbite-react/lib/esm/index.d.ts",
     "global.d.ts",
     "cartesia.d.ts"
@@ -56,10 +61,19 @@
     "_dev"
   ],
   "ts-node": {
-    "require": ["tsconfig-paths/register"],
+    "require": [
+      "tsconfig-paths/register"
+    ],
     "transpileOnly": true,
     "compilerOptions": {
-      "module": "commonjs"
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": [
+          "./*"
+        ]
+      }
     }
   }
 }

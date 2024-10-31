@@ -33,7 +33,7 @@ export type EntityKeys = keyof AutomationSchema;
  * }
  */
 export type EntityNameFormats<TEntity extends EntityKeys> =
-    AutomationSchema[TEntity]['entityNameVariations'];
+    AutomationSchema[TEntity]['entityNameFormats'];
 
 /**
  * Gets a specific format variation for an entity
@@ -94,7 +94,7 @@ export type EntityFieldKeys<TEntity extends keyof AutomationSchema> =
 export type FieldNameFormats<
     TEntity extends EntityKeys,
     TField extends EntityFieldKeys<TEntity>
-> = AutomationSchema[TEntity]['entityFields'][TField]['fieldNameVariations'];
+> = AutomationSchema[TEntity]['entityFields'][TField]['fieldNameFormats'];
 
 /**
  * Gets a specific format variation for a field
@@ -278,22 +278,63 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
 };
 
 /**
- * Entity-level type definitions
+ * Define the base relationship structure
+ */
+export interface Relationship {
+    relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
+    column: string;
+    relatedTable: string;
+    relatedColumn: string;
+    junctionTable: string | null;
+}
+
+/**
+ * Type for an array of relationships or empty array
+ */
+export type RelationshipArray = readonly Relationship[] | readonly [];
+
+/**
+ * Entity-level relationships type that preserves the exact structure from the schema
  */
 export type EntityRelationships<TEntity extends EntityKeys> =
-    AutomationSchema[TEntity]['relationships'];
+    Extract<AutomationSchema[TEntity]['relationships'], RelationshipArray>;
+
 
 export type EntitySchemaType<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['schemaType'];
 
+/**
+ * Entity-specific fetch strategy that preserves the schema relationship
+ */
 export type EntityDefaultFetchStrategy<TEntity extends EntityKeys> =
-    AutomationSchema[TEntity]['defaultFetchStrategy'];
+    Extract<AutomationSchema[TEntity]['defaultFetchStrategy'], FetchStrategy>;
+
+/**
+ * Type guard to ensure fetch strategy is valid
+ */
+export function isFetchStrategy(value: unknown): value is FetchStrategy {
+    const validStrategies: readonly string[] = [
+        'simple',
+        'fk',
+        'ifk',
+        'm2m',
+        'fkAndIfk',
+        'm2mAndFk',
+        'm2mAndIfk',
+        'fkIfkAndM2M',
+        'none'
+    ] as const;
+
+    return typeof value === 'string' && validStrategies.includes(value);
+}
+
 
 export type EntityComponentProps<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['componentProps'];
 
 
 type test14 = EntityDefaultFetchStrategy<'registeredFunction'>; // Shows default fetch strategy for an entity
+type test15 = EntityRelationships<'registeredFunction'>; // Shows default fetch strategy for an entity
 
 
 // ========== Potential Simplified Schema ==========
@@ -354,13 +395,26 @@ export type AutomationEntities = {
 };
 
 
-export type UnifiedSchemaCache = {
+export type EntityNameDatabaseMap = Record<EntityNameOfficial, string>;
+export type EntityNameBackendMap = Record<EntityNameOfficial, string>;
+export type FieldNameDatabaseMap = Record<EntityNameOfficial, Record<string, string>>;
+export type FieldNameBackendMap = Record<EntityNameOfficial, Record<string, string>>;
+
+export interface UnifiedSchemaCache {
     schema: AutomationEntities;
-    entityNameToCanonical: EntityNameToCanonicalMap
-    fieldNameToCanonical: FieldNameToCanonicalMap
-    entityNameFormats: EntityNameFormatMap
-    fieldNameFormats: FieldNameFormatMap
-};
+    entityNames: EntityKeys[];
+    entities: Partial<Record<EntityKeys, SchemaEntity>>;
+    fields: Record<string, SchemaField>;
+    fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
+    entityNameToCanonical: Record<string, EntityKeys>;
+    fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
+    entityNameFormats: Record<EntityKeys, Record<string, string>>;
+    fieldNameFormats: Record<EntityKeys, Record<string, Record<string, string>>>;
+    entityNameToDatabase: Record<EntityKeys, string>;
+    entityNameToBackend: Record<EntityKeys, string>;
+    fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
+    fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
+}
 
 
 /**
@@ -472,8 +526,8 @@ export type DataFormat = typeof FORMAT_KEYS[number];
  * Brand interface for format-specific types
  */
 export interface FormatBrand<T extends Record<string, unknown>, F extends DataFormat> {
-    readonly __format: F;
-    readonly data: T;
+     __format: F;
+     data: T;
 }
 
 /**
@@ -646,12 +700,12 @@ type EntitySliceState<TEntity extends EntityKeys> = {
  */
 export type EntityData<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-                                                                  ? TField
-                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+      ? TField
+      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-                                                                  ? TField
-                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+      ? TField
+      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;
@@ -673,6 +727,7 @@ type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 
 import {Draft} from 'immer';
+import {EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true

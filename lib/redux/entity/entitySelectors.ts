@@ -8,7 +8,7 @@ import {EntitySliceState} from "@/lib/redux/entity/entitySliceCreator";
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
 
     const getEntityState = (state: RootState): EntitySliceState<TEntity> => {
-        return state[entityKey] as EntitySliceState<TEntity>;
+        return state.entities[entityKey] as EntitySliceState<TEntity>;
     };
 
     const getData = createSelector([getEntityState], (state) => {

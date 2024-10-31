@@ -1,20 +1,14 @@
 // lib/redux/sagas/SagaCoordinator.ts
 
 import { channel, Channel } from 'redux-saga';
-import {all, call, select} from 'redux-saga/effects';
+import { all, call, select } from 'redux-saga/effects';
 import { createEntitySaga } from '../entity/entitySagas';
-import { UnifiedSchemaCache } from "@/types/entityTypes";
-import {
-    getSchema,
-    selectConvertEntityName,
-    selectConvertFieldNames,
-    selectConvertEntityNameFormat,
-    selectConvertFieldNameFormat
-} from '@/lib/redux/selectors/schemaSelectors';
+import { EntityKeys, UnifiedSchemaCache } from "@/types/entityTypes";
 
 export class SagaCoordinator {
     private static instance: SagaCoordinator | null = null;
     private coordinationChannel: Channel<any>;
+    private entityNames: EntityKeys[] = [];
 
     private constructor() {
         this.coordinationChannel = channel();
@@ -24,7 +18,13 @@ export class SagaCoordinator {
         if (!SagaCoordinator.instance) {
             SagaCoordinator.instance = new SagaCoordinator();
         }
+        console.log('SagaCoordinator returning instance');
         return SagaCoordinator.instance;
+    }
+
+    setEntityNames(entityNames: EntityKeys[]) {
+        console.log('Setting entity names...');
+        this.entityNames = entityNames;
     }
 
     getChannel(): Channel<any> {
@@ -32,13 +32,12 @@ export class SagaCoordinator {
     }
 
     *initializeEntitySagas() {
-        const schema: UnifiedSchemaCache = yield select(getSchema);
+        const sagas = this.entityNames.map((entityKey) => {
+            const saga = createEntitySaga(entityKey);
+            // console.log('Creating saga for entity:', entityKey);
+            return call(saga);
+        });
 
-        for (const entityKey of Object.keys(schema.schema)) {
-            const entitySchema = schema.schema[entityKey];
-
-            const saga = createEntitySaga(entityKey as keyof typeof schema.schema, entitySchema);
-            yield call(saga);
-        }
+        yield all(sagas);
     }
 }

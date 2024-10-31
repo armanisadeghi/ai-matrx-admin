@@ -1,9 +1,9 @@
 // File: lib/schemaUtils.ts
 
 import {v4 as uuidv4} from "uuid";
-import {AutomationTableName, NameFormat} from "@/types/AutomationSchemaTypes";
+import {AutomationTableName, FieldDataOptionsType, NameFormat} from "@/types/AutomationSchemaTypes";
 import {getGlobalCache} from "@/utils/schema/precomputeUtil";
-import {AutomationTable, resolveTableName} from "@/types/automationTableTypes";
+
 import {FieldDataType} from "@/types/entityTypes";
 import {
     entityNameFormats,
@@ -71,8 +71,8 @@ export function convertData<T extends AutomationTableName>(
 
     // Process fields based on schema
     Object.entries(schema.entityFields).forEach(([fieldName, field]) => {
-        const sourceKey = field.fieldNameVariations[sourceFormat];
-        const targetKey = field.fieldNameVariations[targetFormat];
+        const sourceKey = field.fieldNameFormats[sourceFormat];
+        const targetKey = field.fieldNameFormats[targetFormat];
 
         if (sourceKey && targetKey && sourceKey in data) {
             let value = data[sourceKey];
@@ -192,7 +192,7 @@ function handleSingleNestedItem(
 }
 
 // Value conversion with proper typing
-export function convertValue(value: DataValue, dataType: FieldDataType): DataValue {
+export function convertValue(value: DataValue, dataType: FieldDataOptionsType): DataValue {
     if (value === null || value === undefined) {
         return value;
     }

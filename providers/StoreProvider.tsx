@@ -6,6 +6,7 @@ import { useRef, useEffect } from 'react'
 import { Provider } from 'react-redux'
 import { AppStore, makeStore } from "@/lib/redux/store";
 import { loadPreferences } from '@/lib/redux/middleware/preferencesMiddleware';
+import {InitialReduxState} from "@/types/reduxTypes";
 
 export default function StoreProvider(
     {
@@ -13,7 +14,7 @@ export default function StoreProvider(
         initialState
     }: {
         children: React.ReactNode,
-        initialState?: any
+        initialState?: InitialReduxState
     }) {
     const storeRef = useRef<AppStore>()
     if (!storeRef.current) {

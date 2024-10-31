@@ -4,7 +4,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './dynamic/featureSchema';
 import { createFeatureSlice } from './slices/featureSliceCreator';
 import { createModuleSlice } from './slices/moduleSliceCreator';
-import schemaReducer from './slices/schemaSlice'
+import schemaReducer from './slices/globalCacheSlice'
 import { moduleSchemas, ModuleName } from './dynamic/moduleSchema';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
@@ -16,6 +16,7 @@ import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
 import {createEntitySlice} from "@/lib/redux/entity/entitySliceCreator";
 import {AutomationEntities, EntityKeys} from "@/types/entityTypes";
+import {InitialReduxState} from "@/types/reduxTypes";
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -41,13 +42,12 @@ function createAutomationEntityReducers(automationEntities: AutomationEntities):
     }, {} as EntityReducers);
 }
 
-export const createRootReducer = (automationEntities: AutomationEntities) => {
-    const entityReducers = createAutomationEntityReducers(automationEntities);
+export const createRootReducer = (initialState: InitialReduxState) => {
+    const entityReducers = createAutomationEntityReducers(initialState.globalCache.schema);
 
     return combineReducers({
         ...featureReducers,
         ...moduleReducers,
-        ...entityReducers,
         entities: combineReducers(entityReducers),
         layout: layoutReducer,
         theme: themeReducer,
@@ -57,6 +57,6 @@ export const createRootReducer = (automationEntities: AutomationEntities) => {
         testRoutes: testRoutesReducer,
         flashcardChat: flashcardChatReducer,
         aiChat: aiChatReducer,
-        schema: schemaReducer,
+        globalCache: schemaReducer,
     });
 };

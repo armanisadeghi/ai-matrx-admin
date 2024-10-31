@@ -1,12 +1,13 @@
 import {createContext, useContext, useRef} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import {
-    AllEntityNameVariations, AllFieldNameVariations, assertFormat,
+    AllEntityNameVariations, AllFieldNameVariations, assertFormat, AutomationEntities,
     AutomationEntity, createFormattedRecord,
     DataFormat, DefaultGenerators, EntityField, EntityFieldKeys,
     EntityKeys, EntityNameFormat, EntityRecord, FieldNameFormat, FieldNameFormats, FormattedEntitySchema,
     UnifiedSchemaCache
 } from "@/types/entityTypes";
+import {SchemaEntity, SchemaField} from "@/types/schema";
 
 type SchemaContextType = UnifiedSchemaCache;
 
@@ -46,7 +47,15 @@ export function useSchemaResolution() {
         entityNameToCanonical,
         fieldNameToCanonical,
         entityNameFormats,
-        fieldNameFormats
+        fieldNameFormats,
+        entityNames,
+        entities,
+        fields,
+        fieldsByEntity,
+        entityNameToDatabase,
+        entityNameToBackend,
+        fieldNameToDatabase,
+        fieldNameToBackend,
     } = useSchema();
 
     /**
@@ -65,7 +74,7 @@ export function useSchemaResolution() {
             if (!prettyName) {
                 throw new Error(`Pretty name not found for entity key: ${entityKey}`);
             }
-            return { entityKey: entityKey as EntityKeys, pretty: prettyName };
+            return {entityKey: entityKey as EntityKeys, pretty: prettyName};
         });
     };
 
@@ -248,6 +257,7 @@ export function useSchemaResolution() {
             );
         }
 
+        // @ts-ignore
         return fieldNameFormats[entityKey][fieldKey][format];
     };
 

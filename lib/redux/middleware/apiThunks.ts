@@ -114,7 +114,7 @@ export const createApiThunks = <T extends z.ZodTypeAny>(featureName: FeatureName
                 if (error) throw error;
                 const validatedData = paginatedResponseSchema.parse(data);
 
-                // TODO: For now, returning only validated Data because normalized data will probably require changing to a Saga.
+                // For now, returning only validated Data because normalized data will probably require changing to a Saga.
                 const normalizedData = normalizer.normalizeMany(validatedData.paginatedData);
 
                 return validatedData;

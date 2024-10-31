@@ -10,7 +10,7 @@ import {
 
 export const initialAutomationTableSchema = {
     action: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "action",
             "backend": "action",
             "database": "action",
@@ -25,7 +25,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -61,10 +61,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'action',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -100,10 +101,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'action',
             },
             matrix: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "matrix",
                     "backend": "matrix",
                     "database": "matrix",
@@ -139,10 +141,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'action',
             },
             transformer: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "transformer",
                     "backend": "transformer",
                     "database": "transformer",
@@ -178,10 +181,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'action',
             },
             nodeType: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "nodeType",
                     "backend": "node_type",
                     "database": "node_type",
@@ -217,10 +221,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'action',
             },
             referenceId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "referenceId",
                     "backend": "reference_id",
                     "database": "reference_id",
@@ -256,10 +261,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'action',
             },
             automationMatrixReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "automationMatrixReference",
                     "backend": "automation_matrix_reference",
                     "database": "ref_automation_matrix",
@@ -287,7 +293,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'automation_matrix',
             },
             transformerReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "transformerReference",
                     "backend": "transformer_reference",
                     "database": "ref_transformer",
@@ -345,7 +351,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     aiEndpoint: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "aiEndpoint",
             "backend": "ai_endpoint",
             "database": "ai_endpoint",
@@ -360,7 +366,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -396,10 +402,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -435,10 +442,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
             provider: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "provider",
                     "backend": "provider",
                     "database": "provider",
@@ -474,10 +482,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -513,10 +522,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
             additionalCost: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "additionalCost",
                     "backend": "additional_cost",
                     "database": "additional_cost",
@@ -552,10 +562,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
             costDetails: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "costDetails",
                     "backend": "cost_details",
                     "database": "cost_details",
@@ -591,10 +602,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
             params: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "params",
                     "backend": "params",
                     "database": "params",
@@ -630,6 +642,7 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'ai_endpoint',
             },
         },
@@ -648,7 +661,7 @@ export const initialAutomationTableSchema = {
         relationships: [],
     },
     aiModel: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "aiModel",
             "backend": "ai_model",
             "database": "ai_model",
@@ -663,7 +676,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -699,10 +712,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -738,10 +752,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             commonName: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "commonName",
                     "backend": "common_name",
                     "database": "common_name",
@@ -777,10 +792,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             modelClass: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "modelClass",
                     "backend": "model_class",
                     "database": "model_class",
@@ -816,10 +832,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             provider: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "provider",
                     "backend": "provider",
                     "database": "provider",
@@ -855,10 +872,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             endpoints: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "endpoints",
                     "backend": "endpoints",
                     "database": "endpoints",
@@ -894,10 +912,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             contextWindow: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "contextWindow",
                     "backend": "context_window",
                     "database": "context_window",
@@ -933,10 +952,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             maxTokens: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "maxTokens",
                     "backend": "max_tokens",
                     "database": "max_tokens",
@@ -972,10 +992,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             capabilities: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "capabilities",
                     "backend": "capabilities",
                     "database": "capabilities",
@@ -1011,10 +1032,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             controls: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "controls",
                     "backend": "controls",
                     "database": "controls",
@@ -1050,10 +1072,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'ai_model',
             },
             recipeModelInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeModelInverse",
                     "backend": "recipe_model_Inverse",
                     "database": "ifk_recipe_model",
@@ -1111,7 +1134,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     arg: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "arg",
             "backend": "arg",
             "database": "arg",
@@ -1126,7 +1149,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -1162,10 +1185,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'arg',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -1201,10 +1225,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'arg',
             },
             required: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "required",
                     "backend": "required",
                     "database": "required",
@@ -1240,10 +1265,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'arg',
             },
             default: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "default",
                     "backend": "default",
                     "database": "default",
@@ -1279,10 +1305,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'arg',
             },
             dataType: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "dataType",
                     "backend": "data_type",
                     "database": "data_type",
@@ -1318,10 +1345,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined>,
+                enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
                 databaseTable: 'arg',
             },
             ready: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "ready",
                     "backend": "ready",
                     "database": "ready",
@@ -1357,10 +1385,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'arg',
             },
             registeredFunction: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "registeredFunction",
                     "backend": "registered_function",
                     "database": "registered_function",
@@ -1396,10 +1425,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'arg',
             },
             registeredFunctionReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "registeredFunctionReference",
                     "backend": "registered_function_reference",
                     "database": "ref_registered_function",
@@ -1450,7 +1480,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     automationBoundaryBroker: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "automationBoundaryBroker",
             "backend": "automation_boundary_broker",
             "database": "automation_boundary_broker",
@@ -1465,7 +1495,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -1501,10 +1531,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'automation_boundary_broker',
             },
             matrix: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "matrix",
                     "backend": "matrix",
                     "database": "matrix",
@@ -1540,10 +1571,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'automation_boundary_broker',
             },
             broker: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "broker",
                     "backend": "broker",
                     "database": "broker",
@@ -1579,10 +1611,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'automation_boundary_broker',
             },
             sparkSource: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sparkSource",
                     "backend": "spark_source",
                     "database": "spark_source",
@@ -1618,10 +1651,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api" | "chance" | "database" | "environment" | "file" | "function" | "generated_data" | "none" | "user_input" | undefined>,
+                enumValues: ['api', 'chance', 'database', 'environment', 'file', 'function', 'generated_data', 'none', 'user_input'] as const,
                 databaseTable: 'automation_boundary_broker',
             },
             beaconDestination: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "beaconDestination",
                     "backend": "beacon_destination",
                     "database": "beacon_destination",
@@ -1657,10 +1691,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api_response" | "database" | "file" | "function" | "user_output" | undefined>,
+                enumValues: ['api_response', 'database', 'file', 'function', 'user_output'] as const,
                 databaseTable: 'automation_boundary_broker',
             },
             brokerReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "brokerReference",
                     "backend": "broker_reference",
                     "database": "ref_broker",
@@ -1688,7 +1723,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'broker',
             },
             automationMatrixReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "automationMatrixReference",
                     "backend": "automation_matrix_reference",
                     "database": "ref_automation_matrix",
@@ -1746,7 +1781,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     automationMatrix: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "automationMatrix",
             "backend": "automation_matrix",
             "database": "automation_matrix",
@@ -1761,7 +1796,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -1797,10 +1832,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'automation_matrix',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -1836,10 +1872,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'automation_matrix',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -1875,10 +1912,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'automation_matrix',
             },
             averageSeconds: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "averageSeconds",
                     "backend": "average_seconds",
                     "database": "average_seconds",
@@ -1914,10 +1952,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'automation_matrix',
             },
             isAutomated: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "isAutomated",
                     "backend": "is_automated",
                     "database": "is_automated",
@@ -1953,10 +1992,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'automation_matrix',
             },
             cognitionMatrices: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "cognitionMatrices",
                     "backend": "cognition_matrices",
                     "database": "cognition_matrices",
@@ -1992,10 +2032,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"agent_crew" | "agent_mixture" | "conductor" | "hypercluster" | "knowledge_matrix" | "monte_carlo" | "the_matrix" | "workflow" | undefined>,
+                enumValues: ['agent_crew', 'agent_mixture', 'conductor', 'hypercluster', 'knowledge_matrix', 'monte_carlo', 'the_matrix', 'workflow'] as const,
                 databaseTable: 'automation_matrix',
             },
             actionInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "actionInverse",
                     "backend": "action_Inverse",
                     "database": "ifk_action",
@@ -2023,7 +2064,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'action',
             },
             automationBoundaryBrokerInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "automationBoundaryBrokerInverse",
                     "backend": "automation_boundary_broker_Inverse",
                     "database": "ifk_automation_boundary_broker",
@@ -2095,7 +2136,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     broker: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "broker",
             "backend": "broker",
             "database": "broker",
@@ -2110,7 +2151,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -2146,10 +2187,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -2185,10 +2227,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             value: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "value",
                     "backend": "value",
                     "database": "value",
@@ -2224,10 +2267,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             dataType: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "dataType",
                     "backend": "data_type",
                     "database": "data_type",
@@ -2263,10 +2307,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined>,
+                enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
                 databaseTable: 'broker',
             },
             ready: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "ready",
                     "backend": "ready",
                     "database": "ready",
@@ -2302,10 +2347,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             defaultSource: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "defaultSource",
                     "backend": "default_source",
                     "database": "default_source",
@@ -2341,10 +2387,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api" | "chance" | "database" | "environment" | "file" | "function" | "generated_data" | "none" | "user_input" | undefined>,
+                enumValues: ['api', 'chance', 'database', 'environment', 'file', 'function', 'generated_data', 'none', 'user_input'] as const,
                 databaseTable: 'broker',
             },
             displayName: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "displayName",
                     "backend": "display_name",
                     "database": "display_name",
@@ -2380,10 +2427,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -2419,10 +2467,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             tooltip: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "tooltip",
                     "backend": "tooltip",
                     "database": "tooltip",
@@ -2458,10 +2507,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             validationRules: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "validationRules",
                     "backend": "validation_rules",
                     "database": "validation_rules",
@@ -2497,10 +2547,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             sampleEntries: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sampleEntries",
                     "backend": "sample_entries",
                     "database": "sample_entries",
@@ -2536,10 +2587,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             customSourceComponent: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "customSourceComponent",
                     "backend": "custom_source_component",
                     "database": "custom_source_component",
@@ -2575,10 +2627,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             additionalParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "additionalParams",
                     "backend": "additional_params",
                     "database": "additional_params",
@@ -2614,10 +2667,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             otherSourceParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "otherSourceParams",
                     "backend": "other_source_params",
                     "database": "other_source_params",
@@ -2653,10 +2707,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             defaultDestination: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "defaultDestination",
                     "backend": "default_destination",
                     "database": "default_destination",
@@ -2692,10 +2747,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api_response" | "database" | "file" | "function" | "user_output" | undefined>,
+                enumValues: ['api_response', 'database', 'file', 'function', 'user_output'] as const,
                 databaseTable: 'broker',
             },
             outputComponent: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "outputComponent",
                     "backend": "output_component",
                     "database": "output_component",
@@ -2731,10 +2787,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"3DModelViewer" | "AudioOutput" | "BucketList" | "BudgetVisualizer" | "Calendar" | "Carousel" | "Checklist" | "Clock" | "CodeView" | "ComplexMulti" | "DataFlowDiagram" | "DecisionTree" | "DiffViewer" | "FileOutput" | "FitnessTracker" | "Flowchart" | "Form" | "GanttChart" | "GeographicMap" | "GlossaryView" | "Heatmap" | "HorizontalList" | "ImageView" | "InteractiveChart" | "JsonViewer" | "KanbanBoard" | "LaTeXRenderer" | "LiveTraffic" | "LocalEvents" | "MarkdownViewer" | "MealPlanner" | "MindMap" | "NeedNewOption" | "NetworkGraph" | "NewsAggregator" | "PDFViewer" | "PivotTable" | "PlainText" | "Presentation" | "PublicLiveCam" | "RichTextEditor" | "RunCodeBack" | "RunCodeFront" | "SVGEditor" | "SankeyDiagram" | "SatelliteView" | "SocialMediaInfo" | "SpectrumAnalyzer" | "Spreadsheet" | "Table" | "TaskPrioritization" | "Textarea" | "Thermometer" | "Timeline" | "TravelPlanner" | "TreeView" | "UMLDiagram" | "VerticalList" | "VoiceSentimentAnalysis" | "WeatherDashboard" | "WeatherMap" | "WordHighlighter" | "WordMap" | "chatResponse" | "none" | "video" | undefined>,
+                enumValues: ['3DModelViewer', 'AudioOutput', 'BucketList', 'BudgetVisualizer', 'Calendar', 'Carousel', 'Checklist', 'Clock', 'CodeView', 'ComplexMulti', 'DataFlowDiagram', 'DecisionTree', 'DiffViewer', 'FileOutput', 'FitnessTracker', 'Flowchart', 'Form', 'GanttChart', 'GeographicMap', 'GlossaryView', 'Heatmap', 'HorizontalList', 'ImageView', 'InteractiveChart', 'JsonViewer', 'KanbanBoard', 'LaTeXRenderer', 'LiveTraffic', 'LocalEvents', 'MarkdownViewer', 'MealPlanner', 'MindMap', 'NeedNewOption', 'NetworkGraph', 'NewsAggregator', 'PDFViewer', 'PivotTable', 'PlainText', 'Presentation', 'PublicLiveCam', 'RichTextEditor', 'RunCodeBack', 'RunCodeFront', 'SVGEditor', 'SankeyDiagram', 'SatelliteView', 'SocialMediaInfo', 'SpectrumAnalyzer', 'Spreadsheet', 'Table', 'TaskPrioritization', 'Textarea', 'Thermometer', 'Timeline', 'TravelPlanner', 'TreeView', 'UMLDiagram', 'VerticalList', 'VoiceSentimentAnalysis', 'WeatherDashboard', 'WeatherMap', 'WordHighlighter', 'WordMap', 'chatResponse', 'none', 'video'] as const,
                 databaseTable: 'broker',
             },
             tags: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "tags",
                     "backend": "tags",
                     "database": "tags",
@@ -2770,10 +2827,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'broker',
             },
             dataInputComponentReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "dataInputComponentReference",
                     "backend": "data_input_component_reference",
                     "database": "ref_data_input_component",
@@ -2801,7 +2859,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'data_input_component',
             },
             recipeBrokerInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeBrokerInverse",
                     "backend": "recipe_broker_Inverse",
                     "database": "ifk_recipe_broker",
@@ -2829,7 +2887,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_broker',
             },
             registeredFunctionInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "registeredFunctionInverse",
                     "backend": "registered_function_Inverse",
                     "database": "ifk_registered_function",
@@ -2857,7 +2915,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'registered_function',
             },
             automationBoundaryBrokerInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "automationBoundaryBrokerInverse",
                     "backend": "automation_boundary_broker_Inverse",
                     "database": "ifk_automation_boundary_broker",
@@ -2943,7 +3001,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     dataInputComponent: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "dataInputComponent",
             "backend": "data_input_component",
             "database": "data_input_component",
@@ -2958,7 +3016,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -2994,10 +3052,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             options: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "options",
                     "backend": "options",
                     "database": "options",
@@ -3033,10 +3092,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             includeOther: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "includeOther",
                     "backend": "include_other",
                     "database": "include_other",
@@ -3072,10 +3132,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             min: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "min",
                     "backend": "min",
                     "database": "min",
@@ -3111,10 +3172,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             max: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "max",
                     "backend": "max",
                     "database": "max",
@@ -3150,10 +3212,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             step: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "step",
                     "backend": "step",
                     "database": "step",
@@ -3189,10 +3252,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             minRows: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "minRows",
                     "backend": "min_rows",
                     "database": "min_rows",
@@ -3228,10 +3292,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             maxRows: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "maxRows",
                     "backend": "max_rows",
                     "database": "max_rows",
@@ -3267,10 +3332,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             acceptableFiletypes: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "acceptableFiletypes",
                     "backend": "acceptable_filetypes",
                     "database": "acceptable_filetypes",
@@ -3306,10 +3372,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             src: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "src",
                     "backend": "src",
                     "database": "src",
@@ -3345,10 +3412,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             classes: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "classes",
                     "backend": "classes",
                     "database": "classes",
@@ -3384,10 +3452,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             colorOverrides: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "colorOverrides",
                     "backend": "color_overrides",
                     "database": "color_overrides",
@@ -3423,10 +3492,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             additionalParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "additionalParams",
                     "backend": "additional_params",
                     "database": "additional_params",
@@ -3462,10 +3532,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'data_input_component',
             },
             brokerInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "brokerInverse",
                     "backend": "broker_Inverse",
                     "database": "ifk_broker",
@@ -3516,7 +3587,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     dataOutputComponent: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "dataOutputComponent",
             "backend": "data_output_component",
             "database": "data_output_component",
@@ -3531,7 +3602,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -3567,10 +3638,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'data_output_component',
             },
             componentType: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "componentType",
                     "backend": "component_type",
                     "database": "component_type",
@@ -3606,10 +3678,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"3DModelViewer" | "AudioOutput" | "BucketList" | "BudgetVisualizer" | "Calendar" | "Carousel" | "Checklist" | "Clock" | "CodeView" | "ComplexMulti" | "DataFlowDiagram" | "DecisionTree" | "DiffViewer" | "FileOutput" | "FitnessTracker" | "Flowchart" | "Form" | "GanttChart" | "GeographicMap" | "GlossaryView" | "Heatmap" | "HorizontalList" | "ImageView" | "InteractiveChart" | "JsonViewer" | "KanbanBoard" | "LaTeXRenderer" | "LiveTraffic" | "LocalEvents" | "MarkdownViewer" | "MealPlanner" | "MindMap" | "NeedNewOption" | "NetworkGraph" | "NewsAggregator" | "PDFViewer" | "PivotTable" | "PlainText" | "Presentation" | "PublicLiveCam" | "RichTextEditor" | "RunCodeBack" | "RunCodeFront" | "SVGEditor" | "SankeyDiagram" | "SatelliteView" | "SocialMediaInfo" | "SpectrumAnalyzer" | "Spreadsheet" | "Table" | "TaskPrioritization" | "Textarea" | "Thermometer" | "Timeline" | "TravelPlanner" | "TreeView" | "UMLDiagram" | "VerticalList" | "VoiceSentimentAnalysis" | "WeatherDashboard" | "WeatherMap" | "WordHighlighter" | "WordMap" | "chatResponse" | "none" | "video" | undefined>,
+                enumValues: ['3DModelViewer', 'AudioOutput', 'BucketList', 'BudgetVisualizer', 'Calendar', 'Carousel', 'Checklist', 'Clock', 'CodeView', 'ComplexMulti', 'DataFlowDiagram', 'DecisionTree', 'DiffViewer', 'FileOutput', 'FitnessTracker', 'Flowchart', 'Form', 'GanttChart', 'GeographicMap', 'GlossaryView', 'Heatmap', 'HorizontalList', 'ImageView', 'InteractiveChart', 'JsonViewer', 'KanbanBoard', 'LaTeXRenderer', 'LiveTraffic', 'LocalEvents', 'MarkdownViewer', 'MealPlanner', 'MindMap', 'NeedNewOption', 'NetworkGraph', 'NewsAggregator', 'PDFViewer', 'PivotTable', 'PlainText', 'Presentation', 'PublicLiveCam', 'RichTextEditor', 'RunCodeBack', 'RunCodeFront', 'SVGEditor', 'SankeyDiagram', 'SatelliteView', 'SocialMediaInfo', 'SpectrumAnalyzer', 'Spreadsheet', 'Table', 'TaskPrioritization', 'Textarea', 'Thermometer', 'Timeline', 'TravelPlanner', 'TreeView', 'UMLDiagram', 'VerticalList', 'VoiceSentimentAnalysis', 'WeatherDashboard', 'WeatherMap', 'WordHighlighter', 'WordMap', 'chatResponse', 'none', 'video'] as const,
                 databaseTable: 'data_output_component',
             },
             uiComponent: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "uiComponent",
                     "backend": "ui_component",
                     "database": "ui_component",
@@ -3645,10 +3718,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'data_output_component',
             },
             props: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "props",
                     "backend": "props",
                     "database": "props",
@@ -3684,10 +3758,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'data_output_component',
             },
             additionalParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "additionalParams",
                     "backend": "additional_params",
                     "database": "additional_params",
@@ -3723,6 +3798,7 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'data_output_component',
             },
         },
@@ -3741,7 +3817,7 @@ export const initialAutomationTableSchema = {
         relationships: [],
     },
     displayOption: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "displayOption",
             "backend": "display_option",
             "database": "display_option",
@@ -3756,7 +3832,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -3792,10 +3868,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'display_option',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -3831,10 +3908,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'display_option',
             },
             defaultParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "defaultParams",
                     "backend": "default_params",
                     "database": "default_params",
@@ -3870,10 +3948,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'display_option',
             },
             customizableParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "customizableParams",
                     "backend": "customizable_params",
                     "database": "customizable_params",
@@ -3909,10 +3988,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'display_option',
             },
             additionalParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "additionalParams",
                     "backend": "additional_params",
                     "database": "additional_params",
@@ -3948,10 +4028,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'display_option',
             },
             recipeDisplayInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeDisplayInverse",
                     "backend": "recipe_display_Inverse",
                     "database": "ifk_recipe_display",
@@ -4009,7 +4090,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     emails: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "emails",
             "backend": "emails",
             "database": "emails",
@@ -4024,7 +4105,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -4060,10 +4141,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
             sender: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sender",
                     "backend": "sender",
                     "database": "sender",
@@ -4099,10 +4181,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
             recipient: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipient",
                     "backend": "recipient",
                     "database": "recipient",
@@ -4138,10 +4221,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
             subject: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "subject",
                     "backend": "subject",
                     "database": "subject",
@@ -4177,10 +4261,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
             body: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "body",
                     "backend": "body",
                     "database": "body",
@@ -4216,10 +4301,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
             timestamp: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "timestamp",
                     "backend": "timestamp",
                     "database": "timestamp",
@@ -4255,10 +4341,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
             isRead: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "isRead",
                     "backend": "is_read",
                     "database": "is_read",
@@ -4294,6 +4381,7 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'emails',
             },
         },
@@ -4312,7 +4400,7 @@ export const initialAutomationTableSchema = {
         relationships: [],
     },
     extractor: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "extractor",
             "backend": "extractor",
             "database": "extractor",
@@ -4327,7 +4415,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -4363,10 +4451,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'extractor',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -4402,10 +4491,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'extractor',
             },
             outputType: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "outputType",
                     "backend": "output_type",
                     "database": "output_type",
@@ -4441,10 +4531,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined>,
+                enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
                 databaseTable: 'extractor',
             },
             defaultIdentifier: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "defaultIdentifier",
                     "backend": "default_identifier",
                     "database": "default_identifier",
@@ -4480,10 +4571,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'extractor',
             },
             defaultIndex: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "defaultIndex",
                     "backend": "default_index",
                     "database": "default_index",
@@ -4519,6 +4611,7 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'extractor',
             },
         },
@@ -4537,7 +4630,7 @@ export const initialAutomationTableSchema = {
         relationships: [],
     },
     flashcardData: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "flashcardData",
             "backend": "flashcard_data",
             "database": "flashcard_data",
@@ -4552,7 +4645,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -4588,10 +4681,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             userId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "userId",
                     "backend": "user_id",
                     "database": "user_id",
@@ -4627,10 +4721,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             topic: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "topic",
                     "backend": "topic",
                     "database": "topic",
@@ -4666,10 +4761,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             lesson: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "lesson",
                     "backend": "lesson",
                     "database": "lesson",
@@ -4705,10 +4801,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             difficulty: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "difficulty",
                     "backend": "difficulty",
                     "database": "difficulty",
@@ -4744,10 +4841,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             front: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "front",
                     "backend": "front",
                     "database": "front",
@@ -4783,10 +4881,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             back: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "back",
                     "backend": "back",
                     "database": "back",
@@ -4822,10 +4921,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             example: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "example",
                     "backend": "example",
                     "database": "example",
@@ -4861,10 +4961,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             detailedExplanation: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "detailedExplanation",
                     "backend": "detailed_explanation",
                     "database": "detailed_explanation",
@@ -4900,10 +5001,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             audioExplanation: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "audioExplanation",
                     "backend": "audio_explanation",
                     "database": "audio_explanation",
@@ -4939,10 +5041,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             personalNotes: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "personalNotes",
                     "backend": "personal_notes",
                     "database": "personal_notes",
@@ -4978,10 +5081,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             isDeleted: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "isDeleted",
                     "backend": "is_deleted",
                     "database": "is_deleted",
@@ -5017,10 +5121,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             public: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "public",
                     "backend": "public",
                     "database": "public",
@@ -5056,10 +5161,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             sharedWith: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sharedWith",
                     "backend": "shared_with",
                     "database": "shared_with",
@@ -5095,10 +5201,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string[]>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             createdAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "createdAt",
                     "backend": "created_at",
                     "database": "created_at",
@@ -5134,10 +5241,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             updatedAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "updatedAt",
                     "backend": "updated_at",
                     "database": "updated_at",
@@ -5173,10 +5281,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_data',
             },
             flashcardHistoryInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardHistoryInverse",
                     "backend": "flashcard_history_Inverse",
                     "database": "ifk_flashcard_history",
@@ -5204,7 +5313,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_history',
             },
             flashcardSetRelationsInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardSetRelationsInverse",
                     "backend": "flashcard_set_relations_Inverse",
                     "database": "ifk_flashcard_set_relations",
@@ -5232,7 +5341,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_set_relations',
             },
             flashcardImagesInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardImagesInverse",
                     "backend": "flashcard_images_Inverse",
                     "database": "ifk_flashcard_images",
@@ -5304,7 +5413,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardHistory: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "flashcardHistory",
             "backend": "flashcard_history",
             "database": "flashcard_history",
@@ -5319,7 +5428,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -5355,10 +5464,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             flashcardId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardId",
                     "backend": "flashcard_id",
                     "database": "flashcard_id",
@@ -5394,10 +5504,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             userId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "userId",
                     "backend": "user_id",
                     "database": "user_id",
@@ -5433,10 +5544,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             reviewCount: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "reviewCount",
                     "backend": "review_count",
                     "database": "review_count",
@@ -5472,10 +5584,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             correctCount: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "correctCount",
                     "backend": "correct_count",
                     "database": "correct_count",
@@ -5511,10 +5624,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             incorrectCount: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "incorrectCount",
                     "backend": "incorrect_count",
                     "database": "incorrect_count",
@@ -5550,10 +5664,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             createdAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "createdAt",
                     "backend": "created_at",
                     "database": "created_at",
@@ -5589,10 +5704,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             updatedAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "updatedAt",
                     "backend": "updated_at",
                     "database": "updated_at",
@@ -5628,10 +5744,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_history',
             },
             flashcardDataReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardDataReference",
                     "backend": "flashcard_data_reference",
                     "database": "ref_flashcard_data",
@@ -5682,7 +5799,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardImages: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "flashcardImages",
             "backend": "flashcard_images",
             "database": "flashcard_images",
@@ -5697,7 +5814,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -5733,10 +5850,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             flashcardId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardId",
                     "backend": "flashcard_id",
                     "database": "flashcard_id",
@@ -5772,10 +5890,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             filePath: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "filePath",
                     "backend": "file_path",
                     "database": "file_path",
@@ -5811,10 +5930,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             fileName: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "fileName",
                     "backend": "file_name",
                     "database": "file_name",
@@ -5850,10 +5970,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             mimeType: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "mimeType",
                     "backend": "mime_type",
                     "database": "mime_type",
@@ -5889,10 +6010,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             size: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "size",
                     "backend": "size",
                     "database": "size",
@@ -5928,10 +6050,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             createdAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "createdAt",
                     "backend": "created_at",
                     "database": "created_at",
@@ -5967,10 +6090,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_images',
             },
             flashcardDataReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardDataReference",
                     "backend": "flashcard_data_reference",
                     "database": "ref_flashcard_data",
@@ -6021,7 +6145,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardSetRelations: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "flashcardSetRelations",
             "backend": "flashcard_set_relations",
             "database": "flashcard_set_relations",
@@ -6036,7 +6160,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             flashcardId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardId",
                     "backend": "flashcard_id",
                     "database": "flashcard_id",
@@ -6072,10 +6196,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_set_relations',
             },
             setId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "setId",
                     "backend": "set_id",
                     "database": "set_id",
@@ -6111,10 +6236,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_set_relations',
             },
             order: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "order",
                     "backend": "order",
                     "database": "order",
@@ -6150,10 +6276,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'flashcard_set_relations',
             },
             flashcardDataReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardDataReference",
                     "backend": "flashcard_data_reference",
                     "database": "ref_flashcard_data",
@@ -6181,7 +6308,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_data',
             },
             flashcardSetsReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardSetsReference",
                     "backend": "flashcard_sets_reference",
                     "database": "ref_flashcard_sets",
@@ -6239,7 +6366,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardSets: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "flashcardSets",
             "backend": "flashcard_sets",
             "database": "flashcard_sets",
@@ -6254,7 +6381,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             setId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "setId",
                     "backend": "set_id",
                     "database": "set_id",
@@ -6290,10 +6417,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             userId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "userId",
                     "backend": "user_id",
                     "database": "user_id",
@@ -6329,10 +6457,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -6368,10 +6497,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             createdAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "createdAt",
                     "backend": "created_at",
                     "database": "created_at",
@@ -6407,10 +6537,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             updatedAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "updatedAt",
                     "backend": "updated_at",
                     "database": "updated_at",
@@ -6446,10 +6577,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             sharedWith: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sharedWith",
                     "backend": "shared_with",
                     "database": "shared_with",
@@ -6485,10 +6617,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string[]>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             public: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "public",
                     "backend": "public",
                     "database": "public",
@@ -6524,10 +6657,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             topic: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "topic",
                     "backend": "topic",
                     "database": "topic",
@@ -6563,10 +6697,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             lesson: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "lesson",
                     "backend": "lesson",
                     "database": "lesson",
@@ -6602,10 +6737,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             difficulty: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "difficulty",
                     "backend": "difficulty",
                     "database": "difficulty",
@@ -6641,10 +6777,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             audioOverview: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "audioOverview",
                     "backend": "audio_overview",
                     "database": "audio_overview",
@@ -6680,10 +6817,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'flashcard_sets',
             },
             flashcardSetRelationsInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "flashcardSetRelationsInverse",
                     "backend": "flashcard_set_relations_Inverse",
                     "database": "ifk_flashcard_set_relations",
@@ -6741,7 +6879,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     processor: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "processor",
             "backend": "processor",
             "database": "processor",
@@ -6756,7 +6894,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -6792,10 +6930,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'processor',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -6831,10 +6970,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'processor',
             },
             dependsDefault: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "dependsDefault",
                     "backend": "depends_default",
                     "database": "depends_default",
@@ -6870,10 +7010,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'processor',
             },
             defaultExtractors: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "defaultExtractors",
                     "backend": "default_extractors",
                     "database": "default_extractors",
@@ -6909,10 +7050,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'processor',
             },
             params: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "params",
                     "backend": "params",
                     "database": "params",
@@ -6948,10 +7090,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'processor',
             },
             processorReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "processorReference",
                     "backend": "processor_reference",
                     "database": "ref_processor",
@@ -6979,7 +7122,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'processor',
             },
             recipeProcessorInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeProcessorInverse",
                     "backend": "recipe_processor_Inverse",
                     "database": "ifk_recipe_processor",
@@ -7044,7 +7187,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipe: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipe",
             "backend": "recipe",
             "database": "recipe",
@@ -7059,7 +7202,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -7095,10 +7238,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -7134,10 +7278,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -7173,10 +7318,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             tags: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "tags",
                     "backend": "tags",
                     "database": "tags",
@@ -7212,10 +7358,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             sampleOutput: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sampleOutput",
                     "backend": "sample_output",
                     "database": "sample_output",
@@ -7251,10 +7398,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             isPublic: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "isPublic",
                     "backend": "is_public",
                     "database": "is_public",
@@ -7290,10 +7438,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             status: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "status",
                     "backend": "status",
                     "database": "status",
@@ -7329,10 +7478,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"active_testing" | "archived" | "draft" | "in_review" | "live" | "other" | undefined>,
+                enumValues: ['active_testing', 'archived', 'draft', 'in_review', 'live', 'other'] as const,
                 databaseTable: 'recipe',
             },
             version: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "version",
                     "backend": "version",
                     "database": "version",
@@ -7368,10 +7518,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             messages: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "messages",
                     "backend": "messages",
                     "database": "messages",
@@ -7407,10 +7558,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>[]>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             postResultOptions: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "postResultOptions",
                     "backend": "post_result_options",
                     "database": "post_result_options",
@@ -7446,10 +7598,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'recipe',
             },
             recipeBrokerInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeBrokerInverse",
                     "backend": "recipe_broker_Inverse",
                     "database": "ifk_recipe_broker",
@@ -7477,7 +7630,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_broker',
             },
             recipeProcessorInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeProcessorInverse",
                     "backend": "recipe_processor_Inverse",
                     "database": "ifk_recipe_processor",
@@ -7505,7 +7658,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_processor',
             },
             recipeModelInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeModelInverse",
                     "backend": "recipe_model_Inverse",
                     "database": "ifk_recipe_model",
@@ -7533,7 +7686,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_model',
             },
             recipeDisplayInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeDisplayInverse",
                     "backend": "recipe_display_Inverse",
                     "database": "ifk_recipe_display",
@@ -7561,7 +7714,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_display',
             },
             recipeFunctionInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeFunctionInverse",
                     "backend": "recipe_function_Inverse",
                     "database": "ifk_recipe_function",
@@ -7589,7 +7742,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_function',
             },
             recipeToolInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeToolInverse",
                     "backend": "recipe_tool_Inverse",
                     "database": "ifk_recipe_tool",
@@ -7717,7 +7870,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeBroker: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipeBroker",
             "backend": "recipe_broker",
             "database": "recipe_broker",
@@ -7732,7 +7885,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -7768,10 +7921,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_broker',
             },
             recipe: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipe",
                     "backend": "recipe",
                     "database": "recipe",
@@ -7807,10 +7961,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_broker',
             },
             broker: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "broker",
                     "backend": "broker",
                     "database": "broker",
@@ -7846,10 +8001,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_broker',
             },
             brokerRole: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "brokerRole",
                     "backend": "broker_role",
                     "database": "broker_role",
@@ -7885,10 +8041,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"input_broker" | "output_broker" | undefined>,
+                enumValues: ['input_broker', 'output_broker'] as const,
                 databaseTable: 'recipe_broker',
             },
             required: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "required",
                     "backend": "required",
                     "database": "required",
@@ -7924,10 +8081,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
+                enumValues: null,
                 databaseTable: 'recipe_broker',
             },
             brokerReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "brokerReference",
                     "backend": "broker_reference",
                     "database": "ref_broker",
@@ -7955,7 +8113,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'broker',
             },
             recipeReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
@@ -8013,7 +8171,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeDisplay: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipeDisplay",
             "backend": "recipe_display",
             "database": "recipe_display",
@@ -8028,7 +8186,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -8064,10 +8222,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_display',
             },
             recipe: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipe",
                     "backend": "recipe",
                     "database": "recipe",
@@ -8103,10 +8262,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_display',
             },
             display: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "display",
                     "backend": "display",
                     "database": "display",
@@ -8142,10 +8302,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_display',
             },
             priority: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "priority",
                     "backend": "priority",
                     "database": "priority",
@@ -8181,10 +8342,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'recipe_display',
             },
             displaySettings: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "displaySettings",
                     "backend": "display_settings",
                     "database": "display_settings",
@@ -8220,10 +8382,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'recipe_display',
             },
             displayOptionReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "displayOptionReference",
                     "backend": "display_option_reference",
                     "database": "ref_display_option",
@@ -8251,7 +8414,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'display_option',
             },
             recipeReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
@@ -8309,7 +8472,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeFunction: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipeFunction",
             "backend": "recipe_function",
             "database": "recipe_function",
@@ -8324,7 +8487,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -8360,10 +8523,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_function',
             },
             recipe: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipe",
                     "backend": "recipe",
                     "database": "recipe",
@@ -8399,10 +8563,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_function',
             },
             function: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "function",
                     "backend": "function",
                     "database": "function",
@@ -8438,10 +8603,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_function',
             },
             role: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "role",
                     "backend": "role",
                     "database": "role",
@@ -8477,10 +8643,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"comparison" | "decision" | "other" | "post_processing" | "pre-Processing" | "rating" | "save_data" | "validation" | undefined>,
+                enumValues: ['comparison', 'decision', 'other', 'post_processing', 'pre-Processing', 'rating', 'save_data', 'validation'] as const,
                 databaseTable: 'recipe_function',
             },
             params: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "params",
                     "backend": "params",
                     "database": "params",
@@ -8516,10 +8683,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'recipe_function',
             },
             systemFunctionReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "systemFunctionReference",
                     "backend": "system_function_reference",
                     "database": "ref_system_function",
@@ -8547,7 +8715,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'system_function',
             },
             recipeReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
@@ -8605,7 +8773,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeModel: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipeModel",
             "backend": "recipe_model",
             "database": "recipe_model",
@@ -8620,7 +8788,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -8656,10 +8824,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_model',
             },
             recipe: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipe",
                     "backend": "recipe",
                     "database": "recipe",
@@ -8695,10 +8864,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_model',
             },
             aiModel: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "aiModel",
                     "backend": "ai_model",
                     "database": "ai_model",
@@ -8734,10 +8904,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_model',
             },
             role: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "role",
                     "backend": "role",
                     "database": "role",
@@ -8773,10 +8944,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"primary_model" | "trial_model" | "verified_model" | undefined>,
+                enumValues: ['primary_model', 'trial_model', 'verified_model'] as const,
                 databaseTable: 'recipe_model',
             },
             priority: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "priority",
                     "backend": "priority",
                     "database": "priority",
@@ -8812,10 +8984,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
+                enumValues: null,
                 databaseTable: 'recipe_model',
             },
             aiModelReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "aiModelReference",
                     "backend": "ai_model_reference",
                     "database": "ref_ai_model",
@@ -8843,7 +9016,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'ai_model',
             },
             recipeReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
@@ -8901,7 +9074,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeProcessor: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipeProcessor",
             "backend": "recipe_processor",
             "database": "recipe_processor",
@@ -8916,7 +9089,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -8952,10 +9125,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_processor',
             },
             recipe: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipe",
                     "backend": "recipe",
                     "database": "recipe",
@@ -8991,10 +9165,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_processor',
             },
             processor: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "processor",
                     "backend": "processor",
                     "database": "processor",
@@ -9030,10 +9205,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_processor',
             },
             params: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "params",
                     "backend": "params",
                     "database": "params",
@@ -9069,10 +9245,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'recipe_processor',
             },
             processorReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "processorReference",
                     "backend": "processor_reference",
                     "database": "ref_processor",
@@ -9100,7 +9277,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'processor',
             },
             recipeReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
@@ -9158,7 +9335,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeTool: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "recipeTool",
             "backend": "recipe_tool",
             "database": "recipe_tool",
@@ -9173,7 +9350,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -9209,10 +9386,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_tool',
             },
             recipe: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipe",
                     "backend": "recipe",
                     "database": "recipe",
@@ -9248,10 +9426,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_tool',
             },
             tool: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "tool",
                     "backend": "tool",
                     "database": "tool",
@@ -9287,10 +9466,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'recipe_tool',
             },
             params: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "params",
                     "backend": "params",
                     "database": "params",
@@ -9326,10 +9506,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'recipe_tool',
             },
             recipeReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeReference",
                     "backend": "recipe_reference",
                     "database": "ref_recipe",
@@ -9357,7 +9538,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe',
             },
             toolReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "toolReference",
                     "backend": "tool_reference",
                     "database": "ref_tool",
@@ -9415,7 +9596,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     registeredFunction: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "registeredFunction",
             "backend": "registered_function",
             "database": "registered_function",
@@ -9430,7 +9611,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -9466,10 +9647,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'registered_function',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -9505,10 +9687,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'registered_function',
             },
             modulePath: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "modulePath",
                     "backend": "module_path",
                     "database": "module_path",
@@ -9544,10 +9727,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'registered_function',
             },
             className: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "className",
                     "backend": "class_name",
                     "database": "class_name",
@@ -9583,10 +9767,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'registered_function',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -9622,10 +9807,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'registered_function',
             },
             returnBroker: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "returnBroker",
                     "backend": "return_broker",
                     "database": "return_broker",
@@ -9661,10 +9847,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'registered_function',
             },
             brokerReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "brokerReference",
                     "backend": "broker_reference",
                     "database": "ref_broker",
@@ -9692,7 +9879,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'broker',
             },
             systemFunctionInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "systemFunctionInverse",
                     "backend": "system_function_Inverse",
                     "database": "ifk_system_function",
@@ -9720,7 +9907,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'system_function',
             },
             argInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "argInverse",
                     "backend": "arg_Inverse",
                     "database": "ifk_arg",
@@ -9744,7 +9931,7 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'inline-form:1' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
                 databaseTable: 'arg',
             },
         },
@@ -9785,7 +9972,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     systemFunction: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "systemFunction",
             "backend": "system_function",
             "database": "system_function",
@@ -9800,7 +9987,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -9836,10 +10023,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -9875,10 +10063,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -9914,10 +10103,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             sample: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "sample",
                     "backend": "sample",
                     "database": "sample",
@@ -9953,10 +10143,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             inputParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "inputParams",
                     "backend": "input_params",
                     "database": "input_params",
@@ -9992,10 +10183,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             outputOptions: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "outputOptions",
                     "backend": "output_options",
                     "database": "output_options",
@@ -10031,10 +10223,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             rfId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "rfId",
                     "backend": "rf_id",
                     "database": "rf_id",
@@ -10070,10 +10263,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'system_function',
             },
             registeredFunctionReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "registeredFunctionReference",
                     "backend": "registered_function_reference",
                     "database": "ref_registered_function",
@@ -10101,7 +10295,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'registered_function',
             },
             toolInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "toolInverse",
                     "backend": "tool_Inverse",
                     "database": "ifk_tool",
@@ -10129,7 +10323,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'tool',
             },
             recipeFunctionInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeFunctionInverse",
                     "backend": "recipe_function_Inverse",
                     "database": "ifk_recipe_function",
@@ -10201,7 +10395,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     tool: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "tool",
             "backend": "tool",
             "database": "tool",
@@ -10216,7 +10410,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -10252,10 +10446,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -10291,10 +10486,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             source: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "source",
                     "backend": "source",
                     "database": "source",
@@ -10330,10 +10526,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             description: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "description",
                     "backend": "description",
                     "database": "description",
@@ -10369,10 +10566,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             parameters: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "parameters",
                     "backend": "parameters",
                     "database": "parameters",
@@ -10408,10 +10606,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             requiredArgs: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "requiredArgs",
                     "backend": "required_args",
                     "database": "required_args",
@@ -10447,10 +10646,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             systemFunction: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "systemFunction",
                     "backend": "system_function",
                     "database": "system_function",
@@ -10486,10 +10686,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             additionalParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "additionalParams",
                     "backend": "additional_params",
                     "database": "additional_params",
@@ -10525,10 +10726,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'tool',
             },
             systemFunctionReference: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "systemFunctionReference",
                     "backend": "system_function_reference",
                     "database": "ref_system_function",
@@ -10556,7 +10758,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'system_function',
             },
             recipeToolInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "recipeToolInverse",
                     "backend": "recipe_tool_Inverse",
                     "database": "ifk_recipe_tool",
@@ -10621,7 +10823,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     transformer: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "transformer",
             "backend": "transformer",
             "database": "transformer",
@@ -10636,7 +10838,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             id: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "id",
                     "backend": "id",
                     "database": "id",
@@ -10672,10 +10874,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'transformer',
             },
             name: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "name",
                     "backend": "name",
                     "database": "name",
@@ -10711,10 +10914,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'transformer',
             },
             inputParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "inputParams",
                     "backend": "input_params",
                     "database": "input_params",
@@ -10750,10 +10954,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'transformer',
             },
             outputParams: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "outputParams",
                     "backend": "output_params",
                     "database": "output_params",
@@ -10789,10 +10994,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'transformer',
             },
             actionInverse: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "actionInverse",
                     "backend": "action_Inverse",
                     "database": "ifk_action",
@@ -10850,7 +11056,7 @@ export const initialAutomationTableSchema = {
         ],
     },
     userPreferences: {
-        entityNameVariations: {
+        entityNameFormats: {
             "frontend": "userPreferences",
             "backend": "user_preferences",
             "database": "user_preferences",
@@ -10865,7 +11071,7 @@ export const initialAutomationTableSchema = {
         schemaType: 'table' as const,
         entityFields: {
             userId: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "userId",
                     "backend": "user_id",
                     "database": "user_id",
@@ -10901,10 +11107,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
+                enumValues: null,
                 databaseTable: 'user_preferences',
             },
             preferences: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "preferences",
                     "backend": "preferences",
                     "database": "preferences",
@@ -10940,10 +11147,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
+                enumValues: null,
                 databaseTable: 'user_preferences',
             },
             createdAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "createdAt",
                     "backend": "created_at",
                     "database": "created_at",
@@ -10979,10 +11187,11 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'user_preferences',
             },
             updatedAt: {
-                fieldNameVariations: {
+                fieldNameFormats: {
                     "frontend": "updatedAt",
                     "backend": "updated_at",
                     "database": "updated_at",
@@ -11018,6 +11227,7 @@ export const initialAutomationTableSchema = {
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
+                enumValues: null,
                 databaseTable: 'user_preferences',
             },
         },
@@ -11043,13 +11253,13 @@ export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 
 export type InitialTableSchema = {
     schemaType: 'table';
-    entityNameVariations: {
-        [key in NameFormat]: string;
+    entityNameFormats: {
+        [key in NameFormat]?: string;
     };
     entityFields: {
         [fieldName: string]: {
-            fieldNameVariations: {
-                [key in NameFormat]: string;
+            fieldNameFormats: {
+                [key in NameFormat]?: string;
             };
             dataType: FieldDataOptionsType;
             isArray: boolean;

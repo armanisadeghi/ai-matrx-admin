@@ -27,6 +27,9 @@ type ActionType =
 
 
 function getActionType(baseType: string, action: ActionType, status?: ActionStatus): string {
+
+    console.log("entityActionCreator getActionType",status ? `${baseType}_${action}_${status}` : `${baseType}_${action}`);
+
     return status ? `${baseType}_${action}_${status}` : `${baseType}_${action}`;
 }
 

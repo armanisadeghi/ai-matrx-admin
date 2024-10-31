@@ -1,9 +1,10 @@
+/*
 // File: lib/schemaRegistry.ts
 
 import {AutomationTableName, FieldDataType, NameFormat} from "@/types/AutomationSchemaTypes";
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 import {getGlobalCache, resolveTableKey, resolveTableName, StringFieldKey} from "@/utils/schema/precomputeUtil";
-import {AutomationTable, EntityField, TableFields} from "@/types/automationTableTypes";
+import {AutomationTable, EntityField, TableFields} from "@/types/automationTableTypes";// TODO
 
 export interface ConversionOptions {
     maxDepth?: number;
@@ -680,3 +681,4 @@ export async function getRelationships(tableName: TableName, format: NameFormat 
 
 
 
+*/

@@ -8,13 +8,14 @@ import {Toaster} from "@/components/ui/toaster";
 import {ThemeProvider} from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
 import {TooltipProvider} from "@/components/ui/tooltip";
+import {InitialReduxState} from "@/types/reduxTypes";
 
 export function Providers({children, initialReduxState}: {
     children: React.ReactNode,
-    initialReduxState?: any
+    initialReduxState?: InitialReduxState
 }) {
     return (
-        <SchemaProvider initialSchema={initialReduxState?.schema}>
+        <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <StoreProvider initialState={initialReduxState}>
                 <ThemeProvider defaultTheme="dark" enableSystem={false}>
                     <NextUIProvider>

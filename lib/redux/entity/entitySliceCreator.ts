@@ -25,7 +25,7 @@ export type EntitySliceState<TEntity extends EntityKeys> = {
 
 export function createEntitySlice<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    schema: AutomationEntity<TEntity>
+    schema?: AutomationEntity<TEntity>
 ) {
     const initialState: EntitySliceState<TEntity> = {
         data: [],
@@ -44,7 +44,7 @@ export function createEntitySlice<TEntity extends EntityKeys>(
         pageSize: 10,
         maxCount: 1000
     };
-    console.log('createEntitySlice Created Entity Slice:', entityKey);
+    // console.log('createEntitySlice Created Entity Slice:', entityKey);
     const slice = createSlice({
         name: `entity/${entityKey.toUpperCase()}`,
         initialState,
@@ -171,6 +171,5 @@ export function createEntitySlice<TEntity extends EntityKeys>(
             },
         }
     });
-
     return slice;
 }

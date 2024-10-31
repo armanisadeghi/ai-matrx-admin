@@ -10,9 +10,9 @@ interface NavigatorClipboard {
 
 interface Navigator extends NavigatorClipboard {}
 
-declare namespace SchemaTypes {
-    export * from './types/automationTableTypes.ts';
-}
+// declare namespace SchemaTypes {
+//     export * from './types/automationTableTypes.ts';
+// }
 
 
 

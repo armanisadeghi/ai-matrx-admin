@@ -1,6 +1,45 @@
-// File: color-utils/userDataMapper.ts
+// File: utils/userDataMapper.ts
 
-export function mapUserData(user: any) {
+export interface AppMetadata {
+    provider: string | null;
+    providers: string[];
+}
+
+export interface UserMetadata {
+    avatarUrl: string | null;
+    fullName: string | null;
+    name: string | null;
+    preferredUsername: string | null;
+    picture: string | null;
+}
+
+export interface IdentityData {
+    provider: string | null;
+    id: string | null;
+    user_id: string | null;
+    avatar_url: string | null;
+    email: string | null;
+    email_verified: boolean | null;
+    full_name: string | null;
+    picture: string | null;
+    provider_id: string | null;
+    sub: string | null;
+    name: string | null;
+}
+
+export interface UserData {
+    id: string | null;
+    email: string | null;
+    phone: string | null;
+    emailConfirmedAt: string | null;
+    lastSignInAt: string | null;
+    appMetadata: AppMetadata;
+    userMetadata: UserMetadata;
+    identities: IdentityData[];
+}
+
+
+export function mapUserData(user: any): UserData {
     return {
         id: user?.id || null,
         email: user?.email || null,
@@ -33,3 +72,4 @@ export function mapUserData(user: any) {
         })) || [],
     };
 }
+

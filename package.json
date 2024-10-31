@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "ts-node scripts/generate-manifest.ts && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "ts-node -P tsconfig.json tests/setup.ts",
