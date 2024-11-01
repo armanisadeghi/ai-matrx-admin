@@ -1,77 +1,128 @@
-import {call, put, takeLatest, all, select} from 'redux-saga/effects';
-import {PayloadAction} from '@reduxjs/toolkit';
-import {QueryOptions} from '@/utils/supabase/api-wrapper';
+// lib/redux/entity/entitySagas.ts
+
+import {call, put, takeLatest, all, select} from "redux-saga/effects";
+import {PayloadAction} from "@reduxjs/toolkit";
 import {createEntitySlice} from "@/lib/redux/entity/entitySliceCreator";
-
 import {
-    AutomationEntities, createFormattedRecord,
+    AutomationEntities,
     EntityKeys,
-    EntityRecord
+    EntityData,
+    createFormattedRecord,
+    EntityRecord,
 } from "@/types/entityTypes";
-import {PostgrestFilterBuilder} from "@supabase/postgrest-js";
-import {supabase} from '@/utils/supabase/client';
-import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
+import {supabase} from "@/utils/supabase/client";
 import {
-    selectDatabaseConversion, selectEntityDatabaseName,
-    selectFrontendConversion
-} from "@/lib/redux/selectors/schemaSelectors";
+    selectEntityDatabaseName,
+    selectFrontendConversion, selectPayloadOptionsDatabaseConversion,
+    selectQueryDatabaseConversion
+} from "@/lib/redux/schema/globalCacheSelectors";
 
 
-function* initializeDatabaseApi<TEntity extends EntityKeys>(tableName: string) {
-    const { data, error } = yield supabase
-        .from(tableName)
-        .select('*')
-        .limit(8);
-
-    if (error) {
-        throw new Error(`Supabase fetch error: ${error.message}`);
-    }
-    return data;
+function* initializeDatabaseApi(tableName: string) {
+    return supabase.from(tableName);
 }
 
+export type QueryOptions<TEntity extends EntityKeys> = {
+    tableName: string; // Table name as a plain string
+    filters?: Partial<Record<string, any>>; // Filters use string for field names
+    sorts?: Array<{
+        column: string; // Column names are strings
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: Array<string>; // Column names as strings
+};
 
-
-
-function* withConversion<TEntity extends EntityKeys>(
-    sagaHandler: (entityKey: TEntity, actions: any, api: any, action: PayloadAction<any>) => any,
+// Updated WithConversionParams with simplified string types
+interface WithConversionParams<TEntity extends EntityKeys> {
+    sagaHandler: (
+        entityKey: TEntity,
+        actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+        api: any,
+        action: PayloadAction<any>,
+        tableName: string,
+        dbQueryOptions: QueryOptions<TEntity>
+    ) => any,
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    action: PayloadAction<any>
+}
+
+export function* withConversion<TEntity extends EntityKeys>(
+    sagaHandler: (
+        entityKey: TEntity,
+        actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+        api: any,
+        action: PayloadAction<any>,
+        tableName: string,
+        dbQueryOptions: QueryOptions<TEntity>
+    ) => any,
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
     action: PayloadAction<any>
 ) {
     try {
-        console.log('withConversion', entityKey, actions, action);
-        const tableName = yield select(selectEntityDatabaseName, entityKey);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("withConversion converted tableName:", tableName);
+        console.log("withConversion has action:", action);
+        console.log("withConversion has payload.options:", action.payload.options);
 
         const api = yield call(initializeDatabaseApi, tableName);
 
-        const dbQueryOptions = yield select(selectDatabaseConversion, action.payload);
-        const dbAction = { ...action, payload: { ...action.payload, options: dbQueryOptions } };
+        const dbQueryOptions = yield select(selectPayloadOptionsDatabaseConversion, {
+            entityName: entityKey,
+            options: action.payload.options,
+        });
 
-        const response = yield call([null, sagaHandler], entityKey, actions, api, dbAction);
+        console.log("withConversion has Converted dbQueryOptions:", dbQueryOptions);
 
-        const frontendResponse = yield select(selectFrontendConversion, response);
-
-        if (action.type.endsWith('_FETCH_PAGINATED_REQUEST')) {
-            yield put(actions.setPaginatedData(frontendResponse));
-
-            console.log('withConversion frontendResponse', frontendResponse);
-
-        } else if (action.type.endsWith('_FETCH_ONE_REQUEST')) {
-            yield put(actions.setSelectedItem(frontendResponse));
-        } else if (action.type.endsWith('_CREATE_REQUEST') || action.type.endsWith('_UPDATE_REQUEST')) {
-            yield put(actions.setTableData(frontendResponse));
-        // } else if (action.type.endsWith('_DELETE_REQUEST')) {
-        //     yield put(actions.setDeletedItem(frontendResponse));
-        } else {
-            yield put(actions.setTableData(frontendResponse));
-        }
+        yield call(
+            sagaHandler,
+            entityKey,
+            actions,
+            api,
+            action,
+            tableName,
+            dbQueryOptions
+        );
     } catch (error: any) {
-        yield put(actions.setError(error.message || 'An error occurred during fetch.'));
+        yield put(
+            actions.setError({message: error.message || "An error occurred."})
+        );
+        console.error("withConversion error:", error);
     }
 }
 
 
-
+function prepareQueryOptions<TEntity extends EntityKeys>(
+    baseQuery: any,
+    options: QueryOptions<TEntity>
+): any {
+    if (options.filters) {
+        for (const [key, value] of Object.entries(options.filters)) {
+            baseQuery = baseQuery.eq(key, value); // Directly apply the filter
+        }
+    }
+    if (options.sorts) {
+        for (const {column, ascending = true} of options.sorts) {
+            baseQuery = baseQuery.order(column, {ascending}); // Apply sorting
+        }
+    }
+    if (options.limit) {
+        baseQuery = baseQuery.limit(options.limit);
+    }
+    if (options.offset) {
+        baseQuery = baseQuery.range(
+            options.offset,
+            options.offset + (options.limit || 0) - 1
+        );
+    }
+    if (options.columns?.length) {
+        baseQuery = baseQuery.select(options.columns.join(","));
+    }
+    return baseQuery;
+}
 
 /**
  * Utility function to get primary key value from a record
@@ -90,22 +141,22 @@ function* getPrimaryKeyInfo<TEntity extends EntityKeys>(
 
 function* handleFetchByField<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
-        field: keyof EntityRecord<TEntity, 'frontend'>;
+        field: keyof EntityRecord<TEntity, "frontend">;
         value: string | number;
         options?: QueryOptions<TEntity>;
     }>
 ) {
     try {
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleFetchByField converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
+
 
         yield put(actions.setLoading(true));
 
-        const data: EntityRecord<TEntity, 'frontend'>[] = yield call(
+        const data: EntityRecord<TEntity, "frontend">[] = yield call(
             [databaseApi, databaseApi.fetchByField],
             action.payload.field,
             action.payload.value,
@@ -124,27 +175,26 @@ function* handleFetchByField<TEntity extends EntityKeys>(
 
 function* handleFetchPkAndDisplayFields<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions']
+    actions: ReturnType<typeof createEntitySlice>["actions"]
 ) {
     try {
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey,
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleFetchPkAndDisplayFields converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         const pkField = yield call([databaseApi, databaseApi.getPrimaryKeyField]);
         const displayField = yield call([databaseApi, databaseApi.getDisplayField]);
 
-        const data: EntityRecord<TEntity, 'frontend'>[] = yield call(
+        const data: EntityRecord<TEntity, "frontend">[] = yield call(
             [databaseApi, databaseApi.fetchAll],
             {
-                columns: [pkField, ...(displayField ? [displayField] : [])]
+                columns: [pkField, ...(displayField ? [displayField] : [])],
             }
         );
 
-        const pkAndDisplayFields = data.map(record => ({
+        const pkAndDisplayFields = data.map((record) => ({
             pk: record[pkField],
-            display: displayField ? record[displayField] : undefined
+            display: displayField ? record[displayField] : undefined,
         }));
 
         yield put(actions.setAllPkAndDisplayFields(pkAndDisplayFields));
@@ -155,18 +205,20 @@ function* handleFetchPkAndDisplayFields<TEntity extends EntityKeys>(
 
 function* handleCreateBackup<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{ key: string }>
 ) {
     try {
-        const currentData: EntityRecord<TEntity, 'frontend'>[] = yield select(
+        const currentData: EntityRecord<TEntity, "frontend">[] = yield select(
             (state) => state[entityKey].data
         );
 
-        yield put(actions.setBackup({
-            key: action.payload.key,
-            data: currentData
-        }));
+        yield put(
+            actions.setBackup({
+                key: action.payload.key,
+                data: currentData,
+            })
+        );
     } catch (error: any) {
         yield put(actions.setError(error.message));
     }
@@ -174,13 +226,12 @@ function* handleCreateBackup<TEntity extends EntityKeys>(
 
 function* handleRestoreBackup<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{ key: string }>
 ) {
     try {
-        const backups: Record<string, EntityRecord<TEntity, 'frontend'>[]> = yield select(
-            (state) => state[entityKey].backups
-        );
+        const backups: Record<string, EntityRecord<TEntity, "frontend">[]> =
+            yield select((state) => state[entityKey].backups);
 
         const backupData = backups[action.payload.key];
         if (backupData) {
@@ -191,24 +242,22 @@ function* handleRestoreBackup<TEntity extends EntityKeys>(
     }
 }
 
-
 function* handleFetchSimple<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
         id: string | number;
         options?: QueryOptions<TEntity>;
     }>
 ) {
     try {
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey,
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleFetchSimple converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         yield put(actions.setLoading(true));
 
-        const data: EntityRecord<TEntity, 'frontend'> = yield call(
+        const data: EntityRecord<TEntity, "frontend"> = yield call(
             [databaseApi, databaseApi.fetchSimple],
             action.payload.id,
             action.payload.options
@@ -226,16 +275,15 @@ function* handleFetchSimple<TEntity extends EntityKeys>(
 
 function* handleSubscribeToChanges<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
-        callback: (data: EntityRecord<TEntity, 'frontend'>[]) => void;
+        callback: (data: EntityRecord<TEntity, "frontend">[]) => void;
     }>
 ) {
     try {
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey,
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleSubscribeToChanges converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         yield call(
             [databaseApi, databaseApi.subscribeToChanges],
@@ -248,13 +296,12 @@ function* handleSubscribeToChanges<TEntity extends EntityKeys>(
 
 function* handleUnsubscribeFromChanges<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions']
+    actions: ReturnType<typeof createEntitySlice>["actions"]
 ) {
     try {
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey,
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleUnsubscribeFromChanges converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         yield call([databaseApi, databaseApi.unsubscribeFromChanges]);
     } catch (error: any) {
@@ -262,13 +309,12 @@ function* handleUnsubscribeFromChanges<TEntity extends EntityKeys>(
     }
 }
 
-
 /**
  * Handle paginated query for an entity
  */
 function* MakeQuery<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
         options?: QueryOptions<TEntity>;
         page?: number;
@@ -281,19 +327,19 @@ function* MakeQuery<TEntity extends EntityKeys>(
         const optionsKey = JSON.stringify(action.payload || {});
         const lastFetchedTime = entityState.lastFetched[optionsKey];
         const now = Date.now();
-        const isStale = !lastFetchedTime || (now - lastFetchedTime) > entityState.staleTime;
+        const isStale =
+            !lastFetchedTime || now - lastFetchedTime > entityState.staleTime;
 
         if (!isStale) return;
 
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey,
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("MakeQuery converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         yield put(actions.setLoading(true));
 
         const result: {
-            data: EntityRecord<TEntity, 'frontend'>[];
+            data: EntityRecord<TEntity, "frontend">[];
             page: number;
             pageSize: number;
             totalCount: number;
@@ -304,12 +350,14 @@ function* MakeQuery<TEntity extends EntityKeys>(
             action.payload.pageSize
         );
 
-        yield put(actions.setPaginatedData({
-            data: result.data,
-            page: result.page,
-            pageSize: result.pageSize,
-            totalCount: result.totalCount
-        }));
+        yield put(
+            actions.setPaginatedData({
+                data: result.data,
+                page: result.page,
+                pageSize: result.pageSize,
+                totalCount: result.totalCount,
+            })
+        );
         yield put(actions.setLastFetched({key: optionsKey, time: now}));
     } catch (error: any) {
         yield put(actions.setError(error.message));
@@ -323,30 +371,34 @@ function* MakeQuery<TEntity extends EntityKeys>(
  */
 function* handleFetchOne<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
         primaryKeyValue: string | number;
         options?: QueryOptions<TEntity>;
     }>
 ) {
     try {
-        const databaseApi = yield call(
-            initializeDatabaseApi<TEntity>,
-            entityKey,
-        );
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleFetchOne converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         const state = yield select();
         const entityState = state[entityKey];
-        const primaryKeyField = yield call([databaseApi, databaseApi.getPrimaryKeyField]);
+        const primaryKeyField = yield call([
+            databaseApi,
+            databaseApi.getPrimaryKeyField,
+        ]);
 
         const item = entityState.data.find(
-            (item: EntityRecord<TEntity, 'frontend'>) =>
+            (item: EntityRecord<TEntity, "frontend">) =>
                 item[primaryKeyField] === action.payload.primaryKeyValue
         );
 
-        const lastFetchedTime = entityState.lastFetched[action.payload.primaryKeyValue];
+        const lastFetchedTime =
+            entityState.lastFetched[action.payload.primaryKeyValue];
         const now = Date.now();
-        const isStale = !lastFetchedTime || (now - lastFetchedTime) > entityState.staleTime;
+        const isStale =
+            !lastFetchedTime || now - lastFetchedTime > entityState.staleTime;
 
         if (item && !isStale) {
             yield put(actions.setSelectedItem(item));
@@ -355,7 +407,7 @@ function* handleFetchOne<TEntity extends EntityKeys>(
 
         yield put(actions.setLoading(true));
 
-        const data: EntityRecord<TEntity, 'frontend'> = yield call(
+        const data: EntityRecord<TEntity, "frontend"> = yield call(
             [databaseApi, databaseApi.fetchByPrimaryKey],
             action.payload.primaryKeyValue,
             action.payload.options
@@ -363,10 +415,12 @@ function* handleFetchOne<TEntity extends EntityKeys>(
 
         if (data) {
             yield put(actions.setSelectedItem(data));
-            yield put(actions.setLastFetched({
-                key: action.payload.primaryKeyValue.toString(),
-                time: now
-            }));
+            yield put(
+                actions.setLastFetched({
+                    key: action.payload.primaryKeyValue.toString(),
+                    time: now,
+                })
+            );
         }
     } catch (error: any) {
         yield put(actions.setError(error.message));
@@ -380,33 +434,33 @@ function* handleFetchOne<TEntity extends EntityKeys>(
  */
 function* handleCreate<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
-    action: PayloadAction<Partial<EntityRecord<TEntity, 'frontend'>>>
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    action: PayloadAction<Partial<EntityData<TEntity>>>,
+    tableName: string,
+    dbQueryOptions: any
 ) {
     try {
-        yield put(actions.setLoading(true));
 
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityKey,);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleCreate converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
-        const data: EntityRecord<TEntity, 'frontend'> = yield call(
-            [databaseApi, databaseApi.create],
-            action.payload
-        );
 
-        if (data) {
-            const currentData = yield select(
-                (state) => state[entityKey].data
-            );
-            yield put(actions.setTableData([...currentData, data]));
-            // yield put(actions.setLastFetched({
-            //     key: data.id.toString(),
-            //     time: Date.now()
-            // }));
+        console.log("handleCreate starting with:", entityKey, action.payload);
+
+        const {data, error} = yield databaseApi.insert(action.payload).single();
+
+        if (error) {
+            throw error;
         }
+
+        const frontendResponse = yield select(selectFrontendConversion, data);
+
+        // Dispatch success action
+        yield put(actions.createSuccess(frontendResponse));
     } catch (error: any) {
-        yield put(actions.setError(error.message));
-    } finally {
-        yield put(actions.setLoading(false));
+        // Dispatch failure action
+        yield put(actions.createFailure(error));
     }
 }
 
@@ -415,25 +469,27 @@ function* handleCreate<TEntity extends EntityKeys>(
  */
 function* handleUpdate<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
         id: string | number;
-        data: Partial<EntityRecord<TEntity, 'frontend'>>;
+        data: Partial<EntityRecord<TEntity, "frontend">>;
     }>
 ) {
     try {
         yield put(actions.setLoading(true));
 
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityKey,);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleUpdate converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
-        const updatedData: EntityRecord<TEntity, 'frontend'> | null = yield call(
+        const updatedData: EntityRecord<TEntity, "frontend"> | null = yield call(
             [databaseApi, databaseApi.update],
             action.payload.id,
             action.payload.data
         );
 
         if (updatedData) {
-            const currentData: EntityRecord<TEntity, 'frontend'>[] = yield select(
+            const currentData: EntityRecord<TEntity, "frontend">[] = yield select(
                 (state) => state[entityKey].data
             );
 
@@ -442,10 +498,12 @@ function* handleUpdate<TEntity extends EntityKeys>(
             // );
             //
             // yield put(actions.setTableData(newData));
-            yield put(actions.setLastFetched({
-                key: action.payload.id.toString(),
-                time: Date.now()
-            }));
+            yield put(
+                actions.setLastFetched({
+                    key: action.payload.id.toString(),
+                    time: Date.now(),
+                })
+            );
         }
     } catch (error: any) {
         yield put(actions.setError(error.message));
@@ -459,13 +517,15 @@ function* handleUpdate<TEntity extends EntityKeys>(
  */
 function* handleDelete<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<string | number>
 ) {
     try {
         yield put(actions.setLoading(true));
 
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityKey,);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleDelete converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         const success: boolean = yield call(
             [databaseApi, databaseApi.delete],
@@ -473,7 +533,7 @@ function* handleDelete<TEntity extends EntityKeys>(
         );
 
         if (success) {
-            const currentData: EntityRecord<TEntity, 'frontend'>[] = yield select(
+            const currentData: EntityRecord<TEntity, "frontend">[] = yield select(
                 (state) => state[entityKey].data
             );
 
@@ -491,44 +551,10 @@ function* handleDelete<TEntity extends EntityKeys>(
     }
 }
 
-/**
- * Handle custom query execution
- */
-function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
-    entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
-    action: PayloadAction<{
-        queryFn: (baseQuery: PostgrestFilterBuilder<any, any, any>) => Promise<any>;
-        format?: 'frontend' | 'database';
-    }>
-) {
-    try {
-        yield put(actions.setLoading(true));
-
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityKey,);
-
-        const rawData: unknown[] = yield call(
-            [databaseApi, databaseApi.executeCustomQuery],
-            action.payload.queryFn
-        );
-
-        const formattedData = action.payload.format === 'database'
-                              ? rawData
-                              : rawData.map(item =>
-                createFormattedRecord(entityKey, item as Record<string, unknown>, 'frontend')
-            );
-
-        yield put(actions.setTableData(formattedData));
-    } catch (error: any) {
-        yield put(actions.setError(error.message));
-    } finally {
-        yield put(actions.setLoading(false));
-    }
-}
 
 function* handleFetchAll<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
         options?: QueryOptions<TEntity>;
     }>
@@ -536,19 +562,23 @@ function* handleFetchAll<TEntity extends EntityKeys>(
     try {
         yield put(actions.setLoading(true));
 
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityKey,);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleFetchAll converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
-        const data: EntityRecord<TEntity, 'frontend'>[] = yield call(
+        const data: EntityRecord<TEntity, "frontend">[] = yield call(
             [databaseApi, databaseApi.fetchAll],
             action.payload.options
         );
 
         if (data) {
             yield put(actions.setTableData(data));
-            yield put(actions.setLastFetched({
-                key: 'all',
-                time: Date.now()
-            }));
+            yield put(
+                actions.setLastFetched({
+                    key: "all",
+                    time: Date.now(),
+                })
+            );
         }
     } catch (error: any) {
         yield put(actions.setError(error.message));
@@ -559,18 +589,20 @@ function* handleFetchAll<TEntity extends EntityKeys>(
 
 function* handleFetchByPrimaryKey<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+    actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
         primaryKeyValue: string | number;
         options?: QueryOptions<TEntity>;
     }>
 ) {
     try {
-        const databaseApi = yield call(initializeDatabaseApi<TEntity>, entityKey,);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("handleFetchByPrimaryKey converted tableName:", tableName);
+        const databaseApi = yield call(initializeDatabaseApi, tableName);
 
         yield put(actions.setLoading(true));
 
-        const data: EntityRecord<TEntity, 'frontend'> = yield call(
+        const data: EntityRecord<TEntity, "frontend"> = yield call(
             [databaseApi, databaseApi.fetchByPrimaryKey],
             action.payload.primaryKeyValue,
             action.payload.options
@@ -637,136 +669,191 @@ function* handleFetchByPrimaryKey<TEntity extends EntityKeys>(
 //         yield put(actions.setLoading(false));
 //     }
 // }
-
-function* handleFetchPaginated<TEntity extends EntityKeys>(
-    entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice>['actions'],
+/**
+ * Handle custom query execution
+ */
+function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
+    actions: {
+        executeQueryRequest: (payload: any) => any;
+        executeQuerySuccess: (payload: any[]) => any;
+        executeQueryFailure: (payload: { message: string; code?: number }) => any;
+    },
+    api: any,
     action: PayloadAction<{
-        options?: QueryOptions<TEntity>;
-        page: number;
-        pageSize: number;
-        maxCount?: number;
-    }>
+        queryFn: (baseQuery: any) => Promise<any>;
+        format?: "frontend" | "database";
+    }>,
+    tableName: string,
+    dbQueryOptions: any
 ) {
     try {
-        console.log('handleFetchPaginated starting try with:', entityKey, actions, action);
-        // Trigger loading state
-        yield put(actions.setLoading(true));
+        // Start loading
+        yield put(actions.executeQueryRequest({}));
 
-        // Use the simplified initializeDatabaseApi to fetch data
-        const resultData = yield call(initializeDatabaseApi, entityKey);
+        // Execute the custom query with `queryFn`
+        const rawData = yield call(action.payload.queryFn, api);
 
-        // Mock result structure to fit expected format for actions
-        const result = {
-            data: resultData,
-            page: action.payload.page,
-            pageSize: action.payload.pageSize,
-            totalCount: resultData ? resultData.length : 0,
-            maxCount: action.payload.maxCount || 10000
-        };
+        const frontendData =
+            action.payload.format === "database"
+            ? rawData
+            : yield select(selectFrontendConversion, rawData);
 
-        // Dispatch action with simplified result structure
-        console.log('handleFetchPaginated got results', result);
-
-        yield put(actions.setPaginatedData({
-            data: result.data,
-            page: result.page,
-            pageSize: result.pageSize,
-            totalCount: result.totalCount,
-            maxCount: result.maxCount
-        }));
+        yield put(actions.executeQuerySuccess(frontendData));
     } catch (error: any) {
-        // Handle errors with a fallback message if none exists
-        yield put(actions.setError(error.message || 'An error occurred during fetch.'));
-    } finally {
-        // Reset loading state
-        yield put(actions.setLoading(false));
+        yield put(actions.executeQueryFailure({message: error.message, code: error.code}));
     }
 }
 
+function* handleFetchPaginated<TEntity extends EntityKeys>(
+    entityKey: TEntity,  // Added entityKey as first parameter
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    api: any,
+    action: PayloadAction<{
+        page: number;
+        pageSize: number;
+        options?: QueryOptions<TEntity>;
+        maxCount?: number;
+    }>,
+    tableName: string,
+    dbQueryOptions: QueryOptions<TEntity>
+) {
+    try {
+        console.log("handleFetchPaginated starting with Table name:", tableName);
+        console.log("handleFetchPaginated starting with action:", action);
+        console.log("handleFetchPaginated starting with action.payload:", action.payload);
+        console.log("handleFetchPaginated starting with dbQueryOptions:", dbQueryOptions);
+
+        // Fetch data from the API
+        const from = (action.payload.page - 1) * action.payload.pageSize;
+        const to = action.payload.page * action.payload.pageSize - 1;
+
+        const {data, error, count} = yield api
+            .select("*", {count: "exact"})
+            .range(from, to);
+
+        if (error) {
+            throw error;
+        }
+
+        console.log("handleFetchPaginated has data:", data);
+
+        const payload = { entityName: entityKey, data };
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+
+        console.log("handleFetchPaginated has frontendResponse:", frontendResponse);
+
+        const result = {
+            data: frontendResponse,
+            page: action.payload.page,
+            pageSize: action.payload.pageSize,
+            totalCount: count,
+            maxCount: action.payload.maxCount || 10000,
+        };
+
+        console.log("handleFetchPaginated has result:", result);
+
+        // Dispatch success action
+        yield put(actions.fetchPaginatedSuccess(result));
+
+        console.log("Success! handleFetchPaginated has dispatched success action");
+    } catch (error: any) {
+
+        console.log("Error! handleFetchPaginated has dispatched failure action");
+
+        yield put(actions.fetchPaginatedFailure(error));
+    }
+}
 
 type EntitySchemaType<TEntity extends EntityKeys> = AutomationEntities[TEntity];
 
-export function createEntitySaga<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const actions = createEntityActions(entityKey);
-    const baseType = `ENTITY/${entityKey.toUpperCase()}`;
-    // console.log('- createEntitySaga baseType', baseType);
+export function createEntitySaga<TEntity extends EntityKeys>(
+    entityKey: TEntity
+) {
+    const {actions} = createEntitySlice(entityKey);
 
     return function* saga() {
         yield all([
             takeLatest(
-                `${baseType}_FETCH_REQUEST`,
-                withConversion.bind(null, MakeQuery, entityKey, actions)
-            ),
-            takeLatest(
-                `${baseType}_FETCH_PAGINATED_REQUEST`,
+                actions.fetchRequest.type,
                 withConversion.bind(null, handleFetchPaginated, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_FETCH_ONE_REQUEST`,
+                actions.fetchPaginatedRequest.type,
+                withConversion.bind(null, handleFetchPaginated, entityKey, actions)
+            ),
+            takeLatest(
+                actions.fetchOneRequest.type,
                 withConversion.bind(null, handleFetchOne, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_CREATE_REQUEST`,
+                actions.createRequest.type,
                 withConversion.bind(null, handleCreate, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_UPDATE_REQUEST`,
+                actions.updateRequest.type,
                 withConversion.bind(null, handleUpdate, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_DELETE_REQUEST`,
+                actions.deleteRequest.type,
                 withConversion.bind(null, handleDelete, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_EXECUTE_QUERY_REQUEST`,
+                actions.executeQueryRequest.type,
                 withConversion.bind(null, handleExecuteCustomQuery, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_FETCH_PAGINATED_REQUEST`,
+                actions.fetchPaginatedDirectlyRequest.type,
                 withConversion.bind(null, MakeQuery, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_FETCH_BY_PRIMARY_KEY_REQUEST`,
+                actions.fetchByPrimaryKeyRequest.type,
                 withConversion.bind(null, handleFetchByPrimaryKey, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_FETCH_BY_FIELD_REQUEST`,
+                actions.fetchByFieldRequest.type,
                 withConversion.bind(null, handleFetchByField, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_FETCH_SIMPLE_REQUEST`,
+                actions.fetchSimpleRequest.type,
                 withConversion.bind(null, handleFetchSimple, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_SUBSCRIBE`,
+                actions.subscribe.type,
                 withConversion.bind(null, handleSubscribeToChanges, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_UNSUBSCRIBE`,
-                withConversion.bind(null, handleUnsubscribeFromChanges, entityKey, actions)
+                actions.unsubscribe.type,
+                withConversion.bind(
+                    null,
+                    handleUnsubscribeFromChanges,
+                    entityKey,
+                    actions
+                )
             ),
             takeLatest(
-                `${baseType}_FETCH_ALL_REQUEST`,
+                actions.fetchAllRequest.type,
                 withConversion.bind(null, handleFetchAll, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_FETCH_PK_AND_DISPLAY_FIELDS_REQUEST`,
-                withConversion.bind(null, handleFetchPkAndDisplayFields, entityKey, actions)
+                actions.fetchPkAndDisplayFieldsRequest.type,
+                withConversion.bind(
+                    null,
+                    handleFetchPkAndDisplayFields,
+                    entityKey,
+                    actions
+                )
             ),
             takeLatest(
-                `${baseType}_CREATE_BACKUP_REQUEST`,
+                actions.createBackupRequest.type,
                 withConversion.bind(null, handleCreateBackup, entityKey, actions)
             ),
             takeLatest(
-                `${baseType}_RESTORE_BACKUP_REQUEST`,
+                actions.restoreBackupRequest.type,
                 withConversion.bind(null, handleRestoreBackup, entityKey, actions)
             ),
         ]);
     };
 }
-
-
 
 /**
  * Initialize DatabaseApiWrapper for a given entity and dynamically inject the Supabase client
@@ -779,4 +866,3 @@ export function createEntitySaga<TEntity extends EntityKeys>(entityKey: TEntity)
 //     databaseApi.setClient(supabase);
 //     return databaseApi;
 // }
-

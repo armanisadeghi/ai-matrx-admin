@@ -1,50 +1,49 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { createEntitySelectors } from "@/lib/redux/entity/entitySelectors";
-import { createEntityActions } from "@/lib/redux/entity/entityActionCreator";
-import { RootState } from '@/lib/redux/store';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import {createEntitySelectors} from "@/lib/redux/entity/entitySelectors";
+import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 
 const entityKey = 'registeredFunction';
-const selectors = createEntitySelectors(entityKey);
-const actions = createEntityActions(entityKey);
+const entitySelectors = createEntitySelectors(entityKey);
+const entityActions = createEntityActions(entityKey);
 
 const TestEntityTable: React.FC = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
-    const [shouldFetch, setShouldFetch] = useState(true);
 
-    const data = useSelector((state: RootState) => selectors.getData(state));
-    const loading = useSelector((state: RootState) => selectors.getLoading(state));
-    const error = useSelector((state: RootState) => selectors.getError(state));
-    const totalCount = useSelector((state: RootState) => selectors.getTotalCount(state));
-    const initialized = useSelector((state: RootState) => selectors.getInitialized(state));
+    const data = useAppSelector(entitySelectors.selectData);
+    const loading = useAppSelector(entitySelectors.selectLoading);
+    const error = useAppSelector(entitySelectors.selectError);
+    const totalCount = useAppSelector(entitySelectors.selectTotalCount);
+    const initialized = useAppSelector(entitySelectors.selectInitialized);
 
-    const handlePageChange = useCallback((newPage: number, newPageSize: number) => {
+    // Combine fetch logic into a single effect with clear conditions
+    useEffect(() => {
+        // Only fetch if:
+        // 1. We're not currently loading
+        // 2. AND either we're not initialized OR we have an explicit page change
+        if (!loading && (!initialized || page > 0)) {
+            dispatch(entityActions.fetchPaginatedRequest({
+                page,
+                pageSize,
+                options: {},
+                maxCount: 10000
+            }));
+        }
+    }, [page, pageSize]);
+
+    const handlePageChange = useCallback((newPage: number) => {
+        console.log('Page changed to:', newPage);
         setPage(newPage);
-        setPageSize(newPageSize);
-        setShouldFetch(true);
     }, []);
 
-    useEffect(() => {
-        if (shouldFetch) {
-            console.log('Fetching data:', { page, pageSize });
-            dispatch(actions.fetchPaginatedRequest(page, pageSize, {}, 10000));
-            setShouldFetch(false);
-        }
-    }, [page, pageSize, shouldFetch]);
-
-    useEffect(() => {
-        if (!initialized && !loading) {
-            setShouldFetch(true);
-        }
-    }, []);
-
-    const memoizedData = useMemo(() => data, [data]);
-    const memoizedTotalCount = useMemo(() => totalCount, [totalCount]);
+    // Memoize data only if you're using it in expensive computations
+    const memoizedData = data;
+    const memoizedTotalCount = totalCount;
 
     return (
         <div className="p-4 space-y-4">
@@ -52,9 +51,9 @@ const TestEntityTable: React.FC = () => {
 
             {loading && <div>Loading...</div>}
 
-            {error && (
+            {error?.message && (
                 <div className="text-destructive p-4 rounded">
-                    Error: {error}
+                    Error: {error.message}
                 </div>
             )}
 
@@ -85,7 +84,6 @@ const TestEntityTable: React.FC = () => {
                     dataLength: memoizedData?.length,
                     loading,
                     error,
-                    shouldFetch
                 }, null, 2)}
             </pre>
         </div>

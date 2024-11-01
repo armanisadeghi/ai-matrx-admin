@@ -4,7 +4,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './dynamic/featureSchema';
 import { createFeatureSlice } from './slices/featureSliceCreator';
 import { createModuleSlice } from './slices/moduleSliceCreator';
-import schemaReducer from './slices/globalCacheSlice'
+import schemaReducer from './schema/globalCacheSlice'
 import { moduleSchemas, ModuleName } from './dynamic/moduleSchema';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';

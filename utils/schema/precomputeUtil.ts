@@ -1931,6 +1931,8 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     // console.log('\nComplete entityNameToCanonical:', JSON.stringify(globalCache.entityNameToCanonical, null, 2));
     // console.log('\nComplete fieldNameToCanonical:', JSON.stringify(globalCache.fieldNameToCanonical, null, 2));
 
+    // logSchemaCacheReportFile(globalCache);
+
     if (showSummary) {
         console.log();
         console.log(`Total Schema Entries: ${Object.keys(globalCache.schema).length}`);
@@ -1940,3 +1942,153 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     }
 }
 
+import fs from 'fs';
+
+export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
+    // Enable all output sections
+    const showEntities = true;
+    const showFields = true;
+    const showExample = true;
+    const showSummary = true;
+
+    // Enable all sample prints for each part of the schema
+    const showEntityNamesSample = true;
+    const showEntitiesSample = true;
+    const showFieldsSample = true;
+    const showFieldsByEntitySample = true;
+    const showEntityNameToCanonicalSample = true;
+    const showFieldNameToCanonicalSample = true;
+    const showEntityNameFormatsSample = true;
+    const showFieldNameFormatsSample = true;
+    const showEntityNameToDatabaseSample = true;
+    const showEntityNameToBackendSample = true;
+    const showFieldNameToDatabaseSample = true;
+    const showFieldNameToBackendSample = true;
+
+    if (!globalCache) {
+        console.warn('Global cache not initialized. Cannot generate schema report.');
+        return;
+    }
+
+    let report = '\n=== Schema Cache Report ===\n';
+
+    // Example schema entry for 'registeredFunction'
+    if (showExample) {
+        const exampleEntity = globalCache.schema['registeredFunction'];
+        if (exampleEntity) {
+            report += '\n=== Example Entity Detail: registeredFunction ===\n';
+            report += JSON.stringify(exampleEntity, null, 2) + '\n';
+        } else {
+            report += '\nNo entry found for entity: registeredFunction\n';
+        }
+    }
+
+    // Print entities and their fields
+    if (showEntities || showFields) {
+        report += 'Entities and Fields:\n';
+        Object.entries(globalCache.schema).forEach(([entityName, entity]) => {
+            if (showEntities) {
+                report += `\n${entity.entityNameFormats.pretty} [${entityName}]\n`;
+            }
+
+            if (showFields && entity.entityFields) {
+                const fieldNames = Object.keys(entity.entityFields);
+                if (fieldNames.length > 0) {
+                    const prettyFieldNames = fieldNames.map(fieldName => {
+                        const field = entity.entityFields[fieldName];
+                        return `   - ${field.fieldNameFormats.pretty} [${fieldName}]\n`;
+                    });
+                    prettyFieldNames.forEach(prettyFieldName => (report += prettyFieldName));
+                } else {
+                    report += '   No fields available\n';
+                }
+            }
+        });
+    }
+
+    if (showEntityNamesSample) {
+        report += '\nSample Entity Names:\n' + JSON.stringify(globalCache.entityNames.slice(0, 5), null, 2) + '\n';
+    }
+
+    if (showEntitiesSample) {
+        const firstEntityKey = Object.keys(globalCache.entities)[0];
+        const firstEntityValue = globalCache.entities[firstEntityKey];
+        report += '\nSample Entity (Detailed):\n' + JSON.stringify({ [firstEntityKey]: firstEntityValue }, null, 2) + '\n';
+    }
+
+    if (showFieldsSample) {
+        const firstFieldKey = Object.keys(globalCache.fields)[0];
+        const firstFieldValue = globalCache.fields[firstFieldKey];
+        report += '\nSample Field (Detailed):\n' + JSON.stringify({ [firstFieldKey]: firstFieldValue }, null, 2) + '\n';
+    }
+
+    if (showFieldsByEntitySample) {
+        const firstFieldsByEntityKey = Object.keys(globalCache.fieldsByEntity)[0];
+        const firstFieldsByEntityValue = globalCache.fieldsByEntity[firstFieldsByEntityKey];
+        report += '\nSample Fields by Entity (Detailed):\n' + JSON.stringify({ [firstFieldsByEntityKey]: firstFieldsByEntityValue }, null, 2) + '\n';
+    }
+
+    if (showEntityNameToCanonicalSample) {
+        const firstEntityNameToCanonical = Object.entries(globalCache.entityNameToCanonical)[0];
+        report += '\nSample Entity Name to Canonical Mapping (Detailed):\n' + JSON.stringify({ [firstEntityNameToCanonical[0]]: firstEntityNameToCanonical[1] }, null, 2) + '\n';
+    }
+
+    if (showFieldNameToCanonicalSample) {
+        const firstFieldNameToCanonical = Object.entries(globalCache.fieldNameToCanonical)[0];
+        report += '\nSample Field Name to Canonical Mapping (Detailed):\n' + JSON.stringify({ [firstFieldNameToCanonical[0]]: firstFieldNameToCanonical[1] }, null, 2) + '\n';
+    }
+
+    if (showEntityNameFormatsSample) {
+        const firstEntityNameFormat = Object.entries(globalCache.entityNameFormats)[0];
+        report += '\nSample Entity Name Formats (Detailed):\n' + JSON.stringify({ [firstEntityNameFormat[0]]: firstEntityNameFormat[1] }, null, 2) + '\n';
+    }
+
+    if (showFieldNameFormatsSample) {
+        const firstFieldNameFormat = Object.entries(globalCache.fieldNameFormats)[0];
+        report += '\nSample Field Name Formats (Detailed):\n' + JSON.stringify({ [firstFieldNameFormat[0]]: firstFieldNameFormat[1] }, null, 2) + '\n';
+    }
+
+    if (showEntityNameToDatabaseSample) {
+        const firstEntityNameToDatabase = Object.entries(globalCache.entityNameToDatabase)[0];
+        report += '\nSample Entity Name to Database Mapping (Detailed):\n' + JSON.stringify({ [firstEntityNameToDatabase[0]]: firstEntityNameToDatabase[1] }, null, 2) + '\n';
+    }
+
+    if (showEntityNameToBackendSample) {
+        const firstEntityNameToBackend = Object.entries(globalCache.entityNameToBackend)[0];
+        report += '\nSample Entity Name to Backend Mapping (Detailed):\n' + JSON.stringify({ [firstEntityNameToBackend[0]]: firstEntityNameToBackend[1] }, null, 2) + '\n';
+    }
+
+    if (showFieldNameToDatabaseSample) {
+        const firstFieldNameToDatabase = Object.entries(globalCache.fieldNameToDatabase)[0];
+        report += '\nSample Field Name to Database Mapping (Detailed):\n' + JSON.stringify({ [firstFieldNameToDatabase[0]]: firstFieldNameToDatabase[1] }, null, 2) + '\n';
+    }
+
+    if (showFieldNameToBackendSample) {
+        const firstFieldNameToBackend = Object.entries(globalCache.fieldNameToBackend)[0];
+        report += '\nSample Field Name to Backend Mapping (Detailed):\n' + JSON.stringify({ [firstFieldNameToBackend[0]]: firstFieldNameToBackend[1] }, null, 2) + '\n';
+    }
+
+    // Full detailed outputs
+    report += '\nComplete entityNames:\n' + JSON.stringify(globalCache.entityNames, null, 2) + '\n';
+    report += '\nComplete entities:\n' + JSON.stringify(globalCache.entities, null, 2) + '\n';
+    report += '\nComplete fields:\n' + JSON.stringify(globalCache.fields, null, 2) + '\n';
+    report += '\nComplete fieldsByEntity:\n' + JSON.stringify(globalCache.fieldsByEntity, null, 2) + '\n';
+    report += '\nComplete entityNameToCanonical:\n' + JSON.stringify(globalCache.entityNameToCanonical, null, 2) + '\n';
+    report += '\nComplete fieldNameToCanonical:\n' + JSON.stringify(globalCache.fieldNameToCanonical, null, 2) + '\n';
+    report += '\nComplete entityNameFormats:\n' + JSON.stringify(globalCache.entityNameFormats, null, 2) + '\n';
+    report += '\nComplete fieldNameFormats:\n' + JSON.stringify(globalCache.fieldNameFormats, null, 2) + '\n';
+    report += '\nComplete entityNameToDatabase:\n' + JSON.stringify(globalCache.entityNameToDatabase, null, 2) + '\n';
+    report += '\nComplete entityNameToBackend:\n' + JSON.stringify(globalCache.entityNameToBackend, null, 2) + '\n';
+    report += '\nComplete fieldNameToDatabase:\n' + JSON.stringify(globalCache.fieldNameToDatabase, null, 2) + '\n';
+    report += '\nComplete fieldNameToBackend:\n' + JSON.stringify(globalCache.fieldNameToBackend, null, 2) + '\n';
+
+    if (showSummary) {
+        report += `\nTotal Schema Entries: ${Object.keys(globalCache.schema).length}\n`;
+        report += `Total Entity Names: ${globalCache.entityNames.length}\n`;
+        report += `Total Entities: ${Object.keys(globalCache.entities).length}\n`;
+        report += `Total Fields: ${Object.keys(globalCache.fields).length}\n`;
+    }
+
+    fs.writeFileSync('schema_cache_report.txt', report);
+    console.log('Schema cache report saved to schema_cache_report.txt');
+}

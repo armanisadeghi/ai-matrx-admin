@@ -62,10 +62,12 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
                 <AnimatePresence>
                     {page.map((row, i) => {
                         prepareRow(row);
+                        const {key: rowKey, ...rowProps} = row.getRowProps();
+
                         return (
                             <motion.tr
-                                key={row.id}
-                                {...row.getRowProps()}
+                                key={rowKey || `row-${i}`}
+                                {...rowProps}
                                 initial={{opacity: 0, y: -10}}
                                 animate={{
                                     opacity: 1,
@@ -85,16 +87,21 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
                                 className="bg-card hover:bg-accent/50 cursor-pointer scrollbar-hide"
                                 onClick={() => handleAction('view', row.original)}
                             >
-                                {row.cells.map((cell) => (
-                                    <MatrxTableCell
-                                        key={cell.getCellProps().key}
-                                        cell={cell}
-                                        actions={actions}
-                                        rowData={row.original}
-                                        onAction={handleAction}
-                                        truncateAt={truncateAt}
-                                    />
-                                ))}
+                                {row.cells.map((cell, cellIndex) => {
+                                    const {key: cellKey, ...cellProps} = cell.getCellProps();
+
+                                    return (
+                                        <MatrxTableCell
+                                            key={cellKey || `cell-${i}-${cellIndex}`}
+                                            {...cellProps}
+                                            cell={cell}
+                                            actions={actions}
+                                            rowData={row.original}
+                                            onAction={handleAction}
+                                            truncateAt={truncateAt}
+                                        />
+                                    );
+                                })}
                             </motion.tr>
                         );
                     })}
@@ -104,7 +111,8 @@ const MatrxTableBody: React.FC<MatrxTableBodyProps> = (
                 <AnimatedTabModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    onSubmit={() => {}}
+                    onSubmit={() => {
+                    }}
                     onUpdateField={handleUpdateField}
                     formState={formState}
                     title={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Item`}

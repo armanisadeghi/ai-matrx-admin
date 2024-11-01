@@ -7,7 +7,7 @@ import {
     selectEntity, selectEntityDatabaseName,
     selectEntityFields,
     selectEntityNames
-} from "@/lib/redux/selectors/schemaSelectors";
+} from "@/lib/redux/schema/old/schemaSelectors";
 import {EntityNameOfficial} from "@/types/schema";
 import {RootState} from "@/lib/redux/store";
 import {useMemo} from "react";

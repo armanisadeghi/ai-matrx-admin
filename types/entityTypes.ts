@@ -163,6 +163,19 @@ type test10 = FieldFormatTypes<'registeredFunction', 'modulePath'>; // Shows pos
 type test11 = AllFieldNameVariations<'registeredFunction', 'modulePath'>; // Shows all variations including the key
 type test12 = AllEntityFieldVariations<'registeredFunction'>; // Shows all variations for all fields of an entity
 
+export type FieldDatabaseColumn<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>,
+> = FieldNameFormats<TEntity, TField>['database'];
+
+type testRegFuncField = FieldDatabaseColumn<'registeredFunction', 'modulePath'>;
+
+export type EntityDatabaseTable<
+    TEntity extends EntityKeys,
+> = EntityNameFormats<TEntity>['database'];
+
+type testRegFuncTable = EntityDatabaseTable<'registeredFunction'>;
+
 
 export type FieldDataType<
     TEntity extends EntityKeys,

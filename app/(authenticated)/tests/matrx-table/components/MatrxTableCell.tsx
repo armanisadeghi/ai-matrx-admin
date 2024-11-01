@@ -36,8 +36,10 @@ const MatrxTableCell: React.FC<{
 
     const cellContent = truncateText(cell.value, truncateAt);
 
+    const { key: cellKey, ...cellProps } = cell.getCellProps();
+
     return (
-        <TableCell {...cell.getCellProps()} className="text-card-foreground">
+        <TableCell key={cellKey} {...cellProps} className="text-card-foreground">
             <MatrixTableTooltip content={cell.value} side="top">
                 <motion.div
                     initial={false}

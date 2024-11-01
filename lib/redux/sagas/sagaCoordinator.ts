@@ -23,7 +23,6 @@ export class SagaCoordinator {
     }
 
     setEntityNames(entityNames: EntityKeys[]) {
-        console.log('Setting entity names...');
         this.entityNames = entityNames;
     }
 

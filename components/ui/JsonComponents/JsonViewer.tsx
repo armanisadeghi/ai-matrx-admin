@@ -8,7 +8,7 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {Copy, ChevronDown, ChevronRight} from 'lucide-react';
 
 interface JsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
-    data: object;
+    data: object | string;
     initialExpanded?: boolean;
     maxHeight?: string;
 }
@@ -84,8 +84,22 @@ export const JsonViewer: React.FC<JsonViewerProps> = (
     const [isCopied, setIsCopied] = useState(false);
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
+    // Parse data if it's a JSON string
+    let parsedData;
+    if (typeof data === 'string') {
+        try {
+            parsedData = JSON.parse(data);
+        } catch (error) {
+            return <div>Invalid JSON string provided.</div>;
+        }
+    } else if (typeof data === 'object' && data !== null) {
+        parsedData = data;
+    } else {
+        return <div>No data available</div>;
+    }
+
     const copyToClipboard = () => {
-        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+        navigator.clipboard.writeText(JSON.stringify(parsedData, null, 2));
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     };
@@ -103,7 +117,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = (
     }, []);
 
     const expandAll = () => {
-        const allKeys = getAllKeys(data);
+        const allKeys = getAllKeys(parsedData);
         setExpandedKeys(new Set(allKeys));
     };
 
@@ -158,15 +172,15 @@ export const JsonViewer: React.FC<JsonViewerProps> = (
                     {isCopied ? 'Copied!' : 'Copy'}
                 </Button>
             </div>
-            {Object.entries(data).map(([key, value]) => (
-                <JsonViewerItem
-                    key={key}
-                    keyName={key}
-                    value={value}
-                    depth={0}
-                    isExpanded={expandedKeys.has(key)}
-                    onToggle={() => toggleExpand(key)}
-                />
+            {Object.entries(parsedData).map(([key, value]) => (
+                    <JsonViewerItem
+                        key={key}
+                        keyName={key}
+                        value={value}
+                        depth={0}
+                        isExpanded={expandedKeys.has(key)}
+                        onToggle={() => toggleExpand(key)}
+                    />
             ))}
         </div>
     );
