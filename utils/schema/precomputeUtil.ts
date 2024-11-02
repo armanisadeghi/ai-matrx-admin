@@ -72,7 +72,7 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
 
 // function normalizeSchema(originalSchema: AutomationEntities) {
 //     const entityNames: EntityNameOfficial[] = [];
-//     const entities: Partial<Record<EntityNameOfficial, SchemaEntity>> = {};
+//     const applets: Partial<Record<EntityNameOfficial, SchemaEntity>> = {};
 //     const fields: Record<string, SchemaField> = {};
 //     const fieldsByEntity: Partial<Record<EntityNameOfficial, string[]>> = {};
 //
@@ -87,7 +87,7 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
 //         };
 //
 //         entityNames.push(entityName as EntityNameOfficial);
-//         entities[entityName as EntityNameOfficial] = entity;
+//         applets[entityName as EntityNameOfficial] = entity;
 //         fieldsByEntity[entityName as EntityNameOfficial] = [];
 //
 //         // Process fields
@@ -110,7 +110,7 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
 //
 //     return {
 //         entityNames,
-//         entities,
+//         applets,
 //         fields,
 //         fieldsByEntity,
 //     };
@@ -121,6 +121,10 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
  * Generates the client-side schema bundle
  */
 export function generateClientGlobalCache(): UnifiedSchemaCache {
+
+    if (!globalCache)
+        initializeSchemaSystem();
+
     if (!globalCache) throw new Error('Schema system not initialized');
     logSchemaCacheReport(globalCache);
     console.log('Client schema generated successfully');
@@ -273,8 +277,8 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             fieldsByEntity,
             entityNameToCanonical: {...entityNameToCanonical},
             fieldNameToCanonical: {...fieldNameToCanonical},
-            entityNameFormats: deepCopy(entityNameFormats),
-            fieldNameFormats: deepCopy(fieldNameFormats),
+            entityNameFormats, // No deep copy
+            fieldNameFormats,  // No deep copy
             entityNameToDatabase,
             entityNameToBackend,
             fieldNameToDatabase,
@@ -1863,7 +1867,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
         }
     }
 
-    // Print entities and their fields
+    // Print applets and their fields
     if (showEntities || showFields) {
         console.log('Entities and Fields:');
         Object.entries(globalCache.schema).forEach(([entityName, entity]) => {
@@ -1925,7 +1929,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     }
 
     // console.log('\nComplete entityNames:', JSON.stringify(globalCache.entityNames, null, 2));
-    // console.log('\nComplete entities:', JSON.stringify(globalCache.entities, null, 2));
+    // console.log('\nComplete applets:', JSON.stringify(globalCache.applets, null, 2));
     // console.log('\nComplete fields:', JSON.stringify(globalCache.fields, null, 2));
     // console.log('\nComplete fieldsByEntity:', JSON.stringify(globalCache.fieldsByEntity, null, 2));
     // console.log('\nComplete entityNameToCanonical:', JSON.stringify(globalCache.entityNameToCanonical, null, 2));
@@ -1983,7 +1987,7 @@ export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
         }
     }
 
-    // Print entities and their fields
+    // Print applets and their fields
     if (showEntities || showFields) {
         report += 'Entities and Fields:\n';
         Object.entries(globalCache.schema).forEach(([entityName, entity]) => {
@@ -2070,7 +2074,7 @@ export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
 
     // Full detailed outputs
     report += '\nComplete entityNames:\n' + JSON.stringify(globalCache.entityNames, null, 2) + '\n';
-    report += '\nComplete entities:\n' + JSON.stringify(globalCache.entities, null, 2) + '\n';
+    report += '\nComplete applets:\n' + JSON.stringify(globalCache.entities, null, 2) + '\n';
     report += '\nComplete fields:\n' + JSON.stringify(globalCache.fields, null, 2) + '\n';
     report += '\nComplete fieldsByEntity:\n' + JSON.stringify(globalCache.fieldsByEntity, null, 2) + '\n';
     report += '\nComplete entityNameToCanonical:\n' + JSON.stringify(globalCache.entityNameToCanonical, null, 2) + '\n';

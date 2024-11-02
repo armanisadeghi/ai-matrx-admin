@@ -14,7 +14,8 @@ import {supabase} from "@/utils/supabase/client";
 import {
     selectEntityDatabaseName,
     selectFrontendConversion, selectPayloadOptionsDatabaseConversion,
-    selectQueryDatabaseConversion
+    selectQueryDatabaseConversion,
+    selectUnifiedQueryDatabaseConversion, UnifiedQueryOptions
 } from "@/lib/redux/schema/globalCacheSelectors";
 
 
@@ -87,10 +88,14 @@ export function* withConversion<TEntity extends EntityKeys>(
             dbQueryOptions
         );
     } catch (error: any) {
-        yield put(
-            actions.setError({message: error.message || "An error occurred."})
+        yield put(actions.setError({
+                message: error.message || "An error occurred in withConversion.",
+                code: error.code
+            })
         );
-        console.error("withConversion error:", error);
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     }
 }
 
@@ -167,7 +172,14 @@ function* handleFetchByField<TEntity extends EntityKeys>(
             yield put(actions.setTableData(data));
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchByField.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -199,7 +211,14 @@ function* handleFetchPkAndDisplayFields<TEntity extends EntityKeys>(
 
         yield put(actions.setAllPkAndDisplayFields(pkAndDisplayFields));
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchPkAndDisplayFields.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     }
 }
 
@@ -220,7 +239,14 @@ function* handleCreateBackup<TEntity extends EntityKeys>(
             })
         );
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleCreateBackup.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     }
 }
 
@@ -238,7 +264,14 @@ function* handleRestoreBackup<TEntity extends EntityKeys>(
             yield put(actions.setTableData(backupData));
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleRestoreBackup.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     }
 }
 
@@ -267,7 +300,14 @@ function* handleFetchSimple<TEntity extends EntityKeys>(
             yield put(actions.setSelectedItem(data));
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchSimple.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -290,7 +330,14 @@ function* handleSubscribeToChanges<TEntity extends EntityKeys>(
             action.payload.callback
         );
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleSubscribeToChanges.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     }
 }
 
@@ -305,7 +352,14 @@ function* handleUnsubscribeFromChanges<TEntity extends EntityKeys>(
 
         yield call([databaseApi, databaseApi.unsubscribeFromChanges]);
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleUnsubscribeFromChanges.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     }
 }
 
@@ -360,7 +414,14 @@ function* MakeQuery<TEntity extends EntityKeys>(
         );
         yield put(actions.setLastFetched({key: optionsKey, time: now}));
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during MakeQuery.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -423,7 +484,14 @@ function* handleFetchOne<TEntity extends EntityKeys>(
             );
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchOne.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -506,7 +574,14 @@ function* handleUpdate<TEntity extends EntityKeys>(
             );
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleCreate.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -545,7 +620,13 @@ function* handleDelete<TEntity extends EntityKeys>(
             // yield put(actions.removeLastFetchedKey(action.payload.toString()));
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleDelete.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -581,7 +662,13 @@ function* handleFetchAll<TEntity extends EntityKeys>(
             );
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchAll.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -612,7 +699,14 @@ function* handleFetchByPrimaryKey<TEntity extends EntityKeys>(
             yield put(actions.setSelectedItem(data));
         }
     } catch (error: any) {
-        yield put(actions.setError(error.message));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchByPrimaryKey.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -705,7 +799,7 @@ function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
 }
 
 function* handleFetchPaginated<TEntity extends EntityKeys>(
-    entityKey: TEntity,  // Added entityKey as first parameter
+    entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
     api: any,
     action: PayloadAction<{
@@ -718,12 +812,6 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
     dbQueryOptions: QueryOptions<TEntity>
 ) {
     try {
-        console.log("handleFetchPaginated starting with Table name:", tableName);
-        console.log("handleFetchPaginated starting with action:", action);
-        console.log("handleFetchPaginated starting with action.payload:", action.payload);
-        console.log("handleFetchPaginated starting with dbQueryOptions:", dbQueryOptions);
-
-        // Fetch data from the API
         const from = (action.payload.page - 1) * action.payload.pageSize;
         const to = action.payload.page * action.payload.pageSize - 1;
 
@@ -735,12 +823,8 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
             throw error;
         }
 
-        console.log("handleFetchPaginated has data:", data);
-
-        const payload = { entityName: entityKey, data };
+        const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
-
-        console.log("handleFetchPaginated has frontendResponse:", frontendResponse);
 
         const result = {
             data: frontendResponse,
@@ -749,18 +833,16 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
             totalCount: count,
             maxCount: action.payload.maxCount || 10000,
         };
-
-        console.log("handleFetchPaginated has result:", result);
-
-        // Dispatch success action
         yield put(actions.fetchPaginatedSuccess(result));
 
-        console.log("Success! handleFetchPaginated has dispatched success action");
     } catch (error: any) {
-
-        console.log("Error! handleFetchPaginated has dispatched failure action");
-
-        yield put(actions.fetchPaginatedFailure(error));
+        yield put(actions.setError({
+                message: error.message || "An error occurred during handleFetchPaginated.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
     }
 }
 
@@ -866,3 +948,147 @@ export function createEntitySaga<TEntity extends EntityKeys>(
 //     databaseApi.setClient(supabase);
 //     return databaseApi;
 // }
+
+
+// First, let's create an enhanced query preparation function
+function prepareUnifiedQueryOptions<TEntity extends EntityKeys>(
+    baseQuery: any,
+    options: UnifiedQueryOptions<TEntity>
+): any {
+    let query = baseQuery;
+
+    // Handle distinct if specified
+    if (options.distinct) {
+        query = query.select('*', {count: 'exact', head: false}).distinct();
+    }
+
+    // Handle specific columns selection
+    if (options.columns?.length) {
+        query = query.select(options.columns.join(','));
+    }
+
+    // Handle filters
+    if (options.filters) {
+        for (const [key, value] of Object.entries(options.filters)) {
+            // Handle different types of filters
+            if (Array.isArray(value)) {
+                query = query.in(key, value);
+            } else if (typeof value === 'object' && value !== null) {
+                // Handle range queries or special operators
+                const filterObj = value as Record<string, any>;
+                if ('gt' in filterObj) query = query.gt(key, filterObj.gt);
+                if ('gte' in filterObj) query = query.gte(key, filterObj.gte);
+                if ('lt' in filterObj) query = query.lt(key, filterObj.lt);
+                if ('lte' in filterObj) query = query.lte(key, filterObj.lte);
+                if ('not' in filterObj) query = query.not(key, filterObj.not);
+            } else {
+                query = query.eq(key, value);
+            }
+        }
+    }
+
+    // Handle full-text search
+    if (options.fullTextSearch) {
+        query = query.textSearch(
+            options.fullTextSearch.column,
+            options.fullTextSearch.query
+        );
+    }
+
+    // Handle joins
+    if (options.joinTables?.length) {
+        for (const join of options.joinTables) {
+            query = query.select(join.columns?.join(',') || '*', {
+                foreignTable: join.table,
+                // Supabase expects the relationship to be defined in the database
+                // so we just need to specify which foreign table to join
+            });
+        }
+    }
+
+    // Handle sorting
+    if (options.sorts) {
+        for (const {column, ascending = true} of options.sorts) {
+            query = query.order(column, {ascending});
+        }
+    }
+
+    // Handle grouping
+    if (options.groupBy?.length) {
+        query = query.select(options.groupBy.join(','))
+            .group(options.groupBy.join(','));
+    }
+
+    // Handle having clauses after group by
+    if (options.having) {
+        for (const [key, value] of Object.entries(options.having)) {
+            query = query.having(key, value);
+        }
+    }
+
+    // Handle pagination - prefer range if specified, fall back to limit/offset
+    if (options.range) {
+        query = query.range(options.range.start, options.range.end);
+    } else {
+        if (options.limit) {
+            query = query.limit(options.limit);
+        }
+        if (options.offset) {
+            query = query.range(
+                options.offset,
+                options.offset + (options.limit || 0) - 1
+            );
+        }
+    }
+
+    return query;
+}
+
+// Now create the enhanced withConversion function
+export function* withUnifiedConversion<TEntity extends EntityKeys>(
+    {
+        sagaHandler,
+        entityKey,
+        actions,
+        action
+    }: WithConversionParams<TEntity>) {
+    try {
+        // Get the database table name
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        console.log("withUnifiedConversion converted tableName:", tableName);
+
+        // Initialize the database API
+        const api = yield call(initializeDatabaseApi, tableName);
+
+        // Convert the query options using our new unified converter
+        const dbQueryOptions = yield select(selectUnifiedQueryDatabaseConversion, {
+            entityName: entityKey,
+            options: action.payload.options,
+        });
+
+        console.log("withUnifiedConversion converted options:", dbQueryOptions);
+
+        // Prepare the query with all options
+        const preparedQuery = prepareUnifiedQueryOptions(api, dbQueryOptions);
+
+        // Call the saga handler with the prepared query
+        yield call(
+            sagaHandler,
+            entityKey,
+            actions,
+            preparedQuery, // Note: passing the prepared query instead of raw api
+            action,
+            tableName,
+            dbQueryOptions
+        );
+    } catch (error: any) {
+        yield put(
+            actions.setError({
+                message: error.message || "An error occurred during query preparation.",
+                code: error.code
+            })
+        );
+        console.error("withUnifiedConversion error:", error);
+        throw error;
+    }
+}

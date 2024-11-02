@@ -38,7 +38,7 @@ const grid = [
     {
         title: "Advanced Analytics",
         description:
-            "Gain insights into your social media performance with detailed analytics and reporting tools to measure engagement and ROI.",
+            "Gain insights into your social media performance with detailed analytics and reporting old-tools to measure engagement and ROI.",
     },
     {
         title: "Content Calendar",
@@ -63,7 +63,7 @@ const grid = [
     {
         title: "Collaboration Tools",
         description:
-            "Work seamlessly with your team using our collaboration tools, allowing you to assign tasks, share drafts, and provide feedback in real-time.",
+            "Work seamlessly with your team using our collaboration old-tools, allowing you to assign tasks, share drafts, and provide feedback in real-time.",
     },
 ];
 

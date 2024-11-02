@@ -4,7 +4,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys } from "@/types/entityTypes";
 import { EntitySliceState } from "@/lib/redux/entity/entitySliceCreator";
 
-// Base selector that gets the entities state
+// Base selector that gets the applets state
 const selectEntitiesState = (state: RootState) => state.entities;
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
@@ -33,7 +33,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     selectInitialized: createSelector(
       [selectEntitySlice],
-      
+
       (slice) => slice?.initialized ?? false
     ),
 

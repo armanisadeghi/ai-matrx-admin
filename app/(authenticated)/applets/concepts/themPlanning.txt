@@ -1,0 +1,285 @@
+```typescript
+// styles/theme/base.css
+@layer base {
+  :root {
+    /* Your existing global variables */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+// styles/theme/applets.css
+@layer components {
+  .applet-theme-root {
+    /* Default to global theme if no applet theme is set */
+    --applet-background: var(--background);
+    --applet-foreground: var(--foreground);
+    --applet-primary: var(--primary);
+    --applet-primary-foreground: var(--primary-foreground);
+    --applet-secondary: var(--secondary);
+    --applet-secondary-foreground: var(--secondary-foreground);
+    --applet-accent: var(--accent);
+    --applet-accent-foreground: var(--accent-foreground);
+    --applet-muted: var(--muted);
+    --applet-muted-foreground: var(--muted-foreground);
+    --applet-border: var(--border);
+    --applet-radius: var(--radius);
+  }
+
+  /* Theme inheritance system */
+  [data-applet-theme="inherit"] {
+    --applet-background: var(--background);
+    --applet-foreground: var(--foreground);
+    --applet-primary: var(--primary);
+    --applet-primary-foreground: var(--primary-foreground);
+    --applet-secondary: var(--secondary);
+    --applet-secondary-foreground: var(--secondary-foreground);
+    --applet-accent: var(--accent);
+    --applet-accent-foreground: var(--accent-foreground);
+    --applet-muted: var(--muted);
+    --applet-muted-foreground: var(--muted-foreground);
+    --applet-border: var(--border);
+  }
+}
+
+// lib/theme/types.ts
+export interface ThemeConfig {
+  type: 'global' | 'applet';
+  inherit?: boolean;
+  colors: {
+    background: string;
+    foreground: string;
+    primary: string;
+    'primary-foreground': string;
+    secondary: string;
+    'secondary-foreground': string;
+    accent: string;
+    'accent-foreground': string;
+    muted: string;
+    'muted-foreground': string;
+    border: string;
+  };
+  radius?: string;
+}
+
+// components/ThemeProvider.tsx
+import { createContext, useContext, ReactNode } from 'react';
+import { ThemeConfig } from '@/lib/theme/types';
+
+interface ThemeContextValue {
+  theme: ThemeConfig;
+  setTheme: (theme: ThemeConfig) => void;
+}
+
+const ThemeContext = createContext<ThemeContextValue | null>(null);
+
+export function ThemeProvider({
+  children,
+  theme,
+  type = 'global',
+  inherit = false,
+}: {
+  children: ReactNode;
+  theme: ThemeConfig;
+  type?: 'global' | 'applet';
+  inherit?: boolean;
+}) {
+  const themeStyles = Object.entries(theme.colors).reduce((acc, [key, value]) => {
+    const prefix = type === 'applet' ? '--applet-' : '--';
+    acc[`${prefix}${key}`] = value;
+    return acc;
+  }, {} as Record<string, string>);
+
+  return (
+    <div
+      className={type === 'applet' ? 'applet-theme-root' : undefined}
+      data-theme-type={type}
+      data-applet-theme={inherit ? 'inherit' : undefined}
+      style={themeStyles}
+    >
+      <ThemeContext.Provider value={{ theme, setTheme: () => {} }}>
+        {children}
+      </ThemeContext.Provider>
+    </div>
+  );
+}
+
+// Example usage in your app layout
+export function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <ThemeProvider theme={globalTheme} type="global">
+      <div className="min-h-screen bg-background text-foreground">
+        {children}
+      </div>
+    </ThemeProvider>
+  );
+}
+
+// Example usage in an applet
+export function AppletLayout({
+  children,
+  theme,
+  inheritGlobal = false
+}: {
+  children: ReactNode;
+  theme?: ThemeConfig;
+  inheritGlobal?: boolean;
+}) {
+  return (
+    <ThemeProvider
+      theme={theme ?? globalTheme}
+      type="applet"
+      inherit={inheritGlobal}
+    >
+      <div className="bg-applet-background text-applet-foreground">
+        {children}
+      </div>
+    </ThemeProvider>
+  );
+}
+
+// Usage example with shadcn components in an applet
+export function AppletCard({ title, content }: { title: string; content: string }) {
+  return (
+    <Card className="bg-applet-background border-applet-border">
+      <CardHeader>
+        <CardTitle className="text-applet-primary">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-applet-foreground">{content}</p>
+        <Button className="bg-applet-primary text-applet-primary-foreground hover:bg-applet-primary/90">
+          Action
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+```
+
+This system provides several benefits:
+
+1. **Maintains Global Theme**: Your existing global theme remains the source of truth
+2. **Optional Inheritance**: Applets can choose to inherit global theme or use their own
+3. **Type Safety**: Full TypeScript support for both global and applet themes
+4. **Component Consistency**: Works seamlessly with shadcn/ui components
+5. **Dark Mode Support**: Maintains dark mode functionality for both global and applet themes
+
+To use this in your project:
+
+1. Keep your existing global.css with the root variables
+2. Add the new applet theme system
+3. Update your tailwind.config.ts to include both systems:
+
+```typescript
+// tailwind.config.ts
+const config: Config = {
+  // ... other config
+  theme: {
+    extend: {
+      colors: {
+        // Your existing global colors
+        border: "hsl(var(--border))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        // ... other global colors
+
+        // Applet-specific colors
+        'applet': {
+          background: "hsl(var(--applet-background))",
+          foreground: "hsl(var(--applet-foreground))",
+          primary: "hsl(var(--applet-primary))",
+          'primary-foreground': "hsl(var(--applet-primary-foreground))",
+          // ... other applet colors
+        },
+      },
+    },
+  },
+};
+```
+
+You can then use applets in three ways:
+
+1. **Inherit Global Theme**:
+```tsx
+<AppletLayout inheritGlobal>
+  <AppletContent />
+</AppletLayout>
+```
+
+2. **Custom Theme**:
+```tsx
+const customTheme: ThemeConfig = {
+  type: 'applet',
+  colors: {
+    // Custom color values
+  }
+};
+
+<AppletLayout theme={customTheme}>
+  <AppletContent />
+</AppletLayout>
+```
+
+3. **Mixed Approach**:
+```tsx
+const mixedTheme: ThemeConfig = {
+  type: 'applet',
+  inherit: true,
+  colors: {
+    // Override only specific colors
+    primary: "340 82% 52%",
+    // Other colors will inherit from global theme
+  }
+};
+
+<AppletLayout theme={mixedTheme}>
+  <AppletContent />
+</AppletLayout>
+```
+
+Would you like me to:
+1. Show how to create theme presets?
+2. Add more advanced theme inheritance patterns?
+3. Create utilities for dynamic theme switching?
+4. Add support for custom properties beyond colors (animations, transitions, etc.)?

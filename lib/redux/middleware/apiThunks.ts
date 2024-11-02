@@ -190,7 +190,7 @@ export const createApiThunks = <T extends z.ZodTypeAny>(featureName: FeatureName
     //             const validatedData = featureSchema.parse(data);
     //
     //             // TODO: For now, returning only validated Data because normalized data will probably require changing to a Saga.
-    //             const normalizedData = normalizer.normalizeOne(validatedData).entities[featureName];
+    //             const normalizedData = normalizer.normalizeOne(validatedData).applets[featureName];
     //
     //             console.log('Returning validated data:', validatedData);
     //             return validatedData;

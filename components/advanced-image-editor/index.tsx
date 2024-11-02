@@ -38,7 +38,7 @@ const editorOptions = [
     {
         title: "AI Image Editor",
         menuTitle: "AI Editor",
-        description: "AI-powered tools to enhance your image editing workflow.",
+        description: "AI-powered old-tools to enhance your image editing workflow.",
         component: "AIImageEditor",
     },
     {

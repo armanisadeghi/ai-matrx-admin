@@ -49,7 +49,7 @@ function Navbar({ className }: { className?: string }) {
         },
         {
             title: "AI Assisted",
-            description: "AI-powered tools to enhance your image editing workflow.",
+            description: "AI-powered old-tools to enhance your image editing workflow.",
             component: "AIImageEditor",
             href: "/ai-image-editor",
             src: "/images/ai-image-editor.jpg",
@@ -78,7 +78,7 @@ function Navbar({ className }: { className?: string }) {
             href: "/full-featured-image-editor",
             src: "/images/full-featured-image-editor.jpg",
             subLinks: [
-                { title: "All Tools", href: "/full-featured-image-editor/all-tools" },
+                { title: "All Tools", href: "/full-featured-image-editor/all-old-tools" },
                 { title: "Custom Workspaces", href: "/full-featured-image-editor/custom-workspaces" },
                 // Add more sub-links as needed
             ],

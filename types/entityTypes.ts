@@ -8,7 +8,7 @@ export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 
 
 /**
- * The complete automation schema containing all entities and their configurations
+ * The complete automation schema containing all applets and their configurations
  */
 export type AutomationSchema = typeof initialAutomationTableSchema;
 
@@ -52,7 +52,7 @@ export type EntityNameVariations<TEntity extends EntityKeys> =
     | EntityNameFormats<TEntity>[keyof EntityNameFormats<TEntity>];
 
 /**
- * Union of all possible entity name variations across all entities
+ * Union of all possible entity name variations across all applets
  */
 export type AllEntityNameVariations = {
     [TEntity in EntityKeys]: EntityNameVariations<TEntity>
@@ -60,7 +60,7 @@ export type AllEntityNameVariations = {
 
 // Field Keys
 /**
- * All possible field keys across all entities
+ * All possible field keys across all applets
  */
 export type AllEntityFieldKeys = AutomationSchema[EntityKeys] extends infer TField
                                  ? TField extends { entityFields: any }
@@ -149,10 +149,10 @@ type test01 = EntityKeys; // Should show 'registeredFunction' as one of the opti
 type test02 = EntityNameFormats<'registeredFunction'>;  // Shows the mapping structure
 type test03 = EntityNameFormat<'registeredFunction', 'database'>; // Shows specific variation
 type test04 = EntityNameVariations<'registeredFunction'>; // Shows all variations including the key
-type test05 = AllEntityNameVariations; // Shows all variations across all entities
+type test05 = AllEntityNameVariations; // Shows all variations across all applets
 
 // Entity Field related
-type test06 = AllEntityFieldKeys; // Shows all possible field keys across all entities
+type test06 = AllEntityFieldKeys; // Shows all possible field keys across all applets
 type test07 = EntityFieldKeys<'registeredFunction'>; // Shows fields for specific entity
 type test13 = CanonicalFieldKey<'registeredFunction'>; // Shows a single canonical field name for an entity
 
@@ -401,7 +401,7 @@ export type AutomationEntity<TEntity extends EntityKeys> = {
 };
 
 /**
- * Complete automation schema containing all entities
+ * Complete automation schema containing all applets
  */
 export type AutomationEntities = {
     [TEntity in EntityKeys]: AutomationEntity<TEntity>;

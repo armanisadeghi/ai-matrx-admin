@@ -39,12 +39,12 @@ export const selectIsInitialized = createSelector(
   (cache) => cache.isInitialized
 );
 
-export const makeSelectEntity = () => 
+export const makeSelectEntity = () =>
     createSelector(
       [selectEntities, (_: RootState, entityName: EntityKeys) => entityName],
       (entities, entityName): SchemaEntity | undefined => entities[entityName]
     );
-  
+
   export const makeSelectEntityFields = () =>
     createSelector(
       [
@@ -57,7 +57,7 @@ export const makeSelectEntity = () =>
         return fieldIds.map(id => fields[id]).filter(Boolean);
       }
     );
-  
+
 
 
 
@@ -93,7 +93,7 @@ export const selectEntityBackendName = (state: RootState, entityName: EntityKeys
 export const selectEntityCanonicalName = (state: RootState, entityName: EntityKeys) =>
     state.globalCache.entityNameToCanonical[entityName];
 
-// Format selectors for entities
+// Format selectors for applets
 export const selectEntityFormat = (
     state: RootState,
     entityName: EntityKeys,
@@ -435,7 +435,7 @@ function replaceKeysInString(data: string, keyMapping: KeyMapping): string {
 }
 
 
-// Converts data to the 'database' format for both entities and fields
+// Converts data to the 'database' format for both applets and fields
 export function toDatabaseFormat<T extends Record<string, any>>(state: RootState, entityName: string, data: T | T[]): T | T[] {
     const convertEntityName = selectConvertEntityNameFormat(state, "database");
     const convertFieldName = selectConvertFieldNameFormat(state, entityName, "database");
@@ -447,7 +447,7 @@ export function toDatabaseFormat<T extends Record<string, any>>(state: RootState
     return convertedData;
 }
 
-// Converts data to the 'frontend' format for both entities and fields, using canonical names
+// Converts data to the 'frontend' format for both applets and fields, using canonical names
 export function toFrontendFormat<T extends Record<string, any>>(state: RootState, entityName: string, data: T | T[]): T | T[] {
     const convertEntityName = selectObjectVariationToEntityNames(state);
     const convertFieldName = selectObjectVariationToEntityFieldNames(state, entityName);
@@ -459,7 +459,7 @@ export function toFrontendFormat<T extends Record<string, any>>(state: RootState
     return convertedData;
 }
 
-// Converts data to the 'pretty' format for both entities and fields
+// Converts data to the 'pretty' format for both applets and fields
 export function toPrettyFormat<T extends Record<string, any>>(state: RootState, entityName: string, data: T | T[]): T | T[] {
     const convertEntityName = selectConvertEntityNameFormat(state, "pretty");
     const convertFieldName = selectConvertFieldNameFormat(state, entityName, "pretty");
@@ -471,7 +471,7 @@ export function toPrettyFormat<T extends Record<string, any>>(state: RootState, 
     return convertedData;
 }
 
-// Converts data to the 'sqlFunctionRef' format for both entities and fields
+// Converts data to the 'sqlFunctionRef' format for both applets and fields
 export function toSqlFunctionRefFormat<T extends Record<string, any>>(state: RootState, entityName: string, data: T | T[]): T | T[] {
     const convertEntityName = selectConvertEntityNameFormat(state, "sqlFunctionRef");
     const convertFieldName = selectConvertFieldNameFormat(state, entityName, "sqlFunctionRef");

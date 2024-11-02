@@ -24,7 +24,7 @@ type TableConfig = {
 // Base class for dynamic slices
 class DynamicSlice {
     private config: TableConfig;
-    private entities: Record<string, any> = {};
+    private applets: Record<string, any> = {};
     private relationCache: Record<string, Record<string, string[]>> = {};
 
     constructor(config: TableConfig) {
@@ -53,7 +53,7 @@ class DynamicSlice {
             _displayValue: entity[this.config.displayField || primaryKey.actualField]
         };
 
-        this.entities[internalKey] = enhancedEntity;
+        this.applets[internalKey] = enhancedEntity;
         this.updateRelationships(enhancedEntity);
     }
 
@@ -78,9 +78,9 @@ class DynamicSlice {
         });
     }
 
-    // Get related entities
+    // Get related applets
     getRelated(internalKey: string, relationName: string): string[] {
-        const entity = this.entities[internalKey];
+        const entity = this.applets[internalKey];
         const relationConfig = this.config.relations[relationName];
 
         if (!entity || !relationConfig) return [];
@@ -95,7 +95,7 @@ class DynamicSlice {
 
     // Get display value for an entity
     getDisplayValue(internalKey: string): string {
-        const entity = this.entities[internalKey];
+        const entity = this.applets[internalKey];
         if (!entity) return '';
 
         return entity._displayValue;

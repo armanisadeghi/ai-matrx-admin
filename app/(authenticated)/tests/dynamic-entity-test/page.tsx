@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {createEntitySelectors} from "@/lib/redux/entity/entitySelectors";
 import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";

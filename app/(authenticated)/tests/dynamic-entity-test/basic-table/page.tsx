@@ -4,26 +4,28 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { createEntitySelectors } from "@/lib/redux/entity/entitySelectors";
 import { createEntityActions } from "@/lib/redux/entity/entityActionCreator";
-import { RootState } from '@/lib/redux/store';
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 
 const entityKey = 'registeredFunction';
-const selectors = createEntitySelectors(entityKey);
+const entitySelectors = createEntitySelectors(entityKey);
+const entityActions = createEntityActions(entityKey);
 const actions = createEntityActions(entityKey);
 
 const TestEntityTable: React.FC = () => {
-    const dispatch = useDispatch();
+    // Use selectors
+    const dispatch = useAppDispatch();
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [shouldFetch, setShouldFetch] = useState(true);
 
     console.log('Component rendering');
 
-    // Use selectors
-    const data = useSelector((state: RootState) => selectors.getData(state));
-    const loading = useSelector((state: RootState) => selectors.getLoading(state));
-    const error = useSelector((state: RootState) => selectors.getError(state));
-    const totalCount = useSelector((state: RootState) => selectors.getTotalCount(state));
-    const initialized = useSelector((state: RootState) => selectors.getInitialized(state));
+
+    const data = useAppSelector(entitySelectors.selectData);
+    const loading = useAppSelector(entitySelectors.selectLoading);
+    const error = useAppSelector(entitySelectors.selectError);
+    const totalCount = useAppSelector(entitySelectors.selectTotalCount);
+    const initialized = useAppSelector(entitySelectors.selectInitialized);
 
     // Handle page changes
     const handlePageChange = useCallback((newPage: number, newPageSize: number) => {

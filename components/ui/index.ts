@@ -1,4 +1,4 @@
-// components/ui/index.ts
+// components/ui/index.tsx
 
 // Root level components
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './accordion'

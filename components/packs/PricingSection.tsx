@@ -53,7 +53,7 @@ const plans: Array<Plan> = [
             "Advanced analytics dashboard",
             "Customizable reports and charts",
             "Real-time data tracking",
-            "Integration with third-party tools",
+            "Integration with third-party old-tools",
         ],
         buttonText: "Get Team Light",
         additionalFeatures: ["Everything in Personal Plan"],

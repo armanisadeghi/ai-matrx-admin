@@ -5,12 +5,12 @@ import createSagaMiddleware from 'redux-saga';
 import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
 import {loggerMiddleware} from '@/lib/logger/redux-middleware';
 import {createRootReducer} from "@/lib/redux/rootReducer";
-import {InitialReduxState} from "@/types/reduxTypes";
 
 
 const sagaMiddleware = createSagaMiddleware();
 
-export const makeStore = (initialState?: InitialReduxState) => {
+
+export const makeStore = (initialState) => {
     if (!initialState?.globalCache?.schema) {
         throw new Error('Schema must be provided to create store');
     }
@@ -19,13 +19,16 @@ export const makeStore = (initialState?: InitialReduxState) => {
 
     const store = configureStore({
         reducer: rootReducer,
+
         preloadedState: initialState,
+
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
                     ignoredPaths: ['globalCache.schema']
                 }
             }).concat(sagaMiddleware, loggerMiddleware),
+
         devTools: process.env.NODE_ENV !== 'production',
     });
 

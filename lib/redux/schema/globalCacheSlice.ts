@@ -5,89 +5,74 @@ import {
     UnifiedSchemaCache,
     AutomationEntities
 } from "@/types/entityTypes";
-import {GlobalCacheState, SchemaEntity, SchemaField} from "@/types/schema";
+import { SchemaEntity, SchemaField } from "@/types/schema";
 
 
-const initialState: GlobalCacheState = {
-    schema: {} as AutomationEntities,
-    entityNames: [] as EntityKeys[],
-    entities: {} as Partial<Record<EntityKeys, SchemaEntity>>,
-    fields: {} as Record<string, SchemaField>,
-    fieldsByEntity: {} as Partial<Record<EntityKeys, string[]>>,
-    entityNameToCanonical: {} as Record<string, EntityKeys>,
-    fieldNameToCanonical: {} as Record<EntityKeys, Record<string, string>>,
-    entityNameFormats: {} as Record<EntityKeys, Record<string, string>>,
-    fieldNameFormats: {} as Record<EntityKeys, Record<string, Record<string, string>>>,
-    entityNameToDatabase: {} as Record<EntityKeys, string>,
-    entityNameToBackend: {} as Record<EntityKeys, string>,
-    fieldNameToDatabase: {} as Record<EntityKeys, Record<string, string>>,
-    fieldNameToBackend: {} as Record<EntityKeys, Record<string, string>>,
-    isInitialized: false
-};
+export interface GlobalCacheState {
+    readonly schema: AutomationEntities;
+    entityNames: EntityKeys[];
+    entities: Partial<Record<EntityKeys, SchemaEntity>>;
+    fields: Record<string, SchemaField>;
+    fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
+    entityNameToCanonical: Record<string, EntityKeys>;
+    fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
+    entityNameFormats: Record<EntityKeys, Record<string, string>>;
+    fieldNameFormats: Record<EntityKeys, Record<string, Record<string, string>>>;
+    entityNameToDatabase: Record<EntityKeys, string>;
+    entityNameToBackend: Record<EntityKeys, string>;
+    fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
+    fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
+    isInitialized?: boolean;
+}
 
 
-const globalCacheSlice = createSlice({
-    name: 'globalCache',
-    initialState,
-    reducers: {
-        initializeCache: (state, action: PayloadAction<UnifiedSchemaCache>) => {
-            // @ts-ignore
-            state.schema = action.payload.schema; // Full nested structure
+export function createGlobalCacheSlice(initialData: UnifiedSchemaCache) {
 
-            state.entityNames = action.payload.entityNames;  // List of entity names
-            state.entities = action.payload.entities;  // Entity Objects, without fields
+    const initialState: GlobalCacheState = {
+        ...initialData,
+        isInitialized: true
+    };
 
-            state.fields = action.payload.fields;
-            state.fieldsByEntity = action.payload.fieldsByEntity;
-            state.entityNameToCanonical = action.payload.entityNameToCanonical;
-            state.fieldNameToCanonical = action.payload.fieldNameToCanonical;
-            state.entityNameFormats = action.payload.entityNameFormats;
-            state.fieldNameFormats = action.payload.fieldNameFormats;
-            state.entityNameToDatabase = action.payload.entityNameToDatabase;
-            state.entityNameToBackend = action.payload.entityNameToBackend;
-            state.fieldNameToDatabase = action.payload.fieldNameToDatabase;
-            state.fieldNameToBackend = action.payload.fieldNameToBackend;
-            state.isInitialized = true;
+    return createSlice({
+        name: 'globalCache',
+        initialState,
+        reducers: {
+            updateEntity: (state, action: PayloadAction<{
+                entityName: EntityKeys;
+                entity: SchemaEntity;
+            }>) => {
+                const { entityName, entity } = action.payload;
+                state.entities[entityName] = entity;
+                console.log(`Entity "${entityName}" updated in globalCacheSlice`);
+            },
+
+            updateField: (state, action: PayloadAction<{
+                fieldId: string;
+                field: SchemaField;
+            }>) => {
+                const { fieldId, field } = action.payload;
+                state.fields[fieldId] = field;
+                console.log(`Field "${fieldId}" updated in globalCacheSlice`);
+            }
         },
-        resetCache: () => initialState,
-
-        updateEntity: (state, action: PayloadAction<{
-            entityName: EntityKeys;
-            entity: SchemaEntity
-        }>) => {
-            const { entityName, entity } = action.payload;
-            state.entities[entityName] = entity;
-        },
-
-        updateField: (state, action: PayloadAction<{
-            fieldId: string;
-            field: SchemaField;
-        }>) => {
-            const { fieldId, field } = action.payload;
-            state.fields[fieldId] = field;
-        }
-    }
-});
-
-export const {
-    initializeCache,
-    resetCache,
-    updateEntity,
-    updateField
-} = globalCacheSlice.actions;
+    });
+}
 
 // Type guards
-export const isGlobalCacheInitialized = (state: GlobalCacheState): boolean =>
-    state.isInitialized;
-
 export const doesEntityExist = (
     state: GlobalCacheState,
     entityName: EntityKeys
-): boolean => entityName in state.entities;
+): boolean => {
+    const exists = entityName in state.entities;
+    console.log(`Checking if entity "${entityName}" exists:`, exists);
+    return exists;
+}
 
 export const doesFieldExist = (
     state: GlobalCacheState,
     fieldId: string
-): boolean => fieldId in state.fields;
-
-export default globalCacheSlice.reducer;
+): boolean => {
+    const exists = fieldId in state.fields;
+    console.log(`Checking if field "${fieldId}" exists:`, exists);
+    return exists;
+}

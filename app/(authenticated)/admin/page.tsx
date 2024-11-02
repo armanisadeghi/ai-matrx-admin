@@ -2,6 +2,8 @@
 
 // Claude: https://claude.ai/chat/65014a2f-15f6-498a-8617-1e1cd94882fa
 // Claude: https://claude.ai/chat/e142e093-5177-4faa-aa06-b534db104cf5
+import {FeatureSectionWithGradient} from "@/components/animated/my-custom-demos/feature-section-with-gradient";
+// import FeatureSectionAnimatedGradient from "@/components/animated/feature-with-dynamic-grid/dynamic-feature-section";
 
 import {
     IconAdjustmentsBolt,
@@ -13,8 +15,6 @@ import {
     IconFunction
 } from "@tabler/icons-react";
 import React from "react";
-import {FeatureSectionWithGradient} from "@/components/animated/my-custom-demos/feature-section-with-gradient";
-// import FeatureSectionAnimatedGradient from "@/components/animated/feature-with-dynamic-grid/dynamic-feature-section";
 import FeatureSectionAnimatedGradient from "@/components/animated/my-custom-demos/feature-section-animated-gradient";
 
 export default function AdminPage() {

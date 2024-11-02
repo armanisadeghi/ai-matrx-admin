@@ -133,12 +133,12 @@ export const makeSelectFieldNameConversion = () =>
     [selectGlobalCache],
     (cache) => cache.entityNameFormats
   );
-  
+
   export const selectFieldFormats = createSelector(
     [selectGlobalCache],
     (cache) => cache.fieldNameFormats
   );
-  
+
   // Query conversion selectors
   export const makeQueryOptionsConversion = () =>
     createSelector(
@@ -148,11 +148,11 @@ export const makeSelectFieldNameConversion = () =>
       ],
       (maps, { entityName, options, targetFormat }) => {
         if (!options) return options;
-  
+
         const fieldMap = targetFormat === 'database'
           ? maps.toDatabase[entityName]
           : maps.toBackend[entityName];
-  
+
         return {
           ...options,
           filters: options.filters
@@ -171,18 +171,18 @@ export const makeSelectFieldNameConversion = () =>
         };
       }
     );
-  
+
   // Utility hooks for components
   export const useEntity = (entityName: EntityKeys) => {
     const selectEntity = makeSelectEntity();
     return useSelector((state: RootState) => selectEntity(state, entityName));
   };
-  
+
   export const useEntityFields = (entityName: EntityKeys) => {
     const selectEntityFields = makeSelectEntityFields();
     return useSelector((state: RootState) => selectEntityFields(state, entityName));
   };
-  
+
   export const useEntityNameConversion = (
     entityName: EntityKeys,
     targetFormat: 'database' | 'backend' | 'canonical'
@@ -192,18 +192,18 @@ export const makeSelectFieldNameConversion = () =>
       selectConversion(state, entityName, targetFormat)
     );
   };
-  
+
   // Type guard selectors
   export const selectEntityExists = createSelector(
     [selectEntities, (_: RootState, entityName: EntityKeys) => entityName],
     (entities, entityName) => entityName in entities
   );
-  
+
   export const selectFieldExists = createSelector(
     [selectFields, (_: RootState, fieldId: string) => fieldId],
     (fields, fieldId) => fieldId in fields
   );
-  
+
 
 
 
@@ -250,7 +250,7 @@ export const selectEntityCanonicalName = (
   entityName: EntityKeys
 ) => state.globalCache.entityNameToCanonical[entityName];
 
-// Format selectors for entities
+// Format selectors for applets
 export const selectEntityFormat = (
   state: RootState,
   entityName: EntityKeys,
@@ -605,7 +605,7 @@ function replaceKeysInString(data: string, keyMapping: KeyMapping): string {
   }, data);
 }
 
-// Converts data to the 'database' format for both entities and fields
+// Converts data to the 'database' format for both applets and fields
 export function toDatabaseFormat<T extends Record<string, any>>(
   state: RootState,
   entityName: string,
@@ -625,7 +625,7 @@ export function toDatabaseFormat<T extends Record<string, any>>(
   return convertedData;
 }
 
-// Converts data to the 'frontend' format for both entities and fields, using canonical names
+// Converts data to the 'frontend' format for both applets and fields, using canonical names
 export function toFrontendFormat<T extends Record<string, any>>(
   state: RootState,
   entityName: string,
@@ -644,7 +644,7 @@ export function toFrontendFormat<T extends Record<string, any>>(
   return convertedData;
 }
 
-// Converts data to the 'pretty' format for both entities and fields
+// Converts data to the 'pretty' format for both applets and fields
 export function toPrettyFormat<T extends Record<string, any>>(
   state: RootState,
   entityName: string,
@@ -664,7 +664,7 @@ export function toPrettyFormat<T extends Record<string, any>>(
   return convertedData;
 }
 
-// Converts data to the 'sqlFunctionRef' format for both entities and fields
+// Converts data to the 'sqlFunctionRef' format for both applets and fields
 export function toSqlFunctionRefFormat<T extends Record<string, any>>(
   state: RootState,
   entityName: string,

@@ -84,7 +84,7 @@ const Sidebar = () => {
                 // ... (Brush, Erase, Brush Size, Intensity, Brush Intensity, Apply, Cancel) for Mouth
             ],
         },
-        // Other tools
+        // Other old-tools
         {
             category: "Other Tools",
             items: [

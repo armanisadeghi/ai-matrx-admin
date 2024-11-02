@@ -9,6 +9,7 @@ import {appSidebarLinks, adminSidebarLinks} from "@/constants";
 import {generateClientGlobalCache, initializeSchemaSystem} from '@/utils/schema/precomputeUtil';
 import {getTestDirectories} from '@/utils/directoryStructure';
 import {InitialReduxState} from "@/types/reduxTypes";
+import { ClientDebugWrapper } from '@/components/admin/ClientDebugWrapper';
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -54,23 +55,9 @@ export default async function AuthenticatedLayout({
         <Providers initialReduxState={initialReduxState}>
             <LayoutWithSidebar {...layoutProps}>
                 {children}
+                <ClientDebugWrapper user={userData} />
             </LayoutWithSidebar>
         </Providers>
     );
 }
-
-
-// async function getTestDirectories(): Promise<string[]> {
-//     const currentDir = path.dirname(new URL(import.meta.url).pathname.slice(1));
-//     const testsPath = path.join(currentDir, 'tests');
-//
-//     try {
-//         const entries = await fs.readdir(testsPath, { withFileTypes: true });
-//         return entries
-//             .filter(dirent => dirent.isDirectory())
-//             .map(dirent => `/tests/${dirent.name}`);
-//     } catch (error) {
-//         return [];
-//     }
-// }
 

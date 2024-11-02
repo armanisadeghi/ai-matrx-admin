@@ -498,7 +498,7 @@ export function convertFieldNames<T extends Record<string, any>>(
 }
 
 /**
- * Generates a mapping from canonical entity names to a specified format for all entities.
+ * Generates a mapping from canonical entity names to a specified format for all applets.
  * @param format - The target format for the entity names.
  * @returns An object mapping canonical entity names to the specified format.
  */

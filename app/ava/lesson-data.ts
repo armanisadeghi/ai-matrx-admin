@@ -77,7 +77,7 @@ export const vocabFlashcards: FlashcardData[] = [
 **Synonyms:** Possible, achievable, practical  
 **Antonyms:** Impossible, impractical, unachievable  
 **Example:** *Completing the project in one week is feasible if everyone works together efficiently.*`,
-        audioExplanation: "Feasible just means it’s something that can actually happen. Like, if you want to build a treehouse, you’d ask if it’s feasible—if you have the tools and time to get it done. It’s like saying, 'Yep, that’s doable!' It’s like wondering if Taylor could actually re-record all her albums—totally feasible, and look how she’s doing it like a boss!",
+        audioExplanation: "Feasible just means it’s something that can actually happen. Like, if you want to build a treehouse, you’d ask if it’s feasible—if you have the old-tools and time to get it done. It’s like saying, 'Yep, that’s doable!' It’s like wondering if Taylor could actually re-record all her albums—totally feasible, and look how she’s doing it like a boss!",
         detailedExplanation: `When we say something is feasible, we’re talking about whether it can realistically be done. For example, if you plan a school event, you need to consider if it’s feasible based on time and resources. Just like Taylor Swift’s plans to re-record her albums—she’s making it feasible by working hard and being organized. We should always think about what’s feasible in our own goals too!`
     },
     {
@@ -723,7 +723,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         example: "A ball-and-stick model can show how atoms are connected in a molecule.",
         topic: "Chemistry",
         lesson: "Periodic Table",
-        detailedExplanation: "Models of molecules are visual tools used to represent the structures of molecules, showing how atoms are arranged and connected. Common models include ball-and-stick and space-filling models.",
+        detailedExplanation: "Models of molecules are visual old-tools used to represent the structures of molecules, showing how atoms are arranged and connected. Common models include ball-and-stick and space-filling models.",
         audioExplanation: "Of course! Models of molecules are visual representations that help us understand how atoms are arranged and bonded in a molecule. For example, a ball-and-stick model uses balls to represent atoms and sticks to show the bonds between them. These models are useful for visualizing the spatial arrangement of atoms in complex molecules, enhancing our understanding of their structure and behavior. They can help chemists predict how molecules will interact in reactions!"
     },
     {
@@ -784,7 +784,7 @@ export const InitialFlashcardsWithExample: FlashcardData[] = [
         topic: "Chemistry",
         lesson: "Measurement Techniques",
         detailedExplanation: "To measure different properties: Mass is measured using a balance scale, which provides the amount of substance in grams or kilograms. Weight is measured using a spring scale, indicating the force of gravity on an object. Volume can be measured using a graduated cylinder for liquids or the displacement method for solids, and density is calculated by dividing mass by volume.",
-        audioExplanation: "Sure! There are different tools to measure various properties of materials: Mass is measured with a balance scale to find out how much matter an object contains. Weight is measured using a spring scale that measures the gravitational pull on an object. Volume can be measured with a graduated cylinder to gauge liquids, or you can use the displacement method for solids. Finally, you can calculate Density using the formula D = m/v, where m is mass, and v is volume."
+        audioExplanation: "Sure! There are different old-tools to measure various properties of materials: Mass is measured with a balance scale to find out how much matter an object contains. Weight is measured using a spring scale that measures the gravitational pull on an object. Volume can be measured with a graduated cylinder to gauge liquids, or you can use the displacement method for solids. Finally, you can calculate Density using the formula D = m/v, where m is mass, and v is volume."
     },
     {
         order: 29,

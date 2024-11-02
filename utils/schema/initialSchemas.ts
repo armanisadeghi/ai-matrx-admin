@@ -1,6 +1,12 @@
 // File: lib/initialSchemas.ts
 
-import {AutomationTableName,DataStructure,FetchStrategy,NameFormat,FieldDataOptionsType} from '@/types/AutomationSchemaTypes';
+import {
+    AutomationTableName,
+    DataStructure,
+    FetchStrategy,
+    NameFormat,
+    FieldDataOptionsType
+} from '@/types/AutomationSchemaTypes';
 import {AutomationEntity} from '@/types/entityTypes';
 
 export const initialAutomationTableSchema = {
@@ -335,8 +341,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'matrix', relatedTable: 'automation_matrix', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'transformer', relatedTable: 'transformer', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'matrix',
+                relatedTable: 'automation_matrix',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'transformer',
+                relatedTable: 'transformer',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     aiEndpoint: {
@@ -654,9 +672,7 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [
-
-        ],
+        relationships: [],
     },
     aiModel: {
         entityNameFormats: {
@@ -1125,8 +1141,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_model', relatedColumn: 'ai_model', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'ai_model', relatedTable: 'recipe', relatedColumn: 'recipe', junctionTable: 'recipe_model' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_model',
+                relatedColumn: 'ai_model',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'ai_model',
+                relatedTable: 'recipe',
+                relatedColumn: 'recipe',
+                junctionTable: 'recipe_model'
+            }
         ],
     },
     arg: {
@@ -1473,7 +1501,13 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'registered_function', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'registered_function',
+                relatedTable: 'registered_function',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     automationBoundaryBroker: {
@@ -1766,8 +1800,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'broker', relatedTable: 'broker', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'matrix', relatedTable: 'automation_matrix', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'broker',
+                relatedTable: 'broker',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'matrix',
+                relatedTable: 'automation_matrix',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     automationMatrix: {
@@ -2101,10 +2147,34 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'action', relatedColumn: 'matrix', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'automation_boundary_broker', relatedColumn: 'matrix', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'matrix', relatedTable: 'transformer', relatedColumn: 'transformer', junctionTable: 'action' },
-            { relationshipType: 'manyToMany', column: 'matrix', relatedTable: 'broker', relatedColumn: 'broker', junctionTable: 'automation_boundary_broker' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'action',
+                relatedColumn: 'matrix',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'automation_boundary_broker',
+                relatedColumn: 'matrix',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'matrix',
+                relatedTable: 'transformer',
+                relatedColumn: 'transformer',
+                junctionTable: 'action'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'matrix',
+                relatedTable: 'broker',
+                relatedColumn: 'broker',
+                junctionTable: 'automation_boundary_broker'
+            }
         ],
     },
     broker: {
@@ -2945,12 +3015,48 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'custom_source_component', relatedTable: 'data_input_component', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_broker', relatedColumn: 'broker', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'registered_function', relatedColumn: 'return_broker', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'automation_boundary_broker', relatedColumn: 'broker', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'broker', relatedTable: 'automation_matrix', relatedColumn: 'matrix', junctionTable: 'automation_boundary_broker' },
-            { relationshipType: 'manyToMany', column: 'broker', relatedTable: 'recipe', relatedColumn: 'recipe', junctionTable: 'recipe_broker' }
+            {
+                relationshipType: 'foreignKey',
+                column: 'custom_source_component',
+                relatedTable: 'data_input_component',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_broker',
+                relatedColumn: 'broker',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'registered_function',
+                relatedColumn: 'return_broker',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'automation_boundary_broker',
+                relatedColumn: 'broker',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'broker',
+                relatedTable: 'automation_matrix',
+                relatedColumn: 'matrix',
+                junctionTable: 'automation_boundary_broker'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'broker',
+                relatedTable: 'recipe',
+                relatedColumn: 'recipe',
+                junctionTable: 'recipe_broker'
+            }
         ],
     },
     dataInputComponent: {
@@ -3543,7 +3649,13 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'broker', relatedColumn: 'custom_source_component', junctionTable: null }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'broker',
+                relatedColumn: 'custom_source_component',
+                junctionTable: null
+            }
         ],
     },
     dataOutputComponent: {
@@ -3779,9 +3891,7 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [
-
-        ],
+        relationships: [],
     },
     displayOption: {
         entityNameFormats: {
@@ -4045,8 +4155,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_display', relatedColumn: 'display', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'display', relatedTable: 'recipe', relatedColumn: 'recipe', junctionTable: 'recipe_display' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_display',
+                relatedColumn: 'display',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'display',
+                relatedTable: 'recipe',
+                relatedColumn: 'recipe',
+                junctionTable: 'recipe_display'
+            }
         ],
     },
     emails: {
@@ -4364,9 +4486,7 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [
-
-        ],
+        relationships: [],
     },
     extractor: {
         entityNameFormats: {
@@ -4601,9 +4721,7 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [
-
-        ],
+        relationships: [],
     },
     flashcardData: {
         entityNameFormats: {
@@ -5374,10 +5492,34 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'flashcard_history', relatedColumn: 'flashcard_id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'flashcard_set_relations', relatedColumn: 'flashcard_id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'flashcard_images', relatedColumn: 'flashcard_id', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'flashcard_id', relatedTable: 'flashcard_sets', relatedColumn: 'set_id', junctionTable: 'flashcard_set_relations' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'flashcard_history',
+                relatedColumn: 'flashcard_id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'flashcard_set_relations',
+                relatedColumn: 'flashcard_id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'flashcard_images',
+                relatedColumn: 'flashcard_id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'flashcard_id',
+                relatedTable: 'flashcard_sets',
+                relatedColumn: 'set_id',
+                junctionTable: 'flashcard_set_relations'
+            }
         ],
     },
     flashcardHistory: {
@@ -5765,7 +5907,13 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'flashcard_id',
+                relatedTable: 'flashcard_data',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     flashcardImages: {
@@ -6112,7 +6260,13 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'flashcard_id',
+                relatedTable: 'flashcard_data',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     flashcardSetRelations: {
@@ -6323,8 +6477,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'flashcard_id', relatedTable: 'flashcard_data', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'set_id', relatedTable: 'flashcard_sets', relatedColumn: 'set_id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'flashcard_id',
+                relatedTable: 'flashcard_data',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'set_id',
+                relatedTable: 'flashcard_sets',
+                relatedColumn: 'set_id',
+                junctionTable: null
+            }
         ],
     },
     flashcardSets: {
@@ -6835,8 +7001,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'set_id', relatedTable: 'flashcard_set_relations', relatedColumn: 'set_id', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'set_id', relatedTable: 'flashcard_data', relatedColumn: 'flashcard_id', junctionTable: 'flashcard_set_relations' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'set_id',
+                relatedTable: 'flashcard_set_relations',
+                relatedColumn: 'set_id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'set_id',
+                relatedTable: 'flashcard_data',
+                relatedColumn: 'flashcard_id',
+                junctionTable: 'flashcard_set_relations'
+            }
         ],
     },
     processor: {
@@ -7129,9 +7307,27 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'depends_default', relatedTable: 'self_reference', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_processor', relatedColumn: 'processor', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'processor', relatedTable: 'recipe', relatedColumn: 'recipe', junctionTable: 'recipe_processor' }
+            {
+                relationshipType: 'foreignKey',
+                column: 'depends_default',
+                relatedTable: 'self_reference',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_processor',
+                relatedColumn: 'processor',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'processor',
+                relatedTable: 'recipe',
+                relatedColumn: 'recipe',
+                junctionTable: 'recipe_processor'
+            }
         ],
     },
     recipe: {
@@ -7741,18 +7937,90 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_broker', relatedColumn: 'recipe', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_processor', relatedColumn: 'recipe', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_model', relatedColumn: 'recipe', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_display', relatedColumn: 'recipe', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_function', relatedColumn: 'recipe', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_tool', relatedColumn: 'recipe', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'recipe', relatedTable: 'broker', relatedColumn: 'broker', junctionTable: 'recipe_broker' },
-            { relationshipType: 'manyToMany', column: 'recipe', relatedTable: 'display_option', relatedColumn: 'display', junctionTable: 'recipe_display' },
-            { relationshipType: 'manyToMany', column: 'recipe', relatedTable: 'system_function', relatedColumn: 'function', junctionTable: 'recipe_function' },
-            { relationshipType: 'manyToMany', column: 'recipe', relatedTable: 'ai_model', relatedColumn: 'ai_model', junctionTable: 'recipe_model' },
-            { relationshipType: 'manyToMany', column: 'recipe', relatedTable: 'processor', relatedColumn: 'processor', junctionTable: 'recipe_processor' },
-            { relationshipType: 'manyToMany', column: 'recipe', relatedTable: 'tool', relatedColumn: 'tool', junctionTable: 'recipe_tool' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_broker',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_processor',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_model',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_display',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_function',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_tool',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'recipe',
+                relatedTable: 'broker',
+                relatedColumn: 'broker',
+                junctionTable: 'recipe_broker'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'recipe',
+                relatedTable: 'display_option',
+                relatedColumn: 'display',
+                junctionTable: 'recipe_display'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'recipe',
+                relatedTable: 'system_function',
+                relatedColumn: 'function',
+                junctionTable: 'recipe_function'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'recipe',
+                relatedTable: 'ai_model',
+                relatedColumn: 'ai_model',
+                junctionTable: 'recipe_model'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'recipe',
+                relatedTable: 'processor',
+                relatedColumn: 'processor',
+                junctionTable: 'recipe_processor'
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'recipe',
+                relatedTable: 'tool',
+                relatedColumn: 'tool',
+                junctionTable: 'recipe_tool'
+            }
         ],
     },
     recipeBroker: {
@@ -8045,8 +8313,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'broker', relatedTable: 'broker', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'broker',
+                relatedTable: 'broker',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'recipe',
+                relatedTable: 'recipe',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     recipeDisplay: {
@@ -8339,8 +8619,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'display', relatedTable: 'display_option', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'display',
+                relatedTable: 'display_option',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'recipe',
+                relatedTable: 'recipe',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     recipeFunction: {
@@ -8633,8 +8925,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'function', relatedTable: 'system_function', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'function',
+                relatedTable: 'system_function',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'recipe',
+                relatedTable: 'recipe',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     recipeModel: {
@@ -8927,8 +9231,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'ai_model', relatedTable: 'ai_model', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'ai_model',
+                relatedTable: 'ai_model',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'recipe',
+                relatedTable: 'recipe',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     recipeProcessor: {
@@ -9180,8 +9496,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'processor', relatedTable: 'processor', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'processor',
+                relatedTable: 'processor',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'recipe',
+                relatedTable: 'recipe',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     recipeTool: {
@@ -9433,25 +9761,102 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'recipe', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'foreignKey', column: 'tool', relatedTable: 'tool', relatedColumn: 'id', junctionTable: null }
+            {
+                relationshipType: 'foreignKey',
+                column: 'recipe',
+                relatedTable: 'recipe',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'foreignKey',
+                column: 'tool',
+                relatedTable: 'tool',
+                relatedColumn: 'id',
+                junctionTable: null
+            }
         ],
     },
     registeredFunction: {
-        entityNameFormats: {
-            "frontend": "registeredFunction",
-            "backend": "registered_function",
-            "database": "registered_function",
-            "pretty": "Registered Function",
-            "component": "RegisteredFunction",
-            "kebab": "registered-function",
-            "sqlFunctionRef": "p_registered_function",
-            "RestAPI": "registeredFunction",
-            "GraphQL": "registeredFunction",
-            "custom": "registeredFunction"
-        },
         schemaType: 'table' as const,
+        defaultFetchStrategy: 'fkAndIfk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
+        relationships: [
+            {
+                relationshipType: 'foreignKey',
+                column: 'return_broker',
+                relatedTable: 'broker',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'system_function',
+                relatedColumn: 'rf_id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'arg',
+                relatedColumn: 'registered_function',
+                junctionTable: null
+            }
+        ],
         entityFields: {
+            modulePath: {
+                fieldNameFormats: {
+                    "frontend": "modulePath",
+                    "backend": "module_path",
+                    "database": "module_path",
+                    "pretty": "Module Path",
+                    "component": "ModulePath",
+                    "kebab": "module-path",
+                    "sqlFunctionRef": "p_module_path",
+                    "RestAPI": "modulePath",
+                    "GraphQL": "modulePath",
+                    "custom": "modulePath"
+                } as const,
+                dataType: 'string' as const,
+                isRequired: true,
+                maxLength: null,
+                isArray: false,
+                defaultValue: "" as const,
+                isPrimaryKey: false,
+                isDisplayField: false,
+                defaultGeneratorFunction: null,
+                validationFunctions: [],
+                exclusionRules: [],
+                defaultComponent: 'textarea:5' as const,
+                componentProps: {
+                    "variant": "default",
+                    "size": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default"
+                },
+                structure: 'single' as const,
+                isNative: true,
+                typeReference: {} as TypeBrand<string>,
+                enumValues: null,
+                databaseTable: 'registered_function',
+            },
+
             id: {
                 fieldNameFormats: {
                     "frontend": "id",
@@ -9513,47 +9918,6 @@ export const initialAutomationTableSchema = {
                 defaultValue: "" as const,
                 isPrimaryKey: false,
                 isDisplayField: true,
-                defaultGeneratorFunction: null,
-                validationFunctions: [],
-                exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
-                componentProps: {
-                    "variant": "default",
-                    "size": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default"
-                },
-                structure: 'single' as const,
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                enumValues: null,
-                databaseTable: 'registered_function',
-            },
-            modulePath: {
-                fieldNameFormats: {
-                    "frontend": "modulePath",
-                    "backend": "module_path",
-                    "database": "module_path",
-                    "pretty": "Module Path",
-                    "component": "ModulePath",
-                    "kebab": "module-path",
-                    "sqlFunctionRef": "p_module_path",
-                    "RestAPI": "modulePath",
-                    "GraphQL": "modulePath",
-                    "custom": "modulePath"
-                } as const,
-                dataType: 'string' as const,
-                isRequired: true,
-                maxLength: null,
-                isArray: false,
-                defaultValue: "" as const,
-                isPrimaryKey: false,
-                isDisplayField: false,
                 defaultGeneratorFunction: null,
                 validationFunctions: [],
                 exclusionRules: [],
@@ -9783,23 +10147,20 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'arg',
             },
         },
-        defaultFetchStrategy: 'fkAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+
+        entityNameFormats: {
+            "frontend": "registeredFunction",
+            "backend": "registered_function",
+            "database": "registered_function",
+            "pretty": "Registered Function",
+            "component": "RegisteredFunction",
+            "kebab": "registered-function",
+            "sqlFunctionRef": "p_registered_function",
+            "RestAPI": "registeredFunction",
+            "GraphQL": "registeredFunction",
+            "custom": "registeredFunction"
         },
-        relationships: [
-            { relationshipType: 'foreignKey', column: 'return_broker', relatedTable: 'broker', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'system_function', relatedColumn: 'rf_id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'arg', relatedColumn: 'registered_function', junctionTable: null }
-        ],
+
     },
     systemFunction: {
         entityNameFormats: {
@@ -10201,10 +10562,34 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'rf_id', relatedTable: 'registered_function', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'tool', relatedColumn: 'system_function', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_function', relatedColumn: 'function', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'function', relatedTable: 'recipe', relatedColumn: 'recipe', junctionTable: 'recipe_function' }
+            {
+                relationshipType: 'foreignKey',
+                column: 'rf_id',
+                relatedTable: 'registered_function',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'tool',
+                relatedColumn: 'system_function',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_function',
+                relatedColumn: 'function',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'function',
+                relatedTable: 'recipe',
+                relatedColumn: 'recipe',
+                junctionTable: 'recipe_function'
+            }
         ],
     },
     tool: {
@@ -10620,9 +11005,27 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'foreignKey', column: 'system_function', relatedTable: 'system_function', relatedColumn: 'id', junctionTable: null },
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_tool', relatedColumn: 'tool', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'tool', relatedTable: 'recipe', relatedColumn: 'recipe', junctionTable: 'recipe_tool' }
+            {
+                relationshipType: 'foreignKey',
+                column: 'system_function',
+                relatedTable: 'system_function',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_tool',
+                relatedColumn: 'tool',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'tool',
+                relatedTable: 'recipe',
+                relatedColumn: 'recipe',
+                junctionTable: 'recipe_tool'
+            }
         ],
     },
     transformer: {
@@ -10846,8 +11249,20 @@ export const initialAutomationTableSchema = {
             "onChange": "default"
         },
         relationships: [
-            { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'action', relatedColumn: 'transformer', junctionTable: null },
-            { relationshipType: 'manyToMany', column: 'transformer', relatedTable: 'automation_matrix', relatedColumn: 'matrix', junctionTable: 'action' }
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'action',
+                relatedColumn: 'transformer',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'manyToMany',
+                column: 'transformer',
+                relatedTable: 'automation_matrix',
+                relatedColumn: 'matrix',
+                junctionTable: 'action'
+            }
         ],
     },
     userPreferences: {
@@ -11042,9 +11457,7 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [
-
-        ],
+        relationships: [],
     }
 } as const;
 
@@ -11094,9 +11507,6 @@ export type InitialTableSchema = {
 export type TableSchemaStructure = {
     [entityName in AutomationTableName]: InitialTableSchema;
 };
-
-
-
 
 
 // Types to support the flexible structure

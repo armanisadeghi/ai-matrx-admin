@@ -1,4 +1,4 @@
-// components/ui/JsonComponents/index.ts
+// components/ui/JsonComponents/index.tsx
 
 import { JsonViewer, FullJsonViewer } from './JsonViewer';
 import FullEditableJsonViewer, { EditableJsonViewer } from './JsonEditor';

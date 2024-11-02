@@ -3,12 +3,13 @@ import { Database } from '@/types/matrixDb.types';
 import {TestDirectory} from "@/utils/directoryStructure";
 import {UnifiedSchemaCache} from "@/types/entityTypes";
 import {UserData} from "@/utils/userDataMapper";
+import {GlobalCacheState} from "@/lib/redux/schema/globalCacheSlice";
 
 export interface InitialReduxState {
     user: UserData;
     testRoutes: TestDirectory[];
     userPreferences: Record<string, any>;
-    globalCache: UnifiedSchemaCache;
+    globalCache: GlobalCacheState;
 }
 
 

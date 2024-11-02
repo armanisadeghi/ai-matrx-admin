@@ -55,6 +55,23 @@ type FetchStrategy =
     | 'none';
 
 
+interface GlobalCacheState {
+    readonly schema: AutomationEntities;
+    entityNames: EntityKeys[];
+    entities: Partial<Record<EntityKeys, SchemaEntity>>;
+    fields: Record<string, SchemaField>;
+    fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
+    entityNameToCanonical: Record<string, EntityKeys>;
+    fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
+    entityNameFormats: Record<EntityKeys, Record<string, string>>;
+    fieldNameFormats: Record<EntityKeys, Record<string, Record<string, string>>>;
+    entityNameToDatabase: Record<EntityKeys, string>;
+    entityNameToBackend: Record<EntityKeys, string>;
+    fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
+    fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
+    isInitialized: boolean;
+}
+
 export interface SchemaField {
     fieldName: string;
     entityName: EntityNameOfficial;
@@ -74,23 +91,6 @@ export interface SchemaField {
     validationFunctions: string[];
     exclusionRules: string[];
     databaseTable: string;
-}
-
-export interface GlobalCacheState {
-    readonly schema: AutomationEntities;
-    entityNames: EntityKeys[];
-    entities: Partial<Record<EntityKeys, SchemaEntity>>;
-    fields: Record<string, SchemaField>;
-    fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
-    entityNameToCanonical: Record<string, EntityKeys>;
-    fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
-    entityNameFormats: Record<EntityKeys, Record<string, string>>;
-    fieldNameFormats: Record<EntityKeys, Record<string, Record<string, string>>>;
-    entityNameToDatabase: Record<EntityKeys, string>;
-    entityNameToBackend: Record<EntityKeys, string>;
-    fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
-    fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
-    isInitialized: boolean;
 }
 
 

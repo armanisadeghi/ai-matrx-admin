@@ -7,7 +7,7 @@ import { EntitySliceState } from "@/lib/redux/entity/entitySliceCreator";
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
   // Create the base selector for the specific entity
   const selectEntity = (state: RootState): EntitySliceState<TEntity> => {
-    // Access the entity state through the 'entities' namespace
+    // Access the entity state through the 'applets' namespace
     return state.entities[entityKey] as EntitySliceState<TEntity>;
   };
 

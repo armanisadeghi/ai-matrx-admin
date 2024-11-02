@@ -1,4 +1,4 @@
-// File: styles/themes/index.ts
+// File: styles/themes/index.tsx
 
 export type { ThemeMode } from './themeSlice';
 export { ThemeProvider, useTheme } from './ThemeProvider';
