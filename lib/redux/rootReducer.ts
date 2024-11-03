@@ -1,5 +1,5 @@
 // lib/redux/store.ts
-
+// lib/redux/rootReducer.ts
 import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './dynamic/featureSchema';
 import { createFeatureSlice } from './slices/featureSliceCreator';

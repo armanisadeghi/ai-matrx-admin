@@ -1,12 +1,16 @@
 // GO TO THIS CHAT: =================================================    https://claude.ai/chat/76aecaf8-6275-43bb-bbdb-8d390f1080c7 =================================================
 
-// components/matrx/EntityTable/MatrxServerTable.tsx
+// New: https://claude.ai/chat/932ecd5f-7495-4f7f-8e81-f1b6374f2443
+
+// Action Guy: https://claude.ai/chat/76aecaf8-6275-43bb-bbdb-8d390f1080c7
+
+
 'use client';
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState, useCallback} from 'react';
 import {useTable, useSortBy, useGlobalFilter, usePagination} from 'react-table';
 import {Table} from "@/components/ui/table";
-import {TableInstance, ExtendedTableState} from "@/types/tableTypes";
+import {TableInstance, ExtendedTableState} from "@/types/entityTableTypes";
 import MatrxTableHeader from "@/components/matrx/EntityTable/MatrxTableHeader";
 import MatrxTableBody from "@/components/matrx/EntityTable/MatrxTableBody";
 import {cn} from "@/styles/themes";
@@ -22,7 +26,6 @@ interface MatrxServerTableProps {
     truncateAt?: number;
     customModalContent?: React.ReactNode;
     className?: string;
-    // New optional props for server-side pagination
     isServerSide?: boolean;
     loading?: boolean;
     totalCount?: number;
@@ -31,8 +34,6 @@ interface MatrxServerTableProps {
     serverPage?: number;
     serverPageSize?: number;
 }
-
-
 
 const MatrxServerTable: React.FC<MatrxServerTableProps> = (
     {
@@ -43,29 +44,28 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
         truncateAt,
         customModalContent,
         className,
-        // New props with defaults
         isServerSide = false,
         loading = false,
-        totalCount,
+        totalCount = 0,
         onPageChange,
         onPageSizeChange,
-        serverPage,
-        serverPageSize,
+        serverPage = 1,
+        serverPageSize = 10,
     }) => {
-        const allData = useMemo(() => {
-            return data.map((row, index) => ({
-                ...row,
-                actions: actions,
-                id: row.id ? `${row.id}` : `row-${index}`
-            }));
-        }, [data, actions]);
+    const allData = useMemo(() => {
+        return data.map((row, index) => ({
+            ...row,
+            actions: actions,
+            id: row.id ? `${row.id}` : `row-${index}`
+        }));
+    }, [data, actions]);
 
     const allColumns = useMemo(() => {
         if (allData.length === 0) return [];
         const columns = Object.keys(allData[0]).map(key => ({
             Header: key.charAt(0).toUpperCase() + key.slice(1),
             accessor: key,
-            ...(key === 'actions' && { Cell: () => null, Header: 'Actions' })
+            ...(key === 'actions' && {Cell: () => null, Header: 'Actions'})
         }));
         return columns;
     }, [allData]);
@@ -73,9 +73,7 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
     const allColumnNames = useMemo(() => allColumns.map((col) => col.Header as string), [allColumns]);
 
     const [visibleColumnAccessors, setVisibleColumnAccessors] = useState<string[]>([]);
-
-
-
+    const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
 
     useEffect(() => {
         if (allColumns.length > 0) {
@@ -103,26 +101,21 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
         [allColumns, visibleColumnAccessors]
     );
 
-    const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
-
     const tableInstance = useTable(
         {
             columns: visibleColumns,
             data: allData,
             initialState: {
+                pageIndex: isServerSide ? serverPage - 1 : 0,
                 pageSize: serverPageSize || 10,
-                pageIndex: isServerSide ? (serverPage ? serverPage - 1 : 0) : 0,
-            },
+            } as Partial<ExtendedTableState>,  // Cast to ExtendedTableState
             manualPagination: isServerSide,
-            pageCount: isServerSide ? Math.ceil((totalCount || 0) / (serverPageSize || 10)) : undefined,
+            pageCount: isServerSide ? Math.ceil(totalCount / serverPageSize) : undefined,
         },
         useGlobalFilter,
         useSortBy,
         usePagination
     ) as unknown as TableInstance;
-
-
-
 
     const {
         getTableProps,
@@ -139,22 +132,13 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
         pageCount,
         gotoPage,
         setPageSize,
-    } = useTable(
-        {
-            columns: visibleColumns,
-            data: allData,
-            initialState: {pageSize: 10} as Partial<ExtendedTableState>,
-        },
-        useGlobalFilter,
-        useSortBy,
-        usePagination
-    ) as unknown as TableInstance;
-
+    } = tableInstance;
 
     const {globalFilter, pageIndex, pageSize} = state as ExtendedTableState;
 
+    // Define page numbers dynamically
     const pageNumbers = [];
-    const totalPages = pageCount;
+    const totalPages = pageCount || 1;
     const currentPage = pageIndex + 1;
 
     if (totalPages <= 5) {
@@ -171,6 +155,31 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
         }
     }
 
+    const handleNextPage = useCallback(() => {
+        if (canNextPage) {
+            nextPage();
+            if (isServerSide && onPageChange) {
+                onPageChange(pageIndex + 2);  // Move to the next page (pageIndex is zero-based)
+            }
+        }
+    }, [canNextPage, isServerSide, nextPage, onPageChange, pageIndex]);
+
+    const handlePreviousPage = useCallback(() => {
+        if (canPreviousPage) {
+            previousPage();
+            if (isServerSide && onPageChange) {
+                onPageChange(pageIndex);  // Move to the previous page
+            }
+        }
+    }, [canPreviousPage, isServerSide, previousPage, onPageChange, pageIndex]);
+
+    const handleGotoPage = useCallback((pageIndex: number) => {
+        gotoPage(pageIndex);
+        if (isServerSide && onPageChange) {
+            onPageChange(pageIndex + 1);
+        }
+    }, [gotoPage, isServerSide, onPageChange]);
+
     const handleSearchChange = (value: string) => {
         setGlobalFilter(value);
     };
@@ -182,11 +191,9 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
                 handleSearchChange={handleSearchChange}
                 pageSize={pageSize}
                 setPageSize={setPageSize}
-                // handleAdd={() => openModal('add')}
                 handleAdd={() => console.log('Add button clicked. Currently not implemented')}
                 setColumnSettingsOpen={setColumnSettingsOpen}
                 columnSettingsOpen={columnSettingsOpen}
-
             />
 
             <div className="relative overflow-hidden shadow-md sm:rounded-lg scrollbar-hide">
@@ -209,15 +216,17 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
                     </div>
                 </div>
             </div>
+
             <TableBottomSection
                 currentPage={currentPage}
                 pageNumbers={pageNumbers}
                 canPreviousPage={canPreviousPage}
-                canNextPage={canNextPage}
-                previousPage={previousPage}
-                nextPage={nextPage}
-                gotoPage={gotoPage}
+                canNextPage={canNextPage && (isServerSide ? (currentPage * pageSize < totalCount) : true)}
+                previousPage={handlePreviousPage}
+                nextPage={handleNextPage}
+                gotoPage={handleGotoPage}
             />
+
             <MatrxColumnSettings
                 open={columnSettingsOpen}
                 onOpenChange={setColumnSettingsOpen}

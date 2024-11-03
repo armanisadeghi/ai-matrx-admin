@@ -13,13 +13,14 @@ import {Copy, ChevronDown, ChevronRight, Plus, Trash, Save, X, Edit} from 'lucid
 import jsonlint from 'jsonlint-mod';
 
 export interface EditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
-    data: object | string | null; // Allow null
+    data: object | string | null;
     onChange: (newData: object | string) => void;
     onFormat?: () => void;
     initialExpanded?: boolean;
     maxHeight?: string;
     validateDelay?: number;
     lockKeys?: boolean;
+    defaultEnhancedMode?: boolean;
 }
 
 interface ValidationError {
@@ -187,13 +188,14 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
         maxHeight = '400px',
         validateDelay = 300,
         lockKeys = false,
+        defaultEnhancedMode = true,
         ...props
     }) => {
     const [parsedData, setParsedData] = useState<object>({});
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [isCopied, setIsCopied] = useState(false);
     const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-    const [isEnhancedMode, setIsEnhancedMode] = useState(false);
+    const [isEnhancedMode, setIsEnhancedMode] = useState(defaultEnhancedMode);
     const [basicJsonText, setBasicJsonText] = useState('');
 
     const debouncedValidate = useMemo(() => {

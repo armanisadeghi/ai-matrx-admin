@@ -17,10 +17,10 @@ export interface ActionDefinition<TEntity extends EntityKeys = any> {
     label: string | ((data: EntityData<TEntity>) => string);
     icon: React.ReactNode | ((data: EntityData<TEntity>) => React.ReactNode);
     className?: string | ((data: EntityData<TEntity>) => string);
-    // Basic visibility and enablement
+
     isVisible?: (data: EntityData<TEntity>) => boolean;
     isEnabled?: (data: EntityData<TEntity>) => boolean;
-    // Enhanced features (all optional)
+
     type?: 'entity' | 'relationship' | 'service' | 'navigation';
     confirmationRequired?: boolean | {
         title: string;
@@ -41,6 +41,7 @@ export interface ActionDefinition<TEntity extends EntityKeys = any> {
         action: string;
     };
 }
+
 
 // Enhanced Context available to all actions
 export interface ActionContext<TEntity extends EntityKeys> {
@@ -241,12 +242,14 @@ export const MatrxActionButton = <TEntity extends EntityKeys>(
         action,
         data,
         entityKey,
-        className
+        className,
+        onAction
     }: {
-        action: ActionDefinition<TEntity>;
-        data: EntityData<TEntity>;
-        entityKey: TEntity;
-        className?: string;
+        action: ActionDefinition<TEntity>,
+        data: EntityData<TEntity>,
+        entityKey: TEntity,
+        className?: string,
+        onAction?: (action) => void
     }) => {
     const {handleAction, context} = useActions(entityKey, data);
 

@@ -53,6 +53,8 @@ _armani/
 -armani/
 _dev/
 temp/
+public/cache/
+
 
 .env
 .env.local

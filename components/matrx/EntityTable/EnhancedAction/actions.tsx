@@ -2,9 +2,10 @@
 
 import {ReactNode} from 'react';
 import {EntityKeys, EntityData, AutomationEntity} from '@/types/entityTypes';
-import {AppRouterInstance} from 'next/navigation';
-import {Socket} from 'socket.io-client';
-
+import {Edit, Eye} from "lucide-react";
+import MatrxTooltip from '../../MatrxTooltip';
+import {Button} from "@/components/ui";
+import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 
 // Action Context provides rich information to handlers
@@ -140,19 +141,20 @@ export class ActionRegistry<TEntity extends EntityKeys> {
     }
 }
 
-// React component for rendering actions
+interface ActionButtonProps<TEntity extends EntityKeys> {
+    action: EnhancedActionDefinition<TEntity>;
+    context: ActionContext<TEntity>;
+    className?: string;
+    children?: React.ReactNode;
+}
+
 export function ActionButton<TEntity extends EntityKeys>(
     {
         action,
         context,
         className,
         children
-    }: {
-        action: EnhancedActionDefinition<TEntity>;
-        context: ActionContext<TEntity>;
-        className?: string;
-        children?: ReactNode;
-    }) {
+    }: ActionButtonProps<TEntity>) {
     const isVisible = action.isVisible?.(context) ?? true;
     const isEnabled = action.isEnabled?.(context) ?? true;
 
@@ -160,14 +162,14 @@ export function ActionButton<TEntity extends EntityKeys>(
 
     const handleClick = async () => {
         if (action.confirmationRequired) {
-            const confirmed = await context.ui.confirm(
-                typeof action.confirmationRequired === 'boolean'
-                ? {
-                        title: `Confirm ${action.label}`,
-                        message: `Are you sure you want to ${action.label.toLowerCase()}?`
-                    }
-                : action.confirmationRequired
-            );
+            const confirmConfig = typeof action.confirmationRequired === 'boolean'
+                                  ? {
+                    title: `Confirm ${typeof action.label === 'string' ? action.label : ''}`,
+                    message: `Are you sure you want to ${typeof action.label === 'string' ? action.label : ''}?`
+                }
+                                  : action.confirmationRequired;
+
+            const confirmed = await context.ui.confirm(confirmConfig);
             if (!confirmed) return;
         }
 
@@ -176,7 +178,10 @@ export function ActionButton<TEntity extends EntityKeys>(
             action.onSuccess?.(result, context);
         } catch (error) {
             action.onError?.(error, context);
-            context.ui.toast.error(`Failed to ${action.label.toLowerCase()}`);
+            const errorLabel = typeof action.label === 'string'
+                               ? action.label
+                               : 'action';
+            context.ui.toast.error(`Failed to ${errorLabel}`);
         }
     };
 
@@ -184,22 +189,30 @@ export function ActionButton<TEntity extends EntityKeys>(
         return action.renderButton({context, onClick: handleClick});
     }
 
+    const actionLabel = typeof action.label === 'function'
+                        ? action.label(context)
+                        : action.label;
+
+    const actionIcon = typeof action.icon === 'function'
+                       ? action.icon(context)
+                       : action.icon;
+
     return (
         <MatrxTooltip
-            content={typeof action.label === 'function' ? action.label(context) : action.label}
+            content={actionLabel}
             placement="left"
         >
             <Button
                 onClick={handleClick}
                 disabled={!isEnabled}
-                size={action.size || "xs"}
-                variant={action.variant || "ghost"}
+                size="xs"
+                variant="ghost"
                 className={`p-1 ${action.className || ""} ${className || ""}`}
             >
                 {children || (
-                    typeof action.icon === 'function'
-                    ? action.icon(context)
-                    : React.cloneElement(action.icon as React.ReactElement, {className: 'w-3 h-3'})
+                    React.isValidElement(actionIcon)
+                    ? React.cloneElement(actionIcon, {className: 'w-3 h-3'})
+                    : actionIcon
                 )}
             </Button>
         </MatrxTooltip>
@@ -207,6 +220,7 @@ export function ActionButton<TEntity extends EntityKeys>(
 }
 
 
+/*
 // Example usage
 const editAction: EnhancedActionDefinition<'registeredFunction'> = {
     name: 'edit',
@@ -249,6 +263,7 @@ const editAction: EnhancedActionDefinition<'registeredFunction'> = {
         ]
     }
 };
+*/
 
 // Navigation and Routing
 export interface NavigationConfig {
@@ -313,7 +328,7 @@ export interface EnhancedActionContext<TEntity extends EntityKeys> {
 
     // Service Integration
     services: {
-        socket: Socket;
+        socket: 'Socket'; // update later
         invokeService: (config: ServiceConfig) => Promise<any>;
         registerServiceHandler: (service: string, handler: (data: any) => void) => void;
     };

@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/matrx-table/hold-hold-page.tsx
+// app/(authenticated)/tests/selector-test/selector-validation-test/page.tsx
 
 'use client';
 
@@ -174,6 +174,7 @@ const formatTwo = "component";
 const formatThree = "pretty";
 const formatFour = "GraphQL";
 
+
 const DataDisplay = ({data}) => {
     const isString = typeof data === 'string';
 
@@ -280,13 +281,12 @@ const SelectorTestPage: React.FC = () => {
     }));
 
 
-    // PROBLEMATIC!
     const AnyObjectFormatConversion = useAppSelector((state) => schemaSelectors.selectAnyObjectFormatConversion(state, {
         entityName: entityKey,
         data: sampleData,
         format: formatOne
     }));
-    // PROBLEMATIC!
+
     const UnknownToAnyObjectFormatConversion = useAppSelector((state) => schemaSelectors.selectUnknownToAnyObjectFormatConversion(state, {
         entityAlias: entityKey,
         data: sampleData,
@@ -304,14 +304,13 @@ const SelectorTestPage: React.FC = () => {
     }));
 
 
-    // PROBLEMATIC! COMEBACK
     const queryDatabaseConversion = useAppSelector((state) =>
         schemaSelectors.selectQueryDatabaseConversion(state, {
             entityName: entityKey,
             options: queryOptions
         })
     );
-    // PROBLEMATIC!
+
     const payloadOptionsDatabaseConversion = useAppSelector((state) =>
         schemaSelectors.selectPayloadOptionsDatabaseConversion(state, {
             entityName: entityKey,

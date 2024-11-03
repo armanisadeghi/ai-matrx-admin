@@ -104,7 +104,9 @@ export const selectEntityFields = createSelector(
     [selectFields, selectFieldsByEntity, (_: RootState, entityName: EntityKeys) => entityName],
     (fields, fieldsByEntity, entityName): SchemaField[] => {
         const fieldIds = fieldsByEntity[entityName] || [];
-        return fieldIds.map(id => fields[id]).filter(Boolean);
+        if (fieldIds.length === 0) return [];
+        const result = fieldIds.map(id => fields[id]).filter(Boolean);
+        return result;
     }
 );
 
@@ -279,29 +281,85 @@ interface UnknownFieldFormatPayload {
     targetFormat: NameFormat;
 }
 
+// Existing selector with console logs added
 export const selectReplaceKeysInObject = createSelector(
     [
         (_: RootState, data: Record<string, any> | Record<string, any>[] | string) => data,
         (_: RootState, _data: any, keyMapping: KeyMapping) => keyMapping
     ],
     (data, keyMapping) => {
+        // console.log("Received data:", data);
+        // console.log("Received keyMapping:", keyMapping);
+
         if (typeof data === 'string') {
-            return keyMapping[data] || data;
+            // console.log("Data is a string, performing direct key mapping.");
+            return keyMapping?.[data] || data;
         }
 
         const replaceKeys = (obj: Record<string, any>): Record<string, any> => {
-            return Object.keys(obj).reduce((acc, key) => {
-                const newKey = keyMapping[key] || key;
+            // console.log("Replacing keys in object:", obj);
+            const keys = Object.keys(obj);
+            // Return same object if no keys need mapping
+            if (keys.every(key => !keyMapping?.[key])) return obj;
+
+            return keys.reduce((acc, key) => {
+                const newKey = keyMapping?.[key] || key;
+                // console.log(`Mapping key '${key}' to '${newKey}'`);
                 acc[newKey] = obj[key];
                 return acc;
             }, {});
         };
 
         if (Array.isArray(data)) {
-            return data.map(replaceKeys);
+            // console.log("Data is an array, processing each element.");
+            // Return same array if no changes needed
+            const processedData = data.map(replaceKeys);
+            return processedData.every((item, index) => item === data[index]) ? data : processedData;
         }
 
+        // console.log("Data is a single object, replacing keys.");
         return replaceKeys(data);
+    }
+);
+
+// Safer version of selectReplaceKeysInObject
+export const safeSelectReplaceKeysInObjectWithErrorControl = createSelector(
+    [
+        (_: RootState, data: Record<string, any> | Record<string, any>[] | string) => data,
+        (_: RootState, _data: any, keyMapping: KeyMapping) => keyMapping || {}  // Default to empty object if keyMapping is undefined
+    ],
+    (data, keyMapping) => {
+        // console.log("Received data:", data);
+        // console.log("Received keyMapping:", keyMapping);
+
+        if (typeof data === 'string') {
+            // console.log("Data is a string, performing direct key mapping.");
+            return keyMapping[data] || data;  // Safe access
+        }
+
+        const replaceKeys = (obj: Record<string, any> = {}): Record<string, any> => {
+            // console.log("Replacing keys in object:", obj);
+            const keys = Object.keys(obj);
+            // Return same object if no keys need mapping
+            if (keys.every(key => !keyMapping[key])) return obj;
+
+            return keys.reduce((acc, key) => {
+                const newKey = keyMapping[key] || key;
+                // console.log(`Mapping key '${key}' to '${newKey}'`);
+                acc[newKey] = obj[key];
+                return acc;
+            }, {});
+        };
+
+        if (Array.isArray(data)) {
+            // console.log("Data is an array, processing each element.");
+            // Return same array if no changes needed
+            const processedData = data.map(replaceKeys);
+            return processedData.every((item, index) => item === data[index]) ? data : processedData;
+        }
+
+        // console.log("Data is a single object, replacing keys.");
+        return replaceKeys(data as Record<string, any>);
     }
 );
 

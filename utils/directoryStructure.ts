@@ -57,7 +57,6 @@ async function findTestsDirectory(): Promise<string> {
  */
 function formatDirectoryEntry(dirent: Dirent): TestDirectory {
     const name = dirent.name;
-    // Ensure path always starts with / and doesn't have double slashes
     const formattedPath = path.posix.join(TESTS_BASE_PATH, name).replace(/\\/g, '/');
 
     return {

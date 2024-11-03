@@ -6,7 +6,10 @@ import {
     UsePaginationInstanceProps,
     UseSortByInstanceProps,
     UseTableInstanceProps,
-    TableState, Cell, Row, HeaderGroup
+    TableState,
+    Cell,
+    Row,
+    HeaderGroup,
 } from 'react-table';
 
 import React from "react";
@@ -26,7 +29,9 @@ export interface MatrxTableProps {
     truncateAt?: number;
     className?: string;
     customModalContent?: (rowData: TableData) => React.ReactNode;
-    onPageChange?: (pageIndex: number, pageSize: number) => void;
+    onPageChange?: (pageIndex: number, pageSize: number) => void;  // Handles pagination changes
+    loading?: boolean;  // Optional: Loading state for async data
+    totalCount?: number;  // Optional: Total item count for server-side pagination
 }
 
 export interface ExtendedTableState extends TableState<TableData> {

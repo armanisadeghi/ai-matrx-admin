@@ -2,7 +2,7 @@
 
 import React from "react";
 import {Cell} from "react-table";
-import {TableData} from "@/types/tableTypes";
+import {TableData} from "@/types/entityTableTypes";
 import {TableCell} from "@/components/ui/table";
 import {motion} from "framer-motion";
 import { TableActionIcon } from "../MatrixTableActions";

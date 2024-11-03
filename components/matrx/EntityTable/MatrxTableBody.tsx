@@ -5,9 +5,9 @@ import React, {useState} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {TableBody} from "@/components/ui/table";
 import {AnimatedTabModal} from "@/components/matrx/AnimatedForm";
-import {TableData} from "@/types/tableTypes";
-import {generateStandardTabData} from "./StandardTabUtil";
-import MatrxTableCell from "./MatrxTableCell";
+import {TableData} from "@/types/entityTableTypes";
+import {generateStandardTabData} from "@/components/matrx/EntityTable/utils";
+import MatrxTableCell from "@/components/matrx/EntityTable/EnhancedCell/MatrxTableCell";
 import {FormState, TabData} from "@/types/AnimatedFormTypes";
 
 

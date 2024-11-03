@@ -13,7 +13,7 @@ interface EntityTableProps {
     entityKey: EntityKeys;
     customActions?: string[];
     onModalOpen?: (type: string, data: EntityData<EntityKeys>) => void;
-    customModalContent?: (data: EntityData<EntityKeys>) => React.ReactNode;
+    customModalContent?: (data: EntityData<EntityKeys>) => React.ReactNode;  // Function to receive rowData
 }
 
 const EntityTable: React.FC<EntityTableProps> = (

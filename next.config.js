@@ -61,18 +61,16 @@ const nextConfig = {
             },
         ],
     },
-    webpack: (config, { isServer, webpack }) => {
-        // Add plugin to ignore specific directories
+    webpack: (config, {isServer, webpack}) => {
         config.plugins.push(
             new webpack.IgnorePlugin({
                 checkResource: (resource) => {
-                    const excludeDirs = ['/_armani/','/armani/', '/_dev/'];
+                    const excludeDirs = ['/_armani/', '/armani/', '/_dev/'];
                     return excludeDirs.some((dir) => resource.includes(dir));
                 },
             })
         );
 
-        // Handle canvas and other commonjs externals
         if (isServer) {
             config.externals.push({
                 canvas: 'commonjs canvas',
@@ -81,7 +79,6 @@ const nextConfig = {
             });
         }
 
-        // Add fallback for browser-incompatible Node.js modules
         if (!isServer) {
             config.resolve.fallback = {
                 ...config.resolve.fallback,
@@ -113,24 +110,21 @@ const nextConfig = {
             })
         );
 
-        // Add rule for custom Fabric.js file
         config.module.rules.push({
             test: /vendors\/fabric\.js$/,
             use: ['script-loader'],
         });
 
-        // Exclude problematic modules from the client-side bundle
         if (!isServer) {
             config.externals.push({
                 'tough-cookie': 'commonjs tough-cookie',
                 jsdom: 'commonjs jsdom',
-                canvas: 'commonjs canvas',  // Exclude canvas from client-side
+                canvas: 'commonjs canvas',
             });
         }
 
         return config;
     },
-    // Add ESLint configuration
     eslint: {
         ignoreDuringBuilds: true,
         dirs: ['pages', 'components', 'lib', 'utils', 'app'],
@@ -139,13 +133,18 @@ const nextConfig = {
         GROQ_API_KEY: process.env.GROQ_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     },
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '3mb',
+        },
+    },
 };
 
 async function copyFiles() {
     try {
         await fs.access("public/");
     } catch {
-        await fs.mkdir("public/", { recursive: true });
+        await fs.mkdir("public/", {recursive: true});
     }
 
     const wasmFiles = (

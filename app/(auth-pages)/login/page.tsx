@@ -1,7 +1,6 @@
-// app/login/hold-hold-page.tsx
+// app/(auth-pages)/login/page.tsx
 
 import { login, signup, loginWithGoogle, loginWithGithub } from './actions'
-import { Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

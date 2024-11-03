@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { FullEditableJsonViewer } from './JsonEditor';
 import { generateJsonTemplate } from "@/utils/schema/schemaUtils";
+import { EntityKeys } from '@/types/entityTypes';
 
 interface SchemaBasedJsonEditorProps extends React.HTMLAttributes<HTMLDivElement> {
-    tableName: string;
+    tableName: EntityKeys;
     data: object;
     allowKeyEditing?: boolean;
     onChange: (newData: object) => void;

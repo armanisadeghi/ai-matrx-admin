@@ -4,7 +4,10 @@ import { EntityKeys, EntityData } from "@/types/entityTypes";
 import { put, call, select } from "redux-saga/effects";
 import {Cog} from "@mynaui/icons-react";
 import {Rocket} from "lucide-react";
-import {ActionDefinition} from "@/types/tableTypes";
+import {ActionDefinition} from "@/types/entityTableTypes";
+
+// Action Guy: https://claude.ai/chat/76aecaf8-6275-43bb-bbdb-8d390f1080c7
+
 
 // Instruction Types
 type InstructionType =
@@ -111,13 +114,13 @@ const instructionHandlers = {
 
     sequence: async (payload: Instruction[], context: any) => {
         for (const instruction of payload) {
-            await executeInstruction(instruction, context);
+            await executeInstructions(instruction, context);
         }
     },
 
     parallel: async (payload: Instruction[], context: any) => {
         await Promise.all(
-            payload.map(instruction => executeInstruction(instruction, context))
+            payload.map(instruction => executeInstructions(instruction, context))
         );
     }
 };
@@ -131,7 +134,7 @@ function normalizeInstructions(instructions: Instruction | Instruction[]): Instr
 async function executeInstructions(instructions: Instruction | Instruction[], context: any) {
     const normalizedInstructions = normalizeInstructions(instructions);
     for (const instruction of normalizedInstructions) {
-            await executeInstruction(instruction, context);
+            await executeInstructions(instruction, context);
         }
 }
 
@@ -143,7 +146,7 @@ export function createCustomAction<TEntity extends EntityKeys>(
         name: config.name,
         label: typeof config.label === 'function'
             ? (data: EntityData<TEntity>) => {
-                const displayField = getDisplayField(data);
+                // const displayField = getDisplayField(data);
                 return config.label(data);
             }
             : config.label,
@@ -191,116 +194,17 @@ export function createCustomAction<TEntity extends EntityKeys>(
     };
 }
 
+/*
 // Helper to get display field safely
 function getDisplayField(data: EntityData<EntityKeys>): string {
     // Use the system's display field or primary key
     return data.displayField || data.pmid || Object.values(data)[0]?.toString() || 'Unnamed';
 }
+*/
 
-// Example usage with schema awareness
-export const processFunctionAction = createCustomAction({
-    name: 'processFunction',
-    label: (data) => `Process ${getDisplayField(data)}`,
-    icon: <Cog />,
-    instructions: [
-        {
-            type: 'condition',
-            payload: {
-                condition: (context) => context.data.status === 'ready',
-                onTrue: [
-                    {
-                        type: 'setState',
-                        payload: { path: 'status', value: 'processing' }
-                    },
-                    {
-                        type: 'socket',
-                        payload: {
-                            event: 'function:process',
-                            data: (context) => ({
-                                functionId: context.data.pmid // Using pmid instead of id
-                            }),
-                            waitForResponse: true
-                        },
-                        onSuccess: {
-                            type: 'setState',
-                            payload: { path: 'status', value: 'completed' }
-                        },
-                        onError: {
-                            type: 'setState',
-                            payload: { path: 'status', value: 'failed' }
-                        }
-                    }
-                ],
-                onFalse: {
-                    type: 'dispatch',
-                    payload: {
-                        type: 'notification/show',
-                        payload: { message: 'Function not ready' }
-                    }
-                }
-            }
-        }
-    ],
-    options: {
-        confirmation: true,
-        retry: { count: 3, delay: 1000 },
-        rollback: true,
-        logging: true
-    }
-});
 
-// Complex Example with Multiple Steps
-export const deployFunctionAction = createCustomAction({
-    name: 'deployFunction',
-    label: 'Deploy',
-    icon: <Rocket />,
-    instructions: [
-        {
-            type: 'sequence',
-            payload: [
-                {
-                    type: 'transform',
-                    payload: {
-                        transformer: (data) => ({
-                            ...data,
-                            deploymentId: Date.now()
-                        })
-                    }
-                },
-                {
-                    type: 'parallel',
-                    payload: [
-                        {
-                            type: 'socket',
-                            payload: {
-                                event: 'function:prepare',
-                                waitForResponse: true
-                            }
-                        },
-                        {
-                            type: 'saga',
-                            payload: {
-                                saga: 'deployment/prepare',
-                                args: { id: 'deploymentId' }
-                            }
-                        }
-                    ]
-                },
-                {
-                    type: 'api',
-                    payload: {
-                        endpoint: '/api/deploy',
-                        method: 'POST'
-                    }
-                },
-                {
-                    type: 'navigation',
-                    payload: {
-                        path: '/deployments',
-                        params: { id: 'deploymentId' }
-                    }
-                }
-            ]
-        }
-    ]
-});
+
+
+
+/*
+
