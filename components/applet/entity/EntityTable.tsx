@@ -1,34 +1,58 @@
 'use client';
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
 import {createEntitySelectors} from "@/lib/redux/entity/entitySelectors";
 import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import MatrxTable from '@/components/matrx/EntityTable/MatrxServerTable';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {useToast} from '@/components/ui/use-toast';
-import {useEntityTableActions} from "@/components/matrx/EntityTable/EnhancedAction/useEntityTableActions";
+import {
+    selectEntityPrimaryKeyField,
+    selectEntityDisplayField,
+    selectEntityPrettyName,
+    selectFieldPrettyName,
+    selectAllFieldPrettyNames
+} from '@/lib/redux/schema/globalCacheSelectors';
+import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxCommands/EntityCommand";
 
-interface EntityTableProps {
-    entityKey: EntityKeys;
-    customActions?: string[];
-    onModalOpen?: (type: string, data: EntityData<EntityKeys>) => void;
-    customModalContent?: (data: EntityData<EntityKeys>) => React.ReactNode;  // Function to receive rowData
+
+
+interface EntityTableProps<TEntity extends EntityKeys> {
+    entityKey: TEntity;
+    customCommands?: {
+        [key in EntityCommandName]?: boolean | {
+        useCallback?: boolean;
+        setActiveOnClick?: boolean;
+        hidden?: boolean;
+    };
+    };
+    onModalOpen?: (actionName: EntityCommandName, data: EntityData<TEntity>) => void;
+    onModalClose?: () => void;
+    customModalContent?: (data: EntityData<TEntity>) => React.ReactNode;
+    useParentModal?: boolean;
+    useParentRowHandling?: boolean;
+    onCommandExecute?: (
+        actionName: EntityCommandName,
+        context: EntityCommandContext<TEntity>
+    ) => Promise<void>;
 }
 
-const EntityTable: React.FC<EntityTableProps> = (
-    {
+const EntityTable = <TEntity extends EntityKeys>({
         entityKey,
-        customActions = [],
+    customCommands = {},
         onModalOpen,
-        customModalContent
-    }) => {
+    onModalClose,
+    customModalContent,
+    useParentModal = false,
+    useParentRowHandling = false,
+    onCommandExecute: parentCommandExecute,
+}: EntityTableProps<TEntity>) => {
     const dispatch = useAppDispatch();
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const {toast} = useToast();
 
-    // Create selectors and actions based on the passed entityKey
     const entitySelectors = createEntitySelectors(entityKey);
     const entityActions = createEntityActions(entityKey);
 
@@ -38,28 +62,119 @@ const EntityTable: React.FC<EntityTableProps> = (
     const totalCount = useAppSelector(entitySelectors.selectTotalCount);
     const initialized = useAppSelector(entitySelectors.selectInitialized);
 
-    // Set up action handlers
-    const {handleAction} = useEntityTableActions(entityKey, {
-        onModalOpen,
-        onSuccess: (action, result) => {
+    const primaryKeyField = useAppSelector((state) =>
+        selectEntityPrimaryKeyField(state, entityKey)
+    );
+    const displayField = useAppSelector((state) =>
+        selectEntityDisplayField(state, entityKey)
+    );
+
+    const entityPrettyName = useAppSelector((state) =>
+        selectEntityPrettyName(state, entityKey)
+    );
+
+    console.log(`Entity Pretty Name for ${entityKey}:`, entityPrettyName);
+
+    const fieldPrettyNames = useAppSelector((state) =>
+        selectAllFieldPrettyNames(state, { entityName: entityKey })
+    );
+    console.log(`All Field Pretty Names for ${entityKey}:`, fieldPrettyNames);
+
+    // Default visible columns
+    const defaultVisibleColumns = useMemo(() => {
+        if (!data?.[0]) return [];
+        const important = [primaryKeyField, displayField].filter(Boolean) as string[];
+        const otherFields = Object.keys(data[0])
+            .filter(field => !important.includes(field))
+            .slice(0, 5);
+
+        return [...important, ...otherFields];
+    }, [data, primaryKeyField, displayField]);
+
+    // Command configuration
+    const defaultCommands = {
+        expand: true,
+        view: { setActiveOnClick: true },
+        edit: {
+            useCallback: true,
+            setActiveOnClick: true
+        },
+        delete: {
+            useCallback: true,
+            requireConfirmation: true,
+            confirmationMessage: 'Are you sure you want to delete this item?'
+        },
+        create: true
+    };
+
+    const commands = {
+        ...defaultCommands,
+        ...customCommands
+    };
+
+    // Command execution handler
+    const handleCommandExecute = async (
+        actionName: EntityCommandName,
+        context: EntityCommandContext<TEntity>
+    ) => {
+        try {
+            if (parentCommandExecute) {
+                await parentCommandExecute(actionName, context);
+                return;
+            }
+
+            switch (actionName) {
+                case 'view':
+                    dispatch(entityActions.setSelectedItem({ index: context.index }));
+                    if (!useParentModal && onModalOpen) {
+                        onModalOpen(actionName, context.data);
+                    }
+                    break;
+
+                case 'edit':
+                    dispatch(entityActions.setSelectedItem({ index: context.index }));
+                    if (!useParentModal && onModalOpen) {
+                        onModalOpen(actionName, context.data);
+                    }
+                    break;
+
+                case 'delete':
+                await dispatch(entityActions.deleteRequest(context.index));
+
             toast({
                 title: 'Success',
-                description: `${action} completed successfully`,
+                        description: 'Item deleted successfully',
                 variant: 'default',
             });
-        },
-        onError: (action, error) => {
+                    break;
+
+            case 'create':
+                dispatch(entityActions.createRequest(context.data));
+                if (!useParentModal && onModalOpen) {
+                    onModalOpen(actionName, context.data);
+                }
+                break;
+
+                case 'expand':
+                    // TODO: Handle expand logic
+                    break;
+
+                default:
+                    if (customCommands[actionName]) {
+                        // Handle custom commands
+                        console.log(`Executing custom command: ${actionName}`);
+                    }
+            }
+        } catch (error) {
             toast({
                 title: 'Error',
-                description: `Failed to ${action}: ${error.message}`,
+                description: `Failed to execute ${actionName}: ${(error as Error).message}`,
                 variant: 'destructive',
             });
         }
-    });
+    };
 
-    // Default actions plus any custom ones
-    const availableActions = ['view', 'edit', 'delete', ...customActions];
-
+    // Fetch data
     useEffect(() => {
         if (!loading && (!initialized || page > 0)) {
             dispatch(entityActions.fetchPaginatedRequest({
@@ -69,69 +184,69 @@ const EntityTable: React.FC<EntityTableProps> = (
                 maxCount: 10000
             }));
         }
-    }, [page, pageSize, loading, initialized, dispatch, entityActions]);
+    }, []);
 
     const handlePageChange = useCallback((newPage: number) => {
         setPage(newPage);
     }, []);
 
-    const memoizedData = data;
-    const memoizedTotalCount = totalCount;
+    const handlePageSizeChange = useCallback((newPageSize: number) => {
+        setPageSize(newPageSize);
+    }, []);
+
+    if (error?.message) {
+        return (
+            <div className="text-destructive p-4 rounded bg-destructive/10">
+                Error: {error.message}
+            </div>
+        );
+    }
 
     return (
-        <div className="p-4 space-y-4">
+        <div className="w-full h-full flex flex-col">
+
             <h1 className="text-xl font-bold">
-                {entityKey.charAt(0).toUpperCase() + entityKey.slice(1)} Table
+            {entityPrettyName}
             </h1>
 
             {loading && (
                 <div className="flex justify-center p-4">
-                    <div
-                        className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"/>
                 </div>
             )}
 
-            {error?.message && (
-                <div className="text-destructive p-4 rounded bg-destructive/10">
-                    Error: {error.message}
-                </div>
-            )}
-
-            {!loading && memoizedData && (
-                <div className="space-y-4">
+            {!loading && data && primaryKeyField && (
+                <div className="flex-1 min-h-0">
                     <MatrxTable
-                        data={memoizedData}
-                        actions={availableActions}
-                        onAction={handleAction}
+                        entityKey={entityKey}
+                        data={data}
+                        primaryKey={primaryKeyField as keyof EntityData<TEntity>}
+                        commands={commands}
+                        onCommandExecute={handleCommandExecute}
+                        onModalOpen={onModalOpen}
+                        onModalClose={onModalClose}
+                        defaultVisibleColumns={defaultVisibleColumns}
+                        columnHeaders={fieldPrettyNames}
                         truncateAt={50}
                         onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
                         isServerSide={true}
                         loading={loading}
-                        totalCount={memoizedTotalCount}
+                        totalCount={totalCount}
                         serverPage={page}
                         serverPageSize={pageSize}
                         customModalContent={customModalContent}
+                        useParentModal={useParentModal}
+                        useParentRowHandling={useParentRowHandling}
                     />
 
-                    {memoizedTotalCount !== undefined && (
+                    {totalCount !== undefined && (
                         <div className="text-muted-foreground text-sm">
-                            Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, memoizedTotalCount)} of {memoizedTotalCount} entries
+                            Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalCount)} of {totalCount} entries
                         </div>
                     )}
                 </div>
             )}
-
-            <pre className="mt-4 p-4 bg-background rounded border">
-                {JSON.stringify({
-                    page,
-                    pageSize,
-                    initialized,
-                    totalCount: memoizedTotalCount,
-                    dataLength: memoizedData?.length,
-                    loading,
-                    error,
-                }, null, 2)}
-            </pre>
         </div>
     );
 };

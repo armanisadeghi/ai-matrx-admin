@@ -1,56 +1,100 @@
 'use client';
 
 import React from "react";
-import {Cell} from "react-table";
-import {TableData} from "@/types/entityTableTypes";
+import {
+    Cell as TanStackCell,
+} from '@tanstack/react-table';
 import {TableCell} from "@/components/ui/table";
 import {motion} from "framer-motion";
-import { TableActionIcon } from "../MatrixTableActions";
-import { truncateText } from "../utils";
+import {truncateText} from "../utils";
 import MatrixTableTooltip from "../MatrixTableTooltip";
+import {EntityData, EntityKeys} from "@/types/entityTypes";
+import {
+    EntityCommandGroup,
+    EntityCommandName,
+    EntityActionCell, EntityCommandContext
+} from "@/components/matrx/MatrxCommands/EntityCommand";
 
-
-const MatrxTableCell: React.FC<{
-    cell: Cell<TableData>;
-    actions: string[];
-    rowData: TableData;
-    onAction: (actionName: string, rowData: TableData) => void;
+interface MatrxTableCellProps<TEntity extends EntityKeys> {
+    cell: TanStackCell<EntityData<TEntity>, unknown>;
+    rowData: EntityData<TEntity>;
+    entityKey: TEntity;
+    index: number;
     truncateAt: number;
-}> = ({cell, actions, rowData, onAction, truncateAt}) => {
+
+    commands?: {
+        [key in EntityCommandName]?: boolean | {
+        useCallback?: boolean;
+        setActiveOnClick?: boolean;
+        hidden?: boolean;
+    };
+    };
+    customCommands?: Record<string, React.ComponentType<any>>;
+
+    onCommandExecute?: (
+        actionName: EntityCommandName,
+        context: EntityCommandContext<TEntity>
+    ) => Promise<void>;
+    onSetActiveItem?: (index: number) => void;
+}
+
+const MatrxTableCell = <TEntity extends EntityKeys>(
+    {
+        cell,
+        rowData,
+        entityKey,
+        index,
+        commands,
+        customCommands,
+        onCommandExecute,
+        onSetActiveItem,
+        truncateAt
+    }: MatrxTableCellProps<TEntity>) => {
     if (cell.column.id === 'actions') {
         return (
-            <TableCell className="text-card-foreground">
-                <div className="flex items-center space-x-1">
-                    {actions.map((actionName, index) => (
-                        <TableActionIcon
-                            key={index}
-                            actionName={actionName}
-                            data={rowData}
-                            onAction={onAction}
-                        />
-                    ))}
-                </div>
-            </TableCell>
+            <EntityActionCell
+                entityKey={entityKey}
+                data={rowData}
+                index={index}
+                commands={commands}
+                customCommands={customCommands}
+                onCommandExecute={onCommandExecute}
+                onSetActiveItem={onSetActiveItem}
+                className="h-full"
+            />
         );
     }
 
-    const cellContent = truncateText(cell.value, truncateAt);
-
-    const { key: cellKey, ...cellProps } = cell.getCellProps();
+    const value = cell.getValue();
+    const stringValue = String(value);
+    const cellContent = truncateText(stringValue, truncateAt);
+    const isTextTruncated = stringValue.length > truncateAt;
 
     return (
-        <TableCell key={cellKey} {...cellProps} className="text-card-foreground">
-            <MatrixTableTooltip content={cell.value} side="top">
-                <motion.div
-                    initial={false}
-                    animate={{
-                        scale: 1,
-                        transition: {type: "spring", stiffness: 300, damping: 10},
-                    }}
-                >
-                    {cellContent}
-                </motion.div>
-            </MatrixTableTooltip>
+        <TableCell className="text-card-foreground">
+            {isTextTruncated ? (
+                <MatrixTableTooltip content={stringValue} side="top">
+                    <motion.div
+                        initial={false}
+                        animate={{
+                            scale: 1,
+                            transition: {type: "spring", stiffness: 300, damping: 10},
+                        }}
+                    >
+                        {cellContent}
+                    </motion.div>
+                </MatrixTableTooltip>
+            ) : (
+                 <motion.div
+                     initial={false}
+                     animate={{
+                         scale: 1,
+                         transition: {type: "spring", stiffness: 300, damping: 10},
+                     }}
+                 >
+                     {cellContent}
+                 </motion.div>
+             )}
         </TableCell>
     );
 };

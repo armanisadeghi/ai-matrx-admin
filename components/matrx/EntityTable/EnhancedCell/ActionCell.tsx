@@ -1,7 +1,8 @@
+/*
 'use client';
 
 import React from "react";
-import {Cell} from "react-table";
+
 import {TableData} from "@/types/entityTableTypes";
 import {TableCell} from "@/components/ui/table";
 import {motion} from "framer-motion";
@@ -67,3 +68,4 @@ const MatrxTableCell: React.FC<{
 };
 
 export default MatrxTableCell;
+*/

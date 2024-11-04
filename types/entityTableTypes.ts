@@ -1,31 +1,27 @@
 'use client';
 
 import {
-    Column,
-    UseGlobalFiltersInstanceProps,
-    UsePaginationInstanceProps,
-    UseSortByInstanceProps,
-    UseTableInstanceProps,
-    TableState,
-    Cell,
-    Row,
-    HeaderGroup,
-} from 'react-table';
+    ColumnDef,
+    Table as TanStackTable, // Import Table instance type from TanStack Table
+    Row as TanStackRow,
+    HeaderGroup as TanStackHeaderGroup,
+    Cell as TanStackCell, Row,
+} from '@tanstack/react-table';
 import React from "react";
-import { FlexibleId } from '@/types/FlexibleId';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
-import { ActionContext } from '@/components/matrx/EntityTable/EnhancedAction/EntityMatrxActions';
+import {FlexibleId} from '@/types/FlexibleId';
+import {EntityKeys, EntityData} from '@/types/entityTypes';
+import {ActionContext} from '@/components/matrx/EntityTable/EnhancedAction/EntityMatrxActions';
 
 // Base Types - Keeping original TableData for backward compatibility
 export interface TableData {
     id?: FlexibleId;
+
     [key: string]: any;
 }
 
-// New Entity-Aware Table Props
-export interface EnhancedMatrxTableProps<TEntity extends EntityKeys> {
+export interface MatrxServerTableProps<TEntity extends EntityKeys> {
     data: EntityData<TEntity>[];
-    entityKey: TEntity;
+    primaryKey: keyof EntityData<TEntity>;
     actions?: string[];
     onAction?: (actionName: string, rowData: EntityData<TEntity>) => void;
     defaultVisibleColumns?: string[];
@@ -39,44 +35,15 @@ export interface EnhancedMatrxTableProps<TEntity extends EntityKeys> {
     onPageSizeChange?: (pageSize: number) => void;
     serverPage?: number;
     serverPageSize?: number;
+    columnHeaders?: Record<string, string>; // Add this to support pretty names
+    displayField?: string; // Add this to support display field
 }
 
-// Original MatrxTableProps kept for backward compatibility
-export interface MatrxTableProps {
-    data: TableData[];
-    actions?: string[];
-    onAction?: (actionName: string, rowData: TableData) => void;
-    defaultVisibleColumns?: string[];
-    truncateAt?: number;
-    className?: string;
-    customModalContent?: (rowData: TableData) => React.ReactNode;
-    onPageChange?: (pageIndex: number, pageSize: number) => void;
-    loading?: boolean;
-    totalCount?: number;
-}
+// Updated Column Definition Types for TanStack Table v8
+export type EnhancedColumnDef<TEntity extends EntityKeys> = ColumnDef<EntityData<TEntity>, unknown>;
 
-// Enhanced Action Definition
-export interface EnhancedActionDefinition<TEntity extends EntityKeys> {
-    name: string;
-    label: string | ((data: EntityData<TEntity>) => string);
-    icon: React.ReactNode | ((data: EntityData<TEntity>) => React.ReactNode);
-    className?: string | ((data: EntityData<TEntity>) => string);
-    type?: 'entity' | 'relationship' | 'service' | 'navigation' | 'custom';
-    handler: (context: ActionContext<TEntity>) => void | Promise<void>;
-    isVisible?: (data: EntityData<TEntity>) => boolean;
-    isEnabled?: (data: EntityData<TEntity>) => boolean;
-}
-
-// Original Action Definition kept for backward compatibility
-export interface ActionDefinition {
-    name: string;
-    label: string;
-    icon: React.ReactNode;
-    className?: string;
-}
-
-// Enhanced Table State
-export interface EnhancedTableState<TEntity extends EntityKeys> extends TableState<EntityData<TEntity>> {
+// Enhanced Table State for TanStack Table
+export interface EnhancedTableState<TEntity extends EntityKeys> {
     globalFilter: any;
     pageIndex: number;
     pageSize: number;
@@ -87,92 +54,119 @@ export interface EnhancedTableState<TEntity extends EntityKeys> extends TableSta
     };
 }
 
-// Original ExtendedTableState kept for backward compatibility
-export interface ExtendedTableState extends TableState<TableData> {
-    globalFilter: any;
-    pageIndex: number;
-    pageSize: number;
-}
-
-// Enhanced Table Instance
-export interface EnhancedTableInstance<TEntity extends EntityKeys>
-    extends UseTableInstanceProps<EntityData<TEntity>>,
-        UseGlobalFiltersInstanceProps<EntityData<TEntity>>,
-        UsePaginationInstanceProps<EntityData<TEntity>>,
-        UseSortByInstanceProps<EntityData<TEntity>> {
+// Enhanced Table Instance for TanStack Table
+export interface EnhancedTableInstance<TEntity extends EntityKeys> {
+    table: TanStackTable<EntityData<TEntity>>;
     state: EnhancedTableState<TEntity>;
 }
-
-// Original TableInstance kept for backward compatibility
-export type TableInstance = UseTableInstanceProps<TableData> &
-    UseGlobalFiltersInstanceProps<TableData> &
-    UsePaginationInstanceProps<TableData> &
-    UseSortByInstanceProps<TableData>;
 
 // Component Props - Updated with entity awareness
 export interface MatrxColumnSettingsProps<TEntity extends EntityKeys> {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    columns: Column<EntityData<TEntity>>[];
+    columns: EnhancedColumnDef<TEntity>[];
     visibleColumns: string[];
     setVisibleColumns: React.Dispatch<React.SetStateAction<string[]>>;
+    columnHeaders?: Record<string, string>; // Add this
 }
 
-export interface CustomTableCellProps<TEntity extends EntityKeys> {
-    cell: Cell<EntityData<TEntity>>;
-    truncateText: (text: unknown, maxLength?: number) => string;
-    actions: EnhancedActionDefinition<TEntity>[];
-    rowData: EntityData<TEntity>;
-    onAction: (actionName: string, rowData: EntityData<TEntity>) => void;
+
+export interface TableHeaderProps<TEntity extends EntityKeys> {
+    headerGroups: TanStackHeaderGroup<EntityData<TEntity>>[];
 }
 
-// Keep the rest of the interfaces as they are for now
-export interface ModernTableProps {
-    columns: Column<TableData>[];
-    data: TableData[];
-    defaultVisibleColumns?: string[];
-    className?: string;
-    onAdd: (newItem: Omit<TableData, 'id'>) => void;
-    onEdit: (item: TableData) => void;
-    onDelete: (item: TableData) => void;
-    onExpand: (item: TableData) => void;
-}
 
-export interface Action {
-    name: string;
-    position?: 'above' | 'before' | 'below' | 'after' | 'behind' | 'over';
-}
-
-export type MatrixColumn<T extends object> = Column<T> & {
-    actions?: Action[];
-};
-
+// Component Props for Modals and Forms
 export interface ColumnSettingsModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    columns: Column<TableData>[];
+    columns: EnhancedColumnDef<any>[]; // Updated to support TanStack Table ColumnDef
     visibleColumns: string[];
     setVisibleColumns: React.Dispatch<React.SetStateAction<string[]>>;
-}
-
-export interface CustomTableBodyProps {
-    page: Row<TableData>[];
-    prepareRow: (row: Row<TableData>) => void;
-    truncateText: (text: unknown, maxLength?: number) => string;
-    actions: ActionDefinition[];
-    onAction: (actionName: string, rowData: TableData) => void;
-    visibleColumns: string[];
-}
-
-export interface TableHeaderProps {
-    headerGroups: HeaderGroup<TableData>[];
 }
 
 export interface DialogFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     mode: 'add' | 'edit' | 'delete' | 'view';
-    columns: Column<TableData>[];
+    columns: EnhancedColumnDef<any>[]; // Using TanStack Table ColumnDef
     data: TableData | null;
     onAction: (action: string, formData?: Record<string, string>) => void;
 }
+
+
+// Enhanced Table Body and Header for TanStack Table
+export interface MatrxTableBodyProps<TEntity extends EntityKeys> {
+    page: TanStackRow<EntityData<TEntity>>[];
+    prepareRow: (row: TanStackRow<EntityData<TEntity>>) => void;
+    truncateAt?: number;
+    actionList?: string[];
+    onAction: (actionName: string, rowData: EntityData<TEntity>) => void;
+    visibleColumns: string[];
+    customModalContent?: (rowData: EntityData<TEntity>) => React.ReactNode;
+}
+
+
+// export interface CustomTableCellProps<TEntity extends EntityKeys> {
+//     cell: TanStackCell<EntityData<TEntity>, unknown>;
+//     truncateAt?: number;
+//     rowData: EntityData<TEntity>;
+//     actions: MatrxCommand<TEntity>[]; // Full action definitions list
+//     onAction: (action: MatrxCommand<TEntity>, rowData: EntityData<TEntity>) => void; // Pass action definition
+// }
+//
+//
+// export interface EntityActionButtonProps<TEntity extends EntityKeys> {
+//     action: MatrxCommand<TEntity>;
+//     entityData: EntityData<TEntity>;
+//     entityKey: TEntity;
+//     className?: string;
+//     onActionOverride?: (action: MatrxCommand<TEntity>, entityData: EntityData<TEntity>) => void; // Optional custom handler
+// }
+
+export interface EntityActionGroupProps<TEntity extends EntityKeys> {
+    actionNames: string[];
+    entityData: EntityData<TEntity>;
+    entityKey: TEntity;
+    className?: string;
+    customActions?: ActionDefinition<TEntity>[]; // Optional list of custom actions
+    actionOverrides?: Record<string, (action: ActionDefinition<TEntity>, entityData: EntityData<TEntity>) => void>; // Optional handlers for specific actions
+}
+
+// Base Action Definition
+export interface ActionDefinition<TEntity extends EntityKeys = any> {
+    name: string;
+    label: string;
+    icon: React.ReactNode;
+    type: 'entity' | 'feature' | 'module' | 'service' | 'navigation' | 'custom';
+    subType?: 'single' | 'relationship' | 'custom';
+
+    handler?: (context: ActionContext<TEntity>) => void | Promise<void>;
+    overrideHandler?: (context: ActionContext<TEntity>) => void | Promise<void>;
+
+    className?: string | ((data: EntityData<TEntity>) => string);
+
+    isVisible?: (data: EntityData<TEntity>) => boolean;
+    isEnabled?: (data: EntityData<TEntity>) => boolean;
+
+    confirmationRequired?: boolean | {
+        title: string;
+        message: string;
+        confirmText?: string;
+        cancelText?: string;
+    };
+    relationship?: {
+        entityKey: EntityKeys;
+        display: 'modal' | 'sidebar' | 'page' | 'inline';
+    };
+    navigation?: {
+        path: string;
+        params?: Record<string, string>;
+    };
+    service?: {
+        type: 'socket' | 'api' | 'ai';
+        action: string;
+    };
+}
+
+

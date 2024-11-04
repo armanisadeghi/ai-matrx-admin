@@ -107,16 +107,16 @@ export function entityActionCreators(entityName: EntityKeys) {
 
 export function createEntityActions(entityName: EntityKeys) {
     const actionTypes = entityActionCreators(entityName);
-  
+
     return {
       fetchRequest: createAction(actionTypes.FETCH_REQUEST),
       fetchSuccess: createAction<any[]>(actionTypes.FETCH_SUCCESS),
       fetchFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_FAILURE),
-  
+
       fetchOneRequest: createAction<string | number>(actionTypes.FETCH_ONE_REQUEST),
       fetchOneSuccess: createAction<any>(actionTypes.FETCH_ONE_SUCCESS),
       fetchOneFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_ONE_FAILURE),
-  
+
       fetchPaginatedRequest: createAction<{
           page: number;
           pageSize: number;
@@ -131,72 +131,71 @@ export function createEntityActions(entityName: EntityKeys) {
         maxCount?: number;
       }>(actionTypes.FETCH_PAGINATED_SUCCESS),
       fetchPaginatedFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_PAGINATED_FAILURE),
-  
+
       fetchPaginatedDirectlyRequest: createAction<QueryOptions<any>>(actionTypes.FETCH_PAGINATED_DIRECTLY_REQUEST),
       fetchPaginatedDirectlySuccess: createAction<{
         data: any[];
         totalCount: number;
       }>(actionTypes.FETCH_PAGINATED_DIRECTLY_SUCCESS),
       fetchPaginatedDirectlyFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_PAGINATED_DIRECTLY_FAILURE),
-  
+
       fetchByPrimaryKeyRequest: createAction<string | number>(actionTypes.FETCH_BY_PRIMARY_KEY_REQUEST),
       fetchByPrimaryKeySuccess: createAction<any>(actionTypes.FETCH_BY_PRIMARY_KEY_SUCCESS),
       fetchByPrimaryKeyFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_BY_PRIMARY_KEY_FAILURE),
-  
+
       fetchRelatedRequest: createAction<string | number>(actionTypes.FETCH_RELATED_REQUEST),
       fetchRelatedSuccess: createAction<any[]>(actionTypes.FETCH_RELATED_SUCCESS),
       fetchRelatedFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_RELATED_FAILURE),
-  
+
       fetchByFieldRequest: createAction<{
         field: string;
         value: any;
       }>(actionTypes.FETCH_BY_FIELD_REQUEST),
       fetchByFieldSuccess: createAction<any[]>(actionTypes.FETCH_BY_FIELD_SUCCESS),
       fetchByFieldFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_BY_FIELD_FAILURE),
-  
+
       fetchSimpleRequest: createAction(actionTypes.FETCH_SIMPLE_REQUEST),
       fetchSimpleSuccess: createAction<any[]>(actionTypes.FETCH_SIMPLE_SUCCESS),
       fetchSimpleFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_SIMPLE_FAILURE),
-  
+
       fetchAllRequest: createAction(actionTypes.FETCH_ALL_REQUEST),
       fetchAllSuccess: createAction<any[]>(actionTypes.FETCH_ALL_SUCCESS),
       fetchAllFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_ALL_FAILURE),
-  
+
       fetchPkAndDisplayFieldsRequest: createAction(actionTypes.FETCH_PK_AND_DISPLAY_FIELDS_REQUEST),
       fetchPkAndDisplayFieldsSuccess: createAction<any[]>(actionTypes.FETCH_PK_AND_DISPLAY_FIELDS_SUCCESS),
       fetchPkAndDisplayFieldsFailure: createAction<{ message: string; code?: number }>(actionTypes.FETCH_PK_AND_DISPLAY_FIELDS_FAILURE),
-  
+
       createBackupRequest: createAction(actionTypes.CREATE_BACKUP_REQUEST),
       createBackupSuccess: createAction<any>(actionTypes.CREATE_BACKUP_SUCCESS),
       createBackupFailure: createAction<{ message: string; code?: number }>(actionTypes.CREATE_BACKUP_FAILURE),
-  
+
       restoreBackupRequest: createAction(actionTypes.RESTORE_BACKUP_REQUEST),
       restoreBackupSuccess: createAction<any>(actionTypes.RESTORE_BACKUP_SUCCESS),
       restoreBackupFailure: createAction<{ message: string; code?: number }>(actionTypes.RESTORE_BACKUP_FAILURE),
-  
+
       createRequest: createAction<Partial<any>>(actionTypes.CREATE_REQUEST),
       createSuccess: createAction<any>(actionTypes.CREATE_SUCCESS),
       createFailure: createAction<{ message: string; code?: number }>(actionTypes.CREATE_FAILURE),
-  
+
       updateRequest: createAction<{
         id: string | number;
         data: Partial<any>;
       }>(actionTypes.UPDATE_REQUEST),
       updateSuccess: createAction<any>(actionTypes.UPDATE_SUCCESS),
       updateFailure: createAction<{ message: string; code?: number }>(actionTypes.UPDATE_FAILURE),
-  
+
       deleteRequest: createAction<string | number>(actionTypes.DELETE_REQUEST),
       deleteSuccess: createAction<string | number>(actionTypes.DELETE_SUCCESS),
       deleteFailure: createAction<{ message: string; code?: number }>(actionTypes.DELETE_FAILURE),
-  
+
       subscribe: createAction(actionTypes.SUBSCRIBE),
       unsubscribe: createAction(actionTypes.UNSUBSCRIBE),
-  
+
       executeQueryRequest: createAction<any>(actionTypes.EXECUTE_QUERY_REQUEST),
       executeQuerySuccess: createAction<any[]>(actionTypes.EXECUTE_QUERY_SUCCESS),
       executeQueryFailure: createAction<{ message: string; code?: number }>(actionTypes.EXECUTE_QUERY_FAILURE),
-  
+
       setSelectedItem: createAction<any>(actionTypes.SET_SELECTED_ITEM),
     };
   }
-  

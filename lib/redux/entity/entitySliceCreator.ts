@@ -16,6 +16,7 @@ export type EntitySliceState<TEntity extends EntityKeys> = {
   backups: Record<string, Array<EntityData<TEntity>>>;
   selectedItem: EntityData<TEntity> | null;
   entitySchema?: AutomationEntity<EntityKeys>;
+  primaryKey?: string;
   page: number;
   pageSize: number;
   maxCount?: number;
@@ -24,24 +25,27 @@ export type EntitySliceState<TEntity extends EntityKeys> = {
 export function createEntitySlice<TEntity extends EntityKeys>(
     entityKey: TEntity,
     schema?: AutomationEntity<TEntity>
-  ) {
-    const initialState: EntitySliceState<TEntity> = {
-      data: [],
-      totalCount: 0,
-      allPkAndDisplayFields: [],
-      initialized: false,
-      loading: false,
-      error: null,
-      lastFetched: {},
-      staleTime: 600000,
-      stale: true,
-      backups: {},
-      selectedItem: null,
-      entitySchema: schema,
-      page: 1,
-      pageSize: 10,
-      maxCount: 1000,
-    };
+) {
+  const primaryKey = schema?.primaryKey;
+
+  const initialState: EntitySliceState<TEntity> = {
+    data: [],
+    totalCount: 0,
+    allPkAndDisplayFields: [],
+    initialized: false,
+    loading: false,
+    error: null,
+    lastFetched: {},
+    staleTime: 600000,
+    stale: true,
+    backups: {},
+    selectedItem: null,
+    entitySchema: schema,
+    primaryKey: primaryKey,
+    page: 1,
+    pageSize: 10,
+    maxCount: 1000,
+  };
 
     const entityActions = createEntityActions(entityKey);
 
@@ -125,6 +129,12 @@ export function createEntitySlice<TEntity extends EntityKeys>(
           state.allPkAndDisplayFields = action.payload as Draft<
             Array<{ pk: string; display?: string }>
           >;
+        },
+        removeLastFetchedKey: (
+            state: Draft<EntitySliceState<TEntity>>,
+            action: PayloadAction<string>
+        ) => {
+          delete state.lastFetched[action.payload];
         },
         setStale: (
           state: Draft<EntitySliceState<TEntity>>,

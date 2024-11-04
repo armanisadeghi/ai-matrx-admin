@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/matrx-table/components/MatrixTableTooltip.tsx
+// components/matrx/EntityTable/MatrixTableTooltip.tsx
 
 "use client"
 

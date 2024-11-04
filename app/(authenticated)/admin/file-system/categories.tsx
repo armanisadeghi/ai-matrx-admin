@@ -1,7 +1,8 @@
 import {
+    IconAccessible,
     IconAdjustmentsBolt,
     IconAlertOctagon,
-    IconApi,
+    IconApi, IconBox,
     IconBrandCloudflare,
     IconBug,
     IconCalendar,
@@ -21,7 +22,7 @@ import {
     IconHistory,
     IconImageInPicture,
     IconLock,
-    IconLogs,
+    IconLogs, IconMagnet,
     IconMaximize,
     IconMinimize,
     IconPencil,
@@ -40,6 +41,9 @@ import AdminComponentOne from "@/app/(authenticated)/admin/file-system/component
 import React from "react";
 import {CiFloppyDisk} from "react-icons/ci";
 import LocalFileAccess from "@/app/(authenticated)/admin/file-system/components/LocalFileAccess";
+import AdminTestPage from "@/app/(authenticated)/admin/file-system/components/command-testers/Command4";
+import CommandTestPage5 from "@/app/(authenticated)/admin/file-system/components/command-testers/Command5";
+import CommandTestPage from "./components/command-testers/CommandTestPage";
 
 export const adminCategories = [
     {
@@ -88,6 +92,67 @@ export const adminCategories = [
                 icon: <IconUpload />,
                 component: <AdminComponentOne />
             }
+        ]
+    },
+    {
+        name: "Feature Testing",
+        icon: <IconTestPipe className="w-6 h-6" />,
+        features: [
+            {
+                title: "Entity Command Tester",
+                description: "Test the powerful Entity Commands which are directly plugged into Redux state.",
+                icon: <IconSquareToggle />,
+                component: <CommandTestPage />
+            },
+            {
+                title: "Entity Command GPT",
+                description: "Test the interaction and state management of new UI components.",
+                icon: <IconBox />,
+                component: <AdminTestPage  entityKey={"registeredFunction"}/>
+            },
+            {
+                title: "Entity Command 3",
+                description: "Test the interaction and state management of new UI components.",
+                icon: <IconBox />,
+                component: <CommandTestPage5 />
+            },
+            {
+                title: "Component Interaction Testing",
+                description: "Test the interaction and state management of new UI components.",
+                icon: <IconBox />,
+                component: <AdminTestPage  entityKey={"registeredFunction"}/>
+            },
+            {
+                title: "Animation & Motion Testing",
+                description: "Evaluate animations and transitions for smoothness and user experience.",
+                icon: <IconMagnet />,
+                component: <AdminComponentOne />
+            },
+            {
+                title: "Form Validation Testing",
+                description: "Test complex form validation scenarios, including async validation.",
+                icon: <IconFolder />,
+                component: <AdminComponentOne />
+            },
+            {
+                title: "Responsive Layout Testing",
+                description: "Examine responsiveness and breakpoints for new layouts across devices.",
+                icon: <IconDashboard />,
+                component: <AdminComponentOne />
+            },
+            {
+                title: "API Integration Testing",
+                description: "Verify API calls, including error handling and performance under load.",
+                icon: <IconApi />,
+                component: <AdminComponentOne />
+            },
+            {
+                title: "Accessibility Testing",
+                description: "Test accessibility features like keyboard navigation and screen reader support.",
+                icon: <IconAccessible />,
+                component: <AdminComponentOne />
+            },
+
         ]
     },
     {

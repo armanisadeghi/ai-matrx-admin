@@ -1,7 +1,7 @@
 // components/matrx/actions/MatrxActions.tsx
 'use client';
 
-import React from "react";
+import React, {useState} from "react";
 import {useRouter} from "next/navigation";
 import {Edit, Eye, Maximize2, Trash, ExternalLink, MoreHorizontal} from "lucide-react";
 import {useDispatch, useSelector} from "react-redux";
@@ -10,37 +10,11 @@ import MatrxTooltip from "@/components/matrx/MatrxTooltip";
 import {Button} from "@/components/ui/button";
 import {createEntityActions} from "@/lib/redux/entity/entityActionCreator";
 import {RootState} from "@/lib/redux/store";
-
-// Base Action Definition
-export interface ActionDefinition<TEntity extends EntityKeys = any> {
-    name: string;
-    label: string | ((data: EntityData<TEntity>) => string);
-    icon: React.ReactNode | ((data: EntityData<TEntity>) => React.ReactNode);
-    className?: string | ((data: EntityData<TEntity>) => string);
-
-    isVisible?: (data: EntityData<TEntity>) => boolean;
-    isEnabled?: (data: EntityData<TEntity>) => boolean;
-
-    type?: 'entity' | 'relationship' | 'service' | 'navigation';
-    confirmationRequired?: boolean | {
-        title: string;
-        message: string;
-        confirmText?: string;
-        cancelText?: string;
-    };
-    relationship?: {
-        entityKey: EntityKeys;
-        display: 'modal' | 'sidebar' | 'page' | 'inline';
-    };
-    navigation?: {
-        path: string;
-        params?: Record<string, string>;
-    };
-    service?: {
-        type: 'socket' | 'api' | 'ai';
-        action: string;
-    };
-}
+import {ActionDefinition, EntityActionGroupProps} from "@/types/entityTableTypes";
+import { cn } from '@/utils/cn';
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
+import {useToast} from "@/components/ui";
+import {createEntitySelectors} from "@/lib/redux/entity/entitySelectors";
 
 
 // Enhanced Context available to all actions
@@ -102,15 +76,23 @@ export const standardActions: Record<string, ActionDefinition> = {
 };
 
 // Hook for managing action state and handlers
-export function useActions<TEntity extends EntityKeys>(
+export function useEntityOps<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    data: EntityData<TEntity>
 ) {
-    const dispatch = useDispatch();
-    const router = useRouter();
-    const loading = useSelector((state: RootState) =>
-        state.entities[entityKey]?.loading || false
-    );
+    const dispatch = useAppDispatch();
+    const entitySelectors = createEntitySelectors(entityKey);
+    const initialized = useAppSelector(entitySelectors.selectInitialized);
+    const entityActions = createEntityActions(entityKey);
+    const data = useAppSelector(entitySelectors.selectData);
+    const activeItem = useAppSelector(entitySelectors.selectSelectedItem);
+    const loading = useAppSelector(entitySelectors.selectLoading);
+    const error = useAppSelector(entitySelectors.selectError);
+    const totalCount = useAppSelector(entitySelectors.selectTotalCount);
+
+    const {toast} = useToast();
+
+
+
 
     const context: ActionContext<TEntity> = {
         data,
@@ -236,78 +218,121 @@ async function handleServiceAction<TEntity extends EntityKeys>(
     // This will be expanded based on your service system
 }
 
-// Main Action Component
-export const MatrxActionButton = <TEntity extends EntityKeys>(
-    {
-        action,
-        data,
-        entityKey,
-        className,
-        onAction
-    }: {
-        action: ActionDefinition<TEntity>,
-        data: EntityData<TEntity>,
-        entityKey: TEntity,
-        className?: string,
-        onAction?: (action) => void
-    }) => {
-    const {handleAction, context} = useActions(entityKey, data);
+export interface EntityOpsButtonProps<TEntity extends EntityKeys> {
+    action: ActionDefinition<TEntity>;
+    entityData: EntityData<TEntity>;
+    entityKey: TEntity;
+    className?: string;
+    onActionOverride?: (action: ActionDefinition<TEntity>, entityData: EntityData<TEntity>) => void;
+}
 
-    const isVisible = action.isVisible?.(data) ?? true;
-    const isEnabled = action.isEnabled?.(data) ?? true;
+export const EntityOpsButton = <TEntity extends EntityKeys>({
+    action,
+    entityData,
+    entityKey,
+    className,
+    onActionOverride
+}: EntityOpsButtonProps<TEntity>) => {
+    const { handleAction, context } = useEntityOps(entityKey, entityData);
+
+    const isVisible = action.isVisible?.(entityData) ?? true;
+    const isEnabled = action.isEnabled?.(entityData) ?? true;
 
     if (!isVisible) return null;
 
-    const label = typeof action.label === 'function' ? action.label(data) : action.label;
-    const icon = typeof action.icon === 'function' ? action.icon(data) : action.icon;
+    const label = typeof action.label === 'function' ? action.label(entityData) : action.label;
+    const icon = typeof action.icon === 'function' ? action.icon(entityData) : action.icon;
     const buttonClassName = typeof action.className === 'function'
-                            ? action.className(data)
-                            : action.className;
+        ? action.className(entityData)
+        : action.className;
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onActionOverride) {
+            onActionOverride(action, entityData);
+        } else {
+            handleAction(action, e);
+        }
+    };
 
     return (
         <MatrxTooltip content={label} placement="left">
             <Button
-                onClick={(e) => handleAction(action, e)}
+                onClick={handleClick}
                 disabled={!isEnabled || context.state.loading}
                 size="xs"
                 variant="ghost"
-                className={`p-1 ${buttonClassName || ""} ${className || ""} 
-                    transition-all duration-300 hover:scale-105`}
+                className={cn(
+                    'p-1 transition-all duration-300 hover:scale-105',
+                    buttonClassName,
+                    className
+                )}
             >
-                {React.cloneElement(icon as React.ReactElement, {className: 'w-3 h-3'})}
+                {React.cloneElement(icon as React.ReactElement, { className: 'w-3 h-3' })}
             </Button>
         </MatrxTooltip>
     );
 };
 
-// Convenience wrapper for multiple actions
-export const MatrxActionGroup = <TEntity extends EntityKeys>(
-    {
-        actions,
-        data,
-        entityKey,
-        className
-    }: {
-        actions: string[];
-        data: EntityData<TEntity>;
-        entityKey: TEntity;
-        className?: string;
-    }) => {
+export interface EntityOpsButtonGroupProps<TEntity extends EntityKeys> {
+    actionNames: string[];
+    entityData: EntityData<TEntity>;
+    entityKey: TEntity;
+    className?: string;
+    customActions?: ActionDefinition<TEntity>[];
+    actionOverrides?: Record<string, (action: ActionDefinition<TEntity>, entityData: EntityData<TEntity>) => void>;
+}
+
+export const EntityOpsButtonGroup = <TEntity extends EntityKeys>({
+    actionNames,
+    entityData,
+    entityKey,
+    className,
+    customActions = [],
+    actionOverrides = {}
+}: EntityOpsButtonGroupProps<TEntity>) => {
+
+    const customActionsMap = Object.fromEntries(customActions.map(action => [action.name, action]));
+
     return (
-        <div className={`flex items-center space-x-1 ${className || ""}`}>
-            {actions.map((actionName) => {
-                const action = standardActions[actionName];
+        <div className={cn('flex items-center space-x-1', className)}>
+            {actionNames.map((actionName) => {
+                const action = customActionsMap[actionName] || standardActions[actionName];
                 if (!action) return null;
 
+                const onActionOverride = actionOverrides[actionName];
+
                 return (
-                    <MatrxActionButton
+                    <EntityOpsButton
                         key={actionName}
                         action={action}
-                        data={data}
+                        entityData={entityData}
                         entityKey={entityKey}
+                        className={className}
+                        onActionOverride={onActionOverride}
+                    />
+                );
+            })}
+
+            {customActions.map((action) => {
+                if (actionNames.includes(action.name)) return null;
+
+                const onActionOverride = actionOverrides[action.name];
+
+                return (
+                    <EntityOpsButton
+                        key={action.name}
+                        action={action}
+                        entityData={entityData}
+                        entityKey={entityKey}
+                        className={className}
+                        onActionOverride={onActionOverride}
                     />
                 );
             })}
         </div>
     );
 };
+
+
+

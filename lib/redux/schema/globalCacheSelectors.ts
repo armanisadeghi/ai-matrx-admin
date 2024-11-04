@@ -131,6 +131,7 @@ export const selectEntityPrimaryKeyField = createSelector(
     }
 );
 
+// get the display field, if there is one
 export const selectEntityDisplayField = createSelector(
     [selectEntityFields],
     (fields): string | undefined => {
@@ -138,6 +139,7 @@ export const selectEntityDisplayField = createSelector(
         return displayField ? displayField.fieldName : undefined;
     }
 );
+
 
 
 
@@ -184,6 +186,7 @@ export const selectEntityCanonicalName = createSelector(
 
 export const selectEntityFrontendName = selectEntityCanonicalName;
 
+// Returns the name of the table in a Pretty Format for display
 export const selectEntityPrettyName = createSelector(
     [selectEntityNameFormats, (_: RootState, entityName: EntityKeys) => entityName],
     (entityNameFormats, entityName) => entityNameFormats[entityName]?.['pretty'] || entityName
@@ -223,6 +226,7 @@ export const selectFieldFrontendName = createSelector(
         toCanonicalMap[entityName]?.[fieldName] || fieldName
 );
 
+// Returns the nae of the field in a Pretty Format for display, such as a column header
 export const selectFieldPrettyName = createSelector(
     [
         selectFieldNameFormats,
@@ -231,6 +235,29 @@ export const selectFieldPrettyName = createSelector(
     (fieldFormats, {entityName, fieldName}) =>
         fieldFormats[entityName]?.[fieldName]?.['pretty'] || fieldName
 );
+
+export const selectAllFieldPrettyNames = createSelector(
+    [
+        selectFieldNameFormats,
+        (_: RootState, params: { entityName: EntityKeys }) => params,
+    ],
+    (fieldFormats, { entityName }) => {
+
+        const entityFields = fieldFormats[entityName];
+        if (!entityFields) {
+            return {};
+        }
+
+        const prettyNames: Record<string, string> = {};
+        Object.keys(entityFields).forEach((fieldName) => {
+            const prettyName = entityFields[fieldName]?.['pretty'] || fieldName;
+            prettyNames[fieldName] = prettyName;
+        });
+
+        return prettyNames;
+    }
+);
+
 
 export const selectFieldAnyName = createSelector(
     [

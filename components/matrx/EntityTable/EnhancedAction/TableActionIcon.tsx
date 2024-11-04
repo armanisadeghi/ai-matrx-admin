@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";
-import { Button, buttonVariants} from "@/components/ui/button";
+import { Button} from "@/components/ui/button";
 import {TableData} from "@/types/entityTableTypes";
-import { type VariantProps } from "class-variance-authority";
 import {
     Edit,
     Trash,
@@ -388,193 +387,177 @@ const TableActions: React.FC<{ data: TableData }> = ({ data }) => {
     );
 };
 
-// export type TableActionName = keyof typeof tableCommands;
+export type TableActionName = keyof typeof tableCommands;
 
 
-export const simpleTableActions: Record<string, SimpleAction> = {
-    create: {
-        name: 'create',
-        label: "Create new item",
-        icon: <Plus className="h-4 w-4"/>,
-        className: "text-success hover:bg-success hover:text-success-foreground",
-    },
-    duplicate: {
-        name: 'duplicate',
-        label: "Duplicate this item",
-        icon: <Copy className="h-4 w-4"/>,
-        className: "text-primary hover:bg-primary hover:text-primary-foreground",
-    },
+interface CommandConfig {
+    useCallback?: boolean;
+    hidden?: boolean;
+}
 
-    // Read actions
-    view: {
-        name: 'view',
-        label: "View this item",
-        icon: <Eye className="h-4 w-4"/>,
-        className: "text-primary hover:bg-secondary hover:text-secondary-foreground",
-    },
-    expand: {
-        name: 'expand',
-        label: "Expand view",
-        icon: <Maximize2 className="h-4 w-4"/>,
-        className: "text-secondary hover:bg-secondary hover:text-secondary-foreground",
-    },
-    search: {
-        name: 'search',
-        label: "Search items",
-        icon: <Search className="h-4 w-4"/>,
-        className: "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-    },
-    filter: {
-        name: 'filter',
-        label: "Filter items",
-        icon: <Filter className="h-4 w-4"/>,
-        className: "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-    },
-
-    // Update actions
-    edit: {
-        name: 'edit',
-        label: "Edit this item",
-        icon: <Edit className="h-4 w-4"/>,
-        className: "text-primary hover:bg-primary hover:text-primary-foreground",
-    },
-    save: {
-        name: 'save',
-        label: "Save changes",
-        icon: <Save className="h-4 w-4"/>,
-        className: "text-success hover:bg-success hover:text-success-foreground",
-    },
-    cancel: {
-        name: 'cancel',
-        label: "Cancel changes",
-        icon: <X className="h-4 w-4"/>,
-        className: "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-    },
-
-    delete: {
-        name: 'delete',
-        label: "Delete this item",
-        icon: <Trash className="h-4 w-4"/>,
-        className: "text-destructive hover:bg-destructive hover:text-destructive-foreground",
-    },
-    archive: {
-        name: 'archive',
-        label: "Archive this item",
-        icon: <Archive className="h-4 w-4"/>,
-        className: "text-warning hover:bg-warning hover:text-warning-foreground",
-    },
-
-    // Utility actions
-    refresh: {
-        name: 'refresh',
-        label: "Refresh data",
-        icon: <RefreshCw className="h-4 w-4"/>,
-        className: "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-    },
-    export: {
-        name: 'export',
-        label: "Export data",
-        icon: <Download className="h-4 w-4"/>,
-        className: "text-primary hover:bg-primary hover:text-primary-foreground",
-    },
-    import: {
-        name: 'import',
-        label: "Import data",
-        icon: <Upload className="h-4 w-4"/>,
-        className: "text-primary hover:bg-primary hover:text-primary-foreground",
-    },
-    more: {
-        name: 'more',
-        label: "More options",
-        icon: <MoreHorizontal className="h-4 w-4"/>,
-        className: "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground",
-    },
-    approve: {
-        name: 'approve',
-        label: "Approve item",
-        icon: <CheckCircle className="h-4 w-4"/>,
-        className: "text-success hover:bg-success hover:text-success-foreground",
-    },
+type CommandGroupConfig = {
+    [K in TableActionName]?: CommandConfig | boolean;
 };
 
-
-
-interface SimpleAction {
-    name: string;
-    label: string;
-    icon: React.ReactElement;
-    className?: string;
-    disabled?: boolean;
-    hidden?: boolean;
-    callback?: (data: TableData) => void;
-    variant?: VariantProps<typeof buttonVariants>["variant"];
-    size?: VariantProps<typeof buttonVariants>["size"];
-}
-
-interface TableActionIconProps {
-    actionName: string;
+interface TableCommandGroupProps {
+    // The data for the current row
     data: TableData;
-    onAction: (actionName: string, data: TableData) => void;
+    // Configuration for each command
+    commands?: CommandGroupConfig;
+    // Default configuration for all commands
+    defaultConfig?: CommandConfig;
+    // Class name for the group container
     className?: string;
+    // Custom handler for command execution
+    onCommandExecute?: (
+        actionName: TableActionName,
+        context: TableCommandContext<TableData>
+    ) => Promise<void>;
 }
 
-export const TableActionIcon = React.forwardRef<
-    HTMLButtonElement,
-    TableActionIconProps
->(({ actionName, data, onAction, className }, ref) => {
-    const action = simpleTableActions[actionName];
-    if (!action) return null;
+const defaultCommands: TableActionName[] = ['view', 'edit', 'expand', 'delete'];
 
-    const {
-        name,
-        label,
-        icon,
-        disabled = false,
-        hidden = false,
-        callback,
-        variant = "ghost",
-        size = "xs",
-    } = action;
+export const TableCommandGroup: React.FC<TableCommandGroupProps> = ({
+    data,
+    commands = {},
+    defaultConfig = {},
+    className,
+    onCommandExecute
+}) => {
+    // Process command configuration
+    const getCommandConfig = (actionName: TableActionName): CommandConfig => {
+        const commandConfig = commands[actionName];
 
-    if (hidden) return null;
+        // If command config is boolean, treat it as useCallback
+        if (typeof commandConfig === 'boolean') {
+            return { useCallback: commandConfig };
+        }
 
-    const handleClick = React.useCallback(
-        (e: React.MouseEvent) => {
-            e.stopPropagation();
-            if (callback) {
-                callback(data);
-            }
-            onAction(name, data);
-        },
-        [callback, data, name, onAction]
-    );
+        // Merge with default config
+        return {
+            ...defaultConfig,
+            ...commandConfig
+        };
+    };
+
+    // Get list of commands to display
+    const commandList = Object.keys(commands).length > 0
+        ? Object.keys(commands) as TableActionName[]
+        : defaultCommands;
 
     return (
-        <MatrxTooltip content={label} placement="left">
-            <Button
-                ref={ref}
-                onClick={handleClick}
-                size={size}
-                variant={variant}
-                disabled={disabled}
-                className={cn(
-                    "transition-all duration-300 hover:scale-105",
-                    disabled && "cursor-not-allowed",
-                    action.className,
-                    className
-                )}
-            >
-                {React.isValidElement(icon) &&
-                    React.cloneElement<any>(icon, {
-                        className: cn(
-                            "w-3 h-3",
-                            (icon.props as any).className
-                        )
-                    })
-                }
-            </Button>
-        </MatrxTooltip>
-    );
-});
+        <div className={cn("flex gap-1 items-center justify-end", className)}>
+            {commandList.map(actionName => {
+                const CommandComponent = tableCommands[actionName];
+                if (!CommandComponent) return null;
 
-TableActionIcon.displayName = "TableActionIcon";
+                const config = getCommandConfig(actionName);
+                if (config.hidden) return null;
+
+                return (
+                    <CommandComponent
+                        key={actionName}
+                        data={data}
+                        rowId={data.id}
+                        onExecute={config.useCallback
+                            ? (context) => onCommandExecute?.(actionName, context)
+                            : undefined}
+                    />
+                );
+            })}
+        </div>
+    );
+};
+
+// More specific component for table cells
+export const TableActionCell: React.FC<TableCommandGroupProps> = (props) => {
+    return (
+        <td className="p-2">
+            <TableCommandGroup {...props} />
+        </td>
+    );
+};
+
+// Helper component for common command groups
+interface QuickCommandGroupProps {
+    data: TableData;
+    show: TableActionName[];
+    useCallbacks?: boolean | TableActionName[];
+    className?: string;
+    onCommandExecute?: (
+        actionName: TableActionName,
+        context: TableCommandContext<TableData>
+    ) => Promise<void>;
+}
+
+export const QuickCommandGroup: React.FC<QuickCommandGroupProps> = ({
+    data,
+    show,
+    useCallbacks = false,
+    className,
+    onCommandExecute
+}) => {
+    // Convert show and useCallbacks into command config
+    const commands = show.reduce<CommandGroupConfig>((acc, actionName) => {
+        const useCallback = Array.isArray(useCallbacks)
+            ? useCallbacks.includes(actionName)
+            : useCallbacks;
+
+        acc[actionName] = { useCallback };
+        return acc;
+    }, {});
+
+    return (
+        <TableCommandGroup
+            data={data}
+            commands={commands}
+            className={className}
+            onCommandExecute={onCommandExecute}
+        />
+    );
+};
+
+// Usage examples:
+
+// 1. Basic usage with defaults
+const BasicExample = ({ rowData }: { rowData: TableData }) => (
+    <TableCommandGroup data={rowData} />
+);
+
+// 2. Custom command selection
+const CustomExample = ({ rowData }: { rowData: TableData }) => (
+    <TableCommandGroup
+        data={rowData}
+        commands={{
+            edit: true,      // Use callback
+            delete: false,   // Don't use callback
+            view: { hidden: true }, // Hide this command
+            archive: { useCallback: true } // Additional command with callback
+        }}
+    />
+);
+
+
+// 3. Quick usage with specific commands
+const QuickExample = ({ rowData }: { rowData: TableData }) => (
+    <QuickCommandGroup
+        data={rowData}
+        show={['edit', 'delete', 'archive']}
+        useCallbacks={['delete', 'archive']} // Only these will use callbacks
+    />
+);
+
+// 4. Table cell usage
+const TableExample = ({ row }: { row: TableData }) => (
+    <TableActionCell
+        data={row}
+        commands={{
+            edit: true,
+            view: true,
+            delete: { useCallback: true }
+        }}
+        onCommandExecute={async (actionName, context) => {
+            console.log(`Executing ${actionName}:`, context);
+        }}
+    />
+);

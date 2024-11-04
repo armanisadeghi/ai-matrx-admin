@@ -503,32 +503,36 @@ function* handleFetchOne<TEntity extends EntityKeys>(
 function* handleCreate<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
-    action: PayloadAction<Partial<EntityData<TEntity>>>,
-    tableName: string,
-    dbQueryOptions: any
+    action: PayloadAction<Partial<EntityData<TEntity>>>
 ) {
     try {
-
+        // Select table name and initialize database API
         const tableName: string = yield select(selectEntityDatabaseName, entityKey);
-        console.log("handleCreate converted tableName:", tableName);
         const databaseApi = yield call(initializeDatabaseApi, tableName);
-
 
         console.log("handleCreate starting with:", entityKey, action.payload);
 
-        const {data, error} = yield databaseApi.insert(action.payload).single();
+        // Insert data into the database
+        const { data, error } = yield call([databaseApi, databaseApi.insert], action.payload);
 
         if (error) {
             throw error;
         }
 
+        // Convert database response for frontend compatibility
         const frontendResponse = yield select(selectFrontendConversion, data);
 
-        // Dispatch success action
+        // Dispatch success action with converted data
         yield put(actions.createSuccess(frontendResponse));
     } catch (error: any) {
-        // Dispatch failure action
-        yield put(actions.createFailure(error));
+        // Dispatch failure action if an error occurs
+        yield put(
+            actions.createFailure({
+                message: error.message || "An error occurred during handleCreate.",
+                code: error.code
+            })
+        );
+        console.error("handleCreate error:", error);
     }
 }
 
@@ -539,7 +543,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice>["actions"],
     action: PayloadAction<{
-        id: string | number;
+        primaryKeyValue: string | number;
         data: Partial<EntityRecord<TEntity, "frontend">>;
     }>
 ) {
@@ -547,41 +551,46 @@ function* handleUpdate<TEntity extends EntityKeys>(
         yield put(actions.setLoading(true));
 
         const tableName: string = yield select(selectEntityDatabaseName, entityKey);
-        console.log("handleUpdate converted tableName:", tableName);
+        const primaryKey: string = yield select((state) => state[entityKey].primaryKey);
         const databaseApi = yield call(initializeDatabaseApi, tableName);
 
-        const updatedData: EntityRecord<TEntity, "frontend"> | null = yield call(
+        console.log("handleUpdate starting with:", entityKey, action.payload);
+
+        const { data: updatedData, error } = yield call(
             [databaseApi, databaseApi.update],
-            action.payload.id,
+            action.payload.primaryKeyValue,
             action.payload.data
         );
+
+        if (error) {
+            throw error;
+        }
 
         if (updatedData) {
             const currentData: EntityRecord<TEntity, "frontend">[] = yield select(
                 (state) => state[entityKey].data
             );
 
-            // const newData = currentData.map(item =>
-            //     item.id === action.payload.id ? updatedData : item
-            // );
-            //
-            // yield put(actions.setTableData(newData));
+            const newData = currentData.map(item =>
+                item[primaryKey] === action.payload.primaryKeyValue ? updatedData : item
+            );
+
+            yield put(actions.setTableData(newData));
+
             yield put(
                 actions.setLastFetched({
-                    key: action.payload.id.toString(),
+                    key: action.payload.primaryKeyValue.toString(),
                     time: Date.now(),
                 })
             );
         }
     } catch (error: any) {
         yield put(actions.setError({
-                message: error.message || "An error occurred during handleCreate.",
+                message: error.message || "An error occurred during handleUpdate.",
                 code: error.code
             })
         );
-        console.error("withUnifiedConversion error:", error);
-        throw error;
-
+        console.error("handleUpdate error:", error);
     } finally {
         yield put(actions.setLoading(false));
     }
@@ -599,8 +608,11 @@ function* handleDelete<TEntity extends EntityKeys>(
         yield put(actions.setLoading(true));
 
         const tableName: string = yield select(selectEntityDatabaseName, entityKey);
-        console.log("handleDelete converted tableName:", tableName);
         const databaseApi = yield call(initializeDatabaseApi, tableName);
+
+        const primaryKey: string = yield select(
+            (state) => state[entityKey].primaryKey || "id"
+        );
 
         const success: boolean = yield call(
             [databaseApi, databaseApi.delete],
@@ -612,12 +624,12 @@ function* handleDelete<TEntity extends EntityKeys>(
                 (state) => state[entityKey].data
             );
 
-            // const filteredData = currentData.filter(
-            //     item => item.id !== action.payload
-            // );
-            //
-            // yield put(actions.setTableData(filteredData));
-            // yield put(actions.removeLastFetchedKey(action.payload.toString()));
+            const filteredData = currentData.filter(
+                (item) => item[primaryKey] !== action.payload
+            );
+
+            yield put(actions.setTableData(filteredData));
+            yield put(actions.removeLastFetchedKey(action.payload.toString()));
         }
     } catch (error: any) {
         yield put(actions.setError({

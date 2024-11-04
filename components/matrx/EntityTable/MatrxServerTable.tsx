@@ -1,31 +1,60 @@
-// GO TO THIS CHAT: =================================================    https://claude.ai/chat/76aecaf8-6275-43bb-bbdb-8d390f1080c7 =================================================
-
-// New: https://claude.ai/chat/932ecd5f-7495-4f7f-8e81-f1b6374f2443
-
-// Action Guy: https://claude.ai/chat/76aecaf8-6275-43bb-bbdb-8d390f1080c7
-
-
 'use client';
 
-import React, {useEffect, useMemo, useState, useCallback} from 'react';
-import {useTable, useSortBy, useGlobalFilter, usePagination} from 'react-table';
+import React, {useEffect, useMemo, useState} from 'react';
+import {
+    getCoreRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    getFilteredRowModel,
+    useReactTable,
+    ColumnDef,
+} from '@tanstack/react-table';
+
 import {Table} from "@/components/ui/table";
-import {TableInstance, ExtendedTableState} from "@/types/entityTableTypes";
 import MatrxTableHeader from "@/components/matrx/EntityTable/MatrxTableHeader";
 import MatrxTableBody from "@/components/matrx/EntityTable/MatrxTableBody";
 import {cn} from "@/styles/themes";
 import TableTopOptions from "@/components/matrx/EntityTable/TableTopOptions";
 import TableBottomSection from "@/components/matrx/EntityTable/TableBottomSection";
 import MatrxColumnSettings from "@/components/matrx/EntityTable/MatrxColumnSettings";
+import {EntityData, EntityKeys} from '@/types/entityTypes';
+import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxCommands/EntityCommand";
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { selectFieldPrettyName } from '@/lib/redux/schema/globalCacheSelectors';
+import {createEntitySelectors} from "@/lib/redux/entity/paramSelectors";
 
-interface MatrxServerTableProps {
-    data: any[];
-    actions?: string[];
-    onAction?: (action: string, row: any) => void;
+export interface MatrxServerTableProps<TEntity extends EntityKeys> {
+    // Entity Configuration
+    entityKey: TEntity;
+    data: EntityData<TEntity>[];
+    primaryKey: keyof EntityData<TEntity>;
+
+    // Command Configuration
+    commands?: {
+        [key in EntityCommandName]?: boolean | {
+        useCallback?: boolean;
+        setActiveOnClick?: boolean;
+        hidden?: boolean;
+    };
+    };
+
+    // Command Callbacks
+    onCommandExecute?: (
+        actionName: EntityCommandName,
+        context: EntityCommandContext<TEntity>
+    ) => Promise<void>;
+
+    // Modal Control
+    onModalOpen?: (actionName: EntityCommandName, data: EntityData<TEntity>) => void;
+    onModalClose?: () => void;
+
+    // Table Configuration
     defaultVisibleColumns?: string[];
     truncateAt?: number;
-    customModalContent?: React.ReactNode;
     className?: string;
+    customModalContent?: (rowData: EntityData<TEntity>) => React.ReactNode;
+
+    // Server-side Configuration
     isServerSide?: boolean;
     loading?: boolean;
     totalCount?: number;
@@ -33,14 +62,67 @@ interface MatrxServerTableProps {
     onPageSizeChange?: (pageSize: number) => void;
     serverPage?: number;
     serverPageSize?: number;
+    columnHeaders?: Record<string, string>;
+    displayField?: string;
+
+    // Parent Control Props
+    useParentModal?: boolean;
+    useParentRowHandling?: boolean;
+    useParentFormState?: boolean;
 }
 
-const MatrxServerTable: React.FC<MatrxServerTableProps> = (
+
+const generateColumns = <TEntity extends EntityKeys>(
+    sampleData: EntityData<TEntity>,
+    primaryKey: keyof EntityData<TEntity>,
+    columnHeaders?: Record<string, string>
+): ColumnDef<EntityData<TEntity>>[] => {
+    if (!sampleData) return [];
+
+    return Object.keys(sampleData).map((key) => {
+        if (key === 'actions') {
+            return {
+                id: 'actions',
+                header: columnHeaders?.['actions'] || 'Actions',
+                cell: () => null,
+                enableSorting: false, // Disable sorting for actions column
+            } as ColumnDef<EntityData<TEntity>>;
+        }
+
+        return {
+            id: key,
+            header: columnHeaders?.[key] || key.charAt(0).toUpperCase() + key.slice(1),
+            accessorFn: (row: EntityData<TEntity>) => row[key as keyof EntityData<TEntity>],
+            enableSorting: true, // Enable sorting for data columns
+        } as ColumnDef<EntityData<TEntity>>;
+    });
+};
+const getColumnId = <TEntity extends EntityKeys>(
+    column: ColumnDef<EntityData<TEntity>>
+): string => {
+    if ('accessorKey' in column && typeof column.accessorKey === 'string') {
+        return column.accessorKey;
+    }
+    return column.id || '';
+};
+
+
+
+const MatrxServerTable = <TEntity extends EntityKeys>(
     {
+        entityKey,
         data,
-        actions,
-        onAction,
-        defaultVisibleColumns,
+        primaryKey,
+        commands = {
+            view: true,
+            edit: {useCallback: true},
+            delete: {useCallback: true},
+            expand: true
+        },
+        onCommandExecute,
+        onModalOpen,
+        onModalClose,
+        defaultVisibleColumns = [],
         truncateAt,
         customModalContent,
         className,
@@ -51,134 +133,129 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
         onPageSizeChange,
         serverPage = 1,
         serverPageSize = 10,
-    }) => {
+        columnHeaders = {},
+        displayField,
+        useParentModal = false,
+        useParentRowHandling = false,
+        useParentFormState = false,
+    }: MatrxServerTableProps<TEntity>) => {
+
+    const dispatch = useAppDispatch();
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+
     const allData = useMemo(() => {
         return data.map((row, index) => ({
             ...row,
-            actions: actions,
-            id: row.id ? `${row.id}` : `row-${index}`
+            _rowId: row[primaryKey] ? `${row[primaryKey]}` : `row-${index}`,
+            // If there's a display field, add it as _displayValue for easier access
+            ...(displayField && {_displayValue: row[displayField as keyof EntityData<TEntity>]})
         }));
-    }, [data, actions]);
+    }, [data, primaryKey, displayField]);
 
+    // Dynamically generate column definitions based on data keys
     const allColumns = useMemo(() => {
         if (allData.length === 0) return [];
-        const columns = Object.keys(allData[0]).map(key => ({
-            Header: key.charAt(0).toUpperCase() + key.slice(1),
-            accessor: key,
-            ...(key === 'actions' && {Cell: () => null, Header: 'Actions'})
-        }));
-        return columns;
-    }, [allData]);
+        const sampleData = allData[0];
+        return generateColumns(sampleData, primaryKey, columnHeaders);
+    }, [allData, primaryKey, columnHeaders]);
 
-    const allColumnNames = useMemo(() => allColumns.map((col) => col.Header as string), [allColumns]);
+    // Use pretty names for column names when available
+    const allColumnNames = useMemo(() =>
+            allColumns.map((col) => {
+                const id = getColumnId(col);
+                return columnHeaders[id] || (typeof col.header === 'string' ? col.header : '');
+            }),
+        [allColumns, columnHeaders]
+    );
 
-    const [visibleColumnAccessors, setVisibleColumnAccessors] = useState<string[]>([]);
+    const [visibleColumnAccessors, setVisibleColumnAccessors] = useState<string[]>(
+        defaultVisibleColumns.length > 0 ? defaultVisibleColumns : allColumnNames
+    );
+
     const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
 
+    const handleCommandExecute = async (
+        actionName: EntityCommandName,
+        context: EntityCommandContext<TEntity>
+    ) => {
+        if (onCommandExecute) {
+            await onCommandExecute(actionName, context);
+        }
+
+        // Handle modal opening if not controlled by parent
+        if (!useParentModal && onModalOpen) {
+            onModalOpen(actionName, context.data);
+        }
+    };
+
+    // Update visible columns when defaults change
     useEffect(() => {
         if (allColumns.length > 0) {
-            if (defaultVisibleColumns && defaultVisibleColumns.length > 0) {
-                const newVisibleAccessors = allColumns
-                    .filter(column =>
-                        defaultVisibleColumns.some(defaultCol =>
-                            defaultCol.toLowerCase() === column.Header.toLowerCase() ||
-                            defaultCol.toLowerCase() === column.accessor.toLowerCase()
-                        )
+            const newVisibleAccessors = allColumns
+                .filter(column =>
+                    typeof column.header === 'string' &&
+                    defaultVisibleColumns.some(
+                        (defaultCol) => {
+                            const columnId = getColumnId(column);
+                            const headerStr = column.header as string;
+                            return defaultCol.toLowerCase() === headerStr.toLowerCase() ||
+                                (columnId && defaultCol.toLowerCase() === columnId.toLowerCase());
+                        }
                     )
-                    .map(col => col.accessor as string);
-                setVisibleColumnAccessors(newVisibleAccessors);
-            } else {
-                const initialAccessors = allColumns
-                    .filter(column => column.accessor !== 'id')
-                    .map(col => col.accessor as string);
-                setVisibleColumnAccessors(initialAccessors);
-            }
+                )
+                .map(col => getColumnId(col));
+            setVisibleColumnAccessors(newVisibleAccessors);
         }
     }, [allColumns, defaultVisibleColumns]);
 
     const visibleColumns = useMemo(
-        () => allColumns.filter(column => visibleColumnAccessors.includes(column.accessor as string)),
+        () => allColumns.filter(column => {
+            const columnId = getColumnId(column);
+            return visibleColumnAccessors.includes(columnId);
+        }),
         [allColumns, visibleColumnAccessors]
     );
 
-    const tableInstance = useTable(
-        {
-            columns: visibleColumns,
-            data: allData,
-            initialState: {
-                pageIndex: isServerSide ? serverPage - 1 : 0,
-                pageSize: serverPageSize || 10,
-            } as Partial<ExtendedTableState>,  // Cast to ExtendedTableState
-            manualPagination: isServerSide,
-            pageCount: isServerSide ? Math.ceil(totalCount / serverPageSize) : undefined,
-        },
-        useGlobalFilter,
-        useSortBy,
-        usePagination
-    ) as unknown as TableInstance;
+    const [sorting, setSorting] = useState([]);
+    const [globalFilter, setGlobalFilter] = useState('');
+    const [pagination, setPagination] = useState({
+        pageIndex: serverPage - 1,
+        pageSize: serverPageSize || 10,
+    });
 
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        prepareRow,
-        state,
-        setGlobalFilter,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        pageCount,
-        gotoPage,
-        setPageSize,
-    } = tableInstance;
+    const table = useReactTable({
+        columns: visibleColumns,
+        data: allData,
+        state: {sorting, globalFilter, pagination},
+        onSortingChange: setSorting,
+        onGlobalFilterChange: setGlobalFilter,
+        onPaginationChange: setPagination,
+        manualPagination: isServerSide,
+        pageCount: isServerSide ? Math.ceil(totalCount / pagination.pageSize) : undefined,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+    });
 
-    const {globalFilter, pageIndex, pageSize} = state as ExtendedTableState;
-
-    // Define page numbers dynamically
-    const pageNumbers = [];
-    const totalPages = pageCount || 1;
-    const currentPage = pageIndex + 1;
-
-    if (totalPages <= 5) {
-        for (let i = 1; i <= totalPages; i++) {
-            pageNumbers.push(i);
+    const handleNextPage = () => {
+        if (table.getCanNextPage()) {
+            table.nextPage();
+            if (isServerSide && onPageChange) onPageChange(pagination.pageIndex + 2);
         }
-    } else {
-        if (currentPage <= 3) {
-            pageNumbers.push(1, 2, 3, 4, 5);
-        } else if (currentPage >= totalPages - 2) {
-            pageNumbers.push(totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-        } else {
-            pageNumbers.push(currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2);
-        }
-    }
+    };
 
-    const handleNextPage = useCallback(() => {
-        if (canNextPage) {
-            nextPage();
-            if (isServerSide && onPageChange) {
-                onPageChange(pageIndex + 2);  // Move to the next page (pageIndex is zero-based)
-            }
+    const handlePreviousPage = () => {
+        if (table.getCanPreviousPage()) {
+            table.previousPage();
+            if (isServerSide && onPageChange) onPageChange(pagination.pageIndex);
         }
-    }, [canNextPage, isServerSide, nextPage, onPageChange, pageIndex]);
+    };
 
-    const handlePreviousPage = useCallback(() => {
-        if (canPreviousPage) {
-            previousPage();
-            if (isServerSide && onPageChange) {
-                onPageChange(pageIndex);  // Move to the previous page
-            }
-        }
-    }, [canPreviousPage, isServerSide, previousPage, onPageChange, pageIndex]);
-
-    const handleGotoPage = useCallback((pageIndex: number) => {
-        gotoPage(pageIndex);
-        if (isServerSide && onPageChange) {
-            onPageChange(pageIndex + 1);
-        }
-    }, [gotoPage, isServerSide, onPageChange]);
+    const handleGotoPage = (pageIndex: number) => {
+        table.setPageIndex(pageIndex);
+        if (isServerSide && onPageChange) onPageChange(pageIndex + 1);
+    };
 
     const handleSearchChange = (value: string) => {
         setGlobalFilter(value);
@@ -189,9 +266,22 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
             <TableTopOptions
                 columnNames={allColumnNames}
                 handleSearchChange={handleSearchChange}
-                pageSize={pageSize}
-                setPageSize={setPageSize}
-                handleAdd={() => console.log('Add button clicked. Currently not implemented')}
+                pageSize={pagination.pageSize}
+                setPageSize={(size) => {
+                    table.setPageSize(size);
+                    onPageSizeChange?.(size);
+                }}
+                handleAdd={() => {
+                    handleCommandExecute('create', {
+                        type: 'entity',
+                        scope: 'single',
+                        entityKey,
+                        data: {} as EntityData<TEntity>,
+                        index: -1,
+                        dispatch,
+                        selectors,
+                    });
+                }}
                 setColumnSettingsOpen={setColumnSettingsOpen}
                 columnSettingsOpen={columnSettingsOpen}
             />
@@ -200,16 +290,22 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
                 <div className="overflow-x-auto scrollbar-hide">
                     <div className="inline-block min-w-full align-middle scrollbar-hide">
                         <div className="overflow-hidden border rounded-xl bg-matrxBorder scrollbar-hide">
-                            <Table {...getTableProps()}
-                                   className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 scrollbar-hide">
-                                <MatrxTableHeader headerGroups={headerGroups}/>
+                            <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 scrollbar-hide">
+                                <MatrxTableHeader headerGroups={table.getHeaderGroups()}/>
                                 <MatrxTableBody
-                                    page={page}
-                                    prepareRow={prepareRow}
-                                    actions={actions}
-                                    onAction={onAction}
+                                    entityKey={entityKey}
+                                    page={table.getRowModel().rows}
+                                    prepareRow={(row) => row.getVisibleCells()}
+                                    commands={commands}
+                                    onCommandExecute={handleCommandExecute}
+                                    onModalOpen={onModalOpen}
+                                    onModalClose={onModalClose}
                                     truncateAt={truncateAt}
                                     customModalContent={customModalContent}
+                                    useParentModal={useParentModal}
+                                    useParentRowHandling={useParentRowHandling}
+                                    useParentFormState={useParentFormState}
+                                    visibleColumns={visibleColumnAccessors}
                                 />
                             </Table>
                         </div>
@@ -218,10 +314,10 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
             </div>
 
             <TableBottomSection
-                currentPage={currentPage}
-                pageNumbers={pageNumbers}
-                canPreviousPage={canPreviousPage}
-                canNextPage={canNextPage && (isServerSide ? (currentPage * pageSize < totalCount) : true)}
+                currentPage={pagination.pageIndex + 1}
+                pageNumbers={Array.from({length: table.getPageCount()}, (_, i) => i + 1)}
+                canPreviousPage={table.getCanPreviousPage()}
+                canNextPage={table.getCanNextPage()}
                 previousPage={handlePreviousPage}
                 nextPage={handleNextPage}
                 gotoPage={handleGotoPage}
@@ -233,6 +329,7 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
                 columns={allColumns}
                 visibleColumns={visibleColumnAccessors}
                 setVisibleColumns={setVisibleColumnAccessors}
+                columnHeaders={columnHeaders}
             />
         </div>
     );

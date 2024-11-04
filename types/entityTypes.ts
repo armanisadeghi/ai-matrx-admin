@@ -391,6 +391,7 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
  */
 export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
+    primaryKey: string;
     defaultFetchStrategy: FetchStrategy;
     componentProps: EntityComponentProps<TEntity>;
     entityNameFormats: EntityNameFormats<TEntity>;
@@ -754,7 +755,7 @@ type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
 
 type registeredFunctionDataDraft = EntityDataDraft<'registeredFunction'>;
 type userPreferencesDataDraft = EntityDataDraft<'userPreferences'>;
-
+type registeredFunctionPrimaryKey = FieldIsPrimaryKey<'registeredFunction', 'id'>;
 
 // // Usage example:
 // const example = () => {

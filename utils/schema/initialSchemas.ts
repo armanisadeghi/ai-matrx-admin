@@ -11,19 +11,20 @@ import {AutomationEntity} from '@/types/entityTypes';
 
 export const initialAutomationTableSchema = {
     action: {
-        entityNameFormats: {
-            "frontend": "action",
-            "backend": "action",
-            "database": "action",
-            "pretty": "Action",
-            "component": "Action",
-            "kebab": "action",
-            "sqlFunctionRef": "p_action",
-            "RestAPI": "action",
-            "GraphQL": "action",
-            "custom": "action"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -328,17 +329,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'transformer',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "action",
+            "backend": "action",
+            "database": "action",
+            "pretty": "Action",
+            "component": "Action",
+            "kebab": "action",
+            "sqlFunctionRef": "p_action",
+            "RestAPI": "action",
+            "GraphQL": "action",
+            "custom": "action"
         },
         relationships: [
             {
@@ -358,19 +359,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     aiEndpoint: {
-        entityNameFormats: {
-            "frontend": "aiEndpoint",
-            "backend": "ai_endpoint",
-            "database": "ai_endpoint",
-            "pretty": "Ai Endpoint",
-            "component": "AiEndpoint",
-            "kebab": "ai-endpoint",
-            "sqlFunctionRef": "p_ai_endpoint",
-            "RestAPI": "aiEndpoint",
-            "GraphQL": "aiEndpoint",
-            "custom": "aiEndpoint"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'simple',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -660,7 +662,24 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'ai_endpoint',
             },
         },
-        defaultFetchStrategy: 'simple',
+        entityNameFormats: {
+            "frontend": "aiEndpoint",
+            "backend": "ai_endpoint",
+            "database": "ai_endpoint",
+            "pretty": "Ai Endpoint",
+            "component": "AiEndpoint",
+            "kebab": "ai-endpoint",
+            "sqlFunctionRef": "p_ai_endpoint",
+            "RestAPI": "aiEndpoint",
+            "GraphQL": "aiEndpoint",
+            "custom": "aiEndpoint"
+        },
+        relationships: [],
+    },
+    aiModel: {
+        schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
             "size": "default",
@@ -672,22 +691,6 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [],
-    },
-    aiModel: {
-        entityNameFormats: {
-            "frontend": "aiModel",
-            "backend": "ai_model",
-            "database": "ai_model",
-            "pretty": "Ai Model",
-            "component": "AiModel",
-            "kebab": "ai-model",
-            "sqlFunctionRef": "p_ai_model",
-            "RestAPI": "aiModel",
-            "GraphQL": "aiModel",
-            "custom": "aiModel"
-        },
-        schemaType: 'table' as const,
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -1128,17 +1131,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_model',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "aiModel",
+            "backend": "ai_model",
+            "database": "ai_model",
+            "pretty": "Ai Model",
+            "component": "AiModel",
+            "kebab": "ai-model",
+            "sqlFunctionRef": "p_ai_model",
+            "RestAPI": "aiModel",
+            "GraphQL": "aiModel",
+            "custom": "aiModel"
         },
         relationships: [
             {
@@ -1158,19 +1161,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     arg: {
-        entityNameFormats: {
-            "frontend": "arg",
-            "backend": "arg",
-            "database": "arg",
-            "pretty": "Arg",
-            "component": "Arg",
-            "kebab": "arg",
-            "sqlFunctionRef": "p_arg",
-            "RestAPI": "arg",
-            "GraphQL": "arg",
-            "custom": "arg"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -1488,17 +1492,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'registered_function',
             },
         },
-        defaultFetchStrategy: 'fk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "arg",
+            "backend": "arg",
+            "database": "arg",
+            "pretty": "Arg",
+            "component": "Arg",
+            "kebab": "arg",
+            "sqlFunctionRef": "p_arg",
+            "RestAPI": "arg",
+            "GraphQL": "arg",
+            "custom": "arg"
         },
         relationships: [
             {
@@ -1511,19 +1515,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     automationBoundaryBroker: {
-        entityNameFormats: {
-            "frontend": "automationBoundaryBroker",
-            "backend": "automation_boundary_broker",
-            "database": "automation_boundary_broker",
-            "pretty": "Automation Boundary Broker",
-            "component": "AutomationBoundaryBroker",
-            "kebab": "automation-boundary-broker",
-            "sqlFunctionRef": "p_automation_boundary_broker",
-            "RestAPI": "automationBoundaryBroker",
-            "GraphQL": "automationBoundaryBroker",
-            "custom": "automationBoundaryBroker"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -1787,17 +1792,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'automation_matrix',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "automationBoundaryBroker",
+            "backend": "automation_boundary_broker",
+            "database": "automation_boundary_broker",
+            "pretty": "Automation Boundary Broker",
+            "component": "AutomationBoundaryBroker",
+            "kebab": "automation-boundary-broker",
+            "sqlFunctionRef": "p_automation_boundary_broker",
+            "RestAPI": "automationBoundaryBroker",
+            "GraphQL": "automationBoundaryBroker",
+            "custom": "automationBoundaryBroker"
         },
         relationships: [
             {
@@ -1817,19 +1822,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     automationMatrix: {
-        entityNameFormats: {
-            "frontend": "automationMatrix",
-            "backend": "automation_matrix",
-            "database": "automation_matrix",
-            "pretty": "Automation Matrix",
-            "component": "AutomationMatrix",
-            "kebab": "automation-matrix",
-            "sqlFunctionRef": "p_automation_matrix",
-            "RestAPI": "automationMatrix",
-            "GraphQL": "automationMatrix",
-            "custom": "automationMatrix"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndIfk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -2134,17 +2140,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'automation_boundary_broker',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "automationMatrix",
+            "backend": "automation_matrix",
+            "database": "automation_matrix",
+            "pretty": "Automation Matrix",
+            "component": "AutomationMatrix",
+            "kebab": "automation-matrix",
+            "sqlFunctionRef": "p_automation_matrix",
+            "RestAPI": "automationMatrix",
+            "GraphQL": "automationMatrix",
+            "custom": "automationMatrix"
         },
         relationships: [
             {
@@ -2178,19 +2184,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     broker: {
-        entityNameFormats: {
-            "frontend": "broker",
-            "backend": "broker",
-            "database": "broker",
-            "pretty": "Broker",
-            "component": "Broker",
-            "kebab": "broker",
-            "sqlFunctionRef": "p_broker",
-            "RestAPI": "broker",
-            "GraphQL": "broker",
-            "custom": "broker"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fkIfkAndM2M',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -3002,17 +3009,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'automation_boundary_broker',
             },
         },
-        defaultFetchStrategy: 'fkIfkAndM2M',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "broker",
+            "backend": "broker",
+            "database": "broker",
+            "pretty": "Broker",
+            "component": "Broker",
+            "kebab": "broker",
+            "sqlFunctionRef": "p_broker",
+            "RestAPI": "broker",
+            "GraphQL": "broker",
+            "custom": "broker"
         },
         relationships: [
             {
@@ -3060,19 +3067,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     dataInputComponent: {
-        entityNameFormats: {
-            "frontend": "dataInputComponent",
-            "backend": "data_input_component",
-            "database": "data_input_component",
-            "pretty": "Data Input Component",
-            "component": "DataInputComponent",
-            "kebab": "data-input-component",
-            "sqlFunctionRef": "p_data_input_component",
-            "RestAPI": "dataInputComponent",
-            "GraphQL": "dataInputComponent",
-            "custom": "dataInputComponent"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'ifk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -3636,17 +3644,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'broker',
             },
         },
-        defaultFetchStrategy: 'ifk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "dataInputComponent",
+            "backend": "data_input_component",
+            "database": "data_input_component",
+            "pretty": "Data Input Component",
+            "component": "DataInputComponent",
+            "kebab": "data-input-component",
+            "sqlFunctionRef": "p_data_input_component",
+            "RestAPI": "dataInputComponent",
+            "GraphQL": "dataInputComponent",
+            "custom": "dataInputComponent"
         },
         relationships: [
             {
@@ -3659,19 +3667,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     dataOutputComponent: {
-        entityNameFormats: {
-            "frontend": "dataOutputComponent",
-            "backend": "data_output_component",
-            "database": "data_output_component",
-            "pretty": "Data Output Component",
-            "component": "DataOutputComponent",
-            "kebab": "data-output-component",
-            "sqlFunctionRef": "p_data_output_component",
-            "RestAPI": "dataOutputComponent",
-            "GraphQL": "dataOutputComponent",
-            "custom": "dataOutputComponent"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'simple',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -3879,7 +3888,24 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'data_output_component',
             },
         },
-        defaultFetchStrategy: 'simple',
+        entityNameFormats: {
+            "frontend": "dataOutputComponent",
+            "backend": "data_output_component",
+            "database": "data_output_component",
+            "pretty": "Data Output Component",
+            "component": "DataOutputComponent",
+            "kebab": "data-output-component",
+            "sqlFunctionRef": "p_data_output_component",
+            "RestAPI": "dataOutputComponent",
+            "GraphQL": "dataOutputComponent",
+            "custom": "dataOutputComponent"
+        },
+        relationships: [],
+    },
+    displayOption: {
+        schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
             "size": "default",
@@ -3891,22 +3917,6 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [],
-    },
-    displayOption: {
-        entityNameFormats: {
-            "frontend": "displayOption",
-            "backend": "display_option",
-            "database": "display_option",
-            "pretty": "Display Option",
-            "component": "DisplayOption",
-            "kebab": "display-option",
-            "sqlFunctionRef": "p_display_option",
-            "RestAPI": "displayOption",
-            "GraphQL": "displayOption",
-            "custom": "displayOption"
-        },
-        schemaType: 'table' as const,
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -4142,17 +4152,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_display',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "displayOption",
+            "backend": "display_option",
+            "database": "display_option",
+            "pretty": "Display Option",
+            "component": "DisplayOption",
+            "kebab": "display-option",
+            "sqlFunctionRef": "p_display_option",
+            "RestAPI": "displayOption",
+            "GraphQL": "displayOption",
+            "custom": "displayOption"
         },
         relationships: [
             {
@@ -4172,19 +4182,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     emails: {
-        entityNameFormats: {
-            "frontend": "emails",
-            "backend": "emails",
-            "database": "emails",
-            "pretty": "Emails",
-            "component": "Emails",
-            "kebab": "emails",
-            "sqlFunctionRef": "p_emails",
-            "RestAPI": "emails",
-            "GraphQL": "emails",
-            "custom": "emails"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'simple',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -4474,6 +4485,23 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'emails',
             },
         },
+        entityNameFormats: {
+            "frontend": "emails",
+            "backend": "emails",
+            "database": "emails",
+            "pretty": "Emails",
+            "component": "Emails",
+            "kebab": "emails",
+            "sqlFunctionRef": "p_emails",
+            "RestAPI": "emails",
+            "GraphQL": "emails",
+            "custom": "emails"
+        },
+        relationships: [],
+    },
+    extractor: {
+        schemaType: 'table' as const,
+        primaryKey: 'id',
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
@@ -4486,22 +4514,6 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [],
-    },
-    extractor: {
-        entityNameFormats: {
-            "frontend": "extractor",
-            "backend": "extractor",
-            "database": "extractor",
-            "pretty": "Extractor",
-            "component": "Extractor",
-            "kebab": "extractor",
-            "sqlFunctionRef": "p_extractor",
-            "RestAPI": "extractor",
-            "GraphQL": "extractor",
-            "custom": "extractor"
-        },
-        schemaType: 'table' as const,
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -4709,7 +4721,24 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'extractor',
             },
         },
-        defaultFetchStrategy: 'simple',
+        entityNameFormats: {
+            "frontend": "extractor",
+            "backend": "extractor",
+            "database": "extractor",
+            "pretty": "Extractor",
+            "component": "Extractor",
+            "kebab": "extractor",
+            "sqlFunctionRef": "p_extractor",
+            "RestAPI": "extractor",
+            "GraphQL": "extractor",
+            "custom": "extractor"
+        },
+        relationships: [],
+    },
+    flashcardData: {
+        schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
             "size": "default",
@@ -4721,22 +4750,6 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [],
-    },
-    flashcardData: {
-        entityNameFormats: {
-            "frontend": "flashcardData",
-            "backend": "flashcard_data",
-            "database": "flashcard_data",
-            "pretty": "Flashcard Data",
-            "component": "FlashcardData",
-            "kebab": "flashcard-data",
-            "sqlFunctionRef": "p_flashcard_data",
-            "RestAPI": "flashcardData",
-            "GraphQL": "flashcardData",
-            "custom": "flashcardData"
-        },
-        schemaType: 'table' as const,
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -5479,17 +5492,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_images',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "flashcardData",
+            "backend": "flashcard_data",
+            "database": "flashcard_data",
+            "pretty": "Flashcard Data",
+            "component": "FlashcardData",
+            "kebab": "flashcard-data",
+            "sqlFunctionRef": "p_flashcard_data",
+            "RestAPI": "flashcardData",
+            "GraphQL": "flashcardData",
+            "custom": "flashcardData"
         },
         relationships: [
             {
@@ -5523,19 +5536,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardHistory: {
-        entityNameFormats: {
-            "frontend": "flashcardHistory",
-            "backend": "flashcard_history",
-            "database": "flashcard_history",
-            "pretty": "Flashcard History",
-            "component": "FlashcardHistory",
-            "kebab": "flashcard-history",
-            "sqlFunctionRef": "p_flashcard_history",
-            "RestAPI": "flashcardHistory",
-            "GraphQL": "flashcardHistory",
-            "custom": "flashcardHistory"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -5894,17 +5908,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_data',
             },
         },
-        defaultFetchStrategy: 'fk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "flashcardHistory",
+            "backend": "flashcard_history",
+            "database": "flashcard_history",
+            "pretty": "Flashcard History",
+            "component": "FlashcardHistory",
+            "kebab": "flashcard-history",
+            "sqlFunctionRef": "p_flashcard_history",
+            "RestAPI": "flashcardHistory",
+            "GraphQL": "flashcardHistory",
+            "custom": "flashcardHistory"
         },
         relationships: [
             {
@@ -5917,19 +5931,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardImages: {
-        entityNameFormats: {
-            "frontend": "flashcardImages",
-            "backend": "flashcard_images",
-            "database": "flashcard_images",
-            "pretty": "Flashcard Images",
-            "component": "FlashcardImages",
-            "kebab": "flashcard-images",
-            "sqlFunctionRef": "p_flashcard_images",
-            "RestAPI": "flashcardImages",
-            "GraphQL": "flashcardImages",
-            "custom": "flashcardImages"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -6247,17 +6262,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_data',
             },
         },
-        defaultFetchStrategy: 'fk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "flashcardImages",
+            "backend": "flashcard_images",
+            "database": "flashcard_images",
+            "pretty": "Flashcard Images",
+            "component": "FlashcardImages",
+            "kebab": "flashcard-images",
+            "sqlFunctionRef": "p_flashcard_images",
+            "RestAPI": "flashcardImages",
+            "GraphQL": "flashcardImages",
+            "custom": "flashcardImages"
         },
         relationships: [
             {
@@ -6270,19 +6285,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardSetRelations: {
-        entityNameFormats: {
-            "frontend": "flashcardSetRelations",
-            "backend": "flashcard_set_relations",
-            "database": "flashcard_set_relations",
-            "pretty": "Flashcard Set Relations",
-            "component": "FlashcardSetRelations",
-            "kebab": "flashcard-set-relations",
-            "sqlFunctionRef": "p_flashcard_set_relations",
-            "RestAPI": "flashcardSetRelations",
-            "GraphQL": "flashcardSetRelations",
-            "custom": "flashcardSetRelations"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'flashcardId, setId',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             flashcardId: {
                 fieldNameFormats: {
@@ -6464,17 +6480,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_sets',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "flashcardSetRelations",
+            "backend": "flashcard_set_relations",
+            "database": "flashcard_set_relations",
+            "pretty": "Flashcard Set Relations",
+            "component": "FlashcardSetRelations",
+            "kebab": "flashcard-set-relations",
+            "sqlFunctionRef": "p_flashcard_set_relations",
+            "RestAPI": "flashcardSetRelations",
+            "GraphQL": "flashcardSetRelations",
+            "custom": "flashcardSetRelations"
         },
         relationships: [
             {
@@ -6494,19 +6510,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     flashcardSets: {
-        entityNameFormats: {
-            "frontend": "flashcardSets",
-            "backend": "flashcard_sets",
-            "database": "flashcard_sets",
-            "pretty": "Flashcard Sets",
-            "component": "FlashcardSets",
-            "kebab": "flashcard-sets",
-            "sqlFunctionRef": "p_flashcard_sets",
-            "RestAPI": "flashcardSets",
-            "GraphQL": "flashcardSets",
-            "custom": "flashcardSets"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'setId',
+        defaultFetchStrategy: 'm2mAndIfk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             setId: {
                 fieldNameFormats: {
@@ -6988,17 +7005,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'flashcard_set_relations',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "flashcardSets",
+            "backend": "flashcard_sets",
+            "database": "flashcard_sets",
+            "pretty": "Flashcard Sets",
+            "component": "FlashcardSets",
+            "kebab": "flashcard-sets",
+            "sqlFunctionRef": "p_flashcard_sets",
+            "RestAPI": "flashcardSets",
+            "GraphQL": "flashcardSets",
+            "custom": "flashcardSets"
         },
         relationships: [
             {
@@ -7018,19 +7035,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     processor: {
-        entityNameFormats: {
-            "frontend": "processor",
-            "backend": "processor",
-            "database": "processor",
-            "pretty": "Processor",
-            "component": "Processor",
-            "kebab": "processor",
-            "sqlFunctionRef": "p_processor",
-            "RestAPI": "processor",
-            "GraphQL": "processor",
-            "custom": "processor"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fkIfkAndM2M',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -7294,17 +7312,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_processor',
             },
         },
-        defaultFetchStrategy: 'fkIfkAndM2M',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "processor",
+            "backend": "processor",
+            "database": "processor",
+            "pretty": "Processor",
+            "component": "Processor",
+            "kebab": "processor",
+            "sqlFunctionRef": "p_processor",
+            "RestAPI": "processor",
+            "GraphQL": "processor",
+            "custom": "processor"
         },
         relationships: [
             {
@@ -7331,19 +7349,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipe: {
-        entityNameFormats: {
-            "frontend": "recipe",
-            "backend": "recipe",
-            "database": "recipe",
-            "pretty": "Recipe",
-            "component": "Recipe",
-            "kebab": "recipe",
-            "sqlFunctionRef": "p_recipe",
-            "RestAPI": "recipe",
-            "GraphQL": "recipe",
-            "custom": "recipe"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndIfk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -7924,17 +7943,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_tool',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipe",
+            "backend": "recipe",
+            "database": "recipe",
+            "pretty": "Recipe",
+            "component": "Recipe",
+            "kebab": "recipe",
+            "sqlFunctionRef": "p_recipe",
+            "RestAPI": "recipe",
+            "GraphQL": "recipe",
+            "custom": "recipe"
         },
         relationships: [
             {
@@ -8024,19 +8043,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeBroker: {
-        entityNameFormats: {
-            "frontend": "recipeBroker",
-            "backend": "recipe_broker",
-            "database": "recipe_broker",
-            "pretty": "Recipe Broker",
-            "component": "RecipeBroker",
-            "kebab": "recipe-broker",
-            "sqlFunctionRef": "p_recipe_broker",
-            "RestAPI": "recipeBroker",
-            "GraphQL": "recipeBroker",
-            "custom": "recipeBroker"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -8300,17 +8320,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipeBroker",
+            "backend": "recipe_broker",
+            "database": "recipe_broker",
+            "pretty": "Recipe Broker",
+            "component": "RecipeBroker",
+            "kebab": "recipe-broker",
+            "sqlFunctionRef": "p_recipe_broker",
+            "RestAPI": "recipeBroker",
+            "GraphQL": "recipeBroker",
+            "custom": "recipeBroker"
         },
         relationships: [
             {
@@ -8330,19 +8350,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeDisplay: {
-        entityNameFormats: {
-            "frontend": "recipeDisplay",
-            "backend": "recipe_display",
-            "database": "recipe_display",
-            "pretty": "Recipe Display",
-            "component": "RecipeDisplay",
-            "kebab": "recipe-display",
-            "sqlFunctionRef": "p_recipe_display",
-            "RestAPI": "recipeDisplay",
-            "GraphQL": "recipeDisplay",
-            "custom": "recipeDisplay"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -8606,17 +8627,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipeDisplay",
+            "backend": "recipe_display",
+            "database": "recipe_display",
+            "pretty": "Recipe Display",
+            "component": "RecipeDisplay",
+            "kebab": "recipe-display",
+            "sqlFunctionRef": "p_recipe_display",
+            "RestAPI": "recipeDisplay",
+            "GraphQL": "recipeDisplay",
+            "custom": "recipeDisplay"
         },
         relationships: [
             {
@@ -8636,19 +8657,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeFunction: {
-        entityNameFormats: {
-            "frontend": "recipeFunction",
-            "backend": "recipe_function",
-            "database": "recipe_function",
-            "pretty": "Recipe Function",
-            "component": "RecipeFunction",
-            "kebab": "recipe-function",
-            "sqlFunctionRef": "p_recipe_function",
-            "RestAPI": "recipeFunction",
-            "GraphQL": "recipeFunction",
-            "custom": "recipeFunction"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -8912,17 +8934,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipeFunction",
+            "backend": "recipe_function",
+            "database": "recipe_function",
+            "pretty": "Recipe Function",
+            "component": "RecipeFunction",
+            "kebab": "recipe-function",
+            "sqlFunctionRef": "p_recipe_function",
+            "RestAPI": "recipeFunction",
+            "GraphQL": "recipeFunction",
+            "custom": "recipeFunction"
         },
         relationships: [
             {
@@ -8942,19 +8964,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeModel: {
-        entityNameFormats: {
-            "frontend": "recipeModel",
-            "backend": "recipe_model",
-            "database": "recipe_model",
-            "pretty": "Recipe Model",
-            "component": "RecipeModel",
-            "kebab": "recipe-model",
-            "sqlFunctionRef": "p_recipe_model",
-            "RestAPI": "recipeModel",
-            "GraphQL": "recipeModel",
-            "custom": "recipeModel"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -9218,17 +9241,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipeModel",
+            "backend": "recipe_model",
+            "database": "recipe_model",
+            "pretty": "Recipe Model",
+            "component": "RecipeModel",
+            "kebab": "recipe-model",
+            "sqlFunctionRef": "p_recipe_model",
+            "RestAPI": "recipeModel",
+            "GraphQL": "recipeModel",
+            "custom": "recipeModel"
         },
         relationships: [
             {
@@ -9248,19 +9271,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeProcessor: {
-        entityNameFormats: {
-            "frontend": "recipeProcessor",
-            "backend": "recipe_processor",
-            "database": "recipe_processor",
-            "pretty": "Recipe Processor",
-            "component": "RecipeProcessor",
-            "kebab": "recipe-processor",
-            "sqlFunctionRef": "p_recipe_processor",
-            "RestAPI": "recipeProcessor",
-            "GraphQL": "recipeProcessor",
-            "custom": "recipeProcessor"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -9483,17 +9507,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipeProcessor",
+            "backend": "recipe_processor",
+            "database": "recipe_processor",
+            "pretty": "Recipe Processor",
+            "component": "RecipeProcessor",
+            "kebab": "recipe-processor",
+            "sqlFunctionRef": "p_recipe_processor",
+            "RestAPI": "recipeProcessor",
+            "GraphQL": "recipeProcessor",
+            "custom": "recipeProcessor"
         },
         relationships: [
             {
@@ -9513,19 +9537,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     recipeTool: {
-        entityNameFormats: {
-            "frontend": "recipeTool",
-            "backend": "recipe_tool",
-            "database": "recipe_tool",
-            "pretty": "Recipe Tool",
-            "component": "RecipeTool",
-            "kebab": "recipe-tool",
-            "sqlFunctionRef": "p_recipe_tool",
-            "RestAPI": "recipeTool",
-            "GraphQL": "recipeTool",
-            "custom": "recipeTool"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndFk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -9748,17 +9773,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'tool',
             },
         },
-        defaultFetchStrategy: 'm2mAndFk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "recipeTool",
+            "backend": "recipe_tool",
+            "database": "recipe_tool",
+            "pretty": "Recipe Tool",
+            "component": "RecipeTool",
+            "kebab": "recipe-tool",
+            "sqlFunctionRef": "p_recipe_tool",
+            "RestAPI": "recipeTool",
+            "GraphQL": "recipeTool",
+            "custom": "recipeTool"
         },
         relationships: [
             {
@@ -9779,6 +9804,7 @@ export const initialAutomationTableSchema = {
     },
     registeredFunction: {
         schemaType: 'table' as const,
+        primaryKey: 'id',
         defaultFetchStrategy: 'fkAndIfk',
         componentProps: {
             "variant": "default",
@@ -9791,72 +9817,7 @@ export const initialAutomationTableSchema = {
             "type": "default",
             "onChange": "default"
         },
-        relationships: [
-            {
-                relationshipType: 'foreignKey',
-                column: 'return_broker',
-                relatedTable: 'broker',
-                relatedColumn: 'id',
-                junctionTable: null
-            },
-            {
-                relationshipType: 'inverseForeignKey',
-                column: 'id',
-                relatedTable: 'system_function',
-                relatedColumn: 'rf_id',
-                junctionTable: null
-            },
-            {
-                relationshipType: 'inverseForeignKey',
-                column: 'id',
-                relatedTable: 'arg',
-                relatedColumn: 'registered_function',
-                junctionTable: null
-            }
-        ],
         entityFields: {
-            modulePath: {
-                fieldNameFormats: {
-                    "frontend": "modulePath",
-                    "backend": "module_path",
-                    "database": "module_path",
-                    "pretty": "Module Path",
-                    "component": "ModulePath",
-                    "kebab": "module-path",
-                    "sqlFunctionRef": "p_module_path",
-                    "RestAPI": "modulePath",
-                    "GraphQL": "modulePath",
-                    "custom": "modulePath"
-                } as const,
-                dataType: 'string' as const,
-                isRequired: true,
-                maxLength: null,
-                isArray: false,
-                defaultValue: "" as const,
-                isPrimaryKey: false,
-                isDisplayField: false,
-                defaultGeneratorFunction: null,
-                validationFunctions: [],
-                exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
-                componentProps: {
-                    "variant": "default",
-                    "size": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default"
-                },
-                structure: 'single' as const,
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                enumValues: null,
-                databaseTable: 'registered_function',
-            },
-
             id: {
                 fieldNameFormats: {
                     "frontend": "id",
@@ -9918,6 +9879,47 @@ export const initialAutomationTableSchema = {
                 defaultValue: "" as const,
                 isPrimaryKey: false,
                 isDisplayField: true,
+                defaultGeneratorFunction: null,
+                validationFunctions: [],
+                exclusionRules: [],
+                defaultComponent: 'textarea:5' as const,
+                componentProps: {
+                    "variant": "default",
+                    "size": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default"
+                },
+                structure: 'single' as const,
+                isNative: true,
+                typeReference: {} as TypeBrand<string>,
+                enumValues: null,
+                databaseTable: 'registered_function',
+            },
+            modulePath: {
+                fieldNameFormats: {
+                    "frontend": "modulePath",
+                    "backend": "module_path",
+                    "database": "module_path",
+                    "pretty": "Module Path",
+                    "component": "ModulePath",
+                    "kebab": "module-path",
+                    "sqlFunctionRef": "p_module_path",
+                    "RestAPI": "modulePath",
+                    "GraphQL": "modulePath",
+                    "custom": "modulePath"
+                } as const,
+                dataType: 'string' as const,
+                isRequired: true,
+                maxLength: null,
+                isArray: false,
+                defaultValue: "" as const,
+                isPrimaryKey: false,
+                isDisplayField: false,
                 defaultGeneratorFunction: null,
                 validationFunctions: [],
                 exclusionRules: [],
@@ -10147,7 +10149,6 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'arg',
             },
         },
-
         entityNameFormats: {
             "frontend": "registeredFunction",
             "backend": "registered_function",
@@ -10160,22 +10161,45 @@ export const initialAutomationTableSchema = {
             "GraphQL": "registeredFunction",
             "custom": "registeredFunction"
         },
-
+        relationships: [
+            {
+                relationshipType: 'foreignKey',
+                column: 'return_broker',
+                relatedTable: 'broker',
+                relatedColumn: 'id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'system_function',
+                relatedColumn: 'rf_id',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'arg',
+                relatedColumn: 'registered_function',
+                junctionTable: null
+            }
+        ],
     },
     systemFunction: {
-        entityNameFormats: {
-            "frontend": "systemFunction",
-            "backend": "system_function",
-            "database": "system_function",
-            "pretty": "System Function",
-            "component": "SystemFunction",
-            "kebab": "system-function",
-            "sqlFunctionRef": "p_system_function",
-            "RestAPI": "systemFunction",
-            "GraphQL": "systemFunction",
-            "custom": "systemFunction"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fkIfkAndM2M',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -10549,17 +10573,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_function',
             },
         },
-        defaultFetchStrategy: 'fkIfkAndM2M',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "systemFunction",
+            "backend": "system_function",
+            "database": "system_function",
+            "pretty": "System Function",
+            "component": "SystemFunction",
+            "kebab": "system-function",
+            "sqlFunctionRef": "p_system_function",
+            "RestAPI": "systemFunction",
+            "GraphQL": "systemFunction",
+            "custom": "systemFunction"
         },
         relationships: [
             {
@@ -10593,19 +10617,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     tool: {
-        entityNameFormats: {
-            "frontend": "tool",
-            "backend": "tool",
-            "database": "tool",
-            "pretty": "Tool",
-            "component": "Tool",
-            "kebab": "tool",
-            "sqlFunctionRef": "p_tool",
-            "RestAPI": "tool",
-            "GraphQL": "tool",
-            "custom": "tool"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'fkIfkAndM2M',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -10992,17 +11017,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_tool',
             },
         },
-        defaultFetchStrategy: 'fkIfkAndM2M',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "tool",
+            "backend": "tool",
+            "database": "tool",
+            "pretty": "Tool",
+            "component": "Tool",
+            "kebab": "tool",
+            "sqlFunctionRef": "p_tool",
+            "RestAPI": "tool",
+            "GraphQL": "tool",
+            "custom": "tool"
         },
         relationships: [
             {
@@ -11029,19 +11054,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     transformer: {
-        entityNameFormats: {
-            "frontend": "transformer",
-            "backend": "transformer",
-            "database": "transformer",
-            "pretty": "Transformer",
-            "component": "Transformer",
-            "kebab": "transformer",
-            "sqlFunctionRef": "p_transformer",
-            "RestAPI": "transformer",
-            "GraphQL": "transformer",
-            "custom": "transformer"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'id',
+        defaultFetchStrategy: 'm2mAndIfk',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             id: {
                 fieldNameFormats: {
@@ -11236,17 +11262,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'action',
             },
         },
-        defaultFetchStrategy: 'm2mAndIfk',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "transformer",
+            "backend": "transformer",
+            "database": "transformer",
+            "pretty": "Transformer",
+            "component": "Transformer",
+            "kebab": "transformer",
+            "sqlFunctionRef": "p_transformer",
+            "RestAPI": "transformer",
+            "GraphQL": "transformer",
+            "custom": "transformer"
         },
         relationships: [
             {
@@ -11266,19 +11292,20 @@ export const initialAutomationTableSchema = {
         ],
     },
     userPreferences: {
-        entityNameFormats: {
-            "frontend": "userPreferences",
-            "backend": "user_preferences",
-            "database": "user_preferences",
-            "pretty": "User Preferences",
-            "component": "UserPreferences",
-            "kebab": "user-preferences",
-            "sqlFunctionRef": "p_user_preferences",
-            "RestAPI": "userPreferences",
-            "GraphQL": "userPreferences",
-            "custom": "userPreferences"
-        },
         schemaType: 'table' as const,
+        primaryKey: 'userId',
+        defaultFetchStrategy: 'simple',
+        componentProps: {
+            "variant": "default",
+            "size": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default"
+        },
         entityFields: {
             userId: {
                 fieldNameFormats: {
@@ -11445,17 +11472,17 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'user_preferences',
             },
         },
-        defaultFetchStrategy: 'simple',
-        componentProps: {
-            "variant": "default",
-            "size": "default",
-            "animation": "default",
-            "fullWidthValue": "default",
-            "fullWidth": "default",
-            "disabled": "default",
-            "className": "default",
-            "type": "default",
-            "onChange": "default"
+        entityNameFormats: {
+            "frontend": "userPreferences",
+            "backend": "user_preferences",
+            "database": "user_preferences",
+            "pretty": "User Preferences",
+            "component": "UserPreferences",
+            "kebab": "user-preferences",
+            "sqlFunctionRef": "p_user_preferences",
+            "RestAPI": "userPreferences",
+            "GraphQL": "userPreferences",
+            "custom": "userPreferences"
         },
         relationships: [],
     }
@@ -11507,6 +11534,8 @@ export type InitialTableSchema = {
 export type TableSchemaStructure = {
     [entityName in AutomationTableName]: InitialTableSchema;
 };
+
+
 
 
 // Types to support the flexible structure

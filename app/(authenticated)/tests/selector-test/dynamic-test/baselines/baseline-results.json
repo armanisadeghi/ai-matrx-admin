@@ -313,9 +313,9 @@
         "recipeTool__toolReference"
       ],
       "registeredFunction": [
-        "registeredFunction__modulePath",
         "registeredFunction__id",
         "registeredFunction__name",
+        "registeredFunction__modulePath",
         "registeredFunction__className",
         "registeredFunction__description",
         "registeredFunction__returnBroker",
@@ -1693,49 +1693,6 @@
     ],
     "result": [
       {
-        "fieldName": "modulePath",
-        "entityName": "registeredFunction",
-        "fieldNameFormats": {
-          "frontend": "modulePath",
-          "backend": "module_path",
-          "database": "module_path",
-          "pretty": "Module Path",
-          "component": "ModulePath",
-          "kebab": "module-path",
-          "sqlFunctionRef": "p_module_path",
-          "RestAPI": "modulePath",
-          "GraphQL": "modulePath",
-          "custom": "modulePath"
-        },
-        "dataType": "string",
-        "isRequired": true,
-        "maxLength": null,
-        "isArray": false,
-        "defaultValue": "",
-        "isPrimaryKey": false,
-        "isDisplayField": false,
-        "defaultGeneratorFunction": null,
-        "validationFunctions": [],
-        "exclusionRules": [],
-        "defaultComponent": "textarea:5",
-        "componentProps": {
-          "variant": "default",
-          "size": "default",
-          "animation": "default",
-          "fullWidthValue": "default",
-          "fullWidth": "default",
-          "disabled": "default",
-          "className": "default",
-          "type": "default",
-          "onChange": "default"
-        },
-        "structure": "single",
-        "isNative": true,
-        "typeReference": {},
-        "enumValues": null,
-        "databaseTable": "registered_function"
-      },
-      {
         "fieldName": "id",
         "entityName": "registeredFunction",
         "fieldNameFormats": {
@@ -1800,6 +1757,49 @@
         "defaultValue": "",
         "isPrimaryKey": false,
         "isDisplayField": true,
+        "defaultGeneratorFunction": null,
+        "validationFunctions": [],
+        "exclusionRules": [],
+        "defaultComponent": "textarea:5",
+        "componentProps": {
+          "variant": "default",
+          "size": "default",
+          "animation": "default",
+          "fullWidthValue": "default",
+          "fullWidth": "default",
+          "disabled": "default",
+          "className": "default",
+          "type": "default",
+          "onChange": "default"
+        },
+        "structure": "single",
+        "isNative": true,
+        "typeReference": {},
+        "enumValues": null,
+        "databaseTable": "registered_function"
+      },
+      {
+        "fieldName": "modulePath",
+        "entityName": "registeredFunction",
+        "fieldNameFormats": {
+          "frontend": "modulePath",
+          "backend": "module_path",
+          "database": "module_path",
+          "pretty": "Module Path",
+          "component": "ModulePath",
+          "kebab": "module-path",
+          "sqlFunctionRef": "p_module_path",
+          "RestAPI": "modulePath",
+          "GraphQL": "modulePath",
+          "custom": "modulePath"
+        },
+        "dataType": "string",
+        "isRequired": true,
+        "maxLength": null,
+        "isArray": false,
+        "defaultValue": "",
+        "isPrimaryKey": false,
+        "isDisplayField": false,
         "defaultGeneratorFunction": null,
         "validationFunctions": [],
         "exclusionRules": [],
@@ -2279,6 +2279,80 @@
       }
     ],
     "result": "Module Path"
+  },
+  {
+    "name": "selectAllFieldPrettyNames",
+    "props": [
+      {
+        "entityName": "registeredFunction"
+      }
+    ],
+    "result": {
+      "id": "Id",
+      "name": "Name",
+      "modulePath": "Module Path",
+      "className": "Class Name",
+      "description": "Description",
+      "returnBroker": "Return Broker",
+      "brokerReference": "Broker Reference",
+      "systemFunctionInverse": "System Function Inverse",
+      "argInverse": "Arg Inverse"
+    }
+  },
+  {
+    "name": "selectAllFieldPrettyNames",
+    "props": [
+      {
+        "entityName": "registeredFunction"
+      }
+    ],
+    "result": {
+      "id": "Id",
+      "name": "Name",
+      "modulePath": "Module Path",
+      "className": "Class Name",
+      "description": "Description",
+      "returnBroker": "Return Broker",
+      "brokerReference": "Broker Reference",
+      "systemFunctionInverse": "System Function Inverse",
+      "argInverse": "Arg Inverse"
+    }
+  },
+  {
+    "name": "selectAllFieldPrettyNames",
+    "props": [
+      {
+        "entityName": "arg"
+      }
+    ],
+    "result": {
+      "id": "Id",
+      "name": "Name",
+      "required": "Required",
+      "default": "Default",
+      "dataType": "Data Type",
+      "ready": "Ready",
+      "registeredFunction": "Registered Function",
+      "registeredFunctionReference": "Registered Function Reference"
+    }
+  },
+  {
+    "name": "selectAllFieldPrettyNames",
+    "props": [
+      {
+        "entityName": "arg"
+      }
+    ],
+    "result": {
+      "id": "Id",
+      "name": "Name",
+      "required": "Required",
+      "default": "Default",
+      "dataType": "Data Type",
+      "ready": "Ready",
+      "registeredFunction": "Registered Function",
+      "registeredFunctionReference": "Registered Function Reference"
+    }
   },
   {
     "name": "selectEntitySchema",

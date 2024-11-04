@@ -454,6 +454,17 @@ export const selectorsConfig = [
         args: [{entityName: entityKey, fieldName: fieldKey, format: formatThree}], //
         isObjectArgs: true, conductTest: true
     },
+    // ----------------
+    // New Selectors
+    // ---------------
+    {
+        category: "Field Name Conversion",
+        name: "selectAllFieldPrettyNames",
+        selectorFn: schemaSelectors.selectAllFieldPrettyNames,
+        args: [{entityName: entityKey}],
+        isObjectArgs: true, conductTest: true
+    },
+
 
     // ----------------
     // Schema Selectors

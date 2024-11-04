@@ -4,6 +4,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";
 import {Button} from "@/components/ui/button";
 import {Plus, Settings} from "lucide-react";
+import {cn} from "@/lib/utils";
 
 interface TableTopOptionsProps {
     columnNames: string[];
@@ -13,6 +14,8 @@ interface TableTopOptionsProps {
     handleAdd: () => void;
     setColumnSettingsOpen: (open: boolean) => void;
     columnSettingsOpen: boolean;
+    disableAdd?: boolean;
+    addButtonTooltip?: string;
 }
 
 const TableTopOptions: React.FC<TableTopOptionsProps> = (
@@ -24,6 +27,8 @@ const TableTopOptions: React.FC<TableTopOptionsProps> = (
         handleAdd,
         setColumnSettingsOpen,
         columnSettingsOpen,
+        disableAdd = false,
+        addButtonTooltip = "Add a new item"
     }) => {
     return (
         <div className="flex justify-between items-center">
@@ -53,10 +58,14 @@ const TableTopOptions: React.FC<TableTopOptionsProps> = (
                 </div>
 
                 <div className="flex space-x-2">
-                    <MatrxTooltip content="Add a new item" placement="bottom" offset={10}>
+                    <MatrxTooltip content={addButtonTooltip} placement="bottom" offset={10}>
                         <Button
                             onClick={handleAdd}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105"
+                            disabled={disableAdd}
+                            className={cn(
+                                "bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105",
+                                disableAdd && "opacity-50 cursor-not-allowed"
+                            )}
                         >
                             <Plus className="mr-2 h-4 w-4"/> Add New
                         </Button>
