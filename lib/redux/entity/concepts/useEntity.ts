@@ -1,3 +1,4 @@
+/*
 // lib/redux/entity/useEntity.ts
 
 import {useCallback, useEffect, useMemo} from 'react';
@@ -97,3 +98,4 @@ export function useEntity(
         refetch,
     };
 }
+*/

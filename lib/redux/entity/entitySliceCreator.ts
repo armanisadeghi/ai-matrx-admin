@@ -5,8 +5,11 @@ import { createEntityActions } from "@/lib/redux/entity/entityActionCreator";
 
 export type EntitySliceState<TEntity extends EntityKeys> = {
   data: Array<EntityData<TEntity>>;
+  selectedItem: EntityData<TEntity> | null;
+  primaryKey: string | Array<string>;
+  entitySchema?: AutomationEntity<EntityKeys>;
   totalCount: number;
-  allPkAndDisplayFields: Array<{ pk: string; display?: string }>;
+  allPkAndDisplayFields: Array<{ pmId: string; display?: string }>;
   initialized: boolean;
   loading: boolean;
   error: { message: string; code?: number } | null;
@@ -14,9 +17,6 @@ export type EntitySliceState<TEntity extends EntityKeys> = {
   staleTime: number;
   stale: boolean;
   backups: Record<string, Array<EntityData<TEntity>>>;
-  selectedItem: EntityData<TEntity> | null;
-  entitySchema?: AutomationEntity<EntityKeys>;
-  primaryKey?: string;
   page: number;
   pageSize: number;
   maxCount?: number;
@@ -124,10 +124,10 @@ export function createEntitySlice<TEntity extends EntityKeys>(
         },
         setAllPkAndDisplayFields: (
           state: Draft<EntitySliceState<TEntity>>,
-          action: PayloadAction<Array<{ pk: string; display?: string }>>
+          action: PayloadAction<Array<{ pmId: string; display?: string }>>
         ) => {
           state.allPkAndDisplayFields = action.payload as Draft<
-            Array<{ pk: string; display?: string }>
+            Array<{ pmId: string; display?: string }>
           >;
         },
         removeLastFetchedKey: (

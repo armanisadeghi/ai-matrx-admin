@@ -1,4 +1,3 @@
-// lib/redux/store.ts
 // lib/redux/rootReducer.ts
 import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './dynamic/featureSchema';
@@ -18,6 +17,7 @@ import {createEntitySlice} from "@/lib/redux/entity/entitySliceCreator";
 import {AutomationEntities, EntityKeys} from "@/types/entityTypes";
 import {InitialReduxState} from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
+import {initializeEntitySlice} from "@/lib/redux/entity/initialize";
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -35,7 +35,7 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
 
 type EntityReducers = Record<EntityKeys, ReturnType<typeof createEntitySlice>['reducer']>;
 
-function createAutomationEntityReducers(automationEntities: AutomationEntities): EntityReducers {
+function createEntityReducers(automationEntities: AutomationEntities): EntityReducers {
     return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
         const entitySlice = createEntitySlice(entityName as EntityKeys, entitySchema);
         acc[entityName as EntityKeys] = entitySlice.reducer;
@@ -44,7 +44,7 @@ function createAutomationEntityReducers(automationEntities: AutomationEntities):
 }
 
 export const createRootReducer = (initialState: InitialReduxState) => {
-    const entityReducers = createAutomationEntityReducers(initialState.globalCache.schema);
+    const entityReducers = createEntityReducers(initialState.globalCache.schema);
     const globalCacheSlice = createGlobalCacheSlice(initialState.globalCache);
 
     return combineReducers({
@@ -62,3 +62,19 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         globalCache: globalCacheSlice.reducer,
     });
 };
+
+
+
+/*
+function createEntityReducers(automationEntities: AutomationEntities): EntityReducers {
+    return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
+        const { initialState, metadata } = initializeEntitySlice(
+            entityName as EntityKeys,
+            entitySchema
+        );
+        const entitySlice = createEntitySlice(entityName as EntityKeys, initialState);
+        acc[entityName as EntityKeys] = entitySlice.reducer;
+        return acc;
+    }, {} as EntityReducers);
+}
+*/

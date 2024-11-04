@@ -391,7 +391,7 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
  */
 export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
-    primaryKey: string;
+    primaryKey: string | Array<string>;
     defaultFetchStrategy: FetchStrategy;
     componentProps: EntityComponentProps<TEntity>;
     entityNameFormats: EntityNameFormats<TEntity>;

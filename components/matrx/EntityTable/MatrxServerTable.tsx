@@ -21,7 +21,7 @@ import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxCommands/EntityCommand";
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { selectFieldPrettyName } from '@/lib/redux/schema/globalCacheSelectors';
-import {createEntitySelectors} from "@/lib/redux/entity/paramSelectors";
+import {createEntitySelectors} from "@/lib/redux/entity/concepts/paramSelectors";
 
 export interface MatrxServerTableProps<TEntity extends EntityKeys> {
     // Entity Configuration

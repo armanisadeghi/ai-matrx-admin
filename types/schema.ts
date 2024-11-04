@@ -2,7 +2,7 @@ import {
     AutomationEntities,
     EntityComponentProps,
     EntityDefaultFetchStrategy,
-    EntityKeys,
+    EntityKeys, EntityNameFormats,
     EntityRelationships,
     EntitySchemaType
 } from "@/types/entityTypes";
@@ -93,21 +93,21 @@ export interface SchemaField {
     databaseTable: string;
 }
 
-
-export interface SchemaEntity {
-    entityName: EntityNameOfficial;
-    schemaType: 'table' | 'view' | 'dynamic' | 'other';
-    defaultFetchStrategy: FetchStrategy;
-    componentProps?: Record<string, any>;
-    relationships: relationships[];
-}
-
 export interface relationships {
     relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
     column: string;
     relatedTable: string;
     relatedColumn: string;
     junctionTable: string | null;
+}
+
+export interface SchemaEntity {
+    entityName: EntityNameOfficial;
+    schemaType: 'table' | 'view' | 'dynamic' | 'other';
+    primaryKey: string | Array<string>;
+    defaultFetchStrategy:  "m2mAndFk" | "simple" | "m2mAndIfk" | "fk" | "none" | "fkIfkAndM2M" | "ifk" | "fkAndIfk" | "m2m";
+    componentProps?: Record<string, any>;
+    relationships: relationships[];
 }
 
 export const createFieldId = (entityName: EntityNameOfficial, fieldName: string) =>
@@ -117,6 +117,15 @@ export const parseFieldId = (fieldId: string): [EntityNameOfficial, string] => {
     const [entityName, fieldName] = fieldId.split('__') as [EntityNameOfficial, string];
     return [entityName, fieldName];
 };
+
+export interface SchemaEntity {
+    entityName: EntityNameOfficial;
+    schemaType: 'table' | 'view' | 'dynamic' | 'other';
+    primaryKey: string | Array<string>;
+    defaultFetchStrategy: FetchStrategy;
+    componentProps?: Record<string, any>;
+    relationships: relationships[];
+}
 
 
 
