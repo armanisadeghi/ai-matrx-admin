@@ -1,5 +1,5 @@
-import {AutomationEntity, EntityKeys} from "@/types/entityTypes";
-import {EntityMetadata, EntityState} from "@/lib/redux/entity/types";
+import { AutomationEntity, EntityKeys } from "@/types/entityTypes";
+import { EntityMetadata, EntityState, PrimaryKeyMetadata } from "@/lib/redux/entity/types";
 
 function extractFieldsFromSchema<TEntity extends EntityKeys>(
     schema: AutomationEntity<TEntity>,
@@ -18,6 +18,28 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
     return [];
 }
 
+function createPrimaryKeyMetadata<TEntity extends EntityKeys>(
+    schema: AutomationEntity<TEntity>
+): PrimaryKeyMetadata {
+    // console.log('\nPrimary Key Entry: \n', schema.primaryKey);
+    // console.log('\nPrimary Key Metadata: \n', schema.primaryKeyMetadata);
+    const primaryKeyFields = schema.primaryKey.split(',').map(key => key.trim());
+
+    return {
+        type: primaryKeyFields.length > 1 ? 'composite' : 'single',
+        fields: primaryKeyFields,
+        database_fields: primaryKeyFields.map(field => {
+            const entityField = schema.entityFields[field];
+            return entityField.fieldNameFormats.database;
+        }),
+        where_template: primaryKeyFields.reduce((template, field) => {
+            const entityField = schema.entityFields[field];
+            template[entityField.fieldNameFormats.database] = null;
+            return template;
+        }, {} as Record<string, null>)
+    };
+}
+
 export const initializeEntitySlice = <TEntity extends EntityKeys>(
     entityKey: TEntity,
     schema: AutomationEntity<TEntity>
@@ -25,9 +47,10 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(
     const metadata: EntityMetadata = {
         displayName: schema.entityNameFormats.pretty || entityKey,
         schemaType: schema.schemaType,
-        primaryKey: schema.primaryKey,
+        primaryKeyMetadata: createPrimaryKeyMetadata(schema),
         fields: extractFieldsFromSchema(schema),
     };
+
     const initialState: EntityState<TEntity> = {
         records: {},
         entityMetadata: metadata,
@@ -50,7 +73,7 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(
             hasNextPage: false,
             hasPreviousPage: false,
         },
-        loading:{
+        loading: {
             loading: false,
             initialized: false,
             error: null,
@@ -88,4 +111,3 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(
 
     return { metadata, initialState };
 };
-

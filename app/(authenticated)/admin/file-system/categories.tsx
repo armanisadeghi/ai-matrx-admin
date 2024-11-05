@@ -5,7 +5,7 @@ import {
     IconApi, IconBox,
     IconBrandCloudflare,
     IconBug,
-    IconCalendar,
+    IconCalendar, IconChartBar,
     IconChartLine,
     IconClipboard,
     IconCloud,
@@ -44,6 +44,7 @@ import LocalFileAccess from "@/app/(authenticated)/admin/file-system/components/
 import AdminTestPage from "@/app/(authenticated)/admin/file-system/components/command-testers/Command4";
 import CommandTestPage5 from "@/app/(authenticated)/admin/file-system/components/command-testers/Command5";
 import CommandTestPage from "./components/command-testers/CommandTestPage";
+import EntityTestingLab from "@/app/(authenticated)/admin/file-system/components/entities/EntityTestingLab";
 
 export const adminCategories = [
     {
@@ -92,6 +93,24 @@ export const adminCategories = [
                 icon: <IconUpload />,
                 component: <AdminComponentOne />
             }
+        ]
+    },
+    {
+        name: "Entity Management & Testing",
+        icon: <IconDatabase className="w-6 h-6" />,
+        features: [
+            {
+                title: "Entity Operations Lab",
+                description: "Comprehensive testing environment for entity operations, including CRUD, filtering, and real-time updates.",
+                icon: <IconTestPipe />,
+                component: <EntityTestingLab />
+            },
+            // {
+            //     title: "Entity Performance Metrics",
+            //     description: "Monitor and analyze entity operation performance, caching efficiency, and state management.",
+            //     icon: <IconChartBar />,
+            //     component: <EntityMetrics />
+            // }
         ]
     },
     {

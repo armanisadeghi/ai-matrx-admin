@@ -13,6 +13,18 @@ export const initialAutomationTableSchema = {
     action: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -361,6 +373,18 @@ export const initialAutomationTableSchema = {
     aiEndpoint: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
@@ -679,6 +703,18 @@ export const initialAutomationTableSchema = {
     aiModel: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -1163,6 +1199,18 @@ export const initialAutomationTableSchema = {
     arg: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fk',
         componentProps: {
             "variant": "default",
@@ -1517,6 +1565,18 @@ export const initialAutomationTableSchema = {
     automationBoundaryBroker: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -1824,6 +1884,18 @@ export const initialAutomationTableSchema = {
     automationMatrix: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -2186,6 +2258,18 @@ export const initialAutomationTableSchema = {
     broker: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
@@ -3069,6 +3153,18 @@ export const initialAutomationTableSchema = {
     dataInputComponent: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'ifk',
         componentProps: {
             "variant": "default",
@@ -3669,6 +3765,18 @@ export const initialAutomationTableSchema = {
     dataOutputComponent: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
@@ -3905,6 +4013,18 @@ export const initialAutomationTableSchema = {
     displayOption: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -4184,6 +4304,18 @@ export const initialAutomationTableSchema = {
     emails: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
@@ -4502,6 +4634,18 @@ export const initialAutomationTableSchema = {
     extractor: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
@@ -4738,6 +4882,18 @@ export const initialAutomationTableSchema = {
     flashcardData: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -5538,6 +5694,18 @@ export const initialAutomationTableSchema = {
     flashcardHistory: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fk',
         componentProps: {
             "variant": "default",
@@ -5933,6 +6101,18 @@ export const initialAutomationTableSchema = {
     flashcardImages: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fk',
         componentProps: {
             "variant": "default",
@@ -6287,6 +6467,21 @@ export const initialAutomationTableSchema = {
     flashcardSetRelations: {
         schemaType: 'table' as const,
         primaryKey: 'flashcardId, setId',
+        primaryKeyMetadata: {
+            "type": "composite",
+            "fields": [
+                "flashcardId",
+                "setId"
+            ],
+            "database_fields": [
+                "flashcard_id",
+                "set_id"
+            ],
+            "where_template": {
+                "flashcard_id": null,
+                "set_id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -6512,6 +6707,18 @@ export const initialAutomationTableSchema = {
     flashcardSets: {
         schemaType: 'table' as const,
         primaryKey: 'setId',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "setId"
+            ],
+            "database_fields": [
+                "set_id"
+            ],
+            "where_template": {
+                "set_id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -7037,6 +7244,18 @@ export const initialAutomationTableSchema = {
     processor: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
@@ -7351,6 +7570,18 @@ export const initialAutomationTableSchema = {
     recipe: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -8045,6 +8276,18 @@ export const initialAutomationTableSchema = {
     recipeBroker: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -8352,6 +8595,18 @@ export const initialAutomationTableSchema = {
     recipeDisplay: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -8659,6 +8914,18 @@ export const initialAutomationTableSchema = {
     recipeFunction: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -8966,6 +9233,18 @@ export const initialAutomationTableSchema = {
     recipeModel: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -9273,6 +9552,18 @@ export const initialAutomationTableSchema = {
     recipeProcessor: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -9539,6 +9830,18 @@ export const initialAutomationTableSchema = {
     recipeTool: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
@@ -9805,6 +10108,18 @@ export const initialAutomationTableSchema = {
     registeredFunction: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fkAndIfk',
         componentProps: {
             "variant": "default",
@@ -10188,6 +10503,18 @@ export const initialAutomationTableSchema = {
     systemFunction: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
@@ -10619,6 +10946,18 @@ export const initialAutomationTableSchema = {
     tool: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
@@ -11056,6 +11395,18 @@ export const initialAutomationTableSchema = {
     transformer: {
         schemaType: 'table' as const,
         primaryKey: 'id',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
@@ -11294,6 +11645,18 @@ export const initialAutomationTableSchema = {
     userPreferences: {
         schemaType: 'table' as const,
         primaryKey: 'userId',
+        primaryKeyMetadata: {
+            "type": "single",
+            "fields": [
+                "userId"
+            ],
+            "database_fields": [
+                "user_id"
+            ],
+            "where_template": {
+                "user_id": null
+            }
+        },
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
@@ -11534,8 +11897,6 @@ export type InitialTableSchema = {
 export type TableSchemaStructure = {
     [entityName in AutomationTableName]: InitialTableSchema;
 };
-
-
 
 
 // Types to support the flexible structure

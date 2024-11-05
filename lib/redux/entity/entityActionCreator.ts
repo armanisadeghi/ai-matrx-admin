@@ -1,3 +1,4 @@
+/*
 // lib/redux/entity/entityActionCreator.ts
 
 import { createAction } from '@reduxjs/toolkit';
@@ -199,3 +200,4 @@ export function createEntityActions(entityName: EntityKeys) {
       setSelectedItem: createAction<any>(actionTypes.SET_SELECTED_ITEM),
     };
   }
+*/

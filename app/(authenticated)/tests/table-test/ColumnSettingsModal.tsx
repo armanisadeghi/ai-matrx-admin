@@ -14,8 +14,8 @@ const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = (
     const handleColumnToggle = (columnId: string, isChecked: boolean) => {
         setVisibleColumns(prev =>
             isChecked
-                ? [...prev, columnId]
-                : prev.filter(id => id !== columnId)
+            ? [...prev, columnId]
+            : prev.filter(id => id !== columnId)
         );
     };
 
@@ -26,9 +26,9 @@ const ColumnSettingsModal: React.FC<ColumnSettingsModalProps> = (
                     <DialogTitle>Column Settings</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4 ">
-                    {columns.map(column => (
+                    {columns.map((column, columnIndex) => (
                         <MatrxCheckbox
-                            key={column.id}
+                            key={column.id || `column-${columnIndex}`}
                             id={column.id as string}
                             lineThrough={false}
                             checked={visibleColumns.includes(column.accessor as string)}

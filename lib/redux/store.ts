@@ -5,6 +5,7 @@ import createSagaMiddleware from 'redux-saga';
 import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
 import {loggerMiddleware} from '@/lib/logger/redux-middleware';
 import {createRootReducer} from "@/lib/redux/rootReducer";
+import { socketMiddleware } from './middleware/socketMiddleware';
 
 
 const sagaMiddleware = createSagaMiddleware();
@@ -27,7 +28,7 @@ export const makeStore = (initialState) => {
                 serializableCheck: {
                     ignoredPaths: ['globalCache.schema']
                 }
-            }).concat(sagaMiddleware, loggerMiddleware),
+            }).concat(sagaMiddleware, loggerMiddleware, socketMiddleware),
 
         devTools: process.env.NODE_ENV !== 'production',
     });

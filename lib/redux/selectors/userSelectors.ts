@@ -1,6 +1,7 @@
 // File: lib/redux/selectors/userSelectors.ts
 
 import { RootState } from '../store';
+import {createSelector} from "reselect";
 
 // Basic selectors
 export const selectUser = (state: RootState) => state.user;
@@ -11,36 +12,81 @@ export const selectUserEmailConfirmedAt = (state: RootState) => state.user.email
 export const selectUserLastSignInAt = (state: RootState) => state.user.lastSignInAt;
 
 // App metadata selectors
-export const selectUserAppMetadata = (state: RootState) => state.user.appMetadata;
-export const selectUserProvider = (state: RootState) => state.user.appMetadata.provider;
-export const selectUserProviders = (state: RootState) => state.user.appMetadata.providers;
+export const selectUserAppMetadata = createSelector(
+    [selectUser],
+    (user) => user.appMetadata
+);
+
+export const selectUserProvider = createSelector(
+    [selectUserAppMetadata],
+    (appMetadata) => appMetadata.provider
+);
+
+export const selectUserProviders = createSelector(
+    [selectUserAppMetadata],
+    (appMetadata) => appMetadata.providers
+);
 
 // User metadata selectors
-export const selectUserMetadata = (state: RootState) => state.user.userMetadata;
-export const selectUserAvatarUrl = (state: RootState) => state.user.userMetadata.avatarUrl;
-export const selectUserFullName = (state: RootState) => state.user.userMetadata.fullName;
-export const selectUserName = (state: RootState) => state.user.userMetadata.name;
-export const selectUserPreferredUsername = (state: RootState) => state.user.userMetadata.preferredUsername;
-export const selectUserPicture = (state: RootState) => state.user.userMetadata.picture;
+export const selectUserMetadata = createSelector(
+    [selectUser],
+    (user) => user.userMetadata
+);
+
+export const selectUserAvatarUrl = createSelector(
+    [selectUserMetadata],
+    (userMetadata) => userMetadata.avatarUrl
+);
+
+export const selectUserFullName = createSelector(
+    [selectUserMetadata],
+    (userMetadata) => userMetadata.fullName
+);
+
+export const selectUserName = createSelector(
+    [selectUserMetadata],
+    (userMetadata) => userMetadata.name
+);
+
+export const selectUserPreferredUsername = createSelector(
+    [selectUserMetadata],
+    (userMetadata) => userMetadata.preferredUsername
+);
+
+export const selectUserPicture = createSelector(
+    [selectUserMetadata],
+    (userMetadata) => userMetadata.picture
+);
 
 // Identities selector
-export const selectUserIdentities = (state: RootState) => state.user.identities;
+export const selectUserIdentities = createSelector(
+    [selectUser],
+    (user) => user.identities
+);
 
 // Specific selectors requested
 export const selectActiveUserId = selectUserId;
-export const selectActiveUserName = (state: RootState) =>
-    state.user.userMetadata.name ||
-    state.user.userMetadata.fullName ||
-    state.user.userMetadata.preferredUsername;
-export const selectActiveUserAvatarUrl = (state: RootState) =>
-    state.user.userMetadata.avatarUrl ||
-    state.user.userMetadata.picture;
 
-export const selectActiveUserInfo = (state: RootState) => ({
-    id: selectActiveUserId(state),
-    name: selectActiveUserName(state),
-    avatarUrl: selectActiveUserAvatarUrl(state),
-});
+export const selectActiveUserName = createSelector(
+    [selectUserMetadata],
+    (userMetadata) =>
+        userMetadata.name || userMetadata.fullName || userMetadata.preferredUsername
+);
+
+export const selectActiveUserAvatarUrl = createSelector(
+    [selectUserMetadata],
+    (userMetadata) =>
+        userMetadata.avatarUrl || userMetadata.picture
+);
+
+export const selectActiveUserInfo = createSelector(
+    [selectActiveUserId, selectActiveUserName, selectActiveUserAvatarUrl],
+    (id, name, avatarUrl) => ({
+        id,
+        name,
+        avatarUrl,
+    })
+);
 
 // Authentication-related selectors
 // Note: Based on your current setup, it seems you're not storing the access token in the Redux store.
@@ -52,8 +98,11 @@ export const selectAuthToken = (state: RootState) => {
 };
 
 // Composite selector for all user data
-export const selectFullUserData = (state: RootState) => ({
-    ...state.user,
-    activeUserInfo: selectActiveUserInfo(state),
-    authToken: selectAuthToken(state),
-});
+export const selectFullUserData = createSelector(
+    [selectUser, selectActiveUserInfo, selectAuthToken],
+    (user, activeUserInfo, authToken) => ({
+        ...user,
+        activeUserInfo,
+        authToken,
+    })
+);

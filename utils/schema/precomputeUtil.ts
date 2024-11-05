@@ -54,12 +54,14 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
         }
 
         // Create the processed entity
-        const processedEntity: AutomationEntity<TEntity> = {
-            schemaType: entity.schemaType as EntitySchemaType<TEntity>,
-            defaultFetchStrategy: entity.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
-            componentProps: entity.componentProps as EntityComponentProps<TEntity>,
-            entityNameFormats: entity.entityNameFormats as EntityNameFormats<TEntity>,
-            relationships: entity.relationships as EntityRelationships<TEntity>,
+        const processedEntity = {
+            schemaType: entity.schemaType,
+            primaryKey: entity.primaryKey,
+            primaryKeyMetadata: entity.primaryKeyMetadata,
+            defaultFetchStrategy: entity.defaultFetchStrategy,
+            componentProps: entity.componentProps,
+            entityNameFormats: entity.entityNameFormats,
+            relationships: entity.relationships,
             entityFields: processedFields
         };
 
@@ -252,6 +254,8 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             entities[typedEntityName] = {
                 entityName: typedEntityName,
                 schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,
+                primaryKey: entityDef.primaryKey,
+                primaryKeyMetadata: entityDef.primaryKeyMetadata,
                 defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
                 componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
                 relationships: entityDef.relationships as EntityRelationships<TEntity>
@@ -260,6 +264,8 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             // @ts-ignore Store processed entity with complete typing
             processedSchema[typedEntityName] = {
                 schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,
+                primaryKey: entityDef.primaryKey,
+                primaryKeyMetadata: entityDef.primaryKeyMetadata,
                 defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
                 componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
                 entityNameFormats: entityDef.entityNameFormats as EntityNameFormats<TEntity>,

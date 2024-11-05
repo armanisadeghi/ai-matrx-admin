@@ -40,6 +40,12 @@ export const loadPreferences = (): AppThunk => async (dispatch, getState) => {
         const storedPreferences = localStorage.getItem('userPreferences');
         if (storedPreferences) {
             const preferences = JSON.parse(storedPreferences);
+
+            // Convert any Date fields to strings if needed
+            if (preferences.lastUpdated && preferences.lastUpdated instanceof Date) {
+                preferences.lastUpdated = preferences.lastUpdated.toISOString();
+            }
+
             dispatch({ type: 'userPreferences/setAllPreferences', payload: preferences });
         }
     }
@@ -55,7 +61,14 @@ export const loadPreferences = (): AppThunk => async (dispatch, getState) => {
         if (error) {
             console.error('Error loading preferences from Supabase:', error);
         } else if (data) {
-            dispatch({ type: 'userPreferences/setAllPreferences', payload: data.preferences });
+            const preferences = data.preferences;
+
+            // Convert any Date fields to strings
+            if (preferences.lastUpdated && preferences.lastUpdated instanceof Date) {
+                preferences.lastUpdated = preferences.lastUpdated.toISOString();
+            }
+
+            dispatch({ type: 'userPreferences/setAllPreferences', payload: preferences });
         }
     }
 };

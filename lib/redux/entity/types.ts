@@ -2,14 +2,22 @@ import { EntityKeys, EntityData } from "@/types/entityTypes";
 
 // --- Basic Types ---
 export type MatrxRecordId = string | number;
-// --- Schema-Related Types ---
 
-type SchemaType = 'Table' | 'View' | 'Function' | 'MaterializedView' | 'custom';
 
+type PrimaryKeyType = 'single' | 'composite' | 'none';
+
+export interface PrimaryKeyMetadata {
+    type: PrimaryKeyType;
+    fields: string[];
+    database_fields: string[];
+    where_template: Record<string, null>;
+}
+
+// Updated EntityMetadata
 export interface EntityMetadata {
     displayName: string;
     schemaType: string;
-    primaryKey: string | Array<string>
+    primaryKeyMetadata: PrimaryKeyMetadata;
     fields: Array<{
         name: string;
         displayName: string;
@@ -17,6 +25,8 @@ export interface EntityMetadata {
         isDisplayField?: boolean;
     }>;
 }
+
+
 
 // --- Selection Management ---
 export interface SelectionState<TEntity extends EntityKeys> {
@@ -51,7 +61,7 @@ export interface LoadingState {
 
 // --- Cache Management ---
 export interface CacheState {
-    lastFetched: Record<string, Date>;
+    lastFetched: Record<string, string>;
     staleTime: number;
     stale: boolean;
     prefetchedPages: Set<number>;
@@ -60,10 +70,10 @@ export interface CacheState {
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
-    recordId: MatrxRecordId;
+    primaryKeyValues: Record<string, MatrxRecordId>;
     displayValue: string;
     metadata?: {
-        lastModified?: Date;
+        lastModified?: string;
         createdBy?: string;
         status?: string;
     };
@@ -71,29 +81,31 @@ export interface QuickReferenceRecord {
 
 export interface QuickReferenceState {
     records: QuickReferenceRecord[];
-    lastUpdated: Date;
+    lastUpdated: string;
     totalAvailable: number;
     fetchComplete: boolean;
 }
 
 // --- History Management ---
 export interface HistoryEntry<TEntity extends EntityKeys> {
-    timestamp: Date;
+    timestamp: string;
     operation: 'create' | 'update' | 'delete' | 'bulk';
-    data: EntityData<TEntity> | EntityData<TEntity>[];  // error for both
-    previousData?: EntityData<TEntity> | EntityData<TEntity>[];  // error for both
+    data: EntityData<TEntity> | EntityData<TEntity>[];
+    previousData?: EntityData<TEntity> | EntityData<TEntity>[];
     metadata?: {
         user?: string;
         reason?: string;
         batchId?: string;
+        primaryKeyValues?: Record<string, unknown>; // Store the PK values for reference
     };
 }
+
 
 export interface HistoryState<TEntity extends EntityKeys> {
     past: HistoryEntry<TEntity>[];
     future: HistoryEntry<TEntity>[];
     maxHistorySize: number;
-    lastSaved?: Date;
+    lastSaved?: string;
 }
 
 // --- Query and Filter Types ---
@@ -169,16 +181,6 @@ export interface EntityState<TEntity extends EntityKeys> {
     };
 }
 
-// --- Action Payloads ---
-export interface BatchOperationPayload<TEntity extends EntityKeys> {
-    operation: 'create' | 'update' | 'delete';
-    records: EntityData<TEntity>[];
-    options?: {
-        skipHistory?: boolean;
-        batchSize?: number;
-        onProgress?: (progress: number) => void;
-    };
-}
 
 export interface FilterPayload {
     conditions: FilterCondition[];
@@ -190,4 +192,22 @@ export interface SortPayload {
     field: string;
     direction: 'asc' | 'desc';
     append?: boolean;
+}
+
+// Updated RecordOperation
+export interface RecordOperation<TEntity extends EntityKeys> {
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    record: EntityData<TEntity>;
+}
+
+// Updated BatchOperationPayload
+export interface BatchOperationPayload<TEntity extends EntityKeys> {
+    operation: 'create' | 'update' | 'delete';
+    records: EntityData<TEntity>[];
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    options?: {
+        skipHistory?: boolean;
+        batchSize?: number;
+        onProgress?: (progress: number) => void;
+    };
 }

@@ -1,3 +1,4 @@
+/*
 
 // Custom hooks (if needed)
 import {useSelector} from "react-redux";
@@ -37,3 +38,4 @@ export const useEntityDatabaseNames = (entityNames: EntityKeys[]) => {
     const convertNames = useMemo(makeEntityNamesToDatabaseSelector, []);
     return useSelector((state: RootState) => convertNames(state, entityNames));
 };
+*/

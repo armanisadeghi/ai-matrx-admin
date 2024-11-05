@@ -1,3 +1,4 @@
+/*
 import {PayloadAction} from "@reduxjs/toolkit";
 import {call, put} from "redux-saga/effects";
 
@@ -9,3 +10,4 @@ export function* syncSaga(action: PayloadAction<SyncPayload>) {
         yield put(syncError(error));
     }
 }
+*/

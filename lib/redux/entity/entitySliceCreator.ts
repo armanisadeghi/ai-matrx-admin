@@ -1,3 +1,4 @@
+/*
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Draft } from "immer";
 import { AutomationEntity, EntityData, EntityKeys } from "@/types/entityTypes";
@@ -225,3 +226,4 @@ export function createEntitySlice<TEntity extends EntityKeys>(
       actions: combinedActions,
     };
   }
+*/

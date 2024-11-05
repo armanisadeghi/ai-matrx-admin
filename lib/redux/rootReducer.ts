@@ -3,7 +3,6 @@ import { combineReducers } from '@reduxjs/toolkit';
 import { featureSchemas } from './dynamic/featureSchema';
 import { createFeatureSlice } from './slices/featureSliceCreator';
 import { createModuleSlice } from './slices/moduleSliceCreator';
-
 import { moduleSchemas, ModuleName } from './dynamic/moduleSchema';
 import layoutReducer from './slices/layoutSlice';
 import formReducer from './slices/formSlice';
@@ -13,7 +12,7 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-import {createEntitySlice} from "@/lib/redux/entity/entitySliceCreator";
+import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {AutomationEntities, EntityKeys} from "@/types/entityTypes";
 import {InitialReduxState} from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
@@ -37,7 +36,11 @@ type EntityReducers = Record<EntityKeys, ReturnType<typeof createEntitySlice>['r
 
 function createEntityReducers(automationEntities: AutomationEntities): EntityReducers {
     return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
-        const entitySlice = createEntitySlice(entityName as EntityKeys, entitySchema);
+        const { initialState, metadata } = initializeEntitySlice(
+            entityName as EntityKeys,
+            entitySchema
+        );
+        const entitySlice = createEntitySlice(entityName as EntityKeys, initialState);
         acc[entityName as EntityKeys] = entitySlice.reducer;
         return acc;
     }, {} as EntityReducers);
@@ -73,6 +76,17 @@ function createEntityReducers(automationEntities: AutomationEntities): EntityRed
             entitySchema
         );
         const entitySlice = createEntitySlice(entityName as EntityKeys, initialState);
+        acc[entityName as EntityKeys] = entitySlice.reducer;
+        return acc;
+    }, {} as EntityReducers);
+}
+*/
+
+
+/*
+function createEntityReducers(automationEntities: AutomationEntities): EntityReducers {
+    return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
+        const entitySlice = createEntitySlice(entityName as EntityKeys, entitySchema);
         acc[entityName as EntityKeys] = entitySlice.reducer;
         return acc;
     }, {} as EntityReducers);

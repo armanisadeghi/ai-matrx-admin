@@ -73,13 +73,13 @@ export interface MatrxServerTableProps<TEntity extends EntityKeys> {
 
 
 const generateColumns = <TEntity extends EntityKeys>(
-    sampleData: EntityData<TEntity>,
+    entityData: EntityData<TEntity>,
     primaryKey: keyof EntityData<TEntity>,
     columnHeaders?: Record<string, string>
 ): ColumnDef<EntityData<TEntity>>[] => {
-    if (!sampleData) return [];
+    if (!entityData) return [];
 
-    return Object.keys(sampleData).map((key) => {
+    return Object.keys(entityData).map((key) => {
         if (key === 'actions') {
             return {
                 id: 'actions',
@@ -114,10 +114,10 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
         data,
         primaryKey,
         commands = {
-            view: true,
+            view: {useCallback: true},
             edit: {useCallback: true},
             delete: {useCallback: true},
-            expand: true
+            expand: {useCallback: true},
         },
         onCommandExecute,
         onModalOpen,
@@ -155,15 +155,15 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
     // Dynamically generate column definitions based on data keys
     const allColumns = useMemo(() => {
         if (allData.length === 0) return [];
-        const sampleData = allData[0];
-        return generateColumns(sampleData, primaryKey, columnHeaders);
+        const entityData = allData[0];
+        return generateColumns(entityData, primaryKey, columnHeaders);
     }, [allData, primaryKey, columnHeaders]);
 
     // Use pretty names for column names when available
     const allColumnNames = useMemo(() =>
             allColumns.map((col) => {
-                const id = getColumnId(col);
-                return columnHeaders[id] || (typeof col.header === 'string' ? col.header : '');
+                const columnId = getColumnId(col);
+                return columnHeaders[columnId] || (typeof col.header === 'string' ? col.header : '');
             }),
         [allColumns, columnHeaders]
     );

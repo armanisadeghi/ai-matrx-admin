@@ -137,6 +137,7 @@
     "remark-gfm": "latest",
     "remirror": "latest",
     "sharp": "latest",
+    "socket.io-client": "^4.8.1",
     "sonner": "latest",
     "supabase": "latest",
     "tailwind-merge": "latest",

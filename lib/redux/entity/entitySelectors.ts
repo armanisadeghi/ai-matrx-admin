@@ -1,3 +1,4 @@
+/*
 // lib/redux/entity/selectors.ts
 import { RootState } from "@/lib/redux/store";
 import { createSelector } from "@reduxjs/toolkit";
@@ -110,3 +111,4 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 };
 
 export type EntitySelectors<TEntity extends EntityKeys> = ReturnType<typeof createEntitySelectors<TEntity>>;
+*/

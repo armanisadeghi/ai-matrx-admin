@@ -4,8 +4,9 @@ import {createSelector} from "@reduxjs/toolkit";
 import {EntityFieldKeys, EntityKeys} from "@/types/entityTypes";
 import {SchemaEntity, SchemaField} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
-import {QueryOptions} from "@/lib/redux/entity/entitySagas";
+
 import { GlobalCacheState } from "./globalCacheSlice";
+import {QueryOptions} from "@/lib/redux/entity/sagas";
 
 
 

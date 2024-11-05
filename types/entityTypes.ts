@@ -389,9 +389,11 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
 /**
  * Complete entity configuration type containing all entity-level settings
  */
+
 export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
-    primaryKey: string | Array<string>;
+    primaryKey: string;
+    primaryKeyMetadata: PrimaryKeyMetadata;
     defaultFetchStrategy: FetchStrategy;
     componentProps: EntityComponentProps<TEntity>;
     entityNameFormats: EntityNameFormats<TEntity>;
@@ -401,12 +403,20 @@ export type AutomationEntity<TEntity extends EntityKeys> = {
     };
 };
 
+
 /**
  * Complete automation schema containing all applets
  */
 export type AutomationEntities = {
     [TEntity in EntityKeys]: AutomationEntity<TEntity>;
 };
+
+
+export type ExtractPrimaryKeyInfo<TEntity extends EntityKeys> =
+    AutomationEntity<TEntity>['primaryKeyMetadata'];
+
+export type WhereClause<TEntity extends EntityKeys> =
+    Record<ExtractPrimaryKeyInfo<TEntity>['database_fields'][number], unknown>;
 
 
 export type EntityNameDatabaseMap = Record<EntityNameOfficial, string>;
@@ -742,6 +752,7 @@ type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 import {Draft} from 'immer';
 import {EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
+import {PrimaryKeyMetadata} from "@/lib/redux/entity/types";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true

@@ -61,3 +61,68 @@ export default async function AuthenticatedLayout({
     );
 }
 
+
+
+/*
+// app/layout.tsx or app/page.tsx
+
+import { useSocketInitialization } from '@/lib/hooks/useSocketInitialization';
+
+export default function AppLayout({ children }) {
+    useSocketInitialization();
+
+    return <>{children}</>;
+}
+*/
+
+
+/*
+// In a component or saga
+
+import { useDispatch } from 'react-redux';
+
+function MyComponent() {
+    const dispatch = useDispatch();
+
+    const handleClick = () => {
+        dispatch({ type: 'EMIT_entity/myEntity/action', payload: { data: 'test' } });
+    };
+
+    return <button onClick={handleClick}>Send Socket Event</button>;
+}
+*/
+
+
+
+/*
+// In your entity reducer
+
+import { createSlice } from '@reduxjs/toolkit';
+
+const myEntitySlice = createSlice({
+    name: 'myEntity',
+    initialState: {},
+    reducers: {
+        updateMyEntity(state, action) {
+            // Update state with payload
+        },
+    },
+    extraReducers: (builder) => {
+        builder.addCase('SOCKET_entity/myEntity/update', (state, action) => {
+            // Handle socket update
+        });
+    },
+});
+
+export default myEntitySlice.reducer;
+*/
+
+/*
+
+// types/socketTypes.ts
+
+export interface SocketEventPayload {
+    eventName: string;
+    args: any[];
+}
+*/
