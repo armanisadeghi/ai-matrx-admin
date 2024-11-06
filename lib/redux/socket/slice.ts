@@ -1,4 +1,4 @@
-// lib/redux/slices/socketSlice.ts
+// lib/redux/socket/slice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 

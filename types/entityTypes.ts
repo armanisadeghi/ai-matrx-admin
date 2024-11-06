@@ -107,7 +107,7 @@ export type FieldNameFormat<
 > = FieldNameFormats<TEntity, TField>[TFormat];
 
 /**
- * Available format types for a field (e.g., 'frontend', 'backend', 'database', etc.)
+ * Available format types for a field (e.g., 'frontend', 'backend', 'database', 'pretty', etc.)
  */
 export type FieldFormatTypes<
     TEntity extends EntityKeys,
@@ -140,6 +140,9 @@ export type CanonicalFieldKey<TEntity extends EntityKeys> = EntityFieldKeys<TEnt
                                                               ? K
                                                               : never
                                                             : never;
+
+type regFuncPretty = EntityNameFormat<'registeredFunction', 'pretty'>; // Shows  "Registered Function"
+type regFuncModulePathFieldPretty = FieldNameFormat<'registeredFunction', 'modulePath', 'pretty'>; // Shows "Module Path"
 
 
 // Basic types
@@ -550,8 +553,8 @@ export type DataFormat = typeof FORMAT_KEYS[number];
  * Brand interface for format-specific types
  */
 export interface FormatBrand<T extends Record<string, unknown>, F extends DataFormat> {
-     __format: F;
-     data: T;
+    __format: F;
+    data: T;
 }
 
 /**
@@ -724,12 +727,12 @@ type EntitySliceState<TEntity extends EntityKeys> = {
  */
 export type EntityData<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-      ? TField
-      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+                                                                  ? TField
+                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-      ? TField
-      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+                                                                  ? TField
+                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;
@@ -768,6 +771,50 @@ type registeredFunctionDataDraft = EntityDataDraft<'registeredFunction'>;
 type userPreferencesDataDraft = EntityDataDraft<'userPreferences'>;
 type registeredFunctionPrimaryKey = FieldIsPrimaryKey<'registeredFunction', 'id'>;
 
+
+/**
+ * Gets the pretty name for an entity
+ * @example
+ * type name = PrettyEntityName<'registeredFunction'> // "Registered Function"
+ */
+export type PrettyEntityName<TEntity extends EntityKeys> = EntityNameFormat<TEntity, 'pretty'>;
+
+/**
+ * Gets the pretty name for a field of an entity
+ * @example
+ * type name = PrettyFieldName<'registeredFunction', 'modulePath'> // "Module Path"
+ */
+export type PrettyFieldName<
+    TEntity extends EntityKeys,
+    TField extends EntityFieldKeys<TEntity>
+> = FieldNameFormat<TEntity, TField, 'pretty'>;
+
+/**
+ * Gets an object type containing all pretty field names for an entity
+ * @example
+ * type names = EntityPrettyFields<'registeredFunction'>
+ * // {
+ * //   modulePath: "Module Path",
+ * //   name: "Name",
+ * //   ...
+ * // }
+ */
+export type EntityPrettyFields<TEntity extends EntityKeys> = {
+    [TField in EntityFieldKeys<TEntity>]: PrettyFieldName<TEntity, TField>;
+};
+
+// Usage examples:
+type regFuncPrettyName = PrettyEntityName<'registeredFunction'>; // "Registered Function"
+type modulePathPretty = PrettyFieldName<'registeredFunction', 'modulePath'>; // "Module Path"
+type allPrettyFields = EntityPrettyFields<'registeredFunction'>; // Object with all pretty field names
+
+
+export type EntitySelectOption<TEntity extends EntityKeys> = {
+    value: TEntity;
+    label: PrettyEntityName<TEntity>;
+};
+
+
 // // Usage example:
 // const example = () => {
 //     // Get a schema in database format
@@ -783,7 +830,6 @@ type registeredFunctionPrimaryKey = FieldIsPrimaryKey<'registeredFunction', 'id'
 //     // TypeScript now knows the exact shape of both objects
 //     // and their format brands
 // };
-
 
 // // 5. Usage Examples
 // function exampleUsage() {
@@ -856,7 +902,6 @@ type registeredFunctionPrimaryKey = FieldIsPrimaryKey<'registeredFunction', 'id'
 //         payload: { entity, data }
 //     })
 // };
-
 
 // // 5. Usage Examples
 // type Example = {

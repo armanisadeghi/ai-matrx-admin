@@ -1,21 +1,28 @@
 // lib/redux/entity/selectors.ts
 
-import { createSelector } from '@reduxjs/toolkit';
-import { EntityKeys, EntityData } from "@/types/entityTypes";
-import { RootState } from "@/lib/redux/store";
-import { EntityState, MatrxRecordId } from "@/lib/redux/entity/types";
-import { createRecordKey } from "@/lib/redux/entity/utils";
+import {createSelector} from '@reduxjs/toolkit';
+import {EntityKeys, EntityData} from "@/types/entityTypes";
+import {RootState} from "@/lib/redux/store";
+import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
+import {createRecordKey} from "@/lib/redux/entity/utils";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
-    // Base entity selector
+    if (!entityKey) return null;
+
     const selectEntity = (state: RootState): EntityState<TEntity> => {
-        return state.entities[entityKey] as EntityState<TEntity>;
+        return state.entities[entityKey] || {} as EntityState<TEntity>;
     };
 
-    // Core Data Selectors
     const selectAllRecords = createSelector(
         [selectEntity],
-        (entity) => entity.records
+        (entity) => entity?.records || {}
+    );
+
+    const selectEntityDisplayName = createSelector(
+        [selectEntity],
+        (entity) => {
+            return entity.entityMetadata.displayName;
+        }
     );
 
     const selectRecordByPrimaryKey = createSelector(
@@ -80,7 +87,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectCurrentPage = createSelector(
         [selectEntity, selectAllRecords],
         (entity, records) => {
-            const { page, pageSize } = entity.pagination;
+            const {page, pageSize} = entity.pagination;
             const startIndex = (page - 1) * pageSize;
             return Object.values(records).slice(startIndex, startIndex + pageSize);
         }
@@ -103,20 +110,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     filters.conditions.every(condition => {
                         const value = record[condition.field];
                         switch (condition.operator) {
-                            case 'eq': return value === condition.value;
-                            case 'neq': return value !== condition.value;
-                            case 'gt': return value > condition.value;
-                            case 'gte': return value >= condition.value;
-                            case 'lt': return value < condition.value;
-                            case 'lte': return value <= condition.value;
-                            case 'like': return String(value).includes(String(condition.value));
-                            case 'ilike': return String(value).toLowerCase().includes(String(condition.value).toLowerCase());
-                            case 'in': return Array.isArray(condition.value) && condition.value.includes(value);
+                            case 'eq':
+                                return value === condition.value;
+                            case 'neq':
+                                return value !== condition.value;
+                            case 'gt':
+                                return value > condition.value;
+                            case 'gte':
+                                return value >= condition.value;
+                            case 'lt':
+                                return value < condition.value;
+                            case 'lte':
+                                return value <= condition.value;
+                            case 'like':
+                                return String(value).includes(String(condition.value));
+                            case 'ilike':
+                                return String(value).toLowerCase().includes(String(condition.value).toLowerCase());
+                            case 'in':
+                                return Array.isArray(condition.value) && condition.value.includes(value);
                             case 'between':
                                 return Array.isArray(condition.value) &&
                                     value >= condition.value[0] &&
                                     value <= condition.value[1];
-                            default: return true;
+                            default:
+                                return true;
                         }
                     })
                 );
@@ -185,6 +202,210 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.history
     );
 
+    const selectFieldInfo = createSelector(
+        [selectEntityMetadata],
+        (metadata) => metadata.fields.map(field => ({
+            name: field.name,
+            displayName: field.displayName,
+            isPrimary: field.isPrimary || false,
+            isDisplayField: field.isDisplayField || false
+        }))
+    );
+
+// For select components (value/label pairs)
+    const selectFieldOptions = createSelector(
+        [selectFieldInfo],
+        (fields) => fields.map(field => ({
+            value: field.name,
+            label: field.displayName
+        }))
+    );
+
+// For table headers
+    const selectTableColumns = createSelector(
+        [selectFieldInfo],
+        (fields) => fields.map(field => ({
+            key: field.name,
+            title: field.displayName,
+            isPrimary: field.isPrimary,
+            isDisplayField: field.isDisplayField
+        }))
+    );
+
+// Filtered and paginated data combined
+    const selectCurrentPageFiltered = createSelector(
+        [selectFilteredRecords, selectPaginationInfo],
+        (filteredRecords, pagination) => {
+            const {page, pageSize} = pagination;
+            const startIndex = (page - 1) * pageSize;
+            return filteredRecords.slice(startIndex, startIndex + pageSize);
+        }
+    );
+
+// Selection-related helpers
+    const selectSelectionSummary = createSelector(
+        [selectSelectedRecords, selectActiveRecord, selectSelectionMode],
+        (selectedRecords, activeRecord, mode) => ({
+            count: selectedRecords.length,
+            hasSelection: selectedRecords.length > 0,
+            hasSingleSelection: selectedRecords.length === 1,
+            hasMultipleSelection: selectedRecords.length > 1,
+            activeRecord,
+            mode
+        })
+    );
+
+// Record with display values resolved
+    const selectRecordWithDisplay = createSelector(
+        [
+            selectEntity,
+            (_: RootState, recordKey: string) => recordKey,
+            selectFieldInfo
+        ],
+        (entity, recordKey, fields) => {
+            const record = entity.records[recordKey];
+            if (!record) return null;
+
+            return fields.reduce((acc, field) => {
+                acc[field.name] = {
+                    value: record[field.name],
+                    displayValue: String(record[field.name]),
+                    fieldInfo: field
+                };
+                return acc;
+            }, {} as Record<string, { value: any; displayValue: string; fieldInfo: typeof fields[0] }>);
+        }
+    );
+
+// Quick access to important metadata combinations
+    const selectMetadataSummary = createSelector(
+        [selectEntityMetadata],
+        (metadata) => ({
+            displayName: metadata.displayName,
+            primaryKeys: metadata.primaryKeyMetadata.fields,
+            displayField: metadata.fields.find(f => f.isDisplayField)?.name,
+            totalFields: metadata.fields.length,
+            schemaType: metadata.schemaType
+        })
+    );
+
+// Cache and loading state combined
+    const selectDataState = createSelector(
+        [selectLoadingState, selectIsStale, selectHasUnsavedChanges],
+        (loading, isStale, hasUnsavedChanges) => ({
+            isLoading: loading.loading,
+            isError: !!loading.error,
+            errorMessage: loading.error?.message,
+            lastOperation: loading.lastOperation,
+            isStale,
+            hasUnsavedChanges,
+            needsAttention: isStale || hasUnsavedChanges || !!loading.error
+        })
+    );
+
+// Pagination with additional computed properties
+    const selectPaginationExtended = createSelector(
+        [selectPaginationInfo, selectFilteredRecords],
+        (pagination, filteredRecords) => ({
+            ...pagination,
+            totalFilteredRecords: filteredRecords.length,
+            currentPageRecords: filteredRecords.length > 0
+                                ? Math.min(pagination.pageSize, filteredRecords.length - (pagination.page - 1) * pagination.pageSize)
+                                : 0,
+            isFirstPage: pagination.page === 1,
+            isLastPage: pagination.page === pagination.totalPages,
+            pageOptions: Array.from({length: pagination.totalPages}, (_, i) => ({
+                value: i + 1,
+                label: `Page ${i + 1}`
+            }))
+        })
+    );
+
+// History state with additional information
+    const selectHistoryState = createSelector(
+        [selectHistory],
+        (history) => ({
+            canUndo: history.past.length > 0,
+            canRedo: history.future.length > 0,
+            lastAction: history.past[history.past.length - 1],
+            nextAction: history.future[history.future.length - 1],
+            totalActions: history.past.length + history.future.length,
+            lastSaved: history.lastSaved
+        })
+    );
+
+    const selectMetrics = createSelector(
+        [selectEntity],
+        (entity) => entity.metrics
+    );
+
+    const selectOperationCounts = createSelector(
+        [selectMetrics],
+        (metrics) => metrics.operationCounts
+    );
+
+    const selectPerformanceMetrics = createSelector(
+        [selectMetrics],
+        (metrics) => metrics.performanceMetrics
+    );
+
+    const selectCacheStats = createSelector(
+        [selectMetrics],
+        (metrics) => metrics.cacheStats
+    );
+
+    const selectErrorRates = createSelector(
+        [selectMetrics],
+        (metrics) => metrics.errorRates
+    );
+
+    const selectMetricsLastUpdated = createSelector(
+        [selectMetrics],
+        (metrics) => metrics.lastUpdated
+    );
+
+    // Performance-specific selectors
+    const selectResponseTimeMetrics = createSelector(
+        [selectPerformanceMetrics],
+        (metrics) => metrics.responseTimes
+    );
+
+    const selectThroughputMetrics = createSelector(
+        [selectPerformanceMetrics],
+        (metrics) => metrics.throughput
+    );
+
+    // Cache-specific selectors
+    const selectCacheHitRate = createSelector(
+        [selectCacheStats],
+        (stats) => stats.hitRate
+    );
+
+    const selectCacheSize = createSelector(
+        [selectCacheStats],
+        (stats) => stats.size
+    );
+
+    // Error-specific selectors
+    const selectErrorTimeline = createSelector(
+        [selectErrorRates],
+        (rates) => rates.timeline
+    );
+
+    const selectErrorDistribution = createSelector(
+        [selectErrorRates],
+        (rates) => rates.distribution
+    );
+
+    const selectRecentErrors = createSelector(
+        [selectErrorRates],
+        (rates) => rates.recent
+    );
+
+
+
+
+
     return {
         selectEntity,
         selectAllRecords,
@@ -207,5 +428,32 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectPrimaryKeyMetadata,
         selectDisplayField,
         selectHistory,
+        selectFieldInfo,
+        selectFieldOptions,
+        selectTableColumns,
+        selectCurrentPageFiltered,
+        selectSelectionSummary,
+        selectRecordWithDisplay,
+        selectMetadataSummary,
+        selectDataState,
+        selectPaginationExtended,
+        selectHistoryState,
+        // Newly added selectors
+        selectMetrics,
+        selectOperationCounts,
+        selectPerformanceMetrics,
+        selectCacheStats,
+        selectErrorRates,
+        selectMetricsLastUpdated,
+        selectResponseTimeMetrics,
+        selectThroughputMetrics,
+        selectCacheHitRate,
+        selectCacheSize,
+        selectErrorTimeline,
+        selectErrorDistribution,
+        selectRecentErrors,
+
+        // Convenience Additions
+        selectEntityDisplayName,
     };
 };

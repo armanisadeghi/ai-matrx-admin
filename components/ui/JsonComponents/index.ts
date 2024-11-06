@@ -5,7 +5,7 @@ import FullEditableJsonViewer, { EditableJsonViewer } from './JsonEditor';
 import SchemaBasedJsonEditor from "./SchemaBasedJsonEditor";
 
 // Composite object with all components
-const Json = {
+const MatrxJson = {
     Viewer: JsonViewer,
     FullViewer: FullJsonViewer,
     Editor: EditableJsonViewer,
@@ -14,7 +14,7 @@ const Json = {
 };
 
 // Default export
-export default Json;
+export default MatrxJson;
 
 // Named exports
 export {

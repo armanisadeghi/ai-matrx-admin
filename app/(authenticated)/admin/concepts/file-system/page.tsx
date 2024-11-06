@@ -1,12 +1,13 @@
+/*
 'use client';
 
 import React, {useState} from 'react';
 import {IconGitBranch, IconChevronRight} from "@tabler/icons-react";
 import FeatureSectionAnimatedGradientComponents
     from "@/components/animated/my-custom-demos/feature-section-animated-gradient-component";
-import {adminCategories} from "@/app/(authenticated)/admin/file-system/categories";
+import {adminCategories} from "@/app/(authenticated)/admin/constants/categories";
 import {useRouter} from "next/navigation";
-import ErrorBoundary from './components/entities/ErrorBoundary';
+import ErrorBoundary from '@/app/(authenticated)/admin/components/entities/ErrorBoundary';
 
 const AdminPage = () => {
     const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -193,3 +194,4 @@ const AdminPage = () => {
 };
 
 export default AdminPage;
+*/

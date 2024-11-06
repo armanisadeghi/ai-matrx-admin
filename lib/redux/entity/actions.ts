@@ -1,3 +1,5 @@
+// lib/redux/entity/actions.ts
+
 import { EntityData, EntityKeys } from "@/types/entityTypes";
 import {
     BatchOperationPayload,
@@ -7,7 +9,7 @@ import {
     SubscriptionConfig,
     EntityMetadata,
     LoadingState,
-    QuickReferenceRecord,
+    QuickReferenceRecord, EntityMetrics,
 } from "@/lib/redux/entity/types";
 import { UnifiedQueryOptions } from "@/lib/redux/schema/globalCacheSelectors";
 
@@ -65,6 +67,10 @@ export interface EntityActions<TEntity extends EntityKeys> {
         mode: 'single' | 'multiple' | 'none';
     }) => void;
     clearSelection: () => void;
+    addToSelection: (payload: EntityData<TEntity>) => void;
+    removeFromSelection: (payload: EntityData<TEntity>) => void;
+    toggleSelection: (payload: EntityData<TEntity>) => void;
+
 
     // History Actions
     pushToHistory: (payload: {
@@ -109,7 +115,34 @@ export interface EntityActions<TEntity extends EntityKeys> {
     refreshData: () => void;
     invalidateCache: () => void;
     resetState: () => void;
+
+    // Metrics Actions
+    fetchMetrics: () => void;
+    fetchMetricsSuccess: (payload: EntityMetrics) => void;
+    setMetrics: (payload: Partial<EntityMetrics>) => void;
+
 }
 
-// Export action type for use in sagas and components
-export type EntityActionType<TEntity extends EntityKeys> = ReturnType<EntityActions<TEntity>[keyof EntityActions<TEntity>]>;
+export interface SelectionPayload<TEntity extends EntityKeys> {
+    records: EntityData<TEntity>[];
+    mode: 'single' | 'multiple' | 'none';
+}
+
+export interface SingleRecordPayload<TEntity extends EntityKeys> {
+    record: EntityData<TEntity>;
+}
+
+
+export const isSelectionAction = (
+    action: any
+): action is { type: string; payload: SelectionPayload<any> } => {
+    return action.type.endsWith('/setSelection') &&
+        'records' in action.payload &&
+        'mode' in action.payload;
+};
+
+// Export updated action type
+export type EntityActionType<TEntity extends EntityKeys> =
+    | ReturnType<EntityActions<TEntity>[keyof EntityActions<TEntity>]>
+    | { type: string; payload: SelectionPayload<TEntity> }
+    | { type: string; payload: SingleRecordPayload<TEntity> };

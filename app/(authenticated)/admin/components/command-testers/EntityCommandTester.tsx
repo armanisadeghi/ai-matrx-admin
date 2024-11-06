@@ -1,3 +1,4 @@
+/*
 // app/admin/command-test/page.tsx
 'use client';
 
@@ -265,3 +266,4 @@ export default function CommandTestPage() {
         </div>
     );
 }
+*/

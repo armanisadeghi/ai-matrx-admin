@@ -1,4 +1,5 @@
-// File: app/Providers.tsx
+// app/Providers.tsx
+
 'use client';
 
 import React from 'react';
@@ -9,22 +10,29 @@ import {ThemeProvider} from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
 import {TooltipProvider} from "@/components/ui/tooltip";
 import {InitialReduxState} from "@/types/reduxTypes";
+import {SocketProvider} from '@/providers/SocketProvider';
 
-export function Providers({children, initialReduxState}: {
-    children: React.ReactNode,
-    initialReduxState?: InitialReduxState
-}) {
+export function Providers(
+    {
+        children,
+        initialReduxState,
+    }: {
+        children: React.ReactNode;
+        initialReduxState?: InitialReduxState;
+    }) {
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <StoreProvider initialState={initialReduxState}>
-                <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                    <NextUIProvider>
-                        <TooltipProvider>
-                            {children}
-                            <Toaster/>
-                        </TooltipProvider>
-                    </NextUIProvider>
-                </ThemeProvider>
+                <SocketProvider>
+                    <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                        <NextUIProvider>
+                            <TooltipProvider>
+                                {children}
+                                <Toaster/>
+                            </TooltipProvider>
+                        </NextUIProvider>
+                    </ThemeProvider>
+                </SocketProvider>
             </StoreProvider>
         </SchemaProvider>
     );

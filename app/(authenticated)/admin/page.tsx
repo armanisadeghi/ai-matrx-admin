@@ -1,84 +1,195 @@
-// File location: @/app/admin/hold-hold-page.tsx
+'use client';
 
-// Claude: https://claude.ai/chat/65014a2f-15f6-498a-8617-1e1cd94882fa
-// Claude: https://claude.ai/chat/e142e093-5177-4faa-aa06-b534db104cf5
-import {FeatureSectionWithGradient} from "@/components/animated/my-custom-demos/feature-section-with-gradient";
-// import FeatureSectionAnimatedGradient from "@/components/animated/feature-with-dynamic-grid/dynamic-feature-section";
+import React, {useState} from 'react';
+import {IconGitBranch, IconChevronRight} from "@tabler/icons-react";
+import FeatureSectionAnimatedGradientComponents
+    from "@/components/animated/my-custom-demos/feature-section-animated-gradient-component";
+import {adminCategories} from "@/app/(authenticated)/admin/constants/categories";
+import {useRouter} from "next/navigation";
+import ErrorBoundary from "@/app/(authenticated)/admin/components/shared/ErrorBoundary";
 
-import {
-    IconAdjustmentsBolt,
-    IconCloud,
-    IconCurrencyDollar,
-    IconEaseInOut, IconHeart,
-    IconHelp,
-    IconRouteAltLeft,
-    IconFunction
-} from "@tabler/icons-react";
-import React from "react";
-import FeatureSectionAnimatedGradient from "@/components/animated/my-custom-demos/feature-section-animated-gradient";
+const AdminPage = () => {
+    const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-export default function AdminPage() {
-    const features = [
-        {
-            title: "Registered Function CRUD",
-            description:
-                "All CRUD Operations for Registered Functions.",
-            icon: <IconFunction/>,
-            link: "/admin/registered-functions",
-        },
-        {
-            title: "Ease of use",
-            description:
-                "It's as easy as using an Apple, and as expensive as buying one.",
-            icon: <IconEaseInOut/>,
-        },
-        {
-            title: "Pricing like no other",
-            description:
-                "Our prices are best in the market. No cap, no lock, no credit card required.",
-            icon: <IconCurrencyDollar/>,
-        },
-        {
-            title: "100% Uptime guarantee",
-            description: "We just cannot be taken down by anyone.",
-            icon: <IconCloud/>,
-        },
-        {
-            title: "Multi-tenant Architecture",
-            description: "You can simply share passwords instead of buying new seats",
-            icon: <IconRouteAltLeft/>,
-        },
-        {
-            title: "24/7 Customer Support",
-            description:
-                "We are available a 100% of the time. Atleast our AI Agents are.",
-            icon: <IconHelp/>,
-        },
-        {
-            title: "Money back guarantee",
-            description:
-                "If you donot like EveryAI, we will convince you to like us.",
-            icon: <IconAdjustmentsBolt/>,
-        },
-        {
-            title: "And everything else",
-            description: "I just ran out of copy ideas. Accept my sincere apologies",
-            icon: <IconHeart/>,
-        },
-    ];
+    const router = useRouter();
+
+    React.useEffect(() => {
+        if (selectedComponent || selectedCategory) {
+            window.history.pushState(
+                {
+                    selectedComponent,
+                    selectedCategory
+                },
+                '',
+                window.location.pathname
+            );
+        }
+
+        const handlePopState = (event: PopStateEvent) => {
+            if (event.state === null) {
+                setSelectedComponent(null);
+                setSelectedCategory(null);
+            } else {
+                setSelectedComponent(event.state.selectedComponent);
+                setSelectedCategory(event.state.selectedCategory);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [selectedComponent, selectedCategory]);
+
+    const handleSelectComponent = (title: string) => {
+        setSelectedComponent(title);
+    };
+
+    const handleSelectCategory = (name: string) => {
+        setSelectedCategory(name);
+    };
+
+    const getPreviewFeatures = (features: any[]) => {
+        if (features.length <= 3) return features;
+        return features.slice(0, 3);
+    };
+
+    const handleBackToSelection = () => {
+        if (selectedComponent) {
+            setSelectedComponent(null);
+            window.history.pushState(
+                {selectedCategory, selectedComponent: null},
+                '',
+                window.location.pathname
+            );
+        } else if (selectedCategory) {
+            setSelectedCategory(null);
+            window.history.pushState(
+                {selectedCategory: null, selectedComponent: null},
+                '',
+                window.location.pathname
+            );
+        }
+    };
+
+    if (selectedComponent) {
+        const selectedFeature = adminCategories
+            .flatMap(cat => cat.features)
+            .find(f => f.title === selectedComponent);
+
+        return (
+            <ErrorBoundary>
+
+                <div className="min-h-screen py-10 bg-neutral-100 dark:bg-neutral-900 w-full">
+                    <div className="w-full px-4">
+                        <button
+                            onClick={handleBackToSelection}
+                            className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                            <IconGitBranch className="mr-2 w-4 h-4"/> Back to Selection
+                        </button>
+                        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-6">
+                            <h2 className="text-2xl font-bold mb-4">{selectedComponent}</h2>
+                            {selectedFeature?.component}
+                        </div>
+                    </div>
+                </div>
+            </ErrorBoundary>
+        );
+    }
+
+    if (selectedCategory) {
+        const category = adminCategories.find(c => c.name === selectedCategory);
+        return (
+            <div className="min-h-screen py-10 bg-neutral-100 dark:bg-neutral-900 w-full">
+                <div className="w-full px-4">
+                    <button
+                        onClick={handleBackToSelection}
+                        className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                        <IconGitBranch className="mr-2 w-4 h-4"/> Back to Categories
+                    </button>
+                    <h2 className="text-3xl font-bold mb-4">{selectedCategory}</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {category?.features.map((feature, index) => (
+                            <FeatureSectionAnimatedGradientComponents
+                                key={feature.title}
+                                {...feature}
+                                index={index}
+                                onClick={() => handleSelectComponent(feature.title)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="py-20 lg:py-40 bg-neutral-100 dark:bg-neutral-900">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 max-w-7xl mx-auto">
-                {features.map((feature, index) => (
-                    <FeatureSectionAnimatedGradient
-                        key={feature.title}
-                        {...feature}
-                        index={index}
-                        link={feature.link}
-                    />
-                ))}
+        <div className="min-h-screen py-10 bg-neutral-100 dark:bg-neutral-900 w-full">
+            <div className="w-full mx-2">
+                <h1 className="text-4xl font-bold text-center mb-4">Admin Dashboard</h1>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {adminCategories.map((category, index) => (
+                        <div
+                            key={category.name}
+                            onClick={() => handleSelectCategory(category.name)}
+                            className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-4
+                                     transform transition-all duration-200 hover:scale-105 hover:shadow-xl
+                                     cursor-pointer relative group"
+                        >
+                            <div className="flex items-center space-x-4 mb-4">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                                    {category.icon}
+                                </div>
+                                <h3 className="text-xl font-semibold">{category.name}</h3>
+                            </div>
+                            <div className="h-32 flex flex-col justify-between">
+                                <div className="space-y-2">
+                                    {getPreviewFeatures(category.features).map((feature) => (
+                                        <div
+                                            key={feature.title}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSelectComponent(feature.title);
+                                            }}
+                                            className="flex items-center h-6 text-gray-600 dark:text-gray-300
+                                                     hover:text-blue-600 dark:hover:text-blue-400
+                                                     cursor-pointer transition-colors duration-200"
+                                        >
+                                            <div className="flex items-center min-w-[28px]">
+                                                <div className="w-4 h-4">
+                                                    {feature.icon}
+                                                </div>
+                                            </div>
+                                            <span className="text-sm font-medium">{feature.title}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {category.features.length > 3 && (
+                                    <div
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelectCategory(category.name);
+                                        }}
+                                        className="flex items-center text-sm text-blue-600 dark:text-blue-400
+                                                 hover:text-blue-800 dark:hover:text-blue-300
+                                                 cursor-pointer transition-colors duration-200
+                                                 mt-2 pl-7"
+                                    >
+                                        <span>See all {category.features.length} features</span>
+                                        <IconChevronRight className="w-4 h-4 ml-1"/>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
-}
+};
 
+export default AdminPage;

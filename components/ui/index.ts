@@ -1,6 +1,8 @@
 // components/ui/index.tsx
 
-// Root level components
+export { default as MatrxJson } from './JsonComponents';
+export * from './JsonComponents';
+
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './accordion'
 export { Alert, AlertTitle, AlertDescription } from './alert'
 export { AspectRatio } from './aspect-ratio'

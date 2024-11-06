@@ -11,8 +11,8 @@ import {DirectoryTree} from "@/components/DirectoryTree/DirectoryTree";
 import {DirectoryType, fileHelpers} from "@/utils/fileSystemUtil";
 import {FileContentResult, getFileType, loadFileContent} from "@/utils/fileContentHandlers";
 import {FileViewer} from "@/components/FileViewer/FileViewer";
-import {FileOperationsToolbar} from "@/app/(authenticated)/admin/file-system/components/FileOperationsToolbar";
-import {FileDetailsPanel} from "@/app/(authenticated)/admin/file-system/components/FileDetailsPanel";
+import {FileOperationsToolbar} from "@/app/(authenticated)/admin/components/FileOperationsToolbar";
+import {FileDetailsPanel} from "@/app/(authenticated)/admin/components/FileDetailsPanel";
 
 
 // https://claude.ai/chat/984ee21f-6116-44d5-b8fa-fe8ca49547bc

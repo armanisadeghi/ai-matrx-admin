@@ -4,7 +4,7 @@ import {channel, Channel, eventChannel, EventChannel} from 'redux-saga';
 import { all, call, take, put, fork } from 'redux-saga/effects';
 import { EntityKeys } from '@/types/entityTypes';
 import { watchEntitySagas } from '@/lib/redux/entity/sagas';
-import { SocketManager } from '@/lib/socket/SocketManager';
+import {SocketManager} from "@/lib/redux/socket/manager";
 
 export class SagaCoordinator {
     private static instance: SagaCoordinator | null = null;
@@ -33,45 +33,57 @@ export class SagaCoordinator {
     }
 
     *initializeEntitySagas() {
-        const sagas = this.entityNames.map((entityKey) => {
-            const saga = watchEntitySagas(entityKey);
-            console.log('Creating saga for entity:', entityKey);
-            return call(saga);
-        });
+
+        yield all(this.entityNames.map((entityKey) => call(watchEntitySagas(entityKey))));
+
+        yield take('SOCKET_INITIALIZED');
 
         yield all([
-            ...sagas,
-            call([this, this.watchSocketEvents]),
             call([this, this.initializeSocketConnection]),
+            call([this, this.watchSocketEvents]),
         ]);
     }
 
     private *initializeSocketConnection() {
-        const socketManager = SocketManager.getInstance();
-        socketManager.connect();
-        this.createSocketEventChannel();
+        if (typeof window !== 'undefined') {
+            try {
+                const socketManager = SocketManager.getInstance();
+                yield call([socketManager, socketManager.connect]);
+                this.createSocketEventChannel();
+            } catch (error) {
+                console.error('SagaCoordinator: Error initializing socket connection', error);
+            }
+        } else {
+            console.log('SagaCoordinator: window is undefined, skipping socket initialization');
+            this.socketEventChannel = null; // Explicitly set to null
+        }
     }
 
     private createSocketEventChannel() {
-        const socket = SocketManager.getInstance().getSocket();
-        this.socketEventChannel = eventChannel((emit) => {
-            socket.onAny((eventName, ...args) => {
-                emit({ eventName, args });
+        if (typeof window !== 'undefined') {
+            const socket = SocketManager.getInstance().getSocket();
+            this.socketEventChannel = eventChannel((emit) => {
+                socket.onAny((eventName: string, ...args: any[]) => {
+                    emit({ eventName, args });
+                });
+                return () => {
+                    socket.offAny();
+                };
             });
-            return () => {
-                socket.offAny();
-            };
-        });
+        } else {
+            console.log('SagaCoordinator: window is undefined, cannot create socket event channel');
+            this.socketEventChannel = null; // Explicitly set to null
+        }
     }
 
     *watchSocketEvents() {
-        if (!this.socketEventChannel) {
-            throw new Error('Socket event channel is not initialized.');
-        }
-
-        while (true) {
-            const payload = yield take(this.socketEventChannel);
-            yield fork(this.handleSocketEvent, payload);
+        if (this.socketEventChannel) {
+            while (true) {
+                const payload = yield take(this.socketEventChannel);
+                yield fork([this, this.handleSocketEvent], payload);
+            }
+        } else {
+            console.log('SagaCoordinator: Socket event channel is not initialized, skipping watchSocketEvents');
         }
     }
 
@@ -88,7 +100,6 @@ export class SagaCoordinator {
             yield put({ type: `SOCKET_${eventName.toUpperCase()}`, payload: args });
         }
     }
-
 
     emitSocketEvent(event: { eventName: string; args: any[] }) {
         // This can be used by the SocketManager to forward events

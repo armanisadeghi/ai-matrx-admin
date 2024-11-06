@@ -12,8 +12,6 @@ import {
     QuickEntityCommandGroup,
     createEntityCommand
 } from '@/components/matrx/MatrxCommands/EntityCommand';
-import {createEntitySelectors} from '@/lib/redux/entity/entitySelectors';
-import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
 
 interface TestEntity {
     id: string;

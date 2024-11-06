@@ -1,3 +1,4 @@
+/*
 // lib/redux/entity/entitySagas.ts
 
 import {call, put, takeLatest, all, select} from "redux-saga/effects";
@@ -129,11 +130,11 @@ function prepareQueryOptions<TEntity extends EntityKeys>(
     return baseQuery;
 }
 
-/**
+/!**
  * Utility function to get primary key value from a record
- */
+ *!/
 
-/*
+/!*
 function* getPrimaryKeyInfo<TEntity extends EntityKeys>(
     databaseApi: DatabaseApiWrapper<TEntity>,
     record: EntityRecord<TEntity, 'frontend'>
@@ -142,7 +143,7 @@ function* getPrimaryKeyInfo<TEntity extends EntityKeys>(
     const value = record[primaryKeyField];
     return {field: primaryKeyField, value};
 }
-*/
+*!/
 
 function* handleFetchByField<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -363,9 +364,9 @@ function* handleUnsubscribeFromChanges<TEntity extends EntityKeys>(
     }
 }
 
-/**
+/!**
  * Handle paginated query for an entity
- */
+ *!/
 function* MakeQuery<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice>["actions"],
@@ -427,9 +428,9 @@ function* MakeQuery<TEntity extends EntityKeys>(
     }
 }
 
-/**
+/!**
  * Updated handlers using dynamic primary key
- */
+ *!/
 function* handleFetchOne<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice>["actions"],
@@ -497,9 +498,9 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     }
 }
 
-/**
+/!**
  * Handle creating a new record
- */
+ *!/
 function* handleCreate<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
@@ -532,9 +533,9 @@ function* handleCreate<TEntity extends EntityKeys>(
     }
 }
 
-/**
+/!**
  * Handle updating a record
- */
+ *!/
 function* handleUpdate<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice>["actions"],
@@ -587,9 +588,9 @@ function* handleUpdate<TEntity extends EntityKeys>(
     }
 }
 
-/**
+/!**
  * Handle deleting a record
- */
+ *!/
 function* handleDelete<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice>["actions"],
@@ -767,9 +768,9 @@ function* handleFetchByPrimaryKey<TEntity extends EntityKeys>(
 //         yield put(actions.setLoading(false));
 //     }
 // }
-/**
+/!**
  * Handle custom query execution
- */
+ *!/
 function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
     actions: {
         executeQueryRequest: (payload: any) => any;
@@ -941,9 +942,9 @@ export function createEntitySaga<TEntity extends EntityKeys>(
     };
 }
 
-/**
+/!**
  * Initialize DatabaseApiWrapper for a given entity and dynamically inject the Supabase client
- */
+ *!/
 // function* initializeDatabaseApi<TEntity extends EntityKeys>(
 //     entityKey: TEntity
 // ) {
@@ -1096,3 +1097,4 @@ export function* withUnifiedConversion<TEntity extends EntityKeys>(
         throw error;
     }
 }
+*/

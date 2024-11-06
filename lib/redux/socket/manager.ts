@@ -1,12 +1,11 @@
-// lib/socket/SocketManager.ts
+// lib/redux/socket/manager.ts
 
-import { io, Socket } from 'socket.io-client';
 import { EventChannel, eventChannel } from 'redux-saga';
 import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
 
 export class SocketManager {
     private static instance: SocketManager;
-    private socket: Socket | null = null;
+    private socket: any | null = null;
 
     private constructor() {}
 
@@ -17,10 +16,25 @@ export class SocketManager {
         return SocketManager.instance;
     }
 
-    connect() {
+    async connect() {
         if (!this.socket) {
-            this.socket = io('https://aimatrixengine.com/'); // Replace with your backend URL
-            this.registerEventHandlers();
+            if (typeof window !== 'undefined') {
+                try {
+                    const { io } = await import('socket.io-client');
+
+                    // Check for SOCKET_OVERRIDE in .env, fallback to default if not present
+                    const socketAddress = process.env.SOCKET_OVERRIDE || 'https://aimatrixengine.com/';
+
+                    this.socket = io(socketAddress);
+                    this.registerEventHandlers();
+
+                    console.log(`SocketManager: Connected to ${socketAddress}`);
+                } catch (error) {
+                    console.error('SocketManager: Error connecting socket', error);
+                }
+            } else {
+                console.log('SocketManager: window is undefined, skipping socket connection');
+            }
         }
     }
 
@@ -31,7 +45,7 @@ export class SocketManager {
         }
     }
 
-    getSocket(): Socket {
+    getSocket(): any {
         if (!this.socket) {
             throw new Error('Socket is not initialized. Call connect() first.');
         }
@@ -51,7 +65,7 @@ export class SocketManager {
         });
 
         // Handle dynamic events and forward them to the Saga Coordinator
-        socket.onAny((eventName, ...args) => {
+        socket.onAny((eventName: string, ...args: any[]) => {
             sagaCoordinator.emitSocketEvent({ eventName, args });
         });
     }

@@ -1,3 +1,4 @@
+/*
 'use client';
 
 import * as React from 'react';
@@ -132,3 +133,4 @@ const AdminTestPage: React.FC<AdminTestPageProps> = ({ entityKey }) => {
 };
 
 export default AdminTestPage;
+*/

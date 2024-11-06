@@ -6,12 +6,16 @@ import {supabase} from "@/utils/supabase/client";
 import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {
-    BatchOperationPayload, FilterPayload, HistoryEntry,
+    BatchOperationPayload,
+    FilterPayload,
+    HistoryEntry,
     MatrxRecordId,
     PrimaryKeyMetadata,
 } from "@/lib/redux/entity/types";
 import {
-    selectEntityDatabaseName,UnifiedQueryOptions,selectFrontendConversion,
+    selectEntityDatabaseName,
+    UnifiedQueryOptions,
+    selectFrontendConversion,
     selectPayloadOptionsDatabaseConversion,
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {Draft} from "immer";
@@ -55,12 +59,9 @@ export interface QueryOptions<TEntity extends EntityKeys> {
 }
 
 
-
-
 function* initializeDatabaseApi(tableName: string) {
     return supabase.from(tableName);
 }
-
 
 
 export function* withConversion<TEntity extends EntityKeys>(
@@ -78,7 +79,7 @@ export function* withConversion<TEntity extends EntityKeys>(
 ) {
     try {
         const tableName: string = yield select(selectEntityDatabaseName, entityKey);
-        EntityLogger.log('debug', 'Resolved table name', entityKey, { tableName });
+        EntityLogger.log('debug', 'Resolved table name', entityKey, {tableName});
 
         const api = yield call(initializeDatabaseApi, tableName);
         EntityLogger.log('debug', 'Database API initialized', entityKey);
@@ -108,6 +109,7 @@ export function* withConversion<TEntity extends EntityKeys>(
         throw error;
     }
 }
+
 /*
 function* handleSubscription<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -139,7 +141,7 @@ function* handleSubscription<TEntity extends EntityKeys>(
 type SagaAction<P = any> = PayloadAction<P> & { type: string };
 
 export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions } = createEntitySlice(entityKey, {} as any);
+    const {actions} = createEntitySlice(entityKey, {} as any);
 
     EntityLogger.log('info', `Initializing entity saga watcher`, entityKey);
 
@@ -207,10 +209,18 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         yield call(withConversion, handleExecuteCustomQuery, entityKey, actions, action);
                     }
                 ),
-                // Handle socket events
+                takeLatest(
+                    actions.fetchMetrics.type,
+                    function* (action: SagaAction<UnifiedQueryOptions<TEntity>>) {
+                        EntityLogger.log('debug', 'Handling executeCustomQuery', entityKey, action.payload);
+                        yield call(withConversion, handleFetchMetrics, entityKey, actions, action);
+                    }
+                ),
+
+                // Handle socket events handleFetchMetrics
                 takeEvery('SOCKET_ENTITY_EVENT', function* (action: any) {
                     if (action.payload.entityKey === entityKey) {
-                        const { eventType, data } = action.payload;
+                        const {eventType, data} = action.payload;
 
                         EntityLogger.log('debug', `Handling socket event ${eventType}`, entityKey, data);
 
@@ -354,7 +364,7 @@ function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
     action: PayloadAction<QueryOptions<TEntity>>,
     tableName: string,
     dbQueryOptions: QueryOptions<TEntity>
-) {
+ ) {
     try {
         yield delay(DEBOUNCE_MS);
 
@@ -428,6 +438,7 @@ function* handleDelete<TEntity extends EntityKeys>(
         throw error;
     }
 }
+
 // Updated BatchOperation with proper typing
 function* handleBatchOperation<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -506,7 +517,6 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
 }
 
 
-
 function* handleSubscriptionEvents<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
@@ -565,7 +575,7 @@ function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
     }
 ) {
     try {
-        EntityLogger.log('debug', 'Updating quick reference', entityKey, { record, metadata });
+        EntityLogger.log('debug', 'Updating quick reference', entityKey, {record, metadata});
 
         if (metadata.displayField && record[metadata.displayField]) {
             const quickReferenceRecord = {
@@ -595,7 +605,7 @@ function* handleRefreshData<TEntity extends EntityKeys>(
         EntityLogger.log('debug', 'Starting data refresh', entityKey);
 
         const currentState = yield select(state => state.entities[entityKey]);
-        const { page, pageSize } = currentState.pagination;
+        const {page, pageSize} = currentState.pagination;
 
         // Create a new action for fetch paginated
         const fetchAction = createPayloadAction(actions.fetchRecords.type, {
@@ -604,7 +614,7 @@ function* handleRefreshData<TEntity extends EntityKeys>(
         });
 
         // Use put instead of call for saga actions
-        yield put(actions.fetchRecords({ page, pageSize }));
+        yield put(actions.fetchRecords({page, pageSize}));
 
         // Refresh quick reference if needed
         if (currentState.quickReference.fetchComplete) {
@@ -618,7 +628,7 @@ function* handleRefreshData<TEntity extends EntityKeys>(
             yield put(actions.fetchQuickReference());
         }
 
-        yield put(actions.setFlags({ needsRefresh: false }));
+        yield put(actions.setFlags({needsRefresh: false}));
         EntityLogger.log('debug', 'Data refresh completed', entityKey);
     } catch (error: any) {
         EntityLogger.log('error', 'Refresh data error', entityKey, error);
@@ -711,7 +721,7 @@ function* handleFilterChange<TEntity extends EntityKeys>(
         const currentState = yield select(state => state.entities[entityKey]);
         yield put(actions.setPage(1));
 
-        let query = api.select("*", { count: "exact" });
+        let query = api.select("*", {count: "exact"});
 
         // Apply filters
         if (action.payload.conditions.length > 0) {
@@ -723,10 +733,10 @@ function* handleFilterChange<TEntity extends EntityKeys>(
             });
         }
 
-        const { data, error, count } = yield query;
+        const {data, error, count} = yield query;
         if (error) throw error;
 
-        const payload = { entityName: entityKey, data };
+        const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         yield put(actions.fetchRecordsSuccess({
@@ -767,7 +777,7 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
         const from = (action.payload.page - 1) * action.payload.pageSize;
         const to = action.payload.page * action.payload.pageSize - 1;
 
-        EntityLogger.log('debug', 'Executing query', entityKey, { from, to });
+        EntityLogger.log('debug', 'Executing query', entityKey, {from, to});
 
         const {data, error, count} = yield api
             .select("*", {count: "exact"})
@@ -805,7 +815,7 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
 }
 
 function createPayloadAction<T>(type: string, payload: T): PayloadAction<T> {
-    return { type, payload };
+    return {type, payload};
 }
 
 function* handleCreate<TEntity extends EntityKeys>(
@@ -819,14 +829,14 @@ function* handleCreate<TEntity extends EntityKeys>(
     try {
         EntityLogger.log('debug', 'Starting create operation', entityKey, action.payload);
 
-        const { data, error } = yield api
+        const {data, error} = yield api
             .insert(action.payload)
             .select()
             .single();
 
         if (error) throw error;
 
-        const payload = { entityName: entityKey, data };
+        const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         yield put(actions.createRecordSuccess(frontendResponse));
@@ -890,7 +900,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
 
         // Optimistic update
         if (previousData) {
-            const optimisticData = { ...previousData, ...action.payload.data };
+            const optimisticData = {...previousData, ...action.payload.data};
             yield put(actions.upsertRecords([optimisticData]));
         }
 
@@ -901,11 +911,11 @@ function* handleUpdate<TEntity extends EntityKeys>(
             query = query.eq(key, value);
         });
 
-        const { data, error } = yield query.select().single();
+        const {data, error} = yield query.select().single();
 
         if (error) throw error;
 
-        const payload = { entityName: entityKey, data };
+        const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         yield put(actions.updateRecordSuccess(frontendResponse));
@@ -952,6 +962,69 @@ function* handleUpdate<TEntity extends EntityKeys>(
     }
 }
 
+function* handleFetchMetrics<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    api: any,
+    action: PayloadAction<void>,
+    tableName: string,
+    dbQueryOptions: QueryOptions<TEntity>
+) {
+    try {
+        EntityLogger.log('debug', 'Fetching entity metrics', entityKey);
+
+        // Fetch operation counts
+        const operationCounts = yield all({
+            creates: api.select('count(*)', { head: true })
+                .eq('operation_type', 'create'),
+            updates: api.select('count(*)', { head: true })
+                .eq('operation_type', 'update'),
+            deletes: api.select('count(*)', { head: true })
+                .eq('operation_type', 'delete'),
+        });
+
+        // Fetch performance metrics
+        const performanceMetrics = yield call(async () => {
+            const response = await api.rpc('get_entity_performance_metrics', {
+                entity_name: tableName
+            });
+            return response.data;
+        });
+
+        // Fetch cache statistics
+        const cacheStats = yield call(async () => {
+            const response = await api.rpc('get_entity_cache_stats', {
+                entity_name: tableName
+            });
+            return response.data;
+        });
+
+        // Fetch error rates
+        const errorRates = yield call(async () => {
+            const response = await api.rpc('get_entity_error_rates', {
+                entity_name: tableName,
+                time_range: '24h'
+            });
+            return response.data;
+        });
+
+        yield put(actions.setMetrics({
+            operationCounts,
+            performanceMetrics,
+            cacheStats,
+            errorRates,
+            lastUpdated: new Date().toISOString()
+        }));
+
+    } catch (error: any) {
+        EntityLogger.log('error', 'Error fetching metrics', entityKey, error);
+        yield put(actions.setError({
+            message: error.message || "An error occurred while fetching metrics.",
+            code: error.code,
+        }));
+        throw error;
+    }
+}
 
 
 /*
@@ -1089,10 +1162,6 @@ function* handleDelete<TEntity extends EntityKeys>(
 }*/
 
 //================================================================
-
-
-
-
 
 
 export {

@@ -1,8 +1,8 @@
 // useEntityTable.ts
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {createEntitySelectors} from '@/lib/redux/entity/entitySelectors';
-import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
+// import {createEntitySelectors} from '@/lib/redux/entity/entitySelectors';
+// import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {useToast} from '@/components/ui/use-toast';
 import {EntityKeys, EntityData} from '@/types/entityTypes';

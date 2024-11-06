@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import useSampleData from "@/app/(authenticated)/admin/file-system/hooks/useSampleData";
+import useSampleData from "@/app/(authenticated)/admin/hooks/useSampleData";
 import { Button } from "@/components/ui";
-import GenericSelect from "@/app/(authenticated)/admin/file-system/components/GenericSelect";
+import GenericSelect from "@/app/(authenticated)/admin/components/GenericSelect";
 
 const adminActions = [
     "Add User",

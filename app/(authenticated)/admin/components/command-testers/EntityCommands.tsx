@@ -1,3 +1,4 @@
+/*
 'use client';
 
 import * as React from 'react';
@@ -98,7 +99,7 @@ export default function EntityCommandTestPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {/* Top Actions */}
+                        {/!* Top Actions *!/}
                         <div className="mb-4">
                             <QuickEntityCommandGroup
                                 entityKey={entityKey}
@@ -108,7 +109,7 @@ export default function EntityCommandTestPage() {
                             />
                         </div>
 
-                        {/* Data Table */}
+                        {/!* Data Table *!/}
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -167,3 +168,4 @@ export default function EntityCommandTestPage() {
         </div>
     );
 }
+*/

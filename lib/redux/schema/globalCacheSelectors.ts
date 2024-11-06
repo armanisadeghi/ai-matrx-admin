@@ -1,7 +1,13 @@
 // lib/redux/selectors/globalCacheSelectors.ts
 import {RootState} from "@/lib/redux/store";
 import {createSelector} from "@reduxjs/toolkit";
-import {EntityFieldKeys, EntityKeys} from "@/types/entityTypes";
+import {
+    EntityFieldKeys,
+    EntityKeys,
+    EntityPrettyFields,
+    EntitySelectOption,
+    PrettyEntityName
+} from "@/types/entityTypes";
 import {SchemaEntity, SchemaField} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
 
@@ -190,8 +196,19 @@ export const selectEntityFrontendName = selectEntityCanonicalName;
 // Returns the name of the table in a Pretty Format for display
 export const selectEntityPrettyName = createSelector(
     [selectEntityNameFormats, (_: RootState, entityName: EntityKeys) => entityName],
-    (entityNameFormats, entityName) => entityNameFormats[entityName]?.['pretty'] || entityName
+    (entityNameFormats, entityName) => entityNameFormats[entityName]?.['pretty'] as PrettyEntityName<EntityKeys>
 );
+
+export const selectFormattedEntityOptions = createSelector(
+    [(state: RootState) => state, selectEntityNames],
+    (state, entityNames): EntitySelectOption<EntityKeys>[] => {
+        return entityNames.map((entityName) => ({
+            value: entityName,
+            label: selectEntityPrettyName(state, entityName)
+        }));
+    }
+);
+
 
 export const selectEntityAnyName = createSelector(
     [selectEntityNameFormats, (_: RootState, params: { entityName: EntityKeys; format: NameFormat }) => params],
@@ -838,6 +855,11 @@ export const selectUnifiedQueryDatabaseConversion = createSelector(
         return result;
     }
 );
+
+// ============= Convenience Selectors =============
+
+
+
 
 
 

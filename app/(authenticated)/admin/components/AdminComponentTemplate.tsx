@@ -1,5 +1,5 @@
 import React from "react";
-import GenericSelect from "@/app/(authenticated)/admin/file-system/components/GenericSelect";
+import GenericSelect from "@/app/(authenticated)/admin/components/GenericSelect";
 import useSampleData from "../hooks/useSampleData";
 
 const adminActions = [

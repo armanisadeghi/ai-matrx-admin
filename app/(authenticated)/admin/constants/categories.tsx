@@ -37,14 +37,17 @@ import {
     IconUpload,
     IconUsers
 } from "@tabler/icons-react";
-import AdminComponentOne from "@/app/(authenticated)/admin/file-system/components/AdminComponetOne";
+import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminComponetOne";
 import React from "react";
 import {CiFloppyDisk} from "react-icons/ci";
-import LocalFileAccess from "@/app/(authenticated)/admin/file-system/components/LocalFileAccess";
-import AdminTestPage from "@/app/(authenticated)/admin/file-system/components/command-testers/Command4";
-import CommandTestPage5 from "@/app/(authenticated)/admin/file-system/components/command-testers/Command5";
-import CommandTestPage from "./components/command-testers/CommandTestPage";
-import EntityTestingLab from "@/app/(authenticated)/admin/file-system/components/entities/EntityTestingLab";
+import LocalFileAccess from "@/app/(authenticated)/admin/components/LocalFileAccess";
+import AdminTestPage from "@/app/(authenticated)/admin/components/command-testers/Command4";
+import CommandTestPage5 from "@/app/(authenticated)/admin/components/command-testers/Command5";
+import CommandTestPage from "@/app/(authenticated)/admin/components/command-testers/CommandTestPage";
+import EntityTestingLab from "@/app/(authenticated)/admin/components/entities/EntityTestingLab";
+import EntityTester from "@/app/(authenticated)/admin/components/entities/EntityTester";
+import EntityMetrics from "../components/entities/EntityMetrics";
+import EntityBrowser from "../components/entities/EntityBrowser";
 
 export const adminCategories = [
     {
@@ -105,12 +108,24 @@ export const adminCategories = [
                 icon: <IconTestPipe />,
                 component: <EntityTestingLab />
             },
-            // {
-            //     title: "Entity Performance Metrics",
-            //     description: "Monitor and analyze entity operation performance, caching efficiency, and state management.",
-            //     icon: <IconChartBar />,
-            //     component: <EntityMetrics />
-            // }
+            {
+                title: "Entity Tester",
+                description: "Comprehensive testing interface for entity operations, allowing real-time CRUD operations, data inspection, and performance monitoring across all system entities.",
+                icon: <IconDatabase />,
+                component: <EntityTester />
+            },
+            {
+                title: "Entity Performance Metrics",
+                description: "Monitor and analyze entity operation performance, caching efficiency, and state management.",
+                icon: <IconChartBar />,
+                component: <EntityMetrics />
+            },
+            {
+                title: "Entity Matrx Table Browser",
+                description: "Test Entity Data in the Matrx Table.",
+                icon: <IconChartBar />,
+                component: <EntityBrowser />
+            }
         ]
     },
     {

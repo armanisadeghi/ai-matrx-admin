@@ -1,3 +1,4 @@
+/*
 // app/admin/command-test/page.tsx
 'use client';
 
@@ -6,8 +7,8 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createEntitySelectors } from '@/lib/redux/entity/entitySelectors';
-import { createEntityActions } from '@/lib/redux/entity/entityActionCreator';
+import { createEntitySelectors } from '@/lib/redux/entity/selectors';
+import { createEntityActions } from '@/lib/redux/entity/actions';
 import {createEntityCommand} from "@/components/matrx/MatrxCommands/EntityCommand";
 
 const EntitySelectorTest = () => {
@@ -181,3 +182,4 @@ export default function CommandTestPage5() {
         </div>
     );
 }
+*/

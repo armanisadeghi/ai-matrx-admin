@@ -1,3 +1,5 @@
+// lib/redux/entity/types.ts
+
 import { EntityKeys, EntityData } from "@/types/entityTypes";
 
 // --- Basic Types ---
@@ -30,10 +32,10 @@ export interface EntityMetadata {
 
 // --- Selection Management ---
 export interface SelectionState<TEntity extends EntityKeys> {
-    selectedRecords: Set<MatrxRecordId>;
+    selectedRecords: string[];  // Changed from Set<string> to string[]
     activeRecord: EntityData<TEntity> | null;
     selectionMode: 'single' | 'multiple' | 'none';
-    lastSelected?: MatrxRecordId;
+    lastSelected?: string;
 }
 
 // --- Pagination State ---
@@ -60,20 +62,21 @@ export interface LoadingState {
 }
 
 // --- Cache Management ---
-export interface CacheState {
-    lastFetched: Record<string, string>;
+interface CacheState {
+    lastFetched: Record<string, string>;  // dates as ISO strings
     staleTime: number;
     stale: boolean;
-    prefetchedPages: Set<number>;
-    invalidationTriggers: Set<string>;
+    prefetchedPages: number[];  // Changed from Set<number> to number[]
+    invalidationTriggers: string[];  // Changed from Set<string> to string[]
 }
+
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
-    primaryKeyValues: Record<string, MatrxRecordId>;
+    primaryKeyValues: Record<string, string>; // Changed from MatrxRecordId to string
     displayValue: string;
     metadata?: {
-        lastModified?: string;
+        lastModified?: string; // Already correct as string
         createdBy?: string;
         status?: string;
     };
@@ -88,7 +91,7 @@ export interface QuickReferenceState {
 
 // --- History Management ---
 export interface HistoryEntry<TEntity extends EntityKeys> {
-    timestamp: string;
+    timestamp: string; // Already correct
     operation: 'create' | 'update' | 'delete' | 'bulk';
     data: EntityData<TEntity> | EntityData<TEntity>[];
     previousData?: EntityData<TEntity> | EntityData<TEntity>[];
@@ -96,7 +99,7 @@ export interface HistoryEntry<TEntity extends EntityKeys> {
         user?: string;
         reason?: string;
         batchId?: string;
-        primaryKeyValues?: Record<string, unknown>; // Store the PK values for reference
+        primaryKeyValues?: Record<string, string>; // Changed from unknown to string for consistency
     };
 }
 
@@ -151,7 +154,7 @@ export interface SubscriptionConfig {
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
     // Core Data
-    records: Record<MatrxRecordId, EntityData<TEntity>>;
+    records: Record<string, EntityData<TEntity>>; // Changed from MatrxRecordId to string for consistent serialization
 
     // Metadata
     entityMetadata: EntityMetadata;
@@ -179,6 +182,7 @@ export interface EntityState<TEntity extends EntityKeys> {
         hasUnsavedChanges: boolean;
         isBatchOperationInProgress: boolean;
     };
+    metrics: EntityMetrics;
 }
 
 
@@ -200,6 +204,7 @@ export interface RecordOperation<TEntity extends EntityKeys> {
     record: EntityData<TEntity>;
 }
 
+
 // Updated BatchOperationPayload
 export interface BatchOperationPayload<TEntity extends EntityKeys> {
     operation: 'create' | 'update' | 'delete';
@@ -211,3 +216,63 @@ export interface BatchOperationPayload<TEntity extends EntityKeys> {
         onProgress?: (progress: number) => void;
     };
 }
+
+
+// Add these interfaces to your types file
+export interface EntityMetrics {
+    operationCounts: {
+        creates: number;
+        updates: number;
+        deletes: number;
+        timeline: Array<{
+            timestamp: string;
+            creates: number;
+            updates: number;
+            deletes: number;
+        }>;
+    };
+    performanceMetrics: {
+        responseTimes: Array<{
+            timestamp: string;
+            avgResponseTime: number;
+            p95ResponseTime: number;
+        }>;
+        throughput: Array<{
+            timestamp: string;
+            reads: number;
+            writes: number;
+        }>;
+    };
+    cacheStats: {
+        hitRate: Array<{
+            timestamp: string;
+            hitRate: number;
+        }>;
+        size: Array<{
+            timestamp: string;
+            size: number;
+        }>;
+        totalHits: number;
+        totalMisses: number;
+        evictions: number;
+        memoryUsage: string;
+    };
+    errorRates: {
+        timeline: Array<{
+            timestamp: string;
+            errorRate: number;
+        }>;
+        distribution: Array<{
+            errorType: string;
+            count: number;
+        }>;
+        recent: Array<{
+            timestamp: string;
+            type: string;
+            message: string;
+            details?: any;
+        }>;
+    };
+    lastUpdated: string;
+}
+

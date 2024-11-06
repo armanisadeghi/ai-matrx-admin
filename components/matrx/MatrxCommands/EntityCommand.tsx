@@ -3,7 +3,7 @@
 import * as React from "react";
 import {useCallback} from "react";
 import {EntityKeys, EntityData} from "@/types/entityTypes";
-import {createEntitySelectors, EntitySelectors} from '@/lib/redux/entity/entitySelectors';
+import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {Button} from "@/components/ui/button";
 import {TableCommandContext, BaseCommandConfig} from './types';
@@ -23,13 +23,14 @@ import {
 import {showConfirmDialog, showErrorToast} from "@/components/matrx/MatrxCommands/helpers";
 import {cn} from '@/lib/utils';
 import {AppDispatch} from "@/lib/redux/store";
-import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
+import {EntityState} from "@/lib/redux/entity/types";
+// import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
 
 // Entity-specific command context
 export interface EntityCommandContext<TEntity extends EntityKeys> extends TableCommandContext {
     entityKey: TEntity;
     data: EntityData<TEntity>;
-    selectors: EntitySelectors<TEntity>;
+    selectors: EntityState<TEntity>;
     index: number;
     dispatch: AppDispatch;
 }

@@ -129,7 +129,7 @@ export function generateClientGlobalCache(): UnifiedSchemaCache {
 
     if (!globalCache) throw new Error('Schema system not initialized');
     logSchemaCacheReport(globalCache);
-    console.log('Client schema generated successfully');
+    // console.log('Client schema generated successfully');
 
     return globalCache;
 }

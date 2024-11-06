@@ -11,6 +11,7 @@ import {
     LoadingState,
     SubscriptionConfig,
     EntityMetadata,
+    EntityMetrics,
 } from "@/lib/redux/entity/types";
 import {createRecordKey} from "@/lib/redux/entity/utils";
 import {UnifiedQueryOptions} from "@/lib/redux/schema/globalCacheSelectors";
@@ -144,6 +145,34 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.flags.isModified = true;
             },
 
+            fetchRecordsRejected: (
+                state,
+                action: PayloadAction<{
+                    message: string;
+                    code?: number;
+                    details?: any;
+                }>
+            ) => {
+                state.loading.loading = false;
+                state.loading.error = action.payload;
+                state.loading.lastOperation = 'fetch';
+            },
+
+            invalidateRecord: (
+                state,
+                action: PayloadAction<string>
+            ) => {
+                const recordKey = action.payload;
+                if (state.records[recordKey]) {
+                    state.cache.invalidationTriggers.push(recordKey);
+                    state.cache.stale = true;
+                }
+            },
+
+
+
+
+
             updateRecordSuccess: (
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>>
@@ -225,12 +254,12 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                     mode: 'single' | 'multiple' | 'none';
                 }>
             ) => {
-                const {records, mode} = action.payload;
-                const {primaryKeyMetadata} = state.entityMetadata;
+                const { records, mode } = action.payload;
+                const { primaryKeyMetadata } = state.entityMetadata;
 
                 state.selection.selectionMode = mode;
-                state.selection.selectedRecords = new Set(
-                    records.map(record => createRecordKey(primaryKeyMetadata, record))
+                state.selection.selectedRecords = records.map(record =>
+                    createRecordKey(primaryKeyMetadata, record)
                 );
 
                 if (records.length === 1) {
@@ -245,11 +274,164 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             },
 
             clearSelection: (state) => {
-                state.selection.selectedRecords.clear();
+                state.selection.selectedRecords = [];
                 state.selection.activeRecord = null;
                 state.selection.lastSelected = undefined;
             },
-// History Management
+
+            addToSelection: (
+                state,
+                action: PayloadAction<Draft<EntityData<TEntity>>>
+            ) => {
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+
+                if (!state.selection.selectedRecords.includes(recordKey)) {
+                    state.selection.selectedRecords.push(recordKey);
+                    state.selection.lastSelected = recordKey;
+
+                    if (state.selection.selectedRecords.length === 1) {
+                        state.selection.activeRecord = action.payload;
+                    } else {
+                        state.selection.activeRecord = null;
+                    }
+                }
+            },
+
+            removeFromSelection: (
+                state,
+                action: PayloadAction<Draft<EntityData<TEntity>>>
+            ) => {
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+
+                state.selection.selectedRecords = state.selection.selectedRecords.filter(
+                    key => key !== recordKey
+                );
+
+                if (state.selection.lastSelected === recordKey) {
+                    state.selection.lastSelected = state.selection.selectedRecords[
+                    state.selection.selectedRecords.length - 1
+                        ];
+                }
+
+                if (state.selection.selectedRecords.length === 1) {
+                    state.selection.activeRecord = state.records[state.selection.selectedRecords[0]];
+                } else {
+                    state.selection.activeRecord = null;
+                }
+            },
+
+            toggleSelection: (
+                state,
+                action: PayloadAction<Draft<EntityData<TEntity>>>
+            ) => {
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+
+                const index = state.selection.selectedRecords.indexOf(recordKey);
+                if (index === -1) {
+                    // Add to selection
+                    state.selection.selectedRecords.push(recordKey);
+                    state.selection.lastSelected = recordKey;
+
+                    if (state.selection.selectedRecords.length === 1) {
+                        state.selection.activeRecord = action.payload;
+                    } else {
+                        state.selection.activeRecord = null;
+                    }
+                } else {
+                    // Remove from selection
+                    state.selection.selectedRecords.splice(index, 1);
+
+                    if (state.selection.lastSelected === recordKey) {
+                        state.selection.lastSelected = state.selection.selectedRecords[
+                        state.selection.selectedRecords.length - 1
+                            ];
+                    }
+
+                    if (state.selection.selectedRecords.length === 1) {
+                        state.selection.activeRecord = state.records[state.selection.selectedRecords[0]];
+                    } else {
+                        state.selection.activeRecord = null;
+                    }
+                }
+            },
+
+            batchSelection: (
+                state,
+                action: PayloadAction<{
+                    operation: 'add' | 'remove' | 'toggle';
+                    records: Draft<EntityData<TEntity>>[];
+                }>
+            ) => {
+                const { operation, records } = action.payload;
+                const { primaryKeyMetadata } = state.entityMetadata;
+
+                const recordKeys = records.map(record =>
+                    createRecordKey(primaryKeyMetadata, record)
+                );
+
+                switch (operation) {
+                    case 'add':
+                        state.selection.selectedRecords = [
+                            ...new Set([...state.selection.selectedRecords, ...recordKeys])
+                        ];
+                        break;
+                    case 'remove':
+                        state.selection.selectedRecords = state.selection.selectedRecords
+                            .filter(key => !recordKeys.includes(key));
+                        break;
+                    case 'toggle':
+                        recordKeys.forEach(key => {
+                            const index = state.selection.selectedRecords.indexOf(key);
+                            if (index === -1) {
+                                state.selection.selectedRecords.push(key);
+                            } else {
+                                state.selection.selectedRecords.splice(index, 1);
+                            }
+                        });
+                        break;
+                }
+
+                state.selection.lastSelected = state.selection.selectedRecords[
+                state.selection.selectedRecords.length - 1
+                    ];
+
+                if (state.selection.selectedRecords.length === 1) {
+                    state.selection.activeRecord = state.records[state.selection.selectedRecords[0]];
+                } else {
+                    state.selection.activeRecord = null;
+                }
+            },
+
+            optimisticUpdate: (
+                state,
+                action: PayloadAction<{
+                    record: Draft<EntityData<TEntity>>;
+                    rollback?: Draft<EntityData<TEntity>>;
+                }>
+            ) => {
+                const { record, rollback } = action.payload;
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, record);
+
+                if (rollback) {
+                    state.history.past.push({
+                        timestamp: new Date().toISOString(),
+                        operation: 'update',
+                        data: record,
+                        previousData: rollback,
+                        metadata: { reason: 'optimistic_update' }
+                    });
+                }
+
+                state.records[recordKey] = record;
+                state.flags.isModified = true;
+                state.flags.hasUnsavedChanges = true;
+            },
+
+            // History Management
             pushToHistory: (
                 state,
                 action: PayloadAction<Draft<HistoryEntry<TEntity>>>
@@ -421,6 +603,33 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.flags = {
                     ...state.flags,
                     ...action.payload
+                };
+            },
+
+            // Add the action to fetch metrics
+            fetchMetrics: (state, action: PayloadAction<{ timeRange?: string }>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
+
+            // Add the success handler
+            fetchMetricsSuccess: (
+                state,
+                action: PayloadAction<EntityMetrics>
+            ) => {
+                state.metrics = action.payload;
+                state.loading.loading = false;
+            },
+
+            // Add the set metrics action
+            setMetrics: (
+                state,
+                action: PayloadAction<Partial<EntityMetrics>>
+            ) => {
+                state.metrics = {
+                    ...state.metrics,
+                    ...action.payload,
+                    lastUpdated: new Date().toISOString()
                 };
             },
 
