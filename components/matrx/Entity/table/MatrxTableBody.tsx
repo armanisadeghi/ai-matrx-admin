@@ -4,11 +4,12 @@
 import React, {useState} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {TableBody} from "@/components/ui/table";
-import {AnimatedTabModal} from "@/components/matrx/AnimatedForm";
+
 import {TableData} from "@/types/tableTypes";
-import {generateStandardTabData} from "@/components/matrx/Entity/utils/StandardTabUtil";
+import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
 import MatrxTableCell from "./MatrxTableCell";
 import {FormState, TabData} from "@/types/AnimatedFormTypes";
+import {AnimatedTabModal} from "@/components/matrx/Entity";
 
 
 interface MatrxTableBodyProps {

@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/styles/themes/utils'; // Import cn utility
+import { cn } from '@/styles/themes/utils';
+import {EntityFormModalProps, EntityFormState} from "@/components/matrx/Entity/types/entityForm";
+import {EntityForm} from "@/components/matrx/Entity"; // Import cn utility
 
-import { AnimatedFormModalProps, FormField, FormState } from "@/types/AnimatedFormTypes";
-import AnimatedForm from '@/components/matrx/Entity/form/AnimatedForm';
 
-const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string }> = (
+const EntityFormModal: React.FC<EntityFormModalProps & { className?: string }> = (
     {
         isOpen: externalIsOpen,
         onClose: externalOnClose,
@@ -25,7 +25,7 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
     }) => {
 
     const [internalIsOpen, setInternalIsOpen] = useState(false);
-    const [internalFormState, setInternalFormState] = useState<FormState>(externalFormState);
+    const [internalFormState, setInternalFormState] = useState<EntityFormState>(externalFormState);
 
     const isControlled = externalIsOpen !== undefined;
     const isOpen = isControlled ? externalIsOpen : internalIsOpen;
@@ -52,7 +52,7 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
     const handleSubmit = () => {
         if (externalOnSubmit) {
             if (externalOnSubmit.length > 0) {
-                (externalOnSubmit as (formData: FormState) => void)(internalFormState);
+                (externalOnSubmit as (formData: EntityFormState) => void)(internalFormState);
             } else {
                 (externalOnSubmit as () => void)();
             }
@@ -97,7 +97,7 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
                                 &times;
                             </button>
                             <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary max-h-[70vh]"> {/* Ensure form content can scroll */}
-                                <AnimatedForm
+                                <EntityForm
                                     fields={fields}
                                     formState={internalFormState}
                                     onUpdateField={handleUpdateField}
@@ -123,4 +123,4 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
     );
 };
 
-export default AnimatedFormModal;
+export default EntityFormModal;

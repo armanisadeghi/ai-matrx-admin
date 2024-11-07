@@ -1,12 +1,8 @@
 "use client"
 
 import * as React from "react"
-import {
-    ColumnDef,
-    flexRender, TableOptions,
-    useReactTable,
-} from "@tanstack/react-table"
-import {ChevronDown, EditIcon, TrashIcon} from "lucide-react"
+import {flexRender, TableOptions, useReactTable,} from "@tanstack/react-table"
+import {ChevronDown} from "lucide-react"
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip"
 
 import {Button} from "@/components/ui/button"
@@ -30,41 +26,12 @@ import {useEntity} from "@/lib/redux/entity/useEntity"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
 import {Spinner} from "@nextui-org/spinner";
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
-import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
-import {useMemo} from "react";
-import {ActionColumnOptions} from "@/components/matrx/Entity/addOns/columnDefinitions";
-
-export interface DataTableProps<TEntity extends EntityKeys> {
-    entityKey: TEntity;
-    variant?: 'default' | 'compact' | 'cards' | 'minimal';
-    options?: {
-        showCheckboxes?: boolean;
-        showFilters?: boolean;
-        showActions?: boolean;
-        actions?: {
-            showEdit?: boolean;
-            showDelete?: boolean;
-            showExpand?: boolean;
-            custom?: Array<{
-                label: string;
-                onClick: (row: EntityData<TEntity>) => void;
-                variant?: "outline" | "destructive";
-                size?: "xs" | "sm";
-            }>;
-        };
-    };
-}
-
-const DEFAULT_OPTIONS = {
-    showCheckboxes: true,
-    showFilters: true,
-    showActions: true,
-    actions: {
-        showEdit: true,
-        showDelete: true,
-        showExpand: true,
-    }
-};
+import {buildColumnsFromTableColumns, defaultTableActions} from "@/components/matrx/Entity/addOns/tableBuilder";
+import {EntityTabModal} from "@/components/matrx/Entity";
+import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
+import {useEntityTabModal} from "@/components/matrx/Entity/hooks/useEntityTabModal";
+import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
+import {DataTableProps, DEFAULT_OPTIONS} from "@/components/matrx/Entity/types/entityTable";
 
 export function DataTable<TEntity extends EntityKeys>(
     {
@@ -89,76 +56,50 @@ export function DataTable<TEntity extends EntityKeys>(
         });
     }, [entityKey]);
 
+    // Modal state
+    const [selectedRow, setSelectedRow] = React.useState<EntityData<TEntity> | null>(null);
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [activeTab, setActiveTab] = React.useState<string>('view');
+
+    const handleAction = React.useCallback((actionName: string, rowData: EntityData<TEntity>) => {
+        setSelectedRow(rowData);
+        setActiveTab(actionName);
+        setIsModalOpen(true);
+    }, []);
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedRow(null);
+    };
+
+    const defaultActions = React.useMemo(() =>
+            createDefaultTableActions(handleAction)
+        , [handleAction]);
+
     const columnsWithActions = React.useMemo(() => {
         const baseColumns = (config.columns || []).map(col => ({
             key: col.id,
             title: String(col.header)
         }));
 
-        const actionButtons = [];
-        if (options.showActions) {
-            if (options.actions?.showEdit) {
-                actionButtons.push({
-                    id: "edit",
-                    label: "Edit",
-                    onClick: (row) => console.log("Edit", row),
-                    variant: "outline",
-                    size: "xs"
-                });
-            }
-
-            if (options.actions?.showDelete) {
-                actionButtons.push({
-                    id: "delete",
-                    label: "Delete",
-                    onClick: (row) => console.log("Delete", row),
-                    variant: "destructive",
-                    size: "xs"
-                });
-            }
-            if (options.actions?.showExpand) {
-                actionButtons.push({
-                    id: "expand",
-                    label: "Expand",
-                    onClick: (row) => console.log("Expand", row),
-                    variant: "primary",
-                    size: "xs"
-                });
-            }
-
-
-            if (options.actions?.custom) {
-                actionButtons.push(...options.actions.custom);
-            }
-        }
-
         return buildColumnsFromTableColumns<TEntity>(
             baseColumns,
-            actionButtons.length > 0
-            ? [{
-                    type: "actions",
-                    options: {
-                        actions: actionButtons,
-                        containerClassName: "justify-end"
-                    }
-                }]
-            : []
+            options.showActions ? [defaultActions.expanded] : []
         );
-    }, [config.columns, options]);
+    }, [config.columns, options, defaultActions]);
 
-    const tableConfig = useMemo(() => {
-        return {
-            ...config,
-            columns: columnsWithActions,
-            data: config.data || [],
-            state: {
-                ...config.state,
-                globalFilter: tableState.globalFilter,
-            },
-        } as TableOptions<EntityData<TEntity>>;
-    }, [config, columnsWithActions, tableState.globalFilter]);
-
-    const table = useReactTable(tableConfig);
+    const table = useReactTable({
+        ...config,
+        columns: columnsWithActions,
+        data: config.data || [],
+        state: {
+            ...config.state,
+            columnVisibility: tableState.columnVisibility,
+            globalFilter: tableState.globalFilter,
+        },
+        onColumnVisibilityChange: config.onColumnVisibilityChange,
+        onGlobalFilterChange: config.onGlobalFilterChange,
+    });
 
     return (
         <div className="relative w-full">
@@ -186,7 +127,7 @@ export function DataTable<TEntity extends EntityKeys>(
                         placeholder="Search all fields..."
                         className="max-w-sm"
                         value={tableState.globalFilter}
-                        onChange={(e) => tableUtils.setGlobalFilter(e.target.value)}
+                        onChange={(e) => table.setGlobalFilter(e.target.value)}
                     />
 
                     <div className="flex gap-2">
@@ -206,9 +147,7 @@ export function DataTable<TEntity extends EntityKeys>(
                                                 key={column.id}
                                                 className="capitalize"
                                                 checked={column.getIsVisible()}
-                                                onCheckedChange={(value) =>
-                                                    column.toggleVisibility(!!value)
-                                                }
+                                                onCheckedChange={(value) => column.toggleVisibility(!!value)}
                                             >
                                                 {column.id}
                                             </DropdownMenuCheckboxItem>
@@ -268,6 +207,25 @@ export function DataTable<TEntity extends EntityKeys>(
                     </TableBody>
                 </Table>
             </div>
+            {selectedRow && isModalOpen && (
+                <EntityTabModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    tabs={generateStandardTabData(
+                        selectedRow,
+                        setActiveTab,
+                        setIsModalOpen,
+                        selectedRow,
+                        handleAction
+                    )}
+                    activeTab={activeTab}
+                    formState={selectedRow}
+                    title={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Item`}
+                    description={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} item details`}
+                    onTabChange={setActiveTab}
+                    isSinglePage={true}
+                />
+            )}
 
             <div className="flex items-center justify-between py-4">
                 <div className="flex items-center space-x-4">

@@ -1,83 +1,106 @@
-// components/table/BaseTable.tsx
-import React from "react";
-import {EntityKeys} from "@/types/entityTypes";
-import {useDataTable} from "@/components/matrx/Entity/hooks/useDataTable";
+"use client"
+
+import * as React from "react"
+import {flexRender, TableOptions, useReactTable,} from "@tanstack/react-table"
+import {ChevronDown} from "lucide-react"
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip"
+
+import {Button} from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+import {Input} from "@/components/ui/input"
+import {useEntity} from "@/lib/redux/entity/useEntity"
+import {EntityKeys, EntityData} from "@/types/entityTypes"
+import {Spinner} from "@nextui-org/spinner";
+import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
+import {buildColumnsFromTableColumns, defaultTableActions} from "@/components/matrx/Entity/addOns/tableBuilder";
+import {EntityTabModal} from "@/components/matrx/Entity";
+import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
+import {useEntityTabModal} from "@/components/matrx/Entity/hooks/useEntityTabModal";
+import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
+import {DataTableProps, DEFAULT_OPTIONS} from "@/components/matrx/Entity/types/entityTable";
 import {DefaultTable} from "@/components/matrx/Entity/DataTable/variants/DefaultTable";
-import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
-import {ColumnFiltersState, useReactTable, getCoreRowModel, getFilteredRowModel} from "@tanstack/react-table";
-import {TableFilter} from "../addOns/TableFilter";
 
-import {useEntity} from "@/lib/redux/entity/useEntity";
-
-const DEFAULT_PAGE_SIZE = 10;
-
-export interface DataTableProps<TEntity extends EntityKeys> {
-    entityKey: TEntity;
-    variant?: 'default' | 'compact' | 'cards' | 'minimal';
-    options?: {
-        showCheckboxes?: boolean; // default true
-        showFilters?: boolean; // default true
-        showActions?: boolean; // default true
-        actions?: {
-            showEdit?: boolean; // default true
-            showDelete?: boolean; // default true
-            showExpand?: boolean; // default true
-            custom?: Array<{
-                label: string;
-                onClick: (row: any) => void;
-                variant?: "outline" | "destructive";
-                size?: "xs" | "sm";
-            }>;
-        };
-    };
-}
-
-export function DataTable<TEntity extends EntityKeys>(
+export function EntityBaseTable<TEntity extends EntityKeys>(
     {
         entityKey,
-        variant = 'default',
-        options = {
-            showCheckboxes: true,
-            showFilters: true,
-            showActions: true,
-            actions: {
-                showEdit: true,
-                showDelete: true,
-                showExpand: true
-            }
-        }
+        options = DEFAULT_OPTIONS
     }: DataTableProps<TEntity>) {
     const {
-        matrxTableData,
-        // ... other useful things from useEntity
+        loadingState,
+        paginationInfo,
+        matrxTableData: {
+            config,
+            state: tableState,
+            utils: tableUtils,
+            defaultPageSize,
+        }
     } = useEntity(entityKey);
 
-    // Add default columns (checkbox and actions) to the existing columns
-    const enhancedColumns = React.useMemo(() => {
-        let columns = [...matrxTableData.columns];
+    React.useEffect(() => {
+        config.onPaginationChange?.({
+            pageIndex: 0,
+            pageSize: defaultPageSize
+        });
+    }, [entityKey]);
 
-        if (options.showCheckboxes) {
-            columns.unshift({
-                id: 'select',
-                // ... your checkbox column definition
-            });
-        }
+    // Modal state
+    const [selectedRow, setSelectedRow] = React.useState<EntityData<TEntity> | null>(null);
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [activeTab, setActiveTab] = React.useState<string>('view');
 
-        if (options.showActions) {
-            columns.push({
-                id: 'actions',
-                // ... your actions column definition
-            });
-        }
+    const handleAction = React.useCallback((actionName: string, rowData: EntityData<TEntity>) => {
+        setSelectedRow(rowData);
+        setActiveTab(actionName);
+        setIsModalOpen(true);
+    }, []);
 
-        return columns;
-    }, [matrxTableData.columns, options]);
-
-    // Enhanced table configuration
-    const tableConfig = {
-        ...matrxTableData.config,
-        columns: enhancedColumns,
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedRow(null);
     };
+
+    const defaultActions = React.useMemo(() =>
+            createDefaultTableActions(handleAction)
+        , [handleAction]);
+
+    const columnsWithActions = React.useMemo(() => {
+        const baseColumns = (config.columns || []).map(col => ({
+            key: col.id,
+            title: String(col.header)
+        }));
+
+        return buildColumnsFromTableColumns<TEntity>(
+            baseColumns,
+            options.showActions ? [defaultActions.expanded] : []
+        );
+    }, [config.columns, options, defaultActions]);
+
+    const table = useReactTable({
+        ...config,
+        columns: columnsWithActions,
+        data: config.data || [],
+        state: {
+            ...config.state,
+            columnVisibility: tableState.columnVisibility,
+            globalFilter: tableState.globalFilter,
+        },
+        onColumnVisibilityChange: config.onColumnVisibilityChange,
+        onGlobalFilterChange: config.onGlobalFilterChange,
+    });
 
     return (
         <div className="space-y-4">
@@ -88,8 +111,20 @@ export function DataTable<TEntity extends EntityKeys>(
             )}
 
             <DefaultTable
-                {...matrxTableData}
-                config={tableConfig}
+                table={table}
+                config={config}
+                options={options}
+                tableState={tableState}
+                loadingState={loadingState}
+                paginationInfo={paginationInfo}
+                columnsWithActions={columnsWithActions}
+                selectedRow={selectedRow}
+                isModalOpen={isModalOpen}
+                handleCloseModal={handleCloseModal}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                setIsModalOpen={setIsModalOpen}
+                handleAction={handleAction}
             />
         </div>
     );
@@ -98,74 +133,3 @@ export function DataTable<TEntity extends EntityKeys>(
 
 
 
-export function DataTable2<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        variant = 'default',
-        defaultColumns,
-        additionalActions
-    }: DataTableProps<TEntity>) {
-    const tableProps = useDataTable(entityKey);
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-
-    const enhancedColumns = React.useMemo(() =>
-            buildColumnsFromTableColumns<TEntity>(
-                defaultColumns || tableProps.tableColumns,
-                [
-                    ...(additionalActions?.map(action => ({
-                        type: "actions" as const,
-                        options: {
-                            actions: [{
-                                ...action,
-                                variant: action.variant || "outline",
-                                size: action.size || "xs"
-                            }]
-                        }
-                    })) || [])
-                ]
-            ),
-        [tableProps.tableColumns, defaultColumns, additionalActions]
-    );
-
-    const table = useReactTable({
-        ...tableProps.table.options,
-        columns: enhancedColumns,
-        state: {
-            ...tableProps.table.options.state,
-            columnFilters,
-        },
-        onColumnFiltersChange: setColumnFilters,
-        getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-    });
-
-    const enhancedProps = {
-        ...tableProps,
-        table,
-        columns: enhancedColumns,
-    };
-
-    return (
-        <div className="space-y-4">
-            {/* Filter Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {table.getHeaderGroups().map(headerGroup =>
-                    headerGroup.headers.map(header => {
-                        if (!header.column.getCanFilter()) return null;
-                        return (
-                            <div key={header.id} className="space-y-1">
-                                <label className="text-sm font-medium">
-                                    {header.column.columnDef.header as string}
-                                </label>
-                                <TableFilter column={header.column}/>
-                            </div>
-                        );
-                    })
-                )}
-            </div>
-
-            {/* Table Component */}
-            <DefaultTable {...enhancedProps} />
-        </div>
-    );
-}

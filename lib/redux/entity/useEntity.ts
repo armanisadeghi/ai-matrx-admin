@@ -9,8 +9,8 @@ import {RootState} from '@/lib/redux/store';
 import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {Draft} from "immer";
 import {QueryOptions} from "@/lib/redux/entity/sagas";
-import { createRecordKey } from '@/lib/redux/entity/utils';
-import { produce } from 'immer';
+import {createRecordKey} from '@/lib/redux/entity/utils';
+import {produce} from 'immer';
 import {
     ColumnDef,
     SortingState,
@@ -45,7 +45,7 @@ interface TanStackColumnMeta {
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { actions } = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
     const [lastError, setLastError] = useState<any>(null);
 
     const safeDispatch = useCallback((action: any) => {
@@ -213,7 +213,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         operation: 'add' | 'remove' | 'toggle',
         records: Draft<EntityData<TEntity>>[]
     ) => {
-        safeDispatch(actions.batchSelection({ operation, records }));
+        safeDispatch(actions.batchSelection({operation, records}));
     }, [safeDispatch, actions]);
 
     // Optimistic Update Support
@@ -221,7 +221,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         record: Draft<EntityData<TEntity>>,
         rollback?: Draft<EntityData<TEntity>>
     ) => {
-        safeDispatch(actions.optimisticUpdate({ record, rollback }));
+        safeDispatch(actions.optimisticUpdate({record, rollback}));
     }, [safeDispatch, actions]);
 
     // Enhanced Error Handling
@@ -261,7 +261,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             id: col.key,
             accessorKey: col.key,
             header: col.title,
-            cell: ({ getValue }) => {
+            cell: ({getValue}) => {
                 const value = getValue();
                 return value === undefined ? "" : String(value);
             },
@@ -293,6 +293,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         enableRowSelection: true,
         enableMultiRowSelection: true,
         enableSorting: true,
+        enableColumnVisibility: true, // Add this
         manualPagination: true,
         manualSorting: true,
         getCoreRowModel: getCoreRowModel(),
@@ -303,29 +304,38 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             const newPagination = typeof updater === 'function'
                                   ? updater(tableState.pagination)
                                   : updater;
-            setTableState(prev => ({ ...prev, pagination: newPagination }));
+            setTableState(prev => ({...prev, pagination: newPagination}));
             fetchRecords(newPagination.pageIndex + 1, newPagination.pageSize);
         },
         onSortingChange: (updater: any) => {
             const newSorting = typeof updater === 'function'
                                ? updater(tableState.sorting)
                                : updater;
-            setTableState(prev => ({ ...prev, sorting: newSorting }));
+            setTableState(prev => ({...prev, sorting: newSorting}));
             setSorting({
                 field: newSorting[0]?.id || '',
                 direction: newSorting[0]?.desc ? 'desc' : 'asc'
             });
         },
+        onColumnVisibilityChange: (updater: any) => {
+            const newVisibility = typeof updater === 'function'
+                                  ? updater(tableState.columnVisibility)
+                                  : updater;
+            setTableState(prev => ({...prev, columnVisibility: newVisibility}));
+        },
         onRowSelectionChange: (updater: any) => {
             const newSelection = typeof updater === 'function'
                                  ? updater(tableState.rowSelection)
                                  : updater;
-            setTableState(prev => ({ ...prev, rowSelection: newSelection }));
+            setTableState(prev => ({...prev, rowSelection: newSelection}));
             const selectedRows = currentPage
                 .filter((_, index) => newSelection[index]) as Draft<EntityData<TEntity>>[];
             setSelection(selectedRows, 'multiple');
         },
-    } as Partial<TableOptions<EntityData<TEntity>>>), [
+        onGlobalFilterChange: (value: string) => {
+            setTableState(prev => ({...prev, globalFilter: value}));
+        },
+    } as TableOptions<EntityData<TEntity>>), [
         currentPage,
         tanstackColumns,
         paginationInfo,
@@ -351,10 +361,10 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             });
         },
         setGlobalFilter: (filter: string) => {
-            setTableState(prev => ({ ...prev, globalFilter: filter }));
+            setTableState(prev => ({...prev, globalFilter: filter}));
         },
         setColumnVisibility: (visibility: VisibilityState) => {
-            setTableState(prev => ({ ...prev, columnVisibility: visibility }));
+            setTableState(prev => ({...prev, columnVisibility: visibility}));
         },
         getVisibleColumns: () => {
             return tanstackColumns.filter(col =>
@@ -367,7 +377,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             return Object.keys(tableState.rowSelection);
         },
         clearSelection: () => {
-            setTableState(prev => ({ ...prev, rowSelection: {} }));
+            setTableState(prev => ({...prev, rowSelection: {}}));
         },
     }), [tanstackColumns, tableState]);
 

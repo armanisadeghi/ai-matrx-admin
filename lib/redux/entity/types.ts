@@ -15,24 +15,26 @@ export interface PrimaryKeyMetadata {
     where_template: Record<string, null>;
 }
 
+export interface EntityField {
+    name: string;
+    displayName: string;
+    isPrimary?: boolean;
+    isDisplayField?: boolean;
+}
+
 // Updated EntityMetadata
 export interface EntityMetadata {
     displayName: string;
     schemaType: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
-    fields: Array<{
-        name: string;
-        displayName: string;
-        isPrimary?: boolean;
-        isDisplayField?: boolean;
-    }>;
+    fields: EntityField[];
 }
 
 
 
 // --- Selection Management ---
 export interface SelectionState<TEntity extends EntityKeys> {
-    selectedRecords: string[];  // Changed from Set<string> to string[]
+    selectedRecords: MatrxRecordId[];  // Changed from Set<string> to string[]
     activeRecord: EntityData<TEntity> | null;
     selectionMode: 'single' | 'multiple' | 'none';
     lastSelected?: string;

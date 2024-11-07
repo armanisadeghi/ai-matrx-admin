@@ -5,9 +5,9 @@ import {Cell} from "react-table";
 import {TableData} from "@/types/tableTypes";
 import {TableCell} from "@/components/ui/table";
 import {TableActionIcon} from "@/components/matrx/Entity/action/MatrixTableActions";
-import {truncateText} from "../utils/StandardTabUtil";
+import {truncateText} from "../utils/tableHelpers";
 import {motion} from "framer-motion";
-import MatrixTableTooltip from "./MatrixTableTooltip";
+import MatrixTableTooltip from "../addOns/MatrixTableTooltip";
 
 
 const MatrxTableCell: React.FC<{

@@ -3,35 +3,97 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {flexRender} from "@tanstack/react-table"
+import {Spinner} from "@nextui-org/spinner";
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+    DropdownMenu, DropdownMenuCheckboxItem,
+    DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui";
+import {ChevronDown} from "lucide-react";
+import * as React from "react";
+import {EntityTabModal, generateStandardTabData} from "@/components/matrx/Entity";
 
 export function DefaultTable(
     {
         table,
         loadingState,
         paginationInfo,
-        pageSizeOptions,
-        globalFilter,
-        setGlobalFilter,
-        handlePageSizeChange,
-        fetchRecords,
-        columns,
+        config,
+        options,
+        tableState,
+        columnsWithActions,
+        selectedRow,
+        isModalOpen,
+        handleCloseModal,
+        activeTab,
+        setActiveTab,
+        setIsModalOpen,
+        handleAction,
     }) {
     return (
         <div className="relative w-full">
-            {/* Table Controls */}
-            <div className="flex items-center justify-between py-4">
-                <Input
-                    placeholder="Search all fields..."
-                    className="max-w-sm"
-                    value={globalFilter}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                />
-            </div>
+            {loadingState.loading && (
+                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">
+                    <div className="flex items-center gap-2">
+                        <Spinner size="lg" label="Loading..." color="primary" labelColor="primary"/>
+                    </div>
+                </div>
+            )}
+            {loadingState.error && (
+                <div className="p-4 text-destructive">
+                    <Alert variant="destructive">
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {loadingState.error.message}
+                        </AlertDescription>
+                    </Alert>
+                </div>
+            )}
 
-            {/* Main Table */}
-            <div className="rounded-md border">
+            {options.showFilters && (
+                <div className="flex items-center justify-between py-4">
+                    <Input
+                        placeholder="Search all fields..."
+                        className="max-w-sm"
+                        value={tableState.globalFilter}
+                        onChange={(e) => table.setGlobalFilter(e.target.value)}
+                    />
+
+                    <div className="flex gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    Columns <ChevronDown className="ml-2 h-4 w-4"/>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {table
+                                    .getAllColumns()
+                                    .filter((column) => column.getCanHide())
+                                    .map((column) => {
+                                        return (
+                                            <DropdownMenuCheckboxItem
+                                                key={column.id}
+                                                className="capitalize"
+                                                checked={column.getIsVisible()}
+                                                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                            >
+                                                {column.id}
+                                            </DropdownMenuCheckboxItem>
+                                        )
+                                    })}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+            )}
+
+            <div className="rounded-md border flex-1 overflow-auto">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-background z-10">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
@@ -50,7 +112,10 @@ export function DefaultTable(
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                <TableRow
+                                    key={row.id}
+                                    data-state={row.getIsSelected() && "selected"}
+                                >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(
@@ -63,7 +128,10 @@ export function DefaultTable(
                             ))
                         ) : (
                              <TableRow>
-                                 <TableCell colSpan={columns.length} className="h-24 text-center">
+                                 <TableCell
+                                     colSpan={columnsWithActions.length}
+                                     className="h-24 text-center"
+                                 >
                                      No results.
                                  </TableCell>
                              </TableRow>
@@ -71,21 +139,48 @@ export function DefaultTable(
                     </TableBody>
                 </Table>
             </div>
+            {selectedRow && isModalOpen && (
+                <EntityTabModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    tabs={generateStandardTabData(
+                        selectedRow,
+                        setActiveTab,
+                        setIsModalOpen,
+                        selectedRow,
+                        handleAction
+                    )}
+                    activeTab={activeTab}
+                    formState={selectedRow}
+                    title={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Item`}
+                    description={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} item details`}
+                    onTabChange={setActiveTab}
+                    isSinglePage={true}
+                />
+            )}
 
-            {/* Pagination Controls */}
             <div className="flex items-center justify-between py-4">
                 <div className="flex items-center space-x-4">
-                    <select
-                        value={paginationInfo.pageSize}
-                        onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                        className="h-8 rounded-md border bg-background px-2 text-sm"
-                    >
-                        {pageSizeOptions.map((size) => (
-                            <option key={size} value={size}>
-                                Show {size}
-                            </option>
-                        ))}
-                    </select>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Rows per page: {paginationInfo.pageSize} <ChevronDown className="ml-2 h-4 w-4"/>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {[5, 10, 25, 50, 100].map((size) => (
+                                <DropdownMenuItem
+                                    key={size}
+                                    onSelect={() => config.onPaginationChange?.({
+                                        pageIndex: 0,
+                                        pageSize: size
+                                    })}
+                                >
+                                    {size}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     <span className="text-sm text-muted-foreground">
                         Showing {((paginationInfo.page - 1) * paginationInfo.pageSize) + 1} to{" "}
@@ -94,26 +189,41 @@ export function DefaultTable(
                     </span>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fetchRecords(paginationInfo.page - 1, paginationInfo.pageSize)}
-                        disabled={!paginationInfo.hasPreviousPage}
-                    >
-                        Previous
-                    </Button>
-                    <span className="text-sm font-medium">
-                        Page {paginationInfo.page} of {paginationInfo.totalPages}
+                <div className="flex items-center space-x-6">
+                    <span className="text-sm text-muted-foreground">
+                        {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                        {table.getFilteredRowModel().rows.length} row(s) selected
                     </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fetchRecords(paginationInfo.page + 1, paginationInfo.pageSize)}
-                        disabled={!paginationInfo.hasNextPage}
-                    >
-                        Next
-                    </Button>
+
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => config.onPaginationChange?.({
+                                pageIndex: paginationInfo.page - 2,
+                                pageSize: paginationInfo.pageSize
+                            })}
+                            disabled={!paginationInfo.hasPreviousPage}
+                        >
+                            Previous
+                        </Button>
+
+                        <span className="text-sm font-medium">
+                            Page {paginationInfo.page} of {paginationInfo.totalPages}
+                        </span>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => config.onPaginationChange?.({
+                                pageIndex: paginationInfo.page,
+                                pageSize: paginationInfo.pageSize
+                            })}
+                            disabled={!paginationInfo.hasNextPage}
+                        >
+                            Next
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

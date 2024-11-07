@@ -6,16 +6,14 @@ import React from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {cn} from '@/styles/themes/utils';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/tabs';
-
-import {AnimatedTabModalProps, TabButton} from "@/types/AnimatedFormTypes";
-import { useAnimatedTabModal } from '../hooks/useAnimatedTabModal';
-import {AnimatedForm } from '../../AnimatedForm';
 import AnimatedButton from "components/matrx/AnimatedForm/AnimatedButton";
+import {EntityTabModalProps, TabButton} from "@/components/matrx/Entity/types/entityForm";
+import {EntityForm} from "@/components/matrx/Entity";
+import {useEntityTabModal} from "@/components/matrx/Entity/hooks/useEntityTabModal";
+import {Button} from "@/components/ui";
 
 
-
-
-const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }> = (
+const EntityTabModal: React.FC<EntityTabModalProps & { className?: string }> = (
     {
         isOpen: externalIsOpen,
         onClose: externalOnClose,
@@ -25,10 +23,8 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
         formState: externalFormState = {},
         onUpdateField: externalOnUpdateField,
         currentStep = 0,
-        onNextStep = () => {
-        },
-        onPrevStep = () => {
-        },
+        onNextStep = () => {},
+        onPrevStep = () => {},
         isSinglePage = false,
         title,
         description,
@@ -49,7 +45,7 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
         handleSubmit,
         handleUpdateField,
         handleTabChange,
-    } = useAnimatedTabModal({
+    } = useEntityTabModal({
         isOpen: externalIsOpen,
         onClose: externalOnClose,
         onSubmit: externalOnSubmit,
@@ -81,8 +77,8 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
     // Dynamic class name for grid columns based on the number of tabs
     const gridColsClass = `grid-cols-${totalTabs}`;
 
-    const renderForm = (fieldsToRender: AnimatedTabModalProps['fields'] = []) => (
-        <AnimatedForm
+    const renderForm = (fieldsToRender: EntityTabModalProps['fields'] = []) => (
+        <EntityForm
             fields={fieldsToRender}
             formState={internalFormState}
             onUpdateField={handleUpdateField}
@@ -138,12 +134,12 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                             style={{maxHeight: "95vh"}}
                             {...props}
                         >
-                            <button
+                            <Button
                                 onClick={closeModal}
                                 className="absolute top-2 right-2 text-foreground hover:text-primary"
                             >
                                 &times;
-                            </button>
+                            </Button>
 
                             {(title || description) && (
                                 <div className="mb-2">
@@ -179,8 +175,8 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                                     ))}
                                 </Tabs>
                             ) : (
-                                renderForm(fields)
-                            )}
+                                 renderForm(fields)
+                             )}
 
                             {footer && (
                                 <div className="mt-2">
@@ -202,4 +198,4 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
     );
 };
 
-export default AnimatedTabModal;
+export default EntityTabModal;

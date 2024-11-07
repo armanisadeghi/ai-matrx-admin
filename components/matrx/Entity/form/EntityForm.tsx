@@ -10,9 +10,9 @@ import AnimatedSelect from "components/matrx/AnimatedForm/AnimatedSelect";
 import AnimatedCheckbox from "components/matrx/AnimatedForm/AnimatedCheckbox";
 import AnimatedRadioGroup from "components/matrx/AnimatedForm/AnimatedRadioGroup";
 import AnimatedButton from "components/matrx/AnimatedForm/AnimatedButton";
-import {AnimatedFormProps, FormField } from "@/types/AnimatedFormTypes";
+import {EntityFormField, EntityFormProps} from "@/components/matrx/Entity/types/entityForm";
 
-const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
+const EntityForm: React.FC<EntityFormProps & { className?: string }> = (
     {
         fields,
         formState,
@@ -60,7 +60,7 @@ const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
     };
   }, [currentStep, fields]);
 
-    const renderField = (field: FormField) => {
+    const renderField = (field: EntityFormField) => {
         const commonProps = {
             field,
             value: formState[field.name] || '',
@@ -203,4 +203,4 @@ const AnimatedForm: React.FC<AnimatedFormProps & { className?: string }> = (
     );
 };
 
-export default AnimatedForm;
+export default EntityForm;

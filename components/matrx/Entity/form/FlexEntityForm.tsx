@@ -22,72 +22,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ColorPicker from "@/components/ui/color-picker";
 import ImageDisplay from "@/components/ui/image-display";
 import StarRating from "@/components/ui/star-rating";
+import {EntityFlexFormField, FlexEntityFormProps} from "@/components/matrx/Entity/types/entityForm";
 
-export type FormFieldType =
-    'text'
-    | 'email'
-    | 'number'
-    | 'select'
-    | 'textarea'
-    | 'checkbox'
-    | 'radio'
-    | 'password'
-    | 'date'
-    | 'time'
-    | 'datetime-local'
-    | 'month'
-    | 'week'
-    | 'tel'
-    | 'url'
-    | 'color'
-    | 'slider'
-    | 'switch'
-    | 'json'
-    | 'file'
-    | 'image'
-    | 'rating';
 
-export interface FlexFormField {
-    name: string;
-    label: string;
-    type: FormFieldType;
-    options?: string[];
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    section?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-    accept?: string;
-    multiple?: boolean;
-    src?: string;
-    alt?: string;
-    jsonSchema?: object;
-}
-
-export interface FormState {
-    [key: string]: any;
-}
-
-export interface FlexAnimatedFormProps {
-    fields: FlexFormField[];
-    formState: FormState;
-    onUpdateField: (name: string, value: any) => void;
-    onSubmit: () => void;
-    currentStep?: number;
-    onNextStep?: () => void;
-    onPrevStep?: () => void;
-    isSinglePage?: boolean;
-    className?: string;
-    isFullPage?: boolean;
-    columns?: number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
-    layout?: 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
-    enableSearch?: boolean;
-    direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-}
-
-const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
+const FlexEntityForm: React.FC<FlexEntityFormProps> = (
     {
         fields,
         formState,
@@ -129,7 +67,7 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
         )
         : fields;
 
-    const renderField = (field: FlexFormField) => {
+    const renderField = (field: EntityFlexFormField) => {
         const commonProps = {
             field,
             value: formState[field.name] || '',
@@ -530,4 +468,4 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
     );
 };
 
-export default FlexAnimatedForm;
+export default FlexEntityForm;

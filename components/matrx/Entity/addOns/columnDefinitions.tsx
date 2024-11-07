@@ -25,13 +25,6 @@ declare module '@tanstack/react-table' {
     }
 }
 
-export interface TableColumnDefinition {
-    key: string;
-    title: string;
-}
-
-
-
 export type ColumnType =
     | "select"
     | "data"
@@ -91,7 +84,7 @@ export type StatusColumnOptions = {
     };
 };
 
-export type ActionColumnOptions = {
+export type ActionColumnOptions<TEntity extends EntityKeys> = {
     type: "actions";
     options: {
         actions: Array<{
@@ -107,17 +100,16 @@ export type ActionColumnOptions = {
     };
 };
 
-
 // Union type of all possible column configurations
-export type ColumnOptions =
+export type ColumnOptions <TEntity extends EntityKeys> =
     | { type: "select" }
     | DataColumnOptions
     | StatusColumnOptions
-    | ActionColumnOptions;
+    | ActionColumnOptions<TEntity>;
 
 // Builder function type
 export type TableColumnBuilder = <TEntity extends EntityKeys>(
-    columns: ColumnOptions[]
+    columns: ColumnOptions<EntityKeys>[]
 ) => ColumnDef<EntityData<TEntity>>[];
 
 

@@ -1,7 +1,7 @@
 import {useState, useEffect, useCallback} from 'react';
-import {AnimatedModalFormState, AnimatedTabModalProps} from "@/types/AnimatedFormTypes";
+import {EntityModalFormState, EntityTabModalProps} from "@/components/matrx/Entity/types/entityForm";
 
-export const useAnimatedTabModal = (
+export const useEntityTabModal = (
     {
         isOpen: externalIsOpen,
         onClose: externalOnClose,
@@ -11,9 +11,9 @@ export const useAnimatedTabModal = (
         tabs,
         activeTab: externalActiveTab,
         onTabChange: externalOnTabChange,
-    }: Partial<AnimatedTabModalProps>) => {
+    }: Partial<EntityTabModalProps>) => {
     const [internalIsOpen, setInternalIsOpen] = useState(false);
-    const [internalFormState, setInternalFormState] = useState<AnimatedModalFormState>(externalFormState);
+    const [internalFormState, setInternalFormState] = useState<EntityModalFormState>(externalFormState);
     const [internalActiveTab, setInternalActiveTab] = useState(tabs ? tabs[0].value : '');
 
     const isControlled = externalIsOpen !== undefined;
@@ -59,7 +59,7 @@ export const useAnimatedTabModal = (
         if (externalOnSubmit) {
             if (typeof externalOnSubmit === 'function') {
                 if (externalOnSubmit.length > 0) {
-                    (externalOnSubmit as (formData: AnimatedModalFormState) => void)(internalFormState);
+                    (externalOnSubmit as (formData: EntityModalFormState) => void)(internalFormState);
                 } else {
                     (externalOnSubmit as () => void)();
                 }
