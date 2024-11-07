@@ -1,15 +1,21 @@
-// SchemaSelect.tsx
+// components/matrx/schema/ops/SchemaSelect.tsx
 import React from 'react';
-// import { useSchema } from '@/lib/hooks/useSchema';
+import { useSchema } from '@/lib/redux/schema/useSchema';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {EntityKeys, EntitySelectOption} from '@/types/entityTypes';
 
 interface SchemaSelectProps {
-    onSchemaSelect: (schemaName: string) => void;
+    onSchemaSelect: (schemaName: EntityKeys) => void;
     selectedSchema: string | null;
 }
 
 const SchemaSelect: React.FC<SchemaSelectProps> = ({ onSchemaSelect, selectedSchema }) => {
-    const { registeredSchemas } = useSchema();
+    const { entityNameAndPrettyName } = useSchema();
+
+    const schemaOptions: EntitySelectOption<any>[] = entityNameAndPrettyName.map(({ value, label }) => ({
+        value,
+        label,
+    }));
 
     return (
         <div className="space-y-2">
@@ -19,9 +25,9 @@ const SchemaSelect: React.FC<SchemaSelectProps> = ({ onSchemaSelect, selectedSch
                     <SelectValue placeholder="Select a table/view" />
                 </SelectTrigger>
                 <SelectContent>
-                    {registeredSchemas.map((schemaName) => (
-                        <SelectItem key={schemaName} value={schemaName}>
-                            {schemaName}
+                    {schemaOptions.map(({ value, label }) => (
+                        <SelectItem key={value} value={value}>
+                            {label}
                         </SelectItem>
                     ))}
                 </SelectContent>

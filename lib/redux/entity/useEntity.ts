@@ -9,7 +9,38 @@ import {RootState} from '@/lib/redux/store';
 import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {Draft} from "immer";
 import {QueryOptions} from "@/lib/redux/entity/sagas";
-import { createRecordKey } from '@/lib/redux/entity//utils';
+import { createRecordKey } from '@/lib/redux/entity/utils';
+import { produce } from 'immer';
+import {
+    ColumnDef,
+    SortingState,
+    VisibilityState,
+    PaginationState,
+    RowSelectionState,
+    TableOptions,
+    getCoreRowModel,
+    getSortedRowModel,
+    getFilteredRowModel,
+} from "@tanstack/react-table"
+
+interface TanStackTableState {
+    sorting: SortingState
+    columnVisibility: VisibilityState
+    rowSelection: RowSelectionState
+    pagination: PaginationState
+    globalFilter: string
+}
+
+interface TanStackColumnMeta {
+    isPrimary: boolean
+    isDisplayField: boolean
+    fieldType: string
+    sortable?: boolean
+    filterable?: boolean
+    width?: number
+    align?: 'left' | 'center' | 'right'
+}
+
 
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
@@ -102,12 +133,9 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
 
     // Add selectors with debug logging
     const entityState = useAppSelector((state) => {
-        console.log('Full Redux State:', state);
+        // console.log('Full Redux State:', state);
         return state.entities[entityKey];
     });
-
-    console.log(`Entity State for ${entityKey}:`, entityState);
-
 
     const fetchOne = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
         dispatch(actions.fetchOne({primaryKeyValues}));
@@ -115,6 +143,14 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
 
     const fetchAll = useCallback(() => {
         dispatch(actions.fetchAll());
+    }, [dispatch, actions]);
+
+    const setPage = useCallback((page: number) => {
+        dispatch(actions.setPage(page));
+    }, [dispatch, actions]);
+
+    const setPageSize = useCallback((pageSize: number) => {
+        dispatch(actions.setPageSize(pageSize));
     }, [dispatch, actions]);
 
 
@@ -206,8 +242,157 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         );
     }, [selectedRecords, primaryKeyMetadata]);
 
+
+    const [tableState, setTableState] = useState<TanStackTableState>({
+        sorting: [],
+        columnVisibility: {},
+        rowSelection: {},
+        pagination: {
+            pageIndex: 0,
+            pageSize: 10,
+        },
+        globalFilter: '',
+    });
+
+    const tanstackColumns = useMemo(() => {
+        if (!tableColumns) return [];
+
+        return tableColumns.map(col => ({
+            id: col.key,
+            accessorKey: col.key,
+            header: col.title,
+            cell: ({ getValue }) => {
+                const value = getValue();
+                return value === undefined ? "" : String(value);
+            },
+            enableSorting: !col.isPrimary,
+            enableHiding: !col.isPrimary && !col.isDisplayField,
+            meta: {
+                isPrimary: col.isPrimary,
+                isDisplayField: col.isDisplayField,
+                fieldType: fieldInfo[col.key]?.type || 'string',
+                sortable: !col.isPrimary,
+                filterable: !col.isPrimary,
+                align: fieldInfo[col.key]?.align || 'left',
+            } as TanStackColumnMeta
+        } as ColumnDef<EntityData<TEntity>>));
+    }, [tableColumns, fieldInfo]);
+
+    // TanStack core configuration
+    const tanstackConfig = useMemo(() => ({
+        data: currentPage,
+        columns: tanstackColumns,
+        pageCount: paginationInfo.totalPages,
+        state: {
+            ...tableState,
+            pagination: {
+                pageIndex: Math.max(0, paginationInfo.page - 1),
+                pageSize: paginationInfo.pageSize,
+            },
+        },
+        enableRowSelection: true,
+        enableMultiRowSelection: true,
+        enableSorting: true,
+        manualPagination: true,
+        manualSorting: true,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getRowId: (row: EntityData<TEntity>) => createRecordKey(primaryKeyMetadata, row),
+        onPaginationChange: (updater: any) => {
+            const newPagination = typeof updater === 'function'
+                                  ? updater(tableState.pagination)
+                                  : updater;
+            setTableState(prev => ({ ...prev, pagination: newPagination }));
+            fetchRecords(newPagination.pageIndex + 1, newPagination.pageSize);
+        },
+        onSortingChange: (updater: any) => {
+            const newSorting = typeof updater === 'function'
+                               ? updater(tableState.sorting)
+                               : updater;
+            setTableState(prev => ({ ...prev, sorting: newSorting }));
+            setSorting({
+                field: newSorting[0]?.id || '',
+                direction: newSorting[0]?.desc ? 'desc' : 'asc'
+            });
+        },
+        onRowSelectionChange: (updater: any) => {
+            const newSelection = typeof updater === 'function'
+                                 ? updater(tableState.rowSelection)
+                                 : updater;
+            setTableState(prev => ({ ...prev, rowSelection: newSelection }));
+            const selectedRows = currentPage
+                .filter((_, index) => newSelection[index]) as Draft<EntityData<TEntity>>[];
+            setSelection(selectedRows, 'multiple');
+        },
+    } as Partial<TableOptions<EntityData<TEntity>>>), [
+        currentPage,
+        tanstackColumns,
+        paginationInfo,
+        tableState,
+        primaryKeyMetadata,
+        fetchRecords,
+        setSorting,
+        setSelection
+    ]);
+
+    // TanStack utility functions
+    const tanstackUtils = useMemo(() => ({
+        resetTableState: () => {
+            setTableState({
+                sorting: [],
+                columnVisibility: {},
+                rowSelection: {},
+                pagination: {
+                    pageIndex: 0,
+                    pageSize: 10,
+                },
+                globalFilter: '',
+            });
+        },
+        setGlobalFilter: (filter: string) => {
+            setTableState(prev => ({ ...prev, globalFilter: filter }));
+        },
+        setColumnVisibility: (visibility: VisibilityState) => {
+            setTableState(prev => ({ ...prev, columnVisibility: visibility }));
+        },
+        getVisibleColumns: () => {
+            return tanstackColumns.filter(col =>
+                !tableState.columnVisibility[col.id as string]);
+        },
+        getSortedColumn: () => {
+            return tableState.sorting[0]?.id || null;
+        },
+        getSelectedRowIds: () => {
+            return Object.keys(tableState.rowSelection);
+        },
+        clearSelection: () => {
+            setTableState(prev => ({ ...prev, rowSelection: {} }));
+        },
+    }), [tanstackColumns, tableState]);
+
+    // Column helper functions
+    const columnUtils = useMemo(() => ({
+        getPrimaryKeyColumns: () => {
+            return tanstackColumns.filter(col =>
+                (col.meta as TanStackColumnMeta)?.isPrimary);
+        },
+        getDisplayColumn: () => {
+            return tanstackColumns.find(col =>
+                (col.meta as TanStackColumnMeta)?.isDisplayField);
+        },
+        getSortableColumns: () => {
+            return tanstackColumns.filter(col =>
+                (col.meta as TanStackColumnMeta)?.sortable);
+        },
+        getFilterableColumns: () => {
+            return tanstackColumns.filter(col =>
+                (col.meta as TanStackColumnMeta)?.filterable);
+        },
+    }), [tanstackColumns]);
+
+
     return {
-        // Entity Basics
         entityDisplayName,
 
 
@@ -270,6 +455,11 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         optimisticUpdate,
 
 
+        // Pagination
+        setPage,
+        setPageSize,
+
+
         // Actions
         fetchRecords,
         fetchOne,
@@ -284,6 +474,17 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         clearFilters,
         refreshData,
         invalidateCache,
+
+
+        // Combined Data
+        matrxTableData: {
+            config: tanstackConfig,
+            state: tableState,
+            columns: tanstackColumns,
+            utils: tanstackUtils,
+            columnUtils,
+            defaultPageSize: 10,
+        },
 
         // Error Handling
         lastError,

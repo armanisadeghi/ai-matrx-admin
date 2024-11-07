@@ -25,21 +25,21 @@ interface useDatabaseResult<T> {
     loading: boolean;
     error: Error | null;
     paginationInfo: PaginationInfo | null;
-    fetchOne: (name: TableOrView, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => Promise<void>;
+    fetchOne: (name: TableOrView, matrxRecordId: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => Promise<void>;
     fetchAll: (name: TableOrView, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => Promise<void>;
-    fetchFk: (name: TableOrView, id: string, foreignKeys: any) => Promise<void>;
-    fetchIfk: (name: TableOrView, id: string, inverseForeignKeys: any) => Promise<void>;
-    fetchM2m: (name: TableOrView, id: string, manyToMany: any) => Promise<void>;
+    fetchFk: (name: TableOrView, matrxRecordId: string, foreignKeys: any) => Promise<void>;
+    fetchIfk: (name: TableOrView, matrxRecordId: string, inverseForeignKeys: any) => Promise<void>;
+    fetchM2m: (name: TableOrView, matrxRecordId: string, manyToMany: any) => Promise<void>;
     fetchPaginated: (name: TableOrView, options: QueryOptions<TableOrView>) => Promise<void>;
     create: (name: TableOrView, data: Partial<T>) => Promise<void>;
-    update: (name: TableOrView, id: string, data: Partial<T>) => Promise<void>;
-    delete: (name: TableOrView, id: string | number) => Promise<void>;
+    update: (name: TableOrView, matrxRecordId: string, data: Partial<T>) => Promise<void>;
+    delete: (name: TableOrView, matrxRecordId: string | number) => Promise<void>;
     executeCustomQuery: (name: TableOrView, query: (baseQuery: any) => any) => Promise<void>;
     subscribeToChanges: (name: TableOrView) => void;
     unsubscribeFromChanges: (name: TableOrView) => void;
 }
 
-function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView): useDatabaseResult<T> & {
+function useDatabase<T extends { matrxRecordId: string } = any>(initialTable?: TableOrView): useDatabaseResult<T> & {
     getPrettyNameForTable: typeof getPrettyNameForTable;
     getNonFkFields: typeof getNonFkFields;
     getForeignKeys: typeof getForeignKeys;
@@ -54,10 +54,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
     const [error, setError] = useState<Error | null>(null);
     const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
 
-    const fetchOne = useCallback(async (tableName: TableName, id: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
+    const fetchOne = useCallback(async (tableName: TableName, matrxRecordId: string, options?: Omit<QueryOptions<TableOrView>, 'limit' | 'offset'>) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchOne(tableName, id, options);
+            const result = await databaseApi.fetchOne(tableName, matrxRecordId, options);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -78,10 +78,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchFk = useCallback(async (tableName: TableName, id: string, foreignKeys: any) => {
+    const fetchFk = useCallback(async (tableName: TableName, matrxRecordId: string, foreignKeys: any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchFk(tableName, id, foreignKeys);
+            const result = await databaseApi.fetchFk(tableName, matrxRecordId, foreignKeys);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -90,10 +90,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchIfk = useCallback(async (tableName: TableName, id: string, inverseForeignKeys: any) => {
+    const fetchIfk = useCallback(async (tableName: TableName, matrxRecordId: string, inverseForeignKeys: any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchIfk(tableName, id, inverseForeignKeys);
+            const result = await databaseApi.fetchIfk(tableName, matrxRecordId, inverseForeignKeys);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -102,10 +102,10 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const fetchM2m = useCallback(async (tableName: TableName, id: string, manyToMany: any) => {
+    const fetchM2m = useCallback(async (tableName: TableName, matrxRecordId: string, manyToMany: any) => {
         setLoading(true);
         try {
-            const result = await databaseApi.fetchM2m(tableName, id, manyToMany);
+            const result = await databaseApi.fetchM2m(tableName, matrxRecordId, manyToMany);
             setData([result] as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
@@ -155,11 +155,11 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const update = useCallback(async (tableName: TableName, id: string, payload: Partial<T>) => {
+    const update = useCallback(async (tableName: TableName, matrxRecordId: string, payload: Partial<T>) => {
         setLoading(true);
         try {
-            const result = await databaseApi.update(tableName, id, payload);
-            setData(prevData => prevData?.map(item => item.id === id ? result : item) as T[]);
+            const result = await databaseApi.update(tableName, matrxRecordId, payload);
+            setData(prevData => prevData?.map(item => item.matrxRecordId === matrxRecordId ? result : item) as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
         } finally {
@@ -167,16 +167,16 @@ function useDatabase<T extends { id: string } = any>(initialTable?: TableOrView)
         }
     }, []);
 
-    const deleteRecord = useCallback(async (tableName: TableName, id: FlexibleId) => {
-        if (!isValidFlexibleId(id)) {
+    const deleteRecord = useCallback(async (tableName: TableName, matrxRecordId: FlexibleId) => {
+        if (!isValidFlexibleId(matrxRecordId)) {
             throw new Error('Invalid ID provided');
         }
 
         setLoading(true);
         try {
-            const stringId = flexibleIdToString(id);
+            const stringId = flexibleIdToString(matrxRecordId);
             await databaseApi.delete(tableName, stringId);
-            setData(prevData => prevData?.filter(item => item.id !== id) as T[]);
+            setData(prevData => prevData?.filter(item => item.matrxRecordId !== matrxRecordId) as T[]);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('An unexpected error occurred'));
         } finally {

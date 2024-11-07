@@ -1,20 +1,23 @@
-import { cn } from "@/styles/themes/utils";
-import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
-import { useState } from "react";
+'use client';
 
-export const HoverEffect = ({
-                                items,
-                                className,
-                            }: {
-    items: {
-        title: string;
-        description: string;
-    link?: string;
-    onClick?: () => void; // Added support for `onClick`
-    }[];
-    className?: string;
-}) => {
+import {cn} from "@/styles/themes/utils";
+import {AnimatePresence, motion} from "framer-motion";
+import Link from "next/link";
+import {useState} from "react";
+
+export const HoverEffect = (
+    {
+        items,
+        className,
+    }: {
+        items: {
+            title: string;
+            description: string;
+            link?: string;
+            onClick?: () => void; // Added support for `onClick`
+        }[];
+        className?: string;
+    }) => {
     let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     return (
@@ -25,8 +28,8 @@ export const HoverEffect = ({
             )}
         >
             {items.map((item, idx) => (
-        <div
-          key={item?.title} // Changed `key` to `title` since `link` may not exist
+                <div
+                    key={item?.title} // Changed `key` to `title` since `link` may not exist
                     className="relative group  block p-2 h-full w-full"
                     onMouseEnter={() => setHoveredIndex(idx)}
                     onMouseLeave={() => setHoveredIndex(null)}
@@ -36,48 +39,49 @@ export const HoverEffect = ({
                             <motion.span
                                 className="absolute inset-0 h-full w-full bg-neutral-200 dark:bg-slate-800/[0.8] block  rounded-3xl"
                                 layoutId="hoverBackground"
-                                initial={{ opacity: 0 }}
+                                initial={{opacity: 0}}
                                 animate={{
                                     opacity: 1,
-                                    transition: { duration: 0.15 },
+                                    transition: {duration: 0.15},
                                 }}
                                 exit={{
                                     opacity: 0,
-                                    transition: { duration: 0.15, delay: 0.2 },
+                                    transition: {duration: 0.15, delay: 0.2},
                                 }}
                             />
                         )}
                     </AnimatePresence>
 
-          {/* Conditionally render Link or div with onClick */}
-          {item.link ? (
-            <Link href={item.link} className="block">
-                    <Card>
-                        <CardTitle>{item.title}</CardTitle>
-                        <CardDescription>{item.description}</CardDescription>
-                    </Card>
-                </Link>
-          ) : (
-            <div className="block cursor-pointer" onClick={item.onClick}>
-              <Card>
-                <CardTitle>{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </Card>
-            </div>
-          )}
-        </div>
+                    {/* Conditionally render Link or div with onClick */}
+                    {item.link ? (
+                        <Link href={item.link} className="block">
+                            <Card>
+                                <CardTitle>{item.title}</CardTitle>
+                                <CardDescription>{item.description}</CardDescription>
+                            </Card>
+                        </Link>
+                    ) : (
+                         <div className="block cursor-pointer" onClick={item.onClick}>
+                             <Card>
+                                 <CardTitle>{item.title}</CardTitle>
+                                 <CardDescription>{item.description}</CardDescription>
+                             </Card>
+                         </div>
+                     )}
+                </div>
             ))}
         </div>
     );
 };
 
-export const Card = ({
-                         className,
-                         children,
-                     }: {
-    className?: string;
-    children: React.ReactNode;
-}) => {
+export const Card = (
+    {
+        className,
+        children,
+    }: {
+        className?: string;
+        children: React.ReactNode;
+    }) => {
     return (
         <div
             className={cn(
@@ -91,26 +95,30 @@ export const Card = ({
         </div>
     );
 };
-export const CardTitle = ({
-                              className,
-                              children,
-                          }: {
-    className?: string;
-    children: React.ReactNode;
-}) => {
+
+export const CardTitle = (
+    {
+        className,
+        children,
+    }: {
+        className?: string;
+        children: React.ReactNode;
+    }) => {
     return (
         <h4 className={cn("text-zinc-100 font-bold tracking-wide mt-4", className)}>
             {children}
         </h4>
     );
 };
-export const CardDescription = ({
-                                    className,
-                                    children,
-                                }: {
-    className?: string;
-    children: React.ReactNode;
-}) => {
+
+export const CardDescription = (
+    {
+        className,
+        children,
+    }: {
+        className?: string;
+        children: React.ReactNode;
+    }) => {
     return (
         <p
             className={cn(

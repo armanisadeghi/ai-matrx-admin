@@ -41,13 +41,12 @@ import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminCompo
 import React from "react";
 import {CiFloppyDisk} from "react-icons/ci";
 import LocalFileAccess from "@/app/(authenticated)/admin/components/LocalFileAccess";
-import AdminTestPage from "@/app/(authenticated)/admin/components/command-testers/Command4";
-import CommandTestPage5 from "@/app/(authenticated)/admin/components/command-testers/Command5";
 import CommandTestPage from "@/app/(authenticated)/admin/components/command-testers/CommandTestPage";
 import EntityTestingLab from "@/app/(authenticated)/admin/components/entities/EntityTestingLab";
 import EntityTester from "@/app/(authenticated)/admin/components/entities/EntityTester";
 import EntityMetrics from "../components/entities/EntityMetrics";
 import EntityBrowser from "../components/entities/EntityBrowser";
+import EntityLab from "../components/entities/EntityLab";
 
 export const adminCategories = [
     {
@@ -109,6 +108,12 @@ export const adminCategories = [
                 component: <EntityTestingLab />
             },
             {
+                title: "Entity Lab Using Special Select Header",
+                description: "Comprehensive testing environment for entity operations, including CRUD, filtering, and real-time updates.",
+                icon: <IconTestPipe />,
+                component: <EntityLab />
+            },
+            {
                 title: "Entity Tester",
                 description: "Comprehensive testing interface for entity operations, allowing real-time CRUD operations, data inspection, and performance monitoring across all system entities.",
                 icon: <IconDatabase />,
@@ -138,24 +143,24 @@ export const adminCategories = [
                 icon: <IconSquareToggle />,
                 component: <CommandTestPage />
             },
-            {
-                title: "Entity Command GPT",
-                description: "Test the interaction and state management of new UI components.",
-                icon: <IconBox />,
-                component: <AdminTestPage  entityKey={"registeredFunction"}/>
-            },
-            {
-                title: "Entity Command 3",
-                description: "Test the interaction and state management of new UI components.",
-                icon: <IconBox />,
-                component: <CommandTestPage5 />
-            },
-            {
-                title: "Component Interaction Testing",
-                description: "Test the interaction and state management of new UI components.",
-                icon: <IconBox />,
-                component: <AdminTestPage  entityKey={"registeredFunction"}/>
-            },
+            // {
+            //     title: "Entity Command GPT",
+            //     description: "Test the interaction and state management of new UI components.",
+            //     icon: <IconBox />,
+            //     component: <AdminTestPage  entityKey={"registeredFunction"}/>
+            // },
+            // {
+            //     title: "Entity Command 3",
+            //     description: "Test the interaction and state management of new UI components.",
+            //     icon: <IconBox />,
+            //     component: <CommandTestPage5 />
+            // },
+            // {
+            //     title: "Component Interaction Testing",
+            //     description: "Test the interaction and state management of new UI components.",
+            //     icon: <IconBox />,
+            //     component: <AdminTestPage  entityKey={"registeredFunction"}/>
+            // },
             {
                 title: "Animation & Motion Testing",
                 description: "Evaluate animations and transitions for smoothness and user experience.",

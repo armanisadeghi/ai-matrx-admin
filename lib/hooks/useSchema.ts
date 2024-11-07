@@ -1,4 +1,3 @@
-/*
 // hooks/useSchema.ts
 'use client';
 
@@ -790,4 +789,3 @@ const globalValidations: Record<string, ValidationFunction> = {
     },
     // Add more validation functions as needed
 };
-*/

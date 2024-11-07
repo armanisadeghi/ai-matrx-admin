@@ -3,9 +3,10 @@
 'use client';
 
 import React, {useState} from 'react';
-import {useSchemaResolution} from "@/providers/SchemaProvider";
+import {useSchemaResolution} from "@/providers/SchemaProvider"; // old
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {AutomationEntity, EntityKeys} from "@/types/entityTypes";
+import {useSchema} from "@/lib/redux/schema/useSchema" // New import
 
 interface SchemaSelectProps {
     onSchemaSelect: (selectedEntity: {
@@ -25,7 +26,7 @@ const SchemaSelect = <TEntity extends EntityKeys>(
         onSchemaFetched,
         selectedSchema
     }: SchemaSelectProps): JSX.Element => {
-    const {getAllEntitiesWithPrettyName, createTypedEntitySchema} = useSchemaResolution();
+    const {getAllEntitiesWithPrettyName, createTypedEntitySchema} = useSchemaResolution();  // old
     const registeredSchemas = getAllEntitiesWithPrettyName();
 
     const [loadingSchema, setLoadingSchema] = useState(false);

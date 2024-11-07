@@ -51,7 +51,6 @@ const EntityHeader: React.FC<EntityHeaderProps> = ({ onEntityChange }) => {
                 />
             </div>
             <div className="text-sm text-gray-500">
-                {/*{entity.entityMetadata.description || 'Manage and view entity data'}*/}
                 Manage and view entity data
             </div>
         </div>

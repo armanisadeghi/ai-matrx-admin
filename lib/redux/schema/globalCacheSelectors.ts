@@ -244,6 +244,17 @@ export const selectFieldFrontendName = createSelector(
         toCanonicalMap[entityName]?.[fieldName] || fieldName
 );
 
+export const selectFieldNameMappingForEntity = createSelector(
+    [
+        selectFieldNameFormats,
+        (_: RootState, entityName: EntityKeys) => entityName
+    ],
+    (fieldFormats, entityName) => {
+        return fieldFormats[entityName] || {};
+    }
+);
+
+
 // Returns the nae of the field in a Pretty Format for display, such as a column header
 export const selectFieldPrettyName = createSelector(
     [

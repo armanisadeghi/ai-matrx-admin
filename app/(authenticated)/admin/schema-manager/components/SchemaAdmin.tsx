@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input';
 import SchemaSelect from "@/components/matrx/schema/opsRedux/SchemaSelect";
 import { EntityKeys, AutomationEntity } from "@/types/entityTypes";
 
+
+import {useSchema} from "@/lib/redux/schema/useSchema" // New import
+
+
 export default function SchemaAdmin() {
     const [selectedSchema, setSelectedSchema] = useState<EntityKeys | null>(null);
     const [schemaDetails, setSchemaDetails] = useState<{

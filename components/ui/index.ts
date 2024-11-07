@@ -70,3 +70,4 @@ export { WobbleCard } from './wobble-card'
 
 export { Credenza } from './added-ui/credenza-modal/credenza'
 export {FileUpload } from './file-upload'
+export {Spinner} from './spinner'

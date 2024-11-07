@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { FullEditableJsonViewer } from './JsonEditor';
 import { generateJsonTemplate } from "@/utils/schema/schemaUtils";

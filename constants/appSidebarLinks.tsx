@@ -16,7 +16,10 @@ import {
     Video,
     Images,
     Edit3, AudioLines, User, SquareSigma, Component, ShieldEllipsis, Repeat1, DatabaseZap, FileJson,
-    ClipboardCheck
+    ClipboardCheck,
+    SquareMousePointer,
+    Grid2x2Plus,
+    TableCellsSplit
 } from "lucide-react";
 import React from "react";
 
@@ -162,22 +165,20 @@ export const primaryLinks = [
             <FileJson className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    //
-    // {
-    //     label: 'Module Name',
-    //     href: '/tests/module', // https://lucide.dev/icons/
-    //     icon: (
-    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
-    //
-    // {
-    //     label: 'Module Name',
-    //     href: '/tests/module', // https://lucide.dev/icons/
-    //     icon: (
-    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
+    {
+        label: 'Entity CRUD',
+        href: '/entity-crud', // https://lucide.dev/icons/
+        icon: (
+            <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Entity Data Table',
+        href: '/tests/table-test/simple-entity', // https://lucide.dev/icons/
+        icon: (
+            <TableCellsSplit className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     //
     // {
     //     label: 'Module Name',
@@ -243,14 +244,14 @@ export const secondaryLinks = [
             <ClipboardCheck className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    //
-    // {
-    //     label: 'Module Name',
-    //     href: '/tests/module', // https://lucide.dev/icons/
-    //     icon: (
-    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
+
+    {
+        label: 'Dynamic Selector Test',
+        href: '/tests/selector-test/dynamic-test', // https://lucide.dev/icons/
+        icon: (
+            <SquareMousePointer className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     //
     // {
     //     label: 'Module Name',

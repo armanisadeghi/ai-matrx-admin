@@ -8,7 +8,7 @@ import { MatrixColumn, TableData } from "@/types/tableTypes";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFieldPrettyNames } from "@/lib/redux/schema/globalCacheSelectors";
 import { EntityData, EntityKeys } from "@/types/entityTypes";
-import { createEntityHooks } from "@/lib/redux/entity/useEntity";
+import { useEntity } from "@/lib/redux/entity/useEntity";
 import { MatrxRecordId } from '@/lib/redux/entity/types';
 
 interface EntityTableProps<TEntity extends EntityKeys> {
@@ -16,36 +16,26 @@ interface EntityTableProps<TEntity extends EntityKeys> {
 }
 
 export function EntityTable<TEntity extends EntityKeys>({ entityKey }: EntityTableProps<TEntity>) {
-    const useEntity = createEntityHooks(entityKey);
-    const {
-        records,
-        loading,
-        fetchRecords,
-        actions,  // Get actions directly
-        metadata
-    } = useEntity();
+    const entity = useEntity(entityKey);
 
     // Log initial mount
     useEffect(() => {
         console.log('EntityTable mounted with key:', entityKey);
-        console.log('Initial records:', records);
-        console.log('Initial metadata:', metadata);
-    }, [entityKey, records, metadata]);
+        console.log('Initial records:', entity.allRecords);
+        console.log('Initial metadata:', entity.metadataSummary);
+    }, []);
 
     // Modified fetch effect
     useEffect(() => {
         console.log('Fetching records...');
-        fetchRecords(1, 1000);
-        // Also try dispatching directly
-        // dispatch(actions.fetchRecords({ page: 1, pageSize: 1000 }));
-    }, [fetchRecords]);
+        entity.fetchAll();
+    }, [entityKey]);
 
     // Get pretty names for fields
     const fieldPrettyNames = useAppSelector((state) =>
         selectAllFieldPrettyNames(state, { entityName: entityKey })
     );
 
-    // Create columns based on field names
     const columns: MatrixColumn<TableData>[] = [
         ...Object.entries(fieldPrettyNames).map(([fieldName, prettyName]) => ({
             Header: prettyName,
@@ -68,55 +58,29 @@ export function EntityTable<TEntity extends EntityKeys>({ entityKey }: EntityTab
 
     // Fetch data on mount
     useEffect(() => {
-        fetchRecords(1, 1000); // Fetch all records for now
-    }, [fetchRecords]);
-
-    // Table action handlers
-    const handleAdd = async (newItem: Omit<TableData, 'id'>) => {
-        try {
-            await createRecord(newItem as EntityType);
-        } catch (error) {
-            console.error('Error adding record:', error);
-        }
-    };
-
-    const handleEdit = async (item: TableData) => {
-        try {
-            const typedItem = item as EntityType;
-            const primaryKeyValues = metadata.primaryKeyMetadata.fields.reduce((acc, field) => {
-                acc[field] = typedItem[field];
-                return acc;
-            }, {} as Record<string, MatrxRecordId>);
-
-            await updateRecord(typedItem, { ...typedItem });
-        } catch (error) {
-            console.error('Error updating record:', error);
-        }
-    };
-
-    const handleDelete = async (item: TableData) => {
-        try {
-            const typedItem = item as EntityType;
-            const primaryKeyValues = metadata.primaryKeyMetadata.fields.reduce((acc, field) => {
-                acc[field] = typedItem[field];
-                return acc;
-            }, {} as Record<string, MatrxRecordId>);
-
-            await deleteRecord(typedItem);
-        } catch (error) {
-            console.error('Error deleting record:', error);
-        }
-    };
+        entity.fetchAll();
+    }, []);
 
     const handleExpand = (item: TableData) => {
         console.log('Expanding item:', item);
     };
 
-    // Convert records object to array for table data
-    const tableData = Object.values(records) as TableData[];
+    const tableData = Object.values(entity.allRecords) as TableData[];
 
-    if (loading.loading) {
+    if (entity.loadingState.loading) {
         return <div>Loading...</div>;
+    }
+
+    const handleAdd = (record: EntityData<TEntity>) => {
+        console.log('Add action:', record);
+    }
+
+    const handleEdit = (record: EntityData<TEntity>) => {
+        console.log('Edit action:', record);
+    }
+
+    const handleDelete = (record: EntityData<TEntity>) => {
+        console.log('Delete action:', record);
     }
 
     return (

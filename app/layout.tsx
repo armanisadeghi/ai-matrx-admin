@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { metadata } from './config/metadata';
 import { viewport } from './config/viewport';
 import { inter, montserrat } from "@/styles/themes";
+import NavigationLoader from "@/components/loaders/NavigationLoader";
 
 export { metadata, viewport };
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </head>
         <body className={cn("min-h-screen bg-matrx-background font-sans antialiased")}>
         <NextUIProvider>
+            <NavigationLoader />
             {children}
             <Toaster />
         </NextUIProvider>

@@ -3,7 +3,7 @@
 import { EntityKeys, EntityData } from "@/types/entityTypes";
 
 // --- Basic Types ---
-export type MatrxRecordId = string | number;
+export type MatrxRecordId = string;
 
 
 type PrimaryKeyType = 'single' | 'composite' | 'none';
@@ -73,7 +73,7 @@ interface CacheState {
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
-    primaryKeyValues: Record<string, string>; // Changed from MatrxRecordId to string
+    primaryKeyValues: Record<MatrxRecordId, string>; // Changed from MatrxRecordId to string back to MatrxRecordId as a string
     displayValue: string;
     metadata?: {
         lastModified?: string; // Already correct as string
@@ -151,10 +151,12 @@ export interface SubscriptionConfig {
     batchUpdates?: boolean;
 }
 
+// records: Record<MatrxRecordId, EntityData<TEntity>>; Changed from MatrxRecordId to string for consistent serialization (Back to MatrxRecordId as string)
+
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
     // Core Data
-    records: Record<string, EntityData<TEntity>>; // Changed from MatrxRecordId to string for consistent serialization
+    records: Record<MatrxRecordId, EntityData<TEntity>>;
 
     // Metadata
     entityMetadata: EntityMetadata;

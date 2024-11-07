@@ -1,3 +1,5 @@
+// app/(authenticated)/admin/schema-manager/page.tsx
+
 'use client';
 
 import React, { useState } from 'react';

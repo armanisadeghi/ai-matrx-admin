@@ -169,6 +169,26 @@ const formatFour = "GraphQL";
 
 
 export const selectorsConfig = [
+    // selectAnyFieldMapping
+    {
+        category: "Local Testing",
+        name: "selectAnyFieldMapping",
+        selectorFn: schemaSelectors.selectAnyFieldMapping,
+        args: [entityKey],
+        isObjectArgs: false,
+        conductTest: true
+    },
+    {
+        category: "Local Testing",
+        name: "selectFieldNameMappingForEntity",
+        selectorFn: schemaSelectors.selectFieldNameMappingForEntity,
+        args: [entityKey],
+        isObjectArgs: false,
+        conductTest: true
+    },
+
+
+
     // ----------------
     // Direct State Access Selectors
     // ----------------

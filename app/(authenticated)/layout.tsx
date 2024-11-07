@@ -10,6 +10,7 @@ import {generateClientGlobalCache, initializeSchemaSystem} from '@/utils/schema/
 import {getTestDirectories} from '@/utils/directoryStructure';
 import {InitialReduxState} from "@/types/reduxTypes";
 import { ClientDebugWrapper } from '@/components/admin/ClientDebugWrapper';
+import NavigationLoader from "@/components/loaders/NavigationLoader";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -54,6 +55,7 @@ export default async function AuthenticatedLayout({
     return (
         <Providers initialReduxState={initialReduxState}>
             <LayoutWithSidebar {...layoutProps}>
+                <NavigationLoader />
                 {children}
                 <ClientDebugWrapper user={userData} />
             </LayoutWithSidebar>

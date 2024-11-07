@@ -1,5 +1,138 @@
 [
   {
+    "name": "selectAnyFieldMapping",
+    "props": [
+      "registeredFunction"
+    ],
+    "result": {
+      "id": "id",
+      "name": "name",
+      "modulePath": "modulePath",
+      "className": "className",
+      "description": "description",
+      "returnBroker": "returnBroker",
+      "brokerReference": "brokerReference",
+      "systemFunctionInverse": "systemFunctionInverse",
+      "argInverse": "argInverse"
+    }
+  },
+  {
+    "name": "selectFieldNameMappingForEntity",
+    "props": [
+      "registeredFunction"
+    ],
+    "result": {
+      "id": {
+        "frontend": "id",
+        "backend": "id",
+        "database": "id",
+        "pretty": "Id",
+        "component": "Id",
+        "kebab": "id",
+        "sqlFunctionRef": "p_id",
+        "RestAPI": "id",
+        "GraphQL": "id",
+        "custom": "id"
+      },
+      "name": {
+        "frontend": "name",
+        "backend": "name",
+        "database": "name",
+        "pretty": "Name",
+        "component": "Name",
+        "kebab": "name",
+        "sqlFunctionRef": "p_name",
+        "RestAPI": "name",
+        "GraphQL": "name",
+        "custom": "name"
+      },
+      "modulePath": {
+        "frontend": "modulePath",
+        "backend": "module_path",
+        "database": "module_path",
+        "pretty": "Module Path",
+        "component": "ModulePath",
+        "kebab": "module-path",
+        "sqlFunctionRef": "p_module_path",
+        "RestAPI": "modulePath",
+        "GraphQL": "modulePath",
+        "custom": "modulePath"
+      },
+      "className": {
+        "frontend": "className",
+        "backend": "class_name",
+        "database": "class_name",
+        "pretty": "Class Name",
+        "component": "ClassName",
+        "kebab": "class-name",
+        "sqlFunctionRef": "p_class_name",
+        "RestAPI": "className",
+        "GraphQL": "className",
+        "custom": "className"
+      },
+      "description": {
+        "frontend": "description",
+        "backend": "description",
+        "database": "description",
+        "pretty": "Description",
+        "component": "Description",
+        "kebab": "description",
+        "sqlFunctionRef": "p_description",
+        "RestAPI": "description",
+        "GraphQL": "description",
+        "custom": "description"
+      },
+      "returnBroker": {
+        "frontend": "returnBroker",
+        "backend": "return_broker",
+        "database": "return_broker",
+        "pretty": "Return Broker",
+        "component": "ReturnBroker",
+        "kebab": "return-broker",
+        "sqlFunctionRef": "p_return_broker",
+        "RestAPI": "returnBroker",
+        "GraphQL": "returnBroker",
+        "custom": "returnBroker"
+      },
+      "brokerReference": {
+        "frontend": "brokerReference",
+        "backend": "broker_reference",
+        "database": "ref_broker",
+        "pretty": "Broker Reference",
+        "component": "BrokerReference",
+        "kebab": "brokerReference",
+        "sqlFunctionRef": "p_ref_broker",
+        "RestAPI": "brokerReference",
+        "GraphQL": "brokerReference",
+        "custom": "brokerReference"
+      },
+      "systemFunctionInverse": {
+        "frontend": "systemFunctionInverse",
+        "backend": "system_function_Inverse",
+        "database": "ifk_system_function",
+        "pretty": "System Function Inverse",
+        "component": "SystemFunctionInverse",
+        "kebab": "system-functionInverse",
+        "sqlFunctionRef": "p_ifk_system_function",
+        "RestAPI": "systemFunctionInverse",
+        "GraphQL": "systemFunctionInverse",
+        "custom": "systemFunctionInverse"
+      },
+      "argInverse": {
+        "frontend": "argInverse",
+        "backend": "arg_Inverse",
+        "database": "ifk_arg",
+        "pretty": "Arg Inverse",
+        "component": "ArgInverse",
+        "kebab": "argInverse",
+        "sqlFunctionRef": "p_ifk_arg",
+        "RestAPI": "argInverse",
+        "GraphQL": "argInverse",
+        "custom": "argInverse"
+      }
+    }
+  },
+  {
     "name": "selectEntityNames",
     "props": [],
     "result": [
@@ -1649,6 +1782,19 @@
     "result": {
       "entityName": "registeredFunction",
       "schemaType": "table",
+      "primaryKey": "id",
+      "primaryKeyMetadata": {
+        "type": "single",
+        "fields": [
+          "id"
+        ],
+        "database_fields": [
+          "id"
+        ],
+        "where_template": {
+          "id": null
+        }
+      },
       "defaultFetchStrategy": "fkAndIfk",
       "componentProps": {
         "variant": "default",
@@ -2300,61 +2446,6 @@
     }
   },
   {
-    "name": "selectAllFieldPrettyNames",
-    "props": [
-      {
-        "entityName": "registeredFunction"
-      }
-    ],
-    "result": {
-      "id": "Id",
-      "name": "Name",
-      "modulePath": "Module Path",
-      "className": "Class Name",
-      "description": "Description",
-      "returnBroker": "Return Broker",
-      "brokerReference": "Broker Reference",
-      "systemFunctionInverse": "System Function Inverse",
-      "argInverse": "Arg Inverse"
-    }
-  },
-  {
-    "name": "selectAllFieldPrettyNames",
-    "props": [
-      {
-        "entityName": "arg"
-      }
-    ],
-    "result": {
-      "id": "Id",
-      "name": "Name",
-      "required": "Required",
-      "default": "Default",
-      "dataType": "Data Type",
-      "ready": "Ready",
-      "registeredFunction": "Registered Function",
-      "registeredFunctionReference": "Registered Function Reference"
-    }
-  },
-  {
-    "name": "selectAllFieldPrettyNames",
-    "props": [
-      {
-        "entityName": "arg"
-      }
-    ],
-    "result": {
-      "id": "Id",
-      "name": "Name",
-      "required": "Required",
-      "default": "Default",
-      "dataType": "Data Type",
-      "ready": "Ready",
-      "registeredFunction": "Registered Function",
-      "registeredFunctionReference": "Registered Function Reference"
-    }
-  },
-  {
     "name": "selectEntitySchema",
     "props": [
       {
@@ -2364,6 +2455,19 @@
     "result": {
       "entityName": "registeredFunction",
       "schemaType": "table",
+      "primaryKey": "id",
+      "primaryKeyMetadata": {
+        "type": "single",
+        "fields": [
+          "id"
+        ],
+        "database_fields": [
+          "id"
+        ],
+        "where_template": {
+          "id": null
+        }
+      },
       "defaultFetchStrategy": "fkAndIfk",
       "componentProps": {
         "variant": "default",
