@@ -34,7 +34,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.loading.loading = true;
                 state.loading.error = null;
             },
-            fetchQuickReference: (state) => {
+            fetchQuickReference: (state, action?: PayloadAction<{ maxRecords?: number }>) => {
                 state.loading.loading = true;
                 state.loading.error = null;
             },
@@ -543,7 +543,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 action: PayloadAction<QuickReferenceRecord[]>
             ) => {
                 state.quickReference.records = action.payload;
-                state.quickReference.lastUpdated = new Date().toISOString(); // Use ISO string instead of Date object
+                state.quickReference.lastUpdated = new Date().toISOString();
                 state.quickReference.fetchComplete = true;
             },
 

@@ -59,6 +59,26 @@ export type DataStructure =
     | 'inverseForeignKey'
     | 'manyToMany';
 
+export interface EntityFlexFormField {
+    name: string;
+    label: string;
+    type: FormFieldType;
+    options?: string[];
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    section?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    accept?: string;
+    multiple?: boolean;
+    src?: string;
+    alt?: string;
+    jsonSchema?: object;
+}
+
+
 
 export interface EntityFormState {
     [key: string]: any;
@@ -132,25 +152,6 @@ export interface EntityFormProps {
     onNextStep?: () => void;
     onPrevStep?: () => void;
     isSinglePage?: boolean;
-}
-
-export interface EntityFlexFormField {
-    name: string;
-    label: string;
-    type: FormFieldType;
-    options?: string[];
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    section?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-    accept?: string;
-    multiple?: boolean;
-    src?: string;
-    alt?: string;
-    jsonSchema?: object;
 }
 
 export interface FlexEntityFormProps {

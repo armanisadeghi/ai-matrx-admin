@@ -1,5 +1,6 @@
 import { AutomationEntity, EntityField, EntityKeys } from "@/types/entityTypes";
 import { EntityMetadata, EntityMetrics, EntityState, PrimaryKeyMetadata } from "@/lib/redux/entity/types";
+import EntityLogger from "@/lib/redux/entity/entityLogger";
 
 /**
  * Represents the structure we expect for each field in the schema
@@ -77,6 +78,8 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
 function createPrimaryKeyMetadata<TEntity extends EntityKeys>(
     schema: AutomationEntity<TEntity>
 ): PrimaryKeyMetadata {
+    // console.log('schema.primaryKeyMetadata:', schema.primaryKeyMetadata);
+
     const primaryKeyFields = schema.primaryKey.split(',').map(key => key.trim());
     const pkMetadata: PrimaryKeyMetadata = {
         type: primaryKeyFields.length > 1 ? 'composite' : 'single',
@@ -98,14 +101,15 @@ function createPrimaryKeyMetadata<TEntity extends EntityKeys>(
         pkMetadata.where_template[entityField.fieldNameFormats.database] = null;
     });
 
+
     if (process.env.NODE_ENV === 'development') {
-        console.log('Primary Key Configuration:', {
+        EntityLogger.log('debug', 'Primary Key Configuration', 'entityKey', {
             fields: pkMetadata.fields,
             databaseFields: pkMetadata.database_fields,
             template: pkMetadata.where_template
         });
     }
-
+    // console.log('pkMetadata:', pkMetadata);
     return pkMetadata;
 }
 
@@ -212,6 +216,7 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(
         displayName: schema.entityNameFormats.pretty || entityKey,
         schemaType: schema.schemaType,
         primaryKeyMetadata: createPrimaryKeyMetadata(schema),
+        displayFieldMetadata: schema.displayFieldMetadata,
         fields: extractFieldsFromSchema(schema),
     };
 

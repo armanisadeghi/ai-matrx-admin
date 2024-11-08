@@ -21,7 +21,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
         pageSize: number;
     }) => void;
 
-    fetchQuickReference: () => void;
+    fetchQuickReference: (payload?: { maxRecords?: number }) => void;
 
     fetchOne: (payload: {
         primaryKeyValues: Record<string, MatrxRecordId>;

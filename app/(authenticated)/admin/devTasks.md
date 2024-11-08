@@ -9,7 +9,8 @@
 - [ ] Relationship Sags - https://claude.ai/chat/65b65df1-7f0c-49d8-91d1-1e4967fcaa53
   - Related Slices - https://claude.ai/chat/e2e18216-11b6-45ed-93a3-aed969995792
 - [ ] Document Schema system - https://claude.ai/chat/a7d36e9a-fc0c-4a62-9348-31c726a0db8e
-- [ ] Task
+- [ ] Table tasks & Enhancements
+  - Visualize some data in other ways, such as Boolean values as a checkmark (Or entire row bolded or un-bolded, like in email lists showing read/unread)
 - [ ] Task
 
 

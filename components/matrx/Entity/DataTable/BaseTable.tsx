@@ -1,11 +1,8 @@
 "use client"
 
 import * as React from "react"
-import {flexRender, TableOptions, useReactTable,} from "@tanstack/react-table"
-import {ChevronDown} from "lucide-react"
+import {useReactTable,} from "@tanstack/react-table"
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip"
-
-import {Button} from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -21,15 +18,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {Input} from "@/components/ui/input"
 import {useEntity} from "@/lib/redux/entity/useEntity"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
-import {Spinner} from "@nextui-org/spinner";
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
-import {buildColumnsFromTableColumns, defaultTableActions} from "@/components/matrx/Entity/addOns/tableBuilder";
-import {EntityTabModal} from "@/components/matrx/Entity";
-import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
-import {useEntityTabModal} from "@/components/matrx/Entity/hooks/useEntityTabModal";
+import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
 import {DataTableProps, DEFAULT_OPTIONS} from "@/components/matrx/Entity/types/entityTable";
 import {DefaultTable} from "@/components/matrx/Entity/DataTable/variants/DefaultTable";

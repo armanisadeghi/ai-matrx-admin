@@ -8,8 +8,8 @@ import {TableInstance, ExtendedTableState} from "@/types/tableTypes";
 import MatrxTableHeader from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableHeader";
 import MatrxTableBody from "@/app/(authenticated)/tests/matrx-table/components/MatrxTableBody";
 import {cn} from "@/styles/themes";
-import TableTopOptions from "@/app/(authenticated)/tests/table-test/TableTopOptions";
-import TableBottomSection from "@/app/(authenticated)/tests/table-test/TableBottomSection";
+import TableTopOptions from "@/app/(authenticated)/tests/table-test/custom-table/TableTopOptions";
+import TableBottomSection from "@/app/(authenticated)/tests/table-test/custom-table/TableBottomSection";
 import MatrxColumnSettings from "@/app/(authenticated)/tests/matrx-table/components/MatrxColumnSettings";
 
 interface MatrxServerTableProps {
@@ -58,7 +58,7 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
                 id: row.id ? `${row.id}` : `row-${index}`
             }));
         }, [data, actions]);
-    
+
     const allColumns = useMemo(() => {
         if (allData.length === 0) return [];
         const columns = Object.keys(allData[0]).map(key => ({
@@ -75,7 +75,7 @@ const MatrxServerTable: React.FC<MatrxServerTableProps> = (
 
 
 
-    
+
     useEffect(() => {
         if (allColumns.length > 0) {
             if (defaultVisibleColumns && defaultVisibleColumns.length > 0) {

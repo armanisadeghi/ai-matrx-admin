@@ -58,13 +58,14 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
             schemaType: entity.schemaType,
             primaryKey: entity.primaryKey,
             primaryKeyMetadata: entity.primaryKeyMetadata,
+            displayFieldMetadata: entity.displayFieldMetadata,
             defaultFetchStrategy: entity.defaultFetchStrategy,
             componentProps: entity.componentProps,
             entityNameFormats: entity.entityNameFormats,
             relationships: entity.relationships,
             entityFields: processedFields
         };
-
+        // @ts-ignore
         processedSchema[typedEntityKey] = processedEntity;
     }
 
@@ -250,12 +251,13 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                 fieldsByEntity[typedEntityName]?.push(fieldId);
             });
 
-            // @ts-ignore Create fully typed entity definition
             entities[typedEntityName] = {
                 entityName: typedEntityName,
                 schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,
                 primaryKey: entityDef.primaryKey,
+                // @ts-ignore Store processed entity with complete typing
                 primaryKeyMetadata: entityDef.primaryKeyMetadata,
+                displayFieldMetadata: entityDef.displayFieldMetadata,
                 defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
                 componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
                 relationships: entityDef.relationships as EntityRelationships<TEntity>
@@ -266,6 +268,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                 schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,
                 primaryKey: entityDef.primaryKey,
                 primaryKeyMetadata: entityDef.primaryKeyMetadata,
+                displayFieldMetadata: entityDef.displayFieldMetadata,
                 defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
                 componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
                 entityNameFormats: entityDef.entityNameFormats as EntityNameFormats<TEntity>,
@@ -1854,6 +1857,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     const showEntityNameToBackendSample = false;
     const showFieldNameToDatabaseSample = false;
     const showFieldNameToBackendSample = false;
+    const showExampleMetadata = false;
 
     if (!globalCache) {
         console.warn('Global cache not initialized. Cannot generate schema report.');
@@ -1932,6 +1936,15 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     }
     if (showFieldNameToBackendSample) {
         console.log('\nSample Field Name to Backend Mapping:', JSON.stringify(Object.entries(globalCache.fieldNameToBackend).slice(0, 5), null, 2));
+    }
+
+    if (showExampleMetadata) {
+        console.log('\nExample Metadata:');
+        const exampleEntity = globalCache.schema['flashcardSetRelations'];
+        const primaryKeyMetadata = exampleEntity.primaryKeyMetadata;
+        const displayFieldMetadata = exampleEntity.displayFieldMetadata;
+        console.log('\nExample Primary Key Metadata:', JSON.stringify(primaryKeyMetadata, null, 2));
+        console.log('\nExample Display Field Metadata:', JSON.stringify(displayFieldMetadata, null, 2));
     }
 
     // console.log('\nComplete entityNames:', JSON.stringify(globalCache.entityNames, null, 2));

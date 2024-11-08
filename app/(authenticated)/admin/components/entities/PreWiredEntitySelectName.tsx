@@ -17,7 +17,7 @@ interface PreWiredEntitySelectProps {
     onValueChange: (value: EntityKeys) => void;
 }
 
-const PreWiredEntitySelect: React.FC<PreWiredEntitySelectProps> = (
+const PreWiredEntitySelectName: React.FC<PreWiredEntitySelectProps> = (
     {
         selectedEntity,
         onValueChange,
@@ -43,4 +43,4 @@ const PreWiredEntitySelect: React.FC<PreWiredEntitySelectProps> = (
     );
 };
 
-export default PreWiredEntitySelect;
+export default PreWiredEntitySelectName;

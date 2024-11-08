@@ -1,6 +1,6 @@
 // lib/redux/entity/types.ts
 
-import { EntityKeys, EntityData } from "@/types/entityTypes";
+import {EntityKeys, EntityData} from "@/types/entityTypes";
 
 // --- Basic Types ---
 export type MatrxRecordId = string;
@@ -15,21 +15,50 @@ export interface PrimaryKeyMetadata {
     where_template: Record<string, null>;
 }
 
+export interface DisplayFieldMetadata {
+    fieldName: string | null;
+    databaseFieldName: string | null;
+}
+
+export interface EntityMetadata {
+    displayName: string;
+    schemaType: string;
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    displayFieldMetadata: DisplayFieldMetadata;
+    displayField?: string;
+    fields: EntityField[];
+}
+
+
+interface CombinedEntityMetadata {
+    displayName: string;
+    schemaType: string;
+    primaryKeyMetadata: {
+        type: 'single' | 'composite' | 'none';
+        fields: string[];
+        database_fields: string[];
+        where_template: Record<string, null>;
+    };
+    DisplayFieldMetadata: {
+        fieldName: string;
+        databaseFieldName: string;
+    }
+    displayField?: string;
+    fields: {
+        name: string;
+        displayName: string;
+        isPrimary?: boolean;
+        isDisplayField?: boolean;
+    }[];
+}
+
+
 export interface EntityField {
     name: string;
     displayName: string;
     isPrimary?: boolean;
     isDisplayField?: boolean;
 }
-
-// Updated EntityMetadata
-export interface EntityMetadata {
-    displayName: string;
-    schemaType: string;
-    primaryKeyMetadata: PrimaryKeyMetadata;
-    fields: EntityField[];
-}
-
 
 
 // --- Selection Management ---
@@ -42,6 +71,7 @@ export interface SelectionState<TEntity extends EntityKeys> {
 
 // --- Pagination State ---
 export interface PaginationState {
+    pageIndex: number;
     page: number;
     pageSize: number;
     totalCount: number;
@@ -60,8 +90,16 @@ export interface LoadingState {
         code?: number;
         details?: unknown;
     } | null;
-    lastOperation?: 'fetch' | 'create' | 'update' | 'delete' | 'custom' |null;
+    lastOperation?: 'fetch' | 'create' | 'update' | 'delete' | 'custom' | null;
 }
+
+export interface EntityError {
+    message: string;
+    code?: number;
+    details?: unknown;
+    lastOperation?: 'fetch' | 'create' | 'update' | 'delete' | 'custom' | null;
+}
+
 
 // --- Cache Management ---
 interface CacheState {
@@ -75,10 +113,10 @@ interface CacheState {
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
-    primaryKeyValues: Record<MatrxRecordId, string>; // Changed from MatrxRecordId to string back to MatrxRecordId as a string
+    primaryKeyValues: Record<string, MatrxRecordId>; // Corrected to map field names to their values
     displayValue: string;
     metadata?: {
-        lastModified?: string; // Already correct as string
+        lastModified?: string;
         createdBy?: string;
         status?: string;
     };

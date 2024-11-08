@@ -1,6 +1,7 @@
 // selectorsConfig.ts
 import * as schemaSelectors from "@/lib/redux/schema/globalCacheSelectors";
 import {EntityKeys} from "@/types/entityTypes";
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 
 
 const entityKey = 'registeredFunction';
@@ -168,12 +169,50 @@ const formatThree = "pretty";
 const formatFour = "GraphQL";
 
 
+export const KeyedSelectorsConfig = [
+    {
+        category: "Entity Selectors",
+        name: "selectAllRecords",
+        selectorFn: (state, entityKey) => createEntitySelectors(entityKey).selectAllRecords(state),
+        args: ["yourEntityKey"], // Replace "yourEntityKey" with a test entity key
+        isObjectArgs: false,
+        conductTest: true
+    },
+    {
+        category: "Entity Selectors",
+        name: "selectEntityDisplayName",
+        selectorFn: (state, entityKey) => createEntitySelectors(entityKey).selectEntityDisplayName(state),
+        args: ["yourEntityKey"],
+        isObjectArgs: false,
+        conductTest: true
+    },
+    {
+        category: "Entity Selectors",
+        name: "selectRecordByPrimaryKey",
+        selectorFn: (state, entityKey, primaryKeyValues) =>
+            createEntitySelectors(entityKey).selectRecordByPrimaryKey(state, primaryKeyValues),
+        args: ["yourEntityKey", {primaryKey: "value"}], // Adjust primaryKey as needed
+        isObjectArgs: true,
+        conductTest: true
+    },
+    {
+        category: "Entity Selectors",
+        name: "selectRecordsByPrimaryKeys",
+        selectorFn: (state, entityKey, primaryKeyValuesList) =>
+            createEntitySelectors(entityKey).selectRecordsByPrimaryKeys(state, primaryKeyValuesList),
+        args: ["yourEntityKey", [{primaryKey: "value1"}, {primaryKey: "value2"}]],
+        isObjectArgs: true,
+        conductTest: true
+    },
+]
+
+
 export const selectorsConfig = [
     // selectAnyFieldMapping
     {
         category: "Local Testing",
         name: "selectAnyFieldMapping",
-        selectorFn: schemaSelectors.selectAnyFieldMapping,
+        selectorFn: schemaSelectors.selectAnyFieldMapping, // This works
         args: [entityKey],
         isObjectArgs: false,
         conductTest: true
@@ -181,11 +220,45 @@ export const selectorsConfig = [
     {
         category: "Local Testing",
         name: "selectFieldNameMappingForEntity",
-        selectorFn: schemaSelectors.selectFieldNameMappingForEntity,
+        selectorFn: schemaSelectors.selectFieldNameMappingForEntity, // This works
         args: [entityKey],
         isObjectArgs: false,
         conductTest: true
     },
+    // {
+    //     category: "Entity Selectors",
+    //     name: "selectAllRecords",
+    //     selectorFn: (state, entityKey) => createEntitySelectors(entityKey).selectAllRecords(state),
+    //     args: ["yourEntityKey"], // Replace "yourEntityKey" with a test entity key
+    //     isObjectArgs: false,
+    //     conductTest: true
+    // },
+    // {
+    //     category: "Entity Selectors",
+    //     name: "selectEntityDisplayName",
+    //     selectorFn: (state, entityKey) => createEntitySelectors(entityKey).selectEntityDisplayName(state),
+    //     args: ["yourEntityKey"],
+    //     isObjectArgs: false,
+    //     conductTest: true
+    // },
+    // {
+    //     category: "Entity Selectors",
+    //     name: "selectRecordByPrimaryKey",
+    //     selectorFn: (state, entityKey, primaryKeyValues) =>
+    //         createEntitySelectors(entityKey).selectRecordByPrimaryKey(state, primaryKeyValues),
+    //     args: ["yourEntityKey", { primaryKey: "value" }], // Adjust primaryKey as needed
+    //     isObjectArgs: true,
+    //     conductTest: true
+    // },
+    // {
+    //     category: "Entity Selectors",
+    //     name: "selectRecordsByPrimaryKeys",
+    //     selectorFn: (state, entityKey, primaryKeyValuesList) =>
+    //         createEntitySelectors(entityKey).selectRecordsByPrimaryKeys(state, primaryKeyValuesList),
+    //     args: ["yourEntityKey", [{ primaryKey: "value1" }, { primaryKey: "value2" }]],
+    //     isObjectArgs: true,
+    //     conductTest: true
+    // },
 
 
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import {TableCell} from '@/components/ui/table';
 import {motion} from 'framer-motion';
-import TableActionIcon from "@/app/(authenticated)/tests/table-test/TableActionIcon";
+import TableActionIcon from "@/app/(authenticated)/tests/table-test/custom-table/TableActionIcon";
 import {CustomTableCellProps} from "@/types/tableTypes";
 
 const CustomTableCell: React.FC<CustomTableCellProps> = (

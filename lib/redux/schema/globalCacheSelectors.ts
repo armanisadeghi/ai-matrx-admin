@@ -13,6 +13,7 @@ import {NameFormat} from "@/types/AutomationSchemaTypes";
 
 import { GlobalCacheState } from "./globalCacheSlice";
 import {QueryOptions} from "@/lib/redux/entity/sagas";
+import {DisplayFieldMetadata, PrimaryKeyMetadata } from "../entity/types";
 
 
 
@@ -147,7 +148,29 @@ export const selectEntityDisplayField = createSelector(
     }
 );
 
+// Selector for primaryKeyMetadata
+export const selectEntityPrimaryKeyMetadata = createSelector(
+    [selectEntity],
+    (entity): PrimaryKeyMetadata | undefined => entity?.primaryKeyMetadata
+);
 
+// Selector for displayFieldMetadata
+export const selectEntityDisplayFieldMetadata = createSelector(
+    [selectEntity],
+    (entity): DisplayFieldMetadata | undefined => entity?.displayFieldMetadata
+);
+
+// Combined selector to get both primaryKeyMetadata and displayFieldMetadata
+export const selectEntityMetadata = createSelector(
+    [selectEntity],
+    (entity): { primaryKeyMetadata?: PrimaryKeyMetadata; displayFieldMetadata?: DisplayFieldMetadata } => {
+        if (!entity) return { primaryKeyMetadata: undefined, displayFieldMetadata: undefined };
+
+        // Extract metadata fields directly from the entity
+        const { primaryKeyMetadata, displayFieldMetadata } = entity;
+        return { primaryKeyMetadata, displayFieldMetadata };
+    }
+);
 
 
 export const selectEntityFieldNameToDatabaseMap = createSelector(

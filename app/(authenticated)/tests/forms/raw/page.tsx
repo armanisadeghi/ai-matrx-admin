@@ -4,7 +4,7 @@ import React, {useState} from "react";
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from "@/lib/redux/store";
 import {submitForm, updateFormField} from "@/lib/redux/slices/formSlice";
-import {formFields} from "@/app/(authenticated)/tests/forms/formData";
+import {formFields} from "@/app/(authenticated)/tests/forms/constants/formData";
 import { FlexAnimatedForm } from "@/components/matrx/AnimatedForm";
 
 

@@ -39,7 +39,7 @@ import LogViewer from './LogViewer';
 import {EntityKeys} from '@/types/entityTypes';
 import {useToast} from "@/components/ui";
 import {useEntityLogging} from "@/app/(authenticated)/admin/components/entities/useEntityLogging";
-import PreWiredEntitySelect from './PreWiredEntitySelect';
+import PreWiredEntitySelectName from './PreWiredEntitySelectName';
 import BrowseTab from './tabs/BrowseTab';
 import OperationsTab from './tabs/OperationsTab';
 import FiltersTab from './tabs/FiltersTab';
@@ -133,7 +133,7 @@ const EntityTestingLab = () => {
                 <CardHeader>
                     <CardTitle className="flex justify-between items-center">
                         <span>Entity Testing Laboratory</span>
-                        <PreWiredEntitySelect
+                        <PreWiredEntitySelectName
                             selectedEntity={selectedEntity}
                             onValueChange={setSelectedEntity}
                         />

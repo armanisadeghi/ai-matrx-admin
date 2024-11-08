@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from "@/lib/redux/store";
 import { submitForm, updateFormField } from "@/lib/redux/slices/formSlice";
 import { AnimatedFormModal, FlexAnimatedForm } from "@/components/matrx/AnimatedForm";
-import { formFields } from "../formData";
+import { formFields } from "../constants/formData";
 import { FlexAnimatedFormProps } from "@/types/AnimatedFormTypes";
 
 // Define a type for common props

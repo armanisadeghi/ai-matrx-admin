@@ -7,7 +7,7 @@ import { selectFormattedEntityOptions } from "@/lib/redux/schema/globalCacheSele
 import { EntityKeys } from '@/types/entityTypes';
 import { useEntity } from '@/lib/redux/entity/useEntity';
 import { Loader2 } from 'lucide-react';
-import PreWiredEntitySelect from './PrewiredEntitySelect';
+import PreWiredEntitySelectName from './PreWiredEntitySelectName';
 
 interface EntityHeaderProps {
     onEntityChange?: (entity: ReturnType<typeof useEntity>) => void;
@@ -45,7 +45,7 @@ const EntityHeader: React.FC<EntityHeaderProps> = ({ onEntityChange }) => {
                 <h2 className="text-xl font-semibold">
                     {entityDisplayName}
                 </h2>
-                <PreWiredEntitySelect
+                <PreWiredEntitySelectName
                     selectedEntity={selectedEntity}
                     onValueChange={setSelectedEntity}
                 />

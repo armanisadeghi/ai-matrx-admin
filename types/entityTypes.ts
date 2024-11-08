@@ -397,6 +397,7 @@ export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
     primaryKey: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
+    displayFieldMetadata: DisplayFieldMetadata;
     defaultFetchStrategy: FetchStrategy;
     componentProps: EntityComponentProps<TEntity>;
     entityNameFormats: EntityNameFormats<TEntity>;
@@ -755,7 +756,7 @@ type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 import {Draft} from 'immer';
 import {EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
-import {PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true

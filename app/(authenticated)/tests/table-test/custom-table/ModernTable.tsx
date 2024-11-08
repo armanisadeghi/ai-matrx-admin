@@ -5,12 +5,12 @@ import {useTable, useSortBy, useGlobalFilter, usePagination,} from 'react-table'
 import {Table} from '@/components/ui/table';
 import DialogForm from "./DialogForm";
 import {cn} from "@/styles/themes/utils"
-import {deleteAction,editAction,expandAction,viewAction} from "@/app/(authenticated)/tests/table-test/actionDefinitions";
-import CustomTableHeader from "@/app/(authenticated)/tests/table-test/CustomTableHeader";
-import CustomTableBody from "@/app/(authenticated)/tests/table-test/CustomTableBody";
-import TableTopOptions from "@/app/(authenticated)/tests/table-test/TableTopOptions";
-import TableBottomSection from "@/app/(authenticated)/tests/table-test/TableBottomSection";
-import ColumnSettingsModal from "@/app/(authenticated)/tests/table-test/ColumnSettingsModal";
+import {deleteAction,editAction,expandAction,viewAction} from "@/app/(authenticated)/tests/table-test/custom-table/actionDefinitions";
+import CustomTableHeader from "@/app/(authenticated)/tests/table-test/custom-table/CustomTableHeader";
+import CustomTableBody from "@/app/(authenticated)/tests/table-test/custom-table/CustomTableBody";
+import TableTopOptions from "@/app/(authenticated)/tests/table-test/custom-table/TableTopOptions";
+import TableBottomSection from "@/app/(authenticated)/tests/table-test/custom-table/TableBottomSection";
+import ColumnSettingsModal from "@/app/(authenticated)/tests/table-test/custom-table/ColumnSettingsModal";
 import {
     ExtendedTableState,
     TableInstance,

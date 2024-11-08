@@ -6,7 +6,7 @@ import { Button, Input } from "@/components/ui";
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import { EntityKeys } from '@/types/entityTypes';
-import PreWiredEntitySelect from "@/app/(authenticated)/admin/components/entities/PreWiredEntitySelect";
+import PreWiredEntitySelectName from "@/app/(authenticated)/admin/components/entities/PreWiredEntitySelectName";
 
 // A default/fallback entity key, assuming one exists in EntityKeys
 const DEFAULT_ENTITY: EntityKeys = 'systemFunction'; // Replace with an appropriate default entity key
@@ -37,7 +37,7 @@ const FetchOperations = () => {
     return (
         <div className="space-y-4">
             {/* Schema Selection */}
-            <PreWiredEntitySelect
+            <PreWiredEntitySelectName
                 selectedEntity={selectedSchema}
                 onValueChange={(schema) => setSelectedSchema(schema)}
             />

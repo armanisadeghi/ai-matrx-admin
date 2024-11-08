@@ -26,7 +26,7 @@ import {useEntity} from "@/lib/redux/entity/useEntity"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
 import {Spinner} from "@nextui-org/spinner";
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
-import {buildColumnsFromTableColumns, defaultTableActions} from "@/components/matrx/Entity/addOns/tableBuilder";
+import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {EntityTabModal} from "@/components/matrx/Entity";
 import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
 import {useEntityTabModal} from "@/components/matrx/Entity/hooks/useEntityTabModal";

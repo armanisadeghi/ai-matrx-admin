@@ -19,11 +19,19 @@ import {
     ClipboardCheck,
     SquareMousePointer,
     Grid2x2Plus,
-    TableCellsSplit
+    TableCellsSplit,
+    LayoutGrid
 } from "lucide-react";
-import React from "react";
+import React from "react";``
 
 export const primaryLinks = [
+    {
+        label: 'Applets',
+        href: '/applets',
+        icon: (
+            <LayoutGrid className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     {
         label: 'Math Demo',
         href: '/tests/math',
@@ -116,8 +124,8 @@ export const primaryLinks = [
         ),
     },
     {
-        label: 'Animated Form',
-        href: '/tests/animated-form',
+        label: 'All Form Tests',
+        href: '/tests/forms',
         icon: (
             <FileInput className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
@@ -246,8 +254,8 @@ export const secondaryLinks = [
     },
 
     {
-        label: 'Dynamic Selector Test',
-        href: '/tests/selector-test/dynamic-test', // https://lucide.dev/icons/
+        label: 'Selector Tests',
+        href: '/tests/selector-test', // https://lucide.dev/icons/
         icon: (
             <SquareMousePointer className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),

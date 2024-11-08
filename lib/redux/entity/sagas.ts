@@ -16,7 +16,7 @@ import {
     selectEntityDatabaseName,
     UnifiedQueryOptions,
     selectFrontendConversion,
-    selectPayloadOptionsDatabaseConversion,
+    selectPayloadOptionsDatabaseConversion, selectEntityMetadata,
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {Draft} from "immer";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
@@ -79,16 +79,16 @@ export function* withConversion<TEntity extends EntityKeys>(
 ) {
     try {
         const tableName: string = yield select(selectEntityDatabaseName, entityKey);
-        EntityLogger.log('debug', 'Resolved table name', entityKey, {tableName});
+        EntityLogger.log('info', 'withConversion Resolved table name', entityKey, {tableName});
 
         const api = yield call(initializeDatabaseApi, tableName);
-        EntityLogger.log('debug', 'Database API initialized', entityKey);
+        EntityLogger.log('info', 'Database API initialized', entityKey);
 
         const dbQueryOptions = yield select(selectPayloadOptionsDatabaseConversion, {
             entityName: entityKey,
             options: action.payload?.options || {},
         });
-        EntityLogger.log('debug', 'Query options', entityKey, dbQueryOptions);
+        EntityLogger.log('info', 'withConversion Query options', entityKey, dbQueryOptions);
 
         yield call(
             sagaHandler,
@@ -143,7 +143,7 @@ type SagaAction<P = any> = PayloadAction<P> & { type: string };
 export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity) {
     const {actions} = createEntitySlice(entityKey, {} as any);
 
-    EntityLogger.log('info', `Initializing entity saga watcher`, entityKey);
+    EntityLogger.log('debug', `Initializing entity saga watcher`, entityKey);
 
     return function* saga() {
         try {
@@ -153,35 +153,35 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 takeLatest(
                     actions.fetchRecords.type,
                     function* (action: SagaAction<{ page: number; pageSize: number }>) {
-                        EntityLogger.log('debug', 'Handling fetchRecords', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling fetchRecords', entityKey, action.payload);
                         yield call(withConversion, handleFetchPaginated, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.fetchOne.type,
                     function* (action: SagaAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) {
-                        EntityLogger.log('debug', 'Handling fetchOne', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling fetchOne', entityKey, action.payload);
                         yield call(withConversion, handleFetchOne, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.fetchAll.type,
                     function* (action: SagaAction) {
-                        EntityLogger.log('debug', 'Handling fetchAll', entityKey);
+                        EntityLogger.log('info', 'watchEntitySagas Handling fetchAll', entityKey);
                         yield call(withConversion, handleFetchAll, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.fetchQuickReference.type,
                     function* (action: SagaAction) {
-                        EntityLogger.log('debug', 'Handling fetchQuickReference', entityKey);
+                        EntityLogger.log('info', 'watchEntitySagas Handling fetchQuickReference', entityKey);
                         yield call(withConversion, handleFetchQuickReference, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.createRecord.type,
                     function* (action: SagaAction<EntityData<TEntity>>) {
-                        EntityLogger.log('debug', 'Handling createRecord', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling createRecord', entityKey, action.payload);
                         yield call(withConversion, handleCreate, entityKey, actions, action);
                     }
                 ),
@@ -191,28 +191,28 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         primaryKeyValues: Record<string, MatrxRecordId>;
                         data: Partial<EntityData<TEntity>>;
                     }>) {
-                        EntityLogger.log('debug', 'Handling updateRecord', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling updateRecord', entityKey, action.payload);
                         yield call(withConversion, handleUpdate, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.deleteRecord.type,
                     function* (action: SagaAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) {
-                        EntityLogger.log('debug', 'Handling deleteRecord', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling deleteRecord', entityKey, action.payload);
                         yield call(withConversion, handleDelete, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.executeCustomQuery.type,
                     function* (action: SagaAction<UnifiedQueryOptions<TEntity>>) {
-                        EntityLogger.log('debug', 'Handling executeCustomQuery', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling executeCustomQuery', entityKey, action.payload);
                         yield call(withConversion, handleExecuteCustomQuery, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.fetchMetrics.type,
                     function* (action: SagaAction<UnifiedQueryOptions<TEntity>>) {
-                        EntityLogger.log('debug', 'Handling executeCustomQuery', entityKey, action.payload);
+                        EntityLogger.log('info', 'watchEntitySagas Handling executeCustomQuery', entityKey, action.payload);
                         yield call(withConversion, handleFetchMetrics, entityKey, actions, action);
                     }
                 ),
@@ -222,7 +222,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                     if (action.payload.entityKey === entityKey) {
                         const {eventType, data} = action.payload;
 
-                        EntityLogger.log('debug', `Handling socket event ${eventType}`, entityKey, data);
+                        EntityLogger.log('info', `Handling socket event ${eventType}`, entityKey, data);
 
                         // switch (eventType) {
                         //     case 'created':
@@ -256,7 +256,7 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     dbQueryOptions: QueryOptions<TEntity>
 ) {
     try {
-        EntityLogger.log('debug', 'Starting fetchOne', entityKey, action.payload);
+        EntityLogger.log('info', 'Starting fetchOne', entityKey, action.payload);
 
         let query = api.select("*");
 
@@ -269,6 +269,7 @@ function* handleFetchOne<TEntity extends EntityKeys>(
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
+        EntityLogger.log('info', 'Fetch one response',entityKey, frontendResponse);
 
         yield put(actions.fetchOneSuccess(frontendResponse));
     } catch (error: any) {
@@ -305,6 +306,7 @@ function* handleFetchAll<TEntity extends EntityKeys>(
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
+        EntityLogger.log('debug', 'Fetch All response got response and sending back');
 
         yield put(actions.fetchAllSuccess(frontendResponse));
     } catch (error: any) {
@@ -321,21 +323,22 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
     api: any,
-    action: PayloadAction<{
-        primaryKeyFields: string[];
-        displayField: string;
-    }>,
+    action: PayloadAction<{ maxRecords?: number } | undefined>,
     tableName: string,
     dbQueryOptions: QueryOptions<TEntity>
 ) {
     try {
         EntityLogger.log('debug', 'Starting fetchQuickReference', entityKey, action.payload);
 
-        const {primaryKeyFields, displayField} = action.payload;
+        const { primaryKeyMetadata, displayFieldMetadata } = yield select(selectEntityMetadata, entityKey);
 
-        let query = api.select(`${primaryKeyFields.join(',')},${displayField}`);
+        const primaryKeyFields = primaryKeyMetadata.database_fields;
+        const displayField = displayFieldMetadata?.databaseFieldName;
+        const limit = action.payload?.maxRecords ?? 1000;
 
-        const {data, error} = yield query;
+        let query = api.select(`${primaryKeyFields.join(',')}${displayField ? `,${displayField}` : ''}`).limit(limit);
+
+        const { data, error } = yield query;
         if (error) throw error;
 
         const quickReferenceRecords = data.map(record => ({
@@ -343,7 +346,7 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
                 ...acc,
                 [field]: record[field]
             }), {}),
-            displayValue: record[displayField]
+            displayValue: displayField ? record[displayField] : undefined
         }));
 
         yield put(actions.setQuickReference(quickReferenceRecords));
@@ -356,6 +359,7 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
         throw error;
     }
 }
+
 
 function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -625,7 +629,7 @@ function* handleRefreshData<TEntity extends EntityKeys>(
                     || metadata.primaryKeyMetadata.fields[0]
             });
 
-            yield put(actions.fetchQuickReference());
+            yield put(actions.fetchQuickReference({ maxRecords: 1000 }));
         }
 
         yield put(actions.setFlags({needsRefresh: false}));

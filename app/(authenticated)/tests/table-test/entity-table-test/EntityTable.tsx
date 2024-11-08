@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import ModernTable from "@/app/(authenticated)/tests/table-test/ModernTable";
+import ModernTable from "@/app/(authenticated)/tests/table-test/custom-table/ModernTable";
 import { MatrixColumn, TableData } from "@/types/tableTypes";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFieldPrettyNames } from "@/lib/redux/schema/globalCacheSelectors";

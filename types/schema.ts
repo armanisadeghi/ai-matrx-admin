@@ -1,3 +1,4 @@
+import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
 import {
     AutomationEntities,
     EntityComponentProps,
@@ -101,15 +102,6 @@ export interface relationships {
     junctionTable: string | null;
 }
 
-export interface SchemaEntity {
-    entityName: EntityNameOfficial;
-    schemaType: 'table' | 'view' | 'dynamic' | 'other';
-    primaryKey: string | Array<string>;
-    defaultFetchStrategy:  "m2mAndFk" | "simple" | "m2mAndIfk" | "fk" | "none" | "fkIfkAndM2M" | "ifk" | "fkAndIfk" | "m2m";
-    componentProps?: Record<string, any>;
-    relationships: relationships[];
-}
-
 export const createFieldId = (entityName: EntityNameOfficial, fieldName: string) =>
     `${entityName}__${fieldName}`;
 
@@ -122,7 +114,29 @@ export interface SchemaEntity {
     entityName: EntityNameOfficial;
     schemaType: 'table' | 'view' | 'dynamic' | 'other';
     primaryKey: string | Array<string>;
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    displayFieldMetadata: DisplayFieldMetadata;
     defaultFetchStrategy: FetchStrategy;
+    componentProps?: Record<string, any>;
+    relationships: relationships[];
+}
+
+
+interface FullSchemaEntity {
+    entityName: EntityNameOfficial;
+    schemaType: 'table' | 'view' | 'dynamic' | 'other';
+    primaryKey: string | Array<string>;
+    primaryKeyMetadata: {
+        type: 'single' | 'composite' | 'none';
+        fields: string[];
+        database_fields: string[];
+        where_template: Record<string, null>;
+    };
+    DisplayFieldMetadata: {
+        fieldName: string;
+        databaseFieldName: string;
+    }
+    defaultFetchStrategy:  "m2mAndFk" | "simple" | "m2mAndIfk" | "fk" | "none" | "fkIfkAndM2M" | "ifk" | "fkAndIfk" | "m2m";
     componentProps?: Record<string, any>;
     relationships: relationships[];
 }
