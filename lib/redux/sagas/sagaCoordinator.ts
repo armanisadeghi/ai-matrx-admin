@@ -5,6 +5,7 @@ import { all, call, take, put, fork } from 'redux-saga/effects';
 import { EntityKeys } from '@/types/entityTypes';
 import { watchEntitySagas } from '@/lib/redux/entity/sagas';
 import {SocketManager} from "@/lib/redux/socket/manager";
+import EntityLogger from "@/lib/redux/entity/entityLogger";
 
 export class SagaCoordinator {
     private static instance: SagaCoordinator | null = null;
@@ -25,7 +26,8 @@ export class SagaCoordinator {
 
     setEntityNames(entityNames: EntityKeys[]) {
         this.entityNames = entityNames;
-        console.log('Setting entity names:', entityNames);
+        EntityLogger.log('info', 'Set Entity Names', "Saga Coordinator", {entityNames});
+
     }
 
     getChannel(): Channel<any> {

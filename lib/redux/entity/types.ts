@@ -1,5 +1,32 @@
 // lib/redux/entity/types.ts
 
+import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
+
+interface CombinedEntityMetadata {
+    displayName: string;
+    schemaType: string;
+    primaryKeyMetadata: {
+        type: 'single' | 'composite' | 'none';
+        fields: string[];
+        database_fields: string[];
+        where_template: Record<string, null>;
+    };
+    DisplayFieldMetadata: {
+        fieldName: string;
+        databaseFieldName: string;
+    }
+    displayField?: string;
+    fields: {
+        name: string;
+        displayName: string;
+        isPrimaryKey?: boolean;
+        isDisplayField?: boolean;
+    }[];
+}
+
+
+
+
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 
 // --- Basic Types ---
@@ -20,45 +47,37 @@ export interface DisplayFieldMetadata {
     databaseFieldName: string | null;
 }
 
+export interface EntityStateField {
+    name: string;
+    displayName: string;
+    isPrimaryKey: boolean;
+    isDisplayField?: boolean;
+    dataType: FieldDataOptionsType;
+    isArray: boolean;
+    structure: DataStructure;
+    isNative: boolean;
+    defaultComponent?: string;
+    componentProps?: Record<string, unknown>;
+    isRequired: boolean;
+    maxLength: number;
+    defaultValue: any;
+    defaultGeneratorFunction: string;
+    validationFunctions: string[];
+    exclusionRules: string[];
+    databaseTable: string;
+}
+
+
 export interface EntityMetadata {
     displayName: string;
     schemaType: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
     displayFieldMetadata: DisplayFieldMetadata;
     displayField?: string;
-    fields: EntityField[];
+    fields: EntityStateField[];
 }
 
 
-interface CombinedEntityMetadata {
-    displayName: string;
-    schemaType: string;
-    primaryKeyMetadata: {
-        type: 'single' | 'composite' | 'none';
-        fields: string[];
-        database_fields: string[];
-        where_template: Record<string, null>;
-    };
-    DisplayFieldMetadata: {
-        fieldName: string;
-        databaseFieldName: string;
-    }
-    displayField?: string;
-    fields: {
-        name: string;
-        displayName: string;
-        isPrimary?: boolean;
-        isDisplayField?: boolean;
-    }[];
-}
-
-
-export interface EntityField {
-    name: string;
-    displayName: string;
-    isPrimary?: boolean;
-    isDisplayField?: boolean;
-}
 
 
 // --- Selection Management ---

@@ -1,31 +1,8 @@
 import { AutomationEntity, EntityField, EntityKeys } from "@/types/entityTypes";
 import { EntityMetadata, EntityMetrics, EntityState, PrimaryKeyMetadata } from "@/lib/redux/entity/types";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
+import {EntityNameOfficial, SchemaField} from "@/types/schema";
 
-/**
- * Represents the structure we expect for each field in the schema
- */
-interface SchemaField {
-    fieldNameFormats: {
-        pretty: string;
-        [key: string]: string;
-    };
-    isDisplayField?: boolean;
-    isPrimaryKey?: boolean;
-}
-
-/**
- * Type guard to ensure a field has the required properties
- */
-function isValidSchemaField(field: unknown): field is SchemaField {
-    const f = field as SchemaField;
-    return (
-        f !== null &&
-        typeof f === 'object' &&
-        'fieldNameFormats' in f &&
-        typeof f.fieldNameFormats?.pretty === 'string'
-    );
-}
 
 // Configuration Constants
 const ENTITY_DEFAULTS = {
@@ -45,6 +22,20 @@ const ENTITY_DEFAULTS = {
 const getCurrentISODate = () => new Date().toISOString();
 
 /**
+ * Type guard to ensure a field has the required properties
+ */
+function isValidSchemaField(field: unknown): field is EntityField<any, any> {
+    const f = field as EntityField<any, any>;
+    return (
+        f !== null &&
+        typeof f === 'object' &&
+        'fieldNameFormats' in f &&
+        typeof f.fieldNameFormats?.pretty === 'string'
+    );
+}
+
+
+/**
  * Simplified field extraction that maintains type safety
  */
 function extractFieldsFromSchema<TEntity extends EntityKeys>(
@@ -62,18 +53,48 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
                 name: key,
                 displayName: key,
                 isDisplayField: false,
-                isPrimary: false,
+                isPrimaryKey: false,
+                dataType: 'string',
+                isArray: false,
+                structure: 'single',
+                isNative: true,
+                defaultComponent: 'input',
+                componentProps: {},
+                isRequired: false,
+                maxLength: null,
+                defaultValue: "",
+                defaultGeneratorFunction: null,
+                validationFunctions: null,
+                exclusionRules: null,
+                databaseTable: null,
+
             };
         }
 
         return {
             name: key,
             displayName: field.fieldNameFormats.pretty,
-            isDisplayField: field.isDisplayField || false,
-            isPrimary: field.isPrimaryKey || false,
+            isDisplayField: field.isDisplayField,
+            isPrimaryKey: field.isPrimaryKey,
+            dataType: field.dataType,
+            isArray: field.isArray,
+            structure: field.structure,
+            isNative: field.isNative,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            isRequired: field.isRequired,
+            maxLength: field.maxLength,
+            defaultValue: field.defaultValue,
+            defaultGeneratorFunction: field.defaultGeneratorFunction,
+            validationFunctions: field.validationFunctions,
+            exclusionRules: field.exclusionRules,
+            databaseTable: field.databaseTable,
+
         };
     });
 }
+
+
 
 function createPrimaryKeyMetadata<TEntity extends EntityKeys>(
     schema: AutomationEntity<TEntity>
@@ -154,7 +175,7 @@ function createInitialState<TEntity extends EntityKeys>(
             fetchComplete: false,
         },
         selection: {
-            selectedRecords: [],  // Initialize as empty array
+            selectedRecords: [],
             activeRecord: null,
             selectionMode: 'none',
         },
@@ -163,6 +184,7 @@ function createInitialState<TEntity extends EntityKeys>(
             pageSize: ENTITY_DEFAULTS.PAGINATION.PAGE_SIZE,
             totalCount: 0,
             totalPages: 0,
+            pageIndex: 0,
             hasNextPage: false,
             hasPreviousPage: false,
         },
@@ -275,6 +297,7 @@ export const createEmptyEntityState = <TEntity extends EntityKeys>(): EntityStat
         pageSize: 25,  // Use the default page size here, or adjust as needed
         totalCount: 0,
         totalPages: 0,
+        pageIndex: 0,
         hasNextPage: false,
         hasPreviousPage: false,
     },

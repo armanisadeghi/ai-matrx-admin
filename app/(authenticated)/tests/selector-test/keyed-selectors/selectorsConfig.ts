@@ -203,8 +203,15 @@ export const entitySelectorsConfig: EntitySelectorConfig[] = [
                 isObjectArgs: false,
                 conductTest: true
             },
+            {
+                name: "selectFieldInfo",
+                selectorKey: "selectFieldInfo",
+                args: [],
+                isObjectArgs: false,
+                conductTest: true
+            },
 
-        ] //
+        ] //fieldInfo
     },
     // {
     //     category: "Entity Metadata",

@@ -2,29 +2,43 @@
 
 import * as React from "react"
 import {useReactTable,} from "@tanstack/react-table"
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip"
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import {useEntity} from "@/lib/redux/entity/useEntity"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
-import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
 import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
-import {DataTableProps, DEFAULT_OPTIONS} from "@/components/matrx/Entity/types/entityTable";
 import {DefaultTable} from "@/components/matrx/Entity/DataTable/variants/DefaultTable";
+import {DEFAULT_TABLE_OPTIONS, useEntityDataTable} from "@/components/matrx/Entity/hooks/useEntityDataTable";
+
+export interface DataTableProps<TEntity extends EntityKeys> {
+    entityKey: TEntity;
+    variant?: 'default' | 'compact' | 'cards' | 'minimal';
+    options?: {
+        showCheckboxes?: boolean;
+        showFilters?: boolean;
+        showActions?: boolean;
+        actions?: {
+            showEdit?: boolean;
+            showDelete?: boolean;
+            showExpand?: boolean;
+            custom?: Array<{
+                label: string;
+                onClick: (row: EntityData<TEntity>) => void;
+                variant?: "outline" | "destructive";
+                size?: "xs" | "sm";
+            }>;
+        };
+    };
+}
+
+export const DEFAULT_OPTIONS = {
+    showCheckboxes: true,
+    showFilters: true,
+    showActions: true,
+    actions: {
+        showEdit: true,
+        showDelete: true,
+        showExpand: true,
+    }
+};
 
 export function EntityBaseTable<TEntity extends EntityKeys>(
     {
@@ -35,21 +49,23 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
         loadingState,
         paginationInfo,
         matrxTableData: {
-            config,
-            state: tableState,
-            utils: tableUtils,
-            defaultPageSize,
-        }
-    } = useEntity(entityKey);
+            tanstackConfig,
+            tableState,
+            tanstackColumns,
+            tanstackUtils,
+            columnUtils,
+            defaults,
+        },
+    } = useEntityDataTable(entityKey);
 
     React.useEffect(() => {
-        config.onPaginationChange?.({
+        tanstackConfig.onPaginationChange?.({
             pageIndex: 0,
-            pageSize: defaultPageSize
+            pageSize: defaults.defaultPageSize
         });
     }, [entityKey]);
 
-    // Modal state
+
     const [selectedRow, setSelectedRow] = React.useState<EntityData<TEntity> | null>(null);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<string>('view');
@@ -58,7 +74,7 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
         setSelectedRow(rowData);
         setActiveTab(actionName);
         setIsModalOpen(true);
-    }, []);
+    }, [setSelectedRow, setActiveTab, setIsModalOpen]);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -70,7 +86,7 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
         , [handleAction]);
 
     const columnsWithActions = React.useMemo(() => {
-        const baseColumns = (config.columns || []).map(col => ({
+        const baseColumns = (tanstackConfig.columns || []).map(col => ({
             key: col.id,
             title: String(col.header)
         }));
@@ -79,19 +95,19 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
             baseColumns,
             options.showActions ? [defaultActions.expanded] : []
         );
-    }, [config.columns, options, defaultActions]);
+    }, [tanstackConfig.columns, options.showActions, defaultActions.expanded]);
 
     const table = useReactTable({
-        ...config,
+        ...tanstackConfig,
         columns: columnsWithActions,
-        data: config.data || [],
+        data: tanstackConfig.data || [],
         state: {
-            ...config.state,
+            ...tanstackConfig.state,
             columnVisibility: tableState.columnVisibility,
             globalFilter: tableState.globalFilter,
         },
-        onColumnVisibilityChange: config.onColumnVisibilityChange,
-        onGlobalFilterChange: config.onGlobalFilterChange,
+        onColumnVisibilityChange: tanstackConfig.onColumnVisibilityChange,
+        onGlobalFilterChange: tanstackConfig.onGlobalFilterChange,
     });
 
     return (
@@ -101,10 +117,9 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
                     {/* Filter row */}
                 </div>
             )}
-
             <DefaultTable
                 table={table}
-                config={config}
+                config={tanstackConfig}
                 options={options}
                 tableState={tableState}
                 loadingState={loadingState}

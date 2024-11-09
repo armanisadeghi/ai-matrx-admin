@@ -1,18 +1,13 @@
 // useEntityTable.ts
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
-// import {createEntitySelectors} from '@/lib/redux/entity/entitySelectors';
-// import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {useToast} from '@/components/ui/use-toast';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityCommandContext, EntityCommandName} from '@/components/matrx/MatrxCommands/EntityCommand';
-import {
-    selectEntityPrimaryKeyField,
-    selectEntityDisplayField,
-    selectEntityPrettyName,
-    selectAllFieldPrettyNames
-} from '@/lib/redux/schema/globalCacheSelectors';
+import {createEntitySlice} from '@/lib/redux/entity/slice';
+import {createEntitySelectors} from '@/lib/redux/entity/selectors';
+import {Draft} from '@reduxjs/toolkit';
 
 interface UseEntityTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -32,44 +27,47 @@ export const useEntityTable = <TEntity extends EntityKeys>(
         parentCommandExecute,
         useParentModal = false
     }: UseEntityTableProps<TEntity>) => {
+
     const dispatch = useAppDispatch();
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
     const {toast} = useToast();
 
-    const entitySelectors = createEntitySelectors(entityKey);
-    const entityActions = createEntityActions(entityKey);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
-    const data = useAppSelector(entitySelectors.selectData);
-    const loading = useAppSelector(entitySelectors.selectLoading);
-    const error = useAppSelector(entitySelectors.selectError);
-    const totalCount = useAppSelector(entitySelectors.selectTotalCount);
-    const initialized = useAppSelector(entitySelectors.selectInitialized);
+    // Generate slice and selectors based on entity key
+    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
-    const primaryKeyField = useAppSelector((state) =>
-        selectEntityPrimaryKeyField(state, entityKey)
-    );
-    const displayField = useAppSelector((state) =>
-        selectEntityDisplayField(state, entityKey)
-    );
+    // Selectors
+    const data = useAppSelector(selectors.selectAllRecords);
+    const loading = useAppSelector(selectors.selectLoadingState).loading;
+    const error = useAppSelector(selectors.selectError);
+    const totalCount = useAppSelector(selectors.selectPaginationInfo).totalCount;
 
-    const entityPrettyName = useAppSelector((state) =>
-        selectEntityPrettyName(state, entityKey)
-    );
+    // Access the primary key fields instead of a single field
+    const primaryKeyFields = useAppSelector(selectors.selectPrimaryKeyMetadata)?.fields;
+    const displayField = useAppSelector(selectors.selectDisplayField);
+    const entityPrettyName = useAppSelector(selectors.selectEntityDisplayName);
+    const fieldPrettyNamesArray = useAppSelector(selectors.selectFieldInfo);
 
-    const fieldPrettyNames = useAppSelector((state) =>
-        selectAllFieldPrettyNames(state, {entityName: entityKey})
-    );
+    // Convert fieldPrettyNames to a Record<string, string>
+    const fieldPrettyNames = useMemo(() => {
+        return fieldPrettyNamesArray.reduce((acc, field) => {
+            acc[field.name] = field.displayName;
+            return acc;
+        }, {} as Record<string, string>);
+    }, [fieldPrettyNamesArray]);
 
+    // Define default columns to display
     const defaultVisibleColumns = useMemo(() => {
         if (!data?.[0]) return [];
-        const important = [primaryKeyField, displayField].filter(Boolean) as string[];
+        const important = [...(primaryKeyFields || []), displayField].filter(Boolean) as string[];
         const otherFields = Object.keys(data[0])
             .filter(field => !important.includes(field))
             .slice(0, 5);
 
         return [...important, ...otherFields];
-    }, [data, primaryKeyField, displayField]);
+    }, [data, primaryKeyFields, displayField]);
 
     const commands = {
         expand: true,
@@ -97,19 +95,19 @@ export const useEntityTable = <TEntity extends EntityKeys>(
             switch (actionName) {
                 case 'view':
                 case 'edit':
-                    dispatch(entityActions.setSelectedItem({index: context.index}));
+                    dispatch(actions.setSelection({records: [context.data as Draft<EntityData<TEntity>>], mode: 'single'}));
                     if (!useParentModal && onModalOpen) onModalOpen(actionName, context.data);
                     break;
                 case 'delete':
-                    await dispatch(entityActions.deleteRequest(context.index));
+                    await dispatch(actions.deleteRecord({primaryKeyValues: context.data}));
                     toast({title: 'Success', description: 'Item deleted successfully', variant: 'default'});
                     break;
                 case 'create':
-                    dispatch(entityActions.createRequest(context.data));
+                    dispatch(actions.createRecord(context.data as Draft<EntityData<TEntity>>));
                     if (!useParentModal && onModalOpen) onModalOpen(actionName, context.data);
                     break;
                 case 'expand':
-                    // TODO: Handle expand logic
+                    // Implement expand logic if needed
                     break;
                 default:
                     console.log(`Executing custom command: ${actionName}`);
@@ -121,27 +119,17 @@ export const useEntityTable = <TEntity extends EntityKeys>(
                 variant: 'destructive'
             });
         }
-    }, [parentCommandExecute, entityActions, dispatch, useParentModal, onModalOpen, toast]);
+    }, [parentCommandExecute, actions, dispatch, useParentModal, onModalOpen, toast]);
 
-    useEffect(() => {
-        if (!loading && (!initialized || page > 0)) {
-            dispatch(entityActions.fetchPaginatedRequest({
-                page,
-                pageSize,
-                options: {},
-                maxCount: 10000
-            }));
-        }
-    }, [loading, initialized, page, pageSize, dispatch, entityActions]);
 
     return {
-        data,
+        data: Object.values(data),
         loading,
         error,
         page,
         pageSize,
         totalCount,
-        primaryKeyField,
+        primaryKeyFields,
         entityPrettyName,
         fieldPrettyNames,
         defaultVisibleColumns,

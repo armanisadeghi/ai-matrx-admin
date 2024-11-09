@@ -105,7 +105,7 @@ export interface FlexEntityFormProps {
 interface EntityField {
     name: string;
     displayName: string;
-    isPrimary?: boolean;
+    isPrimaryKey?: boolean;
     isDisplayField?: boolean;
 }
 interface SchemaField {

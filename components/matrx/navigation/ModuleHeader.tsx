@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import {useRouter, usePathname} from 'next/navigation';
 import {motion} from 'framer-motion';
 import {ChevronLeft, Home, Settings, Boxes, TestTube2} from 'lucide-react';
 import {IconApps} from "@tabler/icons-react";
@@ -31,6 +32,9 @@ export default function ModuleHeader(
         moduleName,
         className = ''
     }: ModuleHeaderProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+
     const headerVariants = {
         initial: {opacity: 0, y: -20},
         animate: {
@@ -58,13 +62,20 @@ export default function ModuleHeader(
         if (!page.relative) {
             return page.path.startsWith('/') ? page.path : `/${page.path}`;
         }
-        return `/${moduleHome}/${page.path}`;
+        return moduleHome.startsWith('/')
+               ? `${moduleHome}/${page.path}`
+               : `/${moduleHome}/${page.path}`;
+    };
+
+    // Handle navigation
+    const handleNavigation = (path: string) => {
+        router.push(path);
     };
 
     // Find current page using the same path logic
     const currentPage = pages.find(page => {
         const fullPath = getFullPath(page);
-        return currentPath === fullPath;
+        return pathname === fullPath;
     });
 
     const currentTitle = moduleName || currentPage?.title || 'Select Page';
@@ -110,7 +121,7 @@ export default function ModuleHeader(
                     animate="animate"
                     whileHover="hover"
                 >
-                    <Link href={`/${moduleHome}`}>
+                    <Link href={moduleHome}>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -133,7 +144,7 @@ export default function ModuleHeader(
             </div>
 
             <div className="flex-1 max-w-xs mx-4">
-                <Select onValueChange={(value) => window.location.href = value}>
+                <Select onValueChange={handleNavigation}>
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder="Navigate to..."/>
                     </SelectTrigger>

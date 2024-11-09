@@ -10,10 +10,10 @@ export const pages: ModulePage[] = [
         description: 'Original Custom Table implementation'
     },
     {
-        title: 'Entity Table Test (Unknown Version)',
+        title: 'Entity Table Test)',
         path: 'entity-table-test',
         relative: true,
-        description: 'Not sure which one this is'
+        description: 'Hardcoded Page.tsx for specific entity (Registered Function). Uses ModernTable'
     },
     {
         title: 'Entity Data Table All in One Original',
@@ -28,10 +28,10 @@ export const pages: ModulePage[] = [
         description: 'Same as all-in-one, but broken into 2 parts'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Advanced Data Table',
+        path: 'advanced-data-table',
         relative: true,
-        description: ''
+        description: 'New Advanced Table that uses the new useAdvancedDataTable hook and integrates new action, and cell renderers logic.'
     },
     {
         title: 'Not Implemented',

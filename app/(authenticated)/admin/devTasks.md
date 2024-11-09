@@ -11,6 +11,10 @@
 - [ ] Document Schema system - https://claude.ai/chat/a7d36e9a-fc0c-4a62-9348-31c726a0db8e
 - [ ] Table tasks & Enhancements
   - Visualize some data in other ways, such as Boolean values as a checkmark (Or entire row bolded or un-bolded, like in email lists showing read/unread)
+- [ ] Entity & Form System - Permissions & Roles
+  - Figure out how to get proper roles set up for users so what they can see and do is limited by their permissions
+- [ ] Task
+- [ ] Task
 - [ ] Task
 
 

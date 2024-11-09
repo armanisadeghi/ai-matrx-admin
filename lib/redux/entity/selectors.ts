@@ -207,8 +207,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (metadata) => metadata.fields.map(field => ({
             name: field.name,
             displayName: field.displayName,
-            isPrimary: field.isPrimary || false,
-            isDisplayField: field.isDisplayField || false
+            isPrimaryKey: field.isPrimaryKey,
+            isDisplayField: field.isDisplayField,
+            dataType: field.dataType,
+            isArray: field.isArray,
+            structure: field.structure,
+            isNative: field.isNative,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            isRequired: field.isRequired,
+            maxLength: field.maxLength,
+            defaultValue: field.defaultValue,
+            defaultGeneratorFunction: field.defaultGeneratorFunction,
+            validationFunctions: field.validationFunctions,
+            exclusionRules: field.exclusionRules,
+            databaseTable: field.databaseTable
         }))
     );
 
@@ -227,8 +240,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (fields) => fields.map(field => ({
             key: field.name,
             title: field.displayName,
-            isPrimary: field.isPrimary,
-            isDisplayField: field.isDisplayField
+            isPrimaryKey: field.isPrimaryKey,
+            isDisplayField: field.isDisplayField,
+            dataType: field.dataType,
+            isArray: field.isArray,
+            structure: field.structure,
+            isNative: field.isNative,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            isRequired: field.isRequired,
+            maxLength: field.maxLength,
+            defaultValue: field.defaultValue,
+            defaultGeneratorFunction: field.defaultGeneratorFunction,
+            validationFunctions: field.validationFunctions,
+            exclusionRules: field.exclusionRules,
+            databaseTable: field.databaseTable
         }))
     );
 

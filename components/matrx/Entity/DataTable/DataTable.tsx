@@ -1,10 +1,8 @@
 "use client"
 
 import * as React from "react"
-import {flexRender, TableOptions, useReactTable,} from "@tanstack/react-table"
+import {flexRender, useReactTable,} from "@tanstack/react-table"
 import {ChevronDown} from "lucide-react"
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip"
-
 import {Button} from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -22,16 +20,46 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import {Input} from "@/components/ui/input"
-import {useEntity} from "@/lib/redux/entity/useEntity"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
 import {Spinner} from "@nextui-org/spinner";
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
 import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {EntityTabModal} from "@/components/matrx/Entity";
 import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
-import {useEntityTabModal} from "@/components/matrx/Entity/hooks/useEntityTabModal";
 import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
-import {DataTableProps, DEFAULT_OPTIONS} from "@/components/matrx/Entity/types/entityTable";
+import {useEntityDataTable} from "@/components/matrx/Entity/hooks/useEntityDataTable";
+
+export interface DataTableProps<TEntity extends EntityKeys> {
+    entityKey: TEntity;
+    variant?: 'default' | 'compact' | 'cards' | 'minimal';
+    options?: {
+        showCheckboxes?: boolean;
+        showFilters?: boolean;
+        showActions?: boolean;
+        actions?: {
+            showEdit?: boolean;
+            showDelete?: boolean;
+            showExpand?: boolean;
+            custom?: Array<{
+                label: string;
+                onClick: (row: EntityData<TEntity>) => void;
+                variant?: "outline" | "destructive";
+                size?: "xs" | "sm";
+            }>;
+        };
+    };
+}
+
+export const DEFAULT_OPTIONS = {
+    showCheckboxes: true,
+    showFilters: true,
+    showActions: true,
+    actions: {
+        showEdit: true,
+        showDelete: true,
+        showExpand: true,
+    }
+};
 
 export function DataTable<TEntity extends EntityKeys>(
     {
@@ -42,17 +70,19 @@ export function DataTable<TEntity extends EntityKeys>(
         loadingState,
         paginationInfo,
         matrxTableData: {
-            config,
-            state: tableState,
-            utils: tableUtils,
-            defaultPageSize,
+            tanstackConfig,
+            tableState,
+            tanstackColumns,
+            tanstackUtils,
+            columnUtils,
+            defaults,
         }
-    } = useEntity(entityKey);
+    } = useEntityDataTable(entityKey);
 
     React.useEffect(() => {
-        config.onPaginationChange?.({
+        tanstackConfig.onPaginationChange?.({
             pageIndex: 0,
-            pageSize: defaultPageSize
+            pageSize: defaults.defaultPageSize
         });
     }, [entityKey]);
 
@@ -65,7 +95,7 @@ export function DataTable<TEntity extends EntityKeys>(
         setSelectedRow(rowData);
         setActiveTab(actionName);
         setIsModalOpen(true);
-    }, []);
+    }, [setSelectedRow, setActiveTab, setIsModalOpen]);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -77,7 +107,7 @@ export function DataTable<TEntity extends EntityKeys>(
         , [handleAction]);
 
     const columnsWithActions = React.useMemo(() => {
-        const baseColumns = (config.columns || []).map(col => ({
+        const baseColumns = (tanstackConfig.columns || []).map(col => ({
             key: col.id,
             title: String(col.header)
         }));
@@ -86,19 +116,19 @@ export function DataTable<TEntity extends EntityKeys>(
             baseColumns,
             options.showActions ? [defaultActions.expanded] : []
         );
-    }, [config.columns, options, defaultActions]);
+    }, [tanstackConfig.columns, options.showActions, defaultActions.expanded]);
 
     const table = useReactTable({
-        ...config,
+        ...tanstackConfig,
         columns: columnsWithActions,
-        data: config.data || [],
+        data: tanstackConfig.data || [],
         state: {
-            ...config.state,
+            ...tanstackConfig.state,
             columnVisibility: tableState.columnVisibility,
             globalFilter: tableState.globalFilter,
         },
-        onColumnVisibilityChange: config.onColumnVisibilityChange,
-        onGlobalFilterChange: config.onGlobalFilterChange,
+        onColumnVisibilityChange: tanstackConfig.onColumnVisibilityChange,
+        onGlobalFilterChange: tanstackConfig.onGlobalFilterChange,
     });
 
     return (
@@ -239,7 +269,7 @@ export function DataTable<TEntity extends EntityKeys>(
                             {[5, 10, 25, 50, 100].map((size) => (
                                 <DropdownMenuItem
                                     key={size}
-                                    onSelect={() => config.onPaginationChange?.({
+                                    onSelect={() => tanstackConfig.onPaginationChange?.({
                                         pageIndex: 0,
                                         pageSize: size
                                     })}
@@ -267,7 +297,7 @@ export function DataTable<TEntity extends EntityKeys>(
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => config.onPaginationChange?.({
+                            onClick={() => tanstackConfig.onPaginationChange?.({
                                 pageIndex: paginationInfo.page - 2,
                                 pageSize: paginationInfo.pageSize
                             })}
@@ -283,7 +313,7 @@ export function DataTable<TEntity extends EntityKeys>(
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => config.onPaginationChange?.({
+                            onClick={() => tanstackConfig.onPaginationChange?.({
                                 pageIndex: paginationInfo.page,
                                 pageSize: paginationInfo.pageSize
                             })}

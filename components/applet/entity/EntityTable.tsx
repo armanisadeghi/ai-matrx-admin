@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import MatrxTable from '@/components/matrx/EntityTable/MatrxServerTable';
 import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxCommands/EntityCommand";
 import {useEntityTable} from './useEntityTable';
+import {useAppDispatch} from "@/lib/redux/hooks";
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
+import {createEntitySlice} from "@/lib/redux/entity/slice";
 
 interface EntityTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -35,7 +38,7 @@ const EntityTable = <TEntity extends EntityKeys>(
         page,
         pageSize,
         totalCount,
-        primaryKeyField,
+        primaryKeyFields,
         entityPrettyName,
         fieldPrettyNames,
         defaultVisibleColumns,
@@ -52,6 +55,26 @@ const EntityTable = <TEntity extends EntityKeys>(
         useParentModal
     });
 
+    const dispatch = useAppDispatch();
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const [lastError, setLastError] = useState<any>(null);
+
+    const safeDispatch = useCallback((action: any) => {
+        try {
+            dispatch(action);
+        } catch (error) {
+            console.error(`Error dispatching action for ${entityKey}:`, error);
+            setLastError(error);
+        }
+    }, [dispatch, entityKey]);
+
+    React.useEffect(() => {
+        if (!loading) {
+            safeDispatch(actions.fetchRecords({page, pageSize}));
+        }
+    }, [entityKey]);
+
     if (error?.message) {
         return (
             <div className="text-destructive p-4 rounded bg-destructive/10">
@@ -67,12 +90,12 @@ const EntityTable = <TEntity extends EntityKeys>(
                 <div className="flex justify-center p-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"/>
                 </div>
-            ) : data && primaryKeyField ? (
+            ) : data && primaryKeyFields && primaryKeyFields.length > 0 ? (
                 <div className="flex-1 min-h-0">
                     <MatrxTable
                         entityKey={entityKey}
                         data={data}
-                        primaryKey={primaryKeyField as keyof EntityData<TEntity>}
+                        primaryKey={primaryKeyFields[0] as keyof EntityData<TEntity>} // Use the first primary key field
                         commands={commands}
                         onCommandExecute={handleCommandExecute}
                         onModalOpen={onModalOpen}

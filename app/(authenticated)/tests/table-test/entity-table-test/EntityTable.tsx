@@ -9,7 +9,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFieldPrettyNames } from "@/lib/redux/schema/globalCacheSelectors";
 import { EntityData, EntityKeys } from "@/types/entityTypes";
 import { useEntity } from "@/lib/redux/entity/useEntity";
-import { MatrxRecordId } from '@/lib/redux/entity/types';
+
 
 interface EntityTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -18,16 +18,8 @@ interface EntityTableProps<TEntity extends EntityKeys> {
 export function EntityTable<TEntity extends EntityKeys>({ entityKey }: EntityTableProps<TEntity>) {
     const entity = useEntity(entityKey);
 
-    // Log initial mount
-    useEffect(() => {
-        console.log('EntityTable mounted with key:', entityKey);
-        console.log('Initial records:', entity.allRecords);
-        console.log('Initial metadata:', entity.metadataSummary);
-    }, []);
 
-    // Modified fetch effect
     useEffect(() => {
-        console.log('Fetching records...');
         entity.fetchAll();
     }, [entityKey]);
 

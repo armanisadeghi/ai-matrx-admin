@@ -9,7 +9,7 @@ import {TableData} from "@/types/tableTypes";
 import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
 import MatrxTableCell from "./MatrxTableCell";
 import {FormState, TabData} from "@/types/AnimatedFormTypes";
-import {AnimatedTabModal} from "@/components/matrx/Entity";
+import { AnimatedTabModal } from "../../AnimatedForm";
 
 
 interface MatrxTableBodyProps {
