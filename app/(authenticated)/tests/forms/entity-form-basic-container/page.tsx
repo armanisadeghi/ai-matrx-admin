@@ -1,14 +1,11 @@
 // app/(authenticated)/tests/forms/entity-form/page.tsx
 'use client';
 
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useMemo} from 'react';
 import {Card, CardContent} from '@/components/ui/card';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
 import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
 import {useEntity} from '@/lib/redux/entity/useEntity';
 import {EntityKeys} from '@/types/entityTypes';
-import {QuickReferenceRecord} from '@/lib/redux/entity/types';
 import {
     EntityFormState,
     FlexEntityFormProps,
@@ -16,44 +13,37 @@ import {
     FormFieldType
 } from '@/components/matrx/Entity/types/entityForm';
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
+import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeaderBasic';
 import {createRecordKey} from '@/lib/redux/entity/utils';
 
-const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
+const EntityFormContainer = (
+    {
+        entityKey,
+        primaryKeyValues
+    }: {
+        entityKey: EntityKeys;
+        primaryKeyValues: Record<string, any> | null;
+    }) => {
     const entity = useEntity(entityKey);
-    const [selectedRecordKey, setSelectedRecordKey] = useState<string | null>(null);
-    const [currentPrimaryKeyValues, setCurrentPrimaryKeyValues] = useState<Record<string, any> | null>(null);
 
-    const currentRecord = useMemo(() => {
-        if (!currentPrimaryKeyValues || !entity.entityMetadata?.primaryKeyMetadata) return null;
-
-        const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, currentPrimaryKeyValues);
-        return entity.allRecords[recordKey];
-    }, [currentPrimaryKeyValues, entity.allRecords, entity.entityMetadata?.primaryKeyMetadata]);
-
-    useEffect(() => {
-        if (entity.entityMetadata) {
-            entity.fetchQuickReference();
+    // Fetch the record when primaryKeyValues change
+    React.useEffect(() => {
+        if (primaryKeyValues) {
+            entity.fetchOne(primaryKeyValues);
         }
-    }, [entity.entityMetadata]);
+    }, [primaryKeyValues, entity]);
 
+    // Set selection when record is loaded
+    React.useEffect(() => {
+        if (primaryKeyValues && entity.entityMetadata?.primaryKeyMetadata) {
+            const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+            const record = entity.allRecords[recordKey];
 
-    const handleRecordSelect = async (value: string) => {
-        console.log('Selected record key:', value);
-        setSelectedRecordKey(value);
-
-        const primaryKeyValues = JSON.parse(value);
-        console.log('Selected record primaryKeyValues:', primaryKeyValues);
-        setCurrentPrimaryKeyValues(primaryKeyValues);
-
-        entity.fetchOne(primaryKeyValues);
-    };
-
-    useEffect(() => {
-        if (currentRecord && !entity.loadingState.loading) {
-            entity.setSelection([currentRecord], 'single');
-            console.log('Selected record:', entity.selectedRecords);
+            if (record && !entity.loadingState.loading) {
+                entity.setSelection([record], 'single');
+            }
         }
-    }, [currentRecord, entity.loadingState.loading]);
+    }, [primaryKeyValues, entity.allRecords, entity.loadingState.loading, entity.entityMetadata?.primaryKeyMetadata]);
 
     const transformFieldsToFormFields = (entityFields: any[]): EntityFlexFormField[] => {
         if (!entityFields) return [];
@@ -66,15 +56,6 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
             disabled: false
         }));
     };
-
-    const quickReferenceOptions = useMemo(() => {
-        if (!entity?.quickReference) return [];
-
-        return entity.quickReference.map((record: QuickReferenceRecord) => ({
-            value: JSON.stringify(record.primaryKeyValues),
-            label: record.displayValue || JSON.stringify(record.primaryKeyValues)
-        }));
-    }, [entity?.quickReference]);
 
     const formProps: FlexEntityFormProps = useMemo(() => {
         if (!entity?.activeRecord) {
@@ -115,7 +96,7 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
             isSinglePage: true,
             isFullPage: true
         };
-    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity]);
+    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity.activeRecord]);
 
     if (!entity.entityMetadata) {
         return <MatrxTableLoading/>;
@@ -123,22 +104,6 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
 
     return (
         <div className="p-4">
-            <Select
-                value={selectedRecordKey || ''}
-                onValueChange={handleRecordSelect}
-            >
-                <SelectTrigger className="w-full mb-4">
-                    <SelectValue placeholder="Select a record"/>
-                </SelectTrigger>
-                <SelectContent>
-                    {quickReferenceOptions.map(({value, label}) => (
-                        <SelectItem key={value} value={value}>
-                            {label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-
             {entity.activeRecord && (
                 <FlexAnimatedForm {...formProps} />
             )}
@@ -148,13 +113,25 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
 
 const DynamicEntityForm: React.FC = () => {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
+    const [selectedRecord, setSelectedRecord] = useState<Record<string, any> | null>(null);
+
+    const handleEntityChange = (entity: EntityKeys | null) => {
+        setSelectedEntity(entity);
+        setSelectedRecord(null);
+    };
 
     return (
         <Card className="w-full">
-            <PreWiredCardHeader onEntityChange={setSelectedEntity}/>
+            <PreWiredEntityRecordHeader
+                onEntityChange={handleEntityChange}
+                onRecordChange={setSelectedRecord}
+            />
             <CardContent>
                 {selectedEntity ? (
-                    <EntityFormContainer entityKey={selectedEntity}/>
+                    <EntityFormContainer
+                        entityKey={selectedEntity}
+                        primaryKeyValues={selectedRecord}
+                    />
                 ) : (
                      <div className="text-center py-8 text-muted-foreground">
                          Select an entity to view its data
@@ -166,7 +143,6 @@ const DynamicEntityForm: React.FC = () => {
 };
 
 export default DynamicEntityForm;
-
 
 
 // For Reference ========================================
