@@ -1,163 +1,37 @@
+// components/matrx/Entity/hooks/useAdvancedDataTable.ts
+
 import * as React from "react"
 import {useEntity} from "@/lib/redux/entity/useEntity"
+import {createRecordKey} from "@/lib/redux/entity/utils"
+import {Draft} from "@reduxjs/toolkit"
+import {
+    createActionColumn,
+    createSmartCellRenderer, formatCellValue,
+} from "@/components/matrx/Entity/addOns/smartCellRender"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
 import {
-    SortingState,
     VisibilityState,
-    PaginationState,
-    RowSelectionState,
     getCoreRowModel,
     getSortedRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
+    getGroupedRowModel,
     getExpandedRowModel,
     getFacetedRowModel,
     getFacetedUniqueValues,
     getFacetedMinMaxValues,
-    getGroupedRowModel,
-    ColumnFiltersState,
-    ExpandedState,
+    ColumnSizingState,
     GroupingState,
 } from "@tanstack/react-table"
-import {createRecordKey} from "@/lib/redux/entity/utils"
-import {Draft} from "@reduxjs/toolkit"
-import {ButtonSize, ButtonVariant} from "../types/tableBuilderTypes"
 import {
-    ActionConfig,
-    createActionColumn,
-    createSmartCellRenderer,
-    SmartFieldConfig
-} from "@/components/matrx/Entity/addOns/smartCellRender"
-import {DEFAULT_TABLE_OPTIONS} from "@/components/matrx/Entity/hooks/useEntityDataTable";
+    UseAdvancedDataTableProps,
+    DEFAULT_OPTIONS,
+    TableState,
+    TableDisplayState,
+    TableDensity,
+    TableFieldMetadata, TableColumn
+} from "@/components/matrx/Entity/types/advancedDataTableTypes"
 
-interface TableState {
-    sorting: SortingState
-    columnVisibility: VisibilityState
-    rowSelection: RowSelectionState
-    pagination: PaginationState
-    globalFilter: string
-    columnFilters: ColumnFiltersState
-    expanded: ExpandedState
-    grouping: GroupingState
-}
-
-interface ValueFormattingOptions {
-    emptyValue?: string
-    nullValue?: string
-    undefinedValue?: string
-    booleanFormat?: {
-        true: string
-        false: string
-    }
-    dateFormat?: string
-    numberFormat?: {
-        minimumFractionDigits?: number
-        maximumFractionDigits?: number
-        style?: 'decimal' | 'currency' | 'percent'
-        currency?: string
-    }
-}
-
-interface ColumnMeta {
-    isPrimaryKey?: boolean;
-    isDisplayField?: boolean;
-    fieldType?: string;
-    sortable?: boolean;
-    filterable?: boolean;
-    groupable?: boolean;
-    align?: 'left' | 'center' | 'right';
-    format?: any;
-    validation?: any;
-}
-
-
-interface TableFeatureOptions {
-    enableSorting?: boolean
-    enableFiltering?: boolean
-    enableGrouping?: boolean
-    enableExpanding?: boolean
-    enablePinning?: boolean
-    enableRowSelection?: boolean
-    enableColumnResizing?: boolean
-    enableGlobalFilter?: boolean
-    enablePagination?: boolean
-    manualPagination?: boolean
-    enableFaceting?: boolean
-}
-
-interface TableDisplayOptions {
-    showToolbar?: boolean
-    showFilters?: boolean
-    showColumnVisibility?: boolean
-    showGlobalFilter?: boolean
-    showPagination?: boolean
-    density?: 'compact' | 'normal' | 'comfortable'
-    variant?: 'default' | 'cards' | 'minimal'
-}
-
-
-interface TableOptions extends TableFeatureOptions, TableDisplayOptions {
-    formatting?: ValueFormattingOptions
-    smartFields?: SmartFieldConfig
-    actions?: ActionConfig
-    defaultPageSize: number
-    defaultPageSizeOptions: number[]
-    maxCharacters: number
-    showTooltips: boolean
-}
-
-const DEFAULT_OPTIONS: TableOptions = {
-    // Feature Options
-    enableSorting: true,
-    enableFiltering: true,
-    enableGrouping: false,
-    enableExpanding: false,
-    enablePinning: false,
-    enableRowSelection: true,
-    enableColumnResizing: true,
-    enableGlobalFilter: true,
-    enablePagination: true,
-    manualPagination: true,
-    enableFaceting: false,
-    // Pagination Options
-    defaultPageSize: 10,
-    defaultPageSizeOptions: [5, 10, 25, 50, 100],
-
-    // Display Options
-    maxCharacters: 100,
-    showTooltips: true,
-    showToolbar: true,
-    showFilters: true,
-    showColumnVisibility: true,
-    showGlobalFilter: true,
-    showPagination: true,
-    density: 'normal',
-    variant: 'default',
-    // Formatting Options
-    formatting: {
-        emptyValue: '',
-        nullValue: '',
-        undefinedValue: '',
-        booleanFormat: {
-            true: 'Yes',
-            false: 'No'
-        },
-        dateFormat: 'MM/dd/yyyy',
-        numberFormat: {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-            style: 'decimal'
-        }
-    }
-}
-
-export interface UseAdvancedDataTableProps<TEntity extends EntityKeys> {
-    entityKey: TEntity
-    options?: Partial<TableOptions>
-    initialState?: Partial<TableState>
-    onStateChange?: (state: TableState) => void
-    onAction?: (action: string, row: EntityData<TEntity>) => void
-}
 
 export function useAdvancedDataTable<TEntity extends EntityKeys>(
     {
@@ -173,6 +47,11 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         [userOptions]
     )
 
+    const initialPageSize = React.useMemo(() =>
+            options.defaultPageSize || DEFAULT_OPTIONS.defaultPageSize,
+        [options.defaultPageSize]
+    )
+
     const {
         fieldInfo,
         primaryKeyMetadata,
@@ -186,23 +65,41 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         loadingState,
     } = useEntity(entityKey)
 
-    // Initialize table state with stable reference
     const [tableState, setTableState] = React.useState<TableState>(() => ({
         sorting: [],
         columnVisibility: {},
         rowSelection: {},
         pagination: {
             pageIndex: paginationInfo.page - 1,
-            pageSize: paginationInfo.pageSize,
+            pageSize: initialPageSize,
         },
         globalFilter: '',
         columnFilters: [],
         expanded: {},
         grouping: [],
+        columnOrder: [],
+        columnPinning: {},
+        rowPinning: {},
+        columnSizingInfo: {
+            startOffset: 0,
+            startSize: 0,
+            deltaOffset: 0,
+            deltaPercentage: 0,
+            isResizingColumn: false,
+            columnSizingStart: [],
+        },
+        columnSizing: {},
+        density: options.density || 'normal',
         ...initialState
     }))
 
-    // Memoize state change handler
+
+    const [displayState, setDisplayState] = React.useState<TableDisplayState>({
+        density: options.density || 'normal',
+        columnSizing: {},
+        grouping: []
+    })
+
     const handleStateChange = React.useCallback((
         updater: (state: TableState) => TableState | Partial<TableState>
     ) => {
@@ -213,136 +110,85 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         })
     }, [onStateChange])
 
-    const truncateText = React.useCallback((text: string) => {
-        if (!text) return ''
-        return text.length > options.maxCharacters
-            ? `${text.substring(0, options.maxCharacters)}...`
-            : text
-    }, [options.maxCharacters])
+    const handleDisplayStateChange = React.useCallback((
+        updates: Partial<TableDisplayState>
+    ) => {
+        setDisplayState(prev => ({...prev, ...updates}))
+    }, [])
 
-    const formatCellValue = React.useCallback((
+    const formatCellValueMemoized = React.useCallback((
         value: any,
         fieldType: string,
-        meta?: ColumnMeta
+        meta?: any
     ) => {
+        return formatCellValue(value, fieldType, options.formatting, options.maxCharacters, meta);
+    }, [options.formatting, options.maxCharacters]);
 
-        if (value === null) return options.formatting?.nullValue
-        if (value === undefined) return options.formatting?.undefinedValue
-        if (value === '') return options.formatting?.emptyValue
 
-        // Use custom format if provided
-        if (meta?.format) {
-            return meta.format(value)
-        }
+    const columns: TableColumn[] = React.useMemo(() => {
+        if (!tableColumns) return [];
 
-        switch (fieldType.toLowerCase()) {
-            case 'boolean':
-                return value
-                    ? options.formatting.booleanFormat.true
-                    : options.formatting.booleanFormat.false
-            case 'date':
-                return value instanceof Date
-                    ? new Intl.DateTimeFormat('en-US', {
-                        dateStyle: 'medium'
-                    }).format(value)
-                    : value
-            case 'number':
-                return typeof value === 'number' ?
-                       new Intl.NumberFormat('en-US', options.formatting?.numberFormat).format(value) : value
-            case 'currency':
-                return typeof value === 'number' ?
-                       new Intl.NumberFormat('en-US', {
-                           ...options.formatting?.numberFormat,
-                           style: 'currency',
-                           currency: options.formatting?.numberFormat?.currency || 'USD'
-                       }).format(value) : value
-            default:
-                return truncateText(value)
-        }
-    }, [options.formatting])
+        const baseColumns: TableColumn[] = tableColumns.map(col => {
+            const fieldMetadata = col as TableFieldMetadata;
+            const fieldType = fieldMetadata.dataType;
+            const width = fieldInfo[col.key]?.width;
 
-    // Memoize columns configuration
-    const columns = React.useMemo(() => {
-        if (!tableColumns) return []
-
-        const baseColumns = tableColumns.map(col => {
-            const fieldMetadata = col
-            const fieldType = fieldMetadata?.dataType
+            const enrichedMetadata: TableFieldMetadata = {
+                ...fieldMetadata,
+                sortable: !fieldMetadata.isPrimaryKey,
+                filterable: !fieldMetadata.isPrimaryKey,
+                groupable: !fieldMetadata.isPrimaryKey,
+                align: fieldInfo[col.key]?.align || 'left',
+                width
+            };
 
             return {
                 id: col.key,
                 accessorKey: col.key,
                 header: col.title,
-                cell: ({getValue, row}) => {
-                    const value = getValue()
-                    const meta = {
-                        isPrimaryKey: col.isPrimaryKey,
-                        isDisplayField: col.isDisplayField,
-                        dataType: fieldMetadata?.dataType,
-                        isArray: fieldMetadata?.isArray,
-                        structure: fieldMetadata?.structure,
-                        isNative: fieldMetadata?.isNative,
-                        defaultComponent: fieldMetadata?.defaultComponent,
-                        componentProps: fieldMetadata?.componentProps,
-                        isRequired: fieldMetadata?.isRequired,
-                        maxLength: fieldMetadata?.maxLength,
-                        defaultValue: fieldMetadata?.defaultValue,
-                        defaultGeneratorFunction: fieldMetadata?.defaultGeneratorFunction,
-                        validationFunctions: fieldMetadata?.validationFunctions,
-                        exclusionRules: fieldMetadata?.exclusionRules,
-                        databaseTable: fieldMetadata?.databaseTable,
-                        fieldType,
-                        sortable: !col.isPrimaryKey,
-                        filterable: !col.isPrimaryKey,
-                        groupable: !col.isPrimaryKey,
-                        align: fieldMetadata?.align || 'left',
-                        format: fieldMetadata?.format,
-                        validation: fieldMetadata?.validationFunctions,
-                    }
+                cell: ({getValue}: { getValue: () => any }) => {
+                    const value = getValue();
 
-                    if (options.smartFields && options.smartFields[fieldType as keyof SmartFieldConfig]) {
+                    if (options.smartFields?.[fieldType] && options.smartFields[fieldType] !== null) {
                         const smartRenderer = createSmartCellRenderer(
                             fieldType,
                             col.key,
                             options.smartFields,
-                            {}
+                            {
+                                isNative: fieldMetadata.isNative ?? true,
+                                databaseTable: fieldMetadata.databaseTable
+                            }
                         );
 
                         if (smartRenderer) {
-                            const smartResult = smartRenderer({getValue, row});
+                            const smartResult = smartRenderer({getValue});
                             if (smartResult !== undefined) {
                                 return smartResult;
                             }
                         }
-                    } else {
-                        console.log(`No smart field configuration found for field type: ${fieldType}`);
                     }
-
-                    return formatCellValue(value, fieldType, meta)
+                    return formatCellValueMemoized(value, fieldType, enrichedMetadata);
                 },
-            enableSorting: options.enableSorting && !col.isPrimaryKey,
-            enableGrouping: options.enableGrouping && !col.isPrimaryKey,
+                enableSorting: options.enableSorting && !fieldMetadata.isPrimaryKey,
+                enableGrouping: options.enableGrouping && !fieldMetadata.isPrimaryKey,
                 enableResizing: options.enableColumnResizing,
-                meta: {
-                    isPrimaryKey: col.isPrimaryKey,
-                    isDisplayField: col.isDisplayField,
-                    fieldType,
-                sortable: !col.isPrimaryKey && options.enableSorting,
-                    filterable: !col.isPrimaryKey,
-                    groupable: !col.isPrimaryKey,
-                    align: fieldMetadata?.align || 'left',
-                    format: fieldMetadata?.format,
-                    validation: fieldMetadata?.validation,
-                } as ColumnMeta
-            }
-        })
+                size: width,
+                minSize: width,
+                maxSize: width,
+                meta: enrichedMetadata
+            } as TableColumn;
+        });
 
         if (options.actions) {
-            baseColumns.push(createActionColumn(options.actions, onAction || (() => {
-            })))
+            const actionColumn = createActionColumn(
+                options.actions,
+                onAction || (() => {
+                })
+            );
+            baseColumns.push(actionColumn);
         }
 
-        return baseColumns
+        return baseColumns;
     }, [
         tableColumns,
         fieldInfo,
@@ -351,18 +197,26 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         options.enableColumnResizing,
         options.smartFields,
         options.actions,
-        formatCellValue,
+        formatCellValueMemoized,
         onAction
-    ])
+    ]);
 
-    // Memoize table configuration
-    const tableConfig = React.useMemo(() => ({
+    const tableConfig: any = React.useMemo(() => ({
         data: currentPage,
         columns,
         pageCount: paginationInfo.totalPages,
-        state: tableState,
+        state: {
+            ...tableState,
+            density: displayState.density,
+            columnSizing: displayState.columnSizing,
+            grouping: displayState.grouping,
+            pagination: {
+                pageIndex: paginationInfo.page - 1,
+                pageSize: options.defaultPageSize || DEFAULT_OPTIONS.defaultPageSize
+            }
+        },
 
-        // Core functionality
+        // All the core functionality
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -377,7 +231,7 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
             getFacetedMinMaxValues: getFacetedMinMaxValues(),
         }),
 
-        // Feature flags
+        // Feature flags and handlers
         enableRowSelection: options.enableRowSelection,
         enableMultiRowSelection: options.enableRowSelection,
         enableSorting: options.enableSorting,
@@ -397,17 +251,48 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         // State management
         onStateChange: handleStateChange,
 
-        // Pagination handlers
-        onPaginationChange: (updater: any) => {
-            const newPagination = typeof updater === 'function' ? updater(tableState.pagination) : updater
-            handleStateChange(state => ({...state, pagination: newPagination}))
-            fetchRecords(newPagination.pageIndex + 1, newPagination.pageSize)
+        // Column sizing handler
+        onColumnSizingChange: (updater: ColumnSizingState) => {
+            handleDisplayStateChange({columnSizing: updater})
         },
 
-        // Sorting handlers
+        // Grouping handler
+        onGroupingChange: (updater: GroupingState) => {
+            handleDisplayStateChange({grouping: updater})
+        },
+
+        // Pagination handlers
+        onPaginationChange: (updater: any) => {
+            const newPagination = typeof updater === 'function'
+                                  ? updater(tableState.pagination)
+                                  : updater
+
+            // Handle page size changes
+            if (newPagination.pageSize !== tableState.pagination.pageSize) {
+                handleStateChange(state => ({
+                    ...state,
+                    pagination: {
+                        pageIndex: 0,
+                        pageSize: newPagination.pageSize
+                    }
+                }))
+                fetchRecords(1, newPagination.pageSize)
+            } else {
+                // Handle page navigation
+                handleStateChange(state => ({
+                    ...state,
+                    pagination: newPagination
+                }))
+                fetchRecords(newPagination.pageIndex + 1, newPagination.pageSize)
+            }
+        },
+
         onSortingChange: (updater: any) => {
-            const newSorting = typeof updater === 'function' ? updater(tableState.sorting) : updater
+            const newSorting = typeof updater === 'function'
+                               ? updater(tableState.sorting)
+                               : updater
             handleStateChange(state => ({...state, sorting: newSorting}))
+            console.log("newSorting", newSorting)
             if (newSorting.length > 0) {
                 setEntitySorting({
                     field: newSorting[0].id,
@@ -416,44 +301,117 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
             }
         },
 
-        // Selection handlers
         onRowSelectionChange: (updater: any) => {
-            const newSelection = typeof updater === 'function' ? updater(tableState.rowSelection) : updater
+            const newSelection = typeof updater === 'function'
+                                 ? updater(tableState.rowSelection)
+                                 : updater
             handleStateChange(state => ({...state, rowSelection: newSelection}))
             const selectedRows = currentPage
                 .filter((_, index) => newSelection[index]) as Draft<EntityData<TEntity>>[]
             setEntitySelection(selectedRows, selectedRows.length === 1 ? 'single' : 'multiple')
         },
+
+        // Utility methods
+        resetState: () => {
+            handleStateChange(() => initialState || {})
+            handleDisplayStateChange({
+                density: options.density || 'normal',
+                columnSizing: {},
+                grouping: []
+            })
+        },
+        setGlobalFilter: (filter: string) =>
+            handleStateChange(state => ({...state, globalFilter: filter})),
+
+        setDensity: (density: TableDensity) =>
+            handleDisplayStateChange({density}),
+
+        setColumnVisibility: (visibility: VisibilityState) =>
+            handleStateChange(state => ({...state, columnVisibility: visibility})),
+
+        getVisibleColumns: () => columns.filter(col => !tableState.columnVisibility[col.id as string]),
+        getPrimaryColumns: () => columns.filter(col => col.meta?.isPrimaryKey),
+        getSortableColumns: () => columns.filter(col => col.meta?.sortable),
+        getFilterableColumns: () => columns.filter(col => col.meta?.filterable),
+        getGroupableColumns: () => columns.filter(col => col.meta?.groupable),
+
+        clearSelection: () => handleStateChange(state => ({...state, rowSelection: {}})),
+        getSortedColumn: () => tableState.sorting[0]?.id || null,
+
+        toggleColumnGrouping: (columnId: string, enabled: boolean) => {
+            const currentGrouping = displayState.grouping
+            const newGrouping = enabled
+                                ? [...currentGrouping, columnId]
+                                : currentGrouping.filter(id => id !== columnId)
+            handleDisplayStateChange({grouping: newGrouping})
+        },
+
+        clearGrouping: () => handleDisplayStateChange({grouping: []}),
+        setColumnSizing: (sizing: ColumnSizingState) => handleDisplayStateChange({columnSizing: sizing}),
     }), [
         currentPage,
         columns,
-        paginationInfo.totalPages,
+        paginationInfo,
         tableState,
+        displayState,
         options,
         primaryKeyMetadata,
         handleStateChange,
+        handleDisplayStateChange,
         fetchRecords,
         setEntitySorting,
-        setEntitySelection
+        setEntitySelection,
+        initialState
     ])
 
-    // Memoize table utilities
+    // Enhanced table utilities
     const tableUtils = React.useMemo(() => ({
-        resetState: () => handleStateChange(() => initialState || {}),
+        resetState: () => {
+            handleStateChange(() => initialState || {})
+            handleDisplayStateChange({
+                density: options.density || 'normal',
+                columnSizing: {},
+                grouping: []
+            })
+        },
         getVisibleColumns: () => columns.filter(col => !tableState.columnVisibility[col.id as string]),
-        getPrimaryColumns: () => columns.filter(col => (col.meta as ColumnMeta)?.isPrimaryKey),
-        getSortableColumns: () => columns.filter(col => (col.meta as ColumnMeta)?.sortable),
-        getFilterableColumns: () => columns.filter(col => (col.meta as ColumnMeta)?.filterable),
+        getPrimaryColumns: () => columns.filter(col => (col.meta as TableFieldMetadata)?.isPrimaryKey),
+        getSortableColumns: () => columns.filter(col => (col.meta as TableFieldMetadata)?.sortable),
+        getFilterableColumns: () => columns.filter(col => (col.meta as TableFieldMetadata)?.filterable),
+        getGroupableColumns: () => columns.filter(col => (col.meta as TableFieldMetadata)?.groupable),
         clearSelection: () => handleStateChange(state => ({...state, rowSelection: {}})),
         setGlobalFilter: (filter: string) => handleStateChange(state => ({...state, globalFilter: filter})),
+
         setColumnVisibility: (visibility: VisibilityState) =>
             handleStateChange(state => ({...state, columnVisibility: visibility})),
+
         getSortedColumn: () => tableState.sorting[0]?.id || null,
-    }), [columns, tableState, handleStateChange, initialState])
+        setDensity: (density: TableDensity) => handleDisplayStateChange({density}),
+
+        toggleColumnGrouping: (columnId: string, enabled: boolean) => {
+            const currentGrouping = displayState.grouping
+            const newGrouping = enabled
+                                ? [...currentGrouping, columnId]
+                                : currentGrouping.filter(id => id !== columnId)
+            handleDisplayStateChange({grouping: newGrouping})
+        },
+
+        clearGrouping: () => handleDisplayStateChange({grouping: []}),
+        setColumnSizing: (sizing: ColumnSizingState) => handleDisplayStateChange({columnSizing: sizing}),
+    }), [
+        columns,
+        tableState,
+        displayState,
+        handleStateChange,
+        handleDisplayStateChange,
+        initialState,
+        options.density
+    ])
+
 
     React.useEffect(() => {
-        fetchRecords(1, options.defaultPageSize)
-    }, [entityKey, options.defaultPageSize, fetchRecords])
+        fetchRecords(1, initialPageSize)
+    }, [entityKey, initialPageSize, fetchRecords])
 
     return {
         loadingState,

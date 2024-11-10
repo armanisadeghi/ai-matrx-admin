@@ -5,9 +5,14 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
-import AdvancedDataTable, { FormattingConfig } from '@/components/matrx/Entity/DataTable/AdvancedDataTable';
+import AdvancedDataTable from '@/components/matrx/Entity/DataTable/AdvancedDataTable';
 import { ButtonVariant, ButtonSize } from '@/components/matrx/Entity/types/tableBuilderTypes';
-import {ActionConfig, SmartFieldConfig} from "@/components/matrx/Entity/addOns/smartCellRender";
+import {
+    ActionConfig,
+    SmartFieldConfig,
+    ValueFormattingOptions,
+    TableOptions
+} from "@/components/matrx/Entity/types/advancedDataTableTypes";
 
 export default function DataBrowserPage() {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
@@ -20,20 +25,20 @@ export default function DataBrowserPage() {
     const handleAction = (action: string, row: EntityData<EntityKeys>) => {
         switch(action) {
             case 'view':
-                console.log('Viewing:', row);
+                console.log('DataBrowserPage Viewing:', row);
                 break;
             case 'edit':
-                console.log('Editing:', row);
+                console.log('DataBrowserPage Editing:', row);
                 break;
             case 'delete':
-                console.log('Deleting:', row);
+                console.log('DataBrowserPage Deleting:', row);
                 break;
             default:
-                console.log(`Unhandled action ${action}:`, row);
+                console.log(`DataBrowserPage Unhandled action ${action}:`, row);
         }
     };
 
-    const formatting: FormattingConfig = {
+    const formatting: ValueFormattingOptions = {
         nullValue: '',
         undefinedValue: '',
         emptyValue: '',
@@ -43,7 +48,8 @@ export default function DataBrowserPage() {
         },
         numberFormat: {
             minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            maximumFractionDigits: 2,
+            style: 'decimal'
         }
     };
 
@@ -54,46 +60,60 @@ export default function DataBrowserPage() {
         },
         uuid: {
             component: 'button',
-            props: { variant: 'ghost' }
+            label: 'Unique ID',
+            onUUIDClick: (uuid) => {
+                console.log('UUID clicked:', uuid);
+            },
+            // props: {
+            //     className: 'custom-class'
+            // }
         },
-        reference: {
-            component: 'modal',
-            props: { width: 'lg' }
-        }
+        object: {
+            component: 'json',
+            props: { size: 'sm' }
+        },
+        date: null,
+        number: null
     };
+
 
     const actions: ActionConfig = {
         view: {
             enabled: true,
-            variant: 'secondary' as ButtonVariant,
-            size: 'xs' as ButtonSize
+            variant: 'secondary',
+            size: 'xs'
         },
         edit: {
             enabled: true,
-            variant: 'outline' as ButtonVariant,
-            size: 'xs' as ButtonSize
+            variant: 'outline',
+            size: 'xs'
         },
         delete: {
             enabled: true,
-            variant: 'destructive' as ButtonVariant,
-            size: 'xs' as ButtonSize
+            variant: 'destructive',
+            size: 'xs'
         },
         custom: [{
             key: 'archive',
             label: 'Archive',
-            variant: 'secondary' as ButtonVariant,
-            size: 'xs' as ButtonSize,
+            variant: 'secondary',
+            size: 'xs',
             handler: handleArchive
         }]
     };
 
-    const tableOptions = {
+    const tableOptions: Partial<TableOptions> = {
         showCheckboxes: true,
         showFilters: true,
         showActions: true,
         enableSorting: true,
         enableGrouping: true,
-        enableColumnResizing: true
+        enableColumnResizing: true,
+        showColumnVisibility: true,
+        showGlobalFilter: true,
+        showPagination: true,
+        defaultPageSize: 10,
+        defaultPageSizeOptions: [5, 10, 25, 50, 100]
     };
 
     return (

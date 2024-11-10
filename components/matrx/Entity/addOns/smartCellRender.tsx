@@ -1,76 +1,61 @@
-import { Switch, Checkbox, Button, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui"
-import { Link } from "lucide-react"
+import {Switch, Button, Tooltip, TooltipContent, TooltipTrigger, Badge} from "@/components/ui"
+import {Link} from "lucide-react"
 import {EntityData, EntityKeys} from "@/types/entityTypes";
-import {ButtonSize, ButtonVariant } from "../types/tableBuilderTypes";
+import {ButtonSize, ButtonVariant} from "../types/tableBuilderTypes";
+import {ActionConfig, SmartFieldConfig, TableColumn} from "@/components/matrx/Entity/types/advancedDataTableTypes";
 
 
-export interface FormattingConfig {
-    nullValue: string;
-    undefinedValue: string;
-    emptyValue: string;
-    booleanFormat: {
-        true: string;
-        false: string;
-    };
-    numberFormat: {
-        minimumFractionDigits: number;
-        maximumFractionDigits: number;
-    };
-}
+const getSpecialValue = (value: any, formatting: any) => {
+    if (value === null) return formatting.nullValue;
+    if (value === undefined) return formatting.undefinedValue;
+    if (value === '') return formatting.emptyValue;
+    return undefined;
+};
 
-export interface ActionConfig {
-    view?: {
-        enabled: boolean;
-        variant?: ButtonVariant;
-        size?: ButtonSize;
-        custom?: (row: any) => void;
-    };
-    edit?: {
-        enabled: boolean;
-        variant?: ButtonVariant;
-        size?: ButtonSize;
-        custom?: (row: any) => void;
-    };
-    delete?: {
-        enabled: boolean;
-        variant?: ButtonVariant;
-        size?: ButtonSize;
-        custom?: (row: any) => void;
-    };
-    custom?: Array<{
-        key: string;
-        label: string;
-        variant?: ButtonVariant;
-        size?: ButtonSize;
-        handler: (row: any) => void;
-    }>;
-}
+const formatDate = (value: any) => {
+    return value instanceof Date
+           ? new Intl.DateTimeFormat('en-US', {dateStyle: 'medium'}).format(value)
+           : value;
+};
 
-export interface AdvancedDataTableProps<TEntity extends EntityKeys> {
-    entityKey: TEntity;
-    variant?: 'default' | 'compact' | 'cards' | 'minimal';
-    options?: {
-        showCheckboxes?: boolean;
-        showFilters?: boolean;
-        showActions?: boolean;
-        enableSorting?: boolean;
-        enableGrouping?: boolean;
-        enableColumnResizing?: boolean;
-    };
-    formatting?: FormattingConfig;
-    smartFields?: SmartFieldConfig;
-    actions?: ActionConfig;
-    onAction?: (action: string, row: EntityData<TEntity>) => void;
-}
+const formatNumber = (value: number, numberFormat?: any) => {
+    return new Intl.NumberFormat('en-US', numberFormat).format(value);
+};
 
-export const formatCellValue = (value: any, fieldType: string) => {
-    switch (fieldType) {
+const formatCurrency = (value: number, numberFormat?: any) => {
+    return new Intl.NumberFormat('en-US', {
+        ...numberFormat,
+        style: 'currency',
+        currency: numberFormat?.currency || 'USD'
+    }).format(value);
+};
+
+const truncateText = (text: string, maxCharacters: number) => {
+    if (!text) return '';
+    return text.length > maxCharacters
+           ? `${text.substring(0, maxCharacters)}...`
+           : text;
+};
+
+export const formatCellValue = (value: any, fieldType: string, formatting: any, maxCharacters: number, meta?: any) => {
+    const specialValue = getSpecialValue(value, formatting);
+    if (specialValue !== undefined) return specialValue;
+
+    if (meta?.format) {
+        return meta.format(value);
+    }
+
+    switch (fieldType.toLowerCase()) {
+        case 'boolean':
+            return value ? formatting.booleanFormat.true : formatting.booleanFormat.false;
+        case 'date':
+            return formatDate(value);
+        case 'number':
+            return typeof value === 'number' ? formatNumber(value, formatting.numberFormat) : value;
+        case 'currency':
+            return typeof value === 'number' ? formatCurrency(value, formatting.numberFormat) : value;
         case 'string':
             return String(value);
-        case 'number':
-            return Number(value);
-        case 'date':
-            return new Date(value).toLocaleDateString();
         case 'time':
             return new Date(value).toLocaleTimeString();
         case 'datetime':
@@ -78,229 +63,191 @@ export const formatCellValue = (value: any, fieldType: string) => {
         case 'json':
             return JSON.stringify(value, null, 2);
         default:
-            return value;
+            return truncateText(String(value), maxCharacters);
     }
 };
 
-export interface SmartFieldConfig {
-    boolean: {
-        component: 'switch' | 'checkbox' | 'text';
-        props?: Record<string, any>;
-    };
-    uuid: {
-        component: 'button' | 'link' | 'copy' | 'text';
-        props?: Record<string, any>;
-    };
-    reference: {
-        component: 'link' | 'modal' | 'sidebar' | 'page';
-        props?: Record<string, any>;
-    };
-    // Add handling for non-native relationships
-    relationship: {
-        component: 'link' | 'modal' | 'count' | 'preview';
-        props?: Record<string, any>;
-    };
+
+// Separate handlers for each type
+const handleNonNativeField = (value: any, databaseTable: string) => (
+    <Link
+        href={`/${databaseTable}`}
+        className="text-blue-600 hover:underline"
+    >
+        View {databaseTable}
+    </Link>
+);
+
+const handleBooleanField = (value: boolean, config?: SmartFieldConfig['boolean']) => {
+    if (!config || config.component === 'text') return String(value);
+
+    return (
+        <Switch
+            checked={value}
+            disabled
+            {...(config.props || {})}
+        />
+    );
+};
+
+interface UUIDFieldConfig {
+    component: 'button' | 'link' | 'copy' | 'text';
+    onUUIDClick?: (uuid: string) => void;
+    globalLabel?: string;
+    props?: Record<string, any>;
 }
 
+const handleUUIDField = (value: string, config?: UUIDFieldConfig | null) => {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-secondary/80"
+                    onClick={() => config?.onUUIDClick?.(value)}
+                >
+                    {config?.globalLabel || 'Unique ID'}
+                </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+                <code className="text-xs font-mono">{value}</code>
+            </TooltipContent>
+        </Tooltip>
+    );
+};
+
+const handleDateField = (value: any) => {
+    const date = new Date(value);
+    return date.toLocaleDateString();
+};
+
+const handleNumberField = (value: number) => {
+    return new Intl.NumberFormat().format(value);
+};
+
+const handleArrayField = (value: any[]) => {
+    if (!Array.isArray(value)) return '0 items';
+
+    return (
+        <Tooltip>
+            <TooltipTrigger>
+                {value.length} items
+            </TooltipTrigger>
+            <TooltipContent>
+                {value.join(', ')}
+            </TooltipContent>
+        </Tooltip>
+    );
+};
+
+const handleObjectField = (value: object) => {
+    console.log('handleObjectField with Object:', value);
+    const display = JSON.stringify(value);
+    return (
+        <Tooltip>
+            <TooltipTrigger>
+                {'{...}'}
+            </TooltipTrigger>
+            <TooltipContent>
+                {display}
+            </TooltipContent>
+        </Tooltip>
+    );
+};
 
 export const createSmartCellRenderer = (
     fieldType: string,
     fieldKey: string,
     smartConfig: SmartFieldConfig,
     metadata: {
-        isNative?: boolean;
-        isArray?: boolean;
+        isNative: boolean;
         databaseTable?: string;
-        maxLength?: number;
-        isRequired?: boolean;
-        defaultComponent?: string;
-        componentProps?: Record<string, any>;
-    },
-    referenceData?: Record<string, any>
+    }
 ) => {
-    return ({getValue, row}: { getValue: () => any, row: any }) => {
+    console.log('createSmartCellRenderer with Field Type:', fieldType);
+
+    return ({getValue}: { getValue: () => any }) => {
         const value = getValue();
 
-        // Handle non-native fields (relationships)
-        if (!metadata.isNative) {
-            return (
-                <div className="text-blue-600 font-medium">
-                    {metadata.isArray ? (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600"
-                            onClick={() => {/* handle relationship click */}}
-                        >
-                            View Related {metadata.databaseTable || 'Items'}
-                        </Button>
-                    ) : (
-                         <Tooltip>
-                             <TooltipTrigger className="cursor-pointer hover:underline">
-                                 {value || `View ${metadata.databaseTable || 'Related Item'}`}
-                             </TooltipTrigger>
-                             <TooltipContent>
-                                 View related {metadata.databaseTable} details
-                             </TooltipContent>
-                         </Tooltip>
-                     )}
-                </div>
-            );
+        // Handle null/undefined
+        if (value === null || value === undefined) return '';
+
+        // Handle non-native fields first
+        if (!metadata.isNative && metadata.databaseTable) {
+            console.log('Non-native field:', fieldKey, value);
+            return handleNonNativeField(value, metadata.databaseTable);
         }
 
-        // Use metadata's defaultComponent if available
-        if (metadata.defaultComponent && metadata.componentProps) {
-            const Component = metadata.defaultComponent;
-            return <Component {...metadata.componentProps} value={value} />;
-        }
-
+        // Handle native fields based on type
         switch (fieldType) {
+            case 'string':
+                return String(value);
+
+            case 'number':
+                return handleNumberField(value);
+
             case 'boolean':
-                return smartConfig.boolean.component === 'switch' ? (
-                    <div className={metadata.isRequired ? 'required-field' : ''}>
-                        <Switch
-                            checked={value}
-                            disabled
-                            {...smartConfig.boolean.props}
-                        />
-                    </div>
-                ) : smartConfig.boolean.component === 'checkbox' ? (
-                    <div className={metadata.isRequired ? 'required-field' : ''}>
-                        <Checkbox
-                            checked={value}
-                            disabled
-                            {...smartConfig.boolean.props}
-                        />
-                    </div>
-                ) : String(value);
+                return handleBooleanField(value, smartConfig.boolean);
+
+            case 'date':
+                return handleDateField(value);
 
             case 'uuid':
-                return smartConfig.uuid.component === 'button' ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {/* handle click */}}
-                                {...smartConfig.uuid.props}
-                            >
-                                {value.substring(0, 8)}...
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            {value}
-                        </TooltipContent>
-                    </Tooltip>
-                ) : value;
+                return handleUUIDField(value, smartConfig.uuid);
 
-            case 'reference':
-                if (!metadata.databaseTable) return value;
+            case 'object':
+                return handleObjectField(value);
 
-                return smartConfig.reference.component === 'link' ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Link
-                                href={`/${metadata.databaseTable}/${value}`}
-                                className="text-blue-600 hover:underline"
-                                {...smartConfig.reference.props}
-                            >
-                                {referenceValue?.displayField || value}
-                            </Link>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            View {metadata.databaseTable} details
-                        </TooltipContent>
-                    </Tooltip>
-                ) : (
-                           <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={() => {/* handle reference click */}}
-                           >
-                               View {metadata.databaseTable}
-                           </Button>
-                       );
+            case 'array':
+                return handleArrayField(value);
 
             default:
-                // Handle arrays
-                if (metadata.isArray) {
-                    if (Array.isArray(value)) {
-                        return (
-                            <Tooltip>
-                                <TooltipTrigger className="text-purple-600">
-                                    {value.length} items
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {value.join(', ')}
-                                </TooltipContent>
-                            </Tooltip>
-                        );
-                    }
-                    return '0 items';
-                }
-
-                // Use metadata maxLength if available
-                const maxLength = metadata.maxLength || 100;
-                const displayValue = value?.toString() || '';
-
-                return displayValue.length > maxLength ? (
-                    <Tooltip>
-                        <TooltipTrigger className={metadata.isRequired ? 'required-field' : ''}>
-                            {displayValue.substring(0, maxLength)}...
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            {displayValue}
-                        </TooltipContent>
-                    </Tooltip>
-                ) : (
-                           <span className={metadata.isRequired ? 'required-field' : ''}>
-                        {displayValue}
-                    </span>
-                       );
+                return String(value);
         }
     };
 };
 
-// Base action interface
-interface Action {
-    label: string;
-    onClick: () => void;
-    variant: ButtonVariant;
-    size: ButtonSize;
-}
 
-
-// Interface for the default actions format expected by the table builder
-interface DefaultActionColumn {
-    type: "actions";
-    options: {
-        actions: Array<{
-            label: string;
-            onClick: (row: any) => void;
-            variant: ButtonVariant;
-            size: ButtonSize;
-        }>;
-        containerClassName: string;
-    };
-}
-
-
-export const createActionColumn = <TEntity extends EntityKeys>(
+export const createActionColumn = (
     config: ActionConfig,
-    onAction: (action: string, row: EntityData<TEntity>) => void
-) => {
+    onAction: (action: string, row: any) => void
+): TableColumn => {
+    const calculateWidth = () => {
+        let totalWidth = 0;
+        if (config.view?.enabled) totalWidth += 40;
+        if (config.edit?.enabled) totalWidth += 40;
+        if (config.delete?.enabled) totalWidth += 50;
+        config.custom?.forEach(() => totalWidth += 60);
+
+        const numberOfGaps = [
+            config.view?.enabled ? 1 : 0,
+            config.edit?.enabled ? 1 : 0,
+            config.delete?.enabled ? 1 : 0,
+            ...(config.custom?.map(() => 1) || [])
+        ].reduce((sum, current) => sum + current, 0) - 1;
+
+        return totalWidth + (Math.max(0, numberOfGaps) * 8);
+    };
+
+    const width = calculateWidth();
+
     return {
         id: 'actions',
         accessorKey: 'actions',
         header: 'Actions',
-        cell: ({ row }) => {
+        cell: ({row}) => {
             const actions = [];
 
             if (config.view?.enabled) {
                 actions.push({
                     label: 'View',
-                    onClick: () => config.view?.custom?.(row.original) ??
-                        onAction('view', row.original),
+                    onClick: () => {
+                        if (config.view?.custom) {
+                            config.view.custom(row.original);
+                        } else {
+                            onAction('view', row.original);
+                        }
+                    },
                     variant: config.view.variant || 'secondary',
                     size: config.view.size || 'xs'
                 });
@@ -309,8 +256,13 @@ export const createActionColumn = <TEntity extends EntityKeys>(
             if (config.edit?.enabled) {
                 actions.push({
                     label: 'Edit',
-                    onClick: () => config.edit?.custom?.(row.original) ??
-                        onAction('edit', row.original),
+                    onClick: () => {
+                        if (config.edit?.custom) {
+                            config.edit.custom(row.original);
+                        } else {
+                            onAction('edit', row.original);
+                        }
+                    },
                     variant: config.edit.variant || 'outline',
                     size: config.edit.size || 'xs'
                 });
@@ -319,8 +271,13 @@ export const createActionColumn = <TEntity extends EntityKeys>(
             if (config.delete?.enabled) {
                 actions.push({
                     label: 'Delete',
-                    onClick: () => config.delete?.custom?.(row.original) ??
-                        onAction('delete', row.original),
+                    onClick: () => {
+                        if (config.delete?.custom) {
+                            config.delete.custom(row.original);
+                        } else {
+                            onAction('delete', row.original);
+                        }
+                    },
                     variant: config.delete.variant || 'destructive',
                     size: config.delete.size || 'xs'
                 });
@@ -336,13 +293,14 @@ export const createActionColumn = <TEntity extends EntityKeys>(
             });
 
             return (
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end w-full">
                     {actions.map((action, index) => (
                         <Button
                             key={`${action.label}-${index}`}
                             variant={action.variant}
                             size={action.size}
                             onClick={action.onClick}
+                            className="whitespace-nowrap"
                         >
                             {action.label}
                         </Button>
@@ -353,28 +311,38 @@ export const createActionColumn = <TEntity extends EntityKeys>(
         enableSorting: false,
         enableGrouping: false,
         enableResizing: true,
+        size: width,
+        minSize: width,
+        maxSize: width,
         meta: {
+            key: 'actions',
+            title: 'actions',
+            isPrimaryKey: false,
+            isDisplayField: false,
+            dataType: 'actions',
             fieldType: 'actions',
             sortable: false,
             filterable: false,
             groupable: false,
-            align: 'right' as const
+            align: 'right',
+            width
         }
     };
 };
 
-export interface ColumnMeta {
-    isPrimaryKey?: boolean;
-    isDisplayField?: boolean;
-    fieldType?: string;
-    sortable?: boolean;
-    filterable?: boolean;
-    groupable?: boolean;
-    align?: 'left' | 'center' | 'right';
-    format?: any;
-    validation?: any;
+// Interface for the default actions format expected by the table builder
+interface DefaultActionColumn {
+    type: "actions";
+    options: {
+        actions: Array<{
+            label: string;
+            onClick: (row: any) => void;
+            variant: ButtonVariant;
+            size: ButtonSize;
+        }>;
+        containerClassName: string;
+    };
 }
-
 
 
 // Create default table actions in the format expected by the table builder
@@ -428,3 +396,154 @@ export const createDefaultTableActions = (
         }
     }
 });
+
+
+// concept for later:
+
+interface TableDisplayConfig {
+    // Basic display settings
+    display: {
+        hidden?: boolean;              // Whether to hide this column by default
+        width?: number;                // Default column width in pixels
+        align?: 'left' | 'center' | 'right';
+        truncate?: boolean;            // Whether to truncate long content
+        maxLength?: number;            // Max characters before truncating
+    };
+
+    // Formatting options based on data type
+    format?: {
+        // Numbers
+        number?: {
+            type: 'decimal' | 'percent' | 'currency';
+            minimumFractionDigits?: number;
+            maximumFractionDigits?: number;
+            currency?: string;         // For currency formatting (USD, EUR, etc.)
+            compact?: boolean;         // Use compact notation (1K, 1M, etc.)
+        };
+
+        // Dates
+        date?: {
+            type: 'date' | 'time' | 'datetime';
+            format?: 'short' | 'medium' | 'long';
+            timezone?: string;
+        };
+
+        // Text
+        text?: {
+            case?: 'upper' | 'lower' | 'title';
+            prefix?: string;
+            suffix?: string;
+        };
+    };
+
+    // Cell styling
+    style?: {
+        backgroundColor?: string;
+        textColor?: string;
+        fontWeight?: 'normal' | 'bold';
+        className?: string;           // Custom CSS class
+    };
+
+    // Conditional formatting
+    conditions?: Array<{
+        when: {
+            value?: any;              // Match exact value
+            range?: [number, number]; // For number ranges
+            contains?: string;        // For text search
+            regex?: string;          // For pattern matching
+        };
+        style: {
+            backgroundColor?: string;
+            textColor?: string;
+            fontWeight?: 'normal' | 'bold';
+            className?: string;
+        };
+    }>;
+}
+
+// Example usage in your schema:
+interface FieldMetadata {
+    // ... your existing metadata ...
+    tableConfig?: TableDisplayConfig;
+}
+
+// Example of how it would be used:
+const exampleSchema = {
+    fields: {
+        price: {
+            dataType: 'number',
+            isNative: true,
+            tableConfig: {
+                display: {
+                    align: 'right',
+                    width: 120
+                },
+                format: {
+                    number: {
+                        type: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2
+                    }
+                },
+                conditions: [
+                    {
+                        when: {range: [0, 100]},
+                        style: {textColor: 'green'}
+                    },
+                    {
+                        when: {range: [100, 1000]},
+                        style: {textColor: 'orange'}
+                    },
+                    {
+                        when: {range: [1000, Infinity]},
+                        style: {textColor: 'red'}
+                    }
+                ]
+            }
+        },
+        status: {
+            dataType: 'string',
+            isNative: true,
+            tableConfig: {
+                display: {
+                    align: 'center',
+                    width: 100
+                },
+                conditions: [
+                    {
+                        when: {value: 'active'},
+                        style: {
+                            backgroundColor: '#e6ffe6',
+                            textColor: '#006600',
+                            className: 'status-active'
+                        }
+                    },
+                    {
+                        when: {value: 'inactive'},
+                        style: {
+                            backgroundColor: '#ffe6e6',
+                            textColor: '#660000',
+                            className: 'status-inactive'
+                        }
+                    }
+                ]
+            }
+        },
+        createdAt: {
+            dataType: 'date',
+            isNative: true,
+            tableConfig: {
+                display: {
+                    align: 'left',
+                    width: 160
+                },
+                format: {
+                    date: {
+                        type: 'datetime',
+                        format: 'medium'
+                    }
+                }
+            }
+        }
+    }
+};
