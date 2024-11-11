@@ -58,7 +58,16 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         })
     );
 
-    // Selection Selectors
+
+
+    // Selection Selectors ==================================================
+
+    const selectSelectedRecordIds = createSelector(
+        [selectEntity],
+        (entity) => entity.selection.selectedRecords
+    );
+
+
     const selectSelectedRecords = createSelector(
         [selectEntity],
         (entity) => {
@@ -77,6 +86,36 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         [selectEntity],
         (entity) => entity.selection.selectionMode
     );
+
+    const selectSelectionSummary = createSelector(
+        [selectSelectedRecords, selectActiveRecord, selectSelectionMode],
+        (selectedRecords, activeRecord, mode) => ({
+            count: selectedRecords.length,
+            hasSelection: selectedRecords.length > 0,
+            hasSingleSelection: selectedRecords.length === 1,
+            hasMultipleSelection: selectedRecords.length > 1,
+            activeRecord,
+            mode
+        })
+    );
+
+    const selectIsRecordSelected = createSelector(
+        [selectEntity, (_: RootState, record: EntityData<TEntity>) => record],
+        (entity, record) => {
+            const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, record);
+            return entity.selection.selectedRecords.includes(recordKey);
+        }
+    );
+
+    const selectIsRecordActive = createSelector(
+        [selectActiveRecord, (_: RootState, record: EntityData<TEntity>) => record],
+        (activeRecord, record) => activeRecord === record
+    );
+
+
+    // === End Selection Selectors ==================================================
+
+
 
     // Pagination Selectors
     const selectPaginationInfo = createSelector(
@@ -180,6 +219,16 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.flags.hasUnsavedChanges
     );
 
+    const selectIsValidated = createSelector(
+        [selectEntity],
+        (entity) => entity.flags.isValidated
+    );
+
+    const selectFetchOneSuccess = createSelector(
+        [selectEntity],
+        (entity) => entity.flags.fetchOneSuccess
+    );
+
     // Metadata Selectors
     const selectEntityMetadata = createSelector(
         [selectEntity],
@@ -225,7 +274,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }))
     );
 
-// For select components (value/label pairs)
+    // For select components (value/label pairs)
     const selectFieldOptions = createSelector(
         [selectFieldInfo],
         (fields) => fields.map(field => ({
@@ -266,19 +315,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             const startIndex = (page - 1) * pageSize;
             return filteredRecords.slice(startIndex, startIndex + pageSize);
         }
-    );
-
-// Selection-related helpers
-    const selectSelectionSummary = createSelector(
-        [selectSelectedRecords, selectActiveRecord, selectSelectionMode],
-        (selectedRecords, activeRecord, mode) => ({
-            count: selectedRecords.length,
-            hasSelection: selectedRecords.length > 0,
-            hasSingleSelection: selectedRecords.length === 1,
-            hasMultipleSelection: selectedRecords.length > 1,
-            activeRecord,
-            mode
-        })
     );
 
 // Record with display values resolved
@@ -439,9 +475,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordsByPrimaryKeys,
         selectQuickReference,
         selectQuickReferenceByPrimaryKey,
-        selectSelectedRecords,
-        selectActiveRecord,
-        selectSelectionMode,
         selectPaginationInfo,
         selectCurrentPage,
         selectCurrentFilters,
@@ -458,7 +491,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectFieldOptions,
         selectTableColumns,
         selectCurrentPageFiltered,
-        selectSelectionSummary,
         selectRecordWithDisplay,
         selectMetadataSummary,
         selectDataState,
@@ -479,7 +511,18 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectErrorDistribution,
         selectRecentErrors,
 
+        // Selection Management
+        selectSelectedRecordIds,
+        selectSelectedRecords,
+        selectActiveRecord,
+        selectSelectionMode,
+        selectSelectionSummary,
+        selectIsRecordSelected,
+        selectIsRecordActive,
+
         // Convenience Additions
         selectEntityDisplayName,
+        selectIsValidated,
+        selectFetchOneSuccess,
     };
 };

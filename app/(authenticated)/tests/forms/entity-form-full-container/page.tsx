@@ -1,32 +1,47 @@
+// app/(authenticated)/tests/forms/entity-form-full-container/page.tsx
+
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FlexAnimatedForm } from '@/components/matrx/AnimatedForm';
-import { EntityKeys } from '@/types/entityTypes';
+import { useEntity } from '@/lib/redux/entity/useEntity';
+import { EntityKeys, EntityData } from '@/types/entityTypes';
 import {
     EntityFormState,
     FlexEntityFormProps,
     EntityFlexFormField,
     FormFieldType
 } from '@/components/matrx/Entity/types/entityForm';
+import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeader';
+import { EntityError, EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types';
+import {mapFieldDataTypeToFormFieldType} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 
-const EntityFormContainer = ({ record, onUpdate }: { record: any; onUpdate: (name: string, value: any) => void }) => {
-    const transformFieldsToFormFields = (entityFields: any[]): EntityFlexFormField[] => {
+interface EntityContentProps<TEntity extends EntityKeys> {
+    entityKey: TEntity;
+}
+
+function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentProps<TEntity>) {
+    const entity = useEntity(entityKey);
+
+    const transformFieldsToFormFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
         if (!entityFields) return [];
 
         return entityFields.map(field => ({
             name: field.name,
             label: field.displayName || field.name,
-            type: 'text' as FormFieldType,
-            required: false,
-            disabled: false
+            type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
+            required: field.isRequired,
+            disabled: false,
+            defaultValue: field.defaultValue,
+            validation: field.validationFunctions,
+            maxLength: field.maxLength
         }));
     };
 
-    const formProps: FlexEntityFormProps = useMemo(() => {
-        if (!record) {
+    const formProps: FlexEntityFormProps = React.useMemo(() => {
+        if (!entity?.activeRecord) {
             return {
                 fields: [],
                 formState: {},
@@ -35,12 +50,28 @@ const EntityFormContainer = ({ record, onUpdate }: { record: any; onUpdate: (nam
             };
         }
 
+        const formFields = transformFieldsToFormFields(entity.fieldInfo);
+
         return {
-            fields: transformFieldsToFormFields(record.fieldInfo),
-            formState: record as EntityFormState,
-            onUpdateField: onUpdate,
+            fields: formFields,
+            formState: entity.activeRecord as EntityFormState,
+            onUpdateField: (name: string, value: any) => {
+                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
+
+                const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce((acc, field) => ({
+                    ...acc,
+                    [field]: entity.activeRecord[field]
+                }), {} as Record<string, MatrxRecordId>);
+
+                const update = {
+                    [name]: value
+                } as Partial<EntityData<TEntity>>;
+
+                entity.updateRecord(primaryKeyValues, update);
+            },
             onSubmit: () => {
-                console.log('Form submitted:', record);
+                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
+                console.log('Form submitted:', entity.activeRecord);
             },
             layout: 'grid',
             direction: 'row',
@@ -49,45 +80,64 @@ const EntityFormContainer = ({ record, onUpdate }: { record: any; onUpdate: (nam
             isSinglePage: true,
             isFullPage: true
         };
-    }, [record]);
+    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity]);
 
-    if (!record) return null;
+    if (!entity.entityMetadata) {
+        return <MatrxTableLoading />;
+    }
+
+    if (entity.loadingState.error) {
+        return (
+            <div className="p-4 text-red-500">
+                Error: {entity.loadingState.error.message}
+            </div>
+        );
+    }
 
     return (
         <div className="p-4">
-            <FlexAnimatedForm {...formProps} />
+            {entity.activeRecord && (
+                <FlexAnimatedForm {...formProps} />
+            )}
         </div>
     );
-};
+}
 
 const DynamicEntityForm: React.FC = () => {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
-    const [activeRecord, setActiveRecord] = useState<any>(null);
+    const [error, setError] = useState<EntityError | null>(null);
 
-    const handleRecordLoad = (record: any) => {
-        setActiveRecord(record);
+    const handleEntityChange = (entityKey: EntityKeys | null) => {
+        setError(null);
+        setSelectedEntity(entityKey);
     };
 
-    const handleFieldUpdate = (name: string, value: any) => {
-        if (!activeRecord) return;
+    const handleRecordLoad = (record: EntityData<EntityKeys>) => {
+        console.log('Record loaded:', record);
+        setError(null);
+    };
 
-        setActiveRecord({
-            ...activeRecord,
-            [name]: value
-        });
+    const handleError = (error: EntityError) => {
+        console.error('Entity error:', error);
+        setError(error);
     };
 
     return (
         <Card className="w-full">
             <PreWiredEntityRecordHeader
-                onEntityChange={setSelectedEntity}
+                onEntityChange={handleEntityChange}
                 onRecordLoad={handleRecordLoad}
+                onError={handleError}
             />
             <CardContent>
+                {error && (
+                    <div className="text-red-500 mb-4">
+                        Error: {error.message}
+                    </div>
+                )}
                 {selectedEntity ? (
-                    <EntityFormContainer
-                        record={activeRecord}
-                        onUpdate={handleFieldUpdate}
+                    <EntityContent
+                        entityKey={selectedEntity}
                     />
                 ) : (
                      <div className="text-center py-8 text-muted-foreground">

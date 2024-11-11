@@ -10,6 +10,10 @@ interface NavigatorClipboard {
 
 interface Navigator extends NavigatorClipboard {}
 
+declare module 'immer' {
+    type Draft<T> = T
+}
+
 // declare namespace SchemaTypes {
 //     export * from './types/automationTableTypes.ts';
 // }

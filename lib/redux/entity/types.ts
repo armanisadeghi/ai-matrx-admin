@@ -31,6 +31,10 @@ import {EntityKeys, EntityData} from "@/types/entityTypes";
 
 // --- Basic Types ---
 export type MatrxRecordId = string;
+export type EntityRecord<TEntity extends EntityKeys> = EntityData<TEntity>;
+export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, EntityData<TEntity>>;
+export type EntityRecordArray<TEntity extends EntityKeys> = EntityData<TEntity>[];
+
 
 
 type PrimaryKeyType = 'single' | 'composite' | 'none';
@@ -82,10 +86,10 @@ export interface EntityMetadata {
 
 // --- Selection Management ---
 export interface SelectionState<TEntity extends EntityKeys> {
-    selectedRecords: MatrxRecordId[];  // Changed from Set<string> to string[]
-    activeRecord: EntityData<TEntity> | null;
+    selectedRecords: MatrxRecordId[];
+    activeRecord: EntityRecord<TEntity> | null;
     selectionMode: 'single' | 'multiple' | 'none';
-    lastSelected?: string;
+    lastSelected?: MatrxRecordId;
 }
 
 // --- Pagination State ---
@@ -132,7 +136,7 @@ interface CacheState {
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
-    primaryKeyValues: Record<string, MatrxRecordId>; // Corrected to map field names to their values
+    primaryKeyValues: Record<string, MatrxRecordId>;
     displayValue: string;
     metadata?: {
         lastModified?: string;
@@ -150,15 +154,15 @@ export interface QuickReferenceState {
 
 // --- History Management ---
 export interface HistoryEntry<TEntity extends EntityKeys> {
-    timestamp: string; // Already correct
+    timestamp: string;
     operation: 'create' | 'update' | 'delete' | 'bulk';
-    data: EntityData<TEntity> | EntityData<TEntity>[];
-    previousData?: EntityData<TEntity> | EntityData<TEntity>[];
+    data: EntityRecord<TEntity> | EntityRecordArray<TEntity>;
+    previousData?: EntityRecord<TEntity> | EntityRecordArray<TEntity>;
     metadata?: {
         user?: string;
         reason?: string;
         batchId?: string;
-        primaryKeyValues?: Record<string, string>; // Changed from unknown to string for consistency
+        primaryKeyValues?: Record<string, MatrxRecordId>;
     };
 }
 
@@ -201,6 +205,18 @@ export interface FilterState {
     savedFilters?: Record<string, FilterCondition[]>;
 }
 
+export interface FilterPayload {
+    conditions: FilterCondition[];
+    replace?: boolean;
+    temporary?: boolean;
+}
+
+export interface SortPayload {
+    field: string;
+    direction: 'asc' | 'desc';
+    append?: boolean;
+}
+
 // --- Real-time Subscriptions ---
 export interface SubscriptionConfig {
     enabled: boolean;
@@ -236,40 +252,30 @@ export interface EntityState<TEntity extends EntityKeys> {
     // Real-time Management
     subscription: SubscriptionConfig;
 
-    // Optimization Flags
-    flags: {
-        needsRefresh: boolean;
-        isModified: boolean;
-        hasUnsavedChanges: boolean;
-        isBatchOperationInProgress: boolean;
-    };
+    flags: EntityFlags;
+
     metrics: EntityMetrics;
 }
 
-
-export interface FilterPayload {
-    conditions: FilterCondition[];
-    replace?: boolean;
-    temporary?: boolean;
+export interface EntityFlags {
+    needsRefresh?: boolean;
+    isModified?: boolean;
+    hasUnsavedChanges?: boolean;
+    isBatchOperationInProgress?: boolean;
+    isValidated?: boolean;
+    fetchOneSuccess?: boolean;
 }
 
-export interface SortPayload {
-    field: string;
-    direction: 'asc' | 'desc';
-    append?: boolean;
-}
 
-// Updated RecordOperation
 export interface RecordOperation<TEntity extends EntityKeys> {
     primaryKeyMetadata: PrimaryKeyMetadata;
-    record: EntityData<TEntity>;
+    record: EntityRecord<TEntity>;
 }
 
 
-// Updated BatchOperationPayload
 export interface BatchOperationPayload<TEntity extends EntityKeys> {
     operation: 'create' | 'update' | 'delete';
-    records: EntityData<TEntity>[];
+    records: EntityRecordArray<TEntity>;
     primaryKeyMetadata: PrimaryKeyMetadata;
     options?: {
         skipHistory?: boolean;

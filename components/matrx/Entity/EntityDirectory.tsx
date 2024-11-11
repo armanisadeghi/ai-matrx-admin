@@ -19,7 +19,7 @@ const EntityDirectory = () => {
                 return (
                     <Link
                         key={value}
-                        href={`/entity-crud/${value}?prettyName=${encodeURIComponent(label)}`}
+                        href={`/entity-crud/${value}?entityPrettyName=${encodeURIComponent(label)}`}
                         className="transition-transform hover:-translate-y-1"
                     >
                         <Card className="h-full hover:shadow-lg transition-shadow">

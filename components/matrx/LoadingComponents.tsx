@@ -227,3 +227,74 @@ export const MatrxTableLoading: React.FC = () => {
         </div>
     );
 };
+
+// Form Loading (Half-Page Version)
+export const FormLoadingSingleColumn: React.FC = () => (
+    <div className="w-full h-[50vh] flex items-center justify-center p-8">
+        <div className="w-full max-w-2xl animate-pulse space-y-8">
+            {/* Title Placeholder */}
+            <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
+
+            {/* Input Field Placeholders */}
+            {[...Array(6)].map((_, index) => (
+                <div key={index} className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label Placeholder */}
+                    <div className="h-12 bg-input rounded"></div> {/* Input Field Placeholder */}
+                </div>
+            ))}
+
+            {/* Multi-Column Field Placeholder */}
+            <div className="grid grid-cols-2 gap-4 space-y-3">
+                {[...Array(2)].map((_, index) => (
+                    <div key={index}>
+                        <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
+                        <div className="h-12 bg-input rounded"></div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Button Placeholder */}
+            <div className="flex justify-end mt-8">
+                <div className="w-36 h-10 bg-primary rounded"></div>
+            </div>
+        </div>
+    </div>
+);
+
+// Form Loading (Two-Column Half-Page Version)
+export const FormLoadingTwoColumn: React.FC = () => (
+    <div className="w-full h-[50vh] flex items-center justify-center p-8">
+        <div className="w-full max-w-4xl animate-pulse space-y-8">
+            {/* Title Placeholder */}
+            <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
+
+            {/* Two-Column Layout */}
+            <div className="grid grid-cols-2 gap-8">
+                {/* Column 1 */}
+                <div className="space-y-6">
+                    {[...Array(4)].map((_, index) => (
+                        <div key={index} className="space-y-3">
+                            <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label Placeholder */}
+                            <div className="h-12 bg-input rounded"></div> {/* Input Field Placeholder */}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Column 2 */}
+                <div className="space-y-6">
+                    {[...Array(4)].map((_, index) => (
+                        <div key={index} className="space-y-3">
+                            <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label Placeholder */}
+                            <div className="h-12 bg-input rounded"></div> {/* Input Field Placeholder */}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Button Placeholder */}
+            <div className="flex justify-end mt-8">
+                <div className="w-36 h-10 bg-primary rounded"></div>
+            </div>
+        </div>
+    </div>
+);

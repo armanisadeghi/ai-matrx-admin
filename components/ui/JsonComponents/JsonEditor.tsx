@@ -447,14 +447,27 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
     );
 };
 
-export const FullEditableJsonViewer: React.FC<EditableJsonViewerProps & { title?: string }> = (
+interface FullEditableJsonViewerProps {
+    data: object | string | null;
+    onChange: (newData: object | string) => void;
+    onFormat?: () => void;
+    initialExpanded?: boolean;
+    maxHeight?: string;
+    validateDelay?: number;
+    lockKeys?: boolean;
+    defaultEnhancedMode?: boolean;
+    title?: string;
+}
+
+export const FullEditableJsonViewer: React.FC<FullEditableJsonViewerProps> = (
     {
         data,
         onChange,
         onFormat,
         title = "JSON Editor",
         ...props
-    }) => {
+    }
+) => {
     return (
         <Card className="p-4 bg-card">
             <h3 className="text-lg font-semibold mb-2 text-foreground">{title}</h3>
@@ -462,5 +475,6 @@ export const FullEditableJsonViewer: React.FC<EditableJsonViewerProps & { title?
         </Card>
     );
 };
+
 
 export default FullEditableJsonViewer;

@@ -1,3 +1,4 @@
+// components/matrx/Entity/records/PreWiredEntityRecordHeader.tsx
 'use client';
 
 import React, {useState, useMemo, useEffect} from 'react';
@@ -11,60 +12,101 @@ import {
 } from "@/components/ui/select";
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
-import {EntityKeys} from '@/types/entityTypes';
+import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useEntity} from '@/lib/redux/entity/useEntity';
-import {QuickReferenceRecord} from '@/lib/redux/entity/types';
+import {
+    QuickReferenceRecord,
+    MatrxRecordId,
+    EntityError
+} from '@/lib/redux/entity/types';
 import {createRecordKey} from '@/lib/redux/entity/utils';
+import type {Draft} from 'immer';
 
 interface PreWiredEntityRecordHeaderProps {
     onEntityChange?: (entity: EntityKeys | null) => void;
-    onRecordLoad?: (record: any) => void;
+    onRecordLoad?: (record: EntityData<EntityKeys>) => void;
+    onError?: (error: EntityError) => void;
 }
 
-interface RecordSelectorProps {
-    entityKey: EntityKeys;
-    onRecordLoad: (record: any) => void;
+interface RecordSelectorProps<TEntity extends EntityKeys> {
+    entityKey: TEntity;
+    onRecordLoad: (record: EntityData<TEntity>) => void;
+    onError?: (error: EntityError) => void;
     onLabelChange: (label: string) => void;
 }
 
-const RecordSelector: React.FC<RecordSelectorProps> = ({
-                                                           entityKey,
-                                                           onRecordLoad,
-                                                           onLabelChange
-                                                       }) => {
+function RecordSelector<TEntity extends EntityKeys>(
+    {
+        entityKey,
+        onRecordLoad,
+        onError,
+        onLabelChange
+    }: RecordSelectorProps<TEntity>) {
     const entity = useEntity(entityKey);
     const [selectedRecordKey, setSelectedRecordKey] = useState<string | null>(null);
+    const [isLoadingRecord, setIsLoadingRecord] = useState(false);
 
-    // Fetch quick reference data when entity changes
+
     useEffect(() => {
-        if (entity.entityMetadata) {
-            entity.fetchQuickReference();
-        }
-    }, [entityKey]); // Only depend on entityKey change
+        if (!selectedRecordKey || !entity.entityMetadata?.primaryKeyMetadata || !isLoadingRecord) return;
 
-    // Handle record fetch and selection
-    useEffect(() => {
-        if (!selectedRecordKey) return;
-
-        const primaryKeyValues = JSON.parse(selectedRecordKey);
-        if (!primaryKeyValues || !entity.entityMetadata?.primaryKeyMetadata) return;
-
-        entity.fetchOne(primaryKeyValues);
-    }, [selectedRecordKey]); // Only depend on selectedRecordKey change
-
-    // Handle record loading completion separately
-    useEffect(() => {
-        if (!selectedRecordKey || !entity.entityMetadata?.primaryKeyMetadata) return;
-
-        const primaryKeyValues = JSON.parse(selectedRecordKey);
+        const primaryKeyValues = JSON.parse(selectedRecordKey) as Record<string, MatrxRecordId>;
         const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+        const record = entity.allRecords[recordKey];
 
-        if (entity.allRecords[recordKey] && !entity.loadingState.loading) {
-            const record = entity.allRecords[recordKey];
-            entity.setSelection([record], 'single');
-            onRecordLoad(record);
+        if (record && !entity.loadingState.loading) {
+            setIsLoadingRecord(false);
+            entity.setSelection([record as Draft<EntityData<TEntity>>], 'single');
+            onRecordLoad(record as EntityData<TEntity>);
         }
     }, [entity.allRecords, entity.loadingState.loading, selectedRecordKey]);
+
+
+    useEffect(() => {
+        if (!selectedRecordKey || isLoadingRecord) return;
+
+        const fetchRecord = async () => {
+            try {
+                const primaryKeyValues = JSON.parse(selectedRecordKey) as Record<string, MatrxRecordId>;
+
+                if (!entity.entityMetadata?.primaryKeyMetadata) {
+                    onError?.({
+                        message: 'Entity metadata not available',
+                        details: 'Primary key metadata is missing',
+                        lastOperation: 'fetch'
+                    });
+                    return;
+                }
+
+                setIsLoadingRecord(true);
+                entity.fetchOne(primaryKeyValues);
+
+            } catch (error) {
+                setIsLoadingRecord(false);
+                onError?.({
+                    message: 'Failed to fetch record',
+                    details: error,
+                    lastOperation: 'fetch'
+                });
+            }
+        };
+
+        fetchRecord();
+    }, [selectedRecordKey]);
+
+    useEffect(() => {
+        if (entity.entityMetadata) {
+            try {
+                entity.fetchQuickReference();
+            } catch (error) {
+                onError?.({
+                    message: 'Failed to fetch quick reference data',
+                    details: error,
+                    lastOperation: 'fetch'
+                });
+            }
+        }
+    }, [entityKey]);
 
     const quickReferenceOptions = useMemo(() => {
         if (!entity?.quickReference) return [];
@@ -85,6 +127,7 @@ const RecordSelector: React.FC<RecordSelectorProps> = ({
         <Select
             value={selectedRecordKey || ''}
             onValueChange={handleRecordSelect}
+            disabled={isLoadingRecord}
         >
             <SelectTrigger className="w-[350px] bg-card text-card-foreground border-matrxBorder">
                 <SelectValue placeholder="Select Record"/>
@@ -102,12 +145,13 @@ const RecordSelector: React.FC<RecordSelectorProps> = ({
             </SelectContent>
         </Select>
     );
-};
+}
 
 const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
     {
         onEntityChange,
-        onRecordLoad
+        onRecordLoad,
+        onError
     }) => {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
     const [hasSelection, setHasSelection] = useState(false);
@@ -121,7 +165,7 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
         onEntityChange?.(value);
     };
 
-    const handleRecordLoad = (record: any) => {
+    const handleRecordLoad = (record: EntityData<EntityKeys>) => {
         setHasSelection(true);
         onRecordLoad?.(record);
     };
@@ -166,6 +210,7 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
                         <RecordSelector
                             entityKey={selectedEntity}
                             onRecordLoad={handleRecordLoad}
+                            onError={onError}
                             onLabelChange={handleRecordLabelChange}
                         />
                     </div>

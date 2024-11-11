@@ -81,7 +81,6 @@ export interface EntityHookReturn<TEntity extends EntityKeys> {
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000
-
 }
 
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
@@ -184,8 +183,8 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         dispatch(actions.fetchAll());
     }, [dispatch, actions]);
 
-    const fetchQuickReference = useCallback(() => {
-        dispatch(actions.fetchQuickReference({ maxRecords: entityDefaultSettings.maxQuickReferenceRecords }));
+    const fetchQuickReference = useCallback((): void => {
+        dispatch(actions.fetchQuickReference({maxRecords: entityDefaultSettings.maxQuickReferenceRecords}));
     }, [dispatch, actions]);
 
     const setPage = useCallback((page: number) => {
@@ -277,7 +276,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         }));
     }, [safeDispatch, actions]);
 
-    // Selection Helpers
     const isSelected = useCallback((record: EntityData<TEntity>) => {
         return selectedRecords.some(selected =>
             createRecordKey(primaryKeyMetadata, selected) ===

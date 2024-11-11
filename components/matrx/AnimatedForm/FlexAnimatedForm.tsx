@@ -201,12 +201,14 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
             case 'json':
                 return (
                     <FullEditableJsonViewer
+                        title={field.label}
                         data={formState[field.name]}
                         onChange={(json) => onUpdateField(field.name, json)}
-                        initialExpanded={false}
+                        initialExpanded={true}
                         maxHeight={'500px'}
                         validateDelay={300}
                         lockKeys={false}
+                        defaultEnhancedMode={true}
                     />
                 );
             case 'file':

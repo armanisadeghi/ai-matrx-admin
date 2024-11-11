@@ -1,4 +1,4 @@
-// app/(authenticated)/tests/forms/entity-form/page.tsx
+// app/(authenticated)/tests/forms/entity-form-basic-container
 'use client';
 
 import React, {useState, useMemo} from 'react';
@@ -96,7 +96,7 @@ const EntityFormContainer = (
             isSinglePage: true,
             isFullPage: true
         };
-    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity.activeRecord]);
+    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity]);
 
     if (!entity.entityMetadata) {
         return <MatrxTableLoading/>;

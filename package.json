@@ -29,6 +29,7 @@
     "@nextui-org/theme": "latest",
     "@radix-ui/react-accessible-icon": "latest",
     "@radix-ui/react-accordion": "latest",
+    "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-aspect-ratio": "latest",
     "@radix-ui/react-avatar": "latest",
     "@radix-ui/react-checkbox": "latest",

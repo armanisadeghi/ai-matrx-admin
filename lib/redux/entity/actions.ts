@@ -9,26 +9,41 @@ import {
     SubscriptionConfig,
     EntityMetadata,
     LoadingState,
-    QuickReferenceRecord, EntityMetrics,
+    QuickReferenceRecord, EntityMetrics, EntityRecordArray, EntityRecordMap, EntityFlags,
 } from "@/lib/redux/entity/types";
 import { UnifiedQueryOptions } from "@/lib/redux/schema/globalCacheSelectors";
 
+
+export interface FetchRecordsPayload {
+    page: number;
+    pageSize: number;
+    options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    };
+}
+
+export interface FetchOnePayload {
+    primaryKeyValues: Record<string, MatrxRecordId>;
+}
+
+export interface FetchRecordsSuccessPayload<TEntity extends EntityKeys> {
+    data: EntityRecordArray<TEntity>;
+    page: number;
+    pageSize: number;
+    totalCount: number;
+}
+
+
+
 // This interface defines all possible actions for an entity
 export interface EntityActions<TEntity extends EntityKeys> {
-    // Core Record Actions
-    fetchRecords: (payload: {
-        page: number;
-        pageSize: number;
-    }) => void;
 
+    fetchRecords: (payload: FetchRecordsPayload) => void;
     fetchQuickReference: (payload?: { maxRecords?: number }) => void;
-
-    fetchOne: (payload: {
-        primaryKeyValues: Record<string, MatrxRecordId>;
-    }) => void;
-
+    fetchOne: (payload: FetchOnePayload) => void;
     fetchAll: () => void;
-
     executeCustomQuery: (payload: UnifiedQueryOptions<TEntity>) => void;
 
     createRecord: (payload: EntityData<TEntity>) => void;
@@ -66,6 +81,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
         records: EntityData<TEntity>[];
         mode: 'single' | 'multiple' | 'none';
     }) => void;
+
     clearSelection: () => void;
     addToSelection: (payload: EntityData<TEntity>) => void;
     removeFromSelection: (payload: EntityData<TEntity>) => void;
@@ -104,12 +120,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
     setSubscription: (payload: Partial<SubscriptionConfig>) => void;
 
     // Flag Management
-    setFlags: (payload: {
-        needsRefresh?: boolean;
-        isModified?: boolean;
-        hasUnsavedChanges?: boolean;
-        isBatchOperationInProgress?: boolean;
-    }) => void;
+    setFlags: (payload: EntityFlags) => void;
 
     // State Management
     refreshData: () => void;
@@ -117,10 +128,9 @@ export interface EntityActions<TEntity extends EntityKeys> {
     resetState: () => void;
 
     // Metrics Actions
-    fetchMetrics: () => void;
+    fetchMetrics: (payload?: { timeRange?: string }) => void;
     fetchMetricsSuccess: (payload: EntityMetrics) => void;
     setMetrics: (payload: Partial<EntityMetrics>) => void;
-
 }
 
 export interface SelectionPayload<TEntity extends EntityKeys> {
@@ -136,13 +146,21 @@ export interface SingleRecordPayload<TEntity extends EntityKeys> {
 export const isSelectionAction = (
     action: any
 ): action is { type: string; payload: SelectionPayload<any> } => {
-    return action.type.endsWith('/setSelection') &&
+    return (
+        action.type.endsWith('/setSelection') &&
         'records' in action.payload &&
-        'mode' in action.payload;
+        'mode' in action.payload &&
+        Array.isArray(action.payload.records) &&
+        ['single', 'multiple', 'none'].includes(action.payload.mode)
+    );
 };
+
 
 // Export updated action type
 export type EntityActionType<TEntity extends EntityKeys> =
-    | ReturnType<EntityActions<TEntity>[keyof EntityActions<TEntity>]>
     | { type: string; payload: SelectionPayload<TEntity> }
-    | { type: string; payload: SingleRecordPayload<TEntity> };
+    | { type: string; payload: FetchRecordsPayload }
+    | { type: string; payload: FetchOnePayload }
+    | { type: string; payload: EntityRecordArray<TEntity> }
+    | { type: string; payload: EntityRecordMap<TEntity> }
+    | { type: string };

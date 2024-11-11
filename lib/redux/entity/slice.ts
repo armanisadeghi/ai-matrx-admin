@@ -34,32 +34,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.loading.loading = true;
                 state.loading.error = null;
             },
-            fetchQuickReference: (state, action?: PayloadAction<{ maxRecords?: number }>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            fetchOne: (state, action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
             fetchAll: (state) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            createRecord: (state, action: PayloadAction<EntityData<TEntity>>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            updateRecord: (state, action: PayloadAction<{
-                primaryKeyValues: Record<string, MatrxRecordId>;
-                data: Partial<EntityData<TEntity>>;
-            }>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            deleteRecord: (state, action: PayloadAction<{
-                primaryKeyValues: Record<string, MatrxRecordId>
-            }>) => {
                 state.loading.loading = true;
                 state.loading.error = null;
             },
@@ -98,18 +73,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.loading.lastOperation = 'fetch';
             },
 
-            fetchOneSuccess: (
-                state,
-                action: PayloadAction<Draft<EntityData<TEntity>>>
-            ) => {
-                const record = action.payload;
-                const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, record);
-                state.records[recordKey] = record;
-                state.loading.lastOperation = 'fetch';
-                state.cache.stale = false;
-                state.loading.loading = false;
-            },
             fetchAllSuccess: (
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>[]>
@@ -124,6 +87,49 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.cache.stale = false;
                 state.loading.loading = false;
             },
+
+
+            // Fetch One Management ========================================
+
+            fetchOne: (state, action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+                state.flags.fetchOneSuccess = false;
+            },
+
+
+            fetchOneSuccess: (
+                state,
+                action: PayloadAction<Draft<EntityData<TEntity>>>
+            ) => {
+                const record = action.payload;
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, record);
+                state.records[recordKey] = record;
+                state.loading.lastOperation = 'fetch';
+                state.flags.fetchOneSuccess = true;
+                state.cache.stale = false;
+                state.loading.loading = false;
+
+                if (!state.selection.selectedRecords.includes(recordKey)) {
+                    state.selection.selectedRecords.push(recordKey);
+                    state.selection.lastSelected = recordKey;
+                    if (state.selection.selectedRecords.length === 1) {
+                        state.selection.activeRecord = record;
+                    } else {
+                        state.selection.activeRecord = null;
+                    }
+                }
+
+                state.flags.fetchOneSuccess = false;
+            },
+
+
+            // Quick Reference Management ========================================
+            fetchQuickReference: (state, action?: PayloadAction<{ maxRecords?: number }>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
             fetchQuickReferenceSuccess: (
                 state,
                 action: PayloadAction<QuickReferenceRecord[]>
@@ -133,17 +139,106 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.quickReference.fetchComplete = true;
                 state.loading.loading = false;
             },
-
-            createRecordSuccess: (
+            setQuickReference: (
                 state,
-                action: PayloadAction<Draft<EntityData<TEntity>>>
+                action: PayloadAction<QuickReferenceRecord[]>
             ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
+                state.quickReference.records = action.payload;
+                state.quickReference.lastUpdated = new Date().toISOString();
+                state.quickReference.fetchComplete = true;
+            },
+
+            // State-wide Validation Management ========================================
+            setValidated: (state) => {
+                state.flags.isValidated = true;
+            },
+
+            // Action to reset `isValidated` to false
+            resetValidated: (state) => {
+                state.flags.isValidated = false;
+            },
+
+            // Update Record Management ========================================
+            updateRecord: (state, action: PayloadAction<{
+                primaryKeyValues: Record<string, MatrxRecordId>;
+                data: Partial<EntityData<TEntity>>;
+            }>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
+            updateRecordSuccess: (state, action: PayloadAction<Draft<EntityData<TEntity>>>) => {
+                const { primaryKeyMetadata } = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 state.loading.loading = false;
                 state.flags.isModified = true;
+                state.flags.isValidated = false; // Reset validation flag
             },
+
+            optimisticUpdate: (
+                state,
+                action: PayloadAction<{
+                    record: Draft<EntityData<TEntity>>;
+                    rollback?: Draft<EntityData<TEntity>>;
+                }>
+            ) => {
+                const { record, rollback } = action.payload;
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, record);
+
+                if (rollback) {
+                    state.history.past.push({
+                        timestamp: new Date().toISOString(),
+                        operation: 'update',
+                        data: record,
+                        previousData: rollback,
+                        metadata: { reason: 'optimistic_update' }
+                    });
+                }
+
+                state.records[recordKey] = record;
+                state.flags.isModified = true;
+                state.flags.hasUnsavedChanges = true;
+            },
+
+            // Delete Record Management ========================================
+            deleteRecord: (state, action: PayloadAction<{
+                primaryKeyValues: Record<string, MatrxRecordId>
+            }>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
+            deleteRecordSuccess: (
+                state,
+                action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>
+            ) => {
+                const {primaryKeyMetadata} = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, action.payload.primaryKeyValues);
+                delete state.records[recordKey];
+                state.loading.loading = false;
+                state.flags.isModified = true;
+            },
+
+
+
+
+            // Create Record Management ========================================
+            createRecord: (state, action: PayloadAction<EntityData<TEntity>>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
+
+            createRecordSuccess: (state, action: PayloadAction<Draft<EntityData<TEntity>>>) => {
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+                state.records[recordKey] = action.payload;
+                state.loading.loading = false;
+                state.flags.isModified = true;
+                state.flags.isValidated = false;
+            },
+
+
+
 
             fetchRecordsRejected: (
                 state,
@@ -167,32 +262,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                     state.cache.invalidationTriggers.push(recordKey);
                     state.cache.stale = true;
                 }
-            },
-
-
-
-
-
-            updateRecordSuccess: (
-                state,
-                action: PayloadAction<Draft<EntityData<TEntity>>>
-            ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
-                state.records[recordKey] = action.payload;
-                state.loading.loading = false;
-                state.flags.isModified = true;
-            },
-
-            deleteRecordSuccess: (
-                state,
-                action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>
-            ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload.primaryKeyValues);
-                delete state.records[recordKey];
-                state.loading.loading = false;
-                state.flags.isModified = true;
             },
             executeCustomQuerySuccess: (
                 state,
@@ -405,31 +474,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 }
             },
 
-            optimisticUpdate: (
-                state,
-                action: PayloadAction<{
-                    record: Draft<EntityData<TEntity>>;
-                    rollback?: Draft<EntityData<TEntity>>;
-                }>
-            ) => {
-                const { record, rollback } = action.payload;
-                const { primaryKeyMetadata } = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, record);
-
-                if (rollback) {
-                    state.history.past.push({
-                        timestamp: new Date().toISOString(),
-                        operation: 'update',
-                        data: record,
-                        previousData: rollback,
-                        metadata: { reason: 'optimistic_update' }
-                    });
-                }
-
-                state.records[recordKey] = record;
-                state.flags.isModified = true;
-                state.flags.hasUnsavedChanges = true;
-            },
 
             // History Management
             pushToHistory: (
@@ -536,15 +580,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.filters.conditions = [];
                 state.filters.sort = [];
                 state.flags.needsRefresh = true;
-            },
-
-            setQuickReference: (
-                state,
-                action: PayloadAction<QuickReferenceRecord[]>
-            ) => {
-                state.quickReference.records = action.payload;
-                state.quickReference.lastUpdated = new Date().toISOString();
-                state.quickReference.fetchComplete = true;
             },
 
             // Metadata Management

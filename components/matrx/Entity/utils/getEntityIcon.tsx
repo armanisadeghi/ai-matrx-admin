@@ -16,7 +16,7 @@ import {
 interface IconMatch {
     pattern: string;
     icon: LucideIcon;
-    priority: number; // Higher number = higher priority
+    priority: number;
 }
 
 const iconMatches: IconMatch[] = [
@@ -176,12 +176,9 @@ const iconMatches: IconMatch[] = [
 export const getEntityIcon = (entityName: string): LucideIcon => {
     const nameLower = entityName.toLowerCase();
 
-    // Sort matches by priority (highest first)
     const sortedMatches = [...iconMatches].sort((a, b) => b.priority - a.priority);
 
-    // Find the first matching pattern
     const match = sortedMatches.find(({ pattern }) => nameLower.includes(pattern));
 
-    // Return the matching icon or default to Table
     return match?.icon || Table;
 };
