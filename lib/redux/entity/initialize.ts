@@ -66,7 +66,9 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
                 defaultGeneratorFunction: null,
                 validationFunctions: null,
                 exclusionRules: null,
+                enumValues: null,
                 databaseTable: null,
+                description: "",
 
             };
         }
@@ -88,8 +90,9 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            enumValues: field.enumValues,
             databaseTable: field.databaseTable,
-
+            description: 'No description provided',
         };
     });
 }
@@ -334,6 +337,8 @@ export const createEmptyEntityState = <TEntity extends EntityKeys>(): EntityStat
         isModified: false,
         hasUnsavedChanges: false,
         isBatchOperationInProgress: false,
+        isValidated: false,
+        fetchOneSuccess: false
     },
     metrics: emptyMetricsState
 });

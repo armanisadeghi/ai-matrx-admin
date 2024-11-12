@@ -270,6 +270,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            enumValues: field.enumValues,
             databaseTable: field.databaseTable
         }))
     );
@@ -303,6 +304,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            enumValues: field.enumValues,
             databaseTable: field.databaseTable
         }))
     );

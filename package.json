@@ -22,6 +22,7 @@
     "@auth0/nextjs-auth0": "latest",
     "@cartesia/cartesia-js": "latest",
     "@deepgram/sdk": "latest",
+    "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "latest",
     "@midudev/tailwind-animations": "^0.1.0",
     "@mynaui/icons-react": "^0.3.2",

@@ -1,5 +1,5 @@
 // lib/redux/entity/entityLogger.ts
-type LogLevel = 'info' | 'warning' | 'error' | 'debug';
+type LogLevel = 'debug' | 'info' | 'warning' | 'error' ;
 
 interface LogEntry {
     timestamp: string;
@@ -12,7 +12,7 @@ interface LogEntry {
 class EntityLogger {
     private static logs: LogEntry[] = [];
     private static subscribers: ((logs: LogEntry[]) => void)[] = [];
-    private static logLevel: LogLevel = 'info'; // Default log level
+    private static logLevel: LogLevel = 'info';
 
     // Define precedence for log levels
     private static logLevelOrder: Record<LogLevel, number> = {
@@ -32,18 +32,27 @@ class EntityLogger {
             return;
         }
 
+        let processedDetails = details;
+        try {
+            if (typeof details === 'object' && details !== null) {
+                processedDetails = JSON.parse(JSON.stringify(details)); // Deep copy to avoid Proxy issues
+            }
+        } catch (error) {
+            processedDetails = `Unable to serialize details: ${error.message}`;
+        }
+
         const entry: LogEntry = {
             timestamp: new Date().toISOString(),
             level,
             entityKey,
             message,
-            details
+            details: processedDetails
         };
 
-        console.log(`[${level.toUpperCase()}]${entityKey ? ` [${entityKey}]` : ''}: ${message}`, details || '');
+        console.log(`[${level.toUpperCase()}]${entityKey ? ` [${entityKey}]` : ''}: ${message}`, processedDetails || '');
 
         this.logs.unshift(entry);
-        if (this.logs.length > 100) this.logs.pop(); // Keep last 100 logs
+        if (this.logs.length > 100) this.logs.pop();
 
         this.notifySubscribers();
     }
@@ -63,6 +72,10 @@ class EntityLogger {
     static clear() {
         this.logs = [];
         this.notifySubscribers();
+    }
+
+    static shouldLog(level: LogLevel): boolean {
+        return this.logLevelOrder[level] >= this.logLevelOrder[this.logLevel];
     }
 }
 

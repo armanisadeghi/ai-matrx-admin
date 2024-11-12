@@ -275,7 +275,6 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
     fieldNameFormats: FieldNameFormats<TEntity, TField>;
     value: any;
     dataType: FieldDataType<TEntity, TField>;
-    enumValues: FieldEnumValues<TEntity, TField>;
     isArray: FieldIsArray<TEntity, TField>;
     structure: FieldStructure<TEntity, TField>;
     isNative: FieldIsNative<TEntity, TField>;
@@ -290,6 +289,7 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
     defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
     validationFunctions: FieldValidationFunctions<TEntity, TField>;
     exclusionRules: FieldExclusionRules<TEntity, TField>;
+    enumValues: FieldEnumValues<TEntity, TField>;
     databaseTable: FieldDatabaseTable<TEntity, TField>;
 };
 
@@ -728,12 +728,12 @@ type EntitySliceState<TEntity extends EntityKeys> = {
  */
 export type EntityData<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-                                                                  ? TField
-                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+          ? TField
+          : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-                                                                  ? TField
-                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+          ? TField
+          : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;

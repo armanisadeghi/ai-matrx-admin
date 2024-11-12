@@ -2,22 +2,46 @@
 
 import { EntityData, EntityKeys } from "@/types/entityTypes";
 import { FilterState, MatrxRecordId, PrimaryKeyMetadata, FilterCondition } from "@/lib/redux/entity/types";
+import EntityLogger from "./entityLogger";
 
 /**
  * Key Management Utilities
  */
+// export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): string => {
+//     return metadata.database_fields
+//         .map((field, index) => {
+//             const frontendField = metadata.fields[index];
+//             const value = record[frontendField];
+//             if (value === undefined) {
+//                 console.warn(`Missing value for primary key field: ${frontendField}`);
+//             }
+//             return `${field}:${value}`;
+//         })
+//         .join('::');
+// };
+
 export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): string => {
-    return metadata.database_fields
+    EntityLogger.log('info', 'createRecordKey called', 'createRecordKey', { record });
+    EntityLogger.log('info', 'Metadata:', 'createRecordKey', { metadata });
+
+    const key = metadata.database_fields
         .map((field, index) => {
             const frontendField = metadata.fields[index];
             const value = record[frontendField];
+
             if (value === undefined) {
-                console.warn(`Missing value for primary key field: ${frontendField}`);
+                EntityLogger.log('error', `Missing value for primary key field: ${frontendField}`, 'createRecordKey');
             }
+
             return `${field}:${value}`;
         })
         .join('::');
+
+    EntityLogger.log('info', 'Generated record key:', 'createRecordKey', { key });
+
+    return key;
 };
+
 
 export const parseRecordKey = (key: string): Record<string, string> => {
     return key.split('::').reduce((acc, pair) => {

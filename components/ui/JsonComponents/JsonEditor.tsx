@@ -1,182 +1,24 @@
 // components/ui/JsonComponents/JsonEditor.tsx
-
-'use client';
-
 import React, {useState, useCallback, useEffect, useMemo} from 'react';
 import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {cn} from '@/lib/utils';
 import {motion, AnimatePresence} from 'framer-motion';
-import {Copy, ChevronDown, ChevronRight, Plus, Trash, Save, X, Edit} from 'lucide-react';
+import {
+    Copy,
+    Save,
+    Maximize2,
+    RotateCcw,
+    Check,
+    Minimize2, FileText, Edit3
+} from 'lucide-react';
 import jsonlint from 'jsonlint-mod';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '../tooltip';
+import {EditableJsonViewerProps} from "@/components/ui/JsonComponents/types";
+import {ValidationError} from "./types";
+import JsonEditorItem from './JsonEditorItem';
 
-export interface EditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
-    data: object | string | null;
-    onChange: (newData: object | string) => void;
-    onFormat?: () => void;
-    initialExpanded?: boolean;
-    maxHeight?: string;
-    validateDelay?: number;
-    lockKeys?: boolean;
-    defaultEnhancedMode?: boolean;
-}
-
-interface ValidationError {
-    line: number;
-    column: number;
-    message: string;
-}
-
-const JsonEditorItem: React.FC<{
-    keyName: string;
-    value: any;
-    depth: number;
-    isExpanded: boolean;
-    onToggle: () => void;
-    onEdit: (newKey: string, newValue: any) => void;
-    onAdd: (newKey: string, newValue: any, index: number) => void;
-    onDelete: () => void;
-    error?: ValidationError;
-    lockKeys?: boolean;
-    index: number;
-}> = ({
-          keyName,
-          value,
-          depth,
-          isExpanded,
-          onToggle,
-          onEdit,
-          onAdd,
-          onDelete,
-          error,
-          lockKeys,
-          index,
-      }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedKey, setEditedKey] = useState(keyName);
-    const [editedValue, setEditedValue] = useState(JSON.stringify(value));
-    const isObject = typeof value === 'object' && value !== null;
-
-    const handleEdit = () => {
-        setIsEditing(true);
-        setEditedKey(keyName);
-        setEditedValue(JSON.stringify(value));
-    };
-
-    const handleSave = () => {
-        try {
-            const parsedValue = JSON.parse(editedValue);
-            onEdit(editedKey, parsedValue);
-            setIsEditing(false);
-        } catch (error) {
-            console.error('Invalid JSON:', error);
-            // You might want to show an error message to the user here
-        }
-    };
-
-    const handleCancel = () => {
-        setIsEditing(false);
-        setEditedKey(keyName);
-        setEditedValue(JSON.stringify(value));
-    };
-
-    const handleAdd = () => {
-        onAdd("newKey", null, index + 1);
-    };
-
-    return (
-        <div className={cn("ml-4", depth === 0 && "ml-0", error && "bg-red-100 p-1 rounded")}>
-            <div className="flex items-center">
-                {isObject && (
-                    <Button variant="ghost" size="sm" className="p-0 h-auto" onClick={onToggle}>
-                        {isExpanded ? <ChevronDown className="h-3 w-3"/> : <ChevronRight className="h-3 w-3"/>}
-                    </Button>
-                )}
-                {!isEditing ? (
-                    <>
-                        <span className="font-semibold text-foreground">{keyName}: </span>
-                        {!isObject && (
-                            <span
-                                className={cn(
-                                    "ml-2 cursor-pointer",
-                                    typeof value === 'string' && "text-success",
-                                    typeof value === 'number' && "text-info",
-                                    typeof value === 'boolean' && "text-warning"
-                                )}
-                                onClick={handleEdit}
-                            >
-                        {JSON.stringify(value)}
-                    </span>
-                        )}
-                        <Button size="xs" variant="ghost" onClick={handleEdit}><Edit className="h-3 w-3"/></Button>
-                    </>
-                ) : (
-                    <div className="flex items-center ml-2">
-                        {!lockKeys && (
-                            <Input
-                                value={editedKey}
-                                onChange={(e) => setEditedKey(e.target.value)}
-                                className="mr-2 w-1/3"
-                            />
-                        )}
-                        <Input
-                            value={editedValue}
-                            onChange={(e) => setEditedValue(e.target.value)}
-                            className="mr-2"
-                        />
-                        <Button size="xs" onClick={handleSave}><Save className="h-3 w-3"/></Button>
-                        <Button size="xs" variant="ghost" onClick={handleCancel}><X className="h-3 w-3"/></Button>
-                    </div>
-                )}
-                <Button size="xs" variant="ghost" onClick={handleAdd}><Plus className="h-3 w-3"/></Button>
-                <Button size="xs" variant="ghost" onClick={onDelete}><Trash className="h-3 w-3"/></Button>
-            </div>
-            {error && <div className="text-red-500 text-sm mt-1">{error.message}</div>}
-            {isObject && isExpanded && (
-                <AnimatePresence>
-                    <motion.div
-                        initial={{opacity: 0, height: 0}}
-                        animate={{opacity: 1, height: 'auto'}}
-                        exit={{opacity: 0, height: 0}}
-                        transition={{duration: 0.2}}
-                    >
-                        {Object.entries(value).map(([k, v], i) => (
-                            <JsonEditorItem
-                                key={k}
-                                keyName={k}
-                                value={v}
-                                depth={depth + 1}
-                                isExpanded={isExpanded}
-                                onToggle={onToggle}
-                                onEdit={(newKey, newValue) => {
-                                    const newObj = {...value};
-                                    delete newObj[k];
-                                    newObj[newKey] = newValue;
-                                    onEdit(keyName, newObj);
-                                }}
-                                onAdd={(newKey, newValue, index) => {
-                                    const entries = Object.entries(value);
-                                    entries.splice(index, 0, [newKey, newValue]);
-                                    const newObj = Object.fromEntries(entries);
-                                    onEdit(keyName, newObj);
-                                }}
-                                onDelete={() => {
-                                    const newObj = {...value};
-                                    delete newObj[k];
-                                    onEdit(keyName, newObj);
-                                }}
-                                lockKeys={lockKeys}
-                                index={i}
-                            />
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
-            )}
-        </div>
-    );
-};
 
 export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
     {
@@ -189,6 +31,7 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
         validateDelay = 300,
         lockKeys = false,
         defaultEnhancedMode = true,
+        readOnly = false,
         ...props
     }) => {
     const [parsedData, setParsedData] = useState<object>({});
@@ -331,112 +174,126 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
         return keys;
     };
 
+    const IconButton = ({icon: Icon, tooltip, onClick, className = ""}) => (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={onClick}
+                        className={cn(
+                            "p-1 hover:bg-muted rounded-sm transition-colors",
+                            className
+                        )}
+                    >
+                        <Icon className="h-4 w-4"/>
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{tooltip}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
+
     return (
         <div
             className={cn(
-                "relative bg-background text-foreground p-4 rounded-md overflow-auto",
+                "relative bg-background text-foreground p-2 rounded-md overflow-auto",
                 className
             )}
             style={{maxHeight}}
             {...props}
         >
-            <div className="flex justify-end space-x-2 mb-2">
-                <Button
-                    variant="outline"
-                    size="sm"
+            <div className="flex justify-end space-x-1 mb-2">
+                <IconButton
+                    icon={isEnhancedMode ? FileText : Edit3}
+                    tooltip={isEnhancedMode ? "Switch to Basic Mode" : "Switch to Enhanced Mode"}
                     onClick={toggleMode}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                    {isEnhancedMode ? 'Basic Mode' : 'Enhanced Mode'}
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
+                />
+                <IconButton
+                    icon={Copy}
+                    tooltip={isCopied ? "Copied!" : "Copy JSON"}
                     onClick={copyToClipboard}
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                >
-                    <Copy className="h-3 w-3 mr-2"/>
-                    {isCopied ? 'Copied!' : 'Copy'}
-                </Button>
+                />
                 {isEnhancedMode && (
                     <>
-                        <Button
-                            variant="outline"
-                            size="sm"
+                        <IconButton
+                            icon={Maximize2}
+                            tooltip="Expand All"
                             onClick={expandAll}
-                            className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        >
-                            Expand All
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
+                        />
+                        <IconButton
+                            icon={Minimize2}
+                            tooltip="Collapse All"
                             onClick={collapseAll}
-                            className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        >
-                            Collapse All
-                        </Button>
+                        />
                     </>
                 )}
-                {onFormat && (
-                    <Button
-                        variant="outline"
-                        size="sm"
+                {!readOnly && onFormat && (
+                    <IconButton
+                        icon={FileText}
+                        tooltip="Format JSON"
                         onClick={onFormat}
-                        className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                    >
-                        Format
-                    </Button>
+                    />
                 )}
             </div>
+
             {isEnhancedMode ? (
-                Object.entries(parsedData).length > 0 ? (
-                    Object.entries(parsedData).map(([key, value], index) => (
-                        <JsonEditorItem
-                            key={key}
-                            keyName={key}
-                            value={value}
-                            depth={0}
-                            isExpanded={expandedKeys.has(key)}
-                            onToggle={() => toggleExpand(key)}
-                            onEdit={(newKey, newValue) => {
-                                const newData = {...parsedData};
-                                delete newData[key];
-                                newData[newKey] = newValue;
-                                handleChange(newData);
-                            }}
-                            onAdd={(newKey, newValue, index) => {
-                                const entries = Object.entries(parsedData);
-                                entries.splice(index, 0, [newKey, newValue]);
-                                const newData = Object.fromEntries(entries);
-                                handleChange(newData);
-                            }}
-                            onDelete={() => {
-                                const newData = {...parsedData};
-                                delete newData[key];
-                                handleChange(newData);
-                            }}
-                            error={validationErrors.find(error => error.line === index + 1)}
-                            lockKeys={lockKeys}
-                            index={index}
-                        />
-                    ))
-                ) : (
-                    <div className="text-gray-500">No data available</div>
-                )
+                <div className="space-y-0.5">
+                    {Object.entries(parsedData).length > 0 ? (
+                        Object.entries(parsedData).map(([key, value], index) => (
+                            <JsonEditorItem
+                                key={key}
+                                keyName={key}
+                                value={value}
+                                depth={0}
+                                isExpanded={expandedKeys.has(key)}
+                                onToggle={() => toggleExpand(key)}
+                                onEdit={(newKey, newValue) => {
+                                    if (readOnly) return;
+                                    const newData = {...parsedData};
+                                    delete newData[key];
+                                    newData[newKey] = newValue;
+                                    handleChange(newData);
+                                }}
+                                onAdd={(newKey, newValue, index) => {
+                                    if (readOnly) return;
+                                    const entries = Object.entries(parsedData);
+                                    entries.splice(index, 0, [newKey, newValue]);
+                                    const newData = Object.fromEntries(entries);
+                                    handleChange(newData);
+                                }}
+                                onDelete={() => {
+                                    if (readOnly) return;
+                                    const newData = {...parsedData};
+                                    delete newData[key];
+                                    handleChange(newData);
+                                }}
+                                error={validationErrors.find(error => error.line === index + 1)}
+                                lockKeys={lockKeys}
+                                readOnly={readOnly}
+                                index={index}
+                            />
+                        ))
+                    ) : (
+                         <div className="text-muted-foreground text-sm">No data available</div>
+                     )}
+                </div>
             ) : (
-                <Textarea
-                    value={basicJsonText}
-                    onChange={handleBasicJsonChange}
-                    className="w-full h-64 font-mono"
-                />
-            )}
+                 <Textarea
+                     value={basicJsonText}
+                     onChange={handleBasicJsonChange}
+                     className="w-full h-64 font-mono text-sm"
+                     readOnly={readOnly}
+                 />
+             )}
+
             {validationErrors.length > 0 && (
-                <div className="mt-4 p-2 bg-red-100 rounded">
-                    <h4 className="text-red-700 font-semibold">Validation Errors:</h4>
-                    <ul className="list-disc pl-5">
+                <div className="mt-2 p-1.5 bg-destructive/10 rounded text-sm">
+                    <h4 className="text-destructive font-medium">Validation Errors:</h4>
+                    <ul className="list-disc pl-4 mt-1">
                         {validationErrors.map((error, index) => (
-                            <li key={index} className="text-red-600">
+                            <li key={index} className="text-destructive">
                                 Line {error.line}, Column {error.column}: {error.message}
                             </li>
                         ))}
@@ -447,32 +304,219 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
     );
 };
 
-interface FullEditableJsonViewerProps {
-    data: object | string | null;
-    onChange: (newData: object | string) => void;
-    onFormat?: () => void;
-    initialExpanded?: boolean;
-    maxHeight?: string;
-    validateDelay?: number;
-    lockKeys?: boolean;
-    defaultEnhancedMode?: boolean;
-    title?: string;
-}
-
-export const FullEditableJsonViewer: React.FC<FullEditableJsonViewerProps> = (
+export const FullEditableJsonViewer: React.FC<EditableJsonViewerProps & { title?: string }> = (
     {
         data,
         onChange,
         onFormat,
         title = "JSON Editor",
+        className,
         ...props
-    }
-) => {
+    }) => {
     return (
-        <Card className="p-4 bg-card">
-            <h3 className="text-lg font-semibold mb-2 text-foreground">{title}</h3>
-            <EditableJsonViewer data={data} onChange={onChange} onFormat={onFormat} {...props} />
+        <Card className={cn("bg-card", className)}>
+            <div className="px-3 py-2 border-b">
+                <h3 className="text-sm font-medium text-foreground">{title}</h3>
+            </div>
+            <div className="p-3">
+                <EditableJsonViewer
+                    data={data}
+                    onChange={onChange}
+                    onFormat={onFormat}
+                    {...props}
+                />
+            </div>
         </Card>
+    );
+};
+
+
+export interface EnhancedEditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
+    data: object | string;
+    title?: string;
+    onSave?: (data: object) => void;
+    onChange?: (data: object) => void;
+    className?: string;
+    allowMinimize?: boolean;
+    isMinimized?: boolean;
+    onMinimizeChange?: (isMinimized: boolean) => void;
+    id?: string;
+    readOnly?: boolean;
+    hideHeader?: boolean;
+}
+
+export const EnhancedEditableJsonViewer: React.FC<EnhancedEditableJsonViewerProps> = (
+    {
+        data,
+        title,
+        onSave,
+        onChange,
+        className,
+        allowMinimize = false,
+        isMinimized: controlledIsMinimized,
+        onMinimizeChange,
+        id,
+        readOnly = false,
+        hideHeader = false,
+        ...props
+    }) => {
+    const [localIsMinimized, setLocalIsMinimized] = useState(false);
+    const [hasChanges, setHasChanges] = useState(false);
+    const [localData, setLocalData] = useState(data);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+    const isMinimized = controlledIsMinimized ?? localIsMinimized;
+
+    useEffect(() => {
+        setLocalData(data);
+        setHasChanges(false);
+    }, [data]);
+
+    const handleMinimizeToggle = () => {
+        const newValue = !isMinimized;
+        setLocalIsMinimized(newValue);
+        onMinimizeChange?.(newValue);
+    };
+
+    const handleChange = (newData: object) => {
+        setLocalData(newData);
+        setHasChanges(true);
+        onChange?.(newData);
+    };
+
+    const handleSave = async () => {
+        if (!hasChanges) return;
+
+        setSaveStatus('saving');
+        try {
+            const dataToSave = typeof localData === 'string'
+                               ? (localData.trim().startsWith('{') || localData.trim().startsWith('[')
+                                  ? JSON.parse(localData)
+                                  : localData)
+                               : localData;
+
+            await onSave?.(dataToSave);
+            setSaveStatus('saved');
+            setHasChanges(false);
+            setTimeout(() => setSaveStatus('idle'), 2000);
+        } catch (error) {
+            console.error('Save error:', error);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+    };
+
+    const handleReset = () => {
+        setLocalData(data);
+        setHasChanges(false);
+    };
+
+    const renderEditorContent = () => (
+        <EditableJsonViewer
+            data={localData}
+            onChange={handleChange}
+            readOnly={readOnly}
+            title={hideHeader ? title : undefined} // Pass title only if header is hidden
+            {...props}
+        />
+    );
+
+    const minimizedContent = (
+        <motion.div
+            key="minimized"
+            initial={{opacity: 0, scale: 0.8}}
+            animate={{opacity: 1, scale: 1}}
+            exit={{opacity: 0, scale: 0.8}}
+            className={cn(
+                "flex items-center gap-2 bg-card rounded-full px-3 py-1.5 shadow-sm border cursor-pointer",
+                hasChanges && "border-orange-500",
+                readOnly && "border-muted"
+            )}
+            onClick={handleMinimizeToggle}
+        >
+            <span className="text-sm font-medium truncate max-w-[200px]">{title}</span>
+            {hasChanges && <span className="w-1.5 h-1.5 rounded-full bg-orange-500"/>}
+            {readOnly && <span className="text-xs text-muted-foreground">(Read Only)</span>}
+            <Maximize2 className="h-3.5 w-3.5 text-muted-foreground"/>
+        </motion.div>
+    );
+
+    const expandedContent = (
+        <motion.div
+            key="expanded"
+            initial={{opacity: 0, scale: 0.95}}
+            animate={{opacity: 1, scale: 1}}
+            exit={{opacity: 0, scale: 0.95}}
+        >
+            <Card className="bg-card">
+                {!hideHeader && (
+                    <div className="px-3 py-2 border-b flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            {readOnly && (
+                                <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded-full">
+                                    Read Only
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            {!readOnly && hasChanges && (
+                                <>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleReset}
+                                        className="h-7 px-2 text-xs"
+                                    >
+                                        <RotateCcw className="h-3.5 w-3.5 mr-1"/>
+                                        Reset
+                                    </Button>
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        onClick={handleSave}
+                                        className="h-7 px-2 text-xs"
+                                        disabled={saveStatus === 'saving'}
+                                    >
+                                        {saveStatus === 'saving' ? (
+                                            <>Saving...</>
+                                        ) : saveStatus === 'saved' ? (
+                                            <><Check className="h-3.5 w-3.5 mr-1"/> Saved</>
+                                        ) : (
+                                                <><Save className="h-3.5 w-3.5 mr-1"/> Save</>
+                                            )}
+                                    </Button>
+                                </>
+                            )}
+                            {allowMinimize && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleMinimizeToggle}
+                                    className="h-7 w-7 p-0"
+                                >
+                                    <Minimize2 className="h-3.5 w-3.5"/>
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                )}
+                <div className={cn("p-3", hideHeader && "pt-0")}>
+                    {renderEditorContent()}
+                </div>
+            </Card>
+        </motion.div>
+    );
+
+    return (
+        <motion.div
+            layout
+            initial={false}
+            className={cn("relative", className)}
+            transition={{type: "spring", bounce: 0.2, duration: 0.3}}
+        >
+            <AnimatePresence mode="wait">
+                {isMinimized ? minimizedContent : expandedContent}
+            </AnimatePresence>
+        </motion.div>
     );
 };
 

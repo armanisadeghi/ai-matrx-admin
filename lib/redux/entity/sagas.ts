@@ -88,7 +88,7 @@ export function* withConversion<TEntity extends EntityKeys>(
             entityName: entityKey,
             options: action.payload?.options || {},
         });
-        EntityLogger.log('info', 'withConversion Query options', entityKey, dbQueryOptions);
+        EntityLogger.log('debug', 'withConversion Query options', entityKey, dbQueryOptions);
 
         yield call(
             sagaHandler,
@@ -160,21 +160,21 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 takeLatest(
                     actions.fetchOne.type,
                     function* (action: SagaAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) {
-                        EntityLogger.log('info', 'watchEntitySagas Handling fetchOne', entityKey, action.payload);
+                        EntityLogger.log('debug', 'watchEntitySagas Handling fetchOne', entityKey, action.payload);
                         yield call(withConversion, handleFetchOne, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.fetchAll.type,
                     function* (action: SagaAction) {
-                        EntityLogger.log('info', 'watchEntitySagas Handling fetchAll', entityKey);
+                        EntityLogger.log('debug', 'watchEntitySagas Handling fetchAll', entityKey);
                         yield call(withConversion, handleFetchAll, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
                     actions.fetchQuickReference.type,
                     function* (action: SagaAction) {
-                        EntityLogger.log('info', 'watchEntitySagas Handling fetchQuickReference', entityKey);
+                        EntityLogger.log('debug', 'watchEntitySagas Handling fetchQuickReference', entityKey);
                         yield call(withConversion, handleFetchQuickReference, entityKey, actions, action);
                     }
                 ),

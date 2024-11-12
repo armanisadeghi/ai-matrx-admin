@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
-import {GripVertical, X, Plus, Trash, Save, CheckSquare} from 'lucide-react';
+import {GripVertical, X, Plus, Trash, Save, CheckSquare, Copy} from 'lucide-react';
 import {useEntityQuickReference} from '@/lib/redux/entity/hooks/useEntityQuickReference';
 import {
     ResizableHandle,
@@ -31,7 +31,7 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {Input} from "@/components/ui/input";
 import {
     Form,
-    FormControl,
+    FormControl, FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -44,6 +44,9 @@ import {DatePicker} from "@/components/ui/date-picker";
 import {toast} from "@/components/ui/use-toast";
 import {EntityStateField} from "@/lib/redux/entity/types";
 import {createRecordKey} from "@/lib/redux/entity/utils";
+import ComponentBasedFieldView from './renderComponentBasedField';
+import { EnhancedJsonViewer } from '@/components/ui';
+import TextDivider from "@/components/matrx/TextDivider";
 
 export const EntityQuickReferenceView = ({entityKey}) => {
     const [sidebarSize, setSidebarSize] = useState(20);
@@ -252,6 +255,19 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                         </form>
                     </Form>
                 </CardContent>
+                <TextDivider
+                    text={"Component Based Field View"}
+                    lineColor={"text-blue-400"}
+                    textColor={"text-blue-600"}
+                    textSize={"text-lg"}
+                />
+                <CardContent>
+                    <ComponentBasedFieldView
+                        fieldInfo={fieldInfo}
+                        initialValues={form.getValues()}
+                    />
+                </CardContent>
+
                 <CardFooter className="flex justify-end space-x-2">
                     {isCreating && (
                         <Button
@@ -282,11 +298,32 @@ export const EntityQuickReferenceView = ({entityKey}) => {
             name: field.name,
             label: field.displayName,
             required: field.isRequired,
+            isDisplayField: field.isDisplayField,
+            isPrimaryKey: field.isPrimaryKey,
+            dataType: field.dataType,
+            isArray: field.isArray,
+            structure: field.structure,
+            isNative: field.isNative,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            isRequired: field.isRequired,
+            maxLength: field.maxLength,
+            defaultValue: field.defaultValue,
+            defaultGeneratorFunction: field.defaultGeneratorFunction,
+            validationFunctions: field.validationFunctions,
+            exclusionRules: field.exclusionRules,
+            enumValues: field.enumValues,
+            databaseTable: field.databaseTable,
+
         };
 
         const getValueOrDefault = (value, defaultValue) => value ?? defaultValue;
-
         const defaultValue = field.defaultValue;
+
+        const handleUUIDCopy = (fieldData) => {
+            console.log('UUID field data:', fieldData);
+            // Future functionality can be added here
+        };
 
         switch (field.dataType) {
             case 'string':
@@ -323,6 +360,37 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                )}
                            />
                        );
+
+            case 'uuid':
+                return (
+                    <FormField
+                        {...commonProps}
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>{commonProps.label}</FormLabel>
+                                <div className="flex gap-2">
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            value={getValueOrDefault(field.value, defaultValue)}
+                                            className="font-mono"
+                                        />
+                                    </FormControl>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleUUIDCopy(field)}
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                );
+
             case 'number':
                 return (
                     <FormField
@@ -343,6 +411,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                         )}
                     />
                 );
+
             case 'boolean':
                 return (
                     <FormField
@@ -362,6 +431,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                         )}
                     />
                 );
+
             case 'date':
                 return (
                     <FormField
@@ -378,157 +448,209 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                         )}
                     />
                 );
+
+        case 'object':
+            return (
+                <FormField
+                    {...commonProps}
+                    render={({field}) => (
+                        <FormItem>
+                            <FormLabel>{commonProps.label}</FormLabel>
+                            <FormControl>
+                                <div className="w-full">
+                                    <EnhancedJsonViewer
+                                        data={getValueOrDefault(field.value, defaultValue || {})}
+                                        title={field.name}
+                                        allowMinimize={true}
+                                        maxHeight="200px"
+                                        className="w-full"
+                                    />
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            );
+
             default:
-                return null;
+                return (
+                    <FormField
+                        {...commonProps}
+                        render={({field: formField}) => (
+                            <FormItem>
+                                <FormLabel className="text-destructive">
+                                    {commonProps.label} (Unhandled type: {field.dataType})
+                                </FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        {...formField}
+                                        value={getValueOrDefault(formField.value, defaultValue)}
+                                        className="border-destructive"
+                                    />
+                                </FormControl>
+                                <FormDescription className="text-destructive">
+                                    Unsupported data type: {field.dataType}
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                );
         }
     };
 
     return (
-        <ResizablePanelGroup
-            direction="horizontal"
-            className="h-[calc(100vh-4rem)] overflow-hidden"
-        >
-            <ResizablePanel
-                defaultSize={sidebarSize}
-                minSize={15}
-                maxSize={40}
-                onResize={setSidebarSize}
-                className="border-r"
+        <div className="relative">
+            <ResizablePanelGroup
+                direction="horizontal"
+                className="h-[calc(100vh-4rem)] overflow-hidden"
             >
-                <div className="h-full flex flex-col">
-                    <div className="p-4 border-b">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">{entityDisplayName}</h2>
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={handleToggleMultiSelect}
-                                    size="sm"
-                                    variant={isMultiSelectMode ? "secondary" : "outline"}
-                                    className="h-8"
-                                >
-                                    <CheckSquare className="h-4 w-4 mr-1"/>
-                                    {isMultiSelectMode ? 'Cancel Multi-Select' : 'Multi-Select'}
-                                </Button>
-                                {!isMultiSelectMode && (
+                <ResizablePanel
+                    defaultSize={sidebarSize}
+                    minSize={15}
+                    maxSize={40}
+                    onResize={setSidebarSize}
+                    className="border-r"
+                >
+                    <div className="h-full flex flex-col">
+                        <div className="p-4 border-b">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-lg font-semibold">{entityDisplayName}</h2>
+                                <div className="flex gap-2">
                                     <Button
-                                        onClick={handleCreateNew}
+                                        onClick={handleToggleMultiSelect}
                                         size="sm"
+                                        variant={isMultiSelectMode ? "secondary" : "outline"}
                                         className="h-8"
                                     >
-                                        <Plus className="h-4 w-4 mr-1"/>
-                                        New
+                                        <CheckSquare className="h-4 w-4 mr-1"/>
+                                        {isMultiSelectMode ? 'Cancel Multi-Select' : 'Multi-Select'}
                                     </Button>
-                                )}
-                            </div>
-                        </div>
-                        <Input
-                            placeholder="Search..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full"
-                        />
-                    </div>
-                    <ScrollArea className="flex-grow">
-                        <div className="p-2 space-y-2">
-                            {filteredReferences.map(ref => (
-                                <Card
-                                    key={JSON.stringify(ref.primaryKeyValues)}
-                                    className={getCardClassName(ref)}
-                                    onClick={() => handleSelection(ref.primaryKeyValues)}
-                                >
-                                    <CardContent className="p-3">
-                                        <div className="flex items-center gap-2">
-                                            {isMultiSelectMode && (
-                                                <Checkbox
-                                                    checked={isSelected(ref)}
-                                                    onCheckedChange={() => handleSelection(ref.primaryKeyValues)}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                />
-                                            )}
-                                            <div className="text-sm">{ref.displayValue}</div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </ScrollArea>
-                </div>
-            </ResizablePanel>
-
-            <ResizableHandle>
-                <GripVertical className="h-4 w-4"/>
-            </ResizableHandle>
-
-            <ResizablePanel defaultSize={100 - sidebarSize}>
-                <ScrollArea className="h-full">
-                    <div className="p-6">
-                        {(activeRecord || isCreating || (isMultiSelectMode && selectedQuickReferences.length > 0)) ? (
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-center">
-                                    <h1 className="text-2xl font-bold">
-                                        {isCreating ? `New ${entityDisplayName}` :
-                                         isMultiSelectMode ? `${selectedQuickReferences.length} Items Selected` :
-                                         selectedQuickReference?.displayValue}
-                                    </h1>
-                                    {!isCreating && !isMultiSelectMode && selectedQuickReference && (
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="sm">
-                                                    <Trash className="h-4 w-4 mr-1"/>
-                                                    Delete
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Delete Record</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Are you sure you want to
-                                                        delete {selectedQuickReference?.displayValue}?
-                                                        This action cannot be undone.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction
-                                                        onClick={() => deleteRecord({
-                                                            onSuccess: () => {
-                                                                toast({
-                                                                    title: "Success",
-                                                                    description: "Record deleted successfully",
-                                                                });
-                                                            },
-                                                            onError: (error) => {
-                                                                toast({
-                                                                    title: "Error",
-                                                                    description: error.message,
-                                                                    variant: "destructive",
-                                                                });
-                                                            }
-                                                        })}
-                                                    >
-                                                        Delete
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                    {!isMultiSelectMode && (
+                                        <Button
+                                            onClick={handleCreateNew}
+                                            size="sm"
+                                            className="h-8"
+                                        >
+                                            <Plus className="h-4 w-4 mr-1"/>
+                                            New
+                                        </Button>
                                     )}
                                 </div>
-                                {renderFormContent()}
                             </div>
-                        ) : (
-                             <div className="h-full flex items-center justify-center">
-                                 <div className="text-center">
-                                     <h2 className="text-xl font-semibold mb-2">No Record Selected</h2>
-                                     <p className="text-muted-foreground">
-                                         Select a record from the sidebar to view or edit its details
-                                     </p>
-                                 </div>
-                             </div>
-                         )}
+                            <Input
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
+                        <ScrollArea className="flex-grow">
+                            <div className="p-2 space-y-2">
+                                {filteredReferences.map(ref => (
+                                    <Card
+                                        key={JSON.stringify(ref.primaryKeyValues)}
+                                        className={getCardClassName(ref)}
+                                        onClick={() => handleSelection(ref.primaryKeyValues)}
+                                    >
+                                        <CardContent className="p-3">
+                                            <div className="flex items-center gap-2">
+                                                {isMultiSelectMode && (
+                                                    <Checkbox
+                                                        checked={isSelected(ref)}
+                                                        onCheckedChange={() => handleSelection(ref.primaryKeyValues)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                )}
+                                                <div className="text-sm">{ref.displayValue}</div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </div>
-                </ScrollArea>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+                </ResizablePanel>
+
+                <ResizableHandle>
+                    <GripVertical className="h-4 w-4"/>
+                </ResizableHandle>
+
+                <ResizablePanel defaultSize={100 - sidebarSize}>
+                    <ScrollArea className="h-full">
+                        <div className="p-6">
+                            {(activeRecord || isCreating || (isMultiSelectMode && selectedQuickReferences.length > 0))
+                             ? (
+                                 <div className="space-y-6">
+                                     <div className="flex justify-between items-center">
+                                         <h1 className="text-2xl font-bold">
+                                             {isCreating ? `New ${entityDisplayName}` :
+                                              isMultiSelectMode ? `${selectedQuickReferences.length} Items Selected` :
+                                              selectedQuickReference?.displayValue}
+                                         </h1>
+                                         {!isCreating && !isMultiSelectMode && selectedQuickReference && (
+                                             <AlertDialog>
+                                                 <AlertDialogTrigger asChild>
+                                                     <Button variant="destructive" size="sm">
+                                                         <Trash className="h-4 w-4 mr-1"/>
+                                                         Delete
+                                                     </Button>
+                                                 </AlertDialogTrigger>
+                                                 <AlertDialogContent>
+                                                     <AlertDialogHeader>
+                                                         <AlertDialogTitle>Delete Record</AlertDialogTitle>
+                                                         <AlertDialogDescription>
+                                                             Are you sure you want to
+                                                             delete {selectedQuickReference?.displayValue}?
+                                                             This action cannot be undone.
+                                                         </AlertDialogDescription>
+                                                     </AlertDialogHeader>
+                                                     <AlertDialogFooter>
+                                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                         <AlertDialogAction
+                                                             onClick={() => deleteRecord({
+                                                                 onSuccess: () => {
+                                                                     toast({
+                                                                         title: "Success",
+                                                                         description: "Record deleted successfully",
+                                                                     });
+                                                                 },
+                                                                 onError: (error) => {
+                                                                     toast({
+                                                                         title: "Error",
+                                                                         description: error.message,
+                                                                         variant: "destructive",
+                                                                     });
+                                                                 }
+                                                             })}
+                                                         >
+                                                             Delete
+                                                         </AlertDialogAction>
+                                                     </AlertDialogFooter>
+                                                 </AlertDialogContent>
+                                             </AlertDialog>
+                                         )}
+                                     </div>
+                                     {renderFormContent()}
+                                 </div>
+                             ) : (
+                                 <div className="h-full flex items-center justify-center">
+                                     <div className="text-center">
+                                         <h2 className="text-xl font-semibold mb-2">No Record Selected</h2>
+                                         <p className="text-muted-foreground">
+                                             Select a record from the sidebar to view or edit its details
+                                         </p>
+                                     </div>
+                                 </div>
+                             )}
+                        </div>
+                    </ScrollArea>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+
+        </div>
+
     );
 };
 

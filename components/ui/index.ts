@@ -24,7 +24,9 @@ export { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuC
 export { Pagination } from './pagination'
 export { Progress } from './progress'
 export { RadioGroup, RadioGroupItem } from './radio-group'
-export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './resizable'
+// export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './resizable'
+export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './matrx/resizable'
+
 export { ScrollArea, ScrollBar } from './scroll-area'
 export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator } from './select'
 export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription } from './sheet'

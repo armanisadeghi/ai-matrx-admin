@@ -20,6 +20,7 @@ import {
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
 import {Draft} from "@reduxjs/toolkit";
 import {createRecordKey} from "@/lib/redux/entity/utils";
+import EntityLogger from '../entityLogger';
 
 export interface UseEntityQuickReferenceResult<TEntity extends EntityKeys> extends Omit<UseEntitySelectionReturn<TEntity>, 'selectedRecords'> {
     // ... (existing interface properties)
@@ -117,11 +118,19 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
         dispatch(actions.clearSelection());
     }, [dispatch, actions]);
 
-    const selectedQuickReferences = useAppSelector(state => {   //TODO: Fix this incorrect selector usage!
+    const selectedQuickReferences = useAppSelector(state => {
+        // TODO: Fix this incorrect selector usage!
         const selectedRecordIds = selection.selectedRecords;
-        return quickReferenceRecords.filter(ref =>
+        const filteredReferences = quickReferenceRecords.filter(ref =>
             selectedRecordIds.includes(createRecordKey(primaryKeyMetadata, ref.primaryKeyValues))
         );
+
+        EntityLogger.log('info', 'Filtered selected quick references',
+            'selectedQuickReferencesSelector',
+            {filteredReferences}
+        );
+
+        return filteredReferences;
     });
 
     const toggleMultiSelectMode = useCallback(() => {
@@ -138,7 +147,7 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
                 primaryKeyValues,
                 isMulti: false
             });
-            dispatch(actions.fetchOne({ primaryKeyValues }));
+            dispatch(actions.fetchOne({primaryKeyValues}));
         },
         [dispatch, actions, clearSelection, primaryKeyMetadata]
     );
@@ -151,7 +160,7 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
                 primaryKeyValues,
                 isMulti: true
             });
-            dispatch(actions.fetchOne({ primaryKeyValues }));
+            dispatch(actions.fetchOne({primaryKeyValues}));
         },
         [dispatch, actions, primaryKeyMetadata]
     );
@@ -169,11 +178,14 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
     }, [fetchOneSuccess, pendingSelection, allRecords, addToSelection]);
 
     useEffect(() => {
-        console.log('Selection state changed:', {
-            selectedQuickReference,
-            selectedQuickReferences,
-            loadingState
-        });
+        if (EntityLogger.shouldLog('debug')) {
+            EntityLogger.log(
+                'debug',
+                'Selection state changed',
+                'useEntityQuickReference',
+                {selectedQuickReference, selectedQuickReferences, loadingState}
+            );
+        }
     }, [selectedQuickReference, selectedQuickReferences, loadingState]);
 
 

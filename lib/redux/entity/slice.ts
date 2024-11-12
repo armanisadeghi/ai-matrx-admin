@@ -91,7 +91,9 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
             // Fetch One Management ========================================
 
-            fetchOne: (state, action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) => {
+            fetchOne: (
+                state,
+                action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) => {
                 state.loading.loading = true;
                 state.loading.error = null;
                 state.flags.fetchOneSuccess = false;
@@ -103,7 +105,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 action: PayloadAction<Draft<EntityData<TEntity>>>
             ) => {
                 const record = action.payload;
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, record);
                 state.records[recordKey] = record;
                 state.loading.lastOperation = 'fetch';
@@ -167,7 +169,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.loading.error = null;
             },
             updateRecordSuccess: (state, action: PayloadAction<Draft<EntityData<TEntity>>>) => {
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 state.loading.loading = false;
@@ -182,8 +184,8 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                     rollback?: Draft<EntityData<TEntity>>;
                 }>
             ) => {
-                const { record, rollback } = action.payload;
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {record, rollback} = action.payload;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, record);
 
                 if (rollback) {
@@ -192,7 +194,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         operation: 'update',
                         data: record,
                         previousData: rollback,
-                        metadata: { reason: 'optimistic_update' }
+                        metadata: {reason: 'optimistic_update'}
                     });
                 }
 
@@ -220,8 +222,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             },
 
 
-
-
             // Create Record Management ========================================
             createRecord: (state, action: PayloadAction<EntityData<TEntity>>) => {
                 state.loading.loading = true;
@@ -229,15 +229,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             },
 
             createRecordSuccess: (state, action: PayloadAction<Draft<EntityData<TEntity>>>) => {
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 state.loading.loading = false;
                 state.flags.isModified = true;
                 state.flags.isValidated = false;
             },
-
-
 
 
             fetchRecordsRejected: (
@@ -323,8 +321,8 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                     mode: 'single' | 'multiple' | 'none';
                 }>
             ) => {
-                const { records, mode } = action.payload;
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {records, mode} = action.payload;
+                const {primaryKeyMetadata} = state.entityMetadata;
 
                 state.selection.selectionMode = mode;
                 state.selection.selectedRecords = records.map(record =>
@@ -352,7 +350,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>>
             ) => {
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
 
                 if (!state.selection.selectedRecords.includes(recordKey)) {
@@ -371,7 +369,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>>
             ) => {
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
 
                 state.selection.selectedRecords = state.selection.selectedRecords.filter(
@@ -395,7 +393,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>>
             ) => {
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {primaryKeyMetadata} = state.entityMetadata;
                 const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
 
                 const index = state.selection.selectedRecords.indexOf(recordKey);
@@ -434,8 +432,8 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                     records: Draft<EntityData<TEntity>>[];
                 }>
             ) => {
-                const { operation, records } = action.payload;
-                const { primaryKeyMetadata } = state.entityMetadata;
+                const {operation, records} = action.payload;
+                const {primaryKeyMetadata} = state.entityMetadata;
 
                 const recordKeys = records.map(record =>
                     createRecordKey(primaryKeyMetadata, record)

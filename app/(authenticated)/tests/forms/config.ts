@@ -4,12 +4,12 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
 
-    // {
-    //     title: 'Dynamic Route Entity Form',
-    //     path: 'dynamic-route-entity-form',
-    //     relative: true,
-    //     description: 'Attempt to set up a dynamic route that can automatically load an entity record'
-    // },
+    {
+        title: 'Sample Fields with Buttons',
+        path: 'components-with-buttons',
+        relative: true,
+        description: 'A bunch of direct sample fields that have buttons built in to trigger things'
+    },
     {
         title: 'Entity Form With Full Container',
         path: 'entity-form-full-container',

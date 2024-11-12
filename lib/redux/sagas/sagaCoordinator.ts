@@ -26,7 +26,7 @@ export class SagaCoordinator {
 
     setEntityNames(entityNames: EntityKeys[]) {
         this.entityNames = entityNames;
-        EntityLogger.log('info', 'Set Entity Names', "Saga Coordinator", {entityNames});
+        EntityLogger.log('debug', '-Set Entity Names', "Saga Coordinator", {entityNames});
 
     }
 
