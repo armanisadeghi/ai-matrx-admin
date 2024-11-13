@@ -1,8 +1,9 @@
 // lib/logger/schema-logger.ts
-import {v4 as uuidv4} from 'uuid';
-import {SchemaResolutionLog, LogLevel} from './types';
-import {BaseLogger} from './base-logger';
-import {LogStorage} from './storage';
+import { v4 as uuidv4 } from 'uuid';
+import { SchemaResolutionLog, LogLevel } from './types';
+import { BaseLogger } from './base-logger';
+import { LogStorage } from './storage';
+import { logConfig } from './config';
 
 export class SchemaLogger extends BaseLogger {
     private static instance: SchemaLogger;
@@ -56,10 +57,9 @@ export class SchemaLogger extends BaseLogger {
             context: {
                 timestamp: new Date().toISOString(),
                 environment: process.env.NODE_ENV || 'development',
-                component: 'SchemaLogger',  // Optional
-                action: 'Resolution',       // Optional
+                component: 'SchemaLogger',
+                action: 'Resolution',
             },
-            // tableMetrics,  // Optionally include table metrics
         };
 
         this.processLog(log);
@@ -76,10 +76,8 @@ export class SchemaLogger extends BaseLogger {
         // Optionally send logs to Datadog or any other monitoring service
         await this.sendToDatadog(log);
 
-        // Output to the console in development environment
-        if (process.env.NODE_ENV === 'development') {
-            this.consoleOutput(log);
-        }
+        // Output to the console if level meets the threshold
+        this.consoleOutput(log);
     }
 }
 

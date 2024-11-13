@@ -1,7 +1,7 @@
 // types/entityTypes.ts
 
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
-import {FetchStrategy} from "@/types/AutomationSchemaTypes";
+import {DataStructure, FetchStrategy, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 
 export type TypeBrand<T> = { _typeBrand: T };
 export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
@@ -290,8 +290,33 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
     validationFunctions: FieldValidationFunctions<TEntity, TField>;
     exclusionRules: FieldExclusionRules<TEntity, TField>;
     enumValues: FieldEnumValues<TEntity, TField>;
+    entityName: EntityKeys;
     databaseTable: FieldDatabaseTable<TEntity, TField>;
+    description: string;
 };
+
+// name: string;
+// displayName: string;
+// isPrimaryKey: boolean;
+// isDisplayField?: boolean;
+// dataType: FieldDataOptionsType;
+// isArray: boolean;
+// structure: DataStructure;
+// isNative: boolean;
+// defaultComponent?: string;
+// componentProps: ComponentProps;
+// isRequired: boolean;
+// maxLength: number;
+// defaultValue: any;
+// defaultGeneratorFunction: string;
+// validationFunctions: string[];
+// exclusionRules: string[];
+// enumValues: string[];
+// entityName: EntityKeys;
+// databaseTable: string;
+// description: string;
+
+
 
 /**
  * Define the base relationship structure
@@ -365,8 +390,6 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
         [TField in EntityFieldKeys<TEntity>]: {
             value: any;
             dataType: FieldDataType<TEntity, TField>;
-            databaseTable: FieldDatabaseTable<TEntity, TField>;
-            enumValues: FieldEnumValues<TEntity, TField>;
             isArray: FieldIsArray<TEntity, TField>;
             structure: FieldStructure<TEntity, TField>;
             isNative: FieldIsNative<TEntity, TField>;
@@ -382,6 +405,10 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
             exclusionRules: FieldExclusionRules<TEntity, TField>;
             fieldNameFormats: FieldNameFormats<TEntity, TField>;
             defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
+            enumValues: FieldEnumValues<TEntity, TField>;
+            entityName: EntityKeys;
+            databaseTable: FieldDatabaseTable<TEntity, TField>;
+            description: string;
         };
     };
 };
@@ -756,7 +783,7 @@ type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 import {Draft} from 'immer';
 import {EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
-import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {ComponentProps, DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true

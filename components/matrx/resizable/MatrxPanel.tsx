@@ -32,7 +32,7 @@ interface MatrxPanelProps {
 
 const MatrxPanel: React.FC<MatrxPanelProps> = (
     {
-        position = 'right',
+        position = 'left',
         className = '',
         defaultExpanded = false,
         isExpanded: controlledExpanded,

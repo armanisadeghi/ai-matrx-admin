@@ -29,14 +29,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -65,20 +72,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'action',
                 databaseTable: 'action',
+                description: '"Id" field for action. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -106,20 +122,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:3' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'action',
                 databaseTable: 'action',
+                description: '"Name" field for action. This is a required field. Your entry must be an string data type. Maximum Length: 255',
             },
             matrix: {
                 fieldNameFormats: {
@@ -147,20 +172,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'action',
                 databaseTable: 'action',
+                description: '"Matrix" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
             },
             transformer: {
                 fieldNameFormats: {
@@ -188,20 +222,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'action',
                 databaseTable: 'action',
+                description: '"Transformer" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Transformer.',
             },
             nodeType: {
                 fieldNameFormats: {
@@ -229,20 +272,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input:50' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'action',
                 databaseTable: 'action',
+                description: '"Node Type" field for action. This is a required field. Your entry must be an string data type. Maximum Length: 50',
             },
             referenceId: {
                 fieldNameFormats: {
@@ -270,20 +322,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'action',
                 databaseTable: 'action',
+                description: '"Reference Id" field for action. This is a required field. Your entry must be an uuid data type.',
             },
             automationMatrixReference: {
                 fieldNameFormats: {
@@ -390,14 +451,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -426,20 +494,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Id" field for aiEndpoint. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -467,20 +544,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Name" field for aiEndpoint. This is a required field. Your entry must be an string data type.',
             },
             provider: {
                 fieldNameFormats: {
@@ -508,20 +594,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Provider" field for aiEndpoint. This is an optional field. Your entry must be an string data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -549,20 +644,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Description" field for aiEndpoint. This is an optional field. Your entry must be an string data type.',
             },
             additionalCost: {
                 fieldNameFormats: {
@@ -590,20 +694,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Additional Cost" field for aiEndpoint. This is an optional field. Your entry must be an boolean data type.',
             },
             costDetails: {
                 fieldNameFormats: {
@@ -631,20 +744,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Cost Details" field for aiEndpoint. This is an optional field. Your entry must be an object data type.',
             },
             params: {
                 fieldNameFormats: {
@@ -672,20 +794,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                description: '"Params" field for aiEndpoint. This is an optional field. Your entry must be an object data type.',
             },
         },
         entityNameFormats: {
@@ -721,14 +852,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -757,20 +895,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Id" field for aiModel. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -798,20 +945,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Name" field for aiModel. This is a required field. Your entry must be an string data type.',
             },
             commonName: {
                 fieldNameFormats: {
@@ -839,20 +995,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Common Name" field for aiModel. This is an optional field. Your entry must be an string data type.',
             },
             modelClass: {
                 fieldNameFormats: {
@@ -880,20 +1045,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Model Class" field for aiModel. This is a required field. Your entry must be an string data type.',
             },
             provider: {
                 fieldNameFormats: {
@@ -921,20 +1095,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Provider" field for aiModel. This is an optional field. Your entry must be an string data type.',
             },
             endpoints: {
                 fieldNameFormats: {
@@ -962,20 +1145,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Endpoints" field for aiModel. This is an optional field. Your entry must be an object data type.',
             },
             contextWindow: {
                 fieldNameFormats: {
@@ -1003,20 +1195,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Context Window" field for aiModel. This is an optional field. Your entry must be an number data type.',
             },
             maxTokens: {
                 fieldNameFormats: {
@@ -1044,20 +1245,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Max Tokens" field for aiModel. This is an optional field. Your entry must be an number data type.',
             },
             capabilities: {
                 fieldNameFormats: {
@@ -1085,20 +1295,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Capabilities" field for aiModel. This is an optional field. Your entry must be an object data type.',
             },
             controls: {
                 fieldNameFormats: {
@@ -1126,20 +1345,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                description: '"Controls" field for aiModel. This is an optional field. Your entry must be an object data type.',
             },
             recipeModelInverse: {
                 fieldNameFormats: {
@@ -1218,14 +1446,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -1254,20 +1489,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Id" field for arg. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -1295,20 +1539,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Name" field for arg. This is a required field. Your entry must be an string data type.',
             },
             required: {
                 fieldNameFormats: {
@@ -1336,20 +1589,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Required" field for arg. This is an optional field. Your entry must be an boolean data type.',
             },
             default: {
                 fieldNameFormats: {
@@ -1377,20 +1639,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Default" field for arg. This is an optional field. Your entry must be an string data type.',
             },
             dataType: {
                 fieldNameFormats: {
@@ -1418,20 +1689,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined>,
                 enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Data Type" field for arg. This is an optional field. Your entry must be an string data type.',
             },
             ready: {
                 fieldNameFormats: {
@@ -1459,20 +1739,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Ready" field for arg. This is an optional field. Your entry must be an boolean data type.',
             },
             registeredFunction: {
                 fieldNameFormats: {
@@ -1500,20 +1789,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'arg',
                 databaseTable: 'arg',
+                description: '"Registered Function" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
             },
             registeredFunctionReference: {
                 fieldNameFormats: {
@@ -1585,14 +1883,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -1621,20 +1926,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                description: '"Id" field for automationBoundaryBroker. This is a required field. Your entry must be an uuid data type.',
             },
             matrix: {
                 fieldNameFormats: {
@@ -1662,20 +1976,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                description: '"Matrix" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
             },
             broker: {
                 fieldNameFormats: {
@@ -1703,20 +2026,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                description: '"Broker" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             sparkSource: {
                 fieldNameFormats: {
@@ -1744,20 +2076,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api" | "chance" | "database" | "environment" | "file" | "function" | "generated_data" | "none" | "user_input" | undefined>,
                 enumValues: ['api', 'chance', 'database', 'environment', 'file', 'function', 'generated_data', 'none', 'user_input'] as const,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                description: '"Spark Source" field for automationBoundaryBroker. This is an optional field. Your entry must be an string data type.',
             },
             beaconDestination: {
                 fieldNameFormats: {
@@ -1785,20 +2126,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api_response" | "database" | "file" | "function" | "user_output" | undefined>,
                 enumValues: ['api_response', 'database', 'file', 'function', 'user_output'] as const,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                description: '"Beacon Destination" field for automationBoundaryBroker. This is an optional field. Your entry must be an string data type.',
             },
             brokerReference: {
                 fieldNameFormats: {
@@ -1905,14 +2255,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -1941,20 +2298,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                description: '"Id" field for automationMatrix. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -1982,20 +2348,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                description: '"Name" field for automationMatrix. This is a required field. Your entry must be an string data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -2023,20 +2398,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                description: '"Description" field for automationMatrix. This is an optional field. Your entry must be an string data type.',
             },
             averageSeconds: {
                 fieldNameFormats: {
@@ -2064,20 +2448,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                description: '"Average Seconds" field for automationMatrix. This is an optional field. Your entry must be an number data type.',
             },
             isAutomated: {
                 fieldNameFormats: {
@@ -2105,20 +2498,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                description: '"Is Automated" field for automationMatrix. This is an optional field. Your entry must be an boolean data type.',
             },
             cognitionMatrices: {
                 fieldNameFormats: {
@@ -2146,20 +2548,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"agent_crew" | "agent_mixture" | "conductor" | "hypercluster" | "knowledge_matrix" | "monte_carlo" | "the_matrix" | "workflow" | undefined>,
                 enumValues: ['agent_crew', 'agent_mixture', 'conductor', 'hypercluster', 'knowledge_matrix', 'monte_carlo', 'the_matrix', 'workflow'] as const,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                description: '"Cognition Matrices" field for automationMatrix. This is an optional field. Your entry must be an string data type.',
             },
             actionInverse: {
                 fieldNameFormats: {
@@ -2280,14 +2691,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -2316,20 +2734,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Id" field for broker. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -2357,20 +2784,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Name" field for broker. This is a required field. Your entry must be an string data type.',
             },
             value: {
                 fieldNameFormats: {
@@ -2398,20 +2834,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Value" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             dataType: {
                 fieldNameFormats: {
@@ -2439,20 +2884,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined>,
                 enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Data Type" field for broker. This is a required field. Your entry must be an string data type.',
             },
             ready: {
                 fieldNameFormats: {
@@ -2480,20 +2934,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Ready" field for broker. This is an optional field. Your entry must be an boolean data type.',
             },
             defaultSource: {
                 fieldNameFormats: {
@@ -2521,20 +2984,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api" | "chance" | "database" | "environment" | "file" | "function" | "generated_data" | "none" | "user_input" | undefined>,
                 enumValues: ['api', 'chance', 'database', 'environment', 'file', 'function', 'generated_data', 'none', 'user_input'] as const,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Default Source" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             displayName: {
                 fieldNameFormats: {
@@ -2562,20 +3034,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Display Name" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -2603,20 +3084,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Description" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             tooltip: {
                 fieldNameFormats: {
@@ -2644,20 +3134,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Tooltip" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             validationRules: {
                 fieldNameFormats: {
@@ -2685,20 +3184,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Validation Rules" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             sampleEntries: {
                 fieldNameFormats: {
@@ -2726,20 +3234,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Sample Entries" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             customSourceComponent: {
                 fieldNameFormats: {
@@ -2767,20 +3284,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Custom Source Component" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.',
             },
             additionalParams: {
                 fieldNameFormats: {
@@ -2808,20 +3334,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Additional Params" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             otherSourceParams: {
                 fieldNameFormats: {
@@ -2849,20 +3384,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Other Source Params" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             defaultDestination: {
                 fieldNameFormats: {
@@ -2890,20 +3434,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"api_response" | "database" | "file" | "function" | "user_output" | undefined>,
                 enumValues: ['api_response', 'database', 'file', 'function', 'user_output'] as const,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Default Destination" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             outputComponent: {
                 fieldNameFormats: {
@@ -2931,20 +3484,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"3DModelViewer" | "AudioOutput" | "BucketList" | "BudgetVisualizer" | "Calendar" | "Carousel" | "Checklist" | "Clock" | "CodeView" | "ComplexMulti" | "DataFlowDiagram" | "DecisionTree" | "DiffViewer" | "FileOutput" | "FitnessTracker" | "Flowchart" | "Form" | "GanttChart" | "GeographicMap" | "GlossaryView" | "Heatmap" | "HorizontalList" | "ImageView" | "InteractiveChart" | "JsonViewer" | "KanbanBoard" | "LaTeXRenderer" | "LiveTraffic" | "LocalEvents" | "MarkdownViewer" | "MealPlanner" | "MindMap" | "NeedNewOption" | "NetworkGraph" | "NewsAggregator" | "PDFViewer" | "PivotTable" | "PlainText" | "Presentation" | "PublicLiveCam" | "RichTextEditor" | "RunCodeBack" | "RunCodeFront" | "SVGEditor" | "SankeyDiagram" | "SatelliteView" | "SocialMediaInfo" | "SpectrumAnalyzer" | "Spreadsheet" | "Table" | "TaskPrioritization" | "Textarea" | "Thermometer" | "Timeline" | "TravelPlanner" | "TreeView" | "UMLDiagram" | "VerticalList" | "VoiceSentimentAnalysis" | "WeatherDashboard" | "WeatherMap" | "WordHighlighter" | "WordMap" | "chatResponse" | "none" | "video" | undefined>,
                 enumValues: ['3DModelViewer', 'AudioOutput', 'BucketList', 'BudgetVisualizer', 'Calendar', 'Carousel', 'Checklist', 'Clock', 'CodeView', 'ComplexMulti', 'DataFlowDiagram', 'DecisionTree', 'DiffViewer', 'FileOutput', 'FitnessTracker', 'Flowchart', 'Form', 'GanttChart', 'GeographicMap', 'GlossaryView', 'Heatmap', 'HorizontalList', 'ImageView', 'InteractiveChart', 'JsonViewer', 'KanbanBoard', 'LaTeXRenderer', 'LiveTraffic', 'LocalEvents', 'MarkdownViewer', 'MealPlanner', 'MindMap', 'NeedNewOption', 'NetworkGraph', 'NewsAggregator', 'PDFViewer', 'PivotTable', 'PlainText', 'Presentation', 'PublicLiveCam', 'RichTextEditor', 'RunCodeBack', 'RunCodeFront', 'SVGEditor', 'SankeyDiagram', 'SatelliteView', 'SocialMediaInfo', 'SpectrumAnalyzer', 'Spreadsheet', 'Table', 'TaskPrioritization', 'Textarea', 'Thermometer', 'Timeline', 'TravelPlanner', 'TreeView', 'UMLDiagram', 'VerticalList', 'VoiceSentimentAnalysis', 'WeatherDashboard', 'WeatherMap', 'WordHighlighter', 'WordMap', 'chatResponse', 'none', 'video'] as const,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Output Component" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             tags: {
                 fieldNameFormats: {
@@ -2972,20 +3534,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'broker',
                 databaseTable: 'broker',
+                description: '"Tags" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             dataInputComponentReference: {
                 fieldNameFormats: {
@@ -3176,14 +3747,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'ifk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -3212,20 +3790,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Id" field for dataInputComponent. This is a required field. Your entry must be an uuid data type.',
             },
             options: {
                 fieldNameFormats: {
@@ -3253,20 +3840,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Options" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             includeOther: {
                 fieldNameFormats: {
@@ -3294,20 +3890,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Include Other" field for dataInputComponent. This is an optional field. Your entry must be an boolean data type.',
             },
             min: {
                 fieldNameFormats: {
@@ -3335,20 +3940,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:float' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Min" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             max: {
                 fieldNameFormats: {
@@ -3376,20 +3990,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:float' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Max" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             step: {
                 fieldNameFormats: {
@@ -3417,20 +4040,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:int' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Step" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             minRows: {
                 fieldNameFormats: {
@@ -3458,20 +4090,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Min Rows" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             maxRows: {
                 fieldNameFormats: {
@@ -3499,20 +4140,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Max Rows" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             acceptableFiletypes: {
                 fieldNameFormats: {
@@ -3540,20 +4190,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Acceptable Filetypes" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             src: {
                 fieldNameFormats: {
@@ -3581,20 +4240,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Src" field for dataInputComponent. This is an optional field. Your entry must be an string data type.',
             },
             classes: {
                 fieldNameFormats: {
@@ -3622,20 +4290,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Classes" field for dataInputComponent. This is an optional field. Your entry must be an string data type.',
             },
             colorOverrides: {
                 fieldNameFormats: {
@@ -3663,20 +4340,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Color Overrides" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             additionalParams: {
                 fieldNameFormats: {
@@ -3704,20 +4390,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                description: '"Additional Params" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             brokerInverse: {
                 fieldNameFormats: {
@@ -3789,14 +4484,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -3825,20 +4527,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                description: '"Id" field for dataOutputComponent. This is a required field. Your entry must be an uuid data type.',
             },
             componentType: {
                 fieldNameFormats: {
@@ -3866,20 +4577,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"3DModelViewer" | "AudioOutput" | "BucketList" | "BudgetVisualizer" | "Calendar" | "Carousel" | "Checklist" | "Clock" | "CodeView" | "ComplexMulti" | "DataFlowDiagram" | "DecisionTree" | "DiffViewer" | "FileOutput" | "FitnessTracker" | "Flowchart" | "Form" | "GanttChart" | "GeographicMap" | "GlossaryView" | "Heatmap" | "HorizontalList" | "ImageView" | "InteractiveChart" | "JsonViewer" | "KanbanBoard" | "LaTeXRenderer" | "LiveTraffic" | "LocalEvents" | "MarkdownViewer" | "MealPlanner" | "MindMap" | "NeedNewOption" | "NetworkGraph" | "NewsAggregator" | "PDFViewer" | "PivotTable" | "PlainText" | "Presentation" | "PublicLiveCam" | "RichTextEditor" | "RunCodeBack" | "RunCodeFront" | "SVGEditor" | "SankeyDiagram" | "SatelliteView" | "SocialMediaInfo" | "SpectrumAnalyzer" | "Spreadsheet" | "Table" | "TaskPrioritization" | "Textarea" | "Thermometer" | "Timeline" | "TravelPlanner" | "TreeView" | "UMLDiagram" | "VerticalList" | "VoiceSentimentAnalysis" | "WeatherDashboard" | "WeatherMap" | "WordHighlighter" | "WordMap" | "chatResponse" | "none" | "video" | undefined>,
                 enumValues: ['3DModelViewer', 'AudioOutput', 'BucketList', 'BudgetVisualizer', 'Calendar', 'Carousel', 'Checklist', 'Clock', 'CodeView', 'ComplexMulti', 'DataFlowDiagram', 'DecisionTree', 'DiffViewer', 'FileOutput', 'FitnessTracker', 'Flowchart', 'Form', 'GanttChart', 'GeographicMap', 'GlossaryView', 'Heatmap', 'HorizontalList', 'ImageView', 'InteractiveChart', 'JsonViewer', 'KanbanBoard', 'LaTeXRenderer', 'LiveTraffic', 'LocalEvents', 'MarkdownViewer', 'MealPlanner', 'MindMap', 'NeedNewOption', 'NetworkGraph', 'NewsAggregator', 'PDFViewer', 'PivotTable', 'PlainText', 'Presentation', 'PublicLiveCam', 'RichTextEditor', 'RunCodeBack', 'RunCodeFront', 'SVGEditor', 'SankeyDiagram', 'SatelliteView', 'SocialMediaInfo', 'SpectrumAnalyzer', 'Spreadsheet', 'Table', 'TaskPrioritization', 'Textarea', 'Thermometer', 'Timeline', 'TravelPlanner', 'TreeView', 'UMLDiagram', 'VerticalList', 'VoiceSentimentAnalysis', 'WeatherDashboard', 'WeatherMap', 'WordHighlighter', 'WordMap', 'chatResponse', 'none', 'video'] as const,
+                entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                description: '"Component Type" field for dataOutputComponent. This is an optional field. Your entry must be an string data type.',
             },
             uiComponent: {
                 fieldNameFormats: {
@@ -3907,20 +4627,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                description: '"Ui Component" field for dataOutputComponent. This is an optional field. Your entry must be an string data type.',
             },
             props: {
                 fieldNameFormats: {
@@ -3948,20 +4677,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                description: '"Props" field for dataOutputComponent. This is an optional field. Your entry must be an object data type.',
             },
             additionalParams: {
                 fieldNameFormats: {
@@ -3989,20 +4727,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                description: '"Additional Params" field for dataOutputComponent. This is an optional field. Your entry must be an object data type.',
             },
         },
         entityNameFormats: {
@@ -4038,14 +4785,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -4074,20 +4828,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'displayOption',
                 databaseTable: 'display_option',
+                description: '"Id" field for displayOption. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -4115,20 +4878,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'displayOption',
                 databaseTable: 'display_option',
+                description: '"Name" field for displayOption. This is an optional field. Your entry must be an string data type.',
             },
             defaultParams: {
                 fieldNameFormats: {
@@ -4156,20 +4928,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'displayOption',
                 databaseTable: 'display_option',
+                description: '"Default Params" field for displayOption. This is an optional field. Your entry must be an object data type.',
             },
             customizableParams: {
                 fieldNameFormats: {
@@ -4197,20 +4978,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'displayOption',
                 databaseTable: 'display_option',
+                description: '"Customizable Params" field for displayOption. This is an optional field. Your entry must be an object data type.',
             },
             additionalParams: {
                 fieldNameFormats: {
@@ -4238,20 +5028,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'displayOption',
                 databaseTable: 'display_option',
+                description: '"Additional Params" field for displayOption. This is an optional field. Your entry must be an object data type.',
             },
             recipeDisplayInverse: {
                 fieldNameFormats: {
@@ -4330,14 +5129,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -4366,20 +5172,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Id" field for emails. This is a required field. Your entry must be an uuid data type.',
             },
             sender: {
                 fieldNameFormats: {
@@ -4407,20 +5222,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Sender" field for emails. This is a required field. Your entry must be an string data type.',
             },
             recipient: {
                 fieldNameFormats: {
@@ -4448,20 +5272,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Recipient" field for emails. This is a required field. Your entry must be an string data type.',
             },
             subject: {
                 fieldNameFormats: {
@@ -4489,20 +5322,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Subject" field for emails. This is a required field. Your entry must be an string data type.',
             },
             body: {
                 fieldNameFormats: {
@@ -4530,20 +5372,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Body" field for emails. This is a required field. Your entry must be an string data type.',
             },
             timestamp: {
                 fieldNameFormats: {
@@ -4571,20 +5422,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Timestamp" field for emails. This is an optional field. Your entry must be an date data type.',
             },
             isRead: {
                 fieldNameFormats: {
@@ -4612,20 +5472,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'emails',
                 databaseTable: 'emails',
+                description: '"Is Read" field for emails. This is an optional field. Your entry must be an boolean data type.',
             },
         },
         entityNameFormats: {
@@ -4661,14 +5530,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -4697,20 +5573,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'extractor',
                 databaseTable: 'extractor',
+                description: '"Id" field for extractor. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -4738,20 +5623,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'extractor',
                 databaseTable: 'extractor',
+                description: '"Name" field for extractor. This is a required field. Your entry must be an string data type.',
             },
             outputType: {
                 fieldNameFormats: {
@@ -4779,20 +5673,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined>,
                 enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
+                entityName: 'extractor',
                 databaseTable: 'extractor',
+                description: '"Output Type" field for extractor. This is an optional field. Your entry must be an string data type.',
             },
             defaultIdentifier: {
                 fieldNameFormats: {
@@ -4820,20 +5723,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'extractor',
                 databaseTable: 'extractor',
+                description: '"Default Identifier" field for extractor. This is an optional field. Your entry must be an string data type.',
             },
             defaultIndex: {
                 fieldNameFormats: {
@@ -4861,20 +5773,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'extractor',
                 databaseTable: 'extractor',
+                description: '"Default Index" field for extractor. This is an optional field. Your entry must be an number data type.',
             },
         },
         entityNameFormats: {
@@ -4910,14 +5831,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -4946,20 +5874,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Id" field for flashcardData. This is a required field. Your entry must be an uuid data type.',
             },
             userId: {
                 fieldNameFormats: {
@@ -4987,20 +5924,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"User Id" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             topic: {
                 fieldNameFormats: {
@@ -5028,20 +5974,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Topic" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             lesson: {
                 fieldNameFormats: {
@@ -5069,20 +6024,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Lesson" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             difficulty: {
                 fieldNameFormats: {
@@ -5110,20 +6074,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Difficulty" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             front: {
                 fieldNameFormats: {
@@ -5151,20 +6124,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Front" field for flashcardData. This is a required field. Your entry must be an string data type.',
             },
             back: {
                 fieldNameFormats: {
@@ -5192,20 +6174,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Back" field for flashcardData. This is a required field. Your entry must be an string data type.',
             },
             example: {
                 fieldNameFormats: {
@@ -5233,20 +6224,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Example" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             detailedExplanation: {
                 fieldNameFormats: {
@@ -5274,20 +6274,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Detailed Explanation" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             audioExplanation: {
                 fieldNameFormats: {
@@ -5315,20 +6324,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Audio Explanation" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             personalNotes: {
                 fieldNameFormats: {
@@ -5356,20 +6374,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Personal Notes" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             isDeleted: {
                 fieldNameFormats: {
@@ -5397,20 +6424,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Is Deleted" field for flashcardData. This is an optional field. Your entry must be an boolean data type.',
             },
             public: {
                 fieldNameFormats: {
@@ -5438,20 +6474,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Public" field for flashcardData. This is an optional field. Your entry must be an boolean data type.',
             },
             sharedWith: {
                 fieldNameFormats: {
@@ -5479,20 +6524,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'multi-select:uuid' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string[]>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Shared With" field for flashcardData. This is an optional field. Your entry must be an uuid data type. You can enter one or more entries.',
             },
             createdAt: {
                 fieldNameFormats: {
@@ -5520,20 +6574,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Created At" field for flashcardData. This is an optional field. Your entry must be an date data type.',
             },
             updatedAt: {
                 fieldNameFormats: {
@@ -5561,20 +6624,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                description: '"Updated At" field for flashcardData. This is an optional field. Your entry must be an date data type.',
             },
             flashcardHistoryInverse: {
                 fieldNameFormats: {
@@ -5723,14 +6795,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -5759,20 +6838,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type.',
             },
             flashcardId: {
                 fieldNameFormats: {
@@ -5800,20 +6888,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Flashcard Id" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             userId: {
                 fieldNameFormats: {
@@ -5841,20 +6938,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"User Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             reviewCount: {
                 fieldNameFormats: {
@@ -5882,20 +6988,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:int' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Review Count" field for flashcardHistory. This is an optional field. Your entry must be an number data type.',
             },
             correctCount: {
                 fieldNameFormats: {
@@ -5923,20 +7038,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:int' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Correct Count" field for flashcardHistory. This is an optional field. Your entry must be an number data type.',
             },
             incorrectCount: {
                 fieldNameFormats: {
@@ -5964,20 +7088,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:int' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Incorrect Count" field for flashcardHistory. This is an optional field. Your entry must be an number data type.',
             },
             createdAt: {
                 fieldNameFormats: {
@@ -6005,20 +7138,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Created At" field for flashcardHistory. This is an optional field. Your entry must be an date data type.',
             },
             updatedAt: {
                 fieldNameFormats: {
@@ -6046,20 +7188,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                description: '"Updated At" field for flashcardHistory. This is an optional field. Your entry must be an date data type.',
             },
             flashcardDataReference: {
                 fieldNameFormats: {
@@ -6131,14 +7282,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -6167,20 +7325,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"Id" field for flashcardImages. This is a required field. Your entry must be an uuid data type.',
             },
             flashcardId: {
                 fieldNameFormats: {
@@ -6208,20 +7375,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"Flashcard Id" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             filePath: {
                 fieldNameFormats: {
@@ -6249,20 +7425,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"File Path" field for flashcardImages. This is a required field. Your entry must be an string data type.',
             },
             fileName: {
                 fieldNameFormats: {
@@ -6290,20 +7475,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"File Name" field for flashcardImages. This is a required field. Your entry must be an string data type.',
             },
             mimeType: {
                 fieldNameFormats: {
@@ -6331,20 +7525,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"Mime Type" field for flashcardImages. This is a required field. Your entry must be an string data type.',
             },
             size: {
                 fieldNameFormats: {
@@ -6372,20 +7575,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:int' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"Size" field for flashcardImages. This is a required field. Your entry must be an number data type.',
             },
             createdAt: {
                 fieldNameFormats: {
@@ -6413,20 +7625,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                description: '"Created At" field for flashcardImages. This is an optional field. Your entry must be an date data type.',
             },
             flashcardDataReference: {
                 fieldNameFormats: {
@@ -6501,14 +7722,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             flashcardId: {
@@ -6537,20 +7765,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
+                description: '"Flashcard Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             setId: {
                 fieldNameFormats: {
@@ -6578,20 +7815,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
+                description: '"Set Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardSets.',
             },
             order: {
                 fieldNameFormats: {
@@ -6619,20 +7865,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:int' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
+                description: '"Order" field for flashcardSetRelations. This is an optional field. Your entry must be an number data type.',
             },
             flashcardDataReference: {
                 fieldNameFormats: {
@@ -6739,14 +7994,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             setId: {
@@ -6775,20 +8037,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Set Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type.',
             },
             userId: {
                 fieldNameFormats: {
@@ -6816,20 +8087,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"User Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             name: {
                 fieldNameFormats: {
@@ -6857,20 +8137,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Name" field for flashcardSets. This is a required field. Your entry must be an string data type.',
             },
             createdAt: {
                 fieldNameFormats: {
@@ -6898,20 +8187,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Created At" field for flashcardSets. This is an optional field. Your entry must be an date data type.',
             },
             updatedAt: {
                 fieldNameFormats: {
@@ -6939,20 +8237,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Updated At" field for flashcardSets. This is an optional field. Your entry must be an date data type.',
             },
             sharedWith: {
                 fieldNameFormats: {
@@ -6980,20 +8287,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'multi-select:uuid' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string[]>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Shared With" field for flashcardSets. This is an optional field. Your entry must be an uuid data type. You can enter one or more entries.',
             },
             public: {
                 fieldNameFormats: {
@@ -7021,20 +8337,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Public" field for flashcardSets. This is an optional field. Your entry must be an boolean data type.',
             },
             topic: {
                 fieldNameFormats: {
@@ -7062,20 +8387,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Topic" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             lesson: {
                 fieldNameFormats: {
@@ -7103,20 +8437,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Lesson" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             difficulty: {
                 fieldNameFormats: {
@@ -7144,20 +8487,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Difficulty" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             audioOverview: {
                 fieldNameFormats: {
@@ -7185,20 +8537,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                description: '"Audio Overview" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             flashcardSetRelationsInverse: {
                 fieldNameFormats: {
@@ -7277,14 +8638,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -7313,20 +8681,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'processor',
                 databaseTable: 'processor',
+                description: '"Id" field for processor. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -7354,20 +8731,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'processor',
                 databaseTable: 'processor',
+                description: '"Name" field for processor. This is a required field. Your entry must be an string data type.',
             },
             dependsDefault: {
                 fieldNameFormats: {
@@ -7395,20 +8781,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'processor',
                 databaseTable: 'processor',
+                description: '"Depends Default" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Processor.',
             },
             defaultExtractors: {
                 fieldNameFormats: {
@@ -7436,20 +8831,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'processor',
                 databaseTable: 'processor',
+                description: '"Default Extractors" field for processor. This is an optional field. Your entry must be an object data type.',
             },
             params: {
                 fieldNameFormats: {
@@ -7477,20 +8881,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'processor',
                 databaseTable: 'processor',
+                description: '"Params" field for processor. This is an optional field. Your entry must be an object data type.',
             },
             processorReference: {
                 fieldNameFormats: {
@@ -7604,14 +9017,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -7640,20 +9060,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Id" field for recipe. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -7681,20 +9110,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Name" field for recipe. This is a required field. Your entry must be an string data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -7722,20 +9160,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Description" field for recipe. This is an optional field. Your entry must be an string data type.',
             },
             tags: {
                 fieldNameFormats: {
@@ -7763,20 +9210,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Tags" field for recipe. This is an optional field. Your entry must be an object data type.',
             },
             sampleOutput: {
                 fieldNameFormats: {
@@ -7804,20 +9260,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Sample Output" field for recipe. This is an optional field. Your entry must be an string data type.',
             },
             isPublic: {
                 fieldNameFormats: {
@@ -7845,20 +9310,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Is Public" field for recipe. This is an optional field. Your entry must be an boolean data type.',
             },
             status: {
                 fieldNameFormats: {
@@ -7886,20 +9360,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"active_testing" | "archived" | "draft" | "in_review" | "live" | "other" | undefined>,
                 enumValues: ['active_testing', 'archived', 'draft', 'in_review', 'live', 'other'] as const,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Status" field for recipe. This is a required field. Your entry must be an string data type.',
             },
             version: {
                 fieldNameFormats: {
@@ -7927,20 +9410,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Version" field for recipe. This is an optional field. Your entry must be an number data type.',
             },
             messages: {
                 fieldNameFormats: {
@@ -7968,20 +9460,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-array:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>[]>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Messages" field for recipe. This is an optional field. Your entry must be an object data type. You can enter one or more entries.',
             },
             postResultOptions: {
                 fieldNameFormats: {
@@ -8009,20 +9510,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
+                description: '"Post Result Options" field for recipe. This is an optional field. Your entry must be an object data type.',
             },
             recipeBrokerInverse: {
                 fieldNameFormats: {
@@ -8311,14 +9821,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -8347,20 +9864,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                description: '"Id" field for recipeBroker. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
                 fieldNameFormats: {
@@ -8388,20 +9914,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                description: '"Recipe" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             broker: {
                 fieldNameFormats: {
@@ -8429,20 +9964,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                description: '"Broker" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             brokerRole: {
                 fieldNameFormats: {
@@ -8470,20 +10014,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"input_broker" | "output_broker" | undefined>,
                 enumValues: ['input_broker', 'output_broker'] as const,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                description: '"Broker Role" field for recipeBroker. This is a required field. Your entry must be an string data type.',
             },
             required: {
                 fieldNameFormats: {
@@ -8511,20 +10064,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'switch' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<boolean>,
                 enumValues: null,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                description: '"Required" field for recipeBroker. This is an optional field. Your entry must be an boolean data type.',
             },
             brokerReference: {
                 fieldNameFormats: {
@@ -8631,14 +10193,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -8667,20 +10236,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                description: '"Id" field for recipeDisplay. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
                 fieldNameFormats: {
@@ -8708,20 +10286,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                description: '"Recipe" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             display: {
                 fieldNameFormats: {
@@ -8749,20 +10336,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                description: '"Display" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a DisplayOption.',
             },
             priority: {
                 fieldNameFormats: {
@@ -8790,20 +10386,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                description: '"Priority" field for recipeDisplay. This is an optional field. Your entry must be an number data type.',
             },
             displaySettings: {
                 fieldNameFormats: {
@@ -8831,20 +10436,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                description: '"Display Settings" field for recipeDisplay. This is an optional field. Your entry must be an object data type.',
             },
             displayOptionReference: {
                 fieldNameFormats: {
@@ -8951,14 +10565,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -8987,20 +10608,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                description: '"Id" field for recipeFunction. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
                 fieldNameFormats: {
@@ -9028,20 +10658,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                description: '"Recipe" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             function: {
                 fieldNameFormats: {
@@ -9069,20 +10708,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                description: '"Function" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
             },
             role: {
                 fieldNameFormats: {
@@ -9110,20 +10758,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"comparison" | "decision" | "other" | "post_processing" | "pre-Processing" | "rating" | "save_data" | "validation" | undefined>,
                 enumValues: ['comparison', 'decision', 'other', 'post_processing', 'pre-Processing', 'rating', 'save_data', 'validation'] as const,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                description: '"Role" field for recipeFunction. This is a required field. Your entry must be an string data type.',
             },
             params: {
                 fieldNameFormats: {
@@ -9151,20 +10808,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                description: '"Params" field for recipeFunction. This is an optional field. Your entry must be an object data type.',
             },
             systemFunctionReference: {
                 fieldNameFormats: {
@@ -9271,14 +10937,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -9307,20 +10980,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                description: '"Id" field for recipeModel. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
                 fieldNameFormats: {
@@ -9348,20 +11030,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                description: '"Recipe" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             aiModel: {
                 fieldNameFormats: {
@@ -9389,20 +11080,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                description: '"Ai Model" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a AiModel.',
             },
             role: {
                 fieldNameFormats: {
@@ -9430,20 +11130,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'select:enum' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<"primary_model" | "trial_model" | "verified_model" | undefined>,
                 enumValues: ['primary_model', 'trial_model', 'verified_model'] as const,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                description: '"Role" field for recipeModel. This is a required field. Your entry must be an string data type.',
             },
             priority: {
                 fieldNameFormats: {
@@ -9471,20 +11180,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'number:smallint' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<number>,
                 enumValues: null,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                description: '"Priority" field for recipeModel. This is an optional field. Your entry must be an number data type.',
             },
             aiModelReference: {
                 fieldNameFormats: {
@@ -9591,14 +11309,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -9627,20 +11352,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                description: '"Id" field for recipeProcessor. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
                 fieldNameFormats: {
@@ -9668,20 +11402,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                description: '"Recipe" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             processor: {
                 fieldNameFormats: {
@@ -9709,20 +11452,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                description: '"Processor" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Processor.',
             },
             params: {
                 fieldNameFormats: {
@@ -9750,20 +11502,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                description: '"Params" field for recipeProcessor. This is an optional field. Your entry must be an object data type.',
             },
             processorReference: {
                 fieldNameFormats: {
@@ -9870,14 +11631,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -9906,20 +11674,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                description: '"Id" field for recipeTool. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
                 fieldNameFormats: {
@@ -9947,20 +11724,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                description: '"Recipe" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             tool: {
                 fieldNameFormats: {
@@ -9988,20 +11774,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                description: '"Tool" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Tool.',
             },
             params: {
                 fieldNameFormats: {
@@ -10029,20 +11824,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                description: '"Params" field for recipeTool. This is an optional field. Your entry must be an object data type.',
             },
             recipeReference: {
                 fieldNameFormats: {
@@ -10149,14 +11953,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fkAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -10185,20 +11996,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                description: '"Id" field for registeredFunction. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -10226,20 +12046,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                description: '"Name" field for registeredFunction. This is a required field. Your entry must be an string data type.',
             },
             modulePath: {
                 fieldNameFormats: {
@@ -10267,20 +12096,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                description: '"Module Path" field for registeredFunction. This is a required field. Your entry must be an string data type.',
             },
             className: {
                 fieldNameFormats: {
@@ -10308,20 +12146,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                description: '"Class Name" field for registeredFunction. This is an optional field. Your entry must be an string data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -10349,20 +12196,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                description: '"Description" field for registeredFunction. This is an optional field. Your entry must be an string data type.',
             },
             returnBroker: {
                 fieldNameFormats: {
@@ -10390,20 +12246,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                description: '"Return Broker" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             brokerReference: {
                 fieldNameFormats: {
@@ -10545,14 +12410,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -10581,20 +12453,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Id" field for systemFunction. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -10622,20 +12503,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Name" field for systemFunction. This is a required field. Your entry must be an string data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -10663,20 +12553,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Description" field for systemFunction. This is an optional field. Your entry must be an string data type.',
             },
             sample: {
                 fieldNameFormats: {
@@ -10704,20 +12603,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Sample" field for systemFunction. This is an optional field. Your entry must be an string data type.',
             },
             inputParams: {
                 fieldNameFormats: {
@@ -10745,20 +12653,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Input Params" field for systemFunction. This is an optional field. Your entry must be an object data type.',
             },
             outputOptions: {
                 fieldNameFormats: {
@@ -10786,20 +12703,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Output Options" field for systemFunction. This is an optional field. Your entry must be an object data type.',
             },
             rfId: {
                 fieldNameFormats: {
@@ -10827,20 +12753,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                description: '"Rf Id" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
             },
             registeredFunctionReference: {
                 fieldNameFormats: {
@@ -10989,14 +12924,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -11025,20 +12967,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Id" field for tool. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -11066,20 +13017,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Name" field for tool. This is a required field. Your entry must be an string data type.',
             },
             source: {
                 fieldNameFormats: {
@@ -11107,20 +13067,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Source" field for tool. This is a required field. Your entry must be an object data type.',
             },
             description: {
                 fieldNameFormats: {
@@ -11148,20 +13117,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Description" field for tool. This is an optional field. Your entry must be an string data type.',
             },
             parameters: {
                 fieldNameFormats: {
@@ -11189,20 +13167,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Parameters" field for tool. This is an optional field. Your entry must be an object data type.',
             },
             requiredArgs: {
                 fieldNameFormats: {
@@ -11230,20 +13217,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Required Args" field for tool. This is an optional field. Your entry must be an object data type.',
             },
             systemFunction: {
                 fieldNameFormats: {
@@ -11271,20 +13267,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"System Function" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
             },
             additionalParams: {
                 fieldNameFormats: {
@@ -11312,20 +13317,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'tool',
                 databaseTable: 'tool',
+                description: '"Additional Params" field for tool. This is an optional field. Your entry must be an object data type.',
             },
             systemFunctionReference: {
                 fieldNameFormats: {
@@ -11439,14 +13453,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             id: {
@@ -11475,20 +13496,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'transformer',
                 databaseTable: 'transformer',
+                description: '"Id" field for transformer. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
                 fieldNameFormats: {
@@ -11516,20 +13546,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'textarea:5' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'transformer',
                 databaseTable: 'transformer',
+                description: '"Name" field for transformer. This is an optional field. Your entry must be an string data type.',
             },
             inputParams: {
                 fieldNameFormats: {
@@ -11557,20 +13596,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'transformer',
                 databaseTable: 'transformer',
+                description: '"Input Params" field for transformer. This is an optional field. Your entry must be an object data type.',
             },
             outputParams: {
                 fieldNameFormats: {
@@ -11598,20 +13646,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'transformer',
                 databaseTable: 'transformer',
+                description: '"Output Params" field for transformer. This is an optional field. Your entry must be an object data type.',
             },
             actionInverse: {
                 fieldNameFormats: {
@@ -11690,14 +13747,21 @@ export const initialAutomationTableSchema = {
         defaultFetchStrategy: 'simple',
         componentProps: {
             "variant": "default",
+            "placeholder": "default",
             "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
             "animation": "default",
             "fullWidthValue": "default",
             "fullWidth": "default",
             "disabled": "default",
             "className": "default",
             "type": "default",
-            "onChange": "default"
+            "onChange": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default"
         },
         entityFields: {
             userId: {
@@ -11726,20 +13790,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<string>,
                 enumValues: null,
+                entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                description: '"User Id" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             preferences: {
                 fieldNameFormats: {
@@ -11767,20 +13840,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'json-editor:200' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Record<string, unknown>>,
                 enumValues: null,
+                entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                description: '"Preferences" field for userPreferences. This is a required field. Your entry must be an object data type.',
             },
             createdAt: {
                 fieldNameFormats: {
@@ -11808,20 +13890,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                description: '"Created At" field for userPreferences. This is a required field. Your entry must be an date data type.',
             },
             updatedAt: {
                 fieldNameFormats: {
@@ -11849,20 +13940,29 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'datetime' as const,
                 componentProps: {
                     "variant": "default",
+                    "placeholder": "default",
                     "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
                     "disabled": "default",
                     "className": "default",
                     "type": "default",
-                    "onChange": "default"
+                    "onChange": "default",
+                    "formatString": "default",
+                    "minDate": "default",
+                    "maxDate": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
                 typeReference: {} as TypeBrand<Date>,
                 enumValues: null,
+                entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                description: '"Updated At" field for userPreferences. This is a required field. Your entry must be an date data type.',
             },
         },
         entityNameFormats: {
@@ -11896,21 +13996,24 @@ export type InitialTableSchema = {
                 [key in NameFormat]?: string;
             };
             dataType: FieldDataOptionsType;
-            isArray: boolean;
-            structure: DataStructure;
-            isNative: boolean;
-            typeReference: TypeBrand<any>;
-            defaultComponent?: string;
-            componentProps?: Record<string, unknown>;
             isRequired: boolean;
             maxLength: number | null;
+            isArray: boolean;
             defaultValue: any;
             isPrimaryKey: boolean;
             isDisplayField?: boolean;
             defaultGeneratorFunction: string | null;
             validationFunctions: readonly string[];
             exclusionRules: readonly string[];
+            defaultComponent?: string;
+            componentProps?: Record<string, unknown>;
+            structure: DataStructure;
+            isNative: boolean;
+            typeReference: TypeBrand<any>;
+            enumValues: readonly string[];
+            entityName: string;
             databaseTable: string;
+            description: string;
         };
     };
     defaultFetchStrategy: FetchStrategy;

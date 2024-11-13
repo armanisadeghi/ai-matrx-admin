@@ -39,7 +39,8 @@ function isValidSchemaField(field: unknown): field is EntityField<any, any> {
  * Simplified field extraction that maintains type safety
  */
 function extractFieldsFromSchema<TEntity extends EntityKeys>(
-    schema: AutomationEntity<TEntity>
+    schema: AutomationEntity<TEntity>,
+    entityKey: EntityKeys,
 ) {
     if (!schema?.entityFields) {
         console.warn('No entityFields found in schema');
@@ -67,6 +68,7 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
                 validationFunctions: null,
                 exclusionRules: null,
                 enumValues: null,
+                entityName: entityKey as EntityKeys,
                 databaseTable: null,
                 description: "",
 
@@ -91,8 +93,9 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
             enumValues: field.enumValues,
+            entityName: field.entityName,
             databaseTable: field.databaseTable,
-            description: 'No description provided',
+            description: field.description,
         };
     });
 }
@@ -242,7 +245,7 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(
         schemaType: schema.schemaType,
         primaryKeyMetadata: createPrimaryKeyMetadata(schema),
         displayFieldMetadata: schema.displayFieldMetadata,
-        fields: extractFieldsFromSchema(schema),
+        fields: extractFieldsFromSchema(schema, entityKey),
     };
 
     return {

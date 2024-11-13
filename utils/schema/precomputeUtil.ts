@@ -251,6 +251,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                 fieldsByEntity[typedEntityName]?.push(fieldId);
             });
 
+            // @ts-ignore
             entities[typedEntityName] = {
                 entityName: typedEntityName,
                 schemaType: entityDef.schemaType as EntitySchemaType<TEntity>,

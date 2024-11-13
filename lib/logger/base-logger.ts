@@ -1,7 +1,13 @@
 // lib/logger/base-logger.ts
-// STATUS: NEW FILE
-import { LogEntry } from './types';
+import { LogEntry, LogLevel } from './types';
 import { logConfig } from './config';
+
+const logLevelMapping: { [key in LogLevel]: number } = {
+    'debug': 0,
+    'info': 1,
+    'warn': 2,
+    'error': 3,
+};
 
 export abstract class BaseLogger {
     protected abstract processLog(log: LogEntry): Promise<void>;
@@ -29,12 +35,19 @@ export abstract class BaseLogger {
     }
 
     protected consoleOutput(log: LogEntry): void {
-        if (!logConfig.console) return;
+        // Restrict console logging to the development environment
+        if (logConfig.environment !== 'development') return;
+
+        // Check if log level meets the console output threshold
+        const logLevelThreshold = logLevelMapping[logConfig.consoleLogLevel || 'info'];
+        if (logLevelMapping[log.level] < logLevelThreshold) {
+            return; // Do not log if below threshold
+        }
 
         const logMethod = log.level === 'error' ? console.error :
-            log.level === 'warn' ? console.warn :
-                log.level === 'debug' ? console.debug :
-                    console.log;
+                          log.level === 'warn' ? console.warn :
+                          log.level === 'debug' ? console.debug :
+                          console.log;
 
         logMethod(`[${log.category}] ${log.message}`, log);
     }

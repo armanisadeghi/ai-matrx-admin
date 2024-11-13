@@ -27,7 +27,7 @@ export const textContext: TextContextEntry[] = [
     },
     {
         id: "1004",
-        name: "name_1004",
+        name: "Clean HTML For Structure Review",
         prefix: "Prefix 4 initial text",
         suffix: "Suffix 4 initial text",
     },
@@ -39,31 +39,3 @@ export const textContext: TextContextEntry[] = [
     },
 ];
 
-export const initialPatternsToRemove = [
-    '&quot;',
-    '&gt;',
-    '&amp;',
-    '<html>',
-];
-
-export const initialPatternsToReplace = [
-    {pattern: '<br/>', replacement: '\n'},
-    {pattern: '&lt;', replacement: '<'},
-    {pattern: '&gt;', replacement: '>'},
-    {pattern: '&apos;', replacement: '\''},
-    {pattern: '&quot;', replacement: '"'},
-];
-
-// Marker patterns for deletion and replacement
-export const initialMarkerPatternsToDelete = [
-    { start: '<start-marker>', end: '<end-marker>' },
-];
-
-export const initialMarkerPatternsToReplace = [
-    { start: '<start-marker>', end: '<end-marker>', replacement: 'REPLACED_TEXT' },
-];
-
-// New marker patterns for extracting text
-export const initialMarkerPatternsToExtract = [
-    { start: '<start-marker>', end: '<end-marker>' },
-];

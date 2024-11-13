@@ -10,6 +10,7 @@ import EntityAnalyzer from "@/components/admin/EntityAnalyzer";
 import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import EntityAnalyzerEditor from '@/components/admin/redux/analyzers/EntityAnalyzerEditor';
+import { PanelLeft } from '@/components/matrx/resizable/Panels';
 
 
 const EntityBrowserContent: React.FC = () => {
@@ -35,16 +36,26 @@ const EntityBrowserContent: React.FC = () => {
                      )}
                 </CardContent>
             </Card>
+            {/*<PanelLeft*/}
+            {/*    header={<h2>Left Panel</h2>}*/}
+            {/*    defaultSize={30}*/}
+            {/*        headerProps={{*/}
+            {/*            title: "Entity State",*/}
+            {/*            description: "Debug and analyze entity state",*/}
+            {/*        }}*/}
+
+            {/*    onResize={(sizes) => console.log('Panel resized:', sizes)}*/}
+            {/*>*/}
+            {/*    <div className="p-4">*/}
+            {/*        <EnhancedEntityAnalyzer defaultExpanded={false}/>*/}
+            {/*    </div>*/}
+            {/*</PanelLeft>*/}
+
             <MatrxDynamicPanel
-                initialPosition="bottom"
+                initialPosition="left"
                 defaultExpanded={false}
-                headerProps={{
-                    title: "Entity State",
-                    description: "Debug and analyze entity state",
-                }}
                 expandButtonProps={{
                     label: 'Entity State',
-                    className: 'fixed bottom-4 right-4'
                 }}
             >
                 <EnhancedEntityAnalyzer defaultExpanded={false}/>

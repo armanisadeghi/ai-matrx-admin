@@ -271,7 +271,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
             enumValues: field.enumValues,
-            databaseTable: field.databaseTable
+            entityName: field.entityName,
+            databaseTable: field.databaseTable,
+            description: field.description,
         }))
     );
 
@@ -305,7 +307,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
             enumValues: field.enumValues,
-            databaseTable: field.databaseTable
+            entityName: field.entityName,
+            databaseTable: field.databaseTable,
+            description: field.description,
         }))
     );
 

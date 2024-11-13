@@ -44,6 +44,7 @@ export interface EntityStateField {
     validationFunctions: string[];
     exclusionRules: string[];
     enumValues: string[];
+    entityName: EntityKeys;
     databaseTable: string;
     description: string;
 }

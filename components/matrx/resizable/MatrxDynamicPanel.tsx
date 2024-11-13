@@ -28,7 +28,6 @@ import {
 import {cn} from '@/lib/utils';
 import {ImperativePanelGroupHandle} from 'react-resizable-panels';
 import type {CSSProperties} from 'react';
-import MatrxPanelHeader, {MatrxPanelHeaderProps} from "@/components/matrx/resizable/MatrxPanelHeader";
 
 type PanelPosition = 'left' | 'right' | 'top' | 'bottom';
 
@@ -98,7 +97,6 @@ interface MatrxDynamicPanelProps {
     minSize?: number;
     maxSize?: number;
     header?: React.ReactNode;
-    headerProps?: Omit<MatrxPanelHeaderProps, 'position'>;
     children: React.ReactNode;
     expandButtonProps?: {
         label?: string;
@@ -117,7 +115,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
         minSize = 1,
         maxSize = 100,
         header,
-        headerProps,
         children,
         expandButtonProps = {
             label: 'Expand Panel',
@@ -153,9 +150,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
 
     const handleToggle = () => {
         const newValue = !isExpanded;
-        if (newValue) {
-            setLastSize(lastSize || defaultSize);
-        }
         setLocalExpanded(newValue);
         onExpandedChange?.(newValue);
     };
@@ -172,12 +166,8 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
 
     const handlePanelResize = (sizes: number[]) => {
         const sizeIndex = isStartPosition ? 0 : 1;
-        const newSize = sizes[sizeIndex];
-
-        if (newSize >= minSize &&
-            newSize <= maxSize &&
-            newSize !== lastSize) {
-            setLastSize(newSize);
+        if (sizes[sizeIndex] >= minSize && sizes[sizeIndex] <= maxSize) {
+            setLastSize(sizes[sizeIndex]);
         }
     };
 
@@ -211,29 +201,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 maxSize: 100 - minSize,
             }
         };
-    };
-
-    const getContainerStyles = () => {
-        const isHorizontal = currentPosition === 'left' || currentPosition === 'right';
-    const size = isFullScreen ? 100 : (lastSize || defaultSize);
-
-        let containerStyle: CSSProperties = {
-            ...styles.dimensions,
-            willChange: 'transform',
-            isolation: 'isolate',
-        };
-
-        if (isHorizontal) {
-            containerStyle.width = `${size}%`;
-            containerStyle.maxWidth = `${maxSize}%`;
-        containerStyle.minWidth = `${minSize}%`;
-        } else {
-            containerStyle.height = `${size}%`;
-            containerStyle.maxHeight = `${maxSize}%`;
-        containerStyle.minHeight = `${minSize}%`;
-        }
-
-        return containerStyle;
     };
 
     const handleStyles = (isVertical: boolean, isFullScreen: boolean): CSSProperties => ({
@@ -324,9 +291,19 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
         <ResizablePanel
             key="spacer"
             {...panelSizes.spacerPanel}
-            style={{visibility: isFullScreen ? 'hidden' : 'visible'}}
+            style={{
+                visibility: isFullScreen ? 'hidden' : 'visible',
+                touchAction: 'none',
+                pointerEvents: 'none',
+            }}
         >
             <div className="h-full"/>
+            {/*<div style={{*/}
+            {/*    height: '100%',*/}
+            {/*    width: '100%',*/}
+            {/*    pointerEvents: 'none'*/}
+            {/*}}/>*/}
+
         </ResizablePanel>,
 
         <ResizableHandle
@@ -351,6 +328,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 style={{
                     touchAction: 'pan-y',
                     transform: 'translate3d(0,0,0)',
+                    pointerEvents: 'auto',
                 }}
             >
                 <div
@@ -360,73 +338,35 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                     )}
                     style={{zIndex: 10}}
                 >
-                    {headerProps ? (
-                        <MatrxPanelHeader
+                    <div className={isVertical ? "flex-1" : "flex-1 min-w-[200px]"}>
+                        {header}
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                        <PositionControl
                             position={currentPosition}
-                            {...headerProps}
-                            trailing={
-                                <div className="flex items-center gap-2">
-                                    {headerProps.trailing}
-                                    <PositionControl
-                                        position={currentPosition}
-                                        onPositionChange={handlePositionChange}
-                                        isVertical={isVertical}
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleFullScreenToggle}
-                                        className="h-6 px-2"
-                                    >
-                                        {isFullScreen ?
-                                         <Minimize2 className="h-3 w-3"/> :
-                                         <Maximize2 className="h-3 w-3"/>
-                                        }
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleToggle}
-                                        className="h-6 px-2"
-                                    >
-                                        <ChevronIcon className="h-3 w-3"/>
-                                    </Button>
-                                </div>
-                            }
+                            onPositionChange={handlePositionChange}
+                            isVertical={isVertical}
                         />
-                    ) : (
-                         <>
-                             <div className={isVertical ? "flex-1" : "flex-1 min-w-[200px]"}>
-                                 {header}
-                             </div>
-                             <div className="flex gap-2 flex-shrink-0">
-                                 <PositionControl
-                                     position={currentPosition}
-                                     onPositionChange={handlePositionChange}
-                                     isVertical={isVertical}
-                                 />
-                                 <Button
-                                     variant="ghost"
-                                     size="sm"
-                                     onClick={handleFullScreenToggle}
-                                     className="h-6 px-2"
-                                 >
-                                     {isFullScreen ?
-                                      <Minimize2 className="h-3 w-3"/> :
-                                      <Maximize2 className="h-3 w-3"/>
-                                     }
-                                 </Button>
-                                 <Button
-                                     variant="ghost"
-                                     size="sm"
-                                     onClick={handleToggle}
-                                     className="h-6 px-2"
-                                 >
-                                     <ChevronIcon className="h-3 w-3"/>
-                                 </Button>
-                             </div>
-                         </>
-                     )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleFullScreenToggle}
+                            className="h-6 px-2"
+                        >
+                            {isFullScreen ?
+                             <Minimize2 className="h-3 w-3"/> :
+                             <Maximize2 className="h-3 w-3"/>
+                            }
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleToggle}
+                            className="h-6 px-2"
+                        >
+                            <ChevronIcon className="h-3 w-3"/>
+                        </Button>
+                    </div>
                 </div>
                 <div
                     className="overflow-auto"
@@ -444,7 +384,12 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     return (
         <div
             className={cn(styles.container, "z-[100]", className)}
-            style={getContainerStyles()}
+            style={{
+                ...styles.dimensions,
+                willChange: 'transform',
+                isolation: 'isolate',
+                pointerEvents: 'none',
+            }}
         >
             <ResizablePanelGroup
                 key={panelKey}
@@ -455,6 +400,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 style={{
                     touchAction: 'none',
                     userSelect: 'none',
+                    // pointerEvents: 'auto',
                 }}
             >
                 {isStartPosition ? panels.reverse() : panels}

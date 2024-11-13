@@ -92,6 +92,7 @@ export interface SchemaField {
     validationFunctions: string[];
     exclusionRules: string[];
     databaseTable: string;
+    description: string;
 }
 
 export interface relationships {

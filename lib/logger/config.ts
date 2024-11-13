@@ -1,6 +1,7 @@
 // lib/logger/config.ts
 // STATUS: Modified version of your existing file - REPLACE
 import { ENVIRONMENTS } from './constants';
+import {LogLevel} from "@/lib/logger/types";
 
 export const logConfig = {
     environment: process.env.NODE_ENV || 'development',
@@ -16,5 +17,7 @@ export const logConfig = {
         apiKey: process.env.DATADOG_API_KEY,
         appKey: process.env.DATADOG_APP_KEY,
         site: process.env.DATADOG_SITE || 'datadoghq.com'
-    }
+    },
+    consoleLogLevel: 'warn' as LogLevel,  // Options: 'debug', 'info', 'warn', 'error'
+
 };
