@@ -1,9 +1,11 @@
-import {useCallback, useMemo, useRef} from 'react';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { createEntitySelectors } from '@/lib/redux/entity/selectors';
-import { createEntitySlice } from '@/lib/redux/entity/slice';
-import { SelectionState, MatrxRecordId, EntityError } from '@/lib/redux/entity/types';
+import * as React from 'react';
+import {EntityKeys, EntityData} from '@/types/entityTypes';
+import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
+import {createEntitySelectors} from '@/lib/redux/entity/selectors';
+import {createEntitySlice} from '@/lib/redux/entity/slice';
+import {SelectionState, MatrxRecordId, EntityError} from '@/lib/redux/entity/types';
+import {useEffect} from "react";
+import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
 
 export interface OperationCallbacks<T = void> {
     onSuccess?: (result: T) => void;
@@ -11,8 +13,8 @@ export interface OperationCallbacks<T = void> {
 }
 
 export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
-    selectedRecords: MatrxRecordId[];
-    activeRecord: EntityData<TEntity> | null;
+    selectedRecordIds: MatrxRecordId[];
+    selectedRecordsData: EntityData<TEntity>[] | null;
     selectionMode: 'single' | 'multiple' | 'none';
     lastSelected?: string;
     selectionSummary: {
@@ -25,7 +27,8 @@ export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
 
     // Actions
     setSelectionMode: (mode: 'single' | 'multiple' | 'none') => void;
-    selectRecord: (record: EntityData<TEntity>) => void;
+    selectRecord: (record: MatrxRecordId) => void;
+    activeRecord: EntityData<TEntity> | null;
     deselectRecord: (record: EntityData<TEntity>) => void;
     toggleRecordSelection: (record: EntityData<TEntity>) => void;
     selectRecords: (records: EntityData<TEntity>[]) => void;
@@ -49,61 +52,63 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     const dispatch = useAppDispatch();
 
     // Initialize selectors and actions
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { actions } = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const {actions} = React.useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
 
     // Operation callbacks ref
-    const operationCallbacksRef = useRef<OperationCallbacks<any>>();
+    const operationCallbacksRef = React.useRef<OperationCallbacks<any>>();
 
     // Use selectors for all state access
     const selectionState = useAppSelector(state => selectors.selectEntity(state).selection);
-    const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
+    const selectedRecordsData = useAppSelector(selectors.selectSelectedRecords);
+    const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectionSummary = useAppSelector(selectors.selectSelectionSummary);
 
-    // Callback Management
-    const setOperationCallbacks = useCallback(<T = void>(callbacks?: OperationCallbacks<T>) => {
+    React.useEffect(() => {
+        dispatch(actions.getOrFetchSelectedRecords({
+            recordIds: selectedRecordIds
+        }));
+
+    }, [selectedRecordIds]);
+
+
+    const setOperationCallbacks = React.useCallback(<T = void>(callbacks?: OperationCallbacks<T>) => {
         operationCallbacksRef.current = callbacks;
     }, []);
 
-    const getOperationCallbacks = useCallback(<T = void>() => {
+    const getOperationCallbacks = React.useCallback(<T = void>() => {
         return operationCallbacksRef.current as OperationCallbacks<T> | undefined;
     }, []);
 
-    const clearOperationCallbacks = useCallback(() => {
+    const clearOperationCallbacks = React.useCallback(() => {
         operationCallbacksRef.current = undefined;
     }, []);
 
-    // Selection Mode Management
-    const setSelectionMode = useCallback(
+    const setSelectionMode = React.useCallback(
         (mode: SelectionState<TEntity>['selectionMode']) => {
             dispatch(actions.setSelection({
-                records: mode === 'none' ? [] : selectedRecords,
+                records: mode === 'none' ? [] : selectedRecordsData,
                 mode,
             }));
         },
-        [dispatch, actions, selectedRecords]
+        [dispatch, actions, selectedRecordsData]
     );
 
-    // Single Record Operations
-    const selectRecord = useCallback(
-        (record: EntityData<TEntity>) => {
-            if (selectionState.selectionMode === 'single') {
-                dispatch(actions.setSelection({ records: [record], mode: 'single' }));
-            } else if (selectionState.selectionMode === 'multiple') {
-                dispatch(actions.addToSelection(record));
-            }
+    const selectRecord = React.useCallback(
+        (record: MatrxRecordId) => {
+            dispatch(actions.addToSelection(record));
         },
         [dispatch, actions, selectionState.selectionMode]
     );
 
-    const deselectRecord = useCallback(
+    const deselectRecord = React.useCallback(
         (record: EntityData<TEntity>) => {
             dispatch(actions.removeFromSelection(record));
         },
         [dispatch, actions]
     );
 
-    const toggleRecordSelection = useCallback(
+    const toggleRecordSelection = React.useCallback(
         (record: EntityData<TEntity>) => {
             if (selectionState.selectionMode === 'single') {
                 dispatch(actions.setSelection({
@@ -118,16 +123,16 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     );
 
     // Batch Operations
-    const selectRecords = useCallback(
+    const selectRecords = React.useCallback(
         (recordsToSelect: EntityData<TEntity>[]) => {
             if (selectionState.selectionMode === 'multiple') {
-                dispatch(actions.batchSelection({ operation: 'add', records: recordsToSelect }));
+                dispatch(actions.batchSelection({operation: 'add', records: recordsToSelect}));
             }
         },
         [dispatch, actions, selectionState.selectionMode]
     );
 
-    const deselectRecords = useCallback(
+    const deselectRecords = React.useCallback(
         (recordsToDeselect: EntityData<TEntity>[]) => {
             dispatch(actions.batchSelection({
                 operation: 'remove',
@@ -137,7 +142,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         [dispatch, actions]
     );
 
-    const toggleRecords = useCallback(
+    const toggleRecords = React.useCallback(
         (recordsToToggle: EntityData<TEntity>[]) => {
             if (selectionState.selectionMode === 'multiple') {
                 dispatch(actions.batchSelection({
@@ -149,19 +154,19 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         [dispatch, actions, selectionState.selectionMode]
     );
 
-    const clearSelection = useCallback(() => {
+    const clearSelection = React.useCallback(() => {
         dispatch(actions.clearSelection());
     }, [dispatch, actions]);
 
     // Helpers using selectors
-    const isSelected = useCallback(
+    const isSelected = React.useCallback(
         (record: EntityData<TEntity>) => useAppSelector(state =>
             selectors.selectIsRecordSelected(state, record)
         ),
         [selectors]
     );
 
-    const isActive = useCallback(
+    const isActive = React.useCallback(
         (record: EntityData<TEntity>) => useAppSelector(state =>
             selectors.selectIsRecordActive(state, record)
         ),
@@ -169,7 +174,8 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     );
 
     return {
-        selectedRecords: selectionState.selectedRecords,
+        selectedRecordIds,
+        selectedRecordsData,
         activeRecord: selectionState.activeRecord,
         selectionMode: selectionState.selectionMode,
         lastSelected: selectionState.lastSelected,

@@ -16,6 +16,7 @@ import {
 import {createRecordKey} from "@/lib/redux/entity/utils";
 import {UnifiedQueryOptions} from "@/lib/redux/schema/globalCacheSelectors";
 import {QueryOptions} from "@/lib/redux/entity/sagas";
+import EntityLogger from "./entityLogger";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -93,7 +94,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
             fetchOne: (
                 state,
-                action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) => {
+                action: PayloadAction<{ primaryKeyValues: Record<string, any> }>) => {
                 state.loading.loading = true;
                 state.loading.error = null;
                 state.flags.fetchOneSuccess = false;
@@ -106,7 +107,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             ) => {
                 const record = action.payload;
                 const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, record);
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                 state.records[recordKey] = record;
                 state.loading.lastOperation = 'fetch';
                 state.flags.fetchOneSuccess = true;
@@ -122,7 +123,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         state.selection.activeRecord = null;
                     }
                 }
-
                 state.flags.fetchOneSuccess = false;
             },
 
@@ -150,6 +150,33 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.quickReference.fetchComplete = true;
             },
 
+            // Get or Fetch Selected Records Management ========================================
+            getOrFetchSelectedRecords: (state, action: PayloadAction<{ recordIds: string[] }>) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
+
+            fetchSelectedRecords: (
+                state,
+                action: PayloadAction<QueryOptions<TEntity>>
+            ) => {
+                state.loading.loading = true;
+                state.loading.error = null;
+            },
+
+            fetchSelectedRecordsSuccess: (
+                state,
+                action: PayloadAction<EntityData<TEntity>[]>) => {
+                const {primaryKeyMetadata} = state.entityMetadata;
+                action.payload.forEach(record => {
+                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                    state.records[recordKey] = record;
+                });
+                state.loading.loading = false;
+                state.loading.lastOperation = 'fetch';
+            },
+
+
             // State-wide Validation Management ========================================
             setValidated: (state) => {
                 state.flags.isValidated = true;
@@ -170,7 +197,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             },
             updateRecordSuccess: (state, action: PayloadAction<Draft<EntityData<TEntity>>>) => {
                 const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 state.loading.loading = false;
                 state.flags.isModified = true;
@@ -186,7 +213,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             ) => {
                 const {record, rollback} = action.payload;
                 const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, record);
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
 
                 if (rollback) {
                     state.history.past.push({
@@ -215,7 +242,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>
             ) => {
                 const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload.primaryKeyValues);
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, action.payload.primaryKeyValues);
                 delete state.records[recordKey];
                 state.loading.loading = false;
                 state.flags.isModified = true;
@@ -230,7 +257,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
             createRecordSuccess: (state, action: PayloadAction<Draft<EntityData<TEntity>>>) => {
                 const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 state.loading.loading = false;
                 state.flags.isModified = true;
@@ -268,7 +295,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 const {primaryKeyMetadata} = state.entityMetadata;
                 state.records = {};
                 action.payload.forEach(record => {
-                    const recordKey = createRecordKey(primaryKeyMetadata, record);
+                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                     state.records[recordKey] = record;
                 });
                 state.loading.lastOperation = 'custom';
@@ -293,7 +320,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             ) => {
                 const {primaryKeyMetadata} = state.entityMetadata;
                 action.payload.forEach(record => {
-                    const recordKey = createRecordKey(primaryKeyMetadata, record);
+                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                     state.records[recordKey] = record;
                 });
                 state.flags.isModified = true;
@@ -306,7 +333,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
             ) => {
                 const {primaryKeyMetadata} = state.entityMetadata;
                 action.payload.forEach(record => {
-                    const recordKey = createRecordKey(primaryKeyMetadata, record);
+                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                     delete state.records[recordKey];
                 });
                 state.flags.isModified = true;
@@ -344,24 +371,27 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state.selection.selectedRecords = [];
                 state.selection.activeRecord = null;
                 state.selection.lastSelected = undefined;
+                state.selection.selectionMode = 'none';
             },
 
             addToSelection: (
                 state,
-                action: PayloadAction<Draft<EntityData<TEntity>>>
+                action: PayloadAction<MatrxRecordId>
             ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
-
-                if (!state.selection.selectedRecords.includes(recordKey)) {
-                    state.selection.selectedRecords.push(recordKey);
-                    state.selection.lastSelected = recordKey;
+                if (!state.selection.selectedRecords.includes(action.payload)) {
+                    state.selection.selectedRecords.push(action.payload);
+                    state.selection.lastSelected = action.payload;
 
                     if (state.selection.selectedRecords.length === 1) {
-                        state.selection.activeRecord = action.payload;
+                        state.selection.activeRecord = state.records[action.payload];
+                        state.selection.selectionMode = 'single';
                     } else {
                         state.selection.activeRecord = null;
+                        state.selection.selectionMode = 'multiple';
                     }
+                }
+                if (state.selection.selectedRecords.length === 0) {
+                    state.selection.selectionMode = 'none';
                 }
             },
 
@@ -369,8 +399,8 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>>
             ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, action.payload);
 
                 state.selection.selectedRecords = state.selection.selectedRecords.filter(
                     key => key !== recordKey
@@ -384,8 +414,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                 if (state.selection.selectedRecords.length === 1) {
                     state.selection.activeRecord = state.records[state.selection.selectedRecords[0]];
+                    state.selection.selectionMode = 'single';
+                } else if (state.selection.selectedRecords.length > 1) {
+                    state.selection.activeRecord = null;
+                    state.selection.selectionMode = 'multiple';
                 } else {
                     state.selection.activeRecord = null;
+                    state.selection.selectionMode = 'none';
                 }
             },
 
@@ -393,22 +428,22 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 state,
                 action: PayloadAction<Draft<EntityData<TEntity>>>
             ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                const recordKey = createRecordKey(primaryKeyMetadata, action.payload);
+                const { primaryKeyMetadata } = state.entityMetadata;
+                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, action.payload);
 
                 const index = state.selection.selectedRecords.indexOf(recordKey);
                 if (index === -1) {
-                    // Add to selection
                     state.selection.selectedRecords.push(recordKey);
                     state.selection.lastSelected = recordKey;
 
                     if (state.selection.selectedRecords.length === 1) {
                         state.selection.activeRecord = action.payload;
+                        state.selection.selectionMode = 'single';
                     } else {
                         state.selection.activeRecord = null;
+                        state.selection.selectionMode = 'multiple';
                     }
                 } else {
-                    // Remove from selection
                     state.selection.selectedRecords.splice(index, 1);
 
                     if (state.selection.lastSelected === recordKey) {
@@ -419,8 +454,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                     if (state.selection.selectedRecords.length === 1) {
                         state.selection.activeRecord = state.records[state.selection.selectedRecords[0]];
+                        state.selection.selectionMode = 'single';
+                    } else if (state.selection.selectedRecords.length > 1) {
+                        state.selection.activeRecord = null;
+                        state.selection.selectionMode = 'multiple';
                     } else {
                         state.selection.activeRecord = null;
+                        state.selection.selectionMode = 'none';
                     }
                 }
             },
@@ -494,11 +534,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                     if (Array.isArray(lastEntry.previousData)) {
                         lastEntry.previousData.forEach(record => {
-                            const recordKey = createRecordKey(primaryKeyMetadata, record);
+                            const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                             state.records[recordKey] = record;
                         });
                     } else if (lastEntry.previousData) {
-                        const recordKey = createRecordKey(primaryKeyMetadata, lastEntry.previousData);
+                        const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, lastEntry.previousData);
                         state.records[recordKey] = lastEntry.previousData;
                     }
                     state.flags.isModified = true;
@@ -514,11 +554,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                     if (Array.isArray(nextEntry.data)) {
                         nextEntry.data.forEach(record => {
-                            const recordKey = createRecordKey(primaryKeyMetadata, record);
+                            const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                             state.records[recordKey] = record;
                         });
                     } else {
-                        const recordKey = createRecordKey(primaryKeyMetadata, nextEntry.data);
+                        const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, nextEntry.data);
                         state.records[recordKey] = nextEntry.data;
                     }
                     state.flags.isModified = true;

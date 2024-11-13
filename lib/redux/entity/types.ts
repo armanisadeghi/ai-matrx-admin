@@ -123,7 +123,8 @@ interface CacheState {
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
-    primaryKeyValues: Record<string, MatrxRecordId>;
+    recordKey: MatrxRecordId;
+    primaryKeyValues: Record<string, any>;
     displayValue: string;
     metadata?: {
         lastModified?: string;
@@ -273,6 +274,7 @@ interface SimplifiedEntityState {
         records: {
             primaryKeyValues: Record<string, MatrxRecordId>;
             displayValue: string;
+            recordKey: string;
             metadata?: {
                 lastModified?: string;
                 createdBy?: string;
@@ -323,6 +325,7 @@ interface SimplifiedEntityState {
             validationFunctions: string[] | null;
             exclusionRules: string[] | null;
             databaseTable: string | null;
+            entityName: string;
         }[];
     };
 }

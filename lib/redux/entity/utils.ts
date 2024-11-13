@@ -7,23 +7,11 @@ import EntityLogger from "./entityLogger";
 /**
  * Key Management Utilities
  */
-// export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): string => {
-//     return metadata.database_fields
-//         .map((field, index) => {
-//             const frontendField = metadata.fields[index];
-//             const value = record[frontendField];
-//             if (value === undefined) {
-//                 console.warn(`Missing value for primary key field: ${frontendField}`);
-//             }
-//             return `${field}:${value}`;
-//         })
-//         .join('::');
-// };
 
-export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): string => {
-    EntityLogger.log('info', 'createRecordKey called', 'createRecordKey', { record });
-    EntityLogger.log('info', 'Metadata:', 'createRecordKey', { metadata });
 
+export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): MatrxRecordId => {
+    EntityLogger.log('debug', 'createRecordKey called', 'createRecordKey', { record });
+    EntityLogger.log('debug', 'Metadata:', 'createRecordKey', { metadata });
     const key = metadata.database_fields
         .map((field, index) => {
             const frontendField = metadata.fields[index];
@@ -32,24 +20,44 @@ export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): stri
             if (value === undefined) {
                 EntityLogger.log('error', `Missing value for primary key field: ${frontendField}`, 'createRecordKey');
             }
-
             return `${field}:${value}`;
         })
         .join('::');
-
-    EntityLogger.log('info', 'Generated record key:', 'createRecordKey', { key });
-
+    EntityLogger.log('info', 'Generated record key:', '---createRecordKey---', { key });
     return key;
 };
 
 
-export const parseRecordKey = (key: string): Record<string, string> => {
+export const parseRecordKey = (key: MatrxRecordId): Record<string, string> => {
     return key.split('::').reduce((acc, pair) => {
         const [field, value] = pair.split(':');
-        acc[field] = value;
+        if (field && value !== undefined) {
+            acc[field] = value;
+        } else {
+            EntityLogger.log(
+                'error',
+                `Invalid format in record key part: ${pair}`,
+                'parseRecordKey',
+                { key }
+            );
+            throw new Error(`Invalid format in record key part: ${pair}`);
+        }
         return acc;
     }, {} as Record<string, string>);
 };
+
+export const createRecordKeys = (metadata: PrimaryKeyMetadata, records: any[]): MatrxRecordId[] => {
+    return records.map((record) => {
+        return createRecordKey(metadata, record);
+    });
+};
+
+export const parseRecordKeys = (keys: MatrxRecordId[]): Record<string, string>[] => {
+    return keys.map((key) => {
+        return parseRecordKey(key);
+    });
+};
+
 
 /**
  * Primary Key Validation and Handling

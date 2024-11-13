@@ -19,13 +19,15 @@ import {
 } from '@/lib/redux/entity/types';
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
 import {Draft} from "@reduxjs/toolkit";
-import {createRecordKey} from "@/lib/redux/entity/utils";
 import EntityLogger from '../entityLogger';
 
 export interface UseEntityQuickReferenceResult<TEntity extends EntityKeys> extends Omit<UseEntitySelectionReturn<TEntity>, 'selectedRecords'> {
     // ... (existing interface properties)
     isMultiSelectMode: boolean;
     toggleMultiSelectMode: () => void;
+
+    getOrFetchSelectedRecords: (payload: { recordIds: MatrxRecordId[] }) => void,
+
 
     // Metadata
     entityDisplayName: string;
@@ -42,8 +44,8 @@ export interface UseEntityQuickReferenceResult<TEntity extends EntityKeys> exten
     lastOperation: LoadingState['lastOperation'];
 
     // Record Management
-    handleMultipleSelections: (primaryKeyValues: Record<string, MatrxRecordId>) => void;
-    handleSingleSelection: (primaryKeyValues: Record<string, MatrxRecordId>) => void;
+    handleMultipleSelections: (primaryKeyValues: Record<string, any>) => void;
+    handleSingleSelection: (primaryKeyValues: Record<string, any>) => void;
 
     // CRUD Operations
     createRecord: (
@@ -75,12 +77,6 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
     entityKey: TEntity
 ): UseEntityQuickReferenceResult<TEntity> {
 
-    const [pendingSelection, setPendingSelection] = useState<{
-        recordKey: string;
-        primaryKeyValues: Record<string, MatrxRecordId>;
-        isMulti: boolean;
-    } | null>(null);
-
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
 
 
@@ -104,12 +100,6 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
     const selectedRecord = useAppSelector(selectors.selectActiveRecord);
     const fetchOneSuccess = useAppSelector(selectors.selectFetchOneSuccess);
 
-    const selectedQuickReference = useAppSelector(state => {
-        const activeRecord = selectedRecord;
-        if (!activeRecord) return null;
-        return selectors.selectQuickReferenceByPrimaryKey(state, activeRecord);
-    });
-
     const addToSelection = useCallback((record: EntityData<TEntity>) => {
         dispatch(actions.addToSelection(record));
     }, [dispatch, actions]);
@@ -118,72 +108,49 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
         dispatch(actions.clearSelection());
     }, [dispatch, actions]);
 
-    const selectedQuickReferences = useAppSelector(state => {
-        // TODO: Fix this incorrect selector usage!
-        const selectedRecordIds = selection.selectedRecords;
+    const getOrFetchSelections = useCallback(() => {
+        dispatch(actions.getOrFetchSelectedRecords());
+    }, [dispatch, actions]);
 
-        return quickReferenceRecords.filter(ref =>
-            selectedRecordIds.includes(createRecordKey(primaryKeyMetadata, ref.primaryKeyValues))
-        );
-    });
+
 
     const toggleMultiSelectMode = useCallback(() => {
         setIsMultiSelectMode(prev => !prev);
         clearSelection();
     }, [clearSelection]);
 
+
     const handleSingleSelection = useCallback(
-        (primaryKeyValues: Record<string, MatrxRecordId>) => {
+        (quickRef: QuickReferenceRecord) => {
             clearSelection();
-            const recordKey = createRecordKey(primaryKeyMetadata, primaryKeyValues);
-            setPendingSelection({
-                recordKey,
-                primaryKeyValues,
-                isMulti: false
-            });
-            dispatch(actions.fetchOne({primaryKeyValues}));
+            dispatch(actions.getOrFetchSelectedRecords({ recordIds: [quickRef.recordKey] }));
         },
-        [dispatch, actions, clearSelection, primaryKeyMetadata]
+        [dispatch, actions, clearSelection]
     );
 
+    // Handle multiple selection
     const handleMultipleSelections = useCallback(
-        (primaryKeyValues: Record<string, MatrxRecordId>) => {
-            const recordKey = createRecordKey(primaryKeyMetadata, primaryKeyValues);
-            setPendingSelection({
-                recordKey,
-                primaryKeyValues,
-                isMulti: true
-            });
-            dispatch(actions.fetchOne({primaryKeyValues}));
+        (quickRef: QuickReferenceRecord) => {
+            dispatch(actions.getOrFetchSelectedRecords({
+                recordIds: [...selection.selectedRecords, quickRef.recordKey]
+            }));
         },
-        [dispatch, actions, primaryKeyMetadata]
+        [dispatch, actions, selection.selectedRecords]
     );
 
-    // Add effect to handle fetch success
-    useEffect(() => {
-        if (fetchOneSuccess && pendingSelection) {
-            const record = allRecords[pendingSelection.recordKey];
-            if (record) {
-                console.log('Fetch succeeded, adding record to selection:', record);
-                addToSelection(record);
-            }
-            setPendingSelection(null);
-        }
-    }, [fetchOneSuccess, pendingSelection, allRecords, addToSelection]);
-
+    // Debug logging effect
     useEffect(() => {
         if (EntityLogger.shouldLog('debug')) {
             EntityLogger.log(
                 'debug',
                 'Selection state changed',
                 'useEntityQuickReference',
-                {selectedQuickReference, selectedQuickReferences, loadingState}
+                {selectedQuickReference, loadingState}
             );
         }
-    }, [selectedQuickReference, selectedQuickReferences, loadingState]);
+    }, [selectedQuickReference, loadingState]);
 
-
-    // Quick Reference Only when the entityKey Changes and Never any other time
+    // Quick Reference fetching effect
     useEffect(() => {
         if (!quickReferenceState.fetchComplete) {
             dispatch(actions.fetchQuickReference({
@@ -192,7 +159,7 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
         }
     }, [entityKey]);
 
-
+    // Operation callbacks effect
     useEffect(() => {
         const currentOperation = loadingState.lastOperation;
         if (!loadingState.loading && currentOperation) {

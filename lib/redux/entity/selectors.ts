@@ -4,7 +4,7 @@ import {createSelector} from '@reduxjs/toolkit';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {RootState} from "@/lib/redux/store";
 import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
-import {createRecordKey} from "@/lib/redux/entity/utils";
+import {createRecordKey, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     if (!entityKey) return null;
@@ -25,6 +25,26 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectRecordByKey = createSelector(
+        [selectEntity, (_: RootState, recordKey: string) => recordKey],
+        (entity, recordKey) => {
+            return entity.records[recordKey] || null;
+        }
+    );
+
+    const selectRecordsForFetching = (recordIds: string[]) => createSelector(
+        [selectAllRecords],
+        (existingRecords) => {
+            const recordIdsNotInState = recordIds.filter((recordId) => !existingRecords[recordId]);
+            const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
+            return {
+                existingRecords,
+                primaryKeysToFetch
+            };
+        }
+    );
+
+
     const selectRecordByPrimaryKey = createSelector(
         [selectEntity, (_: RootState, primaryKeyValues: Record<string, MatrxRecordId>) => primaryKeyValues],
         (entity, primaryKeyValues) => {
@@ -32,6 +52,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return entity.records[recordKey];
         }
     );
+
+
 
     const selectRecordsByPrimaryKeys = createSelector(
         [selectEntity, (_: RootState, primaryKeyValuesList: Record<string, MatrxRecordId>[]) => primaryKeyValuesList],
@@ -530,5 +552,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectEntityDisplayName,
         selectIsValidated,
         selectFetchOneSuccess,
+        selectRecordByKey,
+        selectRecordsForFetching,
     };
 };

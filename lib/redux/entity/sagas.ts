@@ -20,6 +20,8 @@ import {
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {Draft} from "immer";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
+import {createRecordKey, parseRecordKey} from "@/lib/redux/entity/utils";
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 
 
 const DEBOUNCE_MS = 300;
@@ -217,6 +219,23 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                     }
                 ),
 
+                takeLatest(
+                    actions.getOrFetchSelectedRecords.type,
+                    function* (action: SagaAction<{ recordIds: string[] }>) {
+                        EntityLogger.log('info', 'watchEntitySagas Handling fetchSelectedRecords', entityKey, action.payload);
+
+                        // Does not use withConversion because it does not Make API Calls directly.
+                        yield call(handleGetOrFetchSelectedRecords, entityKey, actions, action);
+                    }
+                ),
+                takeLatest(
+                    actions.fetchSelectedRecords.type,
+                    function* (action: SagaAction<QueryOptions<TEntity>>) {
+                        EntityLogger.log('info', 'watchEntitySagas Handling fetchSelectedRecords', entityKey, action.payload);
+                        yield call(withConversion, handleFetchSelectedRecords, entityKey, actions, action);
+                    }
+                ),
+
                 // Handle socket events handleFetchMetrics
                 takeEvery('SOCKET_ENTITY_EVENT', function* (action: any) {
                     if (action.payload.entityKey === entityKey) {
@@ -246,6 +265,89 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
     };
 }
 
+function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    action: PayloadAction<{ recordIds: string[] }>
+) {
+    try {
+        const { recordIds } = action.payload;
+
+        EntityLogger.log('info', 'Starting getOrFetchSelectedRecords', entityKey, recordIds);
+
+        const entitySelectors = createEntitySelectors(entityKey);
+        const { selectedRecords, recordsToFetch } = yield select(entitySelectors.selectRecordsForFetching(recordIds));
+
+        EntityLogger.log('info', 'Records to fetch', entityKey, recordsToFetch);
+
+        if (selectedRecords.length > 0) {
+            yield put(actions.addToSelection(selectedRecords));
+        }
+
+        if (recordsToFetch.length > 0) {
+            const queryOptions: QueryOptions<TEntity> = {
+                tableName: entityKey,
+                filters: recordsToFetch.reduce((acc, recordId) => {
+                    const primaryKeyValues = parseRecordKey(recordId);
+                    Object.assign(acc, primaryKeyValues);
+                    return acc;
+                }, {} as Record<string, string>),
+            };
+
+            EntityLogger.log('info', 'Query options', entityKey, queryOptions);
+
+            yield put(actions.fetchSelectedRecords(queryOptions));
+        }
+
+    } catch (error: any) {
+        EntityLogger.log('error', 'Error in fetchSelectedRecords', entityKey, error);
+        yield put(actions.setError({
+            message: error.message || "An error occurred during fetch by record IDs.",
+            code: error.code,
+        }));
+    }
+}
+
+
+function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    api: any,
+    action: PayloadAction<QueryOptions<TEntity>>
+) {
+    try {
+        const queryOptions = action.payload;
+
+        EntityLogger.log('info', 'Starting fetchSelectedRecords', entityKey, queryOptions);
+
+        let query = api.from(queryOptions.tableName).select("*");
+
+        if (queryOptions.filters) {
+            Object.entries(queryOptions.filters).forEach(([field, value]) => {
+                query = query.eq(field, value);
+            });
+        }
+
+        const {data, error} = yield query;
+        if (error) throw error;
+
+        const payload = {entityName: entityKey, data};
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+        EntityLogger.log('info', 'Fetch Selected Records: ', entityKey, frontendResponse);
+
+
+        yield put(actions.fetchSelectedRecordsSuccess(frontendResponse));
+        yield put(actions.addToSelection(frontendResponse));
+
+    } catch (error: any) {
+        EntityLogger.log('error', 'Error in executeDatabaseQuery', entityKey, error);
+        yield put(actions.setError({
+            message: error.message || "An error occurred during the database query.",
+            code: error.code,
+        }));
+    }
+}
+
 
 function* handleFetchOne<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -269,7 +371,7 @@ function* handleFetchOne<TEntity extends EntityKeys>(
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
-        EntityLogger.log('info', 'Fetch one response',entityKey, frontendResponse);
+        EntityLogger.log('info', 'Fetch one response', entityKey, frontendResponse);
 
         yield put(actions.fetchOneSuccess(frontendResponse));
     } catch (error: any) {
@@ -330,26 +432,53 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
     try {
         EntityLogger.log('debug', 'Starting fetchQuickReference', entityKey, action.payload);
 
-        const { primaryKeyMetadata, displayFieldMetadata } = yield select(selectEntityMetadata, entityKey);
+        const {primaryKeyMetadata, displayFieldMetadata} = yield select(selectEntityMetadata, entityKey);
 
-        const primaryKeyFields = primaryKeyMetadata.database_fields;
-        const displayField = displayFieldMetadata?.databaseFieldName;
+        const dbPrimaryKeyFields = primaryKeyMetadata.database_fields;
+        const dbDisplayField = displayFieldMetadata?.databaseFieldName;
         const limit = action.payload?.maxRecords ?? 1000;
 
-        let query = api.select(`${primaryKeyFields.join(',')}${displayField ? `,${displayField}` : ''}`).limit(limit);
+        let query = api.select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}`
+                                                                                : ''}`).limit(limit);
 
-        const { data, error } = yield query;
+        const {data, error, count} = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 
-        const quickReferenceRecords = data.map(record => ({
-            primaryKeyValues: primaryKeyFields.reduce((acc, field) => ({
-                ...acc,
-                [field]: record[field]
-            }), {}),
-            displayValue: displayField ? record[displayField] : undefined
-        }));
+        EntityLogger.log('debug', 'handleFetchQuickReference db response', entityKey, data);
+
+
+        const payload = {entityName: entityKey, data};
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+
+        EntityLogger.log('debug', 'Saga frontend data: ', entityKey, frontendResponse);
+        EntityLogger.log('debug', 'Saga primaryKeyMetadata: ', entityKey, primaryKeyMetadata);
+
+        const quickReferenceRecords = frontendResponse.map(record => {
+            const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
+                acc[field] = record[field];
+                return acc;
+            }, {} as Record<string, MatrxRecordId>);
+
+            const displayFieldName = displayFieldMetadata.fieldName;
+
+            if (!(displayFieldName in record)) {
+                throw new Error(`Display field '${displayFieldName}' is missing from record data.`);
+            }
+            const displayValue = record[displayFieldName];
+            const recordKey = createRecordKey(primaryKeyMetadata, primaryKeyValues);
+
+            return {
+                primaryKeyValues,
+                displayValue,
+                recordKey,
+            };
+        });
+
+        EntityLogger.log('info', 'Saga Complete Quick Reference Records:', entityKey, quickReferenceRecords);
+
 
         yield put(actions.setQuickReference(quickReferenceRecords));
+
     } catch (error: any) {
         EntityLogger.log('error', 'Error in fetchQuickReference', entityKey, error);
         yield put(actions.setError({
@@ -368,7 +497,7 @@ function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
     action: PayloadAction<QueryOptions<TEntity>>,
     tableName: string,
     dbQueryOptions: QueryOptions<TEntity>
- ) {
+) {
     try {
         yield delay(DEBOUNCE_MS);
 
@@ -528,8 +657,7 @@ function* handleSubscriptionEvents<TEntity extends EntityKeys>(
         eventType: 'INSERT' | 'UPDATE' | 'DELETE';
         new: any;
         old: any;
-    }
-) {
+    }) {
     try {
         EntityLogger.log('debug', 'Handling subscription event', entityKey, payload);
 
@@ -551,14 +679,8 @@ function* handleSubscriptionEvents<TEntity extends EntityKeys>(
                 break;
         }
 
-        // Update quick reference if needed
-        const metadata = yield select(state => state.entities[entityKey].entityMetadata);
-        if (metadata) {
-            yield call(handleQuickReferenceUpdate, entityKey, actions, frontendData, {
-                primaryKeyFields: metadata.primaryKeyMetadata.fields,
-                displayField: metadata.fields.find(f => f.isDisplayField)?.name || metadata.primaryKeyMetadata.fields[0]
-            });
-        }
+        yield* handleQuickReferenceUpdate(entityKey, actions, frontendData);
+
     } catch (error: any) {
         EntityLogger.log('error', 'Subscription event handling error', entityKey, error);
         yield put(actions.setError({
@@ -573,28 +695,23 @@ function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
     record: EntityData<TEntity>,
-    metadata: {
-        primaryKeyFields: string[];
-        displayField: string;
-    }
 ) {
-    try {
-        EntityLogger.log('debug', 'Updating quick reference', entityKey, {record, metadata});
+    const {primaryKeyMetadata, displayFieldMetadata} = yield select(selectEntityMetadata, entityKey);
 
-        if (metadata.displayField && record[metadata.displayField]) {
-            const quickReferenceRecord = {
-                primaryKeyValues: metadata.primaryKeyFields.reduce((acc, field) => ({
-                    ...acc,
-                    [field]: record[field]
-                }), {}),
-                displayValue: record[metadata.displayField]
-            };
+    const displayFieldName = displayFieldMetadata.fieldName;
+    const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
+        acc[field] = record[field];
+        return acc;
+    }, {} as Record<string, MatrxRecordId>);
 
-            yield put(actions.setQuickReference([quickReferenceRecord]));
-        }
-    } catch (error: any) {
-        EntityLogger.log('error', 'Quick reference update error', entityKey, error);
+    const recordKey = createRecordKey(primaryKeyMetadata, primaryKeyValues);
+
+    const quickReferenceRecord = {
+        primaryKeyValues,
+        displayValue: record[displayFieldName],
+        recordKey
     }
+    yield put(actions.setQuickReference([quickReferenceRecord]));
 }
 
 function* handleRefreshData<TEntity extends EntityKeys>(
@@ -621,16 +738,8 @@ function* handleRefreshData<TEntity extends EntityKeys>(
         yield put(actions.fetchRecords({page, pageSize}));
 
         // Refresh quick reference if needed
-        if (currentState.quickReference.fetchComplete) {
-            const metadata = currentState.entityMetadata;
-            const quickRefAction = createPayloadAction(actions.fetchQuickReference.type, {
-                primaryKeyFields: metadata.primaryKeyMetadata.fields,
-                displayField: metadata.fields.find(f => f.isDisplayField)?.name
-                    || metadata.primaryKeyMetadata.fields[0]
-            });
+        yield put(actions.fetchQuickReference({maxRecords: 1000}));
 
-            yield put(actions.fetchQuickReference({ maxRecords: 1000 }));
-        }
 
         yield put(actions.setFlags({needsRefresh: false}));
         EntityLogger.log('debug', 'Data refresh completed', entityKey);
@@ -856,19 +965,8 @@ function* handleCreate<TEntity extends EntityKeys>(
         yield put(actions.invalidateCache());
 
         // Update quick reference
-        if (frontendResponse) {
-            const metadata = yield select(state => state.entities[entityKey].entityMetadata);
-            const displayField = metadata.fields.find(f => f.isDisplayField)?.name
-                || metadata.primaryKeyMetadata.fields[0];
+        yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse);
 
-            yield put(actions.setQuickReference([{
-                primaryKeyValues: metadata.primaryKeyMetadata.fields.reduce((acc, field) => ({
-                    ...acc,
-                    [field]: frontendResponse[field]
-                }), {}),
-                displayValue: frontendResponse[displayField]
-            }]));
-        }
 
     } catch (error: any) {
         EntityLogger.log('error', 'Create operation error', entityKey, error);
@@ -935,20 +1033,10 @@ function* handleUpdate<TEntity extends EntityKeys>(
         // Invalidate cache
         yield put(actions.invalidateCache());
 
-        // Update quick reference
-        if (frontendResponse) {
-            const metadata = yield select(state => state.entities[entityKey].entityMetadata);
-            const displayField = metadata.fields.find(f => f.isDisplayField)?.name
-                || metadata.primaryKeyMetadata.fields[0];
+        const metadata = yield select(state => state.entities[entityKey].entityMetadata);
 
-            yield put(actions.setQuickReference([{
-                primaryKeyValues: metadata.primaryKeyMetadata.fields.reduce((acc, field) => ({
-                    ...acc,
-                    [field]: frontendResponse[field]
-                }), {}),
-                displayValue: frontendResponse[displayField]
-            }]));
-        }
+        yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse);
+
 
     } catch (error: any) {
         EntityLogger.log('error', 'Update operation error', entityKey, error);
@@ -979,11 +1067,11 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
 
         // Fetch operation counts
         const operationCounts = yield all({
-            creates: api.select('count(*)', { head: true })
+            creates: api.select('count(*)', {head: true})
                 .eq('operation_type', 'create'),
-            updates: api.select('count(*)', { head: true })
+            updates: api.select('count(*)', {head: true})
                 .eq('operation_type', 'update'),
-            deletes: api.select('count(*)', { head: true })
+            deletes: api.select('count(*)', {head: true})
                 .eq('operation_type', 'delete'),
         });
 

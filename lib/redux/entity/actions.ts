@@ -12,6 +12,7 @@ import {
     QuickReferenceRecord, EntityMetrics, EntityRecordArray, EntityRecordMap, EntityFlags,
 } from "@/lib/redux/entity/types";
 import { UnifiedQueryOptions } from "@/lib/redux/schema/globalCacheSelectors";
+import { QueryOptions } from "./sagas";
 
 
 export interface FetchRecordsPayload {
@@ -46,18 +47,18 @@ export interface EntityActions<TEntity extends EntityKeys> {
     fetchAll: () => void;
     executeCustomQuery: (payload: UnifiedQueryOptions<TEntity>) => void;
 
+
     createRecord: (payload: EntityData<TEntity>) => void;
 
     updateRecord: (payload: {
-        primaryKeyValues: Record<string, MatrxRecordId>;
+        primaryKeyValues: Record<string, any>;
         data: Partial<EntityData<TEntity>>;
     }) => void;
 
     deleteRecord: (payload: {
-        primaryKeyValues: Record<string, MatrxRecordId>;
+        primaryKeyValues: Record<string, any>;
     }) => void;
 
-    // Success Actions
     fetchRecordsSuccess: (payload: {
         data: EntityData<TEntity>[];
         page: number;
@@ -67,12 +68,17 @@ export interface EntityActions<TEntity extends EntityKeys> {
 
     fetchOneSuccess: (payload: EntityData<TEntity>) => void;
 
+
+    getOrFetchSelectedRecords: (payload: { recordIds: MatrxRecordId[] }) => void,
+    fetchSelectedRecords: (payload: QueryOptions<TEntity>) => void,
+    fetchSelectedRecordsSuccess: (payload: EntityData<TEntity>[]) => void;
+
     fetchAllSuccess: (payload: EntityData<TEntity>[]) => void;
 
     executeCustomQuerySuccess: (payload: EntityData<TEntity>[]) => void;
 
     // Record Management
-    setRecords: (payload: Record<string, EntityData<TEntity>>) => void;
+    setRecords: (payload: Record<MatrxRecordId, EntityData<TEntity>>) => void;
     upsertRecords: (payload: EntityData<TEntity>[]) => void;
     removeRecords: (payload: EntityData<TEntity>[]) => void;
 
@@ -83,7 +89,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
     }) => void;
 
     clearSelection: () => void;
-    addToSelection: (payload: EntityData<TEntity>) => void;
+    addToSelection: (payload: MatrxRecordId) => void;
     removeFromSelection: (payload: EntityData<TEntity>) => void;
     toggleSelection: (payload: EntityData<TEntity>) => void;
 

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
-import {GripVertical, X, Plus, Trash, Save, CheckSquare, Copy} from 'lucide-react';
+import {GripVertical, X, Plus, Trash, Save, CheckSquare, Copy, Download} from 'lucide-react';
 import {useEntityQuickReference} from '@/lib/redux/entity/hooks/useEntityQuickReference';
 import {
     ResizableHandle,
@@ -89,7 +89,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
 
     // Filter quick references based on search term
     const filteredReferences = quickReferenceRecords.filter(ref =>
-        ref.displayValue.toLowerCase().includes(searchTerm.toLowerCase())
+        ref.displayValue?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleCreateNew = () => {
@@ -102,6 +102,34 @@ export const EntityQuickReferenceView = ({entityKey}) => {
         setIsCreating(false);
         if (activeRecord) {
             form.reset(activeRecord);
+        }
+    };
+
+    const [fetchedSelections, setFetchedSelections] = useState([]);
+
+    const handleFetchSelected = async () => {
+        if (selectedQuickReferences.length === 0) {
+            toast({
+                title: "No Selections",
+                description: "Please select items to fetch",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const fetchedRecords = await fetchSelectedRecords(selectedQuickReferences);
+            setFetchedSelections(fetchedRecords);
+            toast({
+                title: "Success",
+                description: `Successfully fetched ${fetchedRecords.length} records`,
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+            });
         }
     };
 
@@ -191,106 +219,121 @@ export const EntityQuickReferenceView = ({entityKey}) => {
         toggleMultiSelectMode();
     };
 
-    const renderFormContent = () => {
-        if (isMultiSelectMode) {
+        const renderFormContent = () => {
+            if (isMultiSelectMode) {
+                return (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Selected Items</CardTitle>
+                            <CardDescription>
+                                {selectedQuickReferences.length} items selected
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {selectedQuickReferences.map(ref => (
+                                    <div key={JSON.stringify(ref.primaryKeyValues)}
+                                         className="flex items-center justify-between p-2 border rounded">
+                                        <span>{ref.displayValue}</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleSelection(ref.primaryKeyValues)}
+                                        >
+                                            <X className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end space-x-2">
+                            <Button
+                                variant="destructive"
+                                onClick={() => clearSelection()}
+                                disabled={selectedQuickReferences.length === 0}
+                            >
+                                Clear Selection
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                onClick={handleFetchSelected}
+                                disabled={selectedQuickReferences.length === 0}
+                            >
+                                <Download className="h-4 w-4 mr-1"/>
+                                Fetch Selected
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                );
+            }
+
             return (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Selected Items</CardTitle>
+                        <CardTitle>
+                            {isCreating ? 'Create New Record' : 'Record Details'}
+                        </CardTitle>
                         <CardDescription>
-                            {selectedQuickReferences.length} items selected
+                            {isCreating
+                             ? 'Enter the details for the new record'
+                             : 'View and edit record information'
+                            }
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-2">
-                            {selectedQuickReferences.map(ref => (
-                                <div key={JSON.stringify(ref.primaryKeyValues)}
-                                     className="flex items-center justify-between p-2 border rounded">
-                                    <span>{ref.displayValue}</span>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleSelection(ref.primaryKeyValues)}
-                                    >
-                                        <X className="h-4 w-4"/>
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                                {fieldInfo.map(field => (
+                                    <div key={field.name}>
+                                        {renderField(field)}
+                                    </div>
+                                ))}
+                            </form>
+                        </Form>
                     </CardContent>
+
+                    {/* Render fetched selections */}
+                    {fetchedSelections.map((selection, index) => (
+                        <div key={JSON.stringify(selection.primaryKeyValues)}>
+                            <TextDivider
+                                text={`Component Based Field View - ${selection.displayValue}`}
+                                lineColor="text-blue-400"
+                                textColor="text-blue-600"
+                                textSize="text-lg"
+                            />
+                            <CardContent>
+                                <ComponentBasedFieldView
+                                    fieldInfo={fieldInfo}
+                                    initialValues={selection}
+                                />
+                            </CardContent>
+                        </div>
+                    ))}
+
                     <CardFooter className="flex justify-end space-x-2">
+                        {isCreating && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCancel}
+                                disabled={loading}
+                            >
+                                Cancel
+                            </Button>
+                        )}
                         <Button
-                            variant="destructive"
-                            onClick={() => clearSelection()}
-                            disabled={selectedQuickReferences.length === 0}
+                            type="submit"
+                            onClick={form.handleSubmit(handleSubmit)}
+                            disabled={loading}
                         >
-                            Clear Selection
+                            <Save className="h-4 w-4 mr-1"/>
+                            {loading ? 'Saving...' : 'Save'}
                         </Button>
                     </CardFooter>
                 </Card>
             );
-        }
+        };
 
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>
-                        {isCreating ? 'Create New Record' : 'Record Details'}
-                    </CardTitle>
-                    <CardDescription>
-                        {isCreating
-                         ? 'Enter the details for the new record'
-                         : 'View and edit record information'
-                        }
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                            {fieldInfo.map(field => (
-                                <div key={field.name}>
-                                    {renderField(field)}
-                                </div>
-                            ))}
-                        </form>
-                    </Form>
-                </CardContent>
-                <TextDivider
-                    text={"Component Based Field View"}
-                    lineColor={"text-blue-400"}
-                    textColor={"text-blue-600"}
-                    textSize={"text-lg"}
-                />
-                <CardContent>
-                    <ComponentBasedFieldView
-                        fieldInfo={fieldInfo}
-                        initialValues={form.getValues()}
-                    />
-                </CardContent>
-
-                <CardFooter className="flex justify-end space-x-2">
-                    {isCreating && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleCancel}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </Button>
-                    )}
-                    <Button
-                        type="submit"
-                        onClick={form.handleSubmit(handleSubmit)}
-                        disabled={loading}
-                    >
-                        <Save className="h-4 w-4 mr-1"/>
-                        {loading ? 'Saving...' : 'Save'}
-                    </Button>
-                </CardFooter>
-            </Card>
-        );
-    };
 
     const renderField = (field: EntityStateField) => {
         const commonProps = {

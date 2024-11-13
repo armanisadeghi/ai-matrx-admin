@@ -168,7 +168,7 @@ export const selectEntityMetadata = createSelector(
 
         // Extract metadata fields directly from the entity
         const { primaryKeyMetadata, displayFieldMetadata } = entity;
-        return { primaryKeyMetadata, displayFieldMetadata };
+        return { primaryKeyMetadata, displayFieldMetadata } as { primaryKeyMetadata?: PrimaryKeyMetadata; displayFieldMetadata?: DisplayFieldMetadata };
     }
 );
 

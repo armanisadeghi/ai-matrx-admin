@@ -41,7 +41,6 @@ const PositionControl: React.FC<PositionControlProps> = (
     {
         position,
         onPositionChange,
-        isVertical
     }) => {
     const positionIcons = {
         left: ArrowLeft,
@@ -298,12 +297,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             }}
         >
             <div className="h-full"/>
-            {/*<div style={{*/}
-            {/*    height: '100%',*/}
-            {/*    width: '100%',*/}
-            {/*    pointerEvents: 'none'*/}
-            {/*}}/>*/}
-
         </ResizablePanel>,
 
         <ResizableHandle
@@ -400,7 +393,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                 style={{
                     touchAction: 'none',
                     userSelect: 'none',
-                    // pointerEvents: 'auto',
                 }}
             >
                 {isStartPosition ? panels.reverse() : panels}
