@@ -3,7 +3,7 @@
 import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 
 
-import {EntityKeys, EntityData} from "@/types/entityTypes";
+import {EntityKeys, EntityData, AllEntityFieldKeys, AnyEntityDatabaseTable} from "@/types/entityTypes";
 
 // --- Basic Types ---
 export type MatrxRecordId = string;
@@ -16,18 +16,18 @@ type PrimaryKeyType = 'single' | 'composite' | 'none';
 
 export interface PrimaryKeyMetadata {
     type: PrimaryKeyType;
-    fields: string[];
+    fields: AllEntityFieldKeys[];
     database_fields: string[];
     where_template: Record<string, null>;
 }
 
 export interface DisplayFieldMetadata {
-    fieldName: string | null;
+    fieldName: AllEntityFieldKeys | null;
     databaseFieldName: string | null;
 }
 
 export interface EntityStateField {
-    name: string;
+    name: AllEntityFieldKeys;
     displayName: string;
     isPrimaryKey: boolean;
     isDisplayField?: boolean;
@@ -45,7 +45,7 @@ export interface EntityStateField {
     exclusionRules: string[];
     enumValues: string[];
     entityName: EntityKeys;
-    databaseTable: string;
+    databaseTable: AnyEntityDatabaseTable;
     description: string;
 }
 
@@ -124,7 +124,7 @@ interface CacheState {
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
     recordKey: MatrxRecordId;
-    primaryKeyValues: Record<string, any>;
+    primaryKeyValues: Record<AllEntityFieldKeys, any>;
     displayValue: string;
     metadata?: {
         lastModified?: string;
@@ -330,12 +330,22 @@ interface SimplifiedEntityState {
     };
 }
 
+export interface SelectionSummary {
+    count: number;
+    hasSelection: boolean;
+    hasSingleSelection: boolean;
+    hasMultipleSelection: boolean;
+    activeRecord: MatrxRecordId | null;
+    mode: SelectionMode;
+}
+
+export type SelectionMode = 'single' | 'multiple' | 'none';
 
 // --- Selection Management ---
-export interface SelectionState<TEntity extends EntityKeys> {
+export interface SelectionState {
     selectedRecords: MatrxRecordId[];
-    selectionMode: 'single' | 'multiple' | 'none';
-    activeRecord: EntityData<TEntity> | null;
+    selectionMode: SelectionMode;
+    activeRecord: MatrxRecordId | null;
     lastSelected?: MatrxRecordId;
 }
 
@@ -343,16 +353,16 @@ export interface SelectionState<TEntity extends EntityKeys> {
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
     // Metadata
-    entityMetadata: EntityMetadata;
+    entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
 
     // Core Data
-    records: Record<MatrxRecordId, EntityData<TEntity>>;
+    records: Record<MatrxRecordId, EntityData<TEntity>>;   // Data is here
 
     // Quick Reference
-    quickReference: QuickReferenceState;
+    quickReference: QuickReferenceState;  // Quick reference data is here
 
     // State Management
-    selection: SelectionState<TEntity>;
+    selection: SelectionState;
     pagination: PaginationState;
     loading: LoadingState;
     cache: CacheState;
@@ -376,6 +386,7 @@ export interface EntityFlags {
     isBatchOperationInProgress?: boolean;
     isValidated?: boolean;
     fetchOneSuccess?: boolean;
+    fetchOneStatus?: 'success' | 'error' | 'loading' | 'idle';
 }
 
 

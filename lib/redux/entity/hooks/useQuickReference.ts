@@ -1,12 +1,10 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import * as React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
+import {useAppDispatch, useAppSelector, useAppStore} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {
-    OperationCallbacks,
     useEntitySelection,
-    UseEntitySelectionReturn
 } from '@/lib/redux/entity/hooks/useEntitySelection';
 import {
     LoadingState,
@@ -14,21 +12,14 @@ import {
     QuickReferenceRecord,
     QuickReferenceState,
     MatrxRecordId,
-    EntityMetadata,
-    EntityStateField, PrimaryKeyMetadata,
+    EntityStateField,
+    SelectionSummary,
+    SelectionMode,
 } from '@/lib/redux/entity/types';
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
-import {Draft} from "@reduxjs/toolkit";
-import EntityLogger from '../entityLogger';
+import {OperationCallbacks} from "@/lib/redux/entity/actions";
 
-export interface UseEntityQuickReferenceResult<TEntity extends EntityKeys> extends Omit<UseEntitySelectionReturn<TEntity>, 'selectedRecords'> {
-    // ... (existing interface properties)
-    isMultiSelectMode: boolean;
-    toggleMultiSelectMode: () => void;
-
-    getOrFetchSelectedRecords: (payload: { recordIds: MatrxRecordId[] }) => void,
-
-
+export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
     entityDisplayName: string;
     fieldInfo: EntityStateField[];
@@ -36,273 +27,126 @@ export interface UseEntityQuickReferenceResult<TEntity extends EntityKeys> exten
     // Quick Reference Data
     quickReferenceRecords: QuickReferenceRecord[];
     quickReferenceState: QuickReferenceState;
-    selectedQuickReference: QuickReferenceRecord | null;
-    primaryKeyMetadata: PrimaryKeyMetadata;
-    // Loading States
-    loading: LoadingState['loading'];
-    error: LoadingState['error'];
-    lastOperation: LoadingState['lastOperation'];
-
-    // Record Management
-    handleMultipleSelections: (primaryKeyValues: Record<string, any>) => void;
-    handleSingleSelection: (primaryKeyValues: Record<string, any>) => void;
-
-    // CRUD Operations
-    createRecord: (
-        data: EntityData<TEntity>,
-        options?: OperationCallbacks<EntityData<TEntity>>
-    ) => Promise<void>;
-
-    updateRecord: (
-        data: Partial<EntityData<TEntity>>,
-        options?: OperationCallbacks<EntityData<TEntity>>
-    ) => Promise<void>;
-
-    deleteRecord: (
-        options?: OperationCallbacks
-    ) => Promise<void>;
-
-    // Validation Management
-    handleSetValidated: (isValid: boolean) => void;
-    // State Management
-    isValidated: boolean;
-    isModified: boolean;
-    hasUnsavedChanges: boolean;
-
-    selectedQuickReferences: QuickReferenceRecord[];
-
-}
-
-export function useEntityQuickReference<TEntity extends EntityKeys>(
-    entityKey: TEntity
-): UseEntityQuickReferenceResult<TEntity> {
-
-    const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
-
-
-    const dispatch = useAppDispatch();
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
 
     // Selection Management
+    selectedRecordIds: MatrxRecordId[];
+    selectedRecords: EntityData<TEntity>[];
+    activeRecord: EntityData<TEntity> | null;
+    selectionMode: SelectionMode;
+    summary: SelectionSummary;
+
+    // Selection Utilities
+    isSelected: (recordKey: MatrxRecordId) => boolean;
+    isActive: (recordKey: MatrxRecordId) => boolean;
+    handleSelection: (recordKey: MatrxRecordId) => void;
+    handleMultiSelection: (recordKey: MatrxRecordId) => void;
+    toggleSelectionMode: () => void;
+    clearSelection: () => void;
+
+    // Record Operations
+    createRecord: (
+        data: Partial<EntityData<TEntity>>,
+        callbacks?: OperationCallbacks<EntityData<TEntity>>
+    ) => void;
+
+    updateRecord: (
+        matrxRecordId: MatrxRecordId,
+        data: Partial<EntityData<TEntity>>,
+        callbacks?: OperationCallbacks<EntityData<TEntity>>
+    ) => void;
+
+    deleteRecord: (
+        matrxRecordId: MatrxRecordId,
+        callbacks?: OperationCallbacks
+    ) => void;
+
+    // UI States
+    loadingState: LoadingState | null;
+    errorState: EntityError | null;
+    isValidated: boolean;
+    getRecordIdByRecord: (record: EntityData<TEntity>) => MatrxRecordId | null;
+    getDisplayValue: (record: EntityData<TEntity>) => string;
+
+    handleSingleSelection: (recordKey: MatrxRecordId) => void;
+}
+
+export function useQuickReference<TEntity extends EntityKeys>(
+    entityKey: TEntity
+): UseQuickReferenceReturn<TEntity> {
+    const dispatch = useAppDispatch();
+    const store = useAppStore();
+
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const {actions} = React.useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+
     const selection = useEntitySelection(entityKey);
 
     // State Selectors
     const entityDisplayName = useAppSelector(selectors.selectEntityDisplayName);
     const fieldInfo = useAppSelector(selectors.selectFieldInfo);
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
-    const quickReferenceState = useAppSelector(state => selectors.selectEntity(state).quickReference);
-    const loadingState = useAppSelector(state => selectors.selectEntity(state).loading);
-    const entityFlags = useAppSelector(state => selectors.selectEntity(state).flags);
+
+    const quickReferenceState = useAppSelector(selectors.selectQuickReferenceState);
+    const isQuickReferenceFetchComplete = useAppSelector(selectors.selectIsQuickReferenceFetchComplete);
+    const loadingState = useAppSelector(selectors.selectLoadingState);
+    const errorState = useAppSelector(selectors.selectErrorState);
     const isValidated = useAppSelector(selectors.selectIsValidated);
-    const allRecords = useAppSelector(selectors.selectAllRecords);
-    const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
-    const selectedRecord = useAppSelector(selectors.selectActiveRecord);
-    const fetchOneSuccess = useAppSelector(selectors.selectFetchOneSuccess);
-
-    const addToSelection = useCallback((record: EntityData<TEntity>) => {
-        dispatch(actions.addToSelection(record));
-    }, [dispatch, actions]);
-
-    const clearSelection = useCallback(() => {
-        dispatch(actions.clearSelection());
-    }, [dispatch, actions]);
-
-    const getOrFetchSelections = useCallback(() => {
-        dispatch(actions.getOrFetchSelectedRecords());
-    }, [dispatch, actions]);
 
 
-
-    const toggleMultiSelectMode = useCallback(() => {
-        setIsMultiSelectMode(prev => !prev);
-        clearSelection();
-    }, [clearSelection]);
-
-
-    const handleSingleSelection = useCallback(
-        (quickRef: QuickReferenceRecord) => {
-            clearSelection();
-            dispatch(actions.getOrFetchSelectedRecords({ recordIds: [quickRef.recordKey] }));
+    const getRecordIdByRecord = React.useCallback(
+        (record: EntityData<TEntity>): MatrxRecordId | null => {
+            const state = store.getState();
+            return selectors.selectRecordIdByRecord(state, record);
         },
-        [dispatch, actions, clearSelection]
+        [selectors, store]
     );
 
-    // Handle multiple selection
-    const handleMultipleSelections = useCallback(
-        (quickRef: QuickReferenceRecord) => {
-            dispatch(actions.getOrFetchSelectedRecords({
-                recordIds: [...selection.selectedRecords, quickRef.recordKey]
-            }));
-        },
-        [dispatch, actions, selection.selectedRecords]
-    );
-
-    // Debug logging effect
-    useEffect(() => {
-        if (EntityLogger.shouldLog('debug')) {
-            EntityLogger.log(
-                'debug',
-                'Selection state changed',
-                'useEntityQuickReference',
-                {selectedQuickReference, loadingState}
-            );
-        }
-    }, [selectedQuickReference, loadingState]);
-
-    // Quick Reference fetching effect
-    useEffect(() => {
-        if (!quickReferenceState.fetchComplete) {
+    React.useEffect(() => {
+        if (!isQuickReferenceFetchComplete) {
             dispatch(actions.fetchQuickReference({
                 maxRecords: entityDefaultSettings.maxQuickReferenceRecords
             }));
         }
     }, [entityKey]);
 
-    // Operation callbacks effect
-    useEffect(() => {
-        const currentOperation = loadingState.lastOperation;
-        if (!loadingState.loading && currentOperation) {
-            if (currentOperation === 'create' || currentOperation === 'update') {
-                const operationCallbacks = selection.getOperationCallbacks<EntityData<TEntity>>();
+    const createRecord = React.useCallback((
+        data: Partial<EntityData<TEntity>>,
+        callbacks?: OperationCallbacks<EntityData<TEntity>>
+    ) => {
+        dispatch(actions.createRecord({ data, ...callbacks }));
+    }, [dispatch, actions]);
 
-                if (loadingState.error && operationCallbacks?.onError) {
-                    operationCallbacks.onError(loadingState.error);
-                } else if (!loadingState.error && operationCallbacks?.onSuccess && selectedRecord) {
-                    operationCallbacks.onSuccess(selectedRecord);
-                }
-            } else if (currentOperation === 'delete') {
-                const operationCallbacks = selection.getOperationCallbacks<void>();
+    const updateRecord = React.useCallback((
+        matrxRecordId: MatrxRecordId,
+        data: Partial<EntityData<TEntity>>,
+        callbacks?: OperationCallbacks<EntityData<TEntity>>
+    ) => {
+        dispatch(actions.updateRecord({ matrxRecordId, data, ...callbacks }));
+    }, [dispatch, actions]);
 
-                if (loadingState.error && operationCallbacks?.onError) {
-                    operationCallbacks.onError(loadingState.error);
-                } else if (!loadingState.error && operationCallbacks?.onSuccess) {
-                    operationCallbacks.onSuccess();
-                }
-            }
+    const deleteRecord = React.useCallback((
+        matrxRecordId: MatrxRecordId,
+        callbacks?: OperationCallbacks
+    ) => {
+        dispatch(actions.deleteRecord({
+            matrxRecordId,
+            ...callbacks
+        }));
+    }, [dispatch, actions]);
 
-            // Clear callbacks after execution
-            selection.clearOperationCallbacks();
-        }
-    }, [loadingState, selectedRecord, selection]);
+    const handleSelection = React.useCallback((recordKey: MatrxRecordId) => {
+        selection.handleSelection(recordKey);
+    }, [selection]);
 
-    // Create Record Management
-    const createRecord = useCallback(
-        async (
-            data: EntityData<TEntity>,
-            options?: OperationCallbacks<EntityData<TEntity>>
-        ) => {
-            if (!isValidated) {
-                const error: EntityError = {
-                    message: 'Validation must be completed before creating record',
-                    code: 400,
-                    lastOperation: 'create'
-                };
-                options?.onError?.(error);
-                return;
-            }
+    const handleMultiSelection = React.useCallback((recordKey: MatrxRecordId) => {
+        selection.handleToggleSelection(recordKey);
+    }, [selection]);
 
-            selection.setOperationCallbacks(options);
-            dispatch(actions.createRecord(data));
-        },
-        [dispatch, actions, isValidated, selection]
-    );
-
-    const handleSetValidated = (isValid: boolean) => {
-        if (isValid) {
-            dispatch(actions.setValidated());
-        } else {
-            dispatch(actions.resetValidated());
-        }
-    };
-
-    // Update Record Management
-    const updateRecord = useCallback(
-        async (
-            data: Partial<EntityData<TEntity>>,
-            options?: OperationCallbacks<EntityData<TEntity>>
-        ) => {
-            if (!isValidated) {
-                const error: EntityError = {
-                    message: 'Validation must be completed before updating record',
-                    code: 400,
-                    lastOperation: 'update'
-                };
-                options?.onError?.(error);
-                return;
-            }
-
-            if (!selectedRecord || !selectedQuickReference) {
-                const error: EntityError = {
-                    message: 'No record selected for update',
-                    code: 400,
-                    lastOperation: 'update'
-                };
-                options?.onError?.(error);
-                return;
-            }
-
-            selection.setOperationCallbacks(options);
-
-            // Store original record for potential rollback
-            const originalRecord = {...selectedRecord};
-
-            // Create optimistic update
-            const optimisticRecord = {
-                ...selectedRecord,
-                ...data
-            } as Draft<EntityData<TEntity>>;
-
-            // Perform optimistic update
-            dispatch(actions.optimisticUpdate({
-                record: optimisticRecord,
-                rollback: originalRecord
-            }));
-
-            // Dispatch actual update
-            dispatch(actions.updateRecord({
-                primaryKeyValues: selectedQuickReference.primaryKeyValues,
-                data
-            }));
-        },
-        [dispatch, actions, selectedRecord, selectedQuickReference, isValidated, selection]
-    );
-
-// Delete Record Management
-    const deleteRecord = useCallback(
-        async (options?: OperationCallbacks) => {
-            if (!selectedRecord || !selectedQuickReference) {
-                const error: EntityError = {
-                    message: 'No record selected for deletion',
-                    code: 400,
-                    lastOperation: 'delete'
-                };
-                options?.onError?.(error);
-                return;
-            }
-
-            // Verify record matches before deletion
-            const currentRecord = useAppSelector(state =>
-                selectors.selectRecordByPrimaryKey(state, selectedQuickReference.primaryKeyValues)
-            );
-
-            if (currentRecord !== selectedRecord) {
-                const error: EntityError = {
-                    message: 'Selected record mismatch - aborting deletion',
-                    code: 409,
-                    lastOperation: 'delete'
-                };
-                options?.onError?.(error);
-                return;
-            }
-
-            selection.setOperationCallbacks(options);
-            dispatch(actions.deleteRecord({
-                primaryKeyValues: selectedQuickReference.primaryKeyValues
-            }));
-        },
-        [dispatch, actions, selectedRecord, selectedQuickReference, selectors, selection]
-    );
+    const getDisplayValue = React.useCallback((record: EntityData<TEntity>) => {
+        const displayField = fieldInfo.find(field => field.isDisplayField);
+        if (!displayField) return 'Unnamed Record';
+        return record[displayField.name] || 'Unnamed Record';
+    }, [fieldInfo]);
 
     return {
         // Metadata
@@ -312,36 +156,33 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
         // Quick Reference Data
         quickReferenceRecords,
         quickReferenceState,
-        selectedQuickReference,
-        selectedQuickReferences,
-        primaryKeyMetadata,
 
-        // Selection State
-        ...selection,
-        isMultiSelectMode,
-        toggleMultiSelectMode,
+        // Selection Management (from useEntitySelection)
+        selectedRecordIds: selection.selectedRecordIds,
+        selectedRecords: selection.selectedRecords,
+        activeRecord: selection.activeRecord,
+        selectionMode: selection.selectionMode,
+        summary: selection.summary,
 
-        // Loading States
-        loading: loadingState.loading,
-        error: loadingState.error,
-        lastOperation: loadingState.lastOperation,
+        // Selection Utilities
+        isSelected: selection.isSelected,
+        isActive: selection.isActive,
+        handleSelection,
+        handleMultiSelection,
+        toggleSelectionMode: selection.toggleSelectionMode,
+        clearSelection: selection.clearSelection,
+        handleSingleSelection: selection.handleSingleSelection,
 
-        // Record Management
-        handleMultipleSelections,
-        handleSingleSelection,
-        clearSelection,
-
-        // CRUD Operations
+        // Record Operations
         createRecord,
         updateRecord,
         deleteRecord,
 
-        // Validation Management
-        handleSetValidated,
-
-        // State Management
+        // UI States
+        loadingState,
+        errorState,
         isValidated,
-        isModified: entityFlags.isModified,
-        hasUnsavedChanges: entityFlags.hasUnsavedChanges
+        getRecordIdByRecord,
+        getDisplayValue,
     };
 }

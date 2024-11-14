@@ -4,7 +4,13 @@ import {call, put, takeLatest, delay, all, select, fork, takeEvery} from "redux-
 import {PayloadAction} from "@reduxjs/toolkit";
 import {supabase} from "@/utils/supabase/client";
 import {createEntitySlice} from "@/lib/redux/entity/slice";
-import {EntityData, EntityKeys} from "@/types/entityTypes";
+import {
+    AllEntityFieldKeys,
+    AllEntityNameVariations,
+    AnyEntityDatabaseTable,
+    EntityData,
+    EntityKeys
+} from "@/types/entityTypes";
 import {
     BatchOperationPayload,
     FilterPayload,
@@ -16,7 +22,7 @@ import {
     selectEntityDatabaseName,
     UnifiedQueryOptions,
     selectFrontendConversion,
-    selectPayloadOptionsDatabaseConversion, selectEntityMetadata,
+    selectPayloadOptionsDatabaseConversion, selectEntityMetadata, selectUnifiedDatabaseObjectConversion,
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {Draft} from "immer";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
@@ -56,10 +62,11 @@ export interface QueryOptions<TEntity extends EntityKeys> {
     }>;
     limit?: number;
     offset?: number;
-    columns?: Array<string>;
+    columns?: string[];
     primaryKeyMetadata?: PrimaryKeyMetadata;
+    primaryKeyFields?: string[];
+    recordKey?: MatrxRecordId;
 }
-
 
 function* initializeDatabaseApi(tableName: string) {
     return supabase.from(tableName);
@@ -112,34 +119,142 @@ export function* withConversion<TEntity extends EntityKeys>(
     }
 }
 
-/*
-function* handleSubscription<TEntity extends EntityKeys>(
+export interface UnifiedDatabaseObject{
+    entityName: EntityKeys;
+    tableName: AnyEntityDatabaseTable;
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    frontendPks: AllEntityFieldKeys[];
+    databasePks: string[];
+    frontendDisplayField: AllEntityFieldKeys;
+    databaseDisplayField: string;
+
+    recordKeys?: MatrxRecordId[];
+    parsedFrontendRecords?: Record<AllEntityFieldKeys, string>[];
+    parsedDatabaseRecords?: Record<string, string>[];
+
+    filters?: Partial<Record<string, unknown>>;
+    sorts?: Array<{
+        column: string;
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: string[];
+
+    data?: unknown | unknown[];
+}
+
+export interface FlexibleQueryOptions {
+    entityNameAnyFormat: AllEntityNameVariations;
+    recordKeys?: MatrxRecordId[];
+    filters?: Partial<Record<AllEntityFieldKeys, unknown>>;
+    sorts?: Array<{
+        column: AllEntityFieldKeys;
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: AllEntityFieldKeys[];
+    data?: unknown | unknown[];
+}
+
+export const optionalActionKeys = [
+    'recordKeys',
+    'filters',
+    'sorts',
+    'limit',
+    'offset',
+    'data'
+] as const;
+
+export function* withFullConversion<TEntity extends EntityKeys>(
+    sagaHandler: (
+        entityKey: TEntity,
+        actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+        api: any,
+        action: PayloadAction<any>,
+        tableName: string,
+        dbQueryOptions: QueryOptions<TEntity>
+    ) => any,
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"]
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    action: PayloadAction<any>,
+    successAction: (payload: any) => PayloadAction<any>
 ) {
+    EntityLogger.log('info', 'withFullConversion With Action Payload', entityKey, action.payload);
+
+    const { onSuccess, onError, ...restPayload } = action.payload;
+
     try {
-        const subscriptionConfig = yield select(selectEntitySubscriptionConfig, entityKey);
-        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+        const flexibleQueryOptions: FlexibleQueryOptions = {
+            entityNameAnyFormat: entityKey
+        };
 
-        if (subscriptionConfig.enabled) {
-            const channel = supabase
-                .channel(`${tableName}_changes`)
-                .on('postgres_changes',
-                    {event: '*', schema: 'public', table: tableName},
-                    (payload) => handleSubscriptionEvents(entityKey, actions, payload)
-                )
-                .subscribe();
+        optionalActionKeys.forEach(key => {
+            if (key in restPayload && restPayload[key] !== undefined) {
+                flexibleQueryOptions[key] = restPayload[key];
+            }
+        });
 
-            // Store subscription reference if needed
-            yield put(actions.setSubscription({channel}));
+        if (restPayload.columns || restPayload.fields) {
+            flexibleQueryOptions.columns = restPayload.columns || restPayload.fields;
         }
+
+        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(
+            selectUnifiedDatabaseObjectConversion,
+            flexibleQueryOptions
+        );
+
+        EntityLogger.log('info', 'unifiedDatabaseObject: ', entityKey, unifiedDatabaseObject);
+
+        const api = yield call(initializeDatabaseApi, unifiedDatabaseObject.tableName);
+        EntityLogger.log('info', 'Database API initialized', entityKey);
+
+        const dbQueryOptions = yield select(selectPayloadOptionsDatabaseConversion, {
+            entityName: entityKey,
+            options: restPayload.options || {},
+        });
+        EntityLogger.log('debug', 'Query options', entityKey, dbQueryOptions);
+
+
+        const result = yield call(
+            sagaHandler,
+            entityKey,
+            actions,
+            api,
+            {...action, payload: restPayload},
+            unifiedDatabaseObject.tableName,
+            dbQueryOptions
+        );
+
+        EntityLogger.log('debug', 'withFullConversion result', entityKey, result);
+
+
+        const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: result});
+        EntityLogger.log('debug', 'Frontend Conversion', entityKey, frontendResponse);
+
+        yield put(successAction(frontendResponse));
+
+        if (onSuccess) {
+            onSuccess(result);
+        }
+
     } catch (error: any) {
-        console.error(`Subscription Error (${entityKey}):`, error);
+        EntityLogger.log('error', 'Error in conversion', entityKey, error);
+        yield put(actions.setError({
+            message: error.message || "An error occurred during database operation",
+            code: error.code,
+            details: error
+        }));
+
+        if (onError) {
+            onError(error);
+        }
+        throw error;
     }
 }
-*/
 
-// Main saga watcher
+
 type SagaAction<P = any> = PayloadAction<P> & { type: string };
 
 export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity) {
@@ -153,17 +268,20 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
 
             yield all([
                 takeLatest(
+                    actions.fetchOne.type,
+                    function* (action: SagaAction<{ matrxRecordId: MatrxRecordId }>) {
+                        yield call(withFullConversion, handleFetchOne, entityKey, actions, action, actions.fetchOneSuccess);
+                        yield delay(1000);  // TODO: Consider reducing this to avoid issues when there are additional requests. But it might not be a problem, since the next request will will reset the status anyways.
+                        yield put(actions.resetFetchOneStatus());
+                    }
+                ),
+
+
+                takeLatest(
                     actions.fetchRecords.type,
                     function* (action: SagaAction<{ page: number; pageSize: number }>) {
                         EntityLogger.log('info', 'watchEntitySagas Handling fetchRecords', entityKey, action.payload);
                         yield call(withConversion, handleFetchPaginated, entityKey, actions, action);
-                    }
-                ),
-                takeLatest(
-                    actions.fetchOne.type,
-                    function* (action: SagaAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>) {
-                        EntityLogger.log('debug', 'watchEntitySagas Handling fetchOne', entityKey, action.payload);
-                        yield call(withConversion, handleFetchOne, entityKey, actions, action);
                     }
                 ),
                 takeLatest(
@@ -221,10 +339,8 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
 
                 takeLatest(
                     actions.getOrFetchSelectedRecords.type,
-                    function* (action: SagaAction<{ recordIds: string[] }>) {
-                        EntityLogger.log('info', 'watchEntitySagas Handling fetchSelectedRecords', entityKey, action.payload);
-
-                        // Does not use withConversion because it does not Make API Calls directly.
+                    function* (action: SagaAction<MatrxRecordId[]>) {
+                        EntityLogger.log('info', 'watchEntitySagas Handling getOrFetchSelectedRecords', entityKey, action.payload);
                         yield call(handleGetOrFetchSelectedRecords, entityKey, actions, action);
                     }
                 ),
@@ -265,91 +381,30 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
     };
 }
 
-function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
-    entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
-    action: PayloadAction<{ recordIds: string[] }>
-) {
-    try {
-        const { recordIds } = action.payload;
-
-        EntityLogger.log('info', 'Starting getOrFetchSelectedRecords', entityKey, recordIds);
-
-        const entitySelectors = createEntitySelectors(entityKey);
-        const { selectedRecords, recordsToFetch } = yield select(entitySelectors.selectRecordsForFetching(recordIds));
-
-        EntityLogger.log('info', 'Records to fetch', entityKey, recordsToFetch);
-
-        if (selectedRecords.length > 0) {
-            yield put(actions.addToSelection(selectedRecords));
-        }
-
-        if (recordsToFetch.length > 0) {
-            const queryOptions: QueryOptions<TEntity> = {
-                tableName: entityKey,
-                filters: recordsToFetch.reduce((acc, recordId) => {
-                    const primaryKeyValues = parseRecordKey(recordId);
-                    Object.assign(acc, primaryKeyValues);
-                    return acc;
-                }, {} as Record<string, string>),
-            };
-
-            EntityLogger.log('info', 'Query options', entityKey, queryOptions);
-
-            yield put(actions.fetchSelectedRecords(queryOptions));
-        }
-
-    } catch (error: any) {
-        EntityLogger.log('error', 'Error in fetchSelectedRecords', entityKey, error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during fetch by record IDs.",
-            code: error.code,
-        }));
-    }
-}
-
-
-function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
+function* handleFetchOne<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
     api: any,
-    action: PayloadAction<QueryOptions<TEntity>>
+    action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>,
+    tableName: string,
+    dbQueryOptions: QueryOptions<TEntity>
 ) {
-    try {
-        const queryOptions = action.payload;
+    EntityLogger.log('info', 'Starting fetchOne', entityKey, action.payload);
 
-        EntityLogger.log('info', 'Starting fetchSelectedRecords', entityKey, queryOptions);
+    let query = api.select("*");
 
-        let query = api.from(queryOptions.tableName).select("*");
+    Object.entries(action.payload.primaryKeyValues).forEach(([key, value]) => {
+        query = query.eq(key, value);
+    });
 
-        if (queryOptions.filters) {
-            Object.entries(queryOptions.filters).forEach(([field, value]) => {
-                query = query.eq(field, value);
-            });
-        }
+    const {data, error} = yield query.single();
+    if (error) throw error;
 
-        const {data, error} = yield query;
-        if (error) throw error;
-
-        const payload = {entityName: entityKey, data};
-        const frontendResponse = yield select(selectFrontendConversion, payload);
-        EntityLogger.log('info', 'Fetch Selected Records: ', entityKey, frontendResponse);
-
-
-        yield put(actions.fetchSelectedRecordsSuccess(frontendResponse));
-        yield put(actions.addToSelection(frontendResponse));
-
-    } catch (error: any) {
-        EntityLogger.log('error', 'Error in executeDatabaseQuery', entityKey, error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during the database query.",
-            code: error.code,
-        }));
-    }
+    return data;
 }
 
 
-function* handleFetchOne<TEntity extends EntityKeys>(
+function* handleFetchOneOld<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
     api: any,
@@ -383,6 +438,110 @@ function* handleFetchOne<TEntity extends EntityKeys>(
         throw error;
     }
 }
+
+
+
+function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    action: PayloadAction<MatrxRecordId[]>
+) {
+    try {
+        EntityLogger.log('info', 'Starting getOrFetchSelectedRecords', entityKey, action.payload);
+
+        const entitySelectors = createEntitySelectors(entityKey);
+        const {existingRecords, primaryKeysToFetch} = yield select(entitySelectors.selectRecordsForFetching(action.payload));
+
+        EntityLogger.log('info', '-Existing records', entityKey, existingRecords);
+        EntityLogger.log('info', '-Primary keys to fetch', entityKey, primaryKeysToFetch);
+
+        for (const recordId of existingRecords) {
+            yield put(actions.addToSelection(recordId));
+        }
+
+        if (primaryKeysToFetch.length > 0) {
+            const queryOptions: QueryOptions<TEntity> = {
+                tableName: entityKey,
+                filters: primaryKeysToFetch.reduce((acc, primaryKey) => {
+                    Object.assign(acc, primaryKey);
+                    return acc;
+                }, {} as Record<string, string>),
+            };
+
+            EntityLogger.log('info', 'Query options', entityKey, queryOptions);
+
+            yield put(actions.fetchSelectedRecords(queryOptions));
+        }
+
+    } catch (error: any) {
+        EntityLogger.log('error', 'Error in fetchSelectedRecords', entityKey, error);
+        yield put(actions.setError({
+            message: error.message || "An error occurred during fetch by record IDs.",
+            code: error.code,
+        }));
+    }
+}
+
+function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    api: any,
+    action: PayloadAction<QueryOptions<TEntity>>
+) {
+    const entitySelectors = createEntitySelectors(entityKey);
+
+    try {
+        const queryOptions = action.payload;
+
+        EntityLogger.log('debug', 'Starting handleFetchSelectedRecords', entityKey, queryOptions);
+
+        let query = api.select("*");
+        EntityLogger.log('debug', 'Initial query:', entityKey, query);
+
+        // Apply filters from queryOptions
+        if (queryOptions.filters) {
+            Object.entries(queryOptions.filters).forEach(([field, value]) => {
+                query = query.eq(field, value);
+                EntityLogger.log('debug', `Applying filter: ${field} = ${value}`, entityKey, query);
+            });
+        }
+
+        // Execute the query and log results
+        EntityLogger.log('debug', 'Final query with all filters applied:', entityKey, query);
+        const { data, error } = yield query;
+
+        // Log data and error from the query
+        if (error) {
+            EntityLogger.log('error', 'Error from database query', entityKey, error);
+            throw error;
+        }
+        EntityLogger.log('debug', 'Data fetched successfully:', entityKey, data);
+
+        // Prepare payload for frontend conversion and log it
+        const payload = { entityName: entityKey, data };
+        EntityLogger.log('debug', 'Payload for frontend conversion:', entityKey, payload);
+
+        // Perform frontend conversion and log the result
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+        EntityLogger.log('debug', 'Fetch Selected Records: Frontend conversion result:', entityKey, frontendResponse);
+
+        // Dispatch success and add to selection actions
+        yield put(actions.fetchSelectedRecordsSuccess(frontendResponse));
+        EntityLogger.log('debug', 'Dispatched fetchSelectedRecordsSuccess action', entityKey, frontendResponse);
+
+        const recordId = yield select(entitySelectors.selectRecordIdByRecord, frontendResponse);
+        yield put(actions.addToSelection(recordId));
+        EntityLogger.log('debug', 'Dispatched addToSelection action', entityKey, frontendResponse);
+
+    } catch (error: any) {
+        EntityLogger.log('error', 'Error in handleFetchSelectedRecords', entityKey, error);
+        yield put(actions.setError({
+            message: error.message || "An error occurred during the database query.",
+            code: error.code,
+        }));
+    }
+}
+
 
 function* handleFetchAll<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -1252,6 +1411,34 @@ function* handleDelete<TEntity extends EntityKeys>(
         // ... existing error handling ...
     }
 }*/
+
+
+/*
+function* handleSubscription<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"]
+) {
+    try {
+        const subscriptionConfig = yield select(selectEntitySubscriptionConfig, entityKey);
+        const tableName: string = yield select(selectEntityDatabaseName, entityKey);
+
+        if (subscriptionConfig.enabled) {
+            const channel = supabase
+                .channel(`${tableName}_changes`)
+                .on('postgres_changes',
+                    {event: '*', schema: 'public', table: tableName},
+                    (payload) => handleSubscriptionEvents(entityKey, actions, payload)
+                )
+                .subscribe();
+
+            // Store subscription reference if needed
+            yield put(actions.setSubscription({channel}));
+        }
+    } catch (error: any) {
+        console.error(`Subscription Error (${entityKey}):`, error);
+    }
+}
+*/
 
 //================================================================
 

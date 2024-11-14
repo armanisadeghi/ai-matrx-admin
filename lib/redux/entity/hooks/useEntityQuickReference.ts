@@ -110,8 +110,8 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
         return selectors.selectQuickReferenceByPrimaryKey(state, activeRecord);
     });
 
-    const addToSelection = useCallback((record: EntityData<TEntity>) => {
-        dispatch(actions.addToSelection(record));
+    const addToSelection = useCallback((recordId: MatrxRecordId) => {
+        dispatch(actions.addToSelection(recordId));
     }, [dispatch, actions]);
 
     const clearSelection = useCallback(() => {
@@ -165,7 +165,7 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
             const record = allRecords[pendingSelection.recordKey];
             if (record) {
                 console.log('Fetch succeeded, adding record to selection:', record);
-                addToSelection(record);
+                addToSelection(pendingSelection.recordKey);
             }
             setPendingSelection(null);
         }

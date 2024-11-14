@@ -57,7 +57,7 @@ export interface EntityHookReturn<TEntity extends EntityKeys> {
     // Selection Methods
     setSelection: (records: Draft<EntityData<TEntity>>[], mode: 'single' | 'multiple' | 'none') => void;
     clearSelection: () => void;
-    addToSelection: (record: Draft<EntityData<TEntity>>) => void;
+    addToSelection: (record: MatrxRecordId) => void;
     removeFromSelection: (record: Draft<EntityData<TEntity>>) => void;
     toggleSelection: (record: Draft<EntityData<TEntity>>) => void;
     batchSelection: (operation: 'add' | 'remove' | 'toggle', records: Draft<EntityData<TEntity>>[]) => void;
@@ -239,8 +239,8 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         dispatch(actions.invalidateCache());
     }, [dispatch, actions]);
 
-    const addToSelection = useCallback((record: Draft<EntityData<TEntity>>) => {
-        safeDispatch(actions.addToSelection(record));
+    const addToSelection = useCallback((recordId: MatrxRecordId) => {
+        safeDispatch(actions.addToSelection(recordId));
     }, [safeDispatch, actions]);
 
     const removeFromSelection = useCallback((record: Draft<EntityData<TEntity>>) => {

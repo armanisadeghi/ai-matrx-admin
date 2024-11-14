@@ -1,6 +1,6 @@
 // lib/redux/entity/utils.ts
 
-import { EntityData, EntityKeys } from "@/types/entityTypes";
+import {AllEntityFieldKeys, EntityData, EntityKeys} from "@/types/entityTypes";
 import { FilterState, MatrxRecordId, PrimaryKeyMetadata, FilterCondition } from "@/lib/redux/entity/types";
 import EntityLogger from "./entityLogger";
 
@@ -28,7 +28,7 @@ export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): Matr
 };
 
 
-export const parseRecordKey = (key: MatrxRecordId): Record<string, string> => {
+export const parseRecordKey = (key: MatrxRecordId): Record<AllEntityFieldKeys, string> => {
     return key.split('::').reduce((acc, pair) => {
         const [field, value] = pair.split(':');
         if (field && value !== undefined) {
@@ -43,7 +43,7 @@ export const parseRecordKey = (key: MatrxRecordId): Record<string, string> => {
             throw new Error(`Invalid format in record key part: ${pair}`);
         }
         return acc;
-    }, {} as Record<string, string>);
+    }, {} as Record<AllEntityFieldKeys, string>);
 };
 
 export const createRecordKeys = (metadata: PrimaryKeyMetadata, records: any[]): MatrxRecordId[] => {
@@ -52,7 +52,7 @@ export const createRecordKeys = (metadata: PrimaryKeyMetadata, records: any[]): 
     });
 };
 
-export const parseRecordKeys = (keys: MatrxRecordId[]): Record<string, string>[] => {
+export const parseRecordKeys = (keys: MatrxRecordId[]): Record<AllEntityFieldKeys, string>[] => {
     return keys.map((key) => {
         return parseRecordKey(key);
     });

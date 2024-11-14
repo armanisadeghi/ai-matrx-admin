@@ -5,6 +5,7 @@ import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {RootState} from "@/lib/redux/store";
 import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
 import {createRecordKey, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
+import EntityLogger from "@/lib/redux/entity/entityLogger";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     if (!entityKey) return null;
@@ -32,13 +33,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    const selectRecordsForFetching = (recordIds: string[]) => createSelector(
+    const selectRecordsForFetching = (matrxRecordIds: MatrxRecordId[]) => createSelector(
         [selectAllRecords],
         (existingRecords) => {
-            const recordIdsNotInState = recordIds.filter((recordId) => !existingRecords[recordId]);
+            const existingRecordIds = matrxRecordIds.filter((recordId) => !!existingRecords[recordId]);
+            const recordIdsNotInState = matrxRecordIds.filter((recordId) => !existingRecords[recordId]);
             const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
+            EntityLogger.log('debug', 'Records to fetch:', 'selectRecordsForFetching', { primaryKeysToFetch });
+            EntityLogger.log('debug', 'Existing records:', 'selectRecordsForFetching', { existingRecordIds });
+
             return {
-                existingRecords,
+                existingRecords: existingRecordIds,
                 primaryKeysToFetch
             };
         }
@@ -52,7 +57,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return entity.records[recordKey];
         }
     );
-
 
 
     const selectRecordsByPrimaryKeys = createSelector(
@@ -73,6 +77,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.quickReference.records
     );
 
+    const selectIsQuickReferenceFetchComplete = createSelector(
+        [selectEntity],
+        (entity) => entity.quickReference.fetchComplete
+    );
+
+    const selectQuickReferenceState = createSelector(
+        [selectEntity],
+        (entity) => entity.quickReference
+    );
+
+
     const selectQuickReferenceByPrimaryKey = createSelector(
         [selectQuickReference, (_: RootState, primaryKeyValues: Record<string, MatrxRecordId>) => primaryKeyValues],
         (records, primaryKeyValues) => records.find(record => {
@@ -81,14 +96,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-
     // Selection Selectors ==================================================
 
     const selectSelectedRecordIds = createSelector(
         [selectEntity],
         (entity) => entity.selection.selectedRecords
     );
-
 
     const selectSelectedRecords = createSelector(
         [selectEntity],
@@ -99,7 +112,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    const selectActiveRecord = createSelector(
+    const selectActiveRecordId = createSelector(
         [selectEntity],
         (entity) => entity.selection.activeRecord
     );
@@ -109,35 +122,52 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.selection.selectionMode
     );
 
-    const selectSelectionSummary = createSelector(
-        [selectSelectedRecords, selectActiveRecord, selectSelectionMode],
-        (selectedRecords, activeRecord, mode) => ({
-            count: selectedRecords.length,
-            hasSelection: selectedRecords.length > 0,
-            hasSingleSelection: selectedRecords.length === 1,
-            hasMultipleSelection: selectedRecords.length > 1,
-            activeRecord,
-            mode
-        })
-    );
-
     const selectIsRecordSelected = createSelector(
-        [selectEntity, (_: RootState, record: EntityData<TEntity>) => record],
-        (entity, record) => {
-            const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, record);
-            return entity.selection.selectedRecords.includes(recordKey);
+        [selectEntity, (_: RootState, recordId: MatrxRecordId) => recordId],
+        (entity, recordId) => {
+            return entity.selection.selectedRecords.includes(recordId);
         }
     );
 
     const selectIsRecordActive = createSelector(
-        [selectActiveRecord, (_: RootState, record: EntityData<TEntity>) => record],
-        (activeRecord, record) => activeRecord === record
+        [selectActiveRecordId, (_: RootState, recordId: MatrxRecordId) => recordId],
+        (activeRecord, recordId) => activeRecord === recordId
+    );
+
+    const selectSelectionSummary = createSelector(
+        [selectSelectedRecords, selectActiveRecordId, selectSelectionMode],
+        (selectedRecords, activeRecord, mode) => {
+            const count = selectedRecords.length;
+            return {
+                count,
+                hasSelection: count > 0,
+                hasSingleSelection: count === 1,
+                hasMultipleSelection: count > 1,
+                activeRecord,
+                mode
+            };
+        }
+    );
+
+    const selectActiveRecord = createSelector(
+        [selectEntity, selectActiveRecordId],
+        (entity, activeRecordId) => {
+            return activeRecordId ? entity.records[activeRecordId] : null;
+        }
     );
 
 
     // === End Selection Selectors ==================================================
 
-
+    const selectRecordIdByRecord = createSelector(
+        [selectEntity, (_: RootState, record: EntityData<TEntity>) => record],
+        (entity, record) => {
+            const entry = Object.entries(entity.records).find(
+                ([, value]) => value === record
+            );
+            return entry ? entry[0] as MatrxRecordId : null;
+        }
+    );
 
     // Pagination Selectors
     const selectPaginationInfo = createSelector(
@@ -226,7 +256,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.loading
     );
 
-    const selectError = createSelector(
+    const selectErrorState = createSelector(
         [selectLoadingState],
         (loading) => loading.error
     );
@@ -234,6 +264,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectIsStale = createSelector(
         [selectEntity],
         (entity) => entity.cache.stale
+    );
+
+
+    const selectEntityFlags = createSelector(
+        [selectEntity],
+        (entity) => entity.flags
     );
 
     const selectHasUnsavedChanges = createSelector(
@@ -493,9 +529,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-
-
-
     return {
         selectEntity,
         selectAllRecords,
@@ -508,9 +541,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectCurrentFilters,
         selectFilteredRecords,
         selectLoadingState,
-        selectError,
+        selectErrorState,
         selectIsStale,
         selectHasUnsavedChanges,
+        selectEntityFlags,
         selectEntityMetadata,
         selectPrimaryKeyMetadata,
         selectDisplayField,
@@ -542,7 +576,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         // Selection Management
         selectSelectedRecordIds,
         selectSelectedRecords,
-        selectActiveRecord,
+        selectActiveRecordId,
         selectSelectionMode,
         selectSelectionSummary,
         selectIsRecordSelected,
@@ -554,5 +588,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectFetchOneSuccess,
         selectRecordByKey,
         selectRecordsForFetching,
+        selectActiveRecord,
+        selectIsQuickReferenceFetchComplete,
+        selectQuickReferenceState,
+        selectRecordIdByRecord,
+
     };
 };

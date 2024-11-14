@@ -78,6 +78,21 @@ export type EntityFieldKeys<TEntity extends keyof AutomationSchema> =
       : never
     : never;
 
+
+/**
+ * All field keys from any entity
+ */
+export type EntityAnyFieldKey<TEntity extends keyof AutomationSchema> =
+    AutomationSchema[TEntity] extends infer TField
+    ? TField extends { entityFields: any }
+      ? keyof TField["entityFields"]
+      : never
+    : never;
+
+// Gets all field keys for just the User entity
+type UserFields = EntityAnyFieldKey<'userPreferences'>;
+
+
 // Field Name Format Mappings
 /**
  * Maps a field name to its various format variations
@@ -158,6 +173,8 @@ type test05 = AllEntityNameVariations; // Shows all variations across all applet
 type test06 = AllEntityFieldKeys; // Shows all possible field keys across all applets
 type test07 = EntityFieldKeys<'registeredFunction'>; // Shows fields for specific entity
 type test13 = CanonicalFieldKey<'registeredFunction'>; // Shows a single canonical field name for an entity
+type test16 = EntityAnyFieldKey<'registeredFunction'>; //  "id" | "name" | "description" | "brokerReference" | "modulePath" | "className" | "returnBroker" | "systemFunctionInverse" | "argInverse
+
 
 // Field Name related
 type test08 = FieldNameFormats<'registeredFunction', 'modulePath'>; // Shows mapping structure
@@ -177,7 +194,13 @@ export type EntityDatabaseTable<
     TEntity extends EntityKeys,
 > = EntityNameFormats<TEntity>['database'];
 
+export type AnyEntityDatabaseTable = EntityDatabaseTable<EntityKeys>;
+
 type testRegFuncTable = EntityDatabaseTable<'registeredFunction'>;
+
+type test1 = EntityDatabaseTable<'registeredFunction'>; // specific table
+type test2 = AnyEntityDatabaseTable;
+
 
 
 export type FieldDataType<

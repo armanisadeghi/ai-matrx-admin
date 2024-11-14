@@ -4,6 +4,7 @@
 import React, {useState} from 'react';
 import {EntityKeys} from '@/types/entityTypes';
 import {EntityQuickReferenceView} from './EntityQuickReferenceView';
+import EntityQuickReferenceNew from './EntityQuickReferenceNew';
 import {Card, CardContent} from '@/components/ui/card';
 import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
 import EntityAnalyzer from "@/components/admin/EntityAnalyzer";
@@ -11,6 +12,7 @@ import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import EntityAnalyzerEditor from '@/components/admin/redux/analyzers/EntityAnalyzerEditor';
 import { PanelLeft } from '@/components/matrx/resizable/Panels';
+import {EntityTestView} from "@/app/(authenticated)/tests/crud-operations/basic-crud/EntityQuickTestView";
 
 
 const EntityBrowserContent: React.FC = () => {
@@ -23,7 +25,7 @@ const EntityBrowserContent: React.FC = () => {
                 <PreWiredCardHeader onEntityChange={setSelectedEntity}/>
                 <CardContent className="p-0">
                     {selectedEntity ? (
-                        <EntityQuickReferenceView entityKey={selectedEntity}/>
+                        <EntityTestView entityKey={selectedEntity}/>
                     ) : (
                          <div className="flex items-center justify-center h-full">
                              <div className="text-center">
@@ -36,21 +38,6 @@ const EntityBrowserContent: React.FC = () => {
                      )}
                 </CardContent>
             </Card>
-            {/*<PanelLeft*/}
-            {/*    header={<h2>Left Panel</h2>}*/}
-            {/*    defaultSize={30}*/}
-            {/*        headerProps={{*/}
-            {/*            title: "Entity State",*/}
-            {/*            description: "Debug and analyze entity state",*/}
-            {/*        }}*/}
-
-            {/*    onResize={(sizes) => console.log('Panel resized:', sizes)}*/}
-            {/*>*/}
-            {/*    <div className="p-4">*/}
-            {/*        <EnhancedEntityAnalyzer defaultExpanded={false}/>*/}
-            {/*    </div>*/}
-            {/*</PanelLeft>*/}
-
             <MatrxDynamicPanel
                 initialPosition="left"
                 defaultExpanded={false}
