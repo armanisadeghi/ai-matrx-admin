@@ -1,4 +1,6 @@
 // components/ui/JsonComponents/JsonEditor.tsx
+'use client';
+
 import React, {useState, useCallback, useEffect, useMemo} from 'react';
 import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';

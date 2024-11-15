@@ -102,7 +102,7 @@ export function useEntityQuickReference<TEntity extends EntityKeys>(
     const allRecords = useAppSelector(selectors.selectAllRecords);
     const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
     const selectedRecord = useAppSelector(selectors.selectActiveRecord);
-    const fetchOneSuccess = useAppSelector(selectors.selectFetchOneSuccess);
+    const fetchOneSuccess = useAppSelector(selectors.selectFetchOneStatus);
 
     const selectedQuickReference = useAppSelector(state => {
         const activeRecord = selectedRecord;

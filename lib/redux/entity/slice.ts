@@ -13,705 +13,714 @@ import {
     EntityMetadata,
     EntityMetrics, SelectionMode,
 } from "@/lib/redux/entity/types";
-import {createRecordKey} from "@/lib/redux/entity/utils";
+import {
+    clearError,
+    createRecordKey,
+    resetFlag,
+    setError,
+    setLoading,
+    setSuccess,
+    addRecordToSelection,
+    removeRecordFromSelection,
+    updateSelectionMode,
+    isMatrxRecordId,
+    createMatrxRecordId,
+    isEntityData,
+    toggleSelectionMode,
+    removeSelections,
+    setSpecificSelectionMode,
+    handleSelectionForDeletedRecord,
+    setNewActiveRecord, setStateIsModified
+} from "@/lib/redux/entity/utils";
 import {UnifiedQueryOptions} from "@/lib/redux/schema/globalCacheSelectors";
-import {QueryOptions} from "@/lib/redux/entity/sagas";
 import EntityLogger from "./entityLogger";
-import {WithCallbacks} from "@/lib/redux/entity/actions";
+import {
+    CreateRecordPayload, DeleteRecordPayload,
+    EntityActions,
+    ExecuteCustomQueryPayload,
+    FetchAllPayload,
+    FetchOnePayload, FetchQuickReferencePayload, FetchRecordsPayload, UpdateRecordPayload
+} from "@/lib/redux/entity/actions";
+import { QueryOptions } from "./sagaHelpers";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(
-    entityKey: TEntity,
-    initialState: EntityState<TEntity>
-) => {
-    const slice = createSlice({
-        name: `ENTITIES/${entityKey.toUpperCase()}`,
-        initialState,
-        reducers: {
-            fetchRecords: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<{
-                    page: number;
-                    pageSize: number;
-                    options?: QueryOptions<TEntity>;
-                    maxCount?: number;
-                }>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            fetchAll: (
-                state: EntityState<TEntity>,
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            executeCustomQuery: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<UnifiedQueryOptions<TEntity>>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
+        entityKey: TEntity,
+        initialState: EntityState<TEntity>
+    ) => {
+        const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice - ${entityKey}`, entityKey);
+        const slice = createSlice({
+                    name: `ENTITIES/${entityKey.toUpperCase()}`,
+                    initialState,
+                    reducers: {
+                        fetchOne: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<FetchOnePayload>
+                        ) => {
+                            entityLogger.log('debug', 'fetchOne', action.payload);
+                            setLoading(state, 'FETCH_ONE');
+                        },
+                        fetchOneSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>>
+                        ) => {
+                            entityLogger.log('debug', 'fetchOneSuccess', action.payload);
 
-            // Success Handlers
-            fetchRecordsSuccess: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<{
-                    data: Draft<EntityData<TEntity>>[];
-                    page: number;
-                    pageSize: number;
-                    totalCount: number;
-                }>
-            ) => {
-                const {data, page, pageSize, totalCount} = action.payload;
-                const {primaryKeyMetadata} = state.entityMetadata;
-
-                data.forEach(record => {
-                    const recordKey = createRecordKey(primaryKeyMetadata, record);
-                    state.records[recordKey] = record;
-                });
-
-                state.pagination.page = page;
-                state.pagination.pageSize = pageSize;
-                state.pagination.totalCount = totalCount;
-                state.pagination.totalPages = Math.ceil(totalCount / pageSize);
-                state.pagination.hasNextPage = page * pageSize < totalCount;
-                state.pagination.hasPreviousPage = page > 1;
-
-                state.loading.loading = false;
-                state.cache.stale = false;
-                state.loading.lastOperation = 'fetch';
-            },
-
-            fetchAllSuccess: (
-                state,
-                action: PayloadAction<Draft<EntityData<TEntity>>[]>
-            ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                state.records = {};
-                action.payload.forEach(record => {
-                    const recordKey = createRecordKey(primaryKeyMetadata, record);
-                    state.records[recordKey] = record;
-                });
-                state.loading.lastOperation = 'fetch';
-                state.cache.stale = false;
-                state.loading.loading = false;
-            },
-
-
-            // Fetch One Management ========================================
-
-            fetchOne: (
-                state,
-                action: PayloadAction<{ matrxRecordId: MatrxRecordId }>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-                state.flags.fetchOneStatus = 'loading';
-            },
-
-            fetchOneSuccess: (
-                state,
-                action: PayloadAction<Draft<EntityData<TEntity>>>
-            ) => {
-                const record = action.payload;
-                const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
-                state.records[recordKey] = record;
-                state.loading.lastOperation = 'fetch';
-                state.flags.fetchOneStatus = 'success';
-                state.cache.stale = false;
-                state.loading.loading = false;
-
-                if (!state.selection.selectedRecords.includes(recordKey)) {
-                    state.selection.selectedRecords.push(recordKey);
-                    state.selection.lastSelected = recordKey;
-                    if (state.selection.selectedRecords.length === 1) {
-                        state.selection.selectionMode = 'single';
-                        state.selection.activeRecord = recordKey;
-                    }
-                    if (state.selection.selectedRecords.length > 1) {
-                        state.selection.selectionMode = 'multiple';
-                        state.selection.activeRecord = null;
-                    } else {
-                        EntityLogger.log('error', 'fetchOneSuccess Selection State Not as expected', recordKey, state.selection);
-                        state.selection.activeRecord = null;
-                    }
-                }
-            },
-            resetFetchOneStatus: (state) => {
-                if (state.flags.fetchOneStatus === 'success') {
-                    state.flags.fetchOneStatus = 'idle';
-                }
-            },
-
-
-            // Quick Reference Management ========================================
-            fetchQuickReference: (state, action?: PayloadAction<{ maxRecords?: number }>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-            fetchQuickReferenceSuccess: (
-                state,
-                action: PayloadAction<QuickReferenceRecord[]>
-            ) => {
-                state.quickReference.records = action.payload;
-                state.quickReference.lastUpdated = new Date().toISOString();
-                state.quickReference.fetchComplete = true;
-                state.loading.loading = false;
-            },
-            setQuickReference: (
-                state,
-                action: PayloadAction<QuickReferenceRecord[]>
-            ) => {
-                state.quickReference.records = action.payload;
-                state.quickReference.lastUpdated = new Date().toISOString();
-                state.quickReference.fetchComplete = true;
-            },
-
-            // Get or Fetch Selected Records Management ========================================
-            getOrFetchSelectedRecords: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<MatrxRecordId[]>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-
-            fetchSelectedRecords: (
-                state,
-                action: PayloadAction<QueryOptions<TEntity>>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-
-            fetchSelectedRecordsSuccess: (
-                state,
-                action: PayloadAction<EntityData<TEntity>[]>) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                action.payload.forEach(record => {
-                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
-                    state.records[recordKey] = record;
-                });
-                state.loading.loading = false;
-                state.loading.lastOperation = 'fetch';
-            },
-
-
-            // State-wide Validation Management ========================================
-            setValidated: (state) => {
-                state.flags.isValidated = true;
-            },
-
-            // Action to reset `isValidated` to false
-            resetValidated: (state) => {
-                state.flags.isValidated = false;
-            },
-
-// Update Record Management ========================================
-            updateRecord: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<WithCallbacks<{
-                    matrxRecordId: MatrxRecordId;
-                    data: Partial<EntityData<TEntity>>;
-                }, EntityData<TEntity>>>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-
-            updateRecordSuccess: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<EntityData<TEntity>>
-            ) => {
-                const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                state.records[recordKey] = action.payload;
-                state.loading.loading = false;
-                state.flags.isModified = true;
-                state.flags.isValidated = false;
-            },
-
-            optimisticUpdate: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<{
-                    record: Draft<EntityData<TEntity>>;
-                    rollback?: Draft<EntityData<TEntity>>;
-                }>
-            ) => {
-                const {record, rollback} = action.payload;
-                const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
-
-                if (rollback) {
-                    state.history.past.push({
-                        timestamp: new Date().toISOString(),
-                        operation: 'update',
-                        data: record,
-                        previousData: rollback,
-                        metadata: {reason: 'optimistic_update'}
-                    });
-                }
-
-                state.records[recordKey] = record;
-                state.flags.isModified = true;
-                state.flags.hasUnsavedChanges = true;
-            },
-
-            // Delete Record Management ========================================
-            deleteRecord: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<WithCallbacks<{ matrxRecordId: MatrxRecordId }, void>>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-
-            deleteRecordSuccess: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
-            ) => {
-                const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-
-                // Delete the record from state
-                delete state.records[recordKey];
-
-                state.loading.loading = false;
-                state.flags.isModified = true;
-            },
-
-
-            // Create Record Management ========================================
-            createRecord: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<WithCallbacks<EntityData<TEntity>, EntityData<TEntity>>>
-            ) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-
-            createRecordSuccess: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<EntityData<TEntity>>
-            ) => {
-                const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                state.records[recordKey] = action.payload;
-                state.loading.loading = false;
-                state.flags.isModified = true;
-                state.flags.isValidated = false;
-            },
-
-
-            fetchRecordsRejected: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<{
-                    message: string;
-                    code?: number;
-                    details?: any;
-                }>
-            ) => {
-                state.loading.loading = false;
-                state.loading.error = action.payload;
-                state.loading.lastOperation = 'fetch';
-            },
-
-            invalidateRecord: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<string>
-            ) => {
-                const recordKey = action.payload;
-                if (state.records[recordKey]) {
-                    state.cache.invalidationTriggers.push(recordKey);
-                    state.cache.stale = true;
-                }
-            },
-            executeCustomQuerySuccess: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<Draft<EntityData<TEntity>>[]>
-            ) => {
-                state.records = {};
-                action.payload.forEach(record => {
-                    const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
-                    state.records[recordKey] = record;
-                });
-                state.loading.lastOperation = 'custom';
-                state.loading.loading = false;
-            },
-
-            // Core Record Management
-            setRecords: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<Record<string, Draft<EntityData<TEntity>>>>
-            ) => {
-                state.records = action.payload;
-                state.loading.lastOperation = 'fetch';
-                const cacheKey = state.entityMetadata.primaryKeyMetadata.database_fields.join('::');
-                state.cache.lastFetched[cacheKey] = new Date().toISOString();
-                state.cache.stale = false;
-            },
-
-            upsertRecords: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<Draft<EntityData<TEntity>>[]>
-            ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                action.payload.forEach(record => {
-                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
-                    state.records[recordKey] = record;
-                });
-                state.flags.isModified = true;
-                state.flags.hasUnsavedChanges = true;
-            },
-
-            removeRecords: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<Draft<EntityData<TEntity>>[]>
-            ) => {
-                const {primaryKeyMetadata} = state.entityMetadata;
-                action.payload.forEach(record => {
-                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
-                    delete state.records[recordKey];
-                });
-                state.flags.isModified = true;
-                state.flags.hasUnsavedChanges = true;
-            },
-
-
-            // Selection Management
-            setSelectionMode: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<SelectionMode>
-            ) => {
-                state.selection.selectionMode = action.payload;
-            },
-            setToggleSelectionMode: (state,) => {
-                if (['none', 'single'].includes(state.selection.selectionMode)) {
-                    state.selection.selectionMode = 'multiple';
-                } else {
-                    state.selection.selectionMode = 'single';
-                }
-            },
-            clearSelection: (state) => {
-                state.selection.selectedRecords = [];
-                state.selection.activeRecord = null;
-                state.selection.lastSelected = undefined;
-                state.selection.selectionMode = 'none';
-            },
-            addToSelection: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<MatrxRecordId>
-            ) => {
-
-                const recordId =
-                    typeof action.payload === 'string' && action.payload.includes(':')
-                    ? action.payload
-                    : typeof action.payload === 'object'
-                      ? Object.keys(state.records).find(key => key === action.payload) || null
-                      : null;
-
-                if (!recordId) return;
-
-                if (!state.selection.selectedRecords.includes(recordId)) {
-                    state.selection.selectedRecords.push(recordId);
-                    state.selection.lastSelected = recordId;
-
-                    console.log('selectedRecords', state.selection.selectedRecords);
-                    console.log('Count: ', state.selection.selectedRecords.length);
-
-                    if (state.selection.selectedRecords.length === 1) {
-                        console.log('selection mode is single');
-                        state.selection.activeRecord = recordId;
-                        state.selection.selectionMode = 'single';
-                    } else {
-                        console.log('selection mode is multiple');
-                        state.selection.activeRecord = null;
-                        state.selection.selectionMode = 'multiple';
-                    }
-                }
-
-                // Set selection mode to 'none' if no records are selected
-                if (state.selection.selectedRecords.length === 0) {
-                    console.log('selection mode is none');
-                    state.selection.selectionMode = 'none';
-                }
-            },
-            removeFromSelection: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<MatrxRecordId>
-            ) => {
-                state.selection.selectedRecords = state.selection.selectedRecords.filter(
-                    key => key !== action.payload
-                );
-                if (state.selection.selectedRecords.length === 1) {
-                    state.selection.activeRecord = state.selection.selectedRecords[0];
-                    state.selection.lastSelected = state.selection.selectedRecords[0];
-                    state.selection.selectionMode = 'single';
-
-                } else if (state.selection.selectedRecords.length > 1) {
-                    state.selection.activeRecord = null;
-                    if (state.selection.lastSelected === action.payload) {
-                        state.selection.lastSelected = state.selection.selectedRecords[
-                        state.selection.selectedRecords.length - 1];
-                    }
-                    state.selection.selectionMode = 'multiple';
-                } else {
-                    state.selection.activeRecord = null;
-                    state.selection.lastSelected = undefined;
-                    state.selection.selectionMode = 'none';
-                }
-            },
-            setActiveRecord: (
-                state: EntityState<TEntity>,
-                action: PayloadAction<MatrxRecordId>
-            ) => {
-                state.selection.activeRecord = action.payload;
-                if (!state.selection.selectedRecords.includes(action.payload)) {
-                    state.selection.selectedRecords.push(action.payload);
-                    state.selection.lastSelected = action.payload;
-
-                    if (state.selection.selectedRecords.length === 1) {
-                        state.selection.selectionMode = 'single';
-                    } else {
-                        state.selection.selectionMode = 'multiple';
-                    }
-                }
-            },
-            clearActiveRecord: (state) => {
-                state.selection.activeRecord = null;
-            },
-
-
-            // History Management
-            pushToHistory: (
-                state,
-                action: PayloadAction<Draft<HistoryEntry<TEntity>>>
-            ) => {
-                state.history.past.push(action.payload);
-                if (state.history.past.length > state.history.maxHistorySize) {
-                    state.history.past.shift();
-                }
-                state.history.future = [];
-                state.history.lastSaved = new Date().toISOString();
-            },
-
-            undo: (state) => {
-                const lastEntry = state.history.past.pop();
-                if (lastEntry) {
-                    state.history.future.push(lastEntry);
-                    const {primaryKeyMetadata} = state.entityMetadata;
-
-                    if (Array.isArray(lastEntry.previousData)) {
-                        lastEntry.previousData.forEach(record => {
-                            const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                            const record = action.payload;
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
                             state.records[recordKey] = record;
-                        });
-                    } else if (lastEntry.previousData) {
-                        const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, lastEntry.previousData);
-                        state.records[recordKey] = lastEntry.previousData;
-                    }
-                    state.flags.isModified = true;
-                    state.flags.hasUnsavedChanges = true;
-                }
-            },
+                            setSuccess(state, 'FETCH_ONE');
 
-            redo: (state) => {
-                const nextEntry = state.history.future.pop();
-                if (nextEntry) {
-                    state.history.past.push(nextEntry);
-                    const {primaryKeyMetadata} = state.entityMetadata;
+                            addRecordToSelection(state, recordKey);
+                            state.cache.stale = false;
+                        },
 
-                    if (Array.isArray(nextEntry.data)) {
-                        nextEntry.data.forEach(record => {
-                            const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                        resetFetchOneStatus: (state) => {
+                            entityLogger.log('debug', 'resetFetchOneStatus');
+                            resetFlag(state, 'FETCH_ONE');
+                        },
+
+                        // Fetch Records Management ========================================
+                        fetchRecords: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<FetchRecordsPayload>
+                        ) => {
+                            entityLogger.log('debug', 'fetchRecords', action.payload);
+                            setLoading(state, 'FETCH_RECORDS');
+                        },
+                        fetchRecordsSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                data: Draft<EntityData<TEntity>>[];
+                                page: number;
+                                pageSize: number;
+                                totalCount: number;
+                            }>
+                        ) => {
+                            const {data, page, pageSize, totalCount} = action.payload;
+                            const {primaryKeyMetadata} = state.entityMetadata;
+
+                            entityLogger.log('debug', 'fetchRecordsSuccess', {data, page, pageSize, totalCount});
+
+                            data.forEach(record => {
+                                const recordKey = createRecordKey(primaryKeyMetadata, record);
+                                state.records[recordKey] = record;
+                            });
+
+                            state.pagination.page = page;
+                            state.pagination.pageSize = pageSize;
+                            state.pagination.totalCount = totalCount;
+                            state.pagination.totalPages = Math.ceil(totalCount / pageSize);
+                            state.pagination.hasNextPage = page * pageSize < totalCount;
+                            state.pagination.hasPreviousPage = page > 1;
+
+                            setSuccess(state, 'FETCH_RECORDS');
+                            state.cache.stale = false;
+                        },
+                        fetchRecordsRejected: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                message: string;
+                                code?: number;
+                                details?: any;
+                            }>
+                        ) => {
+                            state.loading.loading = false;
+                            state.loading.error = action.payload;
+                            state.loading.lastOperation = 'FETCH_RECORDS';
+
+                            entityLogger.log('error', 'fetchRecordsRejected', action.payload);
+                        },
+
+
+                        // Fetch All Management ========================================
+                        fetchAll: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<FetchAllPayload>
+                        ) => {
+                            entityLogger.log('debug', 'fetchAll', action.payload);
+                            setLoading(state, 'FETCH_ALL');
+                        },
+                        fetchAllSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<Draft<EntityData<TEntity>>[]>
+                        ) => {
+                            const {primaryKeyMetadata} = state.entityMetadata;
+                            entityLogger.log('debug', 'fetchAllSuccess', action.payload);
+
+                            state.records = {};
+                            action.payload.forEach(record => {
+                                const recordKey = createRecordKey(primaryKeyMetadata, record);
+                                state.records[recordKey] = record;
+                            });
+
+                            setSuccess(state, 'FETCH_ALL');
+                            state.cache.stale = false;
+                        },
+
+
+                        // Custom Query Management ========================================
+                        executeCustomQuery: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<ExecuteCustomQueryPayload>
+                        ) => {
+                            entityLogger.log('debug', 'executeCustomQuery', action.payload);
+                            setLoading(state, 'CUSTOM');
+                        },
+                        executeCustomQuerySuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<Draft<EntityData<TEntity>>[]>
+                        ) => {
+                            entityLogger.log('debug', 'executeCustomQuerySuccess', action.payload);
+
+                            state.records = {};
+                            action.payload.forEach(record => {
+                                const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
+                                state.records[recordKey] = record;
+                            });
+
+                            setSuccess(state, 'CUSTOM');
+                        },
+
+
+                        fetchQuickReference: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<FetchQuickReferencePayload>
+                        ) => {
+                            entityLogger.log('debug', 'fetchQuickReference', action.payload);
+                            setLoading(state, 'FETCH_QUICK_REFERENCE');
+                        },
+                        fetchQuickReferenceSuccess: (
+                            state,
+                            action: PayloadAction<QuickReferenceRecord[]>
+                        ) => {
+                            entityLogger.log('debug', 'fetchQuickReferenceSuccess', action.payload);
+
+                            state.quickReference.records = action.payload;
+                            state.quickReference.lastUpdated = new Date().toISOString();
+                            state.quickReference.fetchComplete = true;
+
+                            setSuccess(state, 'FETCH_QUICK_REFERENCE');
+                        },
+                        setQuickReference: (
+                            state,
+                            action: PayloadAction<QuickReferenceRecord[]>
+                        ) => {
+                            entityLogger.log('debug', 'setQuickReference', action.payload);
+
+                            state.quickReference.records = action.payload;
+                            state.quickReference.lastUpdated = new Date().toISOString();
+                            state.quickReference.fetchComplete = true;
+                        },
+                        addQuickReferenceRecords: (
+                            state,
+                            action: PayloadAction<QuickReferenceRecord[]>
+                        ) => {
+                            entityLogger.log('debug', 'addQuickReferenceRecord', action.payload);
+
+                            state.quickReference.records = [
+                                ...state.quickReference.records,
+                                ...action.payload
+                            ];
+                            state.quickReference.lastUpdated = new Date().toISOString();
+                        },
+
+
+                        getOrFetchSelectedRecords: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId[]>
+                        ) => {
+                            entityLogger.log('debug', 'getOrFetchSelectedRecords', action.payload);
+                            setLoading(state, 'FETCH_RECORDS');
+                        },
+
+                        fetchSelectedRecords: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<QueryOptions<TEntity> & { callbackId?: string }>
+                        ) => {
+                            entityLogger.log('debug', 'fetchSelectedRecords', action.payload);
+                            setLoading(state, 'FETCH_RECORDS');
+                        },
+
+                        fetchSelectedRecordsSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>[]>
+                        ) => {
+                            const {primaryKeyMetadata} = state.entityMetadata;
+                            entityLogger.log('debug', 'fetchSelectedRecordsSuccess', action.payload);
+
+                            action.payload.forEach(record => {
+                                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                                state.records[recordKey] = record;
+                            });
+
+                            setSuccess(state, 'FETCH_RECORDS');
+                        },
+
+                        createRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<CreateRecordPayload<TEntity>>
+                        ) => {
+                            entityLogger.log('debug', 'createRecord', action.payload);
+                            setLoading(state, 'CREATE');
+                        },
+
+                        createRecordSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>>
+                        ) => {
+                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                            entityLogger.log('debug', 'createRecordSuccess', action.payload);
+
+                            state.records[recordKey] = action.payload;
+                            setNewActiveRecord(state, recordKey);
+                            setSuccess(state, 'CREATE');
+                            setStateIsModified(state);
+                        },
+
+                        updateRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<UpdateRecordPayload<TEntity>>
+                        ) => {
+                            entityLogger.log('debug', 'updateRecord', action.payload);
+                            setLoading(state, 'UPDATE');
+                        },
+
+                        updateRecordSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>>
+                        ) => {
+                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                            entityLogger.log('debug', 'updateRecordSuccess', action.payload);
+
+                            state.records[recordKey] = action.payload;
+                            setNewActiveRecord(state, recordKey);
+                            setSuccess(state, 'UPDATE');
+                            setStateIsModified(state);
+                        },
+
+                        optimisticUpdate: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                record: EntityData<TEntity>;
+                                rollback?: EntityData<TEntity>;
+                            }>
+                        ) => {
+                            const {record, rollback} = action.payload;
+                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
+                            entityLogger.log('debug', 'optimisticUpdate', {record, rollback});
+
+                            if (rollback) {
+                                state.history.past.push({
+                                    timestamp: new Date().toISOString(),
+                                    operation: 'update',
+                                    data: record,
+                                    previousData: rollback,
+                                    metadata: {reason: 'optimistic_update'}
+                                });
+                            }
+
                             state.records[recordKey] = record;
-                        });
-                    } else {
-                        const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, nextEntry.data);
-                        state.records[recordKey] = nextEntry.data;
-                    }
-                    state.flags.isModified = true;
-                    state.flags.hasUnsavedChanges = true;
+                            state.flags.isModified = true;
+                            state.flags.hasUnsavedChanges = true;
+                        },
+
+
+                        deleteRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<DeleteRecordPayload>
+                        ) => {
+                            entityLogger.log('debug', 'deleteRecord', action.payload);
+                            setLoading(state, 'DELETE');
+                        },
+                        deleteRecordSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
+                        ) => {
+                            const recordKey: MatrxRecordId = action.payload.matrxRecordId;
+                            entityLogger.log('debug', 'deleteRecordSuccess', {recordKey});
+                            delete state.records[recordKey];
+                            handleSelectionForDeletedRecord(state, recordKey);
+                            setSuccess(state, 'DELETE');
+                            state.flags.isModified = true;
+                        },
+
+                        setSelectionMode: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<SelectionMode>
+                        ) => {
+                            entityLogger.log('debug', 'setSelectionMode', action.payload);
+                            setSpecificSelectionMode(state, action.payload);
+                        },
+
+                        setToggleSelectionMode: (state) => {
+                            entityLogger.log('debug', 'setToggleSelectionMode', state.selection.selectionMode);
+                            toggleSelectionMode(state);
+                        },
+
+                        clearSelection: (state) => {
+                            entityLogger.log('debug', 'clearSelection');
+                            removeSelections(state);
+                        },
+
+                        addToSelection: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            entityLogger.log('info', 'addToSelection start', action.payload);
+
+                            if (isMatrxRecordId(action.payload)) {
+                                addRecordToSelection(state, action.payload);
+                            } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
+                                const matrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                                addRecordToSelection(state, matrxRecordId);
+                            } else {
+                                entityLogger.log('error', 'Invalid Record in addToSelection', action.payload);
+                            }
+                        },
+
+                        removeFromSelection: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            entityLogger.log('debug', 'removeFromSelection', action.payload);
+                            removeRecordFromSelection(state, action.payload);
+                        },
+
+                        setActiveRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            entityLogger.log('debug', 'setActiveRecord', action.payload);
+                            state.selection.activeRecord = action.payload;
+                            if (!state.selection.selectedRecords.includes(action.payload)) {
+                                addRecordToSelection(state, action.payload);
+                            }
+                        },
+
+                        clearActiveRecord: (state) => {
+                            entityLogger.log('debug', 'clearActiveRecord');
+                            state.selection.activeRecord = null;
+                        },
+
+                        setValidated: (state) => {
+                            entityLogger.log('debug', 'setValidated');
+                            state.flags.isValidated = true;
+                        },
+
+                        resetValidated: (state) => {
+                            entityLogger.log('debug', 'resetValidated');
+                            state.flags.isValidated = false;
+                        },
+
+                        invalidateRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<string>
+                        ) => {
+                            const recordKey = action.payload;
+                            entityLogger.log('debug', 'invalidateRecord', {recordKey});
+
+                            if (state.records[recordKey]) {
+                                state.cache.invalidationTriggers.push(recordKey);
+                                state.cache.stale = true;
+                            }
+                        },
+
+                        // Core Record Management
+                        setRecords: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<Record<string, Draft<EntityData<TEntity>>>>
+                        ) => {
+                            entityLogger.log('debug', 'setRecords', action.payload);
+                            state.records = action.payload;
+                            state.loading.lastOperation = 'FETCH';
+                            const cacheKey = state.entityMetadata.primaryKeyMetadata.database_fields.join('::');
+                            state.cache.lastFetched[cacheKey] = new Date().toISOString();
+                            state.cache.stale = false;
+                        },
+
+                        upsertRecords: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<Draft<EntityData<TEntity>>[]>
+                        ) => {
+                            const {primaryKeyMetadata} = state.entityMetadata;
+                            entityLogger.log('debug', 'upsertRecords', action.payload);
+
+                            action.payload.forEach(record => {
+                                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                                state.records[recordKey] = record;
+                            });
+
+                            state.flags.isModified = true;
+                            state.flags.hasUnsavedChanges = true;
+                        },
+
+                        removeRecords: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<Draft<EntityData<TEntity>>[]>
+                        ) => {
+                            const {primaryKeyMetadata} = state.entityMetadata;
+                            entityLogger.log('debug', 'removeRecords', action.payload);
+
+                            action.payload.forEach(record => {
+                                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                                delete state.records[recordKey];
+                            });
+
+                            state.flags.isModified = true;
+                            state.flags.hasUnsavedChanges = true;
+                        },
+
+                        // History Management
+                        pushToHistory: (
+                            state,
+                            action: PayloadAction<Draft<HistoryEntry<TEntity>>>
+                        ) => {
+                            entityLogger.log('debug', 'pushToHistory', action.payload);
+                            state.history.past.push(action.payload);
+                            if (state.history.past.length > state.history.maxHistorySize) {
+                                state.history.past.shift();
+                            }
+                            state.history.future = [];
+                            state.history.lastSaved = new Date().toISOString();
+                        },
+
+                        undo: (state) => {
+                            entityLogger.log('debug', 'undo');
+                            const lastEntry = state.history.past.pop();
+                            if (lastEntry) {
+                                state.history.future.push(lastEntry);
+                                const {primaryKeyMetadata} = state.entityMetadata;
+
+                                if (Array.isArray(lastEntry.previousData)) {
+                                    lastEntry.previousData.forEach(record => {
+                                        const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                                        state.records[recordKey] = record;
+                                    });
+                                } else if (lastEntry.previousData) {
+                                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, lastEntry.previousData);
+                                    state.records[recordKey] = lastEntry.previousData;
+                                }
+                                state.flags.isModified = true;
+                                state.flags.hasUnsavedChanges = true;
+                            }
+                        },
+
+                        redo: (state) => {
+                            entityLogger.log('debug', 'redo');
+                            const nextEntry = state.history.future.pop();
+                            if (nextEntry) {
+                                state.history.past.push(nextEntry);
+                                const {primaryKeyMetadata} = state.entityMetadata;
+
+                                if (Array.isArray(nextEntry.data)) {
+                                    nextEntry.data.forEach(record => {
+                                        const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                                        state.records[recordKey] = record;
+                                    });
+                                } else {
+                                    const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, nextEntry.data);
+                                    state.records[recordKey] = nextEntry.data;
+                                }
+                                state.flags.isModified = true;
+                                state.flags.hasUnsavedChanges = true;
+                            }
+                        },
+
+                        // Pagination Management
+                        setPage: (
+                            state,
+                            action: PayloadAction<number>
+                        ) => {
+                            entityLogger.log('debug', 'setPage', action.payload);
+                            state.pagination.page = action.payload;
+                            state.flags.needsRefresh = true;
+                        },
+
+                        setPageSize: (
+                            state,
+                            action: PayloadAction<number>
+                        ) => {
+                            entityLogger.log('debug', 'setPageSize', action.payload);
+                            state.pagination.pageSize = action.payload;
+                            state.pagination.page = 1;
+                            state.flags.needsRefresh = true;
+                        },
+
+                        // Filter Management
+                        setFilters: (
+                            state,
+                            action: PayloadAction<FilterPayload>
+                        ) => {
+                            const {conditions, replace, temporary} = action.payload;
+                            entityLogger.log('debug', 'setFilters', action.payload);
+
+                            if (replace) {
+                                state.filters.conditions = conditions;
+                            } else {
+                                state.filters.conditions = [...state.filters.conditions, ...conditions];
+                            }
+                            if (!temporary) {
+                                state.flags.needsRefresh = true;
+                            }
+                        },
+
+                        setSorting: (
+                            state,
+                            action: PayloadAction<SortPayload>
+                        ) => {
+                            const {field, direction, append} = action.payload;
+                            const newSort = {field, direction};
+                            entityLogger.log('debug', 'setSorting', action.payload);
+
+                            if (append) {
+                                state.filters.sort.push(newSort);
+                            } else {
+                                state.filters.sort = [newSort];
+                            }
+                            state.flags.needsRefresh = true;
+                        },
+
+                        clearFilters: (state) => {
+                            entityLogger.log('debug', 'clearFilters');
+                            state.filters.conditions = [];
+                            state.filters.sort = [];
+                            state.flags.needsRefresh = true;
+                        },
+
+                        // Metadata Management
+                        initializeEntityMetadata: (
+                            state,
+                            action: PayloadAction<EntityMetadata>
+                        ) => {
+                            entityLogger.log('debug', 'initializeEntityMetadata', action.payload);
+                            state.entityMetadata = action.payload;
+                        },
+
+                        updateEntityMetadata: (
+                            state,
+                            action: PayloadAction<Partial<EntityMetadata>>
+                        ) => {
+                            entityLogger.log('debug', 'updateEntityMetadata', action.payload);
+                            state.entityMetadata = {
+                                ...state.entityMetadata,
+                                ...action.payload,
+                            };
+                        },
+
+                        // Loading State Management
+                        setLoading: (
+                            state,
+                            action: PayloadAction<boolean>
+                        ) => {
+                            entityLogger.log('debug', 'setLoading', action.payload);
+                            state.loading.loading = action.payload;
+                            if (!action.payload) {
+                                state.loading.lastOperation = undefined;
+                            }
+                        },
+
+                        setError: (
+                            state,
+                            action: PayloadAction<LoadingState['error']>
+                        ) => {
+                            entityLogger.log('error', 'setError', action.payload);
+                            state.loading.error = action.payload;
+                            state.loading.loading = false;
+                        },
+
+                        // Subscription Management
+                        setSubscription: (
+                            state,
+                            action: PayloadAction<Partial<SubscriptionConfig>>
+                        ) => {
+                            entityLogger.log('debug', 'setSubscription', action.payload);
+                            state.subscription = {
+                                ...state.subscription,
+                                ...action.payload
+                            };
+                        },
+
+                        // Flag Management
+                        setFlags: (
+                            state,
+                            action: PayloadAction<Partial<EntityState<TEntity>['flags']>>
+                        ) => {
+                            entityLogger.log('debug', 'setFlags', action.payload);
+                            state.flags = {
+                                ...state.flags,
+                                ...action.payload
+                            };
+                        },
+
+                        // Add the action to fetch metrics
+                        fetchMetrics: (state, action: PayloadAction<{ timeRange?: string }>) => {
+                            entityLogger.log('debug', 'fetchMetrics', action.payload);
+                            state.loading.loading = true;
+                            state.loading.error = null;
+                        },
+
+                        // Add the success handler
+                        fetchMetricsSuccess: (
+                            state,
+                            action: PayloadAction<EntityMetrics>
+                        ) => {
+                            entityLogger.log('debug', 'fetchMetricsSuccess', action.payload);
+                            state.metrics = action.payload;
+                            state.loading.loading = false;
+                        },
+
+                        // Add the set metrics action
+                        setMetrics: (
+                            state,
+                            action: PayloadAction<Partial<EntityMetrics>>
+                        ) => {
+                            entityLogger.log('debug', 'setMetrics', action.payload);
+                            state.metrics = {
+                                ...state.metrics,
+                                ...action.payload,
+                                lastUpdated: new Date().toISOString()
+                            };
+                        },
+
+                        // State Management
+                        refreshData: (state) => {
+                            entityLogger.log('debug', 'refreshData');
+                            state.flags.needsRefresh = true;
+                        },
+
+                        invalidateCache: (state) => {
+                            entityLogger.log('debug', 'invalidateCache');
+                            state.cache.stale = true;
+                        },
+
+                        resetState: () => initialState,
+                    },
+
+                    // Extra Reducers
+                    extraReducers: (builder) => {
+                        builder
+                            .addMatcher(
+                                (action) => action.type.endsWith('/rejected'),
+                                (state, action: PayloadAction<{ message?: string; code?: number; details?: any }>) => {
+                                    entityLogger.log('error', 'Rejected action', action.payload);
+                                    setError(state, action);
+                                }
+                            )
+                            .addMatcher(
+                                (action) => action.type.endsWith('/fulfilled'),
+                                (state) => {
+                                    entityLogger.log('debug', 'Fulfilled action');
+                                    clearError(state);
+                                }
+                            );
+                    },
                 }
-            },
+            )
+        ;
 
-            // Pagination Management
-            setPage: (
-                state,
-                action: PayloadAction<number>
-            ) => {
-                state.pagination.page = action.payload;
-                state.flags.needsRefresh = true;
-            },
-
-            setPageSize: (
-                state,
-                action: PayloadAction<number>
-            ) => {
-                state.pagination.pageSize = action.payload;
-                state.pagination.page = 1;
-                state.flags.needsRefresh = true;
-            },
-
-            // Filter Management
-            setFilters: (
-                state,
-                action: PayloadAction<FilterPayload>
-            ) => {
-                const {conditions, replace, temporary} = action.payload;
-                if (replace) {
-                    state.filters.conditions = conditions;
-                } else {
-                    state.filters.conditions = [...state.filters.conditions, ...conditions];
-                }
-                if (!temporary) {
-                    state.flags.needsRefresh = true;
-                }
-            },
-
-            setSorting: (
-                state,
-                action: PayloadAction<SortPayload>
-            ) => {
-                const {field, direction, append} = action.payload;
-                const newSort = {field, direction};
-                if (append) {
-                    state.filters.sort.push(newSort);
-                } else {
-                    state.filters.sort = [newSort];
-                }
-                state.flags.needsRefresh = true;
-            },
-
-            clearFilters: (state) => {
-                state.filters.conditions = [];
-                state.filters.sort = [];
-                state.flags.needsRefresh = true;
-            },
-
-            // Metadata Management
-            initializeEntityMetadata: (
-                state,
-                action: PayloadAction<EntityMetadata>
-            ) => {
-                state.entityMetadata = action.payload;
-            },
-
-            updateEntityMetadata: (
-                state,
-                action: PayloadAction<Partial<EntityMetadata>>
-            ) => {
-                state.entityMetadata = {
-                    ...state.entityMetadata,
-                    ...action.payload,
-                };
-            },
-
-            // Loading State Management
-            setLoading: (
-                state,
-                action: PayloadAction<boolean>
-            ) => {
-                state.loading.loading = action.payload;
-                if (!action.payload) {
-                    state.loading.lastOperation = undefined;
-                }
-            },
-
-            setError: (
-                state,
-                action: PayloadAction<LoadingState['error']>
-            ) => {
-                state.loading.error = action.payload;
-                state.loading.loading = false;
-            },
-
-            // Subscription Management
-            setSubscription: (
-                state,
-                action: PayloadAction<Partial<SubscriptionConfig>>
-            ) => {
-                state.subscription = {
-                    ...state.subscription,
-                    ...action.payload
-                };
-            },
-
-            // Flag Management
-            setFlags: (
-                state,
-                action: PayloadAction<Partial<EntityState<TEntity>['flags']>>
-            ) => {
-                state.flags = {
-                    ...state.flags,
-                    ...action.payload
-                };
-            },
-
-            // Add the action to fetch metrics
-            fetchMetrics: (state, action: PayloadAction<{ timeRange?: string }>) => {
-                state.loading.loading = true;
-                state.loading.error = null;
-            },
-
-            // Add the success handler
-            fetchMetricsSuccess: (
-                state,
-                action: PayloadAction<EntityMetrics>
-            ) => {
-                state.metrics = action.payload;
-                state.loading.loading = false;
-            },
-
-            // Add the set metrics action
-            setMetrics: (
-                state,
-                action: PayloadAction<Partial<EntityMetrics>>
-            ) => {
-                state.metrics = {
-                    ...state.metrics,
-                    ...action.payload,
-                    lastUpdated: new Date().toISOString()
-                };
-            },
-
-            // State Management
-            refreshData: (state) => {
-                state.flags.needsRefresh = true;
-            },
-
-            invalidateCache: (state) => {
-                state.cache.stale = true;
-            },
-
-            resetState: () => initialState,
-        },
-
-        extraReducers: (builder) => {
-            builder
-                .addMatcher(
-                    (action) => action.type.endsWith('/rejected'),
-                    (state, action: PayloadAction<{
-                        message?: string;
-                        code?: number;
-                        details?: any;
-                    }>) => {
-                        state.loading.loading = false;
-                        state.loading.error = {
-                            message: action.payload?.message || 'An error occurred',
-                            code: action.payload?.code,
-                            details: action.payload?.details,
-                        };
-                    }
-                )
-                .addMatcher(
-                    (action) => action.type.endsWith('/fulfilled'),
-                    (state) => {
-                        state.loading.loading = false;
-                        state.loading.error = null;
-                    }
-                );
-        },
-    });
-
-    return {
-        reducer: slice.reducer,
-        actions: slice.actions,
-    };
-};
+        return {
+            reducer: slice.reducer,
+            actions: slice.actions,
+        };
+    }
+;

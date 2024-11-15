@@ -15,9 +15,12 @@ import {
     EntityStateField,
     SelectionSummary,
     SelectionMode,
+    OperationCallback,
+    CallbackResult,
 } from '@/lib/redux/entity/types';
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
-import {OperationCallbacks} from "@/lib/redux/entity/actions";
+import { v4 as uuidv4 } from 'uuid';
+import {Callback, callbackManager} from "@/utils/callbackManager";
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -46,18 +49,18 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Record Operations
     createRecord: (
         data: Partial<EntityData<TEntity>>,
-        callbacks?: OperationCallbacks<EntityData<TEntity>>
+        callbacks?: Callback,
     ) => void;
 
     updateRecord: (
         matrxRecordId: MatrxRecordId,
         data: Partial<EntityData<TEntity>>,
-        callbacks?: OperationCallbacks<EntityData<TEntity>>
+        callbacks?: Callback,
     ) => void;
 
     deleteRecord: (
         matrxRecordId: MatrxRecordId,
-        callbacks?: OperationCallbacks
+        callbacks?: Callback,
     ) => void;
 
     // UI States
@@ -109,30 +112,39 @@ export function useQuickReference<TEntity extends EntityKeys>(
         }
     }, [entityKey]);
 
-    const createRecord = React.useCallback((
-        data: Partial<EntityData<TEntity>>,
-        callbacks?: OperationCallbacks<EntityData<TEntity>>
-    ) => {
-        dispatch(actions.createRecord({ data, ...callbacks }));
-    }, [dispatch, actions]);
+    const createRecord = React.useCallback((data: Partial<EntityData<TEntity>>, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
 
-    const updateRecord = React.useCallback((
-        matrxRecordId: MatrxRecordId,
-        data: Partial<EntityData<TEntity>>,
-        callbacks?: OperationCallbacks<EntityData<TEntity>>
-    ) => {
-        dispatch(actions.updateRecord({ matrxRecordId, data, ...callbacks }));
-    }, [dispatch, actions]);
+        dispatch(
+            actions.createRecord({
+                data,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
 
-    const deleteRecord = React.useCallback((
-        matrxRecordId: MatrxRecordId,
-        callbacks?: OperationCallbacks
-    ) => {
-        dispatch(actions.deleteRecord({
-            matrxRecordId,
-            ...callbacks
-        }));
-    }, [dispatch, actions]);
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, data: Partial<EntityData<TEntity>>, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.updateRecord({
+                matrxRecordId,
+                data,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
+
+    const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.deleteRecord({
+                matrxRecordId,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
 
     const handleSelection = React.useCallback((recordKey: MatrxRecordId) => {
         selection.handleSelection(recordKey);

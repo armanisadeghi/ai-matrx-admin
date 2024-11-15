@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { cn } from "@/lib/utils";
+import {cn} from "@/lib/utils";
 import {
     Dialog,
     DialogContent,
@@ -8,13 +7,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 import {
     FormLabel,
     FormDescription,
     FormMessage,
 } from "@/components/ui/form";
-import { Badge } from "@/components/ui/badge";
+import {Badge} from "@/components/ui/badge";
 import {
     Edit,
     Link,
@@ -26,7 +25,7 @@ import {
     Plus,
     X
 } from "lucide-react";
-import { EntityStateField } from '@/lib/types/schema';
+import {EntityStateField} from '@/lib/types/schema';
 
 interface SmartFieldWrapperProps {
     field: EntityStateField;
@@ -37,26 +36,32 @@ interface SmartFieldWrapperProps {
     onArrayItemRemove?: (field: EntityStateField, index: number) => void;
 }
 
-export const SmartFieldWrapper: React.FC<SmartFieldWrapperProps> = ({
-                                                                        field,
-                                                                        formField,
-                                                                        children,
-                                                                        onRelationshipClick,
-                                                                        onArrayItemAdd,
-                                                                        onArrayItemRemove
-                                                                    }) => {
+export const SmartFieldWrapper: React.FC<SmartFieldWrapperProps> = (
+    {
+        field,
+        formField,
+        children,
+        onRelationshipClick,
+        onArrayItemAdd,
+        onArrayItemRemove
+    }) => {
     const getFieldIcon = () => {
         switch (field.dataType) {
-            case 'uuid': return <Copy className="h-4 w-4" />;
-            case 'datetime': return (
-                <div className="flex gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <Clock className="h-4 w-4" />
-                </div>
-            );
-            case 'object': return <Link className="h-4 w-4" />;
-            case 'url': return <Globe className="h-4 w-4" />;
-            default: return <Edit className="h-4 w-4" />;
+            case 'uuid':
+                return <Copy className="h-4 w-4"/>;
+            case 'datetime':
+                return (
+                    <div className="flex gap-1">
+                        <Calendar className="h-4 w-4"/>
+                        <Clock className="h-4 w-4"/>
+                    </div>
+                );
+            case 'object':
+                return <Link className="h-4 w-4"/>;
+            case 'url':
+                return <Globe className="h-4 w-4"/>;
+            default:
+                return <Edit className="h-4 w-4"/>;
         }
     };
 
@@ -122,7 +127,7 @@ export const SmartFieldWrapper: React.FC<SmartFieldWrapperProps> = ({
                         size="sm"
                         onClick={() => onArrayItemRemove?.(field, index)}
                     >
-                        <X className="h-4 w-4" />
+                        <X className="h-4 w-4"/>
                     </Button>
                 </div>
             ))}
@@ -132,7 +137,7 @@ export const SmartFieldWrapper: React.FC<SmartFieldWrapperProps> = ({
                 onClick={() => onArrayItemAdd?.(field)}
                 className="mt-2"
             >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 mr-2"/>
                 Add Item
             </Button>
         </div>
@@ -153,7 +158,7 @@ export const SmartFieldWrapper: React.FC<SmartFieldWrapperProps> = ({
                         className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => onRelationshipClick?.(field)}
                     >
-                        <ArrowUpRight className="h-4 w-4" />
+                        <ArrowUpRight className="h-4 w-4"/>
                     </Button>
                 )}
             </div>
@@ -176,7 +181,7 @@ export const SmartFieldWrapper: React.FC<SmartFieldWrapperProps> = ({
 
             <div className="space-y-1">
                 {renderField()}
-                <FormMessage />
+                <FormMessage/>
             </div>
         </div>
     );

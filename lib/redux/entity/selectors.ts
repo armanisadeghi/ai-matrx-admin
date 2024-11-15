@@ -6,9 +6,11 @@ import {RootState} from "@/lib/redux/store";
 import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
 import {createRecordKey, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
+const trace = "ENTITY SELECTORS";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     if (!entityKey) return null;
+    const entityLogger = EntityLogger.createLoggerWithDefaults(trace, entityKey);
 
     const selectEntity = (state: RootState): EntityState<TEntity> => {
         return state.entities[entityKey] || {} as EntityState<TEntity>;
@@ -39,8 +41,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             const existingRecordIds = matrxRecordIds.filter((recordId) => !!existingRecords[recordId]);
             const recordIdsNotInState = matrxRecordIds.filter((recordId) => !existingRecords[recordId]);
             const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
-            EntityLogger.log('debug', 'Records to fetch:', 'selectRecordsForFetching', { primaryKeysToFetch });
-            EntityLogger.log('debug', 'Existing records:', 'selectRecordsForFetching', { existingRecordIds });
+
+            entityLogger.log('debug', 'selectRecordsForFetching - Records to fetch', { primaryKeysToFetch });
+            entityLogger.log('debug', 'selectRecordsForFetching - Existing records', { existingRecordIds });
 
             return {
                 existingRecords: existingRecordIds,
@@ -282,9 +285,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.flags.isValidated
     );
 
-    const selectFetchOneSuccess = createSelector(
+    const selectFetchOneStatus = createSelector(
         [selectEntity],
-        (entity) => entity.flags.fetchOneSuccess
+        (entity) => entity.flags.operationFlags.FETCH_ONE_STATUS
     );
 
     // Metadata Selectors
@@ -585,7 +588,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         // Convenience Additions
         selectEntityDisplayName,
         selectIsValidated,
-        selectFetchOneSuccess,
+        selectFetchOneStatus,
         selectRecordByKey,
         selectRecordsForFetching,
         selectActiveRecord,

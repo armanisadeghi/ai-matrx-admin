@@ -13,22 +13,23 @@ import {
     EntityError,
 } from "@/lib/redux/entity/types";
 import { UnifiedQueryOptions } from "@/lib/redux/schema/globalCacheSelectors";
-import { QueryOptions } from "./sagas";
+import { QueryOptions } from "./sagaHelpers";
 
 
-export interface FetchRecordsPayload {
-    page: number;
-    pageSize: number;
-    options?: {
-        maxCount?: number;
-        filters?: FilterPayload;
-        sort?: SortPayload;
-    };
-}
+export type EntityRecordPayload<TEntity extends EntityKeys> = {
+    data: EntityData<TEntity>;
+    callbackId?: string;
+};
 
-export interface FetchOnePayload {
-    matrxRecordId: MatrxRecordId;
-}
+export type EntityRecordArrayPayload<TEntity extends EntityKeys> = {
+    data: EntityData<TEntity>[];
+    callbackId?: string;
+};
+
+export type EntityRecordMapPayload<TEntity extends EntityKeys> = {
+    data: Record<MatrxRecordId, EntityData<TEntity>>;
+    callbackId?: string;
+};
 
 export interface FetchRecordsSuccessPayload<TEntity extends EntityKeys> {
     data: EntityRecordArray<TEntity>;
@@ -37,58 +38,85 @@ export interface FetchRecordsSuccessPayload<TEntity extends EntityKeys> {
     totalCount: number;
 }
 
-export interface OperationCallbacks<T = void> {
-    onSuccess?: (result: T) => void;
-    onError?: (error: EntityError) => void;
+export type CreateRecordPayload<TEntity extends EntityKeys> = {
+    data: Partial<EntityData<TEntity>>;
+    callbackId?: string;
+};
+
+export interface FetchRecordsPayload {
+    page: number;
+    pageSize: number;
+    callbackId?: string;
+    options?: {
+        maxCount?: number;
+        filters?: FilterPayload;
+        sort?: SortPayload;
+    };
 }
 
-export type WithCallbacks<Payload, Result = void> = Payload & OperationCallbacks<Result>;
+export type UpdateRecordPayload<TEntity extends EntityKeys> = {
+    matrxRecordId: MatrxRecordId;
+    data: Partial<EntityData<TEntity>>;
+    callbackId?: string;
+};
 
+export type DeleteRecordPayload = {
+    matrxRecordId: MatrxRecordId;
+    callbackId?: string;
+};
 
-// This interface defines all possible actions for an entity
+export type FetchAllPayload = {
+    callbackId?: string;
+};
+
+export type FetchOnePayload = {
+    matrxRecordId: MatrxRecordId;
+    callbackId?: string;
+};
+
+export type FetchQuickReferencePayload = {
+    maxRecords?: number;
+    callbackId?: string;
+};
+
+export type ExecuteCustomQueryPayload = {
+    query: UnifiedQueryOptions<EntityKeys>;
+    callbackId?: string;
+};
+
 export interface EntityActions<TEntity extends EntityKeys> {
-
-    fetchOne: (payload: WithCallbacks<FetchOnePayload, EntityData<TEntity>>) => void;
+    // Fetch Actions
+    fetchOne: (payload: FetchOnePayload) => void;
     fetchOneSuccess: (payload: EntityData<TEntity>) => void;
 
-    fetchQuickReference: (payload?: WithCallbacks<{ maxRecords?: number }, QuickReferenceRecord[]>) => void;
+    fetchQuickReference: (payload?: FetchQuickReferencePayload) => void;
     setQuickReference: (payload: QuickReferenceRecord[]) => void;
 
+    fetchRecords: (payload: FetchRecordsPayload) => void;
+    fetchRecordsSuccess: (payload: FetchRecordsSuccessPayload<TEntity>) => void;
 
-    fetchRecords: (payload: WithCallbacks<FetchRecordsPayload, EntityData<TEntity>[]>) => void;
-
-    fetchAll: (payload?: WithCallbacks<{}, EntityData<TEntity>[]>) => void;
-    executeCustomQuery: (payload: WithCallbacks<UnifiedQueryOptions<TEntity>, EntityData<TEntity>[]>) => void;
-
-    createRecord: (payload: WithCallbacks<EntityData<TEntity>, EntityData<TEntity>>) => void;
-
-    updateRecord: (payload: WithCallbacks<{
-        matrxRecordId: MatrxRecordId;
-        data: Partial<EntityData<TEntity>>;
-    }, EntityData<TEntity>>) => void;
-
-    deleteRecord: (payload: WithCallbacks<{
-        matrxRecordId: MatrxRecordId;
-    }, void>) => void;
-
-    fetchRecordsSuccess: (payload: {
-        data: EntityData<TEntity>[];
-        page: number;
-        pageSize: number;
-        totalCount: number;
-    }) => void;
-
-
-
+    fetchAll: (payload?: FetchAllPayload) => void;
     fetchAllSuccess: (payload: EntityData<TEntity>[]) => void;
 
+    executeCustomQuery: (payload: ExecuteCustomQueryPayload) => void;
     executeCustomQuerySuccess: (payload: EntityData<TEntity>[]) => void;
 
-    // Record Management
+    fetchSelectedRecords: (payload: QueryOptions<TEntity> & { callbackId?: string }) => void;
+    fetchSelectedRecordsSuccess: (payload: EntityData<TEntity>[]) => void;
+
+    createRecord: (payload: CreateRecordPayload<TEntity>) => void;
+    createRecordSuccess: (payload: EntityData<TEntity>) => void;
+
+    updateRecord: (payload: UpdateRecordPayload<TEntity>) => void;
+    updateRecordSuccess: (payload: EntityData<TEntity>) => void;
+
+    deleteRecord: (payload: DeleteRecordPayload) => void;
+    deleteRecordSuccess: (payload: { matrxRecordId: MatrxRecordId }) => void;
+
+    // Record Management Actions
     setRecords: (payload: Record<MatrxRecordId, EntityData<TEntity>>) => void;
     upsertRecords: (payload: EntityData<TEntity>[]) => void;
     removeRecords: (payload: EntityData<TEntity>[]) => void;
-
 
     // Selection Management
     setSelectionMode: (payload: SelectionMode) => void;
@@ -98,11 +126,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
     removeFromSelection: (payload: MatrxRecordId) => void;
     setActiveRecord: (payload: MatrxRecordId) => void;
     clearActiveRecord: () => void;
-
     getOrFetchSelectedRecords: (payload: MatrxRecordId[]) => void;
-    fetchSelectedRecords: (payload: WithCallbacks<QueryOptions<TEntity>, EntityData<TEntity>[]>) => void;
-    fetchSelectedRecordsSuccess: (payload: EntityData<TEntity>[]) => void;
-
 
     // History Actions
     pushToHistory: (payload: {
@@ -121,7 +145,6 @@ export interface EntityActions<TEntity extends EntityKeys> {
     setSorting: (payload: SortPayload) => void;
     clearFilters: () => void;
 
-
     // Metadata Actions
     initializeEntityMetadata: (payload: EntityMetadata) => void;
     updateEntityMetadata: (payload: Partial<EntityMetadata>) => void;
@@ -133,29 +156,26 @@ export interface EntityActions<TEntity extends EntityKeys> {
     // Subscription Actions
     setSubscription: (payload: Partial<SubscriptionConfig>) => void;
 
-    // Flag Management
+    // Flag Management Actions
     setFlags: (payload: EntityFlags) => void;
 
-    // State Management
+    // State Management Actions
     refreshData: () => void;
     invalidateCache: () => void;
     resetState: () => void;
 
     // Metrics Actions
-    fetchMetrics: (payload?: WithCallbacks<{ timeRange?: string }, EntityMetrics>) => void;
+    fetchMetrics: (payload?: { timeRange?: string; callbackId?: string }) => void;
     fetchMetricsSuccess: (payload: EntityMetrics) => void;
     setMetrics: (payload: Partial<EntityMetrics>) => void;
 }
+
+
 
 export interface SelectionPayload<TEntity extends EntityKeys> {
     records: EntityData<TEntity>[];
     mode: 'single' | 'multiple' | 'none';
 }
-
-export interface SingleRecordPayload<TEntity extends EntityKeys> {
-    record: EntityData<TEntity>;
-}
-
 
 export const isSelectionAction = (
     action: any
@@ -170,11 +190,11 @@ export const isSelectionAction = (
 };
 
 
-// Export updated action type
-export type EntityActionType<TEntity extends EntityKeys> =
-    | { type: string; payload: SelectionPayload<TEntity> }
-    | { type: string; payload: FetchRecordsPayload }
-    | { type: string; payload: FetchOnePayload }
-    | { type: string; payload: EntityRecordArray<TEntity> }
-    | { type: string; payload: EntityRecordMap<TEntity> }
-    | { type: string };
+// // Export updated action type
+// export type EntityActionType<TEntity extends EntityKeys> =
+//     | { type: string; payload: SelectionPayload<TEntity> }
+//     | { type: string; payload: FetchRecordsPayload }
+//     | { type: string; payload: FetchOnePayload }
+//     | { type: string; payload: EntityRecordArray<TEntity> }
+//     | { type: string; payload: EntityRecordMap<TEntity> }
+//     | { type: string };

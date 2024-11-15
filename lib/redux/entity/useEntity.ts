@@ -118,7 +118,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const currentFilters = useAppSelector(selectors.selectCurrentFilters);
     const filteredRecords = useAppSelector(selectors.selectFilteredRecords);
     const loadingState = useAppSelector(selectors.selectLoadingState);
-    const error = useAppSelector(selectors.selectError);
+    const error = useAppSelector(selectors.selectErrorState);
     const isStale = useAppSelector(selectors.selectIsStale);
     const hasUnsavedChanges = useAppSelector(selectors.selectHasUnsavedChanges);
     const entityMetadata = useAppSelector(selectors.selectEntityMetadata);

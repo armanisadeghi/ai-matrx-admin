@@ -11,6 +11,15 @@ export type EntityRecord<TEntity extends EntityKeys> = EntityData<TEntity>;
 export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, EntityData<TEntity>>;
 export type EntityRecordArray<TEntity extends EntityKeys> = EntityData<TEntity>[];
 
+export type SuccessResult = { status: "success"; data: void };
+export type ErrorResult = { status: "error"; error: any };
+export type CallbackResult = SuccessResult | ErrorResult;
+export type OperationCallback<T = void> = {
+    onSuccess?: (result: SuccessResult) => void;
+    onError?: (error: ErrorResult) => void;
+};
+
+
 
 type PrimaryKeyType = 'single' | 'composite' | 'none';
 
@@ -91,28 +100,9 @@ export interface PaginationState {
     hasPreviousPage: boolean;
 }
 
-// --- Loading and Error Management ---
-export interface LoadingState {
-    loading: boolean;
-    initialized: boolean;
-    error: {
-        message: string;
-        code?: number;
-        details?: unknown;
-    } | null;
-    lastOperation?: 'fetch' | 'create' | 'update' | 'delete' | 'custom' | null;
-}
-
-export interface EntityError {
-    message: string;
-    code?: number;
-    details?: unknown;
-    lastOperation?: 'fetch' | 'create' | 'update' | 'delete' | 'custom' | null;
-}
-
 
 // --- Cache Management ---
-interface CacheState {
+export interface CacheState {
     lastFetched: Record<string, string>;  // dates as ISO strings
     staleTime: number;
     stale: boolean;
@@ -213,6 +203,186 @@ export interface SubscriptionConfig {
     filters?: FilterCondition[];
     debounceMs?: number;
     batchUpdates?: boolean;
+}
+
+export interface SelectionSummary {
+    count: number;
+    hasSelection: boolean;
+    hasSingleSelection: boolean;
+    hasMultipleSelection: boolean;
+    activeRecord: MatrxRecordId | null;
+    mode: SelectionMode;
+}
+
+export type SelectionMode = 'single' | 'multiple' | 'none';
+
+// --- Selection Management ---
+export interface SelectionState {
+    selectedRecords: MatrxRecordId[];
+    selectionMode: SelectionMode;
+    activeRecord: MatrxRecordId | null;
+    lastActiveRecord?: MatrxRecordId | null;
+    lastSelected?: MatrxRecordId;
+}
+
+
+// --- Main Slice State ---
+export interface EntityState<TEntity extends EntityKeys> {
+    // Metadata
+    entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
+
+    // Core Data
+    records: Record<MatrxRecordId, EntityData<TEntity>>;   // Data is here
+
+    // Quick Reference
+    quickReference: QuickReferenceState;  // Quick reference data is here
+
+    // State Management
+    selection: SelectionState;
+    pagination: PaginationState;
+    loading: LoadingState;
+    cache: CacheState;
+    history: HistoryState<TEntity>;
+
+    // Query Management
+    filters: FilterState;
+
+    // Real-time Management
+    subscription: SubscriptionConfig;
+
+    flags: EntityFlags;
+
+    metrics: EntityMetrics;
+}
+
+export type FlagStatusOptions = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
+
+export type EntityOperations =
+    | 'FETCH'
+    | 'FETCH_ONE'
+    | 'FETCH_QUICK_REFERENCE'
+    | 'FETCH_RECORDS'
+    | 'FETCH_ALL'
+    | 'FETCH_PAGINATED'
+    | 'CREATE'
+    | 'UPDATE'
+    | 'DELETE'
+    | 'CUSTOM';
+
+export interface EntityOperationFlags {
+    FETCH_STATUS?: FlagStatusOptions;
+    FETCH_ONE_STATUS?: FlagStatusOptions;
+    FETCH_QUICK_REFERENCE_STATUS?: FlagStatusOptions;
+    FETCH_RECORDS_STATUS?: FlagStatusOptions;
+    FETCH_ALL_STATUS?: FlagStatusOptions;
+    FETCH_PAGINATED_STATUS?: FlagStatusOptions;
+    CREATE_STATUS?: FlagStatusOptions;
+    UPDATE_STATUS?: FlagStatusOptions;
+    DELETE_STATUS?: FlagStatusOptions;
+    CUSTOM_STATUS?: FlagStatusOptions;
+}
+
+export interface EntityFlags {
+    needsRefresh?: boolean;
+    isModified?: boolean;
+    hasUnsavedChanges?: boolean;
+    isBatchOperationInProgress?: boolean;
+    isValidated?: boolean;
+    operationFlags: EntityOperationFlags;
+}
+
+export interface LoadingState {
+    initialized: boolean;
+    loading: boolean;
+    error: {
+        message: string;
+        code?: number;
+        details?: unknown;
+    } | null;
+    lastOperation?: EntityOperations;
+}
+
+export interface EntityError {
+    message: string;
+    code?: number;
+    details?: unknown;
+    lastOperation?: EntityOperations;
+}
+
+
+
+export interface RecordOperation<TEntity extends EntityKeys> {
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    record: EntityRecord<TEntity>;
+}
+
+export interface BatchOperationPayload<TEntity extends EntityKeys> {
+    operation: 'create' | 'update' | 'delete';
+    records: EntityRecordArray<TEntity>;
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    options?: {
+        skipHistory?: boolean;
+        batchSize?: number;
+        onProgress?: (progress: number) => void;
+    };
+}
+
+// Add these interfaces to your types file
+export interface EntityMetrics {
+    operationCounts: {
+        creates: number;
+        updates: number;
+        deletes: number;
+        timeline: Array<{
+            timestamp: string;
+            creates: number;
+            updates: number;
+            deletes: number;
+        }>;
+    };
+    performanceMetrics: {
+        responseTimes: Array<{
+            timestamp: string;
+            avgResponseTime: number;
+            p95ResponseTime: number;
+        }>;
+        throughput: Array<{
+            timestamp: string;
+            reads: number;
+            writes: number;
+        }>;
+    };
+    cacheStats: {
+        hitRate: Array<{
+            timestamp: string;
+            hitRate: number;
+        }>;
+        size: Array<{
+            timestamp: string;
+            size: number;
+        }>;
+        totalHits: number;
+        totalMisses: number;
+        evictions: number;
+        memoryUsage: string;
+    };
+    errorRates: {
+        timeline: Array<{
+            timestamp: string;
+            errorRate: number;
+        }>;
+        distribution: Array<{
+            errorType: string;
+            count: number;
+        }>;
+        recent: Array<{
+            timestamp: string;
+            type: string;
+            message: string;
+            details?: any;
+        }>;
+    };
+    lastUpdated: string;
 }
 
 // records: Record<MatrxRecordId, EntityData<TEntity>>; Changed from MatrxRecordId to string for consistent serialization (Back to MatrxRecordId as string)
@@ -328,141 +498,5 @@ interface SimplifiedEntityState {
             entityName: string;
         }[];
     };
-}
-
-export interface SelectionSummary {
-    count: number;
-    hasSelection: boolean;
-    hasSingleSelection: boolean;
-    hasMultipleSelection: boolean;
-    activeRecord: MatrxRecordId | null;
-    mode: SelectionMode;
-}
-
-export type SelectionMode = 'single' | 'multiple' | 'none';
-
-// --- Selection Management ---
-export interface SelectionState {
-    selectedRecords: MatrxRecordId[];
-    selectionMode: SelectionMode;
-    activeRecord: MatrxRecordId | null;
-    lastSelected?: MatrxRecordId;
-}
-
-
-// --- Main Slice State ---
-export interface EntityState<TEntity extends EntityKeys> {
-    // Metadata
-    entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
-
-    // Core Data
-    records: Record<MatrxRecordId, EntityData<TEntity>>;   // Data is here
-
-    // Quick Reference
-    quickReference: QuickReferenceState;  // Quick reference data is here
-
-    // State Management
-    selection: SelectionState;
-    pagination: PaginationState;
-    loading: LoadingState;
-    cache: CacheState;
-    history: HistoryState<TEntity>;
-
-    // Query Management
-    filters: FilterState;
-
-    // Real-time Management
-    subscription: SubscriptionConfig;
-
-    flags: EntityFlags;
-
-    metrics: EntityMetrics;
-}
-
-export interface EntityFlags {
-    needsRefresh?: boolean;
-    isModified?: boolean;
-    hasUnsavedChanges?: boolean;
-    isBatchOperationInProgress?: boolean;
-    isValidated?: boolean;
-    fetchOneSuccess?: boolean;
-    fetchOneStatus?: 'success' | 'error' | 'loading' | 'idle';
-}
-
-
-export interface RecordOperation<TEntity extends EntityKeys> {
-    primaryKeyMetadata: PrimaryKeyMetadata;
-    record: EntityRecord<TEntity>;
-}
-
-
-export interface BatchOperationPayload<TEntity extends EntityKeys> {
-    operation: 'create' | 'update' | 'delete';
-    records: EntityRecordArray<TEntity>;
-    primaryKeyMetadata: PrimaryKeyMetadata;
-    options?: {
-        skipHistory?: boolean;
-        batchSize?: number;
-        onProgress?: (progress: number) => void;
-    };
-}
-
-
-// Add these interfaces to your types file
-export interface EntityMetrics {
-    operationCounts: {
-        creates: number;
-        updates: number;
-        deletes: number;
-        timeline: Array<{
-            timestamp: string;
-            creates: number;
-            updates: number;
-            deletes: number;
-        }>;
-    };
-    performanceMetrics: {
-        responseTimes: Array<{
-            timestamp: string;
-            avgResponseTime: number;
-            p95ResponseTime: number;
-        }>;
-        throughput: Array<{
-            timestamp: string;
-            reads: number;
-            writes: number;
-        }>;
-    };
-    cacheStats: {
-        hitRate: Array<{
-            timestamp: string;
-            hitRate: number;
-        }>;
-        size: Array<{
-            timestamp: string;
-            size: number;
-        }>;
-        totalHits: number;
-        totalMisses: number;
-        evictions: number;
-        memoryUsage: string;
-    };
-    errorRates: {
-        timeline: Array<{
-            timestamp: string;
-            errorRate: number;
-        }>;
-        distribution: Array<{
-            errorType: string;
-            count: number;
-        }>;
-        recent: Array<{
-            timestamp: string;
-            type: string;
-            message: string;
-            details?: any;
-        }>;
-    };
-    lastUpdated: string;
 }
 

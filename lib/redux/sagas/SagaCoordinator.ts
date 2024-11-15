@@ -6,6 +6,9 @@ import { EntityKeys } from '@/types/entityTypes';
 import { watchEntitySagas } from '@/lib/redux/entity/sagas';
 import {SocketManager} from "@/lib/redux/socket/manager";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
+import { callbackManager, Callback } from '@/utils/callbackManager';
+const trace = "SagaCoordinator";
+const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
 export class SagaCoordinator {
     private static instance: SagaCoordinator | null = null;
@@ -26,7 +29,7 @@ export class SagaCoordinator {
 
     setEntityNames(entityNames: EntityKeys[]) {
         this.entityNames = entityNames;
-        EntityLogger.log('debug', '-Set Entity Names', "Saga Coordinator", {entityNames});
+        sagaLogger.log('debug', '-Set Entity Names', {entityNames});
 
     }
 
@@ -76,6 +79,22 @@ export class SagaCoordinator {
             console.log('SagaCoordinator: window is undefined, cannot create socket event channel');
             this.socketEventChannel = null; // Explicitly set to null
         }
+    }
+
+    emitActionWithCallback(action: any, callback?: Callback<unknown>) {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        this.coordinationChannel.put({
+            ...action,
+            payload: {
+                ...action.payload,
+                callbackId,
+            },
+        });
+    }
+
+    triggerCallback(callbackId: string, data: any) {
+        callbackManager.trigger(callbackId, data);
     }
 
     *watchSocketEvents() {

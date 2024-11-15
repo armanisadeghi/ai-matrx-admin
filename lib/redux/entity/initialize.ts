@@ -1,4 +1,4 @@
-import { AutomationEntity, EntityField, EntityKeys } from "@/types/entityTypes";
+import {AllEntityFieldKeys, AutomationEntity, EntityField, EntityKeys} from "@/types/entityTypes";
 import { EntityMetadata, EntityMetrics, EntityState, PrimaryKeyMetadata } from "@/lib/redux/entity/types";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
 import {EntityNameOfficial, SchemaField} from "@/types/schema";
@@ -17,6 +17,8 @@ const ENTITY_DEFAULTS = {
         DEBOUNCE_MS: 1000
     }
 } as const;
+const trace = "INITIALIZATION";
+const entityLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
 // Utility Functions
 const getCurrentISODate = () => new Date().toISOString();
@@ -51,8 +53,8 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
         if (!isValidSchemaField(field)) {
             console.warn(`Field ${key} does not have expected structure`);
             return {
-                name: key,
-                displayName: key,
+                name: key as AllEntityFieldKeys,
+                displayName: key as AllEntityFieldKeys,
                 isDisplayField: false,
                 isPrimaryKey: false,
                 dataType: 'string',
@@ -96,6 +98,7 @@ function extractFieldsFromSchema<TEntity extends EntityKeys>(
             entityName: field.entityName,
             databaseTable: field.databaseTable,
             description: field.description,
+
         };
     });
 }
@@ -130,7 +133,7 @@ function createPrimaryKeyMetadata<TEntity extends EntityKeys>(
 
 
     if (process.env.NODE_ENV === 'development') {
-        EntityLogger.log('debug', 'Primary Key Configuration', 'entityKey', {
+        entityLogger.log('debug', 'createPrimaryKeyMetadata - Primary Key Configuration', {
             fields: pkMetadata.fields,
             databaseFields: pkMetadata.database_fields,
             template: pkMetadata.where_template
@@ -184,6 +187,8 @@ function createInitialState<TEntity extends EntityKeys>(
             selectedRecords: [],
             activeRecord: null,
             selectionMode: 'none',
+            lastActiveRecord: null,
+            lastSelected: null,
         },
         pagination: {
             page: 1,
@@ -196,7 +201,7 @@ function createInitialState<TEntity extends EntityKeys>(
         },
         loading: {
             loading: false,
-            initialized: false,
+            initialized: true,
             error: null,
             lastOperation: null
         },
@@ -227,10 +232,23 @@ function createInitialState<TEntity extends EntityKeys>(
             isModified: false,
             hasUnsavedChanges: false,
             isBatchOperationInProgress: false,
+            operationFlags: {
+                FETCH_STATUS: 'IDLE',
+                FETCH_ONE_STATUS: 'IDLE',
+                FETCH_QUICK_REFERENCE_STATUS: 'IDLE',
+                FETCH_RECORDS_STATUS: 'IDLE',
+                FETCH_ALL_STATUS: 'IDLE',
+                FETCH_PAGINATED_STATUS: 'IDLE',
+                CREATE_STATUS: 'IDLE',
+                UPDATE_STATUS: 'IDLE',
+                DELETE_STATUS: 'IDLE',
+                CUSTOM_STATUS: 'IDLE',
+            }
         },
         metrics: initialMetricsState
     };
 }
+
 
 export const initializeEntitySlice = <TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -340,8 +358,18 @@ export const createEmptyEntityState = <TEntity extends EntityKeys>(): EntityStat
         isModified: false,
         hasUnsavedChanges: false,
         isBatchOperationInProgress: false,
-        isValidated: false,
-        fetchOneSuccess: false
+        operationFlags: {
+            FETCH_STATUS: 'IDLE',
+            FETCH_ONE_STATUS: 'IDLE',
+            FETCH_QUICK_REFERENCE_STATUS: 'IDLE',
+            FETCH_RECORDS_STATUS: 'IDLE',
+            FETCH_ALL_STATUS: 'IDLE',
+            FETCH_PAGINATED_STATUS: 'IDLE',
+            CREATE_STATUS: 'IDLE',
+            UPDATE_STATUS: 'IDLE',
+            DELETE_STATUS: 'IDLE',
+            CUSTOM_STATUS: 'IDLE',
+        }
     },
     metrics: emptyMetricsState
 });

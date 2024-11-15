@@ -194,12 +194,26 @@ export type EntityDatabaseTable<
     TEntity extends EntityKeys,
 > = EntityNameFormats<TEntity>['database'];
 
-export type AnyEntityDatabaseTable = EntityDatabaseTable<EntityKeys>;
 
 type testRegFuncTable = EntityDatabaseTable<'registeredFunction'>;
 
 type test1 = EntityDatabaseTable<'registeredFunction'>; // specific table
+
+
+// Important Derived Types ===================================================
+
+export type AnyEntityDatabaseTable = EntityDatabaseTable<EntityKeys>;
+
+
+
+
+
+
+
+// Tests for the derived types ===================================================
 type test2 = AnyEntityDatabaseTable;
+
+
 
 
 

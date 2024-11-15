@@ -17,6 +17,10 @@ import {GlobalCacheState} from "./globalCacheSlice";
 import {FlexibleQueryOptions, QueryOptions, UnifiedDatabaseObject} from "@/lib/redux/entity/sagas";
 import {DisplayFieldMetadata, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types";
 import {parseRecordKeys} from "@/lib/redux/entity/utils";
+import EntityLogger from "@/lib/redux/entity/entityLogger";
+
+const trace = 'GLOBAL CACHE SELECTORS';
+const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
 
 // ----------------
@@ -667,7 +671,7 @@ export const selectQueryDatabaseConversion = createSelector(
         (_: RootState, payload: QueryConversionPayload<EntityKeys>) => payload.entityName,
         (_: RootState, payload: QueryConversionPayload<EntityKeys>) => payload.options
     ],
-    (databaseTableName, fieldMap, entityName, options) => {
+    (databaseTableName: AnyEntityDatabaseTable, fieldMap, entityName, options) => {
         if (!options) {
             return {} as QueryOptions<typeof entityName>;
         }
@@ -787,6 +791,8 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             databaseDisplayField: fieldMap[frontendDisplayField] || frontendDisplayField,
         };
 
+        logger.log('info', 'Starting conversion with options:', options);
+
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
             result.parsedFrontendRecords = parseRecordKeys(options.recordKeys);
@@ -802,6 +808,8 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             }
         }
 
+        logger.log('info', 'Record keys processed:', result.recordKeys);
+
         if (options.filters) {
             result.filters = selectReplaceKeysInObject(
                 {} as RootState,
@@ -810,6 +818,8 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             ) as Partial<Record<string, unknown>>;
         }
 
+        logger.log('info', 'Filters processed:', result.filters);
+
         if (options.sorts) {
             result.sorts = options.sorts.map(sort => ({
                 column: fieldMap[sort.column] || sort.column,
@@ -817,30 +827,81 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             }));
         }
 
+        logger.log('info', 'Sorts processed:', result.sorts);
+
         if (options.columns) {
             result.columns = options.columns.map(
                 column => fieldMap[column] || column
             );
         }
 
+        logger.log('info', 'Columns processed:', result.columns);
+
         if (typeof options.limit !== 'undefined') {
             result.limit = options.limit;
         }
+
+        logger.log('info', 'Limit processed:', result.limit);
 
         if (typeof options.offset !== 'undefined') {
             result.offset = options.offset;
         }
 
+        logger.log('info', 'Offset processed:', result.offset);
+
+
         if (options.data) {
-            result.data = selectFrontendConversion(
-                {} as RootState,
-                { entityName, data: options.data }
-            );
+            result.data = convertToDatabase(options.data, fieldMap);
         }
+
+        logger.log('info', 'Data processed:', result.data);
+
+        logger.log('info', 'Conversion complete:', result);
 
         return result;
     }
 );
+
+const convertToDatabase = (
+    data: unknown,
+    fieldMap: Record<string, string>
+): Record<string, unknown> | Record<string, unknown>[] => {
+    const isValuePresent = (value: unknown): boolean => {
+        if (value === null || value === undefined) {
+            return false;
+        }
+
+        if (typeof value === 'string' && value.trim() === '') {
+            return false;
+        }
+
+        if (Array.isArray(value) && value.length === 0) {
+            return false;
+        }
+
+        if (value && typeof value === 'object' && Object.keys(value).length === 0) {
+            return false;
+        }
+
+        return true;
+    };
+
+    const convertSingleObject = (item: Record<string, unknown>): Record<string, unknown> => {
+        const databaseFormatItem: Record<string, unknown> = {};
+        Object.entries(item).forEach(([key, value]) => {
+            if (isValuePresent(value)) {
+                databaseFormatItem[fieldMap[key] || key] = value;
+            }
+        });
+        return databaseFormatItem;
+    };
+
+    if (Array.isArray(data)) {
+        return data.map(item => convertSingleObject(item as Record<string, unknown>));
+    }
+
+    return convertSingleObject(data as Record<string, unknown>);
+};
 
 
 export const selectUnifiedDatabaseObjectConversion2 = createSelector(

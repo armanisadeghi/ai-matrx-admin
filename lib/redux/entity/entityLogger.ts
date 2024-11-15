@@ -1,10 +1,14 @@
 // lib/redux/entity/entityLogger.ts
-type LogLevel = 'debug' | 'info' | 'warning' | 'error' ;
+
+type LogLevel = 'none' | 'debug' | 'info' | 'warn' | 'error';
+type DetailLevel = 'minimal' | 'standard' | 'verbose';
 
 interface LogEntry {
     timestamp: string;
     level: LogLevel;
-    entityKey?: string;
+    trace: string;
+    entityKey: string;
+    feature?: string;
     message: string;
     details?: any;
 }
@@ -12,49 +16,181 @@ interface LogEntry {
 class EntityLogger {
     private static logs: LogEntry[] = [];
     private static subscribers: ((logs: LogEntry[]) => void)[] = [];
-    private static logLevel: LogLevel = 'info';
+    private static logLevel: LogLevel = 'debug';
+    private static consoleLogLevel: LogLevel = 'info';
+    private static detailLevel: DetailLevel = 'standard';
+    private static featureFilter: Set<string> = new Set();
+    private static duplicateSuppressionInterval = 500;
 
-    // Define precedence for log levels
+    private trace: string;
+    private entityKey: string;
+
+    private static lastLogEntry: LogEntry | null = null;
+    private static lastLogTime: number | null = null;
+
     private static logLevelOrder: Record<LogLevel, number> = {
-        'debug': 0,
-        'info': 1,
-        'warning': 2,
-        'error': 3
+        'none': 0,
+        'debug': 1,
+        'info': 2,
+        'warn': 3,
+        'error': 4
     };
 
-    // Method to set the log level
+    private static logLevelColors: Record<LogLevel, string> = {
+        'none': '',
+        'debug': '\x1b[36m', // Cyan
+        'info': '\x1b[32m', // Green
+        'warn': '\x1b[33m', // Yellow
+        'error': '\x1b[31m' // Red
+    };
+
+    private static resetColor = '\x1b[0m'; // Resets color
+
+    constructor(trace: string = 'NoTrace', entityKey: string = 'NoEntity') {
+        this.trace = trace;
+        this.entityKey = entityKey;
+    }
+
     static setLogLevel(level: LogLevel) {
         this.logLevel = level;
     }
 
-    static log(level: LogLevel, message: string, entityKey?: string, details?: any) {
-        if (this.logLevelOrder[level] < this.logLevelOrder[this.logLevel]) {
-            return;
-        }
+    static setConsoleLogLevel(level: LogLevel) {
+        this.consoleLogLevel = level;
+    }
 
-        let processedDetails = details;
-        try {
-            if (typeof details === 'object' && details !== null) {
-                processedDetails = JSON.parse(JSON.stringify(details)); // Deep copy to avoid Proxy issues
-            }
-        } catch (error) {
-            processedDetails = `Unable to serialize details: ${error.message}`;
+    static setDetailLevel(level: DetailLevel) {
+        this.detailLevel = level;
+    }
+
+    static setFeatureFilter(features: string[]) {
+        this.featureFilter = new Set(features);
+    }
+
+    static setDuplicateSuppressionInterval(interval: number) {
+        this.duplicateSuppressionInterval = interval;
+    }
+
+    static createLoggerWithDefaults(trace: string, entityKey: string) {
+        return new EntityLogger(trace, entityKey);
+    }
+
+    log(
+        level: LogLevel,
+        message: string,
+        details?: any,
+        traceOverride?: string,
+        feature?: string
+    ) {
+        const trace = traceOverride || this.trace;
+        const entityKey = this.entityKey;
+
+        if (!EntityLogger.shouldLog(level, feature)) {
+            return;
         }
 
         const entry: LogEntry = {
             timestamp: new Date().toISOString(),
             level,
+            trace,
             entityKey,
+            feature,
             message,
-            details: processedDetails
+            details
         };
 
-        console.log(`[${level.toUpperCase()}]${entityKey ? ` [${entityKey}]` : ''}: ${message}`, processedDetails || '');
+        // Check for duplicate log suppression
+        if (EntityLogger.isDuplicateLog(entry)) {
+            return;
+        }
 
-        this.logs.unshift(entry);
-        if (this.logs.length > 100) this.logs.pop();
+        EntityLogger.logs.unshift(entry);
+        if (EntityLogger.logs.length > 100) EntityLogger.logs.pop();
 
-        this.notifySubscribers();
+        if (EntityLogger.shouldPrintToConsole(level, feature)) {
+            EntityLogger.printToConsole(entry);
+        }
+
+        EntityLogger.notifySubscribers();
+
+        // Update last log entry and time
+        EntityLogger.lastLogEntry = entry;
+        EntityLogger.lastLogTime = Date.now();
+    }
+
+    private static isDuplicateLog(entry: LogEntry): boolean {
+        if (
+            EntityLogger.lastLogEntry &&
+            EntityLogger.lastLogTime &&
+            Date.now() - EntityLogger.lastLogTime < EntityLogger.duplicateSuppressionInterval
+        ) {
+            const last = EntityLogger.lastLogEntry;
+            return (
+                last.level === entry.level &&
+                last.trace === entry.trace &&
+                last.entityKey === entry.entityKey &&
+                last.message === entry.message &&
+                JSON.stringify(last.details) === JSON.stringify(entry.details) &&
+                last.feature === entry.feature
+            );
+        }
+        return false;
+    }
+
+    private static printToConsole(entry: LogEntry) {
+        const { trace, entityKey, feature, level } = entry;
+        const color = this.logLevelColors[level] || '';
+        const reset = this.resetColor;
+        const message = typeof entry.message === 'object' ? JSON.stringify(entry.message, null, 2) : entry.message;
+        const details = typeof entry.details === 'object' && entry.details !== null ? JSON.stringify(entry.details, null, 2) : entry.details;
+
+        switch (this.detailLevel) {
+            case 'minimal':
+                // Color the message only
+                console.log(`[${trace}] ${color}${message}${reset}`);
+                break;
+
+            case 'standard':
+                // Color only the message and include details separately
+                console.log(`[${trace}: ${entityKey}] ${color}${message}${reset}`);
+                if (details !== undefined) {
+                    console.log(`Details: ${color}${details}${reset}`);
+                }
+                break;
+
+            case 'verbose':
+                // Color the message and details individually
+                console.log(`[${trace}: ${entityKey}] ${feature ? `[${feature}]` : ''}`);
+                console.log(color + message + reset);
+                if (details !== undefined) {
+                    console.log(`Details: ${color}${details}${reset}`);
+                    console.log('---');
+                }
+                break;
+
+            default:
+                // Default to color only the message
+                console.log(`[${trace}] ${color}${message}${reset}`);
+                break;
+        }
+    }
+
+    private static shouldLog(level: LogLevel, feature?: string): boolean {
+        return (
+            this.logLevelOrder[level] >= this.logLevelOrder[this.logLevel] ||
+            (feature && this.featureFilter.has(feature))
+        );
+    }
+
+    private static shouldPrintToConsole(level: LogLevel, feature?: string): boolean {
+        return (
+            this.logLevelOrder[level] >= this.logLevelOrder[this.consoleLogLevel] ||
+            (feature && this.featureFilter.has(feature))
+        );
+    }
+
+    private static notifySubscribers() {
+        this.subscribers.forEach(callback => callback(this.logs));
     }
 
     static subscribe(callback: (logs: LogEntry[]) => void) {
@@ -65,17 +201,9 @@ class EntityLogger {
         };
     }
 
-    private static notifySubscribers() {
-        this.subscribers.forEach(callback => callback(this.logs));
-    }
-
     static clear() {
         this.logs = [];
         this.notifySubscribers();
-    }
-
-    static shouldLog(level: LogLevel): boolean {
-        return this.logLevelOrder[level] >= this.logLevelOrder[this.logLevel];
     }
 }
 
