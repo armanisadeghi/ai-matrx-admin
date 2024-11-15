@@ -216,11 +216,18 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<QuickReferenceRecord[]>
                         ) => {
                             entityLogger.log('debug', 'addQuickReferenceRecord', action.payload);
-
-                            state.quickReference.records = [
-                                ...state.quickReference.records,
-                                ...action.payload
-                            ];
+                            action.payload.forEach(newRecord => {
+                                const existingIndex = state.quickReference.records.findIndex(
+                                    record => record.recordKey === newRecord.recordKey
+                                );
+                                if (existingIndex !== -1) {
+                                    state.quickReference.records[existingIndex] = newRecord;
+                                    entityLogger.log('info', 'Replaced existing quick reference record', newRecord);
+                                } else {
+                                    state.quickReference.records.push(newRecord);
+                                    entityLogger.log('info', 'Added new quick reference record', newRecord);
+                                }
+                            });
                             state.quickReference.lastUpdated = new Date().toISOString();
                         },
 
@@ -440,14 +447,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                         upsertRecords: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<Draft<EntityData<TEntity>>[]>
+                            action: PayloadAction<{ recordKey: MatrxRecordId; record: EntityData<TEntity> }[]>
                         ) => {
-                            const {primaryKeyMetadata} = state.entityMetadata;
-                            entityLogger.log('debug', 'upsertRecords', action.payload);
-
-                            action.payload.forEach(record => {
-                                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
-                                state.records[recordKey] = record;
+                            action.payload.forEach(({ recordKey, record }) => {
+                                state.records[recordKey] = {
+                                    ...(state.records[recordKey] || {}),
+                                    ...record,
+                                };
                             });
 
                             state.flags.isModified = true;
@@ -456,15 +462,17 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                         removeRecords: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<Draft<EntityData<TEntity>>[]>
+                            action: PayloadAction<MatrxRecordId[]>
                         ) => {
-                            const {primaryKeyMetadata} = state.entityMetadata;
                             entityLogger.log('debug', 'removeRecords', action.payload);
 
-                            action.payload.forEach(record => {
-                                const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
+                            action.payload.forEach(recordKey => {
                                 delete state.records[recordKey];
                             });
+
+                            state.quickReference.records = state.quickReference.records.filter(
+                                quickRefRecord => !action.payload.includes(quickRefRecord.recordKey)
+                            );
 
                             state.flags.isModified = true;
                             state.flags.hasUnsavedChanges = true;

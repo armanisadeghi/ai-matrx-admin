@@ -2,23 +2,12 @@
 import * as React from 'react';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
 import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import {Save, X, Trash} from 'lucide-react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import {Save, X} from 'lucide-react';
 import {toast} from '@/components/ui';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
+import {DeleteAlert, FormField, MultiRecordView } from './FormFieldComponents';
 
 interface EntityFormPanelProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -56,13 +45,14 @@ export function EntityFormPanel<TEntity extends EntityKeys>(
     const [formData, setFormData] = React.useState<Partial<EntityData<TEntity>>>({});
     const [mode, setMode] = React.useState<FormMode>('view');
 
-    // Reset form when selection changes
     React.useEffect(() => {
-        if (activeRecord && mode !== 'create') {
+        if (selectionMode === 'multiple' && selectedIds?.length) {
+            setMode('multi');
+        } else if (activeRecord && mode !== 'create') {
             setFormData(activeRecord);
-            setMode(selectionMode === 'multiple' ? 'multi' : 'view');
+            setMode('view');
         }
-    }, [activeRecord, selectionMode]);
+    }, [activeRecord, selectionMode, selectedIds, mode]);
 
     const handleSave = () => {
         const callback = (result: { success: boolean; error?: any }) => {
@@ -95,6 +85,7 @@ export function EntityFormPanel<TEntity extends EntityKeys>(
     };
 
     const handleDelete = () => {
+        console.log('Deleting record:', selectedId);
         if (!selectedId) return;
 
         deleteRecord(selectedId, (result) => {
@@ -115,69 +106,43 @@ export function EntityFormPanel<TEntity extends EntityKeys>(
     };
 
     const renderField = (field: typeof fieldInfo[0], record?: EntityData<TEntity>) => {
-        if (field.isPrimaryKey) return null;
-
-        const isReadOnly = mode === 'view';
+        const isReadOnly = mode === 'view' || field.isPrimaryKey;
         const value = record ? record[field.name] : formData[field.name] ?? '';
 
         return (
-            <div key={field.name} className="space-y-2">
-                <label className="text-sm font-medium">
-                    {field.displayName}
-                    {field.isRequired && <span className="text-destructive ml-1">*</span>}
-                </label>
-                {field.description && (
-                    <p className="text-xs text-muted-foreground">{field.description}</p>
-                )}
-                <Input
-                    value={value}
-                    onChange={(e) => {
-                        if (!isReadOnly) {
-                            setFormData(prev => ({
-                                ...prev,
-                                [field.name]: e.target.value
-                            }));
-                        }
-                    }}
-                    disabled={isReadOnly}
-                    placeholder={field.defaultValue as string || ''}
-                    maxLength={field.maxLength}
-                />
-            </div>
+            <FormField
+                key={field.name}
+                field={field}
+                value={value}
+                isReadOnly={isReadOnly}
+                onChange={(newValue) => {
+                    if (!isReadOnly) {
+                        setFormData(prev => ({
+                            ...prev,
+                            [field.name]: newValue
+                        }));
+                    }
+                }}
+            />
         );
     };
 
-    const renderMultiSelectView = () => (
-        <Accordion type="single" collapsible className="w-full">
-            {selectedRecords.map(record => {
-                const recordId = getRecordIdByRecord(record);
-                if (!recordId) return null;
-
-                return (
-                    <AccordionItem key={recordId} value={recordId}>
-                        <AccordionTrigger>{getDisplayValue(record)}</AccordionTrigger>
-                        <AccordionContent>
-                            <div className="space-y-4 p-4">
-                                {fieldInfo.map(field => {
-                                    if (field.isPrimaryKey) return null;
-                                    return (
-                                        <div key={field.name} className="space-y-1">
-                                            <label className="text-sm font-medium">{field.displayName}</label>
-                                            <div className="text-sm">{record[field.name] || '-'}</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                );
-            })}
-        </Accordion>
-    );
-
     const renderFormContent = () => {
-        if (mode === 'multi' && selectedIds?.length) {
-            return renderMultiSelectView();
+        console.log('Rendering form content', {
+            mode,
+            selectedIds,
+            selectedRecords
+        });
+
+        if (mode === 'multi' && selectedIds && selectedIds.length > 0) {
+            return (
+                <MultiRecordView
+                    records={selectedRecords}
+                    fields={fieldInfo}
+                    getRecordId={getRecordIdByRecord}
+                    getDisplayValue={getDisplayValue}
+                />
+            );
         }
 
         return (
@@ -222,28 +187,7 @@ export function EntityFormPanel<TEntity extends EntityKeys>(
                                     >
                                         Edit
                                     </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm">
-                                                <Trash className="h-4 w-4 mr-1"/>
-                                                Delete
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Delete Record</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Are you sure? This cannot be undone.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={handleDelete}>
-                                                    Delete
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
+                                    <DeleteAlert onDelete={handleDelete} />
                                 </div>
                             )}
                         </div>

@@ -14,10 +14,10 @@ import {SchemaEntity, SchemaField} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
 
 import {GlobalCacheState} from "./globalCacheSlice";
-import {FlexibleQueryOptions, QueryOptions, UnifiedDatabaseObject} from "@/lib/redux/entity/sagas";
 import {DisplayFieldMetadata, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types";
-import {parseRecordKeys} from "@/lib/redux/entity/utils";
+import {createMatrxRecordId, parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
+import {FlexibleQueryOptions, QueryOptions, UnifiedDatabaseObject} from "../entity/sagaHelpers";
 
 const trace = 'GLOBAL CACHE SELECTORS';
 const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
@@ -854,8 +854,36 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             result.data = convertToDatabase(options.data, fieldMap);
         }
 
-        logger.log('info', 'Data processed:', result.data);
+        let pksAndValues: Record<string, any> = {};
 
+        if (options.matrxRecordId) {
+            pksAndValues = parseMatrxRecordId(options.matrxRecordId);
+        }
+
+        const {primaryKeysAndValues, recordKeys} = result.databasePks.reduce(
+            (acc, pk, index) => {
+                const value = result.data?.[pk] ?? pksAndValues[pk];
+                if (value !== undefined) {
+                    acc.primaryKeysAndValues[pk] = value;
+                    acc.recordKeyParts.push(`${pk}:${value}`);
+                }
+                if (index === result.databasePks.length - 1 && acc.recordKeyParts.length > 0) {
+                    acc.recordKeys.push(acc.recordKeyParts.join('::'));
+                }
+                return acc;
+            },
+            {
+                primaryKeysAndValues: {} as Record<string, any>,
+                recordKeyParts: [] as string[],
+                recordKeys: [] as string[],
+            }
+        );
+
+        result.primaryKeysAndValues = primaryKeysAndValues;
+        result.recordKeys = recordKeys;
+
+        logger.log('info', 'Data processed:', result.data);
+        logger.log('info', 'Primary keys and values extracted:', primaryKeysAndValues);
         logger.log('info', 'Conversion complete:', result);
 
         return result;
@@ -975,7 +1003,7 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
         if (options.data) {
             result.data = selectFrontendConversion(
                 state,
-                { entityName, data: options.data }
+                {entityName, data: options.data}
             );
         }
 

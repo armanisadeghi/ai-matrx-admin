@@ -346,7 +346,6 @@ export const parseMatrxRecordId = (
         const [field, value] = pair.split(':');
 
         if (field && value !== undefined) {
-            // Cast field as AllEntityFieldKeys if it matches known keys
             acc[field as AllEntityFieldKeys] = value;
         } else {
             throw new Error(`Invalid format in record key part: ${pair}`);

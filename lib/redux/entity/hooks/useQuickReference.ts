@@ -71,6 +71,8 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     getDisplayValue: (record: EntityData<TEntity>) => string;
 
     handleSingleSelection: (recordKey: MatrxRecordId) => void;
+    handleRecordSelect: (recordKey: MatrxRecordId) => void;
+
 }
 
 export function useQuickReference<TEntity extends EntityKeys>(
@@ -160,6 +162,28 @@ export function useQuickReference<TEntity extends EntityKeys>(
         return record[displayField.name] || 'Unnamed Record';
     }, [fieldInfo]);
 
+    React.useEffect(() => {
+        const handleModifierKey = (e: KeyboardEvent) => {
+            const isModifierPressed = e.ctrlKey || e.metaKey;
+            if (isModifierPressed && selection.selectionMode !== 'multiple') {
+                selection.toggleSelectionMode();
+            }
+        };
+
+        window.addEventListener('keydown', handleModifierKey);
+        return () => window.removeEventListener('keydown', handleModifierKey);
+    }, [selection]);
+
+    const handleRecordSelect = React.useCallback((recordKey: MatrxRecordId) => {
+        if (selection.selectionMode === 'multiple') {
+            selection.handleToggleSelection(recordKey);
+        } else {
+            selection.handleSingleSelection(recordKey);
+        }
+    }, [selection]);
+
+
+
     return {
         // Metadata
         entityDisplayName,
@@ -196,5 +220,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
         isValidated,
         getRecordIdByRecord,
         getDisplayValue,
+        handleRecordSelect,
+
     };
 }

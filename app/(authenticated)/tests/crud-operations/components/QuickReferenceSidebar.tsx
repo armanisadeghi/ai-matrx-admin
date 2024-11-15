@@ -17,31 +17,18 @@ interface QuickReferenceSidebarProps<TEntity extends EntityKeys> {
 export function QuickReferenceSidebar<TEntity extends EntityKeys>(
     {
         entityKey,
-        onSelectionChange,
         onCreateNew,
         className = ''
     }: QuickReferenceSidebarProps<TEntity>) {
     const {
         quickReferenceRecords,
-        selectedRecordIds,
         selectionMode,
         isSelected,
-        handleMultiSelection,
-        handleSingleSelection,
+        handleRecordSelect,
         toggleSelectionMode,
     } = useQuickReference(entityKey);
 
-    React.useEffect(() => {
-        if (selectionMode === 'multiple') {
-            onSelectionChange(selectedRecordIds);
-        } else if (selectedRecordIds.length === 1) {
-            onSelectionChange(selectedRecordIds[0]);
-        } else {
-            onSelectionChange('');
-        }
-    }, [selectedRecordIds, selectionMode, onSelectionChange]);
-
-    const getCardClassName = (recordKey: string) => {
+    const getCardClassName = React.useCallback((recordKey: string) => {
         const baseClasses = "cursor-pointer transition-colors hover:bg-accent/50";
         const isMultiple = selectionMode === 'multiple';
         return `${baseClasses} ${
@@ -49,7 +36,7 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
             ? `border-primary ${isMultiple ? 'bg-accent' : 'border-2 bg-accent'}`
             : 'border-transparent'
         }`;
-    };
+    }, [selectionMode, isSelected]);
 
     return (
         <div className={`h-full flex flex-col border-r ${className}`}>
@@ -65,10 +52,7 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
                             {selectionMode === 'multiple' ? 'Cancel Multi' : 'Multi'}
                         </Button>
                         {onCreateNew && (
-                            <Button
-                                onClick={onCreateNew}
-                                size="sm"
-                            >
+                            <Button onClick={onCreateNew} size="sm">
                                 <Plus className="h-4 w-4 mr-1"/>
                                 New
                             </Button>
@@ -83,13 +67,7 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
                         <Card
                             key={ref.recordKey}
                             className={getCardClassName(ref.recordKey)}
-                            onClick={() => {
-                                if (selectionMode === 'multiple') {
-                                    handleMultiSelection(ref.recordKey);
-                                } else {
-                                    handleSingleSelection(ref.recordKey);
-                                }
-                            }}
+                            onClick={() => handleRecordSelect(ref.recordKey)}
                         >
                             <CardContent className="p-3">
                                 <div className="flex items-center gap-2">

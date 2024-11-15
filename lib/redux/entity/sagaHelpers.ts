@@ -67,6 +67,7 @@ export interface FlexibleQueryOptions {
     offset?: number;
     columns?: AllEntityFieldKeys[];
     data?: unknown | unknown[];
+    matrxRecordId?: MatrxRecordId;
 }
 
 
@@ -154,6 +155,8 @@ export interface UnifiedDatabaseObject {
     columns?: string[];
 
     data?: unknown | unknown[];
+    primaryKeysAndValues?: Record<string, any>;
+    matrxRecordId?: MatrxRecordId;
 }
 
 export interface FlexibleQueryOptions {
@@ -172,6 +175,7 @@ export interface FlexibleQueryOptions {
 
 export const optionalActionKeys = [
     'recordKeys',
+    'matrxRecordId',
     'filters',
     'sorts',
     'limit',

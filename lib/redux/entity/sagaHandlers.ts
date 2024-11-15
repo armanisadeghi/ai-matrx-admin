@@ -12,7 +12,7 @@ import {
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {createRecordKey} from "@/lib/redux/entity/utils";
 import {Draft} from "immer";
-import { BaseSagaContext, QueryOptions, UnifiedDatabaseObject } from "./sagaHelpers";
+import {BaseSagaContext, QueryOptions, UnifiedDatabaseObject} from "./sagaHelpers";
 
 const DEBOUNCE_MS = 300;
 const CACHE_DURATION = 5 * 60 * 1000;
@@ -378,33 +378,39 @@ function* handleDelete<TEntity extends EntityKeys>(
         action,
         tableName,
         unifiedDatabaseObject
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId> }>
-    }) {
+    }: BaseSagaContext<TEntity> & {}
+) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleDelete', entityKey);
 
     try {
-        entityLogger.log('info', 'Starting', action.payload);
+        entityLogger.log('info', 'Starting delete operation', unifiedDatabaseObject);
 
         let query = api.delete();
 
-        Object.entries(action.payload.primaryKeyValues).forEach(([key, value]) => {
+        // Apply primary key conditions using primaryKeysAndValues from unifiedDatabaseObject
+        const primaryKeyValues = unifiedDatabaseObject.primaryKeysAndValues;
+        if (primaryKeyValues) {
+            Object.entries(primaryKeyValues).forEach(([key, value]) => {
             query = query.eq(key, value);
         });
+        } else {
+            throw new Error("Primary key values are missing in unifiedDatabaseObject.");
+        }
 
         const {error} = yield query;
         if (error) throw error;
 
         entityLogger.log('info', 'Database response', {success: true});
 
-        const recordToRemove = {
-            ...action.payload.primaryKeyValues,
-        } as Draft<EntityData<TEntity>>;
+        const recordKeys = unifiedDatabaseObject.recordKeys;
 
-        yield put(actions.removeRecords([recordToRemove]));
-        entityLogger.log('info', 'Final result', {removed: recordToRemove});
+        yield put(actions.removeRecords(recordKeys));
+
+        entityLogger.log('info', 'Final result', { removed: primaryKeyValues });
 
     } catch (error: any) {
+        entityLogger.log('error', 'Delete operation error', error);
+
         yield put(actions.setError({
             message: error.message || "An error occurred during delete.",
             code: error.code,
@@ -484,7 +490,7 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
         switch (operation) {
             case 'create':
             case 'update':
-                yield put(actions.upsertRecords(frontendResponse as Draft<EntityData<TEntity>>[]));
+                yield put(actions.upsertRecords(frontendResponse));
                 break;
             case 'delete':
                 yield put(actions.removeRecords(records as Draft<EntityData<TEntity>>[]));
@@ -558,7 +564,7 @@ function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
 
     const {primaryKeyMetadata, displayFieldMetadata} = yield select(selectEntityMetadata, entityKey);
 
-    const displayFieldName = displayFieldMetadata.fieldName;
+    const displayFieldName = unifiedDatabaseObject.frontendDisplayField
     const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
         acc[field] = record[field];
         return acc;
@@ -747,7 +753,7 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
         api,
         action,
         unifiedDatabaseObject,
-}: BaseSagaContext<TEntity> & {
+    }: BaseSagaContext<TEntity> & {
         action: PayloadAction<{ page: number; pageSize: number; options?: QueryOptions<TEntity>; maxCount?: number }>
     }) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchPaginated', entityKey);
@@ -874,43 +880,57 @@ function* handleUpdate<TEntity extends EntityKeys>(
         api,
         action,
         unifiedDatabaseObject,
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<{ primaryKeyValues: Record<string, MatrxRecordId>; data: Partial<EntityData<TEntity>> }>
-    }) {
+    }: BaseSagaContext<TEntity> & {}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleUpdate', entityKey);
+    entityLogger.log('debug', 'Starting update operation', action.payload);
+
+    let previousData: Record<string, any> | undefined;
+    let recordKey: string;
 
     try {
-        entityLogger.log('debug', 'Starting update operation', action.payload);
-
-        // Get previous state
-        const previousData = yield select(state => {
-            const recordKey = Object.entries(action.payload.primaryKeyValues)
-                .map(([key, value]) => `${key}:${value}`)
-                .join('::');
+        recordKey = unifiedDatabaseObject.recordKeys[0];
+        previousData = yield select(state => {
             return state.entities[entityKey].records[recordKey];
         });
 
-        // Optimistic update
+        const updatedData = unifiedDatabaseObject.data as Record<string, any>;
+        const primaryKeyFields = unifiedDatabaseObject.databasePks;
+        entityLogger.log('debug', 'Unified data for update:', updatedData);
+
         if (previousData) {
-            const optimisticData = {...previousData, ...action.payload.data};
-            yield put(actions.upsertRecords([optimisticData]));
+            const optimisticData = {...previousData, ...updatedData};
+            entityLogger.log('info', 'Optimistic update', optimisticData);
+
+            yield put(actions.upsertRecords([
+                { recordKey, record: optimisticData }
+            ]));
         }
 
-        let query = api.update(action.payload.data);
 
-        // Apply primary key conditions
-        Object.entries(action.payload.primaryKeyValues).forEach(([key, value]) => {
+        const primaryKeyValues = primaryKeyFields.reduce((acc, key) => {
+            if (updatedData[key] !== undefined) {
+                acc[key] = updatedData[key];
+            }
+            return acc;
+        }, {});
+
+        entityLogger.log('debug', 'Primary key values:', primaryKeyValues);
+
+
+        let query = api.update(updatedData);
+        Object.entries(primaryKeyValues).forEach(([key, value]) => {
             query = query.eq(key, value);
         });
 
         const {data, error} = yield query.select().single();
-
         if (error) throw error;
 
         entityLogger.log('info', 'Database response', {data});
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
+
+        entityLogger.log('info', 'Frontend response', frontendResponse);
 
         yield put(actions.updateRecordSuccess(frontendResponse));
 
@@ -925,19 +945,21 @@ function* handleUpdate<TEntity extends EntityKeys>(
         // Invalidate cache
         yield put(actions.invalidateCache());
 
-        const metadata = yield select(state => state.entities[entityKey].entityMetadata);
 
-        yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse, unifiedDatabaseObject);
+        yield* handleUpdateQuickReference(entityKey, actions, frontendResponse, unifiedDatabaseObject);
 
         entityLogger.log('info', 'Final result', frontendResponse);
 
     } catch (error: any) {
         entityLogger.log('error', 'Update operation error', error);
 
-        // Revert optimistic update if needed TODO: Needs implementation
-        // if (previousData) {
-        //     yield put(actions.upsertRecords([previousData]));
-        // }
+        // Revert optimistic update if needed
+        if (previousData) {
+            entityLogger.log('info', 'Reverting optimistic update');
+            yield put(actions.upsertRecords([
+                { recordKey, record: previousData }
+            ]));
+        }
 
         yield put(actions.setError({
             message: error.message || "An error occurred during update.",
@@ -946,6 +968,30 @@ function* handleUpdate<TEntity extends EntityKeys>(
         throw error;
     }
 }
+
+function* handleUpdateQuickReference<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    record: EntityData<TEntity>,
+    unifiedDatabaseObject?: UnifiedDatabaseObject
+) {
+    const entityLogger = EntityLogger.createLoggerWithDefaults('handleQuickReferenceUpdate', entityKey);
+
+    entityLogger.log('info', 'Starting Quick Reference Update', { record, unifiedDatabaseObject });
+
+    const quickReferenceRecord = {
+        primaryKeyValues: unifiedDatabaseObject?.primaryKeysAndValues,
+        displayValue: record[unifiedDatabaseObject?.frontendDisplayField],
+        recordKey: unifiedDatabaseObject?.recordKeys[0]
+    };
+
+    entityLogger.log('info', 'Prepared Quick Reference Record', quickReferenceRecord);
+
+    // Dispatch to addQuickReferenceRecords with the properly structured record
+    yield put(actions.addQuickReferenceRecords([quickReferenceRecord]));
+}
+
+
 
 function* handleFetchMetrics<TEntity extends EntityKeys>(
     {
