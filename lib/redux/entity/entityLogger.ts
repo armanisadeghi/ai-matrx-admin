@@ -1,5 +1,7 @@
 // lib/redux/entity/entityLogger.ts
 
+import {safeStringifyWithTimeout} from "@/utils/safeStringify";
+
 type LogLevel = 'none' | 'debug' | 'info' | 'warn' | 'error';
 type DetailLevel = 'minimal' | 'standard' | 'verbose';
 
@@ -16,7 +18,7 @@ interface LogEntry {
 class EntityLogger {
     private static logs: LogEntry[] = [];
     private static subscribers: ((logs: LogEntry[]) => void)[] = [];
-    private static logLevel: LogLevel = 'debug';
+    private static logLevel: LogLevel = 'info';
     private static consoleLogLevel: LogLevel = 'info';
     private static detailLevel: DetailLevel = 'standard';
     private static featureFilter: Set<string> = new Set();
@@ -141,8 +143,15 @@ class EntityLogger {
         const { trace, entityKey, feature, level } = entry;
         const color = this.logLevelColors[level] || '';
         const reset = this.resetColor;
-        const message = typeof entry.message === 'object' ? JSON.stringify(entry.message, null, 2) : entry.message;
-        const details = typeof entry.details === 'object' && entry.details !== null ? JSON.stringify(entry.details, null, 2) : entry.details;
+    const message =
+        typeof entry.message === 'object'
+            ? safeStringifyWithTimeout(entry.message, 2, 5, 1000) // Explicitly passing arguments
+            : entry.message;
+
+    const details =
+        typeof entry.details === 'object' && entry.details !== null
+            ? safeStringifyWithTimeout(entry.details, 2, 5, 1000) // Explicitly passing arguments
+            : entry.details;
 
         switch (this.detailLevel) {
             case 'minimal':

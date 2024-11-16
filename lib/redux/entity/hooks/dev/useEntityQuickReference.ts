@@ -4,7 +4,6 @@ import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {
-    OperationCallbacks,
     useEntitySelection,
     UseEntitySelectionReturn
 } from '@/lib/redux/entity/hooks/useEntitySelection';
@@ -20,60 +19,12 @@ import {
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
 import {Draft} from "@reduxjs/toolkit";
 import {createRecordKey} from "@/lib/redux/entity/utils";
-import EntityLogger from '../entityLogger';
+import EntityLogger from '../../entityLogger';
 
-export interface UseEntityQuickReferenceResult<TEntity extends EntityKeys> extends Omit<UseEntitySelectionReturn<TEntity>, 'selectedRecords'> {
-    // ... (existing interface properties)
-    isMultiSelectMode: boolean;
-    toggleMultiSelectMode: () => void;
-
-    // Metadata
-    entityDisplayName: string;
-    fieldInfo: EntityStateField[];
-
-    // Quick Reference Data
-    quickReferenceRecords: QuickReferenceRecord[];
-    quickReferenceState: QuickReferenceState;
-    selectedQuickReference: QuickReferenceRecord | null;
-    primaryKeyMetadata: PrimaryKeyMetadata;
-    // Loading States
-    loading: LoadingState['loading'];
-    error: LoadingState['error'];
-    lastOperation: LoadingState['lastOperation'];
-
-    // Record Management
-    handleMultipleSelections: (primaryKeyValues: Record<string, MatrxRecordId>) => void;
-    handleSingleSelection: (primaryKeyValues: Record<string, MatrxRecordId>) => void;
-
-    // CRUD Operations
-    createRecord: (
-        data: EntityData<TEntity>,
-        options?: OperationCallbacks<EntityData<TEntity>>
-    ) => Promise<void>;
-
-    updateRecord: (
-        data: Partial<EntityData<TEntity>>,
-        options?: OperationCallbacks<EntityData<TEntity>>
-    ) => Promise<void>;
-
-    deleteRecord: (
-        options?: OperationCallbacks
-    ) => Promise<void>;
-
-    // Validation Management
-    handleSetValidated: (isValid: boolean) => void;
-    // State Management
-    isValidated: boolean;
-    isModified: boolean;
-    hasUnsavedChanges: boolean;
-
-    selectedQuickReferences: QuickReferenceRecord[];
-
-}
 
 export function useEntityQuickReference<TEntity extends EntityKeys>(
     entityKey: TEntity
-): UseEntityQuickReferenceResult<TEntity> {
+) {
 
     const [pendingSelection, setPendingSelection] = useState<{
         recordKey: string;

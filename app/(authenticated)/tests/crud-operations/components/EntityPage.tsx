@@ -3,53 +3,45 @@ import * as React from 'react';
 import {EntityKeys} from '@/types/entityTypes';
 import {ResizableLayout} from './ResizableLayout';
 import {QuickReferenceSidebar} from './QuickReferenceSidebar';
-import {EntityFormPanel} from './EntityFormPanel';
+import {EntityFormPanel, EntityFormPanelRefs} from './EntityFormPanel';
 
 interface EntityPageProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
 }
 
-export function EntityPage<TEntity extends EntityKeys>(
-    {
-        entityKey
-    }: EntityPageProps<TEntity>) {
-    const [selectedId, setSelectedId] = React.useState<string>();
-    const [selectedIds, setSelectedIds] = React.useState<string[]>();
+export function EntityPage<TEntity extends EntityKeys>({entityKey,}: EntityPageProps<TEntity>) {
 
-    const handleSelectionChange = (selection: string | string[]) => {
-        if (Array.isArray(selection)) {
-            setSelectedIds(selection);
-            setSelectedId(undefined);
-        } else {
-            setSelectedId(selection);
-            setSelectedIds(undefined);
-        }
+    const EntityFormPanelRef = React.useRef<EntityFormPanelRefs>(null);
+
+    const handleShowContent = () => {
+        EntityFormPanelRef.current?.handleCreateNew();
     };
 
+
     return (
-        <ResizableLayout
+        <ResizableLayout className={'bg-background'}
             leftPanel={
                 <QuickReferenceSidebar
                     entityKey={entityKey}
-                    onSelectionChange={handleSelectionChange}
-                    onCreateNew={() => setSelectedId(undefined)}
+                    onCreateEntityClick={handleShowContent}
+                    showCreateNewButton={true}
                 />
             }
             rightPanel={
                 <EntityFormPanel
+                    ref={EntityFormPanelRef}
                     entityKey={entityKey}
-                    selectedId={selectedId}
-                    selectedIds={selectedIds}
+                    allowCreateNew={true}
                     onCreateSuccess={() => {
-                        // Handle create success
+                        console.log('Create success from EntityPage Triggered');
                     }}
                     onUpdateSuccess={() => {
-                        // Handle update success
+                        console.log('Update success from EntityPage Triggered');
                     }}
                     onDeleteSuccess={() => {
-                        setSelectedId(undefined);
-                        setSelectedIds(undefined);
+                        console.log('Delete success from EntityPage Triggered');
                     }}
+
                 />
             }
         />

@@ -95,7 +95,7 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleGetOrFetchSelectedRecords', entityKey);
 
     try {
-        entityLogger.log('info', 'Starting', action.payload);
+        entityLogger.log('debug', 'Starting', action.payload);
 
         const entitySelectors = createEntitySelectors(entityKey);
         const {existingRecords, primaryKeysToFetch} = yield select(
@@ -106,9 +106,9 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
         entityLogger.log('info', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
-            entityLogger.log('info', '-Existing records', existingRecords);
-            entityLogger.log('info', 'Adding to selection', recordId);
-            entityLogger.log('info', 'Dispatching addToSelection action');
+            entityLogger.log('debug', '-Existing records', existingRecords);
+            entityLogger.log('info', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
+            entityLogger.log('debug', 'Dispatching addToSelection action');
 
             yield put(actions.addToSelection(recordId));
         }
@@ -255,7 +255,7 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchQuickReference', entityKey);
 
     try {
-        entityLogger.log('info', 'Starting', action.payload);
+        entityLogger.log('debug', 'Starting', action.payload);
 
         const {primaryKeyMetadata, displayFieldMetadata} = yield select(selectEntityMetadata, entityKey);
 
@@ -270,7 +270,7 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
         const {data, error, count} = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 
-        entityLogger.log('info', 'Database response', {data, count});
+        entityLogger.log('debug', 'Database response', {data, count});
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
@@ -841,11 +841,11 @@ function* handleCreate<TEntity extends EntityKeys>(
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        entityLogger.log('info', 'Frontend response', frontendResponse);
+        entityLogger.log('debug', 'Frontend response', frontendResponse);
 
         yield put(actions.createRecordSuccess(frontendResponse));
 
-        entityLogger.log('info', 'Pushing to history', frontendResponse);
+        entityLogger.log('debug', 'Pushing to history', frontendResponse);
 
         yield put(actions.pushToHistory({
             timestamp: new Date().toISOString(),
@@ -853,15 +853,15 @@ function* handleCreate<TEntity extends EntityKeys>(
             data: frontendResponse
         }));
 
-        entityLogger.log('info', 'Invalidating cache');
+        entityLogger.log('debug', 'Invalidating cache');
 
         yield put(actions.invalidateCache());
 
-        entityLogger.log('info', 'Handling quick reference update');
+        entityLogger.log('debug', 'Handling quick reference update');
 
         yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse, unifiedDatabaseObject);
 
-        entityLogger.log('info', 'Final result', frontendResponse);
+        entityLogger.log('debug', 'Final result', frontendResponse);
 
     } catch (error: any) {
         entityLogger.log('error', 'Create operation error', error);
@@ -899,7 +899,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
 
         if (previousData) {
             const optimisticData = {...previousData, ...updatedData};
-            entityLogger.log('info', 'Optimistic update', optimisticData);
+            entityLogger.log('debug', 'Optimistic update', optimisticData);
 
             yield put(actions.upsertRecords([
                 { recordKey, record: optimisticData }
@@ -925,7 +925,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
         const {data, error} = yield query.select().single();
         if (error) throw error;
 
-        entityLogger.log('info', 'Database response', {data});
+        entityLogger.log('debug', 'Database response', {data});
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
@@ -948,7 +948,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
 
         yield* handleUpdateQuickReference(entityKey, actions, frontendResponse, unifiedDatabaseObject);
 
-        entityLogger.log('info', 'Final result', frontendResponse);
+        entityLogger.log('debug', 'Final result', frontendResponse);
 
     } catch (error: any) {
         entityLogger.log('error', 'Update operation error', error);
@@ -977,7 +977,7 @@ function* handleUpdateQuickReference<TEntity extends EntityKeys>(
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleQuickReferenceUpdate', entityKey);
 
-    entityLogger.log('info', 'Starting Quick Reference Update', { record, unifiedDatabaseObject });
+    entityLogger.log('debug', 'Starting Quick Reference Update', { record, unifiedDatabaseObject });
 
     const quickReferenceRecord = {
         primaryKeyValues: unifiedDatabaseObject?.primaryKeysAndValues,

@@ -42,7 +42,6 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     isSelected: (recordKey: MatrxRecordId) => boolean;
     isActive: (recordKey: MatrxRecordId) => boolean;
     handleSelection: (recordKey: MatrxRecordId) => void;
-    handleMultiSelection: (recordKey: MatrxRecordId) => void;
     toggleSelectionMode: () => void;
     clearSelection: () => void;
 
@@ -152,10 +151,6 @@ export function useQuickReference<TEntity extends EntityKeys>(
         selection.handleSelection(recordKey);
     }, [selection]);
 
-    const handleMultiSelection = React.useCallback((recordKey: MatrxRecordId) => {
-        selection.handleToggleSelection(recordKey);
-    }, [selection]);
-
     const getDisplayValue = React.useCallback((record: EntityData<TEntity>) => {
         const displayField = fieldInfo.find(field => field.isDisplayField);
         if (!displayField) return 'Unnamed Record';
@@ -175,12 +170,17 @@ export function useQuickReference<TEntity extends EntityKeys>(
     }, [selection]);
 
     const handleRecordSelect = React.useCallback((recordKey: MatrxRecordId) => {
+        console.log('1 --handleRecordSelect', recordKey);
+        console.log('2 -- selection mode', selection.selectionMode);
+
         if (selection.selectionMode === 'multiple') {
+            console.log('3 --selection mode is multiple... handleToggleSelection');
             selection.handleToggleSelection(recordKey);
         } else {
+            console.log('3 --selection mode is not multiple... handleSingleSelection');
             selection.handleSingleSelection(recordKey);
         }
-    }, [selection]);
+    }, [selection.selectionMode]);
 
 
 
@@ -204,7 +204,6 @@ export function useQuickReference<TEntity extends EntityKeys>(
         isSelected: selection.isSelected,
         isActive: selection.isActive,
         handleSelection,
-        handleMultiSelection,
         toggleSelectionMode: selection.toggleSelectionMode,
         clearSelection: selection.clearSelection,
         handleSingleSelection: selection.handleSingleSelection,

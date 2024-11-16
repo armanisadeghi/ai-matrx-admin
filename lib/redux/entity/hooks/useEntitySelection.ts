@@ -90,9 +90,13 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     }, [dispatch, actions]);
 
     // In useQuickReference
+    // const handleSingleSelection = React.useCallback((recordKey: MatrxRecordId) => {
+    //     dispatch(actions.clearSelection());
+    //     dispatch(actions.addToSelection(recordKey));
+    // }, [dispatch, actions]);
+
     const handleSingleSelection = React.useCallback((recordKey: MatrxRecordId) => {
-        dispatch(actions.clearSelection());
-        dispatch(actions.addToSelection(recordKey));
+        dispatch(actions.setSwitchSelectedRecord(recordKey));
     }, [dispatch, actions]);
 
 
@@ -101,7 +105,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         if (selectedRecordIds.length > 0) {
             dispatch(actions.getOrFetchSelectedRecords(selectedRecordIds));
         }
-        console.log('Use Effect Triggered with: ', selectedRecordIds);
+        console.log('Use Effect in useEntitySelection Triggered with: ', selectedRecordIds);
 
     }, [selectedRecordIds]);
 

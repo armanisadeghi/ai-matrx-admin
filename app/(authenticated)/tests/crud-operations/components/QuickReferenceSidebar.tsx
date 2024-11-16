@@ -9,15 +9,17 @@ import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 
 interface QuickReferenceSidebarProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
-    onSelectionChange: (recordId: string | string[]) => void;
-    onCreateNew?: () => void;
+    onSelectionChange?: (recordId: string | string[]) => void;
+    onCreateEntityClick?: () => void;
+    showCreateNewButton?: boolean;
     className?: string;
 }
 
 export function QuickReferenceSidebar<TEntity extends EntityKeys>(
     {
         entityKey,
-        onCreateNew,
+        onCreateEntityClick,
+        showCreateNewButton = false,
         className = ''
     }: QuickReferenceSidebarProps<TEntity>) {
     const {
@@ -43,16 +45,18 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
             <div className="p-4 border-b">
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex gap-2">
-                        <Button
-                            onClick={toggleSelectionMode}
-                            size="sm"
-                            variant={selectionMode === 'multiple' ? "secondary" : "outline"}
-                        >
-                            <CheckSquare className="h-4 w-4 mr-1"/>
-                            {selectionMode === 'multiple' ? 'Cancel Multi' : 'Multi'}
-                        </Button>
-                        {onCreateNew && (
-                            <Button onClick={onCreateNew} size="sm">
+                        {selectionMode !== 'none' && (
+                            <Button
+                                onClick={toggleSelectionMode}
+                                size="sm"
+                                variant={selectionMode === 'multiple' ? "secondary" : "outline"}
+                            >
+                                <CheckSquare className="h-4 w-4 mr-1"/>
+                                {selectionMode === 'multiple' ? 'Cancel Multi' : 'Multi'}
+                            </Button>
+                        )}
+                        {onCreateEntityClick && showCreateNewButton && (
+                            <Button onClick={onCreateEntityClick} size="sm">
                                 <Plus className="h-4 w-4 mr-1"/>
                                 New
                             </Button>
@@ -60,7 +64,6 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
                     </div>
                 </div>
             </div>
-
             <ScrollArea className="flex-grow">
                 <div className="p-2 space-y-2">
                     {quickReferenceRecords.map(ref => (

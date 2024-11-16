@@ -73,7 +73,7 @@ function RecordSelector<TEntity extends EntityKeys>(
                     onError?.({
                         message: 'Entity metadata not available',
                         details: 'Primary key metadata is missing',
-                        lastOperation: 'fetch'
+                        lastOperation: 'FETCH'
                     });
                     return;
                 }
@@ -86,7 +86,7 @@ function RecordSelector<TEntity extends EntityKeys>(
                 onError?.({
                     message: 'Failed to fetch record',
                     details: error,
-                    lastOperation: 'fetch'
+                    lastOperation: 'FETCH'
                 });
             }
         };
@@ -102,7 +102,7 @@ function RecordSelector<TEntity extends EntityKeys>(
                 onError?.({
                     message: 'Failed to fetch quick reference data',
                     details: error,
-                    lastOperation: 'fetch'
+                    lastOperation: 'FETCH'
                 });
             }
         }

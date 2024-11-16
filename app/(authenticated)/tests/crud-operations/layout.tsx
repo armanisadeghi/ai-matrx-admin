@@ -19,7 +19,7 @@ export default function Layout(
                 moduleHome={MODULE_HOME}
                 moduleName={MODULE_NAME}
             />
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-hidden">
                 {children}
             </main>
         </div>

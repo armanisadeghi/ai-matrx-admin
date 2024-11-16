@@ -1,7 +1,14 @@
 // lib/redux/entity/utils.ts
 
 import {AllEntityFieldKeys, EntityData, EntityKeys} from "@/types/entityTypes";
-import {EntityState, FilterCondition, FilterState, MatrxRecordId, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {
+    EntityOperationFlags,
+    EntityState,
+    FilterCondition,
+    FilterState,
+    MatrxRecordId,
+    PrimaryKeyMetadata
+} from "@/lib/redux/entity/types";
 import EntityLogger from "./entityLogger";
 
 const trace = "UTILS";
@@ -20,56 +27,6 @@ export type EntityOperations =
     | 'UPDATE'
     | 'DELETE'
     | 'CUSTOM';
-
-export interface EntityOperationFlags {
-    FETCH_STATUS?: FlagStatusOptions;
-    FETCH_ONE_STATUS?: FlagStatusOptions;
-    FETCH_QUICK_REFERENCE_STATUS?: FlagStatusOptions;
-    FETCH_RECORDS_STATUS?: FlagStatusOptions;
-    FETCH_ALL_STATUS?: FlagStatusOptions;
-    FETCH_PAGINATED_STATUS?: FlagStatusOptions;
-    CREATE_STATUS?: FlagStatusOptions;
-    UPDATE_STATUS?: FlagStatusOptions;
-    DELETE_STATUS?: FlagStatusOptions;
-    CUSTOM_STATUS?: FlagStatusOptions;
-}
-
-export interface EntityFlags {
-    needsRefresh?: boolean;
-    isModified?: boolean;
-    hasUnsavedChanges?: boolean;
-    isBatchOperationInProgress?: boolean;
-    isValidated?: boolean;
-    operationFlags: EntityOperationFlags;
-}
-
-export interface LoadingState {
-    initialized: boolean;
-    loading: boolean;
-    error: {
-        message: string;
-        code?: number;
-        details?: unknown;
-    } | null;
-    lastOperation?: EntityOperations;
-}
-
-export interface EntityError {
-    message: string;
-    code?: number;
-    details?: unknown;
-    lastOperation?: EntityOperations;
-}
-
-export interface EntityFlags {
-    needsRefresh?: boolean;
-    isModified?: boolean;
-    hasUnsavedChanges?: boolean;
-    isBatchOperationInProgress?: boolean;
-    isValidated?: boolean;
-    fetchOneStatus?: FlagStatusOptions;
-}
-
 
 export const setLoading = <TEntity extends EntityKeys>(
     state: EntityState<TEntity>,
@@ -177,7 +134,7 @@ export interface SelectionState {
 export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
-        state.selection.lastSelected = recordKey;
+        // state.selection.lastSelected = recordKey;
         updateSelectionMode(state);
     }
 };
@@ -247,7 +204,7 @@ export const setSpecificSelectionMode = (state, mode) => {
 }
 
 export const toggleSelectionMode = (state) => {
-    if (state.selection.selectionMode === 'single') {
+    if (state.selection.selectionMode === 'single' || state.selection.selectionMode === 'none') {
         switchToMultipleSelectionMode(state);
     } else if (state.selection.selectionMode === 'multiple') {
         switchToSingleSelectionMode(state);
@@ -260,6 +217,7 @@ export const removeSelections = (state) => {
     }
     state.selection.selectedRecords = [];
     state.selection.selectionMode = 'none';
+    removeActiveRecord(state);
 }
 
 export const handleSelectionForDeletedRecord = (state, recordKey) => {
@@ -378,7 +336,7 @@ export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): Matr
             return `${field}:${value}`;
         })
         .join('::');
-    utilsLogger.log('info', 'Generated record key:', {key});
+    utilsLogger.log('debug', 'Generated record key:', {key});
     return key;
 };
 

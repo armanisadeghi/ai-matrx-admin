@@ -6,7 +6,7 @@ import EntityBrowserContent from './EntityBrowserContent';
 
 export default function EntityBrowserPage() {
     return (
-        <Card className="overflow-hidden">
+        <Card>
             <EntityBrowserContent/>
         </Card>
     );

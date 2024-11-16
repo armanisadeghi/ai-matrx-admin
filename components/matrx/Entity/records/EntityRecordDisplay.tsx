@@ -9,7 +9,7 @@ import {
     EntityFormState,
     FlexEntityFormProps,
 } from '@/components/matrx/Entity/types/entityForm';
-import {MatrxFormLoading} from "@/components/matrx/LoadingComponents";
+import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
 import {EntityError, MatrxRecordId} from '@/lib/redux/entity/types';
 import {createRecordKey} from '@/lib/redux/entity/utils';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
@@ -58,7 +58,7 @@ function EntityRecordDisplay(
             setError({
                 message: 'Record not found',
                 details: `No record found for ${primaryKeyField}: ${primaryKeyValue}`,
-                lastOperation: 'fetch'
+                lastOperation: 'FETCH'
             });
         }
     }, [entity.allRecords, entity.loadingState.loading, entity.entityMetadata]);
@@ -108,11 +108,11 @@ function EntityRecordDisplay(
     }, [entity.fieldInfo, entity.primaryKeyMetadata, entityName, entity]);
 
     if (!entity.entityMetadata) {
-        return <MatrxFormLoading/>;
+        return <FormLoadingTwoColumn/>;
     }
 
     if (entity.loadingState.loading) {
-        return <MatrxFormLoading/>;
+        return <FormLoadingTwoColumn/>;
     }
 
     if (error) {

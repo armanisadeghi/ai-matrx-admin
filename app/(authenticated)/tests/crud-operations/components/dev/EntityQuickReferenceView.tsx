@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
 import {GripVertical, X, Plus, Trash, Save, CheckSquare, Copy, Download} from 'lucide-react';
-import {useEntityQuickReference} from '@/lib/redux/entity/hooks/useEntityQuickReference';
+import {useEntityQuickReference} from '@/lib/redux/entity/hooks/dev/useEntityQuickReference';
 import {
     ResizableHandle,
     ResizablePanel,

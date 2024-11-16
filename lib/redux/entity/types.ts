@@ -281,7 +281,6 @@ export interface EntityOperationFlags {
     DELETE_STATUS?: FlagStatusOptions;
     CUSTOM_STATUS?: FlagStatusOptions;
 }
-
 export interface EntityFlags {
     needsRefresh?: boolean;
     isModified?: boolean;

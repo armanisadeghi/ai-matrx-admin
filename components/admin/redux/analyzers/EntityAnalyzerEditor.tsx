@@ -9,7 +9,7 @@ import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {UniversalJsonGroup} from '@/components/ui';
 import { MatrxRecordId } from '@/lib/redux/entity/types';
 import {createEntitySlice} from "@/lib/redux/entity/slice";
-import {QueryOptions} from "@/lib/redux/entity/sagas";
+import {QueryOptions} from "@/lib/redux/entity/sagaHelpers";
 
 interface EntityAnalyzerEditorProps {
     className?: string;

@@ -115,6 +115,23 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectSelectedRecordsWithKey = createSelector(
+        [selectEntity],
+        (entity) => {
+            return Array.from(entity.selection.selectedRecords).reduce((acc, recordKey) => {
+                const record = entity.records[recordKey];
+                if (record) {
+                    acc[recordKey] = record;
+                }
+                return acc;
+            }, {} as Record<string, typeof entity.records[keyof typeof entity.records]>);
+        }
+    );
+
+
+
+
+
     const selectActiveRecordId = createSelector(
         [selectEntity],
         (entity) => entity.selection.activeRecord
@@ -159,6 +176,18 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectActiveRecordWithId = createSelector(
+        [selectEntity, selectActiveRecordId],
+        (entity, activeRecordId) => {
+            if (!activeRecordId || !entity.records[activeRecordId]) {
+                return { matrxRecordId: null, record: null };
+            }
+            return {
+                matrxRecordId: activeRecordId,
+                record: entity.records[activeRecordId]
+            };
+        }
+    );
 
     // === End Selection Selectors ==================================================
 
@@ -347,6 +376,18 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }))
     );
 
+    const selectDefaultValues = createSelector(
+        [selectFieldInfo],
+        (fieldInfo) =>
+            fieldInfo.reduce(
+                (acc, field) => ({
+                    ...acc,
+                    [field.name]: field.defaultValue,
+                }),
+                {} as Record<string, any>
+            )
+    );
+
 // For table headers
     const selectTableColumns = createSelector(
         [selectFieldInfo],
@@ -373,6 +414,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             description: field.description,
         }))
     );
+
+
+    const selectCombinedRecordsWithFieldInfo = createSelector(
+        [selectEntity, selectFieldInfo, selectDisplayField],
+        (entity, fieldInfo, displayField) => {
+            const keyedSelectedRecords = Array.from(entity.selection.selectedRecords).reduce(
+                (acc, recordKey) => {
+                    const record = entity.records[recordKey];
+                    if (record) {
+                        acc[recordKey] = record;
+                    }
+                    return acc;
+                },
+                {} as Record<string, typeof entity.records[keyof typeof entity.records]>
+            );
+
+            return {
+                records: keyedSelectedRecords,
+                fieldInfo,
+                displayField,
+            };
+        }
+    );
+
 
 // Filtered and paginated data combined
     const selectCurrentPageFiltered = createSelector(
@@ -595,6 +660,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectIsQuickReferenceFetchComplete,
         selectQuickReferenceState,
         selectRecordIdByRecord,
+
+        selectSelectedRecordsWithKey,
+        selectCombinedRecordsWithFieldInfo,
+        selectActiveRecordWithId,
+        selectDefaultValues,
+
 
     };
 };

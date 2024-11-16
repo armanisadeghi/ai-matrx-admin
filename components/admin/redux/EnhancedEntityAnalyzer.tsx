@@ -27,7 +27,7 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
 
     useEffect(() => {
         if (selectedEntityKey !== undefined) {
-            setLocalSelectedEntity(selectedEntityKey);
+            handleEntitySelect(selectedEntityKey);
         }
     }, [selectedEntityKey]);
 

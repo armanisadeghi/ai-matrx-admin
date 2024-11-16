@@ -253,13 +253,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<EntityData<TEntity>[]>
                         ) => {
                             const {primaryKeyMetadata} = state.entityMetadata;
-                            entityLogger.log('debug', 'fetchSelectedRecordsSuccess', action.payload);
+                            entityLogger.log('info', 'fetchSelectedRecordsSuccess', action.payload);
 
                             action.payload.forEach(record => {
                                 const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
                                 state.records[recordKey] = record;
+                                setNewActiveRecord(state, recordKey);
                             });
-
                             setSuccess(state, 'FETCH_RECORDS');
                         },
 
@@ -365,8 +365,18 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         },
 
                         clearSelection: (state) => {
-                            entityLogger.log('debug', 'clearSelection');
+                            entityLogger.log('info', 'clearSelection');
                             removeSelections(state);
+                        },
+
+                        setSwitchSelectedRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            entityLogger.log('debug', 'setSwitchSlectedRecord', action.payload);
+                            removeSelections(state);
+                            state.selection.selectedRecords.push(action.payload);
+                            state.selection.selectionMode = 'single';
                         },
 
                         addToSelection: (
@@ -376,9 +386,12 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             entityLogger.log('info', 'addToSelection start', action.payload);
 
                             if (isMatrxRecordId(action.payload)) {
+                                console.log('It is a MatrxRecordId. Adding to selection');
                                 addRecordToSelection(state, action.payload);
                             } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
+                                console.log('It is an EntityData. Getting recordId from the record.');
                                 const matrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                                console.log('MatrxRecordId: ', matrxRecordId);
                                 addRecordToSelection(state, matrxRecordId);
                             } else {
                                 entityLogger.log('error', 'Invalid Record in addToSelection', action.payload);

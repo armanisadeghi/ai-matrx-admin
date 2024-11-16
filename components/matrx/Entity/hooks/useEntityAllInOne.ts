@@ -15,7 +15,7 @@ import {
 import {RootState} from '@/lib/redux/store';
 import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {Draft} from "immer";
-import {QueryOptions} from "@/lib/redux/entity/sagas";
+import {QueryOptions} from "@/lib/redux/entity/SagaHelpers";
 import {createRecordKey} from '@/lib/redux/entity/utils';
 import {
     ColumnDef,

@@ -1,4 +1,5 @@
 // Export primary components in the Entity folder
+
 export { default as EntityBrowser } from './EntityBrowser';
 export { default as EntityCardHeader } from './EntityCardHeader';
 export { default as EntityDirectory } from './EntityDirectory';
@@ -25,6 +26,8 @@ export { default as MatrxTableHeader } from './table/MatrxTableHeader';
 
 export { default as TableTopOptions } from './addOns/TableTopOptions';
 export { default as TableBottomSection } from './addOns/TableBottomSection';
+
+export { default as EntityShowSelectedAccordion } from './prewired-components/EntityShowSelectedAccordion';
 
 // Export utilities
 export * from './utils/tableHelpers';

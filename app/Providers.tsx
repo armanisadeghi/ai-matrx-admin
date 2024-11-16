@@ -11,6 +11,7 @@ import StoreProvider from "@/providers/StoreProvider";
 import {TooltipProvider} from "@/components/ui/tooltip";
 import {InitialReduxState} from "@/types/reduxTypes";
 import {SocketProvider} from '@/providers/SocketProvider';
+import { RefProvider } from '@/lib/refs';
 
 export function Providers(
     {
@@ -25,12 +26,14 @@ export function Providers(
             <StoreProvider initialState={initialReduxState}>
                 <SocketProvider>
                     <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                        <NextUIProvider>
-                            <TooltipProvider>
-                                {children}
-                                <Toaster/>
-                            </TooltipProvider>
-                        </NextUIProvider>
+                        <RefProvider>
+                            <NextUIProvider>
+                                <TooltipProvider>
+                                    {children}
+                                    <Toaster/>
+                                </TooltipProvider>
+                            </NextUIProvider>
+                        </RefProvider>
                     </ThemeProvider>
                 </SocketProvider>
             </StoreProvider>

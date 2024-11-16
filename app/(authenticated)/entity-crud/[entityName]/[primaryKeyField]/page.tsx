@@ -13,7 +13,7 @@ import Link from 'next/link';
 import {useCallback, useMemo, useState} from "react";
 import {QuickReferenceRecord} from "@/lib/redux/entity/types";
 import {cn} from "@nextui-org/react";
-import {useEntityQuickReference} from "@/lib/redux/entity/hooks/useEntityQuickReference";
+import {useEntityQuickReference} from "@/lib/redux/entity/hooks/dev/useEntityQuickReference";
 import EntityFormWrapper from '@/components/matrx/Entity/form/EntityFormWrapper';
 
 interface EntityQuickReferenceSidebarProps<TEntity extends EntityKeys> {
