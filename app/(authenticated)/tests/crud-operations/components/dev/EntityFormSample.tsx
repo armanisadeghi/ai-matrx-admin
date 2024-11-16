@@ -1,3 +1,4 @@
+/*
 // EntityForm.tsx
 import * as React from 'react';
 import {ScrollArea} from '@/components/ui/scroll-area';
@@ -6,7 +7,6 @@ import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 import {Save, X} from 'lucide-react';
 import {toast} from '@/components/ui';
-import {DeleteRecordAction, FormField, MultiRecordView} from './SimpleFormField';
 import EntityLogger from "@/lib/redux/entity/entityLogger";
 
 interface EntityFormProps<TEntity extends EntityKeys> {
@@ -265,3 +265,4 @@ export const EntityForm = React.forwardRef<EntityFormPanelRefs, EntityFormProps<
         );
     }
 );
+*/

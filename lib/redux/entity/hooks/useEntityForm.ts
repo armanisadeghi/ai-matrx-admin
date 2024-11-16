@@ -194,10 +194,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
         viewMode,
         formData,
         validationErrors,
-        isLoading: loadingState.loading,
-        hasError: !!errorState.message,
-        errorMessage: errorState.message,
-        lastOperation: loadingState.lastOperation,
+        loadingState,
 
         // Metadata
         entityDisplayName,

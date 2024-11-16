@@ -19,7 +19,7 @@ import {
     CallbackResult,
 } from '@/lib/redux/entity/types';
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import {Callback, callbackManager} from "@/utils/callbackManager";
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
@@ -170,7 +170,9 @@ export function useQuickReference<TEntity extends EntityKeys>(
     }, [selection]);
 
     const handleRecordSelect = React.useCallback((recordKey: MatrxRecordId) => {
-        console.log('1 --handleRecordSelect', recordKey);
+        console.log('1 --handleRecordSelect Setting Active Record: ', recordKey);
+        dispatch(actions.setActiveRecord(recordKey));
+
         console.log('2 -- selection mode', selection.selectionMode);
 
         if (selection.selectionMode === 'multiple') {
@@ -181,7 +183,6 @@ export function useQuickReference<TEntity extends EntityKeys>(
             selection.handleSingleSelection(recordKey);
         }
     }, [selection.selectionMode]);
-
 
 
     return {

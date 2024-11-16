@@ -134,10 +134,10 @@ export interface SelectionState {
 export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
-        // state.selection.lastSelected = recordKey;
         updateSelectionMode(state);
     }
 };
+
 
 export const removeRecordFromSelection = (state, recordKey: MatrxRecordId) => {
     state.selection.selectedRecords = state.selection.selectedRecords.filter(

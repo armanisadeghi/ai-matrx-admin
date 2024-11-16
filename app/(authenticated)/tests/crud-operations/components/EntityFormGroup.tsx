@@ -5,7 +5,10 @@ import {DeleteRecordAction} from './helperComponents';
 import {SimpleFormField} from './SimpleFormField';
 import {useEntityForm} from "@/lib/redux/entity/hooks/useEntityForm";
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {MatrxRecordId} from '@/lib/redux/entity/types';
+import {LoadingState, MatrxRecordId} from '@/lib/redux/entity/types';
+import NormalFormField from './NormalFormField';
+import FormContent from "./NormalFormFieldTwo";
+import ComponentBasedFieldView from "@/app/(authenticated)/tests/crud-operations/components/NormalFormFieldThree";
 
 // Updated component props and types
 export type FormMode = 'view' | 'edit' | 'create';
@@ -15,9 +18,7 @@ export interface UseEntityFormState<TEntity extends EntityKeys> {
     viewMode: FormMode;
     formData: Partial<EntityData<TEntity>>;
     validationErrors: Record<string, string>;
-    isLoading: boolean;
-    hasError: boolean;
-    errorMessage?: string;
+    loadingState: LoadingState
     lastOperation?: string;
 
     // Metadata
@@ -89,9 +90,10 @@ interface FormContentProps<TEntity extends EntityKeys> {
     form: UseEntityFormState<TEntity>;
 }
 
-const FormContent = <TEntity extends EntityKeys>({form}: FormContentProps<TEntity>) => {
+/*
+const FormContentOne = <TEntity extends EntityKeys>({form}: FormContentProps<TEntity>) => {
     const renderField = React.useCallback((field) => (
-        <SimpleFormField
+        <NormalFormField
             key={field.name}
             field={field}
             value={form.getFieldValue(field.name)}
@@ -107,6 +109,7 @@ const FormContent = <TEntity extends EntityKeys>({form}: FormContentProps<TEntit
         </div>
     );
 };
+*/
 
 interface FormActionsProps<TEntity extends EntityKeys> {
     form: UseEntityFormState<TEntity>;
@@ -136,13 +139,19 @@ interface EntityFormGroupProps<TEntity extends EntityKeys> {
     allowDelete?: boolean;
 }
 
+export interface EntityFormGroupRefs {
+    handleCreateNew: () => void;
+}
+
+// Updated EntityFormGroup
 function EntityFormGroup<TEntity extends EntityKeys>(
     {
         entityKey,
         allowCreate = true,
         allowEdit = true,
         allowDelete = true,
-    }: EntityFormGroupProps<TEntity>
+    }: EntityFormGroupProps<TEntity>,
+    ref: React.ForwardedRef<EntityFormGroupRefs>
 ) {
     const form = useEntityForm<TEntity>(entityKey, {
         allowCreate,
@@ -150,15 +159,23 @@ function EntityFormGroup<TEntity extends EntityKeys>(
         allowDelete
     });
 
+    React.useImperativeHandle(ref, () => ({
+        handleCreateNew: () => {
+            form.handleNew();
+        }
+    }));
+
     return (
         <div className="space-y-6">
             <FormHeader form={form}/>
             <div className="space-y-6">
-                <FormContent form={form}/>
+                {/*<FormContent form={form}/>*/}
+                <ComponentBasedFieldView entityKey={entityKey}/>
                 <FormActions form={form}/>
             </div>
         </div>
     );
 }
 
-export default EntityFormGroup;
+const ForwardedEntityFormGroup = React.forwardRef(EntityFormGroup);
+export default ForwardedEntityFormGroup;

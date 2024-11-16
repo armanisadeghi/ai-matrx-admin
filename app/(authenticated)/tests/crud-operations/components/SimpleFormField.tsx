@@ -6,11 +6,13 @@ interface SimpleFormFieldFieldProps {
     field: {
         name: string;
         displayName: string;
-        description?: string;
-        isRequired?: boolean;
-        isPrimaryKey?: boolean;
-        defaultValue?: string;
-        maxLength?: number;
+        description: string;
+        isRequired: boolean;
+        isPrimaryKey: boolean;
+        defaultValue: string;
+        maxLength: number;
+        dataType: string;
+        isNative: boolean;
     };
     value: any;
     isReadOnly: boolean;

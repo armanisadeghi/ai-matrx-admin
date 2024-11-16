@@ -27,13 +27,11 @@ export function DynamicResizableLayout(
         direction = 'horizontal',
         className = ''
     }: DynamicResizableLayoutProps) {
-    // Validate total default sizes don't exceed 100
     const totalDefaultSize = panels.reduce((sum, panel) => sum + (panel.defaultSize || 0), 0);
     if (totalDefaultSize > 100) {
         console.warn('Total default sizes exceed 100%. Panels will be adjusted proportionally.');
     }
 
-    // Calculate default sizes if not provided
     const defaultSizes = panels.map((panel, index) => {
         if (panel.defaultSize) return panel.defaultSize;
         const remainingPanels = panels.length - panels.filter(p => p.defaultSize).length;
@@ -49,7 +47,6 @@ export function DynamicResizableLayout(
             const oldSize = newSizes[index];
             const diff = size - oldSize;
 
-            // Adjust other panels proportionally
             const totalOtherSizes = prevSizes.reduce((sum, s, i) => i !== index ? sum + s : sum, 0);
             newSizes[index] = size;
 
@@ -64,8 +61,11 @@ export function DynamicResizableLayout(
     };
 
     return (
-        <div className={`h-[calc(100vh-4rem)] ${className}`}>
-            <ResizablePanelGroup direction={direction}>
+        <div className={`h-[calc(90vh-4rem)] overflow-hidden ${className}`}>
+            <ResizablePanelGroup
+                direction={direction}
+                className="h-full"
+            >
                 {panels.map((panel, index) => (
                     <React.Fragment key={index}>
                         <ResizablePanel
@@ -74,8 +74,13 @@ export function DynamicResizableLayout(
                             maxSize={panel.maxSize || 90}
                             collapsible={panel.collapsible}
                             onResize={(size) => handleResize(index, size)}
+                            className="flex"
                         >
-                            {panel.content}
+                            <div className="flex-1 min-h-0 relative">
+                                <div className="absolute inset-0 overflow-auto">
+                                    {panel.content}
+                                </div>
+                            </div>
                         </ResizablePanel>
                         {index < panels.length - 1 && <ResizableHandle/>}
                     </React.Fragment>

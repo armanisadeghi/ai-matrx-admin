@@ -1,12 +1,11 @@
-// EntityFormPanel.tsx
 import * as React from 'react';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Button} from '@/components/ui/button';
 import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import EntityLogger from "@/lib/redux/entity/entityLogger";
 import {EntityShowSelectedAccordion} from '@/components/matrx/Entity';
-import EntityFormGroup from './EntityFormGroup';
+import { EntityFormGroupRefs } from './EntityFormGroup';
+import ForwardedEntityFormGroup from './EntityFormGroup';
 
 interface EntityFormPanelProps<TEntity extends EntityKeys> {
     ref: React.Ref<any>;
@@ -37,23 +36,27 @@ export const EntityFormPanel = React.forwardRef<EntityFormPanelRefs, EntityFormP
         clearSelection,
     } = useQuickReference(entityKey);
 
-    const entityLogger = EntityLogger.createLoggerWithDefaults("ENTITY FORM PANEL", entityKey);
+    const formGroupRef = React.useRef<EntityFormGroupRefs>(null);
 
     React.useImperativeHandle(ref, () => ({
         handleCreateNew: () => {
             if (!allowCreateNew) return;
             clearSelection();
+            formGroupRef.current?.handleCreateNew();
         }
     }));
 
     const isMultiSelectMode = selectionMode === 'multiple' && selectedRecordIds?.length > 0;
 
     return (
-        <>
+        <div className="h-full flex flex-col">
             {allowCreateNew && (
-                <div className="flex justify-end p-6">
+                <div className="shrink-0 p-6">
                     <Button
-                        onClick={() => clearSelection()}
+                        onClick={() => {
+                            clearSelection();
+                            formGroupRef.current?.handleCreateNew();
+                        }}
                         size="sm"
                         variant="secondary"
                     >
@@ -62,12 +65,13 @@ export const EntityFormPanel = React.forwardRef<EntityFormPanelRefs, EntityFormP
                 </div>
             )}
 
-            <ScrollArea className="h-full">
+            <ScrollArea className="flex-1">
                 <div className="p-6">
                     {isMultiSelectMode ? (
                         <EntityShowSelectedAccordion entityKey={entityKey}/>
                     ) : (
-                         <EntityFormGroup<EntityKeys>
+                         <ForwardedEntityFormGroup
+                             ref={formGroupRef}
                              entityKey={entityKey}
                              allowCreate={allowCreateNew}
                              allowEdit={true}
@@ -76,6 +80,6 @@ export const EntityFormPanel = React.forwardRef<EntityFormPanelRefs, EntityFormP
                      )}
                 </div>
             </ScrollArea>
-        </>
+        </div>
     );
 });
