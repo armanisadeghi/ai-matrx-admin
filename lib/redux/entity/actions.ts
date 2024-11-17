@@ -1,6 +1,6 @@
 // lib/redux/entity/actions.ts
 
-import { EntityData, EntityKeys } from "@/types/entityTypes";
+import {AllEntityFieldKeys, AllEntityNameVariations, EntityData, EntityKeys} from "@/types/entityTypes";
 import {
     BatchOperationPayload,
     FilterPayload,
@@ -42,6 +42,37 @@ export type CreateRecordPayload<TEntity extends EntityKeys> = {
     data: Partial<EntityData<TEntity>>;
     callbackId?: string;
 };
+
+interface FlexibleQueryOptions {
+    entityNameAnyFormat: AllEntityNameVariations;
+    callback?: string;
+    recordKeys?: MatrxRecordId[];
+
+    matrxRecordId?: MatrxRecordId;
+
+    filters?: Partial<Record<AllEntityFieldKeys, unknown>>;
+    sorts?: Array<{
+        column: AllEntityFieldKeys;
+        ascending?: boolean;
+        append?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    maxCount?: number;
+    columns?: AllEntityFieldKeys[];
+    data?: unknown | unknown[];
+    page?: number;
+    pageSize?: number;
+
+    callbackId?: string;
+}
+
+export interface SortPayload {
+    field: string;
+    direction: 'asc' | 'desc';
+    append?: boolean;
+}
+
 
 export interface FetchRecordsPayload {
     page: number;

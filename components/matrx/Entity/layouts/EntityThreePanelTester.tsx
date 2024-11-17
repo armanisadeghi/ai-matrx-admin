@@ -1,15 +1,15 @@
 import * as React from 'react';
 import {EntityKeys} from '@/types/entityTypes';
-import {QuickReferenceSidebar} from './QuickReferenceSidebar';
-import {EntityFormPanel, EntityFormPanelRefs} from './EntityFormPanel';
+import {EntityFormPanel, EntityFormPanelRefs} from '../../../../app/(authenticated)/tests/crud-operations/components/EntityFormPanel';
 import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
 import { DynamicResizableLayout } from '@/components/matrx/resizable/DynamicResizableLayout';
+import EntityQuickReferenceList from "@/components/matrx/Entity/prewired-components/EntityQuickReferenceList";
 
 interface EntityPageProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
 }
 
-export function ThreePanelLayout<TEntity extends EntityKeys>(
+export function EntityThreePanelTester<TEntity extends EntityKeys>(
     {
         entityKey,
     }: EntityPageProps<TEntity>) {
@@ -22,7 +22,7 @@ export function ThreePanelLayout<TEntity extends EntityKeys>(
     const panels = [
         {
             content: (
-                <QuickReferenceSidebar
+                <EntityQuickReferenceList
                     entityKey={entityKey}
                     onCreateEntityClick={handleShowContent}
                     showCreateNewButton={true}

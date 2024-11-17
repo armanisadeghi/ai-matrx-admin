@@ -162,17 +162,6 @@ const AnimatedFormModalPage: React.FC = () => {
                 </select>
 
                 <select
-                    value={selectedDirection}
-                    onChange={(e) => setSelectedDirection(e.target.value as FlexAnimatedFormProps['direction'])}
-                    className="border border-input bg-background text-foreground rounded px-2 py-1"
-                >
-                    <option value="row">Row</option>
-                    <option value="column">Column</option>
-                    <option value="row-reverse">Row Reverse</option>
-                    <option value="column-reverse">Column Reverse</option>
-                </select>
-
-                <select
                     value={columns.toString()}
                     onChange={(e) => setColumns(e.target.value === 'auto' ? 'auto' : parseInt(e.target.value))}
                     className="border border-input bg-background text-foreground rounded px-2 py-1"
@@ -195,6 +184,19 @@ const AnimatedFormModalPage: React.FC = () => {
                     />
                     Enable Search
                 </label>
+
+                <select
+                    value={selectedDirection}
+                    onChange={(e) => setSelectedDirection(e.target.value as FlexAnimatedFormProps['direction'])}
+                    className="border border-input bg-background text-foreground rounded px-2 py-1"
+                >
+                    <option value="row">Row</option>
+                    <option value="column">Column</option>
+                    <option value="row-reverse">Row Reverse</option>
+                    <option value="column-reverse">Column Reverse</option>
+                </select>
+
+
             </div>
 
             {/* Selected Variation */}

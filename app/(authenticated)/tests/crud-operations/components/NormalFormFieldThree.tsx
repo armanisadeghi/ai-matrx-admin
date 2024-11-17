@@ -20,12 +20,10 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Badge} from '@/components/ui/badge';
 import {Copy, Plus} from "lucide-react";
 import {EnhancedJsonViewer, FullJsonViewer} from '@/components/ui';
-import {cn} from '@nextui-org/react';
-import {useEntityForm} from "@/lib/redux/entity/hooks/useEntityForm";
-import {EntityData, EntityKeys} from "@/types/entityTypes";
-import {useAppDispatch, useAppSelector, useAppStore} from "@/lib/redux/hooks";
+import {EntityKeys} from "@/types/entityTypes";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {createEntitySlice} from "@/lib/redux/entity/slice";
+import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 
 // Types
 interface EntityStateField {
@@ -322,7 +320,7 @@ interface BaseFieldProps {
 }
 
 // Dynamic field factory component
-const FieldFactory: React.FC<BaseFieldProps> = ({ field, formField, value }) => {
+const FieldFactory: React.FC<BaseFieldProps> = ({field, formField, value}) => {
     const [componentType] = (field.defaultComponent || 'input').split(':');
 
     const commonProps = {
@@ -351,27 +349,21 @@ interface ComponentBasedFieldViewProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
 }
 
-const ComponentBasedFieldView = <TEntity extends EntityKeys>({
-                                                                 entityKey
-                                                             }: ComponentBasedFieldViewProps<TEntity>) => {
+const ComponentBasedFieldView = <TEntity extends EntityKeys>(
+    {
+        entityKey
+    }: ComponentBasedFieldViewProps<TEntity>) => {
     const dispatch = useAppDispatch();
     const selectors = React.useMemo(
         () => createEntitySelectors(entityKey),
         [entityKey]
     );
-    const { actions } = React.useMemo(
-        () => createEntitySlice(entityKey, {} as any),
-        [entityKey]
-    );
-
-    // Type-safe selectors
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const fields = useAppSelector(selectors.selectFieldInfo);
     const defaultValues = useAppSelector(selectors.selectDefaultValues);
-    const { matrxRecordId, record: activeRecord } = useAppSelector(
+    const {matrxRecordId, record: activeRecord} = useAppSelector(
         selectors.selectActiveRecordWithId
     );
-
-    // Use type assertion for form values to handle dynamic fields
     const form = useForm<Record<string, any>>({
         defaultValues: React.useMemo(() => ({
             ...defaultValues,
@@ -379,7 +371,6 @@ const ComponentBasedFieldView = <TEntity extends EntityKeys>({
         }), [defaultValues, activeRecord]) as Record<string, any>
     });
 
-    // Update form when active record changes
     React.useEffect(() => {
         if (activeRecord) {
             Object.entries(activeRecord).forEach(([key, value]) => {
@@ -405,7 +396,7 @@ const ComponentBasedFieldView = <TEntity extends EntityKeys>({
                                 key={field.name}
                                 control={form.control}
                                 name={field.name as any}
-                                render={({ field: formField }) => (
+                                render={({field: formField}) => (
                                     <FieldFactory
                                         field={field}
                                         formField={formField}

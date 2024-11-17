@@ -12,11 +12,11 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {AutomationEntities, EntityKeys} from "@/types/entityTypes";
 import {InitialReduxState} from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
-import {initializeEntitySlice} from "@/lib/redux/entity/initialize";
+import uiReducer from './ui/uiSlice';
+import {entitySliceRegistry, initializeEntitySlices} from './entity/entitySlice';
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -32,22 +32,12 @@ const moduleReducers = Object.keys(moduleSchemas).reduce((acc, moduleName) => {
     return acc;
 }, {} as Record<string, any>);
 
-type EntityReducers = Record<EntityKeys, ReturnType<typeof createEntitySlice>['reducer']>;
-
-function createEntityReducers(automationEntities: AutomationEntities): EntityReducers {
-    return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
-        const { initialState, metadata } = initializeEntitySlice(
-            entityName as EntityKeys,
-            entitySchema
-        );
-        const entitySlice = createEntitySlice(entityName as EntityKeys, initialState);
-        acc[entityName as EntityKeys] = entitySlice.reducer;
-        return acc;
-    }, {} as EntityReducers);
-}
-
 export const createRootReducer = (initialState: InitialReduxState) => {
-    const entityReducers = createEntityReducers(initialState.globalCache.schema);
+        initializeEntitySlices(initialState.globalCache.schema);
+    const entityReducers = Object.fromEntries(
+        Array.from(entitySliceRegistry.entries()).map(([key, slice]) => [key, slice.reducer])
+    );
+
     const globalCacheSlice = createGlobalCacheSlice(initialState.globalCache);
 
     return combineReducers({
@@ -63,8 +53,30 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         flashcardChat: flashcardChatReducer,
         aiChat: aiChatReducer,
         globalCache: globalCacheSlice.reducer,
+        ui: uiReducer,
     });
 };
+
+
+
+
+
+/*
+type EntityReducers = Record<EntityKeys, ReturnType<typeof createEntitySlice>['reducer']>;
+
+
+function createEntityReducers(automationEntities: AutomationEntities): EntityReducers {
+    return Object.entries(automationEntities).reduce((acc, [entityName, entitySchema]) => {
+        const { initialState, metadata } = initializeEntitySlice(
+            entityName as EntityKeys,
+            entitySchema
+        );
+        const entitySlice = createEntitySlice(entityName as EntityKeys, initialState);
+        acc[entityName as EntityKeys] = entitySlice.reducer;
+        return acc;
+    }, {} as EntityReducers);
+}
+*/
 
 
 

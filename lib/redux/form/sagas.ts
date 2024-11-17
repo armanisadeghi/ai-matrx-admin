@@ -1,8 +1,7 @@
 // lib/redux/form/sagas.ts
 import { takeLatest, put, select, call } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { createEntitySlice } from '../entity/slice';
-import { EntityKeys } from '@/types/entityTypes';
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import * as formActions from './slice';
 
 function* handleFormSubmission(
@@ -18,7 +17,7 @@ function* handleFormSubmission(
             return;
         }
 
-        const entitySlice = createEntitySlice(formState.entityKey, {} as any);
+        const entitySlice = getEntitySlice(formState.entityKey);
 
         yield put(formActions.submitFormStart({ formId }));
 

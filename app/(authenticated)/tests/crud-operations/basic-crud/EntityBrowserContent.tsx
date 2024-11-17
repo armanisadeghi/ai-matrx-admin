@@ -14,7 +14,7 @@ import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnaly
 // import { PanelLeft } from '@/components/matrx/resizable/Panels';
 // import {EntityTestView} from "@/app/(authenticated)/tests/crud-operations/basic-crud/EntityQuickTestView";
 // import {EntityPage} from "@/app/(authenticated)/tests/crud-operations/components/EntityPage";
-import {ThreePanelLayout} from "@/app/(authenticated)/tests/crud-operations/components/ThreePanelLayout";
+import {EntityThreePanelTester} from "@/components/matrx/Entity/layouts/EntityThreePanelTester";
 
 
 const EntityBrowserContent: React.FC = () => {
@@ -27,7 +27,7 @@ const EntityBrowserContent: React.FC = () => {
                 <PreWiredCardHeader onEntityChange={setSelectedEntity}/>
                 <CardContent className="p-0">
                     {selectedEntity ? (
-                        <ThreePanelLayout entityKey={selectedEntity}/>
+                        <EntityThreePanelTester entityKey={selectedEntity}/>
                     ) : (
                          <div className="flex items-center justify-center h-full">
                              <div className="text-center">

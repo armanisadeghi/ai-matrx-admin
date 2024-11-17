@@ -1,6 +1,3 @@
-// app/(authenticated)/entity-crud/[entityName]/[primaryKeyField]/page.tsx
-
-// app/(authenticated)/entity-crud/[entityName]/[primaryKeyField]/page.tsx
 'use client';
 
 import {EntityKeys} from '@/types/entityTypes';
@@ -8,146 +5,117 @@ import {ResizablePanel} from '@/components/ui/resizable';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
-import {Search, Plus, ArrowRight} from 'lucide-react';
-import Link from 'next/link';
+import {Search, Plus} from 'lucide-react';
 import {useCallback, useMemo, useState} from "react";
-import {QuickReferenceRecord} from "@/lib/redux/entity/types";
 import {cn} from "@nextui-org/react";
-import {useEntityQuickReference} from "@/lib/redux/entity/hooks/dev/useEntityQuickReference";
-import EntityFormWrapper from '@/components/matrx/Entity/form/EntityFormWrapper';
+import {Card, CardContent} from '@/components/ui/card';
+import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
+import { use } from 'react';
 
-interface EntityQuickReferenceSidebarProps<TEntity extends EntityKeys> {
-    records: QuickReferenceRecord[];
-    onRecordSelect: (record: QuickReferenceRecord) => void;
-    activeRecordKey?: string;
+type Params = Promise<{
+    entityName: EntityKeys;
+    primaryKeyField: string;
+}>;
+
+type SearchParams = Promise<{
     entityPrettyName: string;
-}
-
-function EntityQuickReferenceSidebar<TEntity extends EntityKeys>(
-    {
-        records,
-        onRecordSelect,
-        activeRecordKey,
-        entityPrettyName
-    }: EntityQuickReferenceSidebarProps<TEntity>) {
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredRecords = useMemo(() => {
-        if (!searchTerm) return records;
-        return records.filter(record =>
-            record.displayValue.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [records, searchTerm]);
-
-    return (
-        <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-                <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"/>
-                    <Input
-                        placeholder={`Search ${entityPrettyName}...`}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8"
-                    />
-                </div>
-            </div>
-            <ScrollArea className="flex-1">
-                <div className="space-y-1 p-2">
-                    {filteredRecords.map((record) => (
-                        <button
-                            key={JSON.stringify(record.primaryKeyValues)}
-                            onClick={() => onRecordSelect(record)}
-                            className={cn(
-                                "w-full text-left px-2 py-1 rounded-md hover:bg-accent",
-                                activeRecordKey === JSON.stringify(record.primaryKeyValues) &&
-                                "bg-accent text-accent-foreground"
-                            )}
-                        >
-                            {record.displayValue}
-                        </button>
-                    ))}
-                </div>
-            </ScrollArea>
-            <div className="p-4 border-t">
-                <Button className="w-full">
-                    <Plus className="h-4 w-4 mr-2"/>
-                    New {entityPrettyName}
-                </Button>
-            </div>
-        </div>
-    );
-}
+    [key: string]: string | string[] | undefined;
+}>;
 
 interface EntityQuickReferencePageProps {
-    params: {
-        entityName: EntityKeys;
-        primaryKeyField: string;
-    };
-    searchParams: {
-        entityPrettyName: string;
-    };
+    params: Params;
+    searchParams: SearchParams;
 }
 
-export default function EntityQuickReferencePage(
-    {
-        params,
-        searchParams
-    }: EntityQuickReferencePageProps) {
-    const {
-        quickReference,
-        activeRecord,
-        loadingState,
-        fetchRecord,
-        setActiveRecord,
-        updateRecord,
-        deleteRecord,
-        entityMetadata
-    } = useEntityQuickReference(params.entityName);
+export default function EntityQuickReferencePage(props: EntityQuickReferencePageProps) {
+    // Use React.use instead of await for client components
+    const params = use(props.params);
+    const searchParams = use(props.searchParams);
 
-    const handleRecordSelect = useCallback((record: QuickReferenceRecord) => {
-        fetchRecord(record.primaryKeyValues);
-    }, [fetchRecord]);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const {
+        quickReferenceRecords,
+        selectionMode,
+        isSelected,
+        handleRecordSelect,
+        toggleSelectionMode,
+    } = useQuickReference(params.entityName);
+
+    const filteredRecords = useMemo(() => {
+        if (!searchTerm) return quickReferenceRecords;
+        return quickReferenceRecords.filter(record =>
+            record.displayValue.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [quickReferenceRecords, searchTerm]);
+
+    const getCardClassName = useCallback((recordKey: string) => {
+        const baseClasses = "cursor-pointer transition-colors hover:bg-accent/50";
+        const isMultiple = selectionMode === 'multiple';
+        return cn(
+            baseClasses,
+            isSelected(recordKey)
+            ? `border-primary ${isMultiple ? 'bg-accent' : 'border-2 bg-accent'}`
+            : 'border-transparent'
+        );
+    }, [selectionMode, isSelected]);
 
     return (
         <div className="flex h-full">
             <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
-                <EntityQuickReferenceSidebar
-                    records={quickReference}
-                    onRecordSelect={handleRecordSelect}
-                    activeRecordKey={activeRecord ? JSON.stringify(activeRecord) : undefined}
-                    entityPrettyName={searchParams.entityPrettyName}
-                />
+                <div className="flex flex-col h-full">
+                    <div className="p-4 border-b">
+                        <div className="relative mb-4">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"/>
+                            <Input
+                                placeholder={`Search ${searchParams.entityPrettyName}...`}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-8"
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                            {selectionMode !== 'none' && (
+                                <Button
+                                    onClick={toggleSelectionMode}
+                                    size="sm"
+                                    variant={selectionMode === 'multiple' ? "secondary" : "outline"}
+                                >
+                                    Multi Select
+                                </Button>
+                            )}
+                            <Button className="w-full">
+                                <Plus className="h-4 w-4 mr-2"/>
+                                New {searchParams.entityPrettyName}
+                            </Button>
+                        </div>
+                    </div>
+                    <ScrollArea className="flex-grow">
+                        <div className="p-2 space-y-2">
+                            {filteredRecords.map(record => (
+                                <Card
+                                    key={record.recordKey}
+                                    className={getCardClassName(record.recordKey)}
+                                    onClick={() => handleRecordSelect(record.recordKey)}
+                                >
+                                    <CardContent className="p-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="text-sm">
+                                                {record.displayValue}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </div>
             </ResizablePanel>
 
             <div className="flex-1 p-6">
-                {activeRecord ? (
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-semibold">
-                                {activeRecord[entityMetadata?.displayField?.fieldName || '']}
-                            </h2>
-                            <Link
-                                href={`/entity-crud/${params.entityName}/table?entityPrettyName=${
-                                    encodeURIComponent(searchParams.entityPrettyName)
-                                }`}
-                                className="flex items-center text-sm text-muted-foreground hover:text-primary"
-                            >
-                                View in Table
-                                <ArrowRight className="ml-2 h-4 w-4"/>
-                            </Link>
-                        </div>
-
-                        <EntityFormWrapper
-                            entity={params.entityName}
-                            entityName={params.entityName}
-                        />
-                    </div>
-                ) : (
-                     <div className="flex items-center justify-center h-full text-muted-foreground">
-                         Select a record to view details
-                     </div>
-                 )}
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Select a record to view details
+                </div>
             </div>
         </div>
     );

@@ -1,14 +1,20 @@
-// File: @/components/matrx/PublicTopMenu.tsx
-import React from "react";
+'use client';
+import React, { useEffect, useState } from "react";
 import { Infinity } from "lucide-react";
 import { StandaloneThemeSwitcher } from "@/styles/themes/StandaloneThemeSwitcher";
 import Link from "next/link";
-import { cookies } from 'next/headers';
 
 const PublicTopMenu: React.FC = () => {
-    const cookieStore = cookies();
-    const theme = cookieStore.get('theme');
-    const initialTheme = theme ? theme.value as 'light' | 'dark' : 'dark';
+    const [initialTheme, setInitialTheme] = useState<'light' | 'dark'>('dark');
+
+    useEffect(() => {
+        const fetchCookies = async () => {
+            const cookieStore = await import('next/headers').then(mod => mod.cookies());
+            const theme = cookieStore.get('theme');
+            setInitialTheme(theme?.value as 'light' | 'dark' || 'dark');
+        };
+        fetchCookies();
+    }, []);
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-gray-900/95 backdrop-blur">

@@ -4,20 +4,20 @@ import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityFormState, FlexEntityFormProps} from '@/components/matrx/Entity/types/entityForm';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
 import {MatrxRecordId} from '@/lib/redux/entity/types';
-import {useEntity} from "@/lib/redux/entity/useEntity";
+import { useEntityForm } from '@/lib/redux/entity/hooks/useEntityForm';
 
 interface EntityFormWrapperProps<TEntity extends EntityKeys> {
-    entity: ReturnType<typeof useEntity>;
+    entityFormState: ReturnType<typeof useEntityForm>;
     entityName: TEntity;
 }
 
 function EntityFormWrapper<TEntity extends EntityKeys>(
     {
-        entity,
+        entityFormState,
         entityName
     }: EntityFormWrapperProps<TEntity>) {
     const formProps: FlexEntityFormProps = useMemo(() => {
-        if (!entity?.activeRecord) {
+        if (!entityFormState?.activeRecord) {
             return {
                 fields: [],
                 formState: {},
@@ -28,28 +28,20 @@ function EntityFormWrapper<TEntity extends EntityKeys>(
             };
         }
 
-        const formFields = transformFieldsToFormFields(entity.fieldInfo);
+        const formFields = transformFieldsToFormFields(entityFormState.fieldInfo);
 
         return {
             fields: formFields,
-            formState: entity.activeRecord as EntityFormState,
+            formState: entityFormState.activeRecord as EntityFormState,
             onUpdateField: (name: string, value: any) => {
-                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-
-                const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce((acc, field) => ({
-                    ...acc,
-                    [field]: entity.activeRecord[field]
-                }), {} as Record<string, MatrxRecordId>);
-
-                const update = {
-                    [name]: value
-                } as Partial<EntityData<TEntity>>;
-
-                entity.updateRecord(primaryKeyValues, update);
+                if (!entityFormState.activeRecord || !entityFormState.matrxRecordId) return;
+                entityFormState.updateRecord(entityFormState.matrxRecordId, updatedData => {
+                    updatedData[name] = value;
+                });
             },
             onSubmit: () => {
-                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-                console.log('Form submitted:', entity.activeRecord);
+                if (!entityFormState.activeRecord || !entityFormState.matrxRecordId) return;
+                console.log('Form submitted:', entityFormState.activeRecord);
             },
             layout: 'grid',
             direction: 'row',
@@ -58,11 +50,11 @@ function EntityFormWrapper<TEntity extends EntityKeys>(
             isSinglePage: true,
             isFullPage: true
         };
-    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity]);
+    }, [entityFormState, entityFormState.fieldInfo, entityFormState.matrxRecordId]);
 
     return (
         <div className="p-4">
-            {entity.activeRecord && <FlexAnimatedForm {...formProps} />}
+            {entityFormState.activeRecord && <FlexAnimatedForm {...formProps} />}
         </div>
     );
 }

@@ -1,10 +1,8 @@
-// utils/supabase/getClient.ts
-
 import { createBrowserClient } from '@supabase/ssr';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export const getSupabaseClient = () => {
+export const getSupabaseClient = async () => {
     if (typeof window !== 'undefined') {
         return createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +10,7 @@ export const getSupabaseClient = () => {
         );
     } else {
         // Server-side
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         return createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

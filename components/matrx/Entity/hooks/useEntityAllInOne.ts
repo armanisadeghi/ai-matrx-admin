@@ -13,7 +13,8 @@ import {
     EntityError
 } from '@/lib/redux/entity/types';
 import {RootState} from '@/lib/redux/store';
-import {createEntitySlice} from '@/lib/redux/entity/slice';
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+
 import {Draft} from "immer";
 import {QueryOptions} from "@/lib/redux/entity/SagaHelpers";
 import {createRecordKey} from '@/lib/redux/entity/utils';
@@ -111,7 +112,7 @@ const MAX_QUICK_REFERENCE_RECORDS = 1000;
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const [lastError, setLastError] = useState<any>(null);
 
     const safeDispatch = useCallback((action: any) => {

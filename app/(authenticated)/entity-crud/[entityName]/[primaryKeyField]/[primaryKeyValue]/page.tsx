@@ -5,19 +5,30 @@ import {EntityKeys} from "@/types/entityTypes";
 import { Card, CardContent } from "@/components/ui";
 import { EntityRecordHeader } from "@/components/matrx/Entity/headers/EntityPageHeader";
 
+type Params = Promise<{
+    entityName: EntityKeys;
+    primaryKeyField: string;
+    primaryKeyValue: string;
+}>;
+
+type SearchParams = Promise<{
+    entityPrettyName: string;
+    entityFieldPrettyName: string;
+    [key: string]: string | string[] | undefined;
+}>;
+
 interface EntityRecordPageProps {
-    params: {
-        entityName: EntityKeys;
-        primaryKeyField: string;
-        primaryKeyValue: string;
-    };
-    searchParams: {
-        entityPrettyName: string;
-        entityFieldPrettyName: string;
-    };
+    params: Params;
+    searchParams: SearchParams;
 }
 
-export default function EntityRecordPage({ params, searchParams }: EntityRecordPageProps) {
+export default async function EntityRecordPage(props: EntityRecordPageProps) {
+    // Await both params and searchParams before using
+    const [params, searchParams] = await Promise.all([
+        props.params,
+        props.searchParams
+    ]);
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1">

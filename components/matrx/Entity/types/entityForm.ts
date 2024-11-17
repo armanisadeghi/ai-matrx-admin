@@ -42,6 +42,7 @@ export type FieldDataOptionsType =
     | 'union'
     | 'bigint'
     | 'date'
+    | 'datetime'
     | 'map'
     | 'set'
     | 'tuple'
@@ -49,7 +50,8 @@ export type FieldDataOptionsType =
     | 'intersection'
     | 'literal'
     | 'void'
-    | 'never';
+    | 'never'
+    | 'url';
 
 export type DataStructure =
     | 'single'
@@ -77,7 +79,6 @@ export interface EntityFlexFormField {
     alt?: string;
     jsonSchema?: object;
 }
-
 
 
 export interface EntityFormState {
@@ -108,6 +109,7 @@ interface EntityField {
     isPrimaryKey?: boolean;
     isDisplayField?: boolean;
 }
+
 interface SchemaField {
     fieldName: string;
     entityName: EntityNameOfficial;
@@ -128,7 +130,6 @@ interface SchemaField {
     exclusionRules: string[];
     databaseTable: string;
 }
-
 
 
 export interface EntityFormField {

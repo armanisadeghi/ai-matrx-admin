@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 import {EntityData, EntityKeys} from '@/types/entityTypes';
@@ -64,7 +66,6 @@ export function EntityTestView<TEntity extends EntityKeys>(
         // Selection Utilities
         isSelected,
         handleSelection,
-        handleMultiSelection,
         toggleSelectionMode,
         clearSelection,
         // Record Operations
@@ -311,7 +312,7 @@ export function EntityTestView<TEntity extends EntityKeys>(
                                         className={getCardClassName(ref.recordKey)}
                                         onClick={() => {
                                             if (selectionMode === 'multiple') {
-                                                handleMultiSelection(ref.recordKey);
+                                                toggleSelectionMode();
                                             } else {
                                                 handleSingleSelection(ref.recordKey);
                                             }

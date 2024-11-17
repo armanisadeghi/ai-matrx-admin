@@ -32,16 +32,15 @@ import {
     handleSelectionForDeletedRecord,
     setNewActiveRecord, setStateIsModified
 } from "@/lib/redux/entity/utils";
-import {UnifiedQueryOptions} from "@/lib/redux/schema/globalCacheSelectors";
 import EntityLogger from "./entityLogger";
 import {
     CreateRecordPayload, DeleteRecordPayload,
-    EntityActions,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
     FetchOnePayload, FetchQuickReferencePayload, FetchRecordsPayload, UpdateRecordPayload
 } from "@/lib/redux/entity/actions";
 import { QueryOptions } from "./sagaHelpers";
+import { Callback } from "@/utils/callbackManager";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(
         entityKey: TEntity,
@@ -242,7 +241,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                         fetchSelectedRecords: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<QueryOptions<TEntity> & { callbackId?: string }>
+                            action: PayloadAction<QueryOptions<TEntity> & { callbackId?: Callback }>
                         ) => {
                             entityLogger.log('debug', 'fetchSelectedRecords', action.payload);
                             setLoading(state, 'FETCH_RECORDS');
@@ -410,10 +409,18 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-                            entityLogger.log('debug', 'setActiveRecord', action.payload);
+                            entityLogger.log('info', 'setActiveRecord', action.payload);
+                            entityLogger.log('info', 'Active Record Before', state.selection.activeRecord);
+                            entityLogger.log('info', 'Last Active Record Before', state.selection.lastActiveRecord);
+                            state.selection.lastActiveRecord = state.selection.activeRecord;
+                            entityLogger.log('info', 'Last Active Record After', state.selection.lastActiveRecord);
                             state.selection.activeRecord = action.payload;
+                            entityLogger.log('info', 'Active Record After', state.selection.activeRecord);
+
                             if (!state.selection.selectedRecords.includes(action.payload)) {
+                                entityLogger.log('info', 'Active Record not in selected records. Adding to selection');
                                 addRecordToSelection(state, action.payload);
+                                entityLogger.log('info', 'Active Record added to selection');
                             }
                         },
 

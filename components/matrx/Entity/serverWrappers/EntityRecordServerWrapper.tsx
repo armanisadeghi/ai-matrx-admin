@@ -3,12 +3,11 @@
 import React, {Suspense} from 'react';
 import {EntityKeys} from '@/types/entityTypes';
 import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
-import {useEntityRecordOld} from '@/lib/redux/entity/hooks/useEntityRecordOld';
 import EntityFormWrapper from "@/components/matrx/Entity/form/EntityFormWrapper";
-import {formatName} from "@/utils/formatName";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui";
 import {ArrowLeft, Database, ChevronRight} from "lucide-react";
 import Link from "next/link";
+import {useEntityForm} from "@/lib/redux/entity/hooks/useEntityForm";
 
 interface EntityRecordServerWrapperProps {
     entityName: EntityKeys;
@@ -24,23 +23,20 @@ function EntityRecordServerWrapper(
         primaryKeyField,
         primaryKeyValue,
     }: EntityRecordServerWrapperProps) {
-    const {entity, error, isLoading} = useEntityRecordOld(
-        entityName,
-        primaryKeyField,
-        primaryKeyValue,
-    );
+    const entityFormState = useEntityForm(entityName,);
 
-    if (isLoading) {
+
+    if (entityFormState.isLoading) {
         return <FormLoadingTwoColumn/>;
     }
 
-    if (error) {
+    if (entityFormState.hasError) {
         return (
             <div className="p-4 text-red-500">
-                Error: {error.message}
-                {error.details && (
+                Error: {entityFormState.errorState.message}
+                {entityFormState.errorState.details && (
                     <div className="mt-2 text-sm">
-                        {error.details.toString()}
+                        {entityFormState.errorState.details.toString()}
                     </div>
                 )}
             </div>
@@ -49,7 +45,7 @@ function EntityRecordServerWrapper(
 
     return (
         <Suspense fallback={<FormLoadingTwoColumn/>}>
-            <EntityFormWrapper entity={entity} entityName={entityName}/>
+            <EntityFormWrapper entityFormState={entityFormState} entityName={entityName}/>
         </Suspense>
     );
 }

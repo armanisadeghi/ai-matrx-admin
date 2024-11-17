@@ -6,6 +6,7 @@ import {RootState} from "@/lib/redux/store";
 import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
 import {createRecordKey, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
+import {FormFieldType} from "@/components/matrx/AnimatedForm/FlexAnimatedForm";
 const trace = "ENTITY SELECTORS";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
@@ -364,8 +365,39 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             entityName: field.entityName,
             databaseTable: field.databaseTable,
             description: field.description,
+            typeReference: field.typeReference,
+
         }))
     );
+
+    const selectFlexFormField = createSelector(
+        [selectEntityMetadata],
+        (metadata) => metadata.fields.map(field => ({
+            name: field.name,
+            label: field.displayName,
+            type: field.dataType,
+            options: field.enumValues,
+            placeholder: field.defaultValue,
+            required: field.isRequired,
+            disabled: field.isPrimaryKey,
+
+            isDisplayField: field.isDisplayField,
+            isArray: field.isArray,
+            structure: field.structure,
+            isNative: field.isNative,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            maxLength: field.maxLength,
+            defaultGeneratorFunction: field.defaultGeneratorFunction,
+            validationFunctions: field.validationFunctions,
+            exclusionRules: field.exclusionRules,
+            entityName: field.entityName,
+            databaseTable: field.databaseTable,
+            description: field.description,
+            typeReference: field.typeReference,
+        }))
+    );
+
 
     // For select components (value/label pairs)
     const selectFieldOptions = createSelector(
@@ -412,6 +444,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             entityName: field.entityName,
             databaseTable: field.databaseTable,
             description: field.description,
+            typeReference: field.typeReference,
+
         }))
     );
 
@@ -665,6 +699,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectCombinedRecordsWithFieldInfo,
         selectActiveRecordWithId,
         selectDefaultValues,
+
+        selectFlexFormField,
 
 
     };

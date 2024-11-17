@@ -2,7 +2,6 @@ import * as React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useAppDispatch, useAppSelector, useAppStore} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {
     useEntitySelection,
 } from '@/lib/redux/entity/hooks/useEntitySelection';
@@ -19,8 +18,8 @@ import {
     CallbackResult,
 } from '@/lib/redux/entity/types';
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
-import {v4 as uuidv4} from 'uuid';
 import {Callback, callbackManager} from "@/utils/callbackManager";
+import { getEntitySlice } from '../entitySlice';
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -72,6 +71,8 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     handleSingleSelection: (recordKey: MatrxRecordId) => void;
     handleRecordSelect: (recordKey: MatrxRecordId) => void;
 
+    flexFormField: any;
+
 }
 
 export function useQuickReference<TEntity extends EntityKeys>(
@@ -81,13 +82,14 @@ export function useQuickReference<TEntity extends EntityKeys>(
     const store = useAppStore();
 
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = React.useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
 
     const selection = useEntitySelection(entityKey);
 
     // State Selectors
     const entityDisplayName = useAppSelector(selectors.selectEntityDisplayName);
     const fieldInfo = useAppSelector(selectors.selectFieldInfo);
+    const flexFormField = useAppSelector(selectors.selectFlexFormField);
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
 
     const quickReferenceState = useAppSelector(selectors.selectQuickReferenceState);
@@ -170,19 +172,13 @@ export function useQuickReference<TEntity extends EntityKeys>(
     }, [selection]);
 
     const handleRecordSelect = React.useCallback((recordKey: MatrxRecordId) => {
-        console.log('1 --handleRecordSelect Setting Active Record: ', recordKey);
         dispatch(actions.setActiveRecord(recordKey));
-
-        console.log('2 -- selection mode', selection.selectionMode);
-
         if (selection.selectionMode === 'multiple') {
-            console.log('3 --selection mode is multiple... handleToggleSelection');
             selection.handleToggleSelection(recordKey);
         } else {
-            console.log('3 --selection mode is not multiple... handleSingleSelection');
             selection.handleSingleSelection(recordKey);
         }
-    }, [selection.selectionMode]);
+    }, [selection.selectionMode, actions, dispatch]);
 
 
     return {
@@ -221,6 +217,8 @@ export function useQuickReference<TEntity extends EntityKeys>(
         getRecordIdByRecord,
         getDisplayValue,
         handleRecordSelect,
+
+        flexFormField,
 
     };
 }

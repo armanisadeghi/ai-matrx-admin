@@ -183,6 +183,7 @@ type Uniforms = {
         type: string;
     };
 };
+/*
 const ShaderMaterial = ({
                             source,
                             uniforms,
@@ -290,7 +291,76 @@ const ShaderMaterial = ({
         </mesh>
     );
 };
+*/
 
+const ShaderMaterial = ({
+                            source,
+                            uniforms,
+                            maxFps = 60,
+                        }: {
+    source: string;
+    uniforms: Uniforms;
+    maxFps?: number;
+}) => {
+    const { size } = useThree();
+    const ref = useRef<THREE.Mesh>(null);
+
+    let lastFrameTime = 0;
+
+    useFrame(({ clock }) => {
+        if (!ref.current) return;
+        const timestamp = clock.getElapsedTime();
+        if (timestamp - lastFrameTime < 1 / maxFps) {
+            return;
+        }
+        lastFrameTime = timestamp;
+
+        const material = ref.current.material as THREE.ShaderMaterial;
+        material.uniforms.u_time.value = timestamp; // Update time
+    });
+
+    // Memoize uniforms and shaders for stability
+    const material = useMemo(() => {
+        return new THREE.ShaderMaterial({
+            vertexShader: `
+                precision mediump float;
+                in vec3 position;
+                out vec2 fragCoord;
+
+                uniform vec2 u_resolution;
+
+                void main() {
+                    fragCoord = (position.xy + vec2(1.0)) * 0.5 * u_resolution;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: source,
+            uniforms: {
+                u_time: { value: 0 },
+                u_resolution: { value: new THREE.Vector2(size.width, size.height) },
+                ...uniforms, // Pass uniforms directly
+            },
+            transparent: true,
+        });
+    }, [source, uniforms, size]);
+
+    return (
+        <mesh ref={ref}>
+            <planeGeometry args={[2, 2]} />
+            <primitive object={material} attach="material" />
+        </mesh>
+    );
+};
+
+const Shader: React.FC<ShaderProps> = ({ source, uniforms, maxFps = 60 }) => {
+    return (
+        <Canvas className="absolute inset-0 h-full w-full">
+            <ShaderMaterial source={source} uniforms={uniforms} maxFps={maxFps} />
+        </Canvas>
+    );
+};
+
+/*
 const Shader: React.FC<ShaderProps> = ({source, uniforms, maxFps = 60}) => {
     return (
         <Canvas className="absolute inset-0  h-full w-full">
@@ -298,6 +368,7 @@ const Shader: React.FC<ShaderProps> = ({source, uniforms, maxFps = 60}) => {
         </Canvas>
     );
 };
+*/
 
 interface ShaderProps {
     source: string;

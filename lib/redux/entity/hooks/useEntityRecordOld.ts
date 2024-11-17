@@ -1,3 +1,4 @@
+/*
 // hooks/useEntityRecord.ts
 import { useState, useEffect } from 'react';
 import { useEntity } from '@/lib/redux/entity/useEntity';
@@ -58,3 +59,4 @@ export function useEntityRecordOld(
         isLoading: !entity.entityMetadata || entity.loadingState.loading
     };
 }
+*/

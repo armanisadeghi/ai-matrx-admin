@@ -8,7 +8,7 @@ import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {UniversalJsonGroup} from '@/components/ui';
 import { MatrxRecordId } from '@/lib/redux/entity/types';
-import {createEntitySlice} from "@/lib/redux/entity/slice";
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import {QueryOptions} from "@/lib/redux/entity/sagaHelpers";
 
 interface EntityAnalyzerEditorProps {
@@ -44,7 +44,7 @@ const EntityAnalyzerEditor: React.FC<EntityAnalyzerEditorProps> = (
     );
 
     const {actions} = useMemo(() =>
-            localSelectedEntity ? createEntitySlice(localSelectedEntity, {} as any) : {actions: null},
+            localSelectedEntity ? getEntitySlice(localSelectedEntity) : {actions: null},
         [localSelectedEntity]
     );
 

@@ -6,21 +6,19 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from '@
 import {Label} from '@/components/ui/label';
 import {Link, Pencil, Upload, Calendar, Clock, Globe, Code, File, Plus} from 'lucide-react';
 
+const actionButtonClass = "h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center gap-2";
+const iconButtonClass = "h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center justify-center";
 
-const actionButtonClass = "h-8 px-3 text-gray-400 hover:text-white hover:bg-gray-700/50 border border-gray-700/50 rounded-md flex items-center gap-2";
-const iconButtonClass = "h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700/50 border border-gray-700/50 rounded-md flex items-center justify-center";
-
-const FormField = (
-    {
-        label,
-        type = 'text',
-        description,
-        optional = false,
-        value,
-        onChange,
-        variant = 'default',
-        singleLine = false,
-    }) => {
+const FormField = ({
+                       label,
+                       type = 'text',
+                       description,
+                       optional = false,
+                       value,
+                       onChange,
+                       variant = 'default',
+                       singleLine = false,
+                   }) => {
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [isFocused, setIsFocused] = React.useState(false);
 
@@ -29,22 +27,14 @@ const FormField = (
 
     const getModalTitle = () => {
         switch (variant) {
-            case 'json':
-                return 'Edit JSON';
-            case 'record':
-                return 'Select Record';
-            case 'edit':
-                return 'Edit Content';
-            case 'file':
-                return 'Upload File';
-            case 'datetime':
-                return 'Select Date & Time';
-            case 'url':
-                return 'Edit URL';
-            case 'code':
-                return 'Edit Code';
-            default:
-                return 'Edit Content';
+            case 'json': return 'Edit JSON';
+            case 'record': return 'Select Record';
+            case 'edit': return 'Edit Content';
+            case 'file': return 'Upload File';
+            case 'datetime': return 'Select Date & Time';
+            case 'url': return 'Edit URL';
+            case 'code': return 'Edit Code';
+            default: return 'Edit Content';
         }
     };
 
@@ -56,7 +46,7 @@ const FormField = (
                     <textarea
                         value={value || ''}
                         onChange={onChange}
-                        className="w-full min-h-[200px] p-3 bg-gray-800 border border-gray-700 rounded-md text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-600"
+                        className="w-full min-h-[200px] p-3 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                 );
             case 'datetime':
@@ -66,14 +56,14 @@ const FormField = (
                             <Label>Date</Label>
                             <input
                                 type="date"
-                                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300"
+                                className="w-full p-2 bg-input border border-border rounded-md text-foreground"
                             />
                         </div>
                         <div className="grid gap-2">
                             <Label>Time</Label>
                             <input
                                 type="time"
-                                className="w-full p-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300"
+                                className="w-full p-2 bg-input border border-border rounded-md text-foreground"
                             />
                         </div>
                     </div>
@@ -83,12 +73,13 @@ const FormField = (
                     <div className="flex flex-col gap-4">
                         <input
                             type="file"
-                            className="text-gray-300"
+                            className="text-foreground"
                         />
-                        <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center">
-                            <Upload className="mx-auto h-12 w-12 text-gray-400"/>
-                            <p className="mt-2 text-sm text-gray-400">Drag and drop your file here, or click to
-                                browse</p>
+                        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                            <Upload className="mx-auto h-12 w-12 text-muted-foreground"/>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                Drag and drop your file here, or click to browse
+                            </p>
                         </div>
                     </div>
                 );
@@ -97,7 +88,7 @@ const FormField = (
                     <textarea
                         value={value || ''}
                         onChange={onChange}
-                        className="w-full min-h-[200px] p-3 bg-gray-800 border border-gray-700 rounded-md text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-600"
+                        className="w-full min-h-[200px] p-3 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                 );
         }
@@ -135,19 +126,18 @@ const FormField = (
     return (
         <div className="mb-6">
             <div className="flex items-baseline mb-1">
-                <Label className="text-sm font-normal text-gray-400">{label}</Label>
-                <span className="text-xs text-gray-500 ml-2">{type}</span>
+                <Label className="text-sm font-normal text-muted-foreground">{label}</Label>
+                <span className="text-xs text-muted ml-2">{type}</span>
             </div>
 
             <div className="relative">
-                <div
-                    className={`
-            ${singleLine ? 'h-10' : 'min-h-24'} w-full bg-gray-800/50 
-            border border-gray-700/50 rounded-md 
-            ${isFocused ? 'ring-2 ring-gray-600 border-gray-500' : ''}
-            transition-all duration-200 flex items-center
-          `}
-                >
+                <div className={`
+                    ${singleLine ? 'h-10' : 'min-h-24'} 
+                    w-full bg-input/50
+                    border border-border rounded-md 
+                    ${isFocused ? 'ring-2 ring-ring border-border' : ''}
+                    transition-all duration-200 flex items-center
+                `}>
                     {singleLine ? (
                         <input
                             type="text"
@@ -156,7 +146,7 @@ const FormField = (
                             onFocus={handleFocus}
                             onBlur={handleBlur}
                             placeholder="NULL"
-                            className="w-full h-full px-3 bg-transparent text-gray-300 focus:outline-none"
+                            className="w-full h-full px-3 bg-transparent text-foreground focus:outline-none"
                         />
                     ) : (
                          <textarea
@@ -165,7 +155,7 @@ const FormField = (
                              onFocus={handleFocus}
                              onBlur={handleBlur}
                              placeholder="NULL"
-                             className="w-full h-full min-h-[96px] p-3 bg-transparent text-gray-300 focus:outline-none resize-none"
+                             className="w-full h-full min-h-[96px] p-3 bg-transparent text-foreground focus:outline-none resize-none"
                          />
                      )}
 
@@ -175,7 +165,7 @@ const FormField = (
                                 <DialogTrigger asChild>
                                     {renderActionButton()}
                                 </DialogTrigger>
-                                <DialogContent className="bg-gray-900 text-white">
+                                <DialogContent className="bg-background text-foreground">
                                     <DialogHeader>
                                         <DialogTitle>{getModalTitle()}</DialogTitle>
                                     </DialogHeader>
@@ -188,20 +178,19 @@ const FormField = (
             </div>
 
             {description && (
-                <p className="mt-1 text-sm text-gray-500">{description}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{description}</p>
             )}
 
             {optional && (
                 <div className="mt-2">
-                    <h4 className="text-sm text-gray-400">Optional Fields</h4>
-                    <p className="text-xs text-gray-500">These are columns that do not need any value</p>
+                    <h4 className="text-sm text-muted-foreground">Optional Fields</h4>
+                    <p className="text-xs text-muted">These are columns that do not need any value</p>
                 </div>
             )}
         </div>
     );
 };
 
-// Example usage component
 const ExampleForm = () => {
     const [formData, setFormData] = React.useState({
         name: '',
@@ -223,7 +212,7 @@ const ExampleForm = () => {
     };
 
     return (
-        <div className="p-6 bg-gray-900 text-white max-w-2xl">
+        <div className="p-6 bg-background text-foreground max-w-2xl">
             <FormField
                 label="name"
                 type="varchar"
@@ -313,10 +302,10 @@ const ExampleForm = () => {
             />
 
             <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" className="text-gray-300 border-gray-700">
+                <Button variant="outline" className="text-muted-foreground border-border">
                     Cancel
                 </Button>
-                <Button className="bg-green-600 hover:bg-green-700">
+                <Button className="bg-success hover:bg-success/90 text-success-foreground">
                     Save
                 </Button>
             </div>

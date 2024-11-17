@@ -8,7 +8,7 @@ import {
     EntityPrettyFields,
     AllEntityNameVariations,
     EntitySelectOption,
-    PrettyEntityName, AllEntityFieldKeys
+    PrettyEntityName, AllEntityFieldKeys, AnyDatabaseColumnForEntity
 } from "@/types/entityTypes";
 import {SchemaEntity, SchemaField} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
@@ -17,7 +17,7 @@ import {GlobalCacheState} from "./globalCacheSlice";
 import {DisplayFieldMetadata, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types";
 import {createMatrxRecordId, parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
-import {FlexibleQueryOptions, QueryOptions, UnifiedDatabaseObject} from "../entity/sagaHelpers";
+import {FlexibleQueryOptions, QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject} from "../entity/sagaHelpers";
 
 const trace = 'GLOBAL CACHE SELECTORS';
 const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
@@ -678,14 +678,14 @@ export const selectQueryDatabaseConversion = createSelector(
 
         const completeFieldMap = {
             ...fieldMap,
-            [options.tableName]: databaseTableName
+            [options.tableName]: databaseTableName as AnyEntityDatabaseTable
         };
 
         const processedFilters = options.filters
                                  ? selectReplaceKeysInObject({} as RootState, options.filters, completeFieldMap) as Partial<Record<string, any>>
                                  : undefined;
 
-        const result: QueryOptions<typeof entityName> = {
+        const result: QueryOptionsReturn<typeof entityName> = {
             tableName: databaseTableName,
 
             ...(processedFilters && {filters: processedFilters}),
@@ -723,11 +723,11 @@ export const selectPayloadOptionsDatabaseConversion = createSelector(
         (_: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => payload.entityName,
         (_: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => payload.options
     ],
-    (fieldMap, databaseTableName, entityName, options) => {
+    (fieldMap, databaseTableName: AnyEntityDatabaseTable, entityName, options) => {
         if (!options) {
             return undefined;
         }
-        const result: QueryOptions<typeof entityName> = {
+        const result: QueryOptionsReturn<typeof entityName> = {
             tableName: options.tableName ? databaseTableName : options.tableName,
 
             ...(options.filters && {
@@ -795,6 +795,7 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
 
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
+            // @ts-ignore
             result.parsedFrontendRecords = parseRecordKeys(options.recordKeys);
 
             if (result.parsedFrontendRecords) {
@@ -958,6 +959,7 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
 
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
+            // @ts-ignore
             result.parsedFrontendRecords = parseRecordKeys(options.recordKeys);
 
             if (result.parsedFrontendRecords) {

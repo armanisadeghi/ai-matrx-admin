@@ -7,7 +7,6 @@ import {MatrxRecordId} from '@/lib/redux/entity/types';
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {toast} from '@/components/ui';
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
-import {EntityOperations, LoadingState, EntityError} from '@/lib/redux/entity/types';
 import { UseEntityFormState } from '@/app/(authenticated)/tests/crud-operations/components/EntityFormGroup';
 
 type FormMode = 'view' | 'edit' | 'create';
@@ -15,43 +14,6 @@ interface UseEntityFormOptions {
     allowCreate?: boolean;
     allowEdit?: boolean;
     allowDelete?: boolean;
-}
-
-
-interface UseEntityFormReturn<TEntity extends EntityKeys> {
-    // State
-    viewMode: FormMode;
-    formData: Partial<EntityData<TEntity>>;
-    validationErrors: Record<string, string>;
-    isLoading: boolean;
-    hasError: boolean;
-    errorMessage?: string;
-    lastOperation?: EntityOperations;
-
-    // Metadata
-    entityDisplayName: string;
-    fieldInfo: any[];
-    activeRecord: EntityData<TEntity> | null;
-    matrxRecordId: MatrxRecordId | null;
-    defaultValues: Partial<EntityData<TEntity>>;
-
-    // Actions
-    handleNew: () => void;
-    handleEdit: () => void;
-    handleCancel: () => void;
-    handleSave: () => Promise<void>;
-    handleDelete: () => void;
-    handleFieldChange: (fieldName: string, newValue: any) => Promise<void>;
-
-    // Utilities
-    isFieldReadOnly: (fieldName: string) => boolean;
-    getFieldValue: (fieldName: string) => any;
-    getDisplayValue: (record: EntityData<TEntity>) => string;
-
-    // Feature flags
-    canCreate: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
 }
 
 export function useEntityForm<TEntity extends EntityKeys>(
@@ -70,12 +32,20 @@ export function useEntityForm<TEntity extends EntityKeys>(
 
     // Selectors
     const entityDisplayName = useAppSelector(selectors.selectEntityDisplayName);
-    const loadingState = useAppSelector(selectors.selectLoadingState);
-    const errorState = useAppSelector(selectors.selectErrorState);
     const displayField = useAppSelector(selectors.selectDisplayField);
     const fieldInfo = useAppSelector(selectors.selectFieldInfo);
     const defaultValues = useAppSelector(selectors.selectDefaultValues);
     const { matrxRecordId, record: activeRecord } = useAppSelector(selectors.selectActiveRecordWithId);
+
+
+    const loadingState = useAppSelector(selectors.selectLoadingState);
+    const errorState = useAppSelector(selectors.selectErrorState);
+
+    // Derived metadata
+    const hasError = !!errorState?.message;
+    const isInitialized = loadingState?.initialized ?? false;
+    const isLoading = loadingState?.loading ?? false;
+
 
     // Validation integration
     const validation = useEntityValidation(entityKey);
@@ -189,12 +159,56 @@ export function useEntityForm<TEntity extends EntityKeys>(
                : formData[fieldName] ?? '';
     }, [viewMode, activeRecord, formData]);
 
+
+    const createRecord = React.useCallback((data: Partial<EntityData<TEntity>>, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.createRecord({
+                data,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
+
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, data: Partial<EntityData<TEntity>>, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.updateRecord({
+                matrxRecordId,
+                data,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
+
+    const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.deleteRecord({
+                matrxRecordId,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
+
+
+
+
+
     return {
         // State
         viewMode,
         formData,
         validationErrors,
+
         loadingState,
+        errorState,
+        hasError,
+        isInitialized,
+        isLoading,
 
         // Metadata
         entityDisplayName,
@@ -210,6 +224,10 @@ export function useEntityForm<TEntity extends EntityKeys>(
         handleSave,
         handleDelete,
         handleFieldChange,
+
+        createRecord,
+        updateRecord,
+        deleteRecord,
 
         // Utilities
         isFieldReadOnly,

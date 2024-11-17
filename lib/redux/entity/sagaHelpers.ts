@@ -1,6 +1,12 @@
 // lib/redux/entity/sagaHelpers.ts
 
-import {AllEntityFieldKeys, AllEntityNameVariations, AnyEntityDatabaseTable, EntityKeys} from "@/types/entityTypes";
+import {
+    AllEntityFieldKeys,
+    AllEntityNameVariations,
+    AnyDatabaseColumnForEntity,
+    AnyEntityDatabaseTable,
+    EntityKeys
+} from "@/types/entityTypes";
 import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {PayloadAction} from "@reduxjs/toolkit";
 import {MatrxRecordId, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
@@ -54,6 +60,23 @@ export interface QueryOptions<TEntity extends EntityKeys> {
     primaryKeyFields?: string[];
 }
 
+export interface QueryOptionsReturn<TEntity extends EntityKeys> {
+    tableName: AnyEntityDatabaseTable;
+    recordKey?: MatrxRecordId;
+    filters?: Partial<Record<AnyDatabaseColumnForEntity<TEntity>, unknown>>;
+    sorts?: Array<{
+        column: AnyDatabaseColumnForEntity<TEntity>;
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: AnyDatabaseColumnForEntity<TEntity>[];
+    primaryKeyMetadata?: PrimaryKeyMetadata;
+    primaryKeyFields?: string[];
+}
+
+
+
 export interface FlexibleQueryOptions {
     entityNameAnyFormat: AllEntityNameVariations;
     callback?: string;
@@ -65,6 +88,7 @@ export interface FlexibleQueryOptions {
     }>;
     limit?: number;
     offset?: number;
+    maxCount?: number;
     columns?: AllEntityFieldKeys[];
     data?: unknown | unknown[];
     matrxRecordId?: MatrxRecordId;
@@ -203,6 +227,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
 
         optionalActionKeys.forEach((key) => {
             if (key in payload && payload[key] !== undefined) {
+                // @ts-ignore
                 flexibleQueryOptions[key] = payload[key];
             }
         });

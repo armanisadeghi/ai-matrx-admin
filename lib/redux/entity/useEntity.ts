@@ -1,5 +1,5 @@
 // lib/redux/entity/useEntity.ts
-
+import * as React from 'react';
 import {useMemo, useCallback, useState, useEffect} from 'react';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppSelector, useAppDispatch} from '@/lib/redux/hooks';
@@ -13,71 +13,10 @@ import {
     EntityError, EntityStateField,
 } from '@/lib/redux/entity/types';
 import {RootState} from '@/lib/redux/store';
-import {createEntitySlice} from '@/lib/redux/entity/slice';
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
 import {QueryOptions} from "@/lib/redux/entity/sagaHelpers";
 import {createRecordKey} from '@/lib/redux/entity/utils';
-
-export interface EntityHookReturn<TEntity extends EntityKeys> {
-    // State
-    allRecords: Record<string, EntityData<TEntity>>;
-    entityMetadata: EntityState<TEntity>['entityMetadata'];
-    entityDisplayName: string;
-    fieldInfo: EntityStateField[];
-    fieldOptions: Record<string, any>;
-    tableColumns: any[];
-    selectedRecords: EntityData<TEntity>[];
-    activeRecord: EntityData<TEntity> | null;
-    selectionMode: 'single' | 'multiple' | 'none';
-    primaryKeyMetadata: EntityState<TEntity>['entityMetadata']['primaryKeyMetadata'];
-    displayField: string | null;
-    quickReference: QuickReferenceRecord[];
-    lastError: EntityError | null;
-
-    // Loading and Status
-    loadingState: { loading: boolean; initialized: boolean; error: EntityError | null };
-    isStale: boolean;
-    hasUnsavedChanges: boolean;
-
-    // Record Access Methods
-    getRecordByPrimaryKey: (primaryKeyValues: Record<string, MatrxRecordId>) => EntityData<TEntity> | null;
-    getRecordsByPrimaryKeys: (primaryKeyValuesList: Record<string, MatrxRecordId>[]) => EntityData<TEntity>[];
-    getQuickReferenceByPrimaryKey: (primaryKeyValues: Record<string, MatrxRecordId>) => QuickReferenceRecord | null;
-
-    // Actions
-    fetchOne: (primaryKeyValues: Record<string, MatrxRecordId>) => Promise<void>;
-    fetchAll: () => Promise<void>;
-    fetchQuickReference: () => Promise<void>;
-    fetchRecords: (page: number, pageSize: number, options?: QueryOptions<TEntity>) => Promise<void>;
-    createRecord: (data: EntityData<TEntity>) => Promise<void>;
-    updateRecord: (primaryKeyValues: Record<string, MatrxRecordId>, data: Partial<EntityData<TEntity>>) => Promise<void>;
-    deleteRecord: (primaryKeyValues: Record<string, MatrxRecordId>) => Promise<void>;
-
-
-    // Selection Methods
-    setSelection: (records: Draft<EntityData<TEntity>>[], mode: 'single' | 'multiple' | 'none') => void;
-    clearSelection: () => void;
-    addToSelection: (record: MatrxRecordId) => void;
-    removeFromSelection: (record: Draft<EntityData<TEntity>>) => void;
-    toggleSelection: (record: Draft<EntityData<TEntity>>) => void;
-    batchSelection: (operation: 'add' | 'remove' | 'toggle', records: Draft<EntityData<TEntity>>[]) => void;
-    isSelected: (record: EntityData<TEntity>) => boolean;
-
-    // Pagination and Filtering
-    setPage: (page: number) => void;
-    setPageSize: (pageSize: number) => void;
-    setFilters: (payload: FilterPayload) => void;
-    setSorting: (payload: SortPayload) => void;
-    clearFilters: () => void;
-
-    // Cache Management
-    refreshData: () => void;
-    invalidateCache: () => void;
-
-    // Update Helpers
-    optimisticUpdate: (record: Draft<EntityData<TEntity>>, rollback?: Draft<EntityData<TEntity>>) => void;
-}
-
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000
@@ -86,7 +25,7 @@ const entityDefaultSettings = {
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const [lastError, setLastError] = useState<any>(null);
 
     const safeDispatch = useCallback((action: any) => {
@@ -209,10 +148,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
 
     const deleteRecord = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
         dispatch(actions.deleteRecord({primaryKeyValues}));
-    }, [dispatch, actions]);
-
-    const setSelection = useCallback((records: Draft<EntityData<TEntity>>[], mode: 'single' | 'multiple' | 'none') => {
-        dispatch(actions.setSelection({records, mode}));
     }, [dispatch, actions]);
 
     const clearSelection = useCallback(() => {
@@ -359,7 +294,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         createRecord,
         updateRecord,
         deleteRecord,
-        setSelection,
         clearSelection,
         setFilters,
         setSorting,

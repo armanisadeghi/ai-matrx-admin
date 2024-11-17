@@ -3,7 +3,15 @@
 import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 
 
-import {EntityKeys, EntityData, AllEntityFieldKeys, AnyEntityDatabaseTable} from "@/types/entityTypes";
+import {
+    EntityKeys,
+    EntityData,
+    AllEntityFieldKeys,
+    AnyEntityDatabaseTable,
+    Relationship,
+    AutomationEntity
+} from "@/types/entityTypes";
+import {TypeBrand} from "@/utils/schema/initialSchemas";
 
 // --- Basic Types ---
 export type MatrxRecordId = string;
@@ -18,7 +26,6 @@ export type OperationCallback<T = void> = {
     onSuccess?: (result: SuccessResult) => void;
     onError?: (error: ErrorResult) => void;
 };
-
 
 
 type PrimaryKeyType = 'single' | 'composite' | 'none';
@@ -40,23 +47,54 @@ export interface EntityStateField {
     displayName: string;
     isPrimaryKey: boolean;
     isDisplayField?: boolean;
-    dataType: FieldDataOptionsType;
-    isArray: boolean;
-    structure: DataStructure;
-    isNative: boolean;
-    defaultComponent?: string;
-    componentProps: ComponentProps;
-    isRequired: boolean;
-    maxLength: number;
+
+    enumValues: string[];
     defaultValue: any;
     defaultGeneratorFunction: string;
+
+
+    dataType: FieldDataOptionsType;
+
+    isArray: boolean;
+
+    structure: DataStructure;
+
+    isNative: boolean;
+
+    defaultComponent?: string;
+    componentProps: ComponentProps;
+
+    isRequired: boolean;
+    maxLength: number;
     validationFunctions: string[];
     exclusionRules: string[];
-    enumValues: string[];
+
     entityName: EntityKeys;
     databaseTable: AnyEntityDatabaseTable;
     description: string;
+    typeReference: TypeBrand<any>;
 }
+
+export interface EntityStateFieldWithValue extends EntityStateField {
+    value: any;
+}
+
+export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
+
+export interface EntityStateFieldWithValueComplex extends EntityStateField {
+    value: ExtractType<this['typeReference']>;
+}
+
+export type EntityFieldWithValue<TEntity extends EntityKeys> = {
+    [TField in keyof AutomationEntity<TEntity>['entityFields']]: Omit<AutomationEntity<TEntity>['entityFields'][TField], 'typeReference'> & {
+    typeReference: AutomationEntity<TEntity>['entityFields'][TField]['typeReference'];
+    value: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+};
+};
+
+type MyEntityFieldWithValues = EntityFieldWithValue<"registeredFunction">;
+type ModulePathField = EntityFieldWithValue<"registeredFunction">['modulePath'];
+type argInverseField = EntityFieldWithValue<"registeredFunction">['argInverse'];
 
 
 export interface EntityMetadata {
@@ -66,6 +104,7 @@ export interface EntityMetadata {
     displayFieldMetadata: DisplayFieldMetadata;
     displayField?: string;
     fields: EntityStateField[];
+    relationships: Relationship[];
 }
 
 export type ComponentProps = {
@@ -196,7 +235,6 @@ export interface SortPayload {
     append?: boolean;
 }
 
-// --- Real-time Subscriptions ---
 export interface SubscriptionConfig {
     enabled: boolean;
     events: Array<'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE'>;
@@ -204,6 +242,7 @@ export interface SubscriptionConfig {
     debounceMs?: number;
     batchUpdates?: boolean;
 }
+
 
 export interface SelectionSummary {
     count: number;
@@ -228,30 +267,17 @@ export interface SelectionState {
 
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
-    // Metadata
     entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
-
-    // Core Data
     records: Record<MatrxRecordId, EntityData<TEntity>>;   // Data is here
-
-    // Quick Reference
     quickReference: QuickReferenceState;  // Quick reference data is here
-
-    // State Management
     selection: SelectionState;
     pagination: PaginationState;
     loading: LoadingState;
     cache: CacheState;
     history: HistoryState<TEntity>;
-
-    // Query Management
     filters: FilterState;
-
-    // Real-time Management
     subscription: SubscriptionConfig;
-
     flags: EntityFlags;
-
     metrics: EntityMetrics;
 }
 
@@ -281,6 +307,7 @@ export interface EntityOperationFlags {
     DELETE_STATUS?: FlagStatusOptions;
     CUSTOM_STATUS?: FlagStatusOptions;
 }
+
 export interface EntityFlags {
     needsRefresh?: boolean;
     isModified?: boolean;
@@ -307,7 +334,6 @@ export interface EntityError {
     details?: unknown;
     lastOperation?: EntityOperations;
 }
-
 
 
 export interface RecordOperation<TEntity extends EntityKeys> {

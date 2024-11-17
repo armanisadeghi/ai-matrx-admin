@@ -18,7 +18,6 @@ import {FullEditableJsonViewer} from "@/components/ui/JsonComponents";
 import {FileUpload} from "@/components/ui/file-upload";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import ColorPicker from "@/components/ui/color-picker";
 import ImageDisplay from "@/components/ui/image-display";
 import StarRating from "@/components/ui/star-rating";

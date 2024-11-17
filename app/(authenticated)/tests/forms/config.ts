@@ -3,7 +3,24 @@
 import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
-
+    {
+        title: 'Action Button Demo Version 3',
+        path: 'components-with-buttons/action-button-three',
+        relative: true,
+        description: 'Designed to allow for custom components'
+    },
+    {
+        title: 'Action Button Demo Version 2',
+        path: 'components-with-buttons/action-button-two',
+        relative: true,
+        description: 'Designed to work with potential Redux integration'
+    },
+    {
+        title: 'Action Button Demo',
+        path: 'components-with-buttons/action-button-demo',
+        relative: true,
+        description: 'Based on Sample Fields with Buttons, and not as good, but with some different things demonstrated'
+    },
     {
         title: 'Sample Fields with Buttons',
         path: 'components-with-buttons',
@@ -66,12 +83,6 @@ export const pages: ModulePage[] = [
         description: 'Latest Implementation - Simple single-form direct, with Redux'
     },
 
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
     {
         title: 'Not Implemented',
         path: 'link-here',

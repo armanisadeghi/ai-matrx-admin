@@ -5,16 +5,24 @@ import {ChevronRight} from 'lucide-react';
 import Link from 'next/link';
 import {formatName} from "@/utils/formatName";
 
+type LayoutParams = Promise<{
+    entityName?: string;
+    primaryKeyField?: string;
+    primaryKeyValue?: string;
+}>;
+
 interface EntityLayoutProps {
     children: React.ReactNode;
-    params: {
-        entityName?: string;
-        primaryKeyField?: string;
-        primaryKeyValue?: string;
-    };
+    params: LayoutParams;
+    // Add searchParams if needed
+    searchParams?: Promise<{
+        entityPrettyName?: string;
+        fieldPrettyName?: string;
+        [key: string]: string | string[] | undefined;
+    }>;
 }
 
-function EntityBreadcrumbs(
+async function EntityBreadcrumbs(
     {
         entityName,
         entityPrettyName,
@@ -64,18 +72,18 @@ function EntityBreadcrumbs(
     );
 }
 
-export default function EntityLayout({children, params}: EntityLayoutProps) {
-    // Log to verify what params we're getting
-    console.log('Layout Params:', params);
+export default async function EntityLayout({children, params}: EntityLayoutProps) {
+    const resolvedParams = await params;
+
+    console.log('Layout Params:', resolvedParams);
 
     return (
         <div className="flex flex-col h-full">
-            <div
-                className="px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <EntityBreadcrumbs
-                    entityName={params.entityName}
-                    primaryKeyField={params.primaryKeyField}
-                    primaryKeyValue={params.primaryKeyValue}
+                    entityName={resolvedParams.entityName}
+                    primaryKeyField={resolvedParams.primaryKeyField}
+                    primaryKeyValue={resolvedParams.primaryKeyValue}
                 />
             </div>
             <div className="flex-1">

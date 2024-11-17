@@ -9,6 +9,7 @@ import {LoadingState, MatrxRecordId} from '@/lib/redux/entity/types';
 import NormalFormField from './NormalFormField';
 import FormContent from "./NormalFormFieldTwo";
 import ComponentBasedFieldView from "@/app/(authenticated)/tests/crud-operations/components/NormalFormFieldThree";
+import {Callback} from "@/utils/callbackManager";
 
 // Updated component props and types
 export type FormMode = 'view' | 'edit' | 'create';
@@ -18,8 +19,18 @@ export interface UseEntityFormState<TEntity extends EntityKeys> {
     viewMode: FormMode;
     formData: Partial<EntityData<TEntity>>;
     validationErrors: Record<string, string>;
-    loadingState: LoadingState
+    loadingState: LoadingState;
     lastOperation?: string;
+
+    // Derived Loading Metadata
+    hasError: boolean;
+    errorState: {
+        code?: number;
+        details?: unknown;
+        message: string;
+    };
+    isInitialized: boolean;
+    isLoading: boolean;
 
     // Metadata
     entityDisplayName: string;
@@ -40,6 +51,23 @@ export interface UseEntityFormState<TEntity extends EntityKeys> {
     isFieldReadOnly: (fieldName: string) => boolean;
     getFieldValue: (fieldName: string) => any;
     getDisplayValue: (record: EntityData<TEntity>) => string;
+
+    // Record Operations
+    createRecord: (
+        data: Partial<EntityData<TEntity>>,
+        callbacks?: Callback,
+    ) => void;
+
+    updateRecord: (
+        matrxRecordId: MatrxRecordId,
+        data: Partial<EntityData<TEntity>>,
+        callbacks?: Callback,
+    ) => void;
+
+    deleteRecord: (
+        matrxRecordId: MatrxRecordId,
+        callbacks?: Callback,
+    ) => void;
 
     // Feature flags
     canCreate: boolean;

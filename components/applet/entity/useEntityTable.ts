@@ -1,13 +1,13 @@
 // useEntityTable.ts
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {useToast} from '@/components/ui/use-toast';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityCommandContext, EntityCommandName} from '@/components/matrx/MatrxCommands/EntityCommand';
-import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {Draft} from '@reduxjs/toolkit';
+import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
 
 interface UseEntityTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -35,7 +35,7 @@ export const useEntityTable = <TEntity extends EntityKeys>(
     const [pageSize, setPageSize] = useState(10);
 
     // Generate slice and selectors based on entity key
-    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
     // Selectors

@@ -1,34 +1,53 @@
-// app/(authenticated)/entity-crud/[entityName]/page.tsx
+// app/(authenticated)/entity-crud/[entityName]/[primaryKeyField]/[primaryKeyValue]/page.tsx
 
+import EntityRecordServerWrapper from "@/components/matrx/Entity/serverWrappers/EntityRecordServerWrapper";
 import {EntityKeys} from "@/types/entityTypes";
-import EntityTableServerWrapper from "@/components/matrx/Entity/serverWrappers/EntityTableServerWrapper";
 import { Card, CardContent } from "@/components/ui";
-import { EntityHeader } from "@/components/matrx/Entity/headers/EntityPageHeader";
+import { EntityRecordHeader } from "@/components/matrx/Entity/headers/EntityPageHeader";
 
-interface EntityPageProps {
-    params: {
-        entityName: EntityKeys;
-    };
-    searchParams: {
-        entityPrettyName: string;
-    };
+type Params = Promise<{
+    entityName: EntityKeys;
+    primaryKeyField: string;
+    primaryKeyValue: string;
+}>;
+
+type SearchParams = Promise<{
+    entityPrettyName: string;
+    entityFieldPrettyName: string;
+    [key: string]: string | string[] | undefined;
+}>;
+
+interface EntityRecordPageProps {
+    params: Params;
+    searchParams: SearchParams;
 }
 
-export default function EntityPage({ params, searchParams }: EntityPageProps) {
+export default async function EntityRecordPage(props: EntityRecordPageProps) {
+    // Await both params and searchParams at once
+    const [params, searchParams] = await Promise.all([
+        props.params,
+        props.searchParams
+    ]);
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1">
                 <Card className="h-full">
-                    <EntityHeader
+                    <EntityRecordHeader
                         entityName={params.entityName}
                         entityPrettyName={searchParams.entityPrettyName}
-                        backUrl="/entity-crud"
-                        backLabel="Back to Entities"
+                        primaryKeyField={params.primaryKeyField}
+                        primaryKeyValue={params.primaryKeyValue}
+                        fieldPrettyName={searchParams.entityFieldPrettyName}
+                        backUrl={`/entity-crud/${params.entityName}?entityPrettyName=${encodeURIComponent(searchParams.entityPrettyName)}`}
                     />
                     <CardContent className="flex-1 p-0">
-                        <EntityTableServerWrapper
-                            selectedEntity={params.entityName}
+                        <EntityRecordServerWrapper
+                            entityName={params.entityName}
+                            primaryKeyField={params.primaryKeyField}
+                            primaryKeyValue={params.primaryKeyValue}
                             entityPrettyName={searchParams.entityPrettyName}
+                            entityFieldPrettyName={searchParams.entityFieldPrettyName}
                         />
                     </CardContent>
                 </Card>

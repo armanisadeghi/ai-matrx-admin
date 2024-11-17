@@ -200,21 +200,27 @@ type testRegFuncTable = EntityDatabaseTable<'registeredFunction'>;
 type test1 = EntityDatabaseTable<'registeredFunction'>; // specific table
 
 
+
 // Important Derived Types ===================================================
 
 export type AnyEntityDatabaseTable = EntityDatabaseTable<EntityKeys>;
 
+export type AnyDatabaseColumnForEntity<TEntity extends EntityKeys> = FieldDatabaseColumn<
+    TEntity,
+    EntityFieldKeys<TEntity>
+>;
 
-
-
-
+export type AllDatabaseColumnsAllEntities = {
+    [Entity in EntityKeys]: AnyDatabaseColumnForEntity<Entity>
+}[EntityKeys];
 
 
 // Tests for the derived types ===================================================
 type test2 = AnyEntityDatabaseTable;
 
+type regFuncColumns = AnyDatabaseColumnForEntity<'registeredFunction'>;
 
-
+type test3 = AllDatabaseColumnsAllEntities;
 
 
 export type FieldDataType<
@@ -352,7 +358,6 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
 // entityName: EntityKeys;
 // databaseTable: string;
 // description: string;
-
 
 
 /**
@@ -792,12 +797,12 @@ type EntitySliceState<TEntity extends EntityKeys> = {
  */
 export type EntityData<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-          ? TField
-          : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+                                                                  ? TField
+                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-          ? TField
-          : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+                                                                  ? TField
+                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;

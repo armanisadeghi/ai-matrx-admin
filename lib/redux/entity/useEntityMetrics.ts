@@ -3,13 +3,13 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { EntityKeys } from '@/types/entityTypes';
-import { createEntitySlice } from './slice';
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 
 export const useEntityMetrics = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { actions } = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const [lastError, setLastError] = useState<any>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 

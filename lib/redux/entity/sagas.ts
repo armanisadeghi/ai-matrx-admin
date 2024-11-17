@@ -29,6 +29,7 @@ import {
 } from "@/lib/redux/entity/sagaHandlers";
 import {DeleteRecordPayload} from "./actions";
 import {withConversion, withFullConversion} from "@/lib/redux/entity/sagaHelpers";
+import { getEntitySlice } from "./entitySlice";
 
 
 const trace = "SAGAS";
@@ -37,7 +38,7 @@ const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 type SagaAction<P = any> = PayloadAction<P> & { type: string };
 
 export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const {actions} = createEntitySlice(entityKey, {} as any);
+    const { actions } = getEntitySlice(entityKey);
     const sagaLogger = EntityLogger.createLoggerWithDefaults('SAGA WATCHER', entityKey);
 
     const requestCache = new Map<string, { timestamp: number; count: number }>();

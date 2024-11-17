@@ -493,6 +493,7 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
                 yield put(actions.upsertRecords(frontendResponse));
                 break;
             case 'delete':
+                // @ts-ignore
                 yield put(actions.removeRecords(records as Draft<EntityData<TEntity>>[]));
                 break;
         }

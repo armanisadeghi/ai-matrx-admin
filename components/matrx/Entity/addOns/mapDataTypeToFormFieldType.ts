@@ -79,6 +79,10 @@ export function mapFieldDataTypeToFormFieldType(dataType: FieldDataOptionsType):
         array: 'select', // Could be dropdowns, assuming 'select' for now
         object: 'json',   // Treating objects as JSON
         json: 'json',
+        uuid: 'text',     // UUIDs typically represented as text
+        email: 'email',   // Dedicated 'email' field type
+        url: 'url',       // Dedicated 'url' field type
+        datetime: 'datetime-local', // HTML5 datetime-local input
         null: 'text',     // Defaulting to 'text'
         undefined: 'text', // Defaulting to 'text'
         any: 'text',      // Defaulting to 'text'
@@ -86,7 +90,7 @@ export function mapFieldDataTypeToFormFieldType(dataType: FieldDataOptionsType):
         symbol: 'text',   // Defaulting to 'text'
         union: 'text',    // Defaulting to 'text'
         bigint: 'number', // Mapping bigints to number
-        date: 'date',
+        date: 'date',     // Dedicated 'date' field type
         map: 'json',      // Maps can be represented as JSON
         set: 'json',      // Sets can be represented as JSON
         tuple: 'text',    // Defaulting to 'text'
@@ -96,6 +100,8 @@ export function mapFieldDataTypeToFormFieldType(dataType: FieldDataOptionsType):
         void: 'text',     // Defaulting to 'text'
         never: 'text',    // Defaulting to 'text'
     };
+
+    // Return the mapped value or default to 'text' if the dataType is not explicitly mapped}
 
     const formFieldType = typeMapping[dataType];
 

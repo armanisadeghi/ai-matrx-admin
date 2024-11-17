@@ -118,7 +118,8 @@ export const EntityQuickReferenceView = ({entityKey}) => {
         }
 
         try {
-            const fetchedRecords = await fetchSelectedRecords(selectedQuickReferences);
+            const fetchedRecords = fetchSelectedRecords(selectedQuickReferences);
+
             setFetchedSelections(fetchedRecords);
             toast({
                 title: "Success",

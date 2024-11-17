@@ -134,52 +134,120 @@ export interface SelectionState {
 export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
-        updateSelectionMode(state);
+        utilsLogger.log('debug', 'Added new record to selection. Current selection:', {
+            newRecord: recordKey,
+            allSelected: state.selection.selectedRecords
+        });
+        updateSelectionMode(state, recordKey);
+    } else {
+        utilsLogger.log('debug', 'Record already in selection, no change:', {
+            recordKey,
+            currentSelection: state.selection.selectedRecords
+        });
     }
 };
 
-
 export const removeRecordFromSelection = (state, recordKey: MatrxRecordId) => {
+    const wasInSelection = state.selection.selectedRecords.includes(recordKey);
     state.selection.selectedRecords = state.selection.selectedRecords.filter(
         key => key !== recordKey
     );
+    utilsLogger.log('debug', 'Removed record from selection. New selection:', {
+        removedRecord: recordKey,
+        wasActuallyRemoved: wasInSelection,
+        newSelection: state.selection.selectedRecords
+    });
+
     if (state.selection.lastSelected === recordKey) {
-        state.selection.lastSelected = state.selection.selectedRecords[state.selection.selectedRecords.length - 1];
+        const newLastSelected = state.selection.selectedRecords[state.selection.selectedRecords.length - 1];
+        state.selection.lastSelected = newLastSelected;
+        utilsLogger.log('debug', 'Updated lastSelected after removal:', {
+            oldLastSelected: recordKey,
+            newLastSelected
+        });
     }
     updateSelectionMode(state);
 };
 
 export const removeActiveRecord = (state) => {
-    state.selection.lastActiveRecord = state.selection.activeRecord;
+    const oldActiveRecord = state.selection.activeRecord;
+    state.selection.lastActiveRecord = oldActiveRecord;
     state.selection.activeRecord = null;
+    utilsLogger.log('debug', 'Removed active record:', {
+        previousActive: oldActiveRecord,
+        newLastActive: state.selection.lastActiveRecord
+    });
 }
 
 export const findBestActiveRecord = (state) => {
-    return state.selection.lastActiveRecord || state.selection.selectedRecords[0] || state.selection.lastSelected;
+    const result = state.selection.lastActiveRecord || state.selection.selectedRecords[0] || state.selection.lastSelected;
+    utilsLogger.log('debug', 'Found best active record:', {
+        result,
+        considered: {
+            lastActiveRecord: state.selection.lastActiveRecord,
+            firstSelectedRecord: state.selection.selectedRecords[0],
+            lastSelected: state.selection.lastSelected
+        }
+    });
+    return result;
 }
 
 export const setNewActiveRecord = (state, recordKey) => {
-    state.selection.lastActiveRecord = state.selection.activeRecord;
+    if (state.selection.activeRecord === recordKey) {
+        utilsLogger.log('debug', 'Skipping setNewActiveRecord - record already active:', {
+            recordKey
+        });
+        return;
+    }
+
+    const oldActiveRecord = state.selection.activeRecord;
+    state.selection.lastActiveRecord = oldActiveRecord;
     state.selection.activeRecord = recordKey;
+    utilsLogger.log('debug', 'Set new active record:', {
+        oldActive: oldActiveRecord,
+        newActive: recordKey,
+        newLastActive: state.selection.lastActiveRecord
+    });
 
     if (!state.selection.selectedRecords.includes(recordKey)) {
+        const oldSelection = [...state.selection.selectedRecords];
         state.selection.selectedRecords = [recordKey];
+        utilsLogger.log('debug', 'Updated selection for new active record:', {
+            oldSelection,
+            newSelection: state.selection.selectedRecords
+        });
     }
 }
 
-export const updateSelectionMode = (state) => {
+export const updateSelectionMode = (state, recordKey = null) => {
+    utilsLogger.log('debug', 'Updating selection mode. With or without Record Key. Got: ', {recordKey});
     if (state.selection.selectedRecords.length === 1) {
-        switchToSingleSelectionMode(state);
+        utilsLogger.log('debug', 'Switching to single selection mode');
+        switchToSingleSelectionMode(state, recordKey);
     } else if (state.selection.selectedRecords.length > 1) {
+        utilsLogger.log('debug', 'Switching to multiple selection mode');
         switchToMultipleSelectionMode(state);
     } else {
+        utilsLogger.log('debug', 'Switching to no selection mode');
         state.selection.selectionMode = 'none';
     }
 };
 
-export const switchToSingleSelectionMode = (state) => {
-    state.selection.activeRecord = findBestActiveRecord(state);
+export const switchToSingleSelectionMode = (state, recordKey = null) => {
+    utilsLogger.log('debug', 'Starting switchToSingleSelectionMode. Got recordKey: ', {recordKey});
+
+    if (recordKey !== null) {
+        utilsLogger.log('debug', 'Using provided recordKey as active record: ', {recordKey});
+        state.selection.activeRecord = recordKey;
+    } else {
+        utilsLogger.log('debug', 'No recordKey provided, finding best active record');
+        state.selection.activeRecord = findBestActiveRecord(state);
+    }
+
+    utilsLogger.log('debug', 'Setting selected records to active record: ', {activeRecord: state.selection.activeRecord});
     state.selection.selectedRecords = [state.selection.activeRecord];
+
+    utilsLogger.log('debug', 'Setting selection mode to single');
     state.selection.selectionMode = 'single';
 }
 

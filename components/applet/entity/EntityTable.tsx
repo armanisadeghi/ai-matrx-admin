@@ -7,7 +7,8 @@ import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxC
 import {useEntityTable} from './useEntityTable';
 import {useAppDispatch} from "@/lib/redux/hooks";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {createEntitySlice} from "@/lib/redux/entity/slice";
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+
 
 interface EntityTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -57,7 +58,7 @@ const EntityTable = <TEntity extends EntityKeys>(
 
     const dispatch = useAppDispatch();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const [lastError, setLastError] = useState<any>(null);
 
     const safeDispatch = useCallback((action: any) => {
