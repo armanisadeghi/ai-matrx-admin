@@ -1,19 +1,17 @@
 'use client';
 
 import React from 'react';
-import {useAppDispatch, useAppSelector} from 'lib/redux/hooks';
-import {useRouter} from 'next/navigation'
+import {useAppDispatch} from 'lib/redux/hooks';
 import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from '@/components/ui/dialog';
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Label} from '@/components/ui/label';
-import {Link, Pencil, Upload, Calendar, Clock, Globe, Code, File, Plus, RefreshCw, Search} from 'lucide-react';
+import {Link, Globe, Code} from 'lucide-react';
 import {QuickReferenceSidebar} from "@/app/(authenticated)/tests/crud-operations/components/QuickReferenceSidebar";
 import EntityShowSelectedAccordion
     from "@/components/matrx/Entity/prewired-components/EntityShowSelectedAccordion";
 
-// Presentation types for actions
 const PRESENTATION_TYPES = {
     MODAL: 'modal',
     SHEET: 'sheet',
@@ -33,18 +31,16 @@ const createFieldAction = (type, config) => ({
     props: config.props || {}, // Additional props for the custom component
     handleAction: config.handleAction,
     shouldShow: config.shouldShow || (() => true),
-    // Container customization
     containerProps: config.containerProps || {},
     renderContainer: config.renderContainer, // Custom container renderer
 });
 
-// Wrapper components for different presentation types
 const ActionContainer = (
     {
         presentation,
         trigger,
         content,
-        containerProps = {} as ContainerProps,
+        containerProps,
         customContainer
     }) => {
     switch (presentation) {
@@ -371,7 +367,7 @@ const ExampleUsage = () => {
                     </div>
                 </div>
             ))}
-            <div className="space-y-12 p-16 border bg-border bg-matrx-card-background">
+            <div className="space-y-4 p-4 border bg-border bg-matrx-card-background">
                 <EntityShowSelectedAccordion entityKey={'registeredFunction'}/>
             </div>
 

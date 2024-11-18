@@ -69,7 +69,7 @@ export interface FormState {
     [key: string]: any;
 }
 
-export type FormDensity = 'normal' | 'compact' | 'spacious';
+export type FormDensity = 'normal' | 'compact' | 'comfortable';
 export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
 
 export interface FlexAnimatedFormProps {
@@ -91,7 +91,7 @@ export interface FlexAnimatedFormProps {
     animationPreset?: AnimationPreset;
 }
 
-const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
+const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
     {
         fields,
         formState,
@@ -127,11 +127,11 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
     const onPrevStep = externalOnPrevStep || internalOnPrevStep;
 
     const filteredFields = enableSearch
-        ? fields.filter(field =>
+                           ? fields.filter(field =>
             field.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
             field.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
-        : fields;
+                           : fields;
 
     const renderField = (field: FlexFormField) => {
         const commonProps = {
@@ -510,15 +510,15 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
                             Submit
                         </AnimatedButton>
                     ) : (
-                        <AnimatedButton
-                            onClick={() => {
-                                if (currentStep < fields.length - 1) onNextStep();
-                            }}
-                            className="bg-primary text-primary-foreground"
-                        >
-                            Next
-                        </AnimatedButton>
-                    )}
+                         <AnimatedButton
+                             onClick={() => {
+                                 if (currentStep < fields.length - 1) onNextStep();
+                             }}
+                             className="bg-primary text-primary-foreground"
+                         >
+                             Next
+                         </AnimatedButton>
+                     )}
                 </motion.div>
             </form>
 
@@ -536,4 +536,4 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
     );
 };
 
-export default FlexAnimatedForm;
+export default ArmaniForm;

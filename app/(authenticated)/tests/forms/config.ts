@@ -3,6 +3,31 @@
 import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Dynamic Entity Management Page',
+        path: 'entity-management',
+        relative: true,
+        description: 'This is the first of the pages which allows for dynamic rendering of pages with different layouts.'
+    },
     {
         title: 'Action Button Demo Version 3',
         path: 'components-with-buttons/action-button-three',
@@ -83,30 +108,6 @@ export const pages: ModulePage[] = [
         description: 'Latest Implementation - Simple single-form direct, with Redux'
     },
 
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
 ];
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');

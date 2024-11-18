@@ -3,6 +3,55 @@
 import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Checkbox and Radio Group Component Demo',
+        path: 'checkbox-radio',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'JSON Viewer Component Demo',
+        path: 'json-viewer',
+        relative: true,
+        description: 'This component is horrible! It is part of the new system but it is not working well at all.'
+    },
     {
         title: 'Accordion Component Demo',
         path: 'accordion',
@@ -18,54 +67,6 @@ export const pages: ModulePage[] = [
     {
         title: 'Calendar Component Demo',
         path: 'calendar',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
         relative: true,
         description: ''
     },

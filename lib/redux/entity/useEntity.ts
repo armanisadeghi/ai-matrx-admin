@@ -182,16 +182,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         safeDispatch(actions.removeFromSelection(record));
     }, [safeDispatch, actions]);
 
-    const toggleSelection = useCallback((record: Draft<EntityData<TEntity>>) => {
-        safeDispatch(actions.toggleSelection(record));
-    }, [safeDispatch, actions]);
-
-    const batchSelection = useCallback((
-        operation: 'add' | 'remove' | 'toggle',
-        records: Draft<EntityData<TEntity>>[]
-    ) => {
-        safeDispatch(actions.batchSelection({operation, records}));
-    }, [safeDispatch, actions]);
 
     // Optimistic Update Support
     const optimisticUpdate = useCallback((
@@ -276,8 +266,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         // Enhanced Actions
         addToSelection,
         removeFromSelection,
-        toggleSelection,
-        batchSelection,
         optimisticUpdate,
 
 

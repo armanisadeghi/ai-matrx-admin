@@ -14,8 +14,6 @@ import {
     EntityStateField,
     SelectionSummary,
     SelectionMode,
-    OperationCallback,
-    CallbackResult,
 } from '@/lib/redux/entity/types';
 import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";

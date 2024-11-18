@@ -3,7 +3,7 @@ import {EntityKeys} from '@/types/entityTypes';
 import {EntityFormPanel, EntityFormPanelRefs} from '../../../../app/(authenticated)/tests/crud-operations/components/EntityFormPanel';
 import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
 import { DynamicResizableLayout } from '@/components/matrx/resizable/DynamicResizableLayout';
-import EntityQuickReferenceList from "@/components/matrx/Entity/prewired-components/EntityQuickReferenceList";
+import EntityQuickReferenceList from "@/components/matrx/Entity/prewired-components/quick-reference/EntityQuickReferenceList";
 
 interface EntityPageProps<TEntity extends EntityKeys> {
     entityKey: TEntity;

@@ -9,7 +9,7 @@ import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import {EntityTableContainer} from "@/components/matrx/Entity";
 
 const EntityBrowser = () => {
-    const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null); // need to eliminate this.
+    const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
 
     return (
         <Card className="w-full">

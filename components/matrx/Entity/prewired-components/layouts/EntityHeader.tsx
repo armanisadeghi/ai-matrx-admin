@@ -1,14 +1,6 @@
-import React, {useState, useRef, useEffect} from 'react';
+// EntityHeader.tsx
+import React, {useRef, useEffect, useState} from 'react';
 import {CardHeader, CardTitle, CardDescription} from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {useAppSelector} from '@/lib/redux/hooks';
-import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityError} from '@/lib/redux/entity/types';
 import {
@@ -18,8 +10,9 @@ import {
     EntityQuickReferenceCardsEnhanced,
     EntityQuickReferenceList,
     EntityQuickReferenceSelect
-} from '../prewired-components/quick-reference';
+} from '../quick-reference';
 import {cn} from '@nextui-org/react';
+import EntitySelection from '../entity-management/EntitySelection';
 
 type QuickReferenceComponentType =
     | 'cards'
@@ -31,7 +24,7 @@ type QuickReferenceComponentType =
 
 type LayoutType = 'stacked' | 'sideBySide';
 
-interface PreWiredEntityRecordHeaderProps {
+interface EntityHeaderProps {
     onEntityChange?: (entity: EntityKeys | null) => void;
     onRecordLoad?: (record: EntityData<EntityKeys>) => void;
     onError?: (error: EntityError) => void;
@@ -40,7 +33,7 @@ interface PreWiredEntityRecordHeaderProps {
     className?: string;
 }
 
-const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
+const EntityHeader: React.FC<EntityHeaderProps> = (
     {
         onEntityChange,
         onRecordLoad,
@@ -53,10 +46,8 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
     const [hasSelection, setHasSelection] = useState(false);
     const [recordLabel, setRecordLabel] = useState<string>('Select Record');
     const [selectHeight, setSelectHeight] = useState<number>(0);
-    const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);
     const rightColumnRef = useRef<HTMLDivElement>(null);
 
-    // Update select height based on right column height
     useEffect(() => {
         if (layout === 'sideBySide' && rightColumnRef.current) {
             const observer = new ResizeObserver((entries) => {
@@ -90,12 +81,6 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
         console.log('Create new entity clicked');
     };
 
-    const getVisibleItems = () => {
-        if (layout !== 'sideBySide' || !selectHeight) return undefined;
-        const itemHeight = 44; // Height of each select item in pixels
-        return Math.max(3, Math.min(5, Math.floor(selectHeight / itemHeight)));
-    };
-
     const QuickReferenceComponent = React.useMemo(() => {
         const commonProps = {
             entityKey: selectedEntity!,
@@ -121,7 +106,6 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
         return components[quickReferenceType];
     }, [selectedEntity, quickReferenceType, onError]);
 
-
     return (
         <CardHeader className={className}>
             <CardTitle className={cn(
@@ -132,50 +116,12 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
                     "flex justify-between items-start",
                     layout === 'sideBySide' && 'min-w-[400px]'
                 )}>
-                    <Select
-                        value={selectedEntity || undefined}
-                        onValueChange={(value) => handleEntityChange(value as EntityKeys)}
-                    >
-                        <SelectTrigger
-                            className={cn(
-                                "w-[400px] bg-card text-card-foreground border-matrxBorder",
-                                "h-12 text-base"
-                            )}
-                        >
-                            <SelectValue placeholder={
-                                <span className="text-base">
-                                    {selectedEntity
-                                     ? entitySelectOptions.find(option => option.value === selectedEntity)?.label
-                                     : 'Select Entity...'}
-                                </span>
-                            }/>
-                        </SelectTrigger>
-                        <SelectContent
-                            position={layout === 'sideBySide' ? 'popper' : 'item-aligned'}
-                            className={cn(
-                                "bg-card",
-                                layout === 'sideBySide' && selectHeight && `max-h-[${selectHeight}px]`
-                            )}
-                            sideOffset={0}
-                            align="start"
-                            side="bottom"
-                        >
-                            <div className={cn(
-                                "overflow-auto",
-                                layout === 'sideBySide' && selectHeight && `max-h-[${selectHeight}px]`
-                            )}>
-                                {entitySelectOptions.map(({value, label}) => (
-                                    <SelectItem
-                                        key={value}
-                                        value={value}
-                                        className="bg-card text-card-foreground hover:bg-muted py-3 text-base"
-                                    >
-                                        {label}
-                                    </SelectItem>
-                                ))}
-                            </div>
-                        </SelectContent>
-                    </Select>
+                    <EntitySelection
+                        selectedEntity={selectedEntity}
+                        onEntityChange={handleEntityChange}
+                        layout={layout}
+                        selectHeight={selectHeight}
+                    />
                 </div>
 
                 {selectedEntity && (
@@ -198,4 +144,4 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
     );
 };
 
-export default PreWiredEntityRecordHeader;
+export default EntityHeader;
