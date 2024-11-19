@@ -5,11 +5,11 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
 const baseUrl = process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : 'http://aimatrx.com'
+                ? 'http://localhost:3000'
+                : 'http://aimatrx.com'
 
 export async function login(formData: FormData) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const data = {
         email: formData.get('email') as string,
@@ -27,7 +27,7 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const data = {
         email: formData.get('email') as string,
@@ -45,7 +45,7 @@ export async function signup(formData: FormData) {
 }
 
 export async function loginWithGoogle() {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -64,7 +64,7 @@ export async function loginWithGoogle() {
 }
 
 export async function loginWithGithub() {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',

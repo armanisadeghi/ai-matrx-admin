@@ -10,7 +10,7 @@ import {Plus, CheckSquare} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
-import { motion, AnimatePresence } from 'framer-motion';
+import {motion, AnimatePresence} from 'framer-motion';
 
 interface EntityQuickReferenceListProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -92,41 +92,41 @@ function EntityQuickReferenceList<TEntity extends EntityKeys>(
                 initial: {},
                 animate: {},
                 exit: {},
-                transition: { duration: 0 },
+                transition: {duration: 0},
                 hover: {},
                 listItem: {},
             },
             subtle: {
-                initial: { opacity: 0, x: -5 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 0, x: 5 },
-                transition: { duration: 0.2 },
-                hover: { scale: 1.01 },
-                listItem: { transition: { staggerChildren: 0.02 } },
+                initial: {opacity: 0, x: -5},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 0, x: 5},
+                transition: {duration: 0.2},
+                hover: {scale: 1.01},
+                listItem: {transition: {staggerChildren: 0.02}},
             },
             smooth: {
-                initial: { opacity: 0, x: -10 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 0, x: 10 },
-                transition: { duration: 0.3 },
-                hover: { scale: 1.02 },
-                listItem: { transition: { staggerChildren: 0.03 } },
+                initial: {opacity: 0, x: -10},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 0, x: 10},
+                transition: {duration: 0.3},
+                hover: {scale: 1.02},
+                listItem: {transition: {staggerChildren: 0.03}},
             },
             energetic: {
-                initial: { opacity: 0, x: -20 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 0, x: 20 },
-                transition: { duration: 0.4, type: "spring" },
-                hover: { scale: 1.03, y: -2 },
-                listItem: { transition: { staggerChildren: 0.04 } },
+                initial: {opacity: 0, x: -20},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 0, x: 20},
+                transition: {duration: 0.4, type: "spring"},
+                hover: {scale: 1.03, y: -2},
+                listItem: {transition: {staggerChildren: 0.04}},
             },
             playful: {
-                initial: { opacity: 0, x: -30, rotate: -5 },
-                animate: { opacity: 1, x: 0, rotate: 0 },
-                exit: { opacity: 0, x: 30, rotate: 5 },
-                transition: { duration: 0.5, type: "spring", bounce: 0.4 },
-                hover: { scale: 1.05, rotate: 1 },
-                listItem: { transition: { staggerChildren: 0.05 } },
+                initial: {opacity: 0, x: -30, rotate: -5},
+                animate: {opacity: 1, x: 0, rotate: 0},
+                exit: {opacity: 0, x: 30, rotate: 5},
+                transition: {duration: 0.5, type: "spring", bounce: 0.4},
+                hover: {scale: 1.05, rotate: 1},
+                listItem: {transition: {staggerChildren: 0.05}},
             },
         };
         return configs[animationPreset];
@@ -198,8 +198,7 @@ function EntityQuickReferenceList<TEntity extends EntityKeys>(
                             >
                                 <Card
                                     className={getCardClassName(ref.recordKey)}
-                                    onClick={() => handleRecordSelect(ref.recordKey)}
-                                >
+                                    onClick={() => handleRecordSelect(ref.recordKey)}>
                                     <CardContent className={densityConfig.cardPadding}>
                                         <div className={cn('flex items-center', densityConfig.itemGap)}>
                                             {selectionMode === 'multiple' && (

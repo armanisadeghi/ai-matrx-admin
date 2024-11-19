@@ -47,6 +47,8 @@ import EntityTester from "@/app/(authenticated)/admin/components/entities/Entity
 import EntityMetrics from "../components/entities/EntityMetrics";
 import EntityBrowser from "../components/entities/EntityBrowser";
 import EntityLab from "../components/entities/EntityLab";
+import { Database, DatabaseZap } from "lucide-react";
+import LocalStorageAdmin from "@/app/(authenticated)/admin/components/LocalStorageAdmin";
 
 export const adminCategories = [
     {
@@ -122,15 +124,33 @@ export const adminCategories = [
             {
                 title: "Entity Performance Metrics",
                 description: "Monitor and analyze entity operation performance, caching efficiency, and state management.",
-                icon: <IconChartBar />,
+                icon: <Database />,
                 component: <EntityMetrics />
             },
             {
                 title: "Entity Matrx Table Browser",
                 description: "Test Entity Data in the Matrx Table.",
-                icon: <IconChartBar />,
+                icon: <DatabaseZap />,
                 component: <EntityBrowser />
             }
+        ]
+    },
+    {
+        name: "Local Storage Management",
+        icon: <IconFlag className="w-6 h-6"/>,
+        features: [
+            {
+                title: "Manage Local Storage",
+                description: "Review your local storage and interact with the various options",
+                icon: <IconFlag/>,
+                component: <LocalStorageAdmin/>
+            },
+            // {
+            //     title: "A/B Testing",
+            //     description: "Manage and track experimental features",
+            //     icon: <IconAdjustmentsBolt/>,
+            //     component: <AdminComponentOne/>
+            // }
         ]
     },
     {

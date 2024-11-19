@@ -1,3 +1,5 @@
+// app/layout.tsx
+
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
@@ -19,9 +21,11 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     const theme = cookieStore.get('theme')?.value || 'dark';
 
     return (
-        <html lang="en" data-theme={theme} className={cn("dark", inter.variable, montserrat.variable)} suppressHydrationWarning>
-        <head>
-        </head>
+        <html lang="en"
+              data-theme={theme}
+              className={cn("dark", inter.variable, montserrat.variable)}
+              suppressHydrationWarning>
+        <head />
         <body className={cn("min-h-screen bg-matrx-background font-sans antialiased")}>
         <NextUIProvider>
             <NavigationLoader />

@@ -55,7 +55,7 @@ export default async function AuthenticatedLayout(
         <Providers initialReduxState={initialReduxState}>
             <LayoutWithSidebar {...layoutProps}>
                 <NavigationLoader/>
-                {children}
+                    {children}
                 <ClientDebugWrapper user={userData}/>
             </LayoutWithSidebar>
         </Providers>

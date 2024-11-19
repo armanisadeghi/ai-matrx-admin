@@ -70,6 +70,7 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     handleRecordSelect: (recordKey: MatrxRecordId) => void;
 
     flexFormField: any;
+    getCardClassName: (recordKey: MatrxRecordId) => string;
 
 }
 
@@ -178,6 +179,16 @@ export function useQuickReference<TEntity extends EntityKeys>(
         }
     }, [selection.selectionMode, actions, dispatch]);
 
+    const getCardClassName = React.useCallback((recordKey: MatrxRecordId) => {
+        const baseClasses = "cursor-pointer transition-colors hover:bg-accent/50";
+        const isMultiple = selection.selectionMode === 'multiple';
+        return `${baseClasses} ${
+            selection.isSelected(recordKey)
+            ? `border-primary ${isMultiple ? 'bg-accent' : 'border-2 bg-accent'}`
+            : 'border-transparent'
+        }`;
+    }, [selection]);
+
 
     return {
         // Metadata
@@ -217,6 +228,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
         handleRecordSelect,
 
         flexFormField,
+        getCardClassName,
 
     };
 }

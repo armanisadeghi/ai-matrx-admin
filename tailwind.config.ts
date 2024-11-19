@@ -200,8 +200,14 @@ const config: Config = {
     		transitionTimingFunction: {
     			bounce: 'var(--animated-menu-bounce)',
     			smooth: 'var(--animated-menu-smooth)'
-    		}
-    	}
+    		},
+			gridTemplateColumns: {
+				'24': 'repeat(24, minmax(0, 1fr))',
+			},
+			gridTemplateRows: {
+				'24': 'repeat(24, minmax(0, 1fr))',
+			},
+		}
     },
     plugins: [
         require("tailwindcss-animate"),
