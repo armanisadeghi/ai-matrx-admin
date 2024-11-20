@@ -1,7 +1,22 @@
 // hooks/useTextCleaner.ts
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { patterns, ActionConfig, PatternConfig } from "@/app/(authenticated)/admin/utils/configs/patterns";
 import { textContext, TextContextEntry } from "@/app/(authenticated)/admin/utils/text-cleaner/configs";
+import {
+    DetailedError,
+    FormattedError,
+    ErrorFormat,
+    EnhancedErrorParser
+} from "../utilities/ErrorParser";
+
+interface TextCleanerError {
+    original: string;
+    parsed: FormattedError | null;
+    timestamp: number;
+}
+
+
+
 
 export function useTextCleaner() {
     const [inputText, setInputText] = useState<string>('');
@@ -11,6 +26,10 @@ export function useTextCleaner() {
     const [preserveStyles, setPreserveStyles] = useState<boolean>(true);
     const [preserveDataAttributes, setPreserveDataAttributes] = useState<boolean>(true);
     const [preserveAriaAttributes, setPreserveAriaAttributes] = useState<boolean>(true);
+    const [errorMode, setErrorMode] = useState<boolean>(false);
+    const [parsedErrors, setParsedErrors] = useState<TextCleanerError[]>([]);
+    const [errorFormat, setErrorFormat] = useState<ErrorFormat>('essential');
+
 
     // Config states
     const [activePatterns, setActivePatterns] = useState<string[]>(Object.keys(patterns));
@@ -141,11 +160,6 @@ export function useTextCleaner() {
         setCleanedText(cleanText(text));
     }, [cleanText]);
 
-    const handleInputChange = useCallback((text: string) => {
-        setInputText(text);
-        processText(text);
-    }, [processText]);
-
     const handleContextChange = useCallback((index: number, contextId: string) => {
         const newContext = textContext.find(entry => entry.id === contextId);
         if (newContext) {
@@ -207,9 +221,104 @@ export function useTextCleaner() {
         return extractedText.trim();
     }, []);
 
+    const processErrorText = useCallback((text: string) => {
+        try {
+            // Split text into potential separate errors
+            const errorSegments = text.split(/(?=<html>|Error:|TypeError:|ReferenceError:)/g)
+                .filter(segment => segment.trim());
+
+            const newErrors: TextCleanerError[] = errorSegments.map(errorText => ({
+                original: errorText,
+                parsed: EnhancedErrorParser.parseError(errorText),
+                timestamp: Date.now()
+            }));
+
+            setParsedErrors(newErrors);
+
+            // Update cleaned text with formatted errors
+            const formattedErrors = newErrors
+                .map(error => error.parsed?.[errorFormat] || error.original)
+                .join('\n\n');
+
+            setCleanedText(formattedErrors);
+        } catch (error) {
+            console.error('Error parsing error text:', error);
+            setCleanedText('Error parsing error text. Please check the format.');
+        }
+    }, [errorFormat]);
+
+    const handleInputChange = useCallback((text: string) => {
+        setInputText(text);
+        if (errorMode) {
+            processErrorText(text);
+        } else {
+            processText(text);
+        }
+    }, [errorMode, processErrorText, processText]);
+
+    const clearErrors = useCallback(() => {
+        setParsedErrors([]);
+        if (errorMode) {
+            setCleanedText('');
+        }
+    }, [errorMode]);
+
+
+    const toggleErrorMode = useCallback(() => {
+        setErrorMode(prev => {
+            const newMode = !prev;
+            if (!newMode) {
+                clearErrors();
+            } else {
+                // Process current input as error if there's any
+                if (inputText) {
+                    processErrorText(inputText);
+                }
+            }
+            return newMode;
+        });
+    }, [clearErrors, inputText, processErrorText]);
+
+    const changeErrorFormat = useCallback((format: ErrorFormat) => {
+        setErrorFormat(format);
+        // Reformat existing errors with new format
+        if (parsedErrors.length > 0) {
+            const formattedErrors = parsedErrors
+                .map(error => error.parsed?.[format] || error.original)
+                .join('\n\n');
+            setCleanedText(formattedErrors);
+        }
+    }, [parsedErrors]);
+
+    const errorStats = useMemo(() => {
+        if (!parsedErrors.length) return null;
+
+        return {
+            total: parsedErrors.length,
+            byType: parsedErrors.reduce((acc, curr) => {
+                const type = curr.parsed?.error.errorType || 'Unknown';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>),
+            bySeverity: parsedErrors.reduce((acc, curr) => {
+                const severity = curr.parsed?.error.severity || 'error';
+                acc[severity] = (acc[severity] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>)
+        };
+    }, [parsedErrors]);
+
 
 
     return {
+        errorMode,
+        errorFormat,
+        parsedErrors,
+        errorStats,
+        toggleErrorMode,
+        changeErrorFormat,
+        clearErrors,
+        setErrorFormat,
         inputText,
         cleanedText,
         prefixes,

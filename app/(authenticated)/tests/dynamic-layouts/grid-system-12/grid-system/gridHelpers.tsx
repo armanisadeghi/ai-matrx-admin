@@ -106,3 +106,24 @@ export const getGridArea = (boxNumber: number): GridArea => {
         colEnd: col + GRID_CONFIG.GRID_ADJUSTMENT + 1
     };
 };
+
+
+/* Added for Strict Mode
+// gridHelpers.ts
+export const enforceGridConstraints = (element: HTMLElement, area: GridArea) => {
+    const width = (area.colEnd - area.colStart) * GRID_CONFIG.CELL_WIDTH;
+    const height = (area.rowEnd - area.rowStart) * GRID_CONFIG.CELL_HEIGHT;
+
+    element.style.maxWidth = `${width}px`;
+    element.style.maxHeight = `${height}px`;
+    element.style.overflow = 'hidden';
+};
+
+export const calculateGridCellDimensions = (area: GridArea): GridDimensions => {
+    return {
+        width: (area.colEnd - area.colStart) * GRID_CONFIG.CELL_WIDTH,
+        height: (area.rowEnd - area.rowStart) * GRID_CONFIG.CELL_HEIGHT,
+        maxWidth: (area.colEnd - area.colStart) * GRID_CONFIG.CELL_WIDTH,
+        maxHeight: (area.rowEnd - area.rowStart) * GRID_CONFIG.CELL_HEIGHT,
+    };
+};*/

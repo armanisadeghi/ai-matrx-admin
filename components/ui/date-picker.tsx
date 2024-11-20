@@ -77,6 +77,12 @@ export const DatePicker: React.FC<DatePickerProps> = (
     );
 };
 
+
+
+
+
+
+/* Usage example:
 // Usage example:
 export const DatePickerExample: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Date>();
@@ -92,98 +98,4 @@ export const DatePickerExample: React.FC = () => {
         />
     );
 };
-const data = {
-    "records": [
-        {
-            "primaryKeyValues": {
-                "flashcard_id": "12b92eac-7200-40ba-ade2-5d4d9924fe84",
-                "set_id": "f34c2510-1b43-4d4b-b91a-c274d024e7c6"
-            },
-            "displayValue": "12b92eac-7200-40ba-ade2-5d4d9924fe84",
-            "recordKey": "flashcard_id:undefined::set_id:undefined"
-        },
-        {
-            "primaryKeyValues": {
-                "flashcard_id": "758e5508-9ca5-4bc5-91a3-2f8e1460d718",
-                "set_id": "f34c2510-1b43-4d4b-b91a-c274d024e7c6"
-            },
-            "displayValue": "758e5508-9ca5-4bc5-91a3-2f8e1460d718",
-            "recordKey": "flashcard_id:undefined::set_id:undefined"
-        },
-        {
-            "primaryKeyValues": {
-                "flashcard_id": "8e22ec07-4ec7-446a-bd05-c81791782c67",
-                "set_id": "f34c2510-1b43-4d4b-b91a-c274d024e7c6"
-            },
-            "displayValue": "8e22ec07-4ec7-446a-bd05-c81791782c67",
-            "recordKey": "flashcard_id:undefined::set_id:undefined"
-        }
-    ],
-    "lastUpdated": "2024-11-13T00:56:05.582Z",
-    "totalAvailable": 0,
-    "fetchComplete": true
-}
-
-const data2 = {
-    "flashcard_id:12b92eac-7200-40ba-ade2-5d4d9924fe84::set_id:f34c2510-1b43-4d4b-b91a-c274d024e7c6": {
-        "flashcardId": "12b92eac-7200-40ba-ade2-5d4d9924fe84",
-        "setId": "f34c2510-1b43-4d4b-b91a-c274d024e7c6",
-        "order": null
-    },
-    "flashcard_id:758e5508-9ca5-4bc5-91a3-2f8e1460d718::set_id:f34c2510-1b43-4d4b-b91a-c274d024e7c6": {
-        "flashcardId": "758e5508-9ca5-4bc5-91a3-2f8e1460d718",
-        "setId": "f34c2510-1b43-4d4b-b91a-c274d024e7c6",
-        "order": 2
-    }
-}
-
-const data3 = {
-    "record": {
-        "flashcard_id": "8e22ec07-4ec7-446a-bd05-c81791782c67",
-        "set_id": "f34c2510-1b43-4d4b-b91a-c274d024e7c6"
-    }
-}
-
-const data4 = {
-    "metadata": {
-        "type": "composite",
-        "fields": [
-            "flashcardId",
-            "setId"
-        ],
-        "database_fields": [
-            "flashcard_id",
-            "set_id"
-        ],
-        "where_template": {
-            "flashcard_id": null,
-            "set_id": null
-        }
-    }
-}
-
-const data5 = {
-    "record": {
-        "flashcardId": "758e5508-9ca5-4bc5-91a3-2f8e1460d718",
-        "setId": "f34c2510-1b43-4d4b-b91a-c274d024e7c6",
-        "order": 2
-    }
-}
-
-const data6 = {
-    "metadata": {
-        "type": "composite",
-        "fields": [
-            "flashcardId",
-            "setId"
-        ],
-        "database_fields": [
-            "flashcard_id",
-            "set_id"
-        ],
-        "where_template": {
-            "flashcard_id": null,
-            "set_id": null
-        }
-    }
-}
+*/

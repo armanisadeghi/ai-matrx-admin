@@ -1,7 +1,8 @@
 import React from 'react';
 import {cn} from '@/lib/utils';
+import {Button, Input, ScrollArea} from "@//components/ui";
+import {Archive, Forward, ImageIcon, Mail, MoreHorizontal, Paperclip, Reply, Smile, Trash2} from "lucide-react";
 
-// Types for grid positions
 type GridPosition = {
     startCol: number;
     endCol?: number;

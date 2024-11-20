@@ -19,8 +19,7 @@ import {
     FormColumnOptions, FormDirectionOptions,
     FormLayoutOptions
 } from '@/types/componentConfigTypes';
-import ArmaniForm from "@/components/matrx/AnimatedForm/ArmaniForm";
-
+import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
 
 interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -28,23 +27,24 @@ interface EntityContentProps<TEntity extends EntityKeys> {
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
     formOptions?: {
-    size?: ComponentSize;
-    formLayout?: FormLayoutOptions;
-    formColumns?: FormColumnOptions;
-    formDirection?: FormDirectionOptions;
-    formEnableSearch?: boolean;
-    formIsSinglePage?: boolean;
-    formIsFullPage?: boolean;
+        size?: ComponentSize;
+        formLayout?: FormLayoutOptions;
+        formColumns?: FormColumnOptions;
+        formDirection?: FormDirectionOptions;
+        formEnableSearch?: boolean;
+        formIsSinglePage?: boolean;
+        formIsFullPage?: boolean;
     };
 }
 
-function EntityContent<TEntity extends EntityKeys>({
-    entityKey,
-    className,
-    density,
-    animationPreset,
-    formOptions
-}: EntityContentProps<TEntity>) {
+function EntityContent<TEntity extends EntityKeys>(
+    {
+        entityKey,
+        className,
+        density,
+        animationPreset,
+        formOptions
+    }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
 
     const transformFieldsToFormFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
@@ -98,16 +98,17 @@ function EntityContent<TEntity extends EntityKeys>({
                 if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
                 console.log('Form submitted:', entity.activeRecord);
             },
-            // Apply form options with defaults
             layout: formOptions?.formLayout ?? 'grid',
             direction: formOptions?.formDirection ?? 'row',
             enableSearch: formOptions?.formEnableSearch ?? false,
             columns: formOptions?.formColumns ?? 2,
             isSinglePage: formOptions?.formIsSinglePage ?? true,
             isFullPage: formOptions?.formIsFullPage ?? true,
-            ...(formOptions?.size && { size: formOptions.size })
+            ...(formOptions?.size && {size: formOptions.size}),
+            ...(animationPreset && {animationPreset}), // Move animationPreset here
+            ...(density && {density}) // Move density here
         };
-    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity, formOptions]);
+    }, [entity, formOptions, animationPreset, density]); // Add dependencies
 
     if (!entity.entityMetadata) {
         return <FormLoadingTwoColumn/>;
@@ -126,13 +127,7 @@ function EntityContent<TEntity extends EntityKeys>({
     return (
         <div className={formClassName}>
             {entity.activeRecord && (
-                <ArmaniForm
-                    {...formProps}
-                    // Pass animation preset if the form component supports it
-                    {...(animationPreset && { animationPreset })}
-                    // Pass density if the form component supports it
-                    {...(density && { density })}
-                />
+                <ArmaniForm {...formProps} />
             )}
         </div>
     );

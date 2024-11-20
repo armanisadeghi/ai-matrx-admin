@@ -373,6 +373,25 @@
     --accent-foreground: 24 9.8% 10%;
     --ring: 47.9 95.8% 53.1%;
 }
+
+/* Added for Grid-24, but added matrx to it. Real system doesn't have 'matrx' */
+.matrx-grid-cell {
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.matrx-grid-content {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -16,10 +16,10 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Email Using 24x Grid System',
+        path: 'grid-demo/email-with-grid-system',
         relative: true,
-        description: ''
+        description: 'Attempt at creating the email app using the 24x24 grid system. This uses "grid-system" not "grid-system-12".'
     },
     {
         title: '12x12 Grid Display',

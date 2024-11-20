@@ -29,14 +29,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Select Component Demos',
+        path: 'selects',
         relative: true,
-        description: ''
+        description: 'Includes the following variations: MatrxVirtualizedSelect, MatrxCascadingSelect, MatrxGroupedSelect, MatrxAsyncSelect, MatrxTagSelect, and MatrxSplitSelect'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Entity Components Demo',
+        path: 'entity-components',
         relative: true,
         description: ''
     },

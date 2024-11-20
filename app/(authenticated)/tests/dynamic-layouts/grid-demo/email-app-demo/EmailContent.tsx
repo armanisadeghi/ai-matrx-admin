@@ -28,7 +28,7 @@ const EmailContent = () => {
         return <EmailContentFallback />;
     }
 
-    const email = Object.values(emails)[0] || {};
+    const email = Object.values(emails)[0];
     const activeEmail = {
         id: email.id || 'Unknown ID',
         sender: email.sender || 'Unknown Sender',
@@ -42,7 +42,6 @@ const EmailContent = () => {
     };
 
     return (
-
         <ScrollArea className="h-[75vh]">
             <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">

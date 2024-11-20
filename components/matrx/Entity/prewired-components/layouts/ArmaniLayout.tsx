@@ -1,5 +1,5 @@
 // EntityLayout.tsx
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, MutableRefObject} from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
@@ -99,13 +99,13 @@ const ExpandButton: React.FC<{
 );
 
 
-
 interface EnhancedCardProps {
-    children: React.ReactNode;
-    className?: string;
-    variants?: any;
-    noAnimation?: boolean;
-    cardRef?: React.RefObject<HTMLDivElement>;  // Add this instead of using ref directly
+    children: React.ReactNode,
+    className?: string,
+    variants?: any,
+    noAnimation?: boolean,
+    cardRef?: React.RefObject<HTMLDivElement>,
+    ref?: MutableRefObject<HTMLDivElement>
 }
 
 
@@ -127,7 +127,6 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = (
     const [selectHeight, setSelectHeight] = useState<number>(0);
     const rightColumnRef = useRef<HTMLDivElement>(null);
 
-    // Preserve existing resize observer functionality
     useEffect(() => {
         if (layoutVariant !== 'stacked' && rightColumnRef.current) {
             const observer = new ResizeObserver((entries) => {
@@ -201,7 +200,8 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = (
             className,
             variants,
             noAnimation,
-            cardRef
+            cardRef,
+            ref
         }) => (
         <motion.div
             variants={!noAnimation ? variants || cardVariants[animationPreset] : undefined}

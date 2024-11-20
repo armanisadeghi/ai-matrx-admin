@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card } from '@/components/ui/card';
+import React, {useState} from 'react';
+import {motion} from 'framer-motion';
+import {Card} from '@/components/ui/card';
 import {
     Select,
     SelectContent,
@@ -10,9 +10,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import {Switch} from "@/components/ui/switch";
+import {Label} from "@/components/ui/label";
+import {Button} from "@/components/ui/button";
 import {
     Settings2,
     Layout,
@@ -33,7 +33,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
+import {Separator} from "@/components/ui/separator";
 import EntityLayout, {
     LayoutVariant,
     ComponentDensity,
@@ -41,7 +41,7 @@ import EntityLayout, {
     ComponentSize,
     QuickReferenceComponentType,
 } from '@/components/matrx/Entity/prewired-components/layouts/EntityLayout';
-import {FormDirectionOptions, FormLayoutOptions } from '@/types/componentConfigTypes';
+import {FormDirectionOptions, FormLayoutOptions} from '@/types/componentConfigTypes';
 import {cn} from "@nextui-org/react";
 import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout';
 
@@ -69,7 +69,7 @@ const EntityPageClient = () => {
         density: 'normal' as ComponentDensity,
         animation: 'smooth' as AnimationPreset,
         size: 'md' as ComponentSize,
-        quickReferenceType: 'cardsEnhanced' as QuickReferenceComponentType,
+        quickReferenceType: 'list' as QuickReferenceComponentType,
         isFullScreen: false,
         formOptions: {
             formLayout: 'grid' as FormLayoutOptions,
@@ -80,27 +80,28 @@ const EntityPageClient = () => {
         }
     });
 
-    const [showControls, setShowControls] = useState(true);
+    const [showControls, setShowControls] = useState(false);
 
-    const SelectControl = ({
-                               label,
-                               icon: Icon,
-                               value,
-                               options,
-                               onChange,
-                           }: {
-        label: string;
-        icon: React.ElementType;
-        value: string;
-        options: readonly string[];
-        onChange: (value: any) => void;
-    }) => (
+    const SelectControl = (
+        {
+            label,
+            icon: Icon,
+            value,
+            options,
+            onChange,
+        }: {
+            label: string;
+            icon: React.ElementType;
+            value: string;
+            options: readonly string[];
+            onChange: (value: any) => void;
+        }) => (
         <div className="flex items-center gap-2 min-w-[250px] flex-shrink-0">
-            <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Icon className="h-4 w-4 text-muted-foreground shrink-0"/>
             <Label className="text-sm font-medium min-w-[80px]">{label}</Label>
             <Select value={value} onValueChange={onChange}>
                 <SelectTrigger className="w-[140px]">
-                    <SelectValue />
+                    <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
                     {options.map(option => (
@@ -113,7 +114,7 @@ const EntityPageClient = () => {
         </div>
     );
 
-    const ControlGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    const ControlGroup = ({title, children}: { title: string; children: React.ReactNode }) => (
         <div className="space-y-4 p-4 bg-card/50 rounded-lg">
             <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
             <div className="flex flex-wrap gap-4">
@@ -130,14 +131,14 @@ const EntityPageClient = () => {
                     icon={Layout}
                     value={settings.layout}
                     options={layoutOptions}
-                    onChange={(value: LayoutVariant) => setSettings(prev => ({ ...prev, layout: value }))}
+                    onChange={(value: LayoutVariant) => setSettings(prev => ({...prev, layout: value}))}
                 />
                 <SelectControl
                     label="Density"
                     icon={Layers}
                     value={settings.density}
                     options={densityOptions}
-                    onChange={(value: ComponentDensity) => setSettings(prev => ({ ...prev, density: value }))}
+                    onChange={(value: ComponentDensity) => setSettings(prev => ({...prev, density: value}))}
                 />
             </ControlGroup>
 
@@ -149,7 +150,7 @@ const EntityPageClient = () => {
                     options={formLayoutOptions}
                     onChange={(value: FormLayoutOptions) => setSettings(prev => ({
                         ...prev,
-                        formOptions: { ...prev.formOptions, formLayout: value }
+                        formOptions: {...prev.formOptions, formLayout: value}
                     }))}
                 />
                 <SelectControl
@@ -159,7 +160,7 @@ const EntityPageClient = () => {
                     options={directionOptions}
                     onChange={(value: FormDirectionOptions) => setSettings(prev => ({
                         ...prev,
-                        formOptions: { ...prev.formOptions, formDirection: value }
+                        formOptions: {...prev.formOptions, formDirection: value}
                     }))}
                 />
             </ControlGroup>
@@ -170,13 +171,16 @@ const EntityPageClient = () => {
                     icon={List}
                     value={settings.quickReferenceType}
                     options={quickReferenceOptions}
-                    onChange={(value: QuickReferenceComponentType) => setSettings(prev => ({ ...prev, quickReferenceType: value }))}
+                    onChange={(value: QuickReferenceComponentType) => setSettings(prev => ({
+                        ...prev,
+                        quickReferenceType: value
+                    }))}
                 />
                 <div className="flex items-center gap-2 min-w-[250px]">
                     <Switch
                         id="fullscreen"
                         checked={settings.isFullScreen}
-                        onCheckedChange={(checked) => setSettings(prev => ({ ...prev, isFullScreen: checked }))}
+                        onCheckedChange={(checked) => setSettings(prev => ({...prev, isFullScreen: checked}))}
                         className="data-[state=checked]:bg-primary"
                     />
                     <Label htmlFor="fullscreen" className="text-sm text-muted-foreground">
@@ -197,7 +201,8 @@ const EntityPageClient = () => {
                 layout
             >
                 <div className="h-full flex flex-col">
-                    <Card className="rounded-none border-x-0 border-t-0 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <Card
+                        className="rounded-none border-x-0 border-t-0 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">
@@ -207,9 +212,10 @@ const EntityPageClient = () => {
                                         onClick={() => setShowControls(!showControls)}
                                         className="text-muted-foreground hover:text-primary"
                                     >
-                                        {showControls ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+                                        {showControls ? <PanelLeftClose className="h-4 w-4"/> : <PanelLeftOpen
+                                            className="h-4 w-4"/>}
                                     </Button>
-                                    <Separator orientation="vertical" className="h-4" />
+                                    <Separator orientation="vertical" className="h-4"/>
                                     <span className="text-sm font-medium text-foreground">
                                     Layout Controls
                                   </span>
@@ -222,25 +228,26 @@ const EntityPageClient = () => {
                                             size="icon"
                                             className="hover:bg-primary hover:text-primary-foreground"
                                         >
-                                            <Settings2 className="h-4 w-4" />
+                                            <Settings2 className="h-4 w-4"/>
                                         </Button>
                                     </SheetTrigger>
-                                    <SheetContent side="right" className="w-[400px] overflow-y-auto bg-background/95 backdrop-blur">
+                                    <SheetContent side="right"
+                                                  className="w-[400px] overflow-y-auto bg-background/95 backdrop-blur">
                                         <SheetHeader>
                                             <SheetTitle>Layout Settings</SheetTitle>
                                             <SheetDescription>
                                                 Customize the appearance and behavior of the interface.
                                             </SheetDescription>
                                         </SheetHeader>
-                                        <Separator className="my-4" />
+                                        <Separator className="my-4"/>
                                         <div className="pr-6">
-                                            <Controls />
+                                            <Controls/>
                                         </div>
                                     </SheetContent>
                                 </Sheet>
                             </div>
 
-                            {showControls && <Controls />}
+                            {showControls && <Controls/>}
                         </div>
                     </Card>
 
@@ -254,7 +261,8 @@ const EntityPageClient = () => {
                             formOptions={{
                                 size: settings.size,
                                 formLayout: settings.formOptions.formLayout,
-                                formColumns: settings.formOptions.formColumns === 'auto' ? 'auto' : parseInt(settings.formOptions.formColumns),
+                                formColumns: settings.formOptions.formColumns === 'auto' ? 'auto'
+                                                                                         : parseInt(settings.formOptions.formColumns),
                                 formDirection: settings.formOptions.formDirection,
                                 formEnableSearch: settings.formOptions.formEnableSearch,
                                 formIsSinglePage: !settings.formOptions.formVariation.includes('MultiStep'),

@@ -49,3 +49,19 @@ export interface GridSettings {
 export interface ValidationStatus {
     [key: string]: boolean;
 }
+
+// Added for Strict Grid Concept.
+export interface GridDimensions {
+    readonly width: number;
+    readonly height: number;
+    readonly maxWidth: number;
+    readonly maxHeight: number;
+}
+
+/* Added for Strict Mode
+
+export interface GridItemProps extends React.HTMLAttributes<HTMLDivElement> {
+    area: number[] | GridArea;
+    enforceConstraints?: boolean; // Optional flag to allow some flexibility when needed
+    dimensions?: GridDimensions;
+}*/

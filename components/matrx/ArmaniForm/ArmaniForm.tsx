@@ -3,24 +3,30 @@
 import React, {useState, useRef} from "react";
 import {motion, AnimatePresence} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
-import AnimatedInput from "./AnimatedInput";
-import AnimatedTextarea from "./AnimatedTextarea";
-import AnimatedSelect from "./AnimatedSelect";
-import AnimatedCheckbox from "./AnimatedCheckbox";
-import AnimatedRadioGroup from "./AnimatedRadioGroup";
-import AnimatedButton from "./AnimatedButton";
-import {Input} from "@/components/ui/input";
-import {Slider} from "@/components/ui/slider";
-import {Switch} from "@/components/ui/switch";
-import {DatePicker} from "@/components/ui/date-picker";
-import {TimePicker} from "@/components/ui/time-picker";
-import {FullEditableJsonViewer} from "@/components/ui/JsonComponents";
-import {FileUpload} from "@/components/ui/file-upload";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ColorPicker from "@/components/ui/color-picker";
-import ImageDisplay from "@/components/ui/image-display";
-import StarRating from "@/components/ui/star-rating";
+import {EntityButton, EntityInput, EntityTextarea, EntitySelect, EntityCheckbox, EntityRadioGroup } from "./field-components";
+import {EntityTimePicker} from "@/components/matrx/ArmaniForm/field-components/time-picker";
+import EntityColorPicker from "@/components/matrx/ArmaniForm/field-components/EntityColorPicker";
+import EntityJsonEditor from "@/components/matrx/ArmaniForm/field-components/EntityJsonEditor";
+import EntityFileUpload from "@/components/matrx/ArmaniForm/field-components/EntityFileUpload";
+import EntityImageDisplay from "@/components/matrx/ArmaniForm/field-components/EntityImageDisplay";
+import EntityStarRating from "@/components/matrx/ArmaniForm/field-components/EntityStarRating";
+import {EntityDatePicker} from "@/components/matrx/ArmaniForm/field-components/EntityDatePicker";
+import {EntitySwitch} from "@/components/matrx/ArmaniForm/field-components/EntitySwitch";
+import {EntitySlider} from "@/components/matrx/ArmaniForm/field-components/EntitySlider";
+
+
+// import {Input} from "@/components/ui/input"; // search input
+// import {Slider} from "@/components/ui/slider";
+// import {Switch} from "@/components/ui/switch";
+// import {DatePicker} from "@/components/ui/date-picker";
+// import {TimePicker} from "@/components/ui/time-picker";
+// import {FullEditableJsonViewer} from "@/components/ui/JsonComponents";
+// import {FileUpload} from "@/components/ui/file-upload";
+// import ColorPicker from "@/components/ui/color-picker";
+// import ImageDisplay from "@/components/ui/image-display";
+// import StarRating from "@/components/ui/star-rating";
 
 export type FormFieldType =
     'text'
@@ -107,6 +113,8 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
         layout = 'grid',
         enableSearch = false,
         direction = 'row',
+        density = 'normal',
+        animationPreset = 'smooth',
         ...props
     }) => {
     const [internalCurrentStep, setInternalCurrentStep] = useState(0);
@@ -147,24 +155,24 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
             case 'password':
             case 'tel':
             case 'url':
-                return <AnimatedInput {...commonProps} />;
+                return <EntityInput {...commonProps} />;
             case 'textarea':
-                return <AnimatedTextarea {...commonProps} />;
+                return <EntityTextarea {...commonProps} />;
             case 'select':
-                return <AnimatedSelect {...commonProps} />;
+                return <EntitySelect {...commonProps} />;
             case 'checkbox':
                 return (
-                    <AnimatedCheckbox
+                    <EntityCheckbox
                         field={field}
                         checked={formState[field.name] || false}
                         onChange={(checked) => onUpdateField(field.name, checked)}
                     />
                 );
             case 'radio':
-                return <AnimatedRadioGroup layout="vertical" {...commonProps} />;
+                return <EntityRadioGroup layout="vertical" {...commonProps} />;
             case 'slider':
                 return (
-                    <Slider
+                    <EntitySlider
                         min={field.min}
                         max={field.max}
                         step={field.step}
@@ -174,14 +182,14 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
                 );
             case 'switch':
                 return (
-                    <Switch
+                    <EntitySwitch
                         checked={formState[field.name] || false}
                         onCheckedChange={(checked) => onUpdateField(field.name, checked)}
                     />
                 );
             case 'date':
                 return (
-                    <DatePicker
+                    <EntityDatePicker
                         value={formState[field.name]}
                         onChange={(date) => onUpdateField(field.name, date)}
                         placeholder={field.placeholder || 'Select a date'}
@@ -190,47 +198,43 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
                 );
             case 'time':
                 return (
-                    <TimePicker
+                    <EntityTimePicker
                         value={formState[field.name]}
                         onChange={(time) => onUpdateField(field.name, time)}
                     />
                 );
             case 'color':
                 return (
-                    <ColorPicker
+                    <EntityColorPicker
                         color={formState[field.name]}
                         onChange={(color) => onUpdateField(field.name, color)}
                     />
                 );
             case 'json':
                 return (
-                    <FullEditableJsonViewer
+                    <EntityJsonEditor
                         title={field.label}
                         data={formState[field.name]}
                         onChange={(json) => onUpdateField(field.name, json)}
-                        initialExpanded={true}
-                        maxHeight={'500px'}
-                        validateDelay={300}
-                        lockKeys={false}
-                        defaultEnhancedMode={true}
+                        isMinimized={false}
                     />
                 );
             case 'file':
                 return (
-                    <FileUpload
+                    <EntityFileUpload
                         onChange={(files) => onUpdateField(field.name, files)}
                     />
                 );
             case 'image':
                 return (
-                    <ImageDisplay
+                    <EntityImageDisplay
                         src={field.src || formState[field.name]}
                         alt={field.alt || field.label}
                     />
                 );
             case 'rating':
                 return (
-                    <StarRating
+                    <EntityStarRating
                         rating={formState[field.name] || 0}
                         onChange={(rating) => onUpdateField(field.name, rating)}
                         color={'amber'}
@@ -452,7 +456,7 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
                 className="space-y-6 h-full"
             >
                 {enableSearch && (
-                    <Input
+                    <EntitySearchInput
                         type="text"
                         placeholder="Search fields..."
                         value={searchTerm}
@@ -495,7 +499,7 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
                     transition={{delay: 0.3, duration: 0.5}}
                 >
                     {!isSinglePage && (
-                        <AnimatedButton
+                        <EntityButton
                             onClick={() => {
                                 if (currentStep > 0) onPrevStep();
                             }}
@@ -503,21 +507,21 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
                             className="space-y-6 bg-secondary text-secondary-foreground"
                         >
                             Previous
-                        </AnimatedButton>
+                        </EntityButton>
                     )}
                     {isSinglePage || currentStep === fields.length - 1 ? (
-                        <AnimatedButton type="submit" className="bg-primary text-primary-foreground">
+                        <EntityButton type="submit" className="bg-primary text-primary-foreground">
                             Submit
-                        </AnimatedButton>
+                        </EntityButton>
                     ) : (
-                         <AnimatedButton
+                        <EntityButton
                              onClick={() => {
                                  if (currentStep < fields.length - 1) onNextStep();
                              }}
                              className="bg-primary text-primary-foreground"
                          >
                              Next
-                         </AnimatedButton>
+                         </EntityButton>
                      )}
                 </motion.div>
             </form>
