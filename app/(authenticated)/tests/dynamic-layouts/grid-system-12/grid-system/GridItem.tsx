@@ -9,6 +9,8 @@ export const GridItem: React.FC<GridItemProps> = (
         children,
         className = '',
         onClick,
+        onMouseDown,
+        onMouseEnter,
         style = {},
     }) => {
     const gridArea: GridArea = Array.isArray(area)
@@ -20,6 +22,8 @@ export const GridItem: React.FC<GridItemProps> = (
             id={id}
             className={`${className}`}
             onClick={onClick}
+            onMouseDown={onMouseDown}
+            onMouseEnter={onMouseEnter}
             style={{
                 gridArea: `${gridArea.rowStart} / ${gridArea.colStart} / ${gridArea.rowEnd} / ${gridArea.colEnd}`,
                 ...style,

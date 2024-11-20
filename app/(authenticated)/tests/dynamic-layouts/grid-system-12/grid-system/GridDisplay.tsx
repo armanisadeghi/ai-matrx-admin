@@ -29,6 +29,11 @@ export const GridDisplay: React.FC = () => {
     const [newContainerName, setNewContainerName] = useState('');
     const [settings, setSettings] = useState<GridSettings>({gap: GRID_CONFIG.DEFAULT_GAP});
 
+    // New state for drag selection
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState<number | null>(null);
+    const [lastHoveredBox, setLastHoveredBox] = useState<number | null>(null);
+
     // Custom Hooks
     const {dimensions} = useGridDimensions(containerRef);
     const {
@@ -37,8 +42,8 @@ export const GridDisplay: React.FC = () => {
         getValidationMessage
     } = useContainerValidation(containers);
 
-    // Container Management Handlers
-    const handleBoxClick = (boxNumber: number) => {
+    // Modified box interaction handlers
+    const handleBoxSelection = (boxNumber: number) => {
         if (!activeContainer) return;
 
         setContainers(prevContainers => {
@@ -67,6 +72,45 @@ export const GridDisplay: React.FC = () => {
         });
     };
 
+    // New drag selection handlers
+    const handleMouseDown = (boxNumber: number) => {
+        if (!activeContainer) return;
+        setIsDragging(true);
+        setDragStart(boxNumber);
+        setLastHoveredBox(boxNumber);
+        handleBoxSelection(boxNumber);
+    };
+
+    const handleMouseEnter = (boxNumber: number) => {
+        if (!isDragging || !activeContainer) return;
+
+        if (boxNumber !== lastHoveredBox) {
+            handleBoxSelection(boxNumber);
+            setLastHoveredBox(boxNumber);
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        setDragStart(null);
+        setLastHoveredBox(null);
+    };
+
+    // Add event listener for mouse up outside grid
+    React.useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            if (isDragging) {
+                handleMouseUp();
+            }
+        };
+
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => {
+            window.removeEventListener('mouseup', handleGlobalMouseUp);
+        };
+    }, [isDragging]);
+
+    // Existing container management handlers
     const handleMergeContainer = () => {
         if (!activeContainer || !isContainerValid(activeContainer)) return;
 
@@ -234,8 +278,10 @@ export const GridDisplay: React.FC = () => {
                                                 aspect-square
                             ${container?.merged ? 'z-10' : ''}
                             ${activeContainer ? 'hover:shadow-md hover:scale-105' : ''}
+                                        ${isDragging ? 'select-none' : ''}
                         `}
-                                    onClick={() => !container?.merged && handleBoxClick(number)}
+                                    onMouseDown={() => !container?.merged && handleMouseDown(number)}
+                                    onMouseEnter={() => !container?.merged && handleMouseEnter(number)}
                                 >
                                     {container?.merged ? container.name : number}
                                 </GridItem>

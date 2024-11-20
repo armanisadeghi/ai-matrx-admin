@@ -2,16 +2,38 @@
 import { GridArea, GridLayout } from './gridTypes';
 
 export const GRID_CONFIG = {
+    // Grid Structure
     ROWS: 24,
     COLUMNS: 24,
+
+    // Grid Calculations
+    GRID_START_INDEX: 1,
+    GRID_ADJUSTMENT: 1,
+
+    // Layout Settings
     DEFAULT_GAP: 1,
     MIN_GAP: 0,
     MAX_GAP: 16,
     GAP_STEP: 1,
+    TOOLBAR_HEIGHT: 48,  // Added
+    CONTAINER_PADDING: 16, // Added
+
+    // UI Settings
     DEFAULT_CONTAINER_NAME: 'Container',
-    GRID_START_INDEX: 1,
-    GRID_ADJUSTMENT: 1,
-};
+    TOOLBAR_CLASS: 'bg-secondary/10 p-2',  // Added
+
+    // Layout Measurements
+    DIMENSIONS: {
+        TOOLBAR: {
+            HEIGHT: 48,
+            PADDING: 8,
+        },
+        CONTAINER: {
+            PADDING: 16,
+            GAP: 16,
+        },
+    }
+} as const;
 
 export const GRID_DEFAULTS = {
     EMPTY_AREA: {
@@ -22,6 +44,10 @@ export const GRID_DEFAULTS = {
     } as GridArea,
     CONTAINER_COLOR_INDEX: 0,
     MERGED_STATUS: false,
+    DIMENSIONS: {
+        width: 0,
+        height: 0
+    }
 } as const;
 
 export const containerColors = [

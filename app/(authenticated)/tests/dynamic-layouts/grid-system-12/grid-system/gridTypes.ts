@@ -17,6 +17,8 @@ export type GridItemProps = {
     children?: React.ReactNode;
     className?: string;
     onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+    onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void;
+    onMouseEnter?: (event: React.MouseEvent<HTMLDivElement>) => void;
     style?: React.CSSProperties;
 };
 

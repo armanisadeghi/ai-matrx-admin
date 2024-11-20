@@ -78,7 +78,13 @@ export const GridToolbar: React.FC<GridToolbarProps> = (
     const [newName, setNewName] = useState('');
 
     return (
-        <div className="flex items-center gap-2 p-2 bg-secondary/10">
+        <div
+            className={`flex items-center gap-2 ${GRID_CONFIG.TOOLBAR_CLASS}`}
+            style={{
+                height: `${GRID_CONFIG.DIMENSIONS.TOOLBAR.HEIGHT}px`,
+                padding: `${GRID_CONFIG.DIMENSIONS.TOOLBAR.PADDING}px`
+            }}
+        >
             {/* Container Creation Section */}
             <div className="flex items-center gap-2">
                 <Input
@@ -137,7 +143,7 @@ export const GridToolbar: React.FC<GridToolbarProps> = (
                             onClick={() => onContainerActivate(container.id)}
                         >
                             {container.name} ({container.boxes.length})
-                {!validationStatus[container.id]?.isValid && container.boxes.length > 0 && (
+                            {!validationStatus[container.id]?.isValid && container.boxes.length > 0 && (
                                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full"/>
                             )}
                         </Button>

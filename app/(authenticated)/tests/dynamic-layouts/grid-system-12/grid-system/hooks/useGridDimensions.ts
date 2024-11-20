@@ -1,6 +1,6 @@
 // hooks/useGridDimensions.ts
 import { useState, useEffect, RefObject } from 'react';
-import { GRID_CONFIG } from '../config';
+import {GRID_CONFIG, GRID_DEFAULTS} from '../config';
 
 interface Dimensions {
     width: number;
@@ -8,16 +8,21 @@ interface Dimensions {
 }
 
 export const useGridDimensions = (containerRef: RefObject<HTMLDivElement>) => {
-    const [dimensions, setDimensions] = useState<Dimensions>({ width: 0, height: 0 });
+    const [dimensions, setDimensions] = useState<Dimensions>(GRID_DEFAULTS.DIMENSIONS);
 
     const updateDimensions = () => {
         if (containerRef.current) {
             const parent = containerRef.current.parentElement;
             if (parent) {
-                const adminBarHeight = GRID_CONFIG.TOOLBAR_HEIGHT;
-                const padding = GRID_CONFIG.CONTAINER_PADDING;
-                const availableHeight = parent.clientHeight - adminBarHeight - (padding * 2);
-                const availableWidth = parent.clientWidth - (padding * 2);
+                const { HEIGHT: toolbarHeight, PADDING: toolbarPadding } = GRID_CONFIG.DIMENSIONS.TOOLBAR;
+                const { PADDING: containerPadding } = GRID_CONFIG.DIMENSIONS.CONTAINER;
+
+                const totalVerticalSpace = toolbarHeight + (toolbarPadding * 2) + (containerPadding * 2);
+                const totalHorizontalSpace = containerPadding * 2;
+
+                const availableHeight = parent.clientHeight - totalVerticalSpace;
+                const availableWidth = parent.clientWidth - totalHorizontalSpace;
+
                 setDimensions({
                     width: availableWidth,
                     height: availableHeight
