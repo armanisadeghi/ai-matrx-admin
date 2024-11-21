@@ -3,9 +3,17 @@
 import React, {useState, useRef} from "react";
 import {motion, AnimatePresence} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {EntityButton, EntityInput, EntityTextarea, EntitySelect, EntityCheckbox, EntityRadioGroup } from "./field-components";
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {
+    EntityButton,
+    EntityInput,
+    EntityTextarea,
+    EntitySelect,
+    EntityCheckbox,
+    EntityRadioGroup,
+    EntityUUIDArray
+} from "./field-components";
 import {EntityTimePicker} from "@/components/matrx/ArmaniForm/field-components/time-picker";
 import EntityColorPicker from "@/components/matrx/ArmaniForm/field-components/EntityColorPicker";
 import EntityJsonEditor from "@/components/matrx/ArmaniForm/field-components/EntityJsonEditor";
@@ -15,18 +23,17 @@ import EntityStarRating from "@/components/matrx/ArmaniForm/field-components/Ent
 import {EntityDatePicker} from "@/components/matrx/ArmaniForm/field-components/EntityDatePicker";
 import {EntitySwitch} from "@/components/matrx/ArmaniForm/field-components/EntitySwitch";
 import {EntitySlider} from "@/components/matrx/ArmaniForm/field-components/EntitySlider";
-
-
-// import {Input} from "@/components/ui/input"; // search input
-// import {Slider} from "@/components/ui/slider";
-// import {Switch} from "@/components/ui/switch";
-// import {DatePicker} from "@/components/ui/date-picker";
-// import {TimePicker} from "@/components/ui/time-picker";
-// import {FullEditableJsonViewer} from "@/components/ui/JsonComponents";
-// import {FileUpload} from "@/components/ui/file-upload";
-// import ColorPicker from "@/components/ui/color-picker";
-// import ImageDisplay from "@/components/ui/image-display";
-// import StarRating from "@/components/ui/star-rating";
+import EntitySearchInput from "@/components/matrx/ArmaniForm/field-components/EntitySearchInput";
+import {EntityNumberInput} from "./field-components/EntityNumberInput";
+import {EntityPhoneInput} from "@/components/matrx/ArmaniForm/field-components/EntityPhoneInput";
+import {
+    cardVariants, containerVariants,
+    densityConfig,
+    getAnimationVariants,
+    spacingConfig,
+} from "../Entity/prewired-components/layouts/layout-sections/config";
+import ActionFieldWrapper from "./action-system/ActionFieldWrapper";
+import {EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 
 export type FormFieldType =
     'text'
@@ -52,24 +59,6 @@ export type FormFieldType =
     | 'image'
     | 'rating';
 
-export interface FlexFormField {
-    name: string;
-    label: string;
-    type: FormFieldType;
-    options?: string[];
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    section?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-    accept?: string;
-    multiple?: boolean;
-    src?: string;
-    alt?: string;
-    jsonSchema?: object;
-}
 
 export interface FormState {
     [key: string]: any;
@@ -79,7 +68,7 @@ export type FormDensity = 'normal' | 'compact' | 'comfortable';
 export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
 
 export interface FlexAnimatedFormProps {
-    fields: FlexFormField[];
+    fields: EntityFlexFormField[];
     formState: FormState;
     onUpdateField: (name: string, value: any) => void;
     onSubmit: () => void;
@@ -96,6 +85,7 @@ export interface FlexAnimatedFormProps {
     density?: FormDensity;
     animationPreset?: AnimationPreset;
 }
+
 
 const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
     {
@@ -122,6 +112,9 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
     const formRef = useRef<HTMLDivElement>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [carouselActiveIndex, setCarouselActiveIndex] = useState(0);
+    const formVariants = getAnimationVariants(animationPreset);
+    const containerSpacing = densityConfig[density].spacing;
+    const densityStyles = spacingConfig[density];
 
     const internalOnNextStep = () => {
         setInternalCurrentStep((prevStep) => Math.min(prevStep + 1, fields.length - 1));
@@ -141,403 +134,548 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
         )
                            : fields;
 
-    const renderField = (field: FlexFormField) => {
+    const renderField = (field: EntityFlexFormField) => {
+        console.log('ArmaniForm renderField called with:', {
+            field,
+            hasActionKeys: !!field.actionKeys,
+            type: field.defaultComponent || field.type
+        });
+
         const commonProps = {
             field,
             value: formState[field.name] || '',
             onChange: (value: any) => onUpdateField(field.name, value),
+            componentProps: field.componentProps || {},
+            density,
+            animationPreset,
         };
 
-        switch (field.type) {
-            case 'text':
-            case 'email':
-            case 'number':
-            case 'password':
-            case 'tel':
-            case 'url':
-                return <EntityInput {...commonProps} />;
-            case 'textarea':
-                return <EntityTextarea {...commonProps} />;
-            case 'select':
-                return <EntitySelect {...commonProps} />;
-            case 'checkbox':
-                return (
-                    <EntityCheckbox
-                        field={field}
-                        checked={formState[field.name] || false}
-                        onChange={(checked) => onUpdateField(field.name, checked)}
-                    />
-                );
-            case 'radio':
-                return <EntityRadioGroup layout="vertical" {...commonProps} />;
-            case 'slider':
-                return (
-                    <EntitySlider
-                        min={field.min}
-                        max={field.max}
-                        step={field.step}
-                        value={[formState[field.name] || field.min]}
-                        onValueChange={(value) => onUpdateField(field.name, value[0])}
-                    />
-                );
-            case 'switch':
-                return (
-                    <EntitySwitch
-                        checked={formState[field.name] || false}
-                        onCheckedChange={(checked) => onUpdateField(field.name, checked)}
-                    />
-                );
-            case 'date':
-                return (
-                    <EntityDatePicker
-                        value={formState[field.name]}
-                        onChange={(date) => onUpdateField(field.name, date)}
-                        placeholder={field.placeholder || 'Select a date'}
-                        formatString={'MM/dd/yyyy'}
-                    />
-                );
-            case 'time':
-                return (
-                    <EntityTimePicker
-                        value={formState[field.name]}
-                        onChange={(time) => onUpdateField(field.name, time)}
-                    />
-                );
-            case 'color':
-                return (
-                    <EntityColorPicker
-                        color={formState[field.name]}
-                        onChange={(color) => onUpdateField(field.name, color)}
-                    />
-                );
-            case 'json':
-                return (
-                    <EntityJsonEditor
-                        title={field.label}
-                        data={formState[field.name]}
-                        onChange={(json) => onUpdateField(field.name, json)}
-                        isMinimized={false}
-                    />
-                );
-            case 'file':
-                return (
-                    <EntityFileUpload
-                        onChange={(files) => onUpdateField(field.name, files)}
-                    />
-                );
-            case 'image':
-                return (
-                    <EntityImageDisplay
-                        src={field.src || formState[field.name]}
-                        alt={field.alt || field.label}
-                    />
-                );
-            case 'rating':
-                return (
-                    <EntityStarRating
-                        rating={formState[field.name] || 0}
-                        onChange={(rating) => onUpdateField(field.name, rating)}
-                        color={'amber'}
-                        size={'md'}
-                        disabled={field.disabled || false}
-                        viewOnly={false}
-                    />
-                );
-            default:
-                return null;
-        }
-    };
+        const baseField = () => {
+            console.log('baseField called for:', field.name);
+            switch (field.defaultComponent) {
+                case 'input':
+                    return <EntityInput {...commonProps} />;
+                case 'textarea':
+                    return <EntityTextarea {...commonProps} />;
+                case 'switch':
+                    return (
+                        <EntitySwitch
+                            checked={formState[field.name] || false}
+                            onCheckedChange={(checked) => onUpdateField(field.name, checked)}
+                        />
+                    );
+                case 'uuidArray':
+                    return <EntityUUIDArray {...commonProps} />;
+                case 'number':
+                    return <EntityNumberInput {...commonProps} />;
 
-    const getGridColumns = () => {
-        if (typeof columns === 'object') {
-            return `grid-cols-${columns.xs} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
-        }
-        if (columns === 'auto') {
-            return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
-        }
-        switch (columns) {
-            case 1:
-                return 'grid-cols-1';
-            case 2:
-                return 'grid-cols-1 sm:grid-cols-2';
-            case 3:
-                return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
-            case 4:
-                return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
-            case 5:
-                return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
-            case 6:
-                return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6';
-            default:
-                return 'grid-cols-1';
-        }
-    };
+                case 'select':
+                    return <EntitySelect {...commonProps} />;
+                case 'checkbox':
+                    return (
+                        <EntityCheckbox
+                            field={field}
+                            checked={formState[field.name] || false}
+                            onChange={(checked) => onUpdateField(field.name, checked)}
+                        />
+                    );
+                case 'radio':
+                    return <EntityRadioGroup layout="vertical" {...commonProps} />;
+                case 'slider':
+                    return (
+                        <EntitySlider
+                            min={field.min}
+                            max={field.max}
+                            step={field.step}
+                            value={[formState[field.name] || field.min]}
+                            onValueChange={(value) => onUpdateField(field.name, value[0])}
+                        />
+                    );
+                case 'date':
+                    return (
+                        <EntityDatePicker
+                            value={formState[field.name]}
+                            onChange={(date) => onUpdateField(field.name, date)}
+                            placeholder={field.placeholder || 'Select a date'}
+                            formatString={'MM/dd/yyyy'}
+                        />
+                    );
+                case 'datetime':
+                    return (
+                        <EntityDatePicker
+                            value={formState[field.name]}
+                            onChange={(date) => onUpdateField(field.name, date)}
+                            placeholder={field.placeholder || 'Select a date'}
+                            formatString={'MM/dd/yyyy'}
+                        />
+                    );
 
-    const getFlexDirection = () => {
-        switch (direction) {
-            case 'row':
-                return 'flex-row';
-            case 'row-reverse':
-                return 'flex-row-reverse';
-            case 'column':
-                return 'flex-col';
-            case 'column-reverse':
-                return 'flex-col-reverse';
-            default:
-                return 'flex-row';
+                case 'time':
+                    return (
+                        <EntityTimePicker
+                            value={formState[field.name]}
+                            onChange={(time) => onUpdateField(field.name, time)}
+                        />
+                    );
+                case 'tel':
+                    return <EntityPhoneInput {...commonProps} />;
+
+                case 'color':
+                    return (
+                        <EntityColorPicker
+                            color={formState[field.name]}
+                            onChange={(color) => onUpdateField(field.name, color)}
+                        />
+                    );
+                case 'json':
+                    return (
+                        <EntityJsonEditor
+                            title={field.label}
+                            data={formState[field.name]}
+                            onChange={(json) => onUpdateField(field.name, json)}
+                            isMinimized={false}
+                        />
+                    );
+                case 'file':
+                    return (
+                        <EntityFileUpload
+                            onChange={(files) => onUpdateField(field.name, files)}
+                        />
+                    );
+                case 'image':
+                    return (
+                        <EntityImageDisplay
+                            src={field.src || formState[field.name]}
+                            alt={field.alt || field.label}
+                        />
+                    );
+                case 'rating':
+                    return (
+                        <EntityStarRating
+                            rating={formState[field.name] || 0}
+                            onChange={(rating) => onUpdateField(field.name, rating)}
+                            color={'amber'}
+                            size={'md'}
+                            disabled={field.disabled || false}
+                            viewOnly={false}
+                        />
+                    );
+                case 'text':
+                    console.log('ERROR ------- ERROR!!!!  Field Type TEXT, which should not exist:', field.type);
+                    return <EntityInput {...commonProps} />;
+
+                case 'email':
+                case 'password':
+                case 'url':
+                    return <EntityInput {...commonProps} />;
+                default:
+
+
+
+                    console.log('ERROR ------- ERROR!!!!  Unknown field type:', field.type, 'defaultComponent:', field.defaultComponent);
+                    return null;
+            }
+        };
+
+        if (!field.actionKeys?.length) {
+            console.log('No actions, returning base field for:', field.name);
+            return baseField();
         }
-    };
 
-    const renderGridLayout = () => (
-        <div className={cn("grid gap-6", getGridColumns(), getFlexDirection())}>
-            <AnimatePresence>
-                {filteredFields.map((field, index) => (
-                    <motion.div
-                        key={field.name}
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: index * 0.1, duration: 0.3}}
-                    >
-                        {renderField(field)}
-                    </motion.div>
-                ))}
-            </AnimatePresence>
-        </div>
-    );
-
-    const renderSectionsLayout = () => {
-        const sections = [...new Set(filteredFields.map(field => field.section || 'Default'))];
+        console.log('Wrapping field with actions:', field.name);
         return (
-            <div className="space-y-8">
-                {sections.map(section => (
-                    <div key={section} className="border-b pb-6">
-                        <h3 className="text-lg font-semibold mb-4">{section}</h3>
-                        <div className={cn("grid gap-6", getGridColumns())}>
-                            {filteredFields
-                                .filter(field => (field.section || 'Default') === section)
-                                .map(field => renderField(field))}
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <ActionFieldWrapper
+                field={field}
+                value={commonProps.value}
+                onChange={commonProps.onChange}
+                renderBaseField={baseField}
+                density={density}
+                animationPreset={animationPreset}
+                renderField={renderField}
+            />
         );
     };
 
-    const renderAccordionLayout = () => {
-        const sections = [...new Set(filteredFields.map(field => field.section || 'Default'))];
-        return (
-            <Accordion type="single" collapsible className="w-full">
-                {sections.map(section => (
-                    <AccordionItem key={section} value={section}>
-                        <AccordionTrigger>{section}</AccordionTrigger>
-                        <AccordionContent>
-                            <div className={cn("grid gap-6", getGridColumns())}>
+        const getGridColumns = () => {
+            if (typeof columns === 'object') {
+                return `grid-cols-${columns.xs} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
+            }
+            if (columns === 'auto') {
+                return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+            }
+            switch (columns) {
+                case 1:
+                    return 'grid-cols-1';
+                case 2:
+                    return 'grid-cols-1 sm:grid-cols-2';
+                case 3:
+                    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+                case 4:
+                    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+                case 5:
+                    return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+                case 6:
+                    return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6';
+                default:
+                    return 'grid-cols-1';
+            }
+        };
+
+        const getFlexDirection = () => {
+            switch (direction) {
+                case 'row':
+                    return 'flex-row';
+                case 'row-reverse':
+                    return 'flex-row-reverse';
+                case 'column':
+                    return 'flex-col';
+                case 'column-reverse':
+                    return 'flex-col-reverse';
+                default:
+                    return 'flex-row';
+            }
+        };
+
+        const renderGridLayout = () => (
+            <div className={cn("grid", containerSpacing, getGridColumns(), getFlexDirection())}>
+                <AnimatePresence>
+                    {filteredFields.map((field, index) => (
+                        <motion.div
+                            key={field.name}
+                            variants={cardVariants[animationPreset]}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            transition={{delay: index * 0.1}}
+                        >
+                            {renderField(field)}
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
+        );
+
+        const renderSectionsLayout = () => {
+            const sections = [...new Set(filteredFields.map(field => field.section || 'Default'))];
+            return (
+                <div className={densityStyles.container}>
+                    {sections.map(section => (
+                        <div key={section} className={cn("border-b", densityStyles.padding)}>
+                            <h3 className={cn(
+                                "font-semibold mb-4",
+                                densityConfig[density].fontSize
+                            )}>{section}</h3>
+                            <div className={cn(
+                                "grid",
+                                densityConfig[density].spacing,
+                                getGridColumns()
+                            )}>
                                 {filteredFields
                                     .filter(field => (field.section || 'Default') === section)
-                                    .map(field => renderField(field))}
+                                    .map(field => (
+                                        <div key={`${section}-${field.name}`}>
+                                            {renderField(field)}
+                                        </div>
+                                    ))}
                             </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-        );
-    };
+                        </div>
+                    ))}
+                </div>
+            );
+        };
 
-    const renderTabsLayout = () => {
-        const sections = [...new Set(filteredFields.map(field => field.section || 'Default'))];
-        return (
-            <Tabs defaultValue={sections[0]} className="w-full">
-                <TabsList>
+        const renderAccordionLayout = () => {
+            const sections = [...new Set(filteredFields.map(field => field.section || 'Default'))];
+            return (
+                <Accordion
+                    type="single"
+                    collapsible
+                    className={cn("w-full", densityStyles.container)}
+                >
                     {sections.map(section => (
-                        <TabsTrigger key={section} value={section}>{section}</TabsTrigger>
+                        <AccordionItem key={section} value={section}>
+                            <AccordionTrigger className={densityConfig[density].fontSize}>
+                                {section}
+                            </AccordionTrigger>
+                            <AccordionContent className={densityStyles.padding}>
+                                <div className={cn(
+                                    "grid",
+                                    densityConfig[density].spacing,
+                                    getGridColumns()
+                                )}>
+                                    {filteredFields
+                                        .filter(field => (field.section || 'Default') === section)
+                                        .map(field => (
+                                            <div key={`${section}-${field.name}`}>
+                                                {renderField(field)}
+                                            </div>
+                                        ))}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
                     ))}
-                </TabsList>
-                {sections.map(section => (
-                    <TabsContent key={section} value={section}>
-                        <div className={cn("grid gap-6", getGridColumns())}>
-                            {filteredFields
-                                .filter(field => (field.section || 'Default') === section)
-                                .map(field => renderField(field))}
-                        </div>
-                    </TabsContent>
-                ))}
-            </Tabs>
-        );
-    };
+                </Accordion>
+            );
+        };
 
-    const renderMasonryLayout = () => (
-        <div className={cn("columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6", getFlexDirection())}>
-            {filteredFields.map((field, index) => (
-                <div key={field.name} className="mb-6 break-inside-avoid">
-                    {renderField(field)}
-                </div>
-            ))}
-        </div>
-    );
-
-    const renderCarouselLayout = () => {
-        return (
-            <div className="relative overflow-hidden">
-                <div className={cn("flex transition-transform duration-300 ease-in-out", getFlexDirection())}
-                     style={{transform: `translateX(-${carouselActiveIndex * 100}%)`}}>
-                    {filteredFields.map((field, index) => (
-                        <div key={field.name} className="w-full flex-shrink-0">
-                            {renderField(field)}
-                        </div>
+        const renderTabsLayout = () => {
+            const sections = [...new Set(filteredFields.map(field => field.section || 'Default'))];
+            return (
+                <Tabs defaultValue={sections[0]} className={cn("w-full", densityStyles.container)}>
+                    <TabsList className={densityConfig[density].fontSize}>
+                        {sections.map(section => (
+                            <TabsTrigger key={section} value={section}>
+                                {section}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                    {sections.map(section => (
+                        <TabsContent
+                            key={section}
+                            value={section}
+                            className={densityStyles.padding}
+                        >
+                            <div className={cn(
+                                "grid",
+                                densityConfig[density].spacing,
+                                getGridColumns()
+                            )}>
+                                {filteredFields
+                                    .filter(field => (field.section || 'Default') === section)
+                                    .map(field => (
+                                        <div key={`${section}-${field.name}`}>
+                                            {renderField(field)}
+                                        </div>
+                                    ))}
+                            </div>
+                        </TabsContent>
                     ))}
-                </div>
-                <button onClick={() => setCarouselActiveIndex((prev) => Math.max(prev - 1, 0))}
-                        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-primary text-primary-foreground p-2 rounded-full">
-                    &lt;
-                </button>
-                <button onClick={() => setCarouselActiveIndex((prev) => Math.min(prev + 1, filteredFields.length - 1))}
-                        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-primary text-primary-foreground p-2 rounded-full">
-                    &gt;
-                </button>
-            </div>
-        );
-    };
+                </Tabs>
+            );
+        };
 
-    const renderTimelineLayout = () => (
-        <div className={cn("relative", getFlexDirection())}>
-            {filteredFields.map((field, index) => (
-                <div key={field.name} className="mb-8 flex">
-                    <div
-                        className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                        {index + 1}
-                    </div>
-                    <div className="ml-4 flex-grow">
+        const renderMasonryLayout = () => (
+            <div className={cn(
+                "columns-1 sm:columns-2 lg:columns-3 xl:columns-4",
+                densityConfig[density].spacing,
+                getFlexDirection()
+            )}>
+                {filteredFields.map((field) => (
+                    <div key={field.name} className={cn(
+                        "break-inside-avoid",
+                        densityStyles.padding
+                    )}>
                         {renderField(field)}
                     </div>
-                </div>
-            ))}
-        </div>
-    );
+                ))}
+            </div>
+        );
 
-    const renderLayout = () => {
-        switch (layout) {
-            case 'sections':
-                return renderSectionsLayout();
-            case 'accordion':
-                return renderAccordionLayout();
-            case 'tabs':
-                return renderTabsLayout();
-            case 'masonry':
-                return renderMasonryLayout();
-            case 'carousel':
-                return renderCarouselLayout();
-            case 'timeline':
-                return renderTimelineLayout();
-            case 'grid':
-            default:
-                return renderGridLayout();
-        }
+        const renderCarouselLayout = () => {
+            return (
+                <div className="relative overflow-hidden">
+                    <div className={cn(
+                        "flex transition-transform duration-300 ease-in-out",
+                        densityConfig[density].spacing,
+                        getFlexDirection()
+                    )}
+                         style={{transform: `translateX(-${carouselActiveIndex * 100}%)`}}>
+                        {filteredFields.map((field) => (
+                            <div key={field.name} className={cn(
+                                "w-full flex-shrink-0",
+                                densityStyles.padding
+                            )}>
+                                {renderField(field)}
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setCarouselActiveIndex((prev) => Math.max(prev - 1, 0))}
+                        className={cn(
+                            "absolute left-0 top-1/2 transform -translate-y-1/2",
+                            "bg-primary text-primary-foreground rounded-full",
+                            densityStyles.padding
+                        )}
+                    >
+                        &lt;
+                    </button>
+                    <button
+                        onClick={() => setCarouselActiveIndex((prev) =>
+                            Math.min(prev + 1, filteredFields.length - 1)
+                        )}
+                        className={cn(
+                            "absolute right-0 top-1/2 transform -translate-y-1/2",
+                            "bg-primary text-primary-foreground rounded-full",
+                            densityStyles.padding
+                        )}
+                    >
+                        &gt;
+                    </button>
+                </div>
+            );
+        };
+
+        const renderTimelineLayout = () => (
+            <div className={cn(
+                "relative",
+                densityStyles.container,
+                getFlexDirection()
+            )}>
+                {filteredFields.map((field, index) => (
+                    <div key={field.name} className={cn(
+                        "flex",
+                        densityStyles.padding
+                    )}>
+                        <div className={cn(
+                            "flex-shrink-0 rounded-full bg-primary",
+                            "flex items-center justify-center text-primary-foreground",
+                            densityConfig[density].iconSize
+                        )}>
+                            {index + 1}
+                        </div>
+                        <div className={cn(
+                            "flex-grow",
+                            densityStyles.padding
+                        )}>
+                            {renderField(field)}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+
+        const renderLayout = () => {
+            switch (layout) {
+                case 'sections':
+                    return renderSectionsLayout();
+                case 'accordion':
+                    return renderAccordionLayout();
+                case 'tabs':
+                    return renderTabsLayout();
+                case 'masonry':
+                    return renderMasonryLayout();
+                case 'carousel':
+                    return renderCarouselLayout();
+                case 'timeline':
+                    return renderTimelineLayout();
+                case 'grid':
+                default:
+                    return renderGridLayout();
+            }
+        };
+
+        return (
+            <motion.div
+                ref={formRef}
+                className={cn(
+                    "bg-card rounded-lg",
+                    isFullPage ? "w-full h-full" : "max-w-md mx-auto mt-2 shadow-xl",
+                    densityConfig[density].padding.md,
+                    className
+                )}
+                variants={containerVariants[animationPreset]}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+            >
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        onSubmit();
+                    }}
+                    className={cn("h-full", densityStyles.container)}
+                >
+                    {enableSearch && (
+                        <EntitySearchInput
+                            type="text"
+                            placeholder="Search fields..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className={densityStyles.inputSize}
+                        />
+                    )}
+
+                    <div className={cn(
+                        isFullPage ? "h-[calc(100%-4rem)] overflow-y-auto" : "",
+                        densityStyles.section
+                    )}>
+                        {isSinglePage ? renderLayout() : (
+                            <>
+                                <motion.h2
+                                    className={cn(
+                                        "font-bold mb-4 text-foreground",
+                                        isFullPage ? "text-3xl" : "text-2xl",
+                                        densityConfig[density].fontSize
+                                    )}
+                                    variants={cardVariants[animationPreset]}
+                                >
+                                    {fields[currentStep].label}
+                                </motion.h2>
+
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={currentStep}
+                                        variants={getAnimationVariants(animationPreset)}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                    >
+                                        {renderField(fields[currentStep])}
+                                    </motion.div>
+                                </AnimatePresence>
+                            </>
+                        )}
+                    </div>
+
+                    <motion.div
+                        className={cn("flex justify-between", densityStyles.gap)}
+                        variants={cardVariants[animationPreset]}
+                    >
+                        {/* Button components with density-aware styling */}
+                        {!isSinglePage && (
+                            <EntityButton
+                                onClick={() => {
+                                    if (currentStep > 0) onPrevStep();
+                                }}
+                                disabled={currentStep === 0}
+                                className={cn(
+                                    "space-y-6 bg-secondary text-secondary-foreground",
+                                    densityStyles.buttonSize
+                                )}
+                            >
+                                Previous
+                            </EntityButton>
+                        )}
+                        {isSinglePage || currentStep === fields.length - 1 ? (
+                            <EntityButton type="submit" className="bg-primary text-primary-foreground">
+                                Submit
+                            </EntityButton>
+                        ) : (
+                             <EntityButton
+                                 onClick={() => {
+                                     if (currentStep < fields.length - 1) onNextStep();
+                                 }}
+                                 className="bg-primary text-primary-foreground"
+                             >
+                                 Next
+                             </EntityButton>
+                         )}
+                    </motion.div>
+                </form>
+
+                {!isSinglePage && (
+                    <motion.div
+                        className={cn(
+                            "mt-4 text-muted-foreground",
+                            densityConfig[density].fontSize
+                        )}
+                        variants={cardVariants[animationPreset]}
+                    >
+                        Step {currentStep + 1} of {fields.length}
+                    </motion.div>
+                )}
+            </motion.div>
+        );
     };
 
-    return (
-        <motion.div
-            ref={formRef}
-            className={cn(
-                "bg-card rounded-lg",
-                isFullPage ? "w-full h-full" : "max-w-md mx-auto mt-4 shadow-xl",
-                "p-4",
-                className
-            )}
-            initial={{opacity: 0, scale: isFullPage ? 0.98 : 0.9}}
-            animate={{opacity: 1, scale: 1}}
-            transition={{duration: 0.5}}
-            {...props}
-        >
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    onSubmit();
-                }}
-                className="space-y-6 h-full"
-            >
-                {enableSearch && (
-                    <EntitySearchInput
-                        type="text"
-                        placeholder="Search fields..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="mb-4"
-                    />
-                )}
-
-                <div className={cn(isFullPage ? "h-[calc(100%-4rem)] overflow-y-auto" : "")}>
-                    {isSinglePage ? renderLayout() : (
-                        <>
-                            <motion.h2
-                                className={cn("font-bold mb-4 text-foreground", isFullPage ? "text-3xl" : "text-2xl")}
-                                initial={{opacity: 0, y: -20}}
-                                animate={{opacity: 1, y: 0}}
-                                transition={{delay: 0.2, duration: 0.5}}
-                            >
-                                {fields[currentStep].label}
-                            </motion.h2>
-
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentStep}
-                                    initial={{opacity: 0, x: 50}}
-                                    animate={{opacity: 1, x: 0}}
-                                    exit={{opacity: 0, x: -50}}
-                                    transition={{duration: 0.3}}
-                                >
-                                    {renderField(fields[currentStep])}
-                                </motion.div>
-                            </AnimatePresence>
-                        </>
-                    )}
-                </div>
-
-                <motion.div
-                    className="flex justify-between mt-6"
-                    initial={{opacity: 0, y: 20}}
-                    animate={{opacity: 1, y: 0}}
-                    transition={{delay: 0.3, duration: 0.5}}
-                >
-                    {!isSinglePage && (
-                        <EntityButton
-                            onClick={() => {
-                                if (currentStep > 0) onPrevStep();
-                            }}
-                            disabled={currentStep === 0}
-                            className="space-y-6 bg-secondary text-secondary-foreground"
-                        >
-                            Previous
-                        </EntityButton>
-                    )}
-                    {isSinglePage || currentStep === fields.length - 1 ? (
-                        <EntityButton type="submit" className="bg-primary text-primary-foreground">
-                            Submit
-                        </EntityButton>
-                    ) : (
-                        <EntityButton
-                             onClick={() => {
-                                 if (currentStep < fields.length - 1) onNextStep();
-                             }}
-                             className="bg-primary text-primary-foreground"
-                         >
-                             Next
-                         </EntityButton>
-                     )}
-                </motion.div>
-            </form>
-
-            {!isSinglePage && (
-                <motion.div
-                    className="mt-4 text-sm text-muted-foreground"
-                    initial={{opacity: 0}}
-                    animate={{opacity: 1}}
-                    transition={{delay: 0.5, duration: 0.5}}
-                >
-                    Step {currentStep + 1} of {fields.length}
-                </motion.div>
-            )}
-        </motion.div>
-    );
-};
-
-export default ArmaniForm;
+    export default ArmaniForm;

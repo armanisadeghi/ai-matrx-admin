@@ -23,6 +23,42 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Dynamic Actions Aware',
+        path: 'components-with-buttons/dynamic-actions-aware',
+        relative: true,
+        description: 'This one is an attempt at allowing normal fields first and only triggering Action Fields when needed.'
+    },
+    {
+        title: 'New Dynamic Action Creator System',
+        path: 'components-with-buttons/dynamic-actions-new',
+        relative: true,
+        description: 'This is my attempt to really and truly make it all separate and fully dynamic.'
+    },
+    {
+        title: 'Dynamic Action Creator System',
+        path: 'components-with-buttons/dynamic-actions',
+        relative: true,
+        description: 'I got this one to work and be slightly more dynamic, but I did not incorporate everything because I want to make it even more dynamic.',
+    },
+    {
         title: 'Dynamic Entity Management Page',
         path: 'entity-management',
         relative: true,

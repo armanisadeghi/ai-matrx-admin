@@ -78,6 +78,26 @@ export interface EntityFlexFormField {
     src?: string;
     alt?: string;
     jsonSchema?: object;
+    actionKeys?: string[];
+    actionProps?: any;
+    inlineFields?: object[]; // TODO: Type this correctly.
+
+    defaultValue?: any;
+    validationFunctions?: string[];
+    maxLength?: number;
+    defaultComponent?: string;
+    subComponent?: string;
+    componentProps?: Record<string, unknown>;
+    isPrimaryKey?: boolean;
+    isDisplayField?: boolean;
+    isRequired?: boolean;
+    isNative?: boolean;
+    dataType?: FieldDataOptionsType;
+    isArray?: boolean;
+    structure?: DataStructure;
+    typeReference?: TypeBrand<any>;
+    defaultGeneratorFunction?: string;
+    exclusionRules?: string[];
 }
 
 

@@ -167,11 +167,11 @@ export const densityConfig = {
     compact: {
         spacing: 'gap-2',
         padding: {
-            xs: 'p-2',
-            sm: 'p-3',
-            md: 'p-4',
-            lg: 'p-5',
-            xl: 'p-6'
+            xs: 'p-1',
+            sm: 'p-2',
+            md: 'p-3',
+            lg: 'p-4',
+            xl: 'p-5'
         },
         fontSize: 'text-sm',
         iconSize: 'h-4 w-4',
@@ -181,11 +181,11 @@ export const densityConfig = {
     normal: {
         spacing: 'gap-4',
         padding: {
-            xs: 'p-3',
-            sm: 'p-4',
-            md: 'p-5',
-            lg: 'p-6',
-            xl: 'p-8'
+            xs: 'p-2',
+            sm: 'p-3',
+            md: 'p-4',
+            lg: 'p-5',
+            xl: 'p-7'
         },
         fontSize: 'text-base',
         iconSize: 'h-5 w-5',
@@ -195,11 +195,11 @@ export const densityConfig = {
     comfortable: {
         spacing: 'gap-6',
         padding: {
-            xs: 'p-4',
-            sm: 'p-6',
-            md: 'p-8',
-            lg: 'p-10',
-            xl: 'p-12'
+            xs: 'p-3',
+            sm: 'p-4',
+            md: 'p-5',
+            lg: 'p-7',
+            xl: 'p-9'
         },
         fontSize: 'text-lg',
         iconSize: 'h-6 w-6',
@@ -208,7 +208,7 @@ export const densityConfig = {
     }
 };
 
-const spacingConfig = {
+export const spacingConfig = {
     compact: {
         container: 'space-y-2',
         section: 'space-y-1',
@@ -237,3 +237,4 @@ const spacingConfig = {
         buttonSize: 'h-12'
     }
 };
+

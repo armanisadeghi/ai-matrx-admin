@@ -23,7 +23,7 @@ import {
     PanelLeftOpen,
     Grid,
     List,
-    ArrowRightLeft,
+    ArrowRightLeft, Maximize2, Sparkles, Columns, Maximize, Columns2,
 } from 'lucide-react';
 import {
     Sheet,
@@ -42,13 +42,12 @@ import EntityLayout, {
     QuickReferenceComponentType,
 } from '@/components/matrx/Entity/prewired-components/layouts/EntityLayout';
 import {FormDirectionOptions, FormLayoutOptions} from '@/types/componentConfigTypes';
-import {cn} from "@nextui-org/react";
 import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout';
+import {Slider} from "@/components/ui";
+import {cn} from "@/utils/cn";
 
 const layoutOptions: LayoutVariant[] = ['split', 'sideBySide', 'stacked'];
 const densityOptions: ComponentDensity[] = ['compact', 'normal', 'comfortable'];
-const animationOptions: AnimationPreset[] = ['none', 'subtle', 'smooth', 'energetic', 'playful'];
-const sizeOptions: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl'];
 const quickReferenceOptions: QuickReferenceComponentType[] = ['cards', 'cardsEnhanced', 'accordion', 'accordionEnhanced', 'list', 'select'];
 const formVariationOptions = [
     'fullWidthSinglePage',
@@ -60,8 +59,11 @@ const formVariationOptions = [
     'multiStepModal'
 ] as const;
 const formLayoutOptions: FormLayoutOptions[] = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline'];
-const columnOptions = ['1', '2', '3', '4', '5', '6', 'auto'] as const;
 const directionOptions: FormDirectionOptions[] = ['row', 'column', 'row-reverse', 'column-reverse'];
+
+const animationOptions: AnimationPreset[] = ['none', 'subtle', 'smooth', 'energetic', 'playful'];
+const sizeOptions: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl'];
+const columnOptions = ['1', '2', '3', '4', '5', '6', 'auto'] as const;
 
 const EntityPageClient = () => {
     const [settings, setSettings] = useState({
@@ -71,6 +73,7 @@ const EntityPageClient = () => {
         size: 'md' as ComponentSize,
         quickReferenceType: 'list' as QuickReferenceComponentType,
         isFullScreen: false,
+        splitRatio: 20,
         formOptions: {
             formLayout: 'grid' as FormLayoutOptions,
             formColumns: '2',
@@ -80,28 +83,21 @@ const EntityPageClient = () => {
         }
     });
 
-    const [showControls, setShowControls] = useState(false);
+    const [showControls, setShowControls] = useState(true);
 
-    const SelectControl = (
+    const CompactSelectControl = (
         {
             label,
             icon: Icon,
             value,
             options,
             onChange,
-        }: {
-            label: string;
-            icon: React.ElementType;
-            value: string;
-            options: readonly string[];
-            onChange: (value: any) => void;
         }) => (
-        <div className="flex items-center gap-2 min-w-[250px] flex-shrink-0">
+        <div className="flex items-center gap-1 bg-secondary/50 rounded-md px-2 py-1">
             <Icon className="h-4 w-4 text-muted-foreground shrink-0"/>
-            <Label className="text-sm font-medium min-w-[80px]">{label}</Label>
             <Select value={value} onValueChange={onChange}>
-                <SelectTrigger className="w-[140px]">
-                    <SelectValue/>
+                <SelectTrigger className="h-8 w-[120px] text-sm border-0 bg-transparent">
+                    <SelectValue placeholder={label}/>
                 </SelectTrigger>
                 <SelectContent>
                     {options.map(option => (
@@ -114,78 +110,114 @@ const EntityPageClient = () => {
         </div>
     );
 
-    const ControlGroup = ({title, children}: { title: string; children: React.ReactNode }) => (
-        <div className="space-y-4 p-4 bg-card/50 rounded-lg">
-            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-            <div className="flex flex-wrap gap-4">
-                {children}
-            </div>
+    const ControlGroup = ({children}: { children: React.ReactNode }) => (
+        <div
+            className="flex items-center gap-2 border-l border-border/50 pl-2 ml-2 first:border-l-0 first:pl-0 first:ml-0">
+            {children}
         </div>
     );
 
     const Controls = () => (
-        <div className="space-y-4">
-            <ControlGroup title="Layout & Presentation">
-                <SelectControl
+        <div className="flex items-center">
+            <ControlGroup>
+                <CompactSelectControl
                     label="Layout"
                     icon={Layout}
                     value={settings.layout}
                     options={layoutOptions}
-                    onChange={(value: LayoutVariant) => setSettings(prev => ({...prev, layout: value}))}
+                    onChange={(value) => setSettings(prev => ({...prev, layout: value}))}
                 />
-                <SelectControl
+                {settings.layout === 'split' && (
+                    <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
+                        <Columns2 className="h-4 w-4 text-muted-foreground"/>
+                        <Slider
+                            value={[settings.splitRatio]}
+                            onValueChange={([value]) => setSettings(prev => ({...prev, splitRatio: value}))}
+                            min={10}
+                            max={90}
+                            step={10}
+                            className="w-24"
+                        />
+                    </div>
+                )}
+            </ControlGroup>
+
+            <ControlGroup>
+                <CompactSelectControl
+                    label="Size"
+                    icon={Maximize2}
+                    value={settings.size}
+                    options={sizeOptions}
+                    onChange={(value) => setSettings(prev => ({...prev, size: value}))}
+                />
+                <CompactSelectControl
                     label="Density"
                     icon={Layers}
                     value={settings.density}
                     options={densityOptions}
-                    onChange={(value: ComponentDensity) => setSettings(prev => ({...prev, density: value}))}
+                    onChange={(value) => setSettings(prev => ({...prev, density: value}))}
+                />
+                <CompactSelectControl
+                    label="Animation"
+                    icon={Sparkles}
+                    value={settings.animation}
+                    options={animationOptions}
+                    onChange={(value) => setSettings(prev => ({...prev, animation: value}))}
                 />
             </ControlGroup>
 
-            <ControlGroup title="Form Layout">
-                <SelectControl
-                    label="Layout"
+            <ControlGroup>
+                <CompactSelectControl
+                    label="Form Layout"
                     icon={Grid}
                     value={settings.formOptions.formLayout}
                     options={formLayoutOptions}
-                    onChange={(value: FormLayoutOptions) => setSettings(prev => ({
+                    onChange={(value) => setSettings(prev => ({
                         ...prev,
                         formOptions: {...prev.formOptions, formLayout: value}
                     }))}
                 />
-                <SelectControl
+                <CompactSelectControl
+                    label="Columns"
+                    icon={Columns}
+                    value={settings.formOptions.formColumns}
+                    options={columnOptions}
+                    onChange={(value) => setSettings(prev => ({
+                        ...prev,
+                        formOptions: {...prev.formOptions, formColumns: value}
+                    }))}
+                />
+                <CompactSelectControl
                     label="Direction"
                     icon={ArrowRightLeft}
                     value={settings.formOptions.formDirection}
                     options={directionOptions}
-                    onChange={(value: FormDirectionOptions) => setSettings(prev => ({
+                    onChange={(value) => setSettings(prev => ({
                         ...prev,
                         formOptions: {...prev.formOptions, formDirection: value}
                     }))}
                 />
             </ControlGroup>
 
-            <ControlGroup title="Display Options">
-                <SelectControl
+            <ControlGroup>
+                <CompactSelectControl
                     label="Reference"
                     icon={List}
                     value={settings.quickReferenceType}
                     options={quickReferenceOptions}
-                    onChange={(value: QuickReferenceComponentType) => setSettings(prev => ({
+                    onChange={(value) => setSettings(prev => ({
                         ...prev,
                         quickReferenceType: value
                     }))}
                 />
-                <div className="flex items-center gap-2 min-w-[250px]">
+                <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
+                    <Maximize className="h-4 w-4 text-muted-foreground"/>
                     <Switch
                         id="fullscreen"
                         checked={settings.isFullScreen}
                         onCheckedChange={(checked) => setSettings(prev => ({...prev, isFullScreen: checked}))}
                         className="data-[state=checked]:bg-primary"
                     />
-                    <Label htmlFor="fullscreen" className="text-sm text-muted-foreground">
-                        Full Screen
-                    </Label>
                 </div>
             </ControlGroup>
         </div>
@@ -203,30 +235,26 @@ const EntityPageClient = () => {
                 <div className="h-full flex flex-col">
                     <Card
                         className="rounded-none border-x-0 border-t-0 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                        <div className="p-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setShowControls(!showControls)}
-                                        className="text-muted-foreground hover:text-primary"
-                                    >
-                                        {showControls ? <PanelLeftClose className="h-4 w-4"/> : <PanelLeftOpen
-                                            className="h-4 w-4"/>}
-                                    </Button>
-                                    <Separator orientation="vertical" className="h-4"/>
-                                    <span className="text-sm font-medium text-foreground">
-                                    Layout Controls
-                                  </span>
-                                </div>
+                        <div className="p-2">
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setShowControls(!showControls)}
+                                    className="text-muted-foreground hover:text-primary"
+                                >
+                                    {showControls ? <PanelLeftClose className="h-4 w-4"/> : <PanelLeftOpen
+                                        className="h-4 w-4"/>}
+                                </Button>
+
+                                {showControls && <Controls/>}
 
                                 <Sheet>
                                     <SheetTrigger asChild>
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="icon"
-                                            className="hover:bg-primary hover:text-primary-foreground"
+                                            className="text-muted-foreground hover:text-primary"
                                         >
                                             <Settings2 className="h-4 w-4"/>
                                         </Button>
@@ -234,20 +262,15 @@ const EntityPageClient = () => {
                                     <SheetContent side="right"
                                                   className="w-[400px] overflow-y-auto bg-background/95 backdrop-blur">
                                         <SheetHeader>
-                                            <SheetTitle>Layout Settings</SheetTitle>
+                                            <SheetTitle>Advanced Settings</SheetTitle>
                                             <SheetDescription>
-                                                Customize the appearance and behavior of the interface.
+                                                Configure additional layout and behavior options.
                                             </SheetDescription>
                                         </SheetHeader>
                                         <Separator className="my-4"/>
-                                        <div className="pr-6">
-                                            <Controls/>
-                                        </div>
                                     </SheetContent>
                                 </Sheet>
                             </div>
-
-                            {showControls && <Controls/>}
                         </div>
                     </Card>
 
@@ -258,6 +281,7 @@ const EntityPageClient = () => {
                             animationPreset={settings.animation}
                             size={settings.size}
                             quickReferenceType={settings.quickReferenceType}
+                            splitRatio={settings.splitRatio}
                             formOptions={{
                                 size: settings.size,
                                 formLayout: settings.formOptions.formLayout,

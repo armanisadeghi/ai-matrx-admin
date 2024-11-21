@@ -55,16 +55,35 @@ import {EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 export function transformFieldsToFormFields(entityFields: EntityStateField[]): EntityFlexFormField[] {
     if (!entityFields) return [];
 
-    return entityFields.map(field => ({
-        name: field.name,
-        label: field.displayName || field.name,
-        type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
-        required: field.isRequired,
-        disabled: false,
-        defaultValue: field.defaultValue,
-        validation: field.validationFunctions,
-        maxLength: field.maxLength
-    }));
+    // Helper function to handle additional transformation logic
+    const applyFieldLogic = (field: EntityFlexFormField, originalField: EntityStateField): EntityFlexFormField => {
+        if (originalField.defaultComponent === 'inline-form:1') {
+            field.defaultComponent = 'input';
+            field.actionKeys = ['entityQuickSidebar'];
+            field.inlineFields = []; // TODO: Need to get the schema from the related table here.
+        }
+        return field;
+    };
+
+    return entityFields.map(field => {
+        // Map the base transformation
+        const transformedField: EntityFlexFormField = {
+            name: field.name,
+            label: field.displayName || field.name,
+            type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
+            required: field.isRequired,
+            disabled: false,
+            defaultValue: field.defaultValue,
+            validationFunctions: field.validationFunctions,
+            maxLength: field.maxLength,
+            subComponent: null,
+            actionKeys: [],
+            actionProps: {},
+        };
+
+        // Apply additional field logic
+        return applyFieldLogic(transformedField, field);
+    });
 }
 
 /**

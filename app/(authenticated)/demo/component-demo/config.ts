@@ -17,14 +17,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'UUID Generator Page Demo',
+        path: 'uuid-generator',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'UUID Array Component Demo',
+        path: 'uuid-array',
         relative: true,
         description: ''
     },

@@ -20,6 +20,8 @@ interface EntityQuickReferenceListProps<TEntity extends EntityKeys> {
     className?: string;
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
+    [key: string]: any; // Allow additional props
+
 }
 
 function EntityQuickReferenceList<TEntity extends EntityKeys>(
@@ -30,7 +32,21 @@ function EntityQuickReferenceList<TEntity extends EntityKeys>(
         className = '',
         density = 'normal',
         animationPreset = 'smooth',
+        ...rest
     }: EntityQuickReferenceListProps<TEntity>) {
+
+    console.log('-- Entity Quick Reference List starting...');
+    console.log('------ entityKey:', entityKey);
+    console.log('All Props:', {
+        entityKey,
+        onCreateEntityClick,
+        showCreateNewButton,
+        className,
+        density,
+        animationPreset,
+        ...rest
+    });
+
     const {
         quickReferenceRecords,
         selectionMode,

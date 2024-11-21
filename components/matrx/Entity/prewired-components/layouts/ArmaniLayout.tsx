@@ -34,7 +34,7 @@ import {
     cardVariants, containerVariants,
     densityConfig, getAnimationVariants, layoutTransitions
 } from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/config";
-import {EntityLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/types";
+import {ArmaniLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/types";
 
 
 const LayoutHeader: React.FC<{
@@ -109,13 +109,14 @@ interface EnhancedCardProps {
 }
 
 
-const ArmaniLayout: React.FC<EntityLayoutProps> = (
+const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
     {
         className,
         density = 'normal',
         animationPreset = 'smooth',
         layoutVariant = 'split',
         size = 'md',
+        splitRatio = 25,
         quickReferenceType = 'cardsEnhanced',
         formOptions
     }) => {
@@ -225,113 +226,98 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = (
         const layouts = {
             split: (
                 <motion.div
-                    className={cn(
-                        "grid h-full overflow-hidden",
-                        isExpanded ? 'grid-cols-1' : 'grid-cols-[minmax(300px,400px)_1fr]',
-                        densityConfig[density].spacing
-                    )}
-                    variants={containerVariants[animationPreset]}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
+                    className="relative h-full overflow-hidden"
                 >
-                    <AnimatePresence mode="wait">
-                        {!isExpanded && (
-                            <motion.div
-                                className="flex flex-col gap-4 min-w-0"
-                                initial={{opacity: 0, x: -20}}
-                                animate={{opacity: 1, x: 0}}
-                                exit={{opacity: 0, x: -20}}
-                            >
-                                <EnhancedCard>
-                                    <CardHeader className="space-y-1.5">
-                                        <CardTitle className={cn(
-                                            "flex items-center gap-2",
-                                            densityConfig[density].fontSize
-                                        )}>
-                                            Select Entity
+                    <motion.div
+                        className={cn(
+                            "grid h-full overflow-hidden mt-12", // added margin-top for the slider
+                            isExpanded ? 'grid-cols-1' : 'grid-cols-[minmax(300px,1fr)_1fr]',
+                            densityConfig[density].spacing
+                        )}
+                        style={{
+                            gridTemplateColumns: isExpanded ? '1fr' : `${splitRatio}% ${100 - splitRatio}%`
+                        }}
+                        variants={containerVariants[animationPreset]}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit">
+                        <AnimatePresence mode="wait">
+                            {!isExpanded && (
+                                <motion.div
+                                    className="flex flex-col gap-4 min-w-0"
+                                    initial={{opacity: 0, x: -20}}
+                                    animate={{opacity: 1, x: 0}}
+                                    exit={{opacity: 0, x: -20}}
+                                >
+                                    <EnhancedCard>
+                                        <CardContent>
+                                            <EntitySelection
+                                                selectedEntity={selectedEntity}
+                                                onEntityChange={handleEntityChange}
+                                                layout="sideBySide"
+                                                selectHeight={selectHeight}
+                                                density={density}
+                                                animationPreset={animationPreset}
+                                            />
+                                        </CardContent>
+                                    </EnhancedCard>
+
+                                    {selectedEntity && (
+                                        <EnhancedCard cardRef={rightColumnRef}>
+                                            <CardHeader className="space-y-1.5">
+                                                <CardTitle className={densityConfig[density].fontSize}>
+                                                    Quick Reference
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-0">
+                                                <ScrollArea className={densityConfig[density].maxHeight}>
+                                                    {QuickReferenceComponent}
+                                                </ScrollArea>
+                                            </CardContent>
+                                        </EnhancedCard>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <motion.div
+                            className="min-w-0 relative"
+                            layout
+                        >
+                            <AnimatePresence mode="wait">
+                                {selectedEntity ? (
+                                    <EnhancedCard className="h-full">
+                                        <div className="absolute top-4 right-4 z-20 flex gap-2">
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <HelpCircle className={cn(
-                                                            "text-muted-foreground",
-                                                            densityConfig[density].iconSize
-                                                        )}/>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => setIsExpanded(!isExpanded)}
+                                                        >
+                                                            {isExpanded ?
+                                                             <Minimize2 className={densityConfig[density].iconSize}/> :
+                                                             <Maximize2 className={densityConfig[density].iconSize}/>
+                                                            }
+                                                        </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>Choose an entity to work with</p>
+                                                        <p>{isExpanded ? 'Show sidebar' : 'Hide sidebar'}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <EntitySelection
-                                            selectedEntity={selectedEntity}
-                                            onEntityChange={handleEntityChange}
-                                            layout="sideBySide"
-                                            selectHeight={selectHeight}
+                                        </div>
+                                        <EntityContent
+                                            entityKey={selectedEntity}
                                             density={density}
                                             animationPreset={animationPreset}
+                                            formOptions={formOptions}
                                         />
-                                    </CardContent>
-                                </EnhancedCard>
-
-                                {selectedEntity && (
-                                    <EnhancedCard cardRef={rightColumnRef}>
-                                        <CardHeader className="space-y-1.5">
-                                            <CardTitle className={densityConfig[density].fontSize}>
-                                                Quick Reference
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="p-0">
-                                            <ScrollArea className={densityConfig[density].maxHeight}>
-                                                {QuickReferenceComponent}
-                                            </ScrollArea>
-                                        </CardContent>
                                     </EnhancedCard>
-                                )}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <motion.div
-                        className="min-w-0 relative"
-                        layout
-                    >
-                        <AnimatePresence mode="wait">
-                            {selectedEntity ? (
-                                <EnhancedCard className="h-full">
-                                    <div className="absolute top-4 right-4 z-20 flex gap-2">
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => setIsExpanded(!isExpanded)}
-                                                    >
-                                                        {isExpanded ?
-                                                         <Minimize2 className={densityConfig[density].iconSize}/> :
-                                                         <Maximize2 className={densityConfig[density].iconSize}/>
-                                                        }
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{isExpanded ? 'Show sidebar' : 'Hide sidebar'}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </div>
-                                    <EntityContent
-                                        entityKey={selectedEntity}
-                                        density={density}
-                                        animationPreset={animationPreset}
-                                        formOptions={formOptions}
-                                    />
-                                </EnhancedCard>
-                            ) : null}
-                        </AnimatePresence>
+                                ) : null}
+                            </AnimatePresence>
+                        </motion.div>
                     </motion.div>
                 </motion.div>
             ),

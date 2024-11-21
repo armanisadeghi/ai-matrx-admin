@@ -31,3 +31,22 @@ export interface EntityLayoutProps {
         formIsFullPage?: boolean;
     };
 }
+
+export interface ArmaniLayoutProps {
+    className?: string;
+    density?: ComponentDensity;
+    animationPreset?: AnimationPreset;
+    layoutVariant?: LayoutVariant;
+    size?: ComponentSize;
+    splitRatio?: number;
+    quickReferenceType?: QuickReferenceComponentType;
+    formOptions?: {
+        size?: ComponentSize;
+        formLayout?: FormLayoutOptions;
+        formColumns?: FormColumnOptions;
+        formDirection?: FormDirectionOptions;
+        formEnableSearch?: boolean;
+        formIsSinglePage?: boolean;
+        formIsFullPage?: boolean;
+    };
+}

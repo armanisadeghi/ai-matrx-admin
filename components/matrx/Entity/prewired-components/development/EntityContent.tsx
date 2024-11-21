@@ -11,7 +11,10 @@ import {
 } from '@/components/matrx/Entity/types/entityForm';
 import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
 import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types';
-import {mapFieldDataTypeToFormFieldType} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
+import {
+    mapFieldDataTypeToFormFieldType,
+    transformFieldsToFormFields
+} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 import {
     AnimationPreset,
     ComponentDensity,
@@ -47,20 +50,39 @@ function EntityContent<TEntity extends EntityKeys>(
     }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
 
+    // Updated transformFieldsToFormFields with new fields and logic
     const transformFieldsToFormFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
         if (!entityFields) return [];
 
-        return entityFields.map(field => ({
-            ...field,
-            name: field.name,
-            label: field.displayName || field.name,
-            type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
-            required: field.isRequired,
-            disabled: false,
-            defaultValue: field.defaultValue,
-            validation: field.validationFunctions,
-            maxLength: field.maxLength,
-        }));
+        // Helper function to handle additional transformation logic
+        const applyFieldLogic = (field: EntityFlexFormField, originalField: EntityStateField): EntityFlexFormField => {
+            if (originalField.defaultComponent === 'inline-form:1') {
+                field.actionKeys = ['entityQuickSidebar'];
+            }
+            return field;
+        };
+
+        return entityFields.map(field => {
+            // Map the base transformation
+            const transformedField: EntityFlexFormField = {
+                name: field.name,
+                label: field.displayName || field.name,
+                type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
+                required: field.isRequired,
+                disabled: false,
+                defaultValue: field.defaultValue,
+                validationFunctions: field.validationFunctions,
+                maxLength: field.maxLength,
+                subComponent: null,
+                actionKeys: [],
+                actionProps: {},
+                defaultComponent: field.defaultComponent, // New field
+                componentProps: field.componentProps,   // New field
+            };
+
+            // Apply additional field logic
+            return applyFieldLogic(transformedField, field);
+        });
     };
 
     const formProps: FlexEntityFormProps = React.useMemo(() => {
@@ -68,35 +90,37 @@ function EntityContent<TEntity extends EntityKeys>(
             return {
                 fields: [],
                 formState: {},
-                onUpdateField: () => {
-                },
-                onSubmit: () => {
-                },
+                onUpdateField: () => {}, // No-op for field changes
+                onSubmit: () => {}, // No-op for submit
             };
         }
 
         const formFields = transformFieldsToFormFields(entity.fieldInfo);
 
+        let localFormState = { ...entity.activeRecord }; // Maintain local state
+
         return {
             fields: formFields,
             formState: entity.activeRecord as EntityFormState,
             onUpdateField: (name: string, value: any) => {
-                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-
-                const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce((acc, field) => ({
-                    ...acc,
-                    [field]: entity.activeRecord[field]
-                }), {} as Record<string, MatrxRecordId>);
-
-                const update = {
-                    [name]: value
-                } as Partial<EntityData<TEntity>>;
-
-                entity.updateRecord(primaryKeyValues, update);
+            // Update local form state, no DB interaction
+            localFormState = {
+                ...localFormState,
+                [name]: value,
+            };
             },
             onSubmit: () => {
                 if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-                console.log('Form submitted:', entity.activeRecord);
+            const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce(
+                (acc, field) => ({
+                    ...acc,
+                    [field]: entity.activeRecord[field],
+                }),
+                {} as Record<string, MatrxRecordId>
+            );
+
+            entity.updateRecord(primaryKeyValues, localFormState); // Save changes to DB here
+            console.log("Form submitted:", localFormState);
             },
             layout: formOptions?.formLayout ?? 'grid',
             direction: formOptions?.formDirection ?? 'row',
@@ -106,7 +130,7 @@ function EntityContent<TEntity extends EntityKeys>(
             isFullPage: formOptions?.formIsFullPage ?? true,
             ...(formOptions?.size && {size: formOptions.size}),
             ...(animationPreset && {animationPreset}), // Move animationPreset here
-            ...(density && {density}) // Move density here
+        ...(density && { density }), // Move density here
         };
     }, [entity, formOptions, animationPreset, density]); // Add dependencies
 
@@ -122,7 +146,7 @@ function EntityContent<TEntity extends EntityKeys>(
         );
     }
 
-    const formClassName = className || "p-4";
+    const formClassName = className || "p-2";
 
     return (
         <div className={formClassName}>

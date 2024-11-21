@@ -541,7 +541,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -591,7 +591,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -641,7 +641,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -741,7 +741,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -791,7 +791,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -942,7 +942,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -992,7 +992,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1042,7 +1042,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1092,7 +1092,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1142,7 +1142,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1292,7 +1292,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1342,7 +1342,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1536,7 +1536,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1636,7 +1636,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2345,7 +2345,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2395,7 +2395,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2781,7 +2781,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2831,7 +2831,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3031,7 +3031,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3081,7 +3081,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3131,7 +3131,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3181,7 +3181,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3231,7 +3231,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3331,7 +3331,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3381,7 +3381,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3531,7 +3531,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3837,7 +3837,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4187,7 +4187,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4237,7 +4237,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4287,7 +4287,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4337,7 +4337,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4387,7 +4387,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4624,7 +4624,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4674,7 +4674,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4724,7 +4724,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4875,7 +4875,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4925,7 +4925,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4975,7 +4975,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5025,7 +5025,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5219,7 +5219,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5269,7 +5269,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5319,7 +5319,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5369,7 +5369,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5620,7 +5620,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5720,7 +5720,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5971,7 +5971,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6021,7 +6021,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6071,7 +6071,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6121,7 +6121,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6171,7 +6171,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6221,7 +6221,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6271,7 +6271,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6321,7 +6321,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6371,7 +6371,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7422,7 +7422,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7472,7 +7472,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7522,7 +7522,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8134,7 +8134,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8384,7 +8384,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8434,7 +8434,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8484,7 +8484,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8534,7 +8534,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8728,7 +8728,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8828,7 +8828,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8878,7 +8878,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9107,7 +9107,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9157,7 +9157,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9207,7 +9207,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9257,7 +9257,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9507,7 +9507,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -10433,7 +10433,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -10805,7 +10805,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -11499,7 +11499,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -11821,7 +11821,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12043,7 +12043,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12093,7 +12093,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12143,7 +12143,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12193,7 +12193,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12500,7 +12500,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12550,7 +12550,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12600,7 +12600,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12650,7 +12650,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -12700,7 +12700,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13014,7 +13014,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13064,7 +13064,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13114,7 +13114,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13164,7 +13164,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13214,7 +13214,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13314,7 +13314,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13543,7 +13543,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:5' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13593,7 +13593,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13643,7 +13643,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -13837,7 +13837,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-editor:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",

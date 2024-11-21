@@ -23,7 +23,8 @@ it's clear that certain aspects of the system won't work like this.
 
 # Next Steps:
 - Left off: Anthropic Workbench: https://console.anthropic.com/workbench/2c0c4eef-b76f-4d17-8454-1c86209b8573
-
+- Click and drag (minor but here): https://claude.ai/chat/fa80b976-b46d-435e-96a5-9b1d6d8c365e
+  - The last question is to add a feature for dragging and making perfect boxes so pick up from there.
 
 -------------------------------
 Yes, we can enforce strict grid boundaries that components cannot override. Here are the key techniques to implement this:

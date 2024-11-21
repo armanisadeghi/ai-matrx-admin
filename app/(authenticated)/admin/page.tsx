@@ -7,6 +7,16 @@ import FeatureSectionAnimatedGradientComponents
 import {adminCategories} from "@/app/(authenticated)/admin/constants/categories";
 import {useRouter} from "next/navigation";
 import ErrorBoundary from "@/app/(authenticated)/admin/components/shared/ErrorBoundary";
+import {ArrowLeftFromLine} from 'lucide-react';
+import {ModuleHeader} from "@/components/matrx/navigation";
+import {pages} from "@/app/(authenticated)/tests/forms/config";
+
+
+const filteredPages = pages.filter(page => page.path !== 'link-here');
+
+const MODULE_HOME = '/admin';
+const MODULE_NAME = 'Admin Home';
+
 
 const AdminPage = () => {
     const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -81,37 +91,19 @@ const AdminPage = () => {
 
         return (
             <ErrorBoundary>
-
-                <div className="min-h-screen py-10 bg-neutral-100 dark:bg-neutral-900 w-full">
-                    <div className="w-full px-4">
-                        <button
-                            onClick={handleBackToSelection}
-                            className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                            <IconGitBranch className="mr-2 w-4 h-4"/> Back to Selection
-                        </button>
-                        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-6">
-                            <h2 className="text-2xl font-bold mb-4">{selectedComponent}</h2>
-                            {selectedFeature?.component}
-                        </div>
+                <div className="min-h-screen py-2 bg-matrx-card w-full">
+                    <div className="w-full">
+                        {selectedFeature?.component}
                     </div>
                 </div>
             </ErrorBoundary>
         );
     }
-
     if (selectedCategory) {
         const category = adminCategories.find(c => c.name === selectedCategory);
         return (
-            <div className="min-h-screen py-10 bg-neutral-100 dark:bg-neutral-900 w-full">
+            <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
                 <div className="w-full px-4">
-                    <button
-                        onClick={handleBackToSelection}
-                        className="mb-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                        <IconGitBranch className="mr-2 w-4 h-4"/> Back to Categories
-                    </button>
-                    <h2 className="text-3xl font-bold mb-4">{selectedCategory}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {category?.features.map((feature, index) => (
                             <FeatureSectionAnimatedGradientComponents
@@ -128,9 +120,9 @@ const AdminPage = () => {
     }
 
     return (
-        <div className="min-h-screen py-10 bg-neutral-100 dark:bg-neutral-900 w-full">
+        <div className="min-h-screen py-4 bg-neutral-100 dark:bg-neutral-900 w-full">
             <div className="w-full mx-2">
-                <h1 className="text-4xl font-bold text-center mb-4">Admin Dashboard</h1>
+                <h1 className="text-xl font-bold text-center mb-4">Admin Dashboard Home</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {adminCategories.map((category, index) => (
                         <div
