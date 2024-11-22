@@ -13,10 +13,11 @@ import {
 } from "./JsonEditor";
 import {QuickReferenceSidebar} from "@/app/(authenticated)/tests/crud-operations/components/QuickReferenceSidebar";
 import EntityShowSelectedAccordion from "@/components/matrx/Entity/prewired-components/EntityShowSelectedAccordion";
+import EntityQuickListAction from "./action-components/EntityQuickListAction";
+import {useAppDispatch} from "@/lib/redux/hooks";
 
 const ACTION_REGISTRY = {
     entityList: {
-        type: 'hello',
         icon: Link,
         label: 'Select Record',
         presentation: PRESENTATION_TYPES.SHEET,
@@ -44,25 +45,66 @@ const ACTION_REGISTRY = {
         }
     },
     entityQuickSidebar: {
-        type: 'hello',
-        icon: ListCheck,
-        label: 'Select Record',
-        presentation: PRESENTATION_TYPES.SHEET,
-        triggerType: TRIGGER_TYPES.ICON,
-        component: QuickReferenceSidebar,
-        directComponentProps: {
-            onCreateEntityClick: () => console.log('Create New Entity Button Clicked...',),
-            showCreateNewButton: true,
-            className: '',
-            density: 'normal',
-            animationPreset: 'smooth',
+        actionType: ACTION_TYPES.DIRECT,
+        presentationConfig: {
+            component: PRESENTATION_TYPES.SHEET,
+            props: {
+                title: 'Choose an item from the list',
+                side: 'right',
+                className: 'min-w-[400px]'
+            },
         },
+        triggerConfig: {
+            component: TRIGGER_TYPES.ICON,
+            props: {
+                label: 'Choose A Record',
+                icon: ListCheck,
+                variant: 'primary',
+                className: 'mr-2'
+            },
+        },
+        actionComponentConfig: {
+            component: QuickReferenceSidebar,
+            onResultHandler: 'onSelectionChange',
+            props: {
+                onCreateEntityClick: () => console.log('Create New Entity Button Clicked...',),
+                showCreateNewButton: true,
+                className: '',
+                density: 'normal',
+                animationPreset: 'smooth',
+            },
+        },
+        reduxActionConfig: null,
+        hookActionConfig: null,
+        commandActionConfig: null,
+        directActionConfig: null,
+
+        icon: ListCheck,
+        label: 'Choose Record',
+
+        presentation: PRESENTATION_TYPES.SHEET,
         containerProps: {
             title: 'Choose an item from the list',
             side: 'right',
             className: 'min-w-[400px]'
         },
-        actionType: ACTION_TYPES.DIRECT,
+
+        triggerType: TRIGGER_TYPES.CHIP,
+        triggerProps: {
+            label: 'Choose Record',
+            icon: ListCheck,
+            variant: 'primary',
+            className: 'mr-2'
+        },
+        component: EntityQuickListAction,
+        onResultHandler: 'onSelectionChange',
+        directComponentProps: {
+            onCreateEntityClick: () => console.log('Create New Entity Button Clicked...',),
+            showCreateNewButton: true,
+            className: '',
+            density: 'compact',
+            animationPreset: 'smooth',
+        },
         actionConfig: {
             actionType: 'SEARCH_RECORDS',
             payload: {}
@@ -73,7 +115,6 @@ const ACTION_REGISTRY = {
     },
 
     recordSelectorAction: {
-        type: 'hi',
         icon: Link,
         label: 'Select Record',
         presentation: PRESENTATION_TYPES.SHEET,
@@ -117,7 +158,9 @@ const ACTION_REGISTRY = {
 };
 
 
-export function createMatrxAction(dispatch) {
+export function createAllActions() {
+    const dispatch = useAppDispatch();
+
     const createActionHandler = (type, config) => {
         if (type === ACTION_TYPES.REDUX) {
             return (field, value) => dispatch({
@@ -138,6 +181,69 @@ export function createMatrxAction(dispatch) {
         ])
     );
 }
+
+export function createMatrxActions(actionRegistryKeys) {
+    const dispatch = useAppDispatch(); // Redux dispatch function
+
+    return actionRegistryKeys.map((actionRegistryKey) => {
+        const actionConfig = ACTION_REGISTRY[actionRegistryKey];
+
+        const baseAction = {
+            actionType: actionConfig.actionType,
+            presentationConfig: actionConfig.presentationConfig,
+            triggerConfig: actionConfig.triggerConfig,
+        };
+
+        switch (actionConfig.actionType) {
+            case ACTION_TYPES.REDUX:
+                return {
+                    ...baseAction,
+                    reduxActionConfig: {
+                        ...actionConfig.reduxActionConfig,
+                        handler: (field, value) =>
+                            dispatch({
+                                type: actionConfig.reduxActionConfig.actionType,
+                                payload: {
+                                    field,
+                                    value,
+                                    ...actionConfig.reduxActionConfig.payload,
+                                },
+                            }),
+                    },
+                };
+
+            case ACTION_TYPES.HOOK:
+                return {
+                    ...baseAction,
+                    hookActionConfig: actionConfig.hookActionConfig,
+                };
+
+            case ACTION_TYPES.COMMAND:
+                return {
+                    ...baseAction,
+                    commandActionConfig: actionConfig.commandActionConfig,
+                };
+
+            case ACTION_TYPES.DIRECT:
+                return {
+                    ...baseAction,
+                    directActionConfig: actionConfig.directActionConfig,
+                };
+
+            case ACTION_TYPES.COMPONENT:
+                return {
+                    ...baseAction,
+                    actionComponentConfig: actionConfig.actionComponentConfig,
+                };
+
+            default:
+                throw new Error(
+                    `Unrecognized action type: "${actionConfig.actionType}" for key: "${actionRegistryKey}".`
+                );
+        }
+    });
+}
+
 
 export function mapFields(dispatch, fieldDefinitions) {
     const actionMap = createMatrxAction(dispatch);

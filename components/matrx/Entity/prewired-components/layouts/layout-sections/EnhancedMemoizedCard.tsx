@@ -14,7 +14,7 @@ import {
 } from '../../quick-reference';
 import {ScrollArea} from "@/components/ui";
 import {LayoutHeader} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/extras";
-import {densityConfig} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/config";
+import {densityConfig} from "@/config/ui/entity-layout-config";
 
 
 

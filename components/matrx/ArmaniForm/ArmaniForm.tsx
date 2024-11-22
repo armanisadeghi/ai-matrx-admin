@@ -31,7 +31,7 @@ import {
     densityConfig,
     getAnimationVariants,
     spacingConfig,
-} from "../Entity/prewired-components/layouts/layout-sections/config";
+} from "@/config/ui/entity-layout-config";
 import ActionFieldWrapper from "./action-system/ActionFieldWrapper";
 import {EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 
@@ -71,7 +71,10 @@ export interface FlexAnimatedFormProps {
     fields: EntityFlexFormField[];
     formState: FormState;
     onUpdateField: (name: string, value: any) => void;
-    onSubmit: () => void;
+    onSubmit?: () => void;
+    onSubmitUpdate?: (data: FormState) => void;
+    onSubmitCreate?: (data: FormState) => void;
+    onSubmitDelete?: () => void;
     currentStep?: number;
     onNextStep?: () => void;
     onPrevStep?: () => void;
@@ -93,6 +96,9 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
         formState,
         onUpdateField,
         onSubmit,
+        onSubmitUpdate,
+        onSubmitCreate,
+        onSubmitDelete,
         currentStep: externalCurrentStep,
         onNextStep: externalOnNextStep,
         onPrevStep: externalOnPrevStep,
@@ -137,7 +143,7 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
     const renderField = (field: EntityFlexFormField) => {
         console.log('ArmaniForm renderField called with:', {
             field,
-            hasActionKeys: !!field.actionKeys,
+            hasActionKeys: !!field.actionKeys.length,
             type: field.defaultComponent || field.type
         });
 
@@ -269,9 +275,6 @@ const ArmaniForm: React.FC<FlexAnimatedFormProps> = (
                 case 'url':
                     return <EntityInput {...commonProps} />;
                 default:
-
-
-
                     console.log('ERROR ------- ERROR!!!!  Unknown field type:', field.type, 'defaultComponent:', field.defaultComponent);
                     return null;
             }

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
-import FieldAction from "./FieldAction";
+import ActionPresentation from "./ActionPresentation";
 
 const DynamicField = ({ field, value, onChange, onActionComplete, isNested = false }) => {
 
@@ -47,13 +47,13 @@ const DynamicField = ({ field, value, onChange, onActionComplete, isNested = fal
             {field.actions?.length > 0 && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                 {field.actions.map((action, index) => (
-                  <FieldAction
+                  <ActionPresentation
                     key={index}
                     action={action}
                     field={field}
                     value={value}
                     onChange={onChange}
-                    fieldComponentProps={field.componentProps}
+                    actionProps={field.actionProps}
                     onActionComplete={onActionComplete}
                   />
                 ))}
@@ -76,13 +76,13 @@ const DynamicField = ({ field, value, onChange, onActionComplete, isNested = fal
             {field.actions?.length > 0 && (
               <div className="absolute right-2 top-2 flex gap-1">
                 {field.actions.map((action, index) => (
-                  <FieldAction
+                  <ActionPresentation
                     key={index}
                     action={action}
                     field={field}
                     value={value}
                     onChange={onChange}
-                    fieldComponentProps={field.componentProps}
+                    actionProps={field.actionProps}
                     onActionComplete={onActionComplete}
                   />
                 ))}
@@ -97,7 +97,7 @@ const DynamicField = ({ field, value, onChange, onActionComplete, isNested = fal
           <div className="relative w-full">
             {field.component ? (
               <field.component
-                {...field.componentProps}
+                {...field.actionProps}
                 value={value}
                 onChange={onChange}
                 onActionComplete={onActionComplete}
@@ -113,13 +113,13 @@ const DynamicField = ({ field, value, onChange, onActionComplete, isNested = fal
             {field.actions?.length > 0 && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                 {field.actions.map((action, index) => (
-                  <FieldAction
+                  <ActionPresentation
                     key={index}
                     action={action}
                     field={field}
                     value={value}
                     onChange={onChange}
-                    fieldComponentProps={field.componentProps}
+                    actionProps={field.actionProps}
                     onActionComplete={onActionComplete}
                   />
                 ))}
@@ -140,13 +140,13 @@ const DynamicField = ({ field, value, onChange, onActionComplete, isNested = fal
             {field.actions?.length > 0 && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                 {field.actions.map((action, index) => (
-                  <FieldAction
+                  <ActionPresentation
                     key={index}
                     action={action}
                     field={field}
                     value={value}
                     onChange={onChange}
-                    fieldComponentProps={field.componentProps}
+                    actionProps={field.actionProps}
                     onActionComplete={onActionComplete}
                   />
                 ))}

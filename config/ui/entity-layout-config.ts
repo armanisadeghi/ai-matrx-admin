@@ -1,7 +1,9 @@
 
 
 // Enhanced layout transitions
-import {AnimationPreset} from "@/types/componentConfigTypes";
+
+
+export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
 
 export const layoutTransitions = {
     split: {

@@ -1,8 +1,6 @@
-// app/(authenticated)/tests/forms/entity-form-full-container/page.tsx
-
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FlexAnimatedForm } from '@/components/matrx/AnimatedForm';
 import { useEntity } from '@/lib/redux/entity/useEntity';
@@ -16,7 +14,38 @@ import {
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeader';
 import { EntityError, EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types';
-import {mapFieldDataTypeToFormFieldType} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
+import { mapFieldDataTypeToFormFieldType } from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
+import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
+
+// Memoized Configurations
+const DEFAULT_FORM_CONFIG = {
+    layout: 'grid' as const,
+    direction: 'row' as const,
+    enableSearch: false,
+    columns: 2,
+    isSinglePage: true,
+    isFullPage: true
+};
+
+const createTransformedFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
+    if (!entityFields) return [];
+
+    return entityFields.map(field => ({
+        name: field.name,
+        label: field.displayName || field.name,
+        type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
+        required: field.isRequired,
+        disabled: false,
+        defaultValue: field.defaultValue,
+        validationFunctions: field.validationFunctions,
+        maxLength: field.maxLength,
+        subComponent: null,
+        actionKeys: field.defaultComponent === 'inline-form:1' ? ['entityQuickSidebar'] : [],
+        actionProps: {},
+        defaultComponent: field.defaultComponent,
+        componentProps: field.componentProps,
+    }));
+};
 
 interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -24,63 +53,67 @@ interface EntityContentProps<TEntity extends EntityKeys> {
 
 function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
+    const [formData, setFormData] = useState<EntityFormState>({});
 
-    const transformFieldsToFormFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
-        if (!entityFields) return [];
+    // Memoize MatrxRecordId generation
+    const getMatrxRecordId = useCallback(() => {
+        if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
 
-        return entityFields.map(field => ({
-            name: field.name,
-            label: field.displayName || field.name,
-            type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
-            required: field.isRequired,
-            disabled: false,
-            defaultValue: field.defaultValue,
-            validation: field.validationFunctions,
-            maxLength: field.maxLength
+        return entity.primaryKeyMetadata.fields.reduce((acc, field) => ({
+            ...acc,
+            [field]: entity.activeRecord[field]
+        }), {} as Record<string, MatrxRecordId>);
+    }, [entity.activeRecord, entity.primaryKeyMetadata]);
+
+    // Memoize field update handler
+    const handleFieldUpdate = useCallback((name: string, value: any) => {
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
         }));
-    };
 
-    const formProps: FlexEntityFormProps = React.useMemo(() => {
-        if (!entity?.activeRecord) {
-            return {
-                fields: [],
-                formState: {},
-                onUpdateField: () => {},
-                onSubmit: () => {},
-            };
+        const matrxRecordId = getMatrxRecordId() as unknown as MatrxRecordId;
+        if (!matrxRecordId) return;
+
+        const update = {
+            [name]: value
+        } as Partial<EntityData<TEntity>>;
+
+        entity.updateRecord(matrxRecordId, update, { showToast: true });
+    }, [entity, getMatrxRecordId]);
+
+    // Memoize CRUD handlers
+    const handleSubmit = useCallback(() => {
+        const matrxRecordId = getMatrxRecordId() as unknown as MatrxRecordId;
+        if (!matrxRecordId) return;
+
+        entity.updateRecord(matrxRecordId, formData, {
+            showToast: true,
+            callback: () => console.log('Form submitted:', formData)
+        });
+    }, [entity, formData, getMatrxRecordId]);
+
+    // Sync form data with active record
+    React.useEffect(() => {
+        if (entity.activeRecord) {
+            setFormData(entity.activeRecord as EntityFormState);
         }
+    }, [entity.activeRecord]);
 
-        const formFields = transformFieldsToFormFields(entity.fieldInfo);
+    // Memoize form fields
+    const formFields = useMemo(() =>
+            createTransformedFields(entity.fieldInfo),
+        [entity.fieldInfo]
+    );
 
-        return {
-            fields: formFields,
-            formState: entity.activeRecord as EntityFormState,
-            onUpdateField: (name: string, value: any) => {
-                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-
-                const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce((acc, field) => ({
-                    ...acc,
-                    [field]: entity.activeRecord[field]
-                }), {} as Record<string, MatrxRecordId>);
-
-                const update = {
-                    [name]: value
-                } as Partial<EntityData<TEntity>>;
-
-                entity.updateRecord(primaryKeyValues, update);
-            },
-            onSubmit: () => {
-                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-                console.log('Form submitted:', entity.activeRecord);
-            },
-            layout: 'grid',
-            direction: 'row',
-            enableSearch: false,
-            columns: 2,
-            isSinglePage: true,
-            isFullPage: true
-        };
-    }, [entity.fieldInfo, entity.primaryKeyMetadata, entity]);
+    // Memoize form props
+    const formProps: FlexEntityFormProps = useMemo(() => ({
+        fields: formFields,
+        formState: formData,
+        onUpdateField: handleFieldUpdate,
+        onSubmit: handleSubmit,
+        ...DEFAULT_FORM_CONFIG
+    }), [formFields, formData, handleFieldUpdate, handleSubmit]);
 
     if (!entity.entityMetadata) {
         return <MatrxTableLoading />;
@@ -97,47 +130,72 @@ function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentP
     return (
         <div className="p-4">
             {entity.activeRecord && (
-                <FlexAnimatedForm {...formProps} />
+                <ArmaniForm{...formProps} />
             )}
         </div>
     );
 }
 
+// Memoize EntityContent
+const MemoizedEntityContent = React.memo(EntityContent, (prev, next) =>
+    prev.entityKey === next.entityKey
+);
+
+interface DynamicEntityFormState {
+    selectedEntity: EntityKeys | null;
+    error: EntityError | null;
+}
+
 const DynamicEntityForm: React.FC = () => {
-    const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
-    const [error, setError] = useState<EntityError | null>(null);
+    const [state, setState] = useState<DynamicEntityFormState>({
+        selectedEntity: null,
+        error: null
+    });
 
-    const handleEntityChange = (entityKey: EntityKeys | null) => {
-        setError(null);
-        setSelectedEntity(entityKey);
-    };
+    // Memoize handlers
+    const handleEntityChange = useCallback((entityKey: EntityKeys | null) => {
+        setState(prev => ({
+            ...prev,
+            error: null,
+            selectedEntity: entityKey
+        }));
+    }, []);
 
-    const handleRecordLoad = (record: EntityData<EntityKeys>) => {
+    const handleRecordLoad = useCallback((record: EntityData<EntityKeys>) => {
         console.log('Record loaded:', record);
-        setError(null);
-    };
+        setState(prev => ({
+            ...prev,
+            error: null
+        }));
+    }, []);
 
-    const handleError = (error: EntityError) => {
+    const handleError = useCallback((error: EntityError) => {
         console.error('Entity error:', error);
-        setError(error);
-    };
+        setState(prev => ({
+            ...prev,
+            error
+        }));
+    }, []);
+
+    // Memoize header props
+    const headerProps = useMemo(() => ({
+        onEntityChange: handleEntityChange,
+        onRecordLoad: handleRecordLoad,
+        onError: handleError
+    }), [handleEntityChange, handleRecordLoad, handleError]);
 
     return (
         <Card className="w-full">
-            <PreWiredEntityRecordHeader
-                onEntityChange={handleEntityChange}
-                onRecordLoad={handleRecordLoad}
-                onError={handleError}
-            />
+            <PreWiredEntityRecordHeader {...headerProps} />
             <CardContent>
-                {error && (
+                {state.error && (
                     <div className="text-red-500 mb-4">
-                        Error: {error.message}
+                        Error: {state.error.message}
                     </div>
                 )}
-                {selectedEntity ? (
-                    <EntityContent
-                        entityKey={selectedEntity}
+                {state.selectedEntity ? (
+                    <MemoizedEntityContent
+                        entityKey={state.selectedEntity}
                     />
                 ) : (
                      <div className="text-center py-8 text-muted-foreground">
@@ -149,4 +207,4 @@ const DynamicEntityForm: React.FC = () => {
     );
 };
 
-export default DynamicEntityForm;
+export default React.memo(DynamicEntityForm);

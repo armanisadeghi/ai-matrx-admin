@@ -12,6 +12,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
+import { MatrxVariant } from './types';
 
 type MenuItem = {
     label: string;
@@ -40,7 +41,7 @@ type RadioGroup = {
 interface EntityDropdownMenuProps {
     trigger?: React.ReactNode;
     triggerText?: string;
-    triggerVariant?: "default" | "primary" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+    triggerVariant?: MatrxVariant;
     label?: string;
     items?: MenuItem[];
     checkboxItems?: CheckboxItem[];

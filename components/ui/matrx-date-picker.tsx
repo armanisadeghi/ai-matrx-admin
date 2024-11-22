@@ -1,9 +1,9 @@
 import React from 'react';
-import { CalendarIcon } from "lucide-react";
-import { addDays, format } from "date-fns";
-import { cn } from "@/lib/utils";
+import {CalendarIcon} from "lucide-react";
+import {addDays, format} from "date-fns";
+import {cn} from "@/lib/utils";
 
-import { Calendar } from "@/components/ui/calendar";
+import {Calendar} from "@/components/ui/calendar";
 import {
     Popover,
     PopoverContent,
@@ -16,12 +16,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DateRange } from "react-day-picker";
+import {DateRange} from "react-day-picker";
 
 // Import original components to extend them
-import { DatePicker as OriginalDatePicker } from './date-picker';
-import {ButtonVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import { Button } from '../matrx/ArmaniForm/field-components/EntityButton';
+import {DatePicker as OriginalDatePicker} from './date-picker';
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+import {Button} from '../matrx/ArmaniForm/field-components/EntityButton';
 
 // Types
 interface PresetOption {
@@ -31,7 +31,7 @@ interface PresetOption {
 
 interface MatrxDatePickerBaseProps {
     className?: string;
-    buttonVariant?: ButtonVariant;
+    variant?: MatrxVariant;
     icon?: React.ReactNode;
     align?: "start" | "center" | "end";
     placeholder?: string;
@@ -62,17 +62,17 @@ interface MatrxDatePickerWithPresetsProps extends MatrxDatePickerProps {
 }
 
 // Default values
-const defaultIcon = <CalendarIcon className="mr-2 h-4 w-4" />;
+const defaultIcon = <CalendarIcon className="mr-2 h-4 w-4"/>;
 
 const defaultPresets: PresetOption[] = [
-    { label: "Today", value: 0 },
-    { label: "Tomorrow", value: 1 },
-    { label: "In 3 days", value: 3 },
-    { label: "In a week", value: 7 }
+    {label: "Today", value: 0},
+    {label: "Tomorrow", value: 1},
+    {label: "In 3 days", value: 3},
+    {label: "In a week", value: 7}
 ];
 
 const defaults = {
-    buttonVariant: "outline" as const,
+    variant: "outline" as const,
     align: "start" as const,
     placeholder: "Pick a date",
     formatString: "PPP",
@@ -82,24 +82,25 @@ const defaults = {
 };
 
 // Enhanced Single Date Picker
-export const MatrxDatePicker: React.FC<MatrxDatePickerProps> = ({
-    value,
-    onChange,
-    className = "",
-    buttonVariant = defaults.buttonVariant,
-    formatString = defaults.formatString,
-    placeholder = defaults.placeholder,
-    icon = defaults.icon,
-    align = defaults.align,
-    disabled = false,
-    minDate,
-    maxDate,
-}) => {
+export const MatrxDatePicker: React.FC<MatrxDatePickerProps> = (
+    {
+        value,
+        onChange,
+        className = "",
+        variant = defaults.variant,
+        formatString = defaults.formatString,
+        placeholder = defaults.placeholder,
+        icon = defaults.icon,
+        align = defaults.align,
+        disabled = false,
+        minDate,
+        maxDate,
+    }) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <Button
-                    variant={buttonVariant}
+                    variant={variant}
                     className={cn(
                         "w-[240px] justify-start text-left font-normal",
                         !value && "text-muted-foreground",
@@ -127,26 +128,27 @@ export const MatrxDatePicker: React.FC<MatrxDatePickerProps> = ({
 };
 
 // Enhanced Date Range Picker
-export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
-    value,
-    onChange,
-    className = "",
-    buttonVariant = defaults.buttonVariant,
-    numberOfMonths = defaults.numberOfMonths,
-    formatString = "LLL dd, y",
-    placeholder = defaults.placeholder,
-    icon = defaults.icon,
-    align = defaults.align,
-    disabled = false,
-    minDate,
-    maxDate,
-}) => {
+export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = (
+    {
+        value,
+        onChange,
+        className = "",
+        variant = defaults.variant,
+        numberOfMonths = defaults.numberOfMonths,
+        formatString = "LLL dd, y",
+        placeholder = defaults.placeholder,
+        icon = defaults.icon,
+        align = defaults.align,
+        disabled = false,
+        minDate,
+        maxDate,
+    }) => {
     return (
         <div className={cn("grid gap-2", className)}>
             <Popover>
                 <PopoverTrigger asChild>
                     <Button
-                        variant={buttonVariant}
+                        variant={variant}
                         className={cn(
                             "w-[300px] justify-start text-left font-normal",
                             !value && "text-muted-foreground"
@@ -164,8 +166,8 @@ export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
                                 format(value.from, formatString)
                             )
                         ) : (
-                            <span>{placeholder}</span>
-                        )}
+                             <span>{placeholder}</span>
+                         )}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align={align}>
@@ -187,26 +189,27 @@ export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
 };
 
 // Enhanced Date Picker with Presets
-export const MatrxDatePickerWithPresets: React.FC<MatrxDatePickerWithPresetsProps> = ({
-    value,
-    onChange,
-    className = "",
-    buttonVariant = defaults.buttonVariant,
-    formatString = defaults.formatString,
-    placeholder = defaults.placeholder,
-    icon = defaults.icon,
-    align = defaults.align,
-    presets = defaultPresets,
-    presetPlaceholder = defaults.presetPlaceholder,
-    disabled = false,
-    minDate,
-    maxDate,
-}) => {
+export const MatrxDatePickerWithPresets: React.FC<MatrxDatePickerWithPresetsProps> = (
+    {
+        value,
+        onChange,
+        className = "",
+        variant = defaults.variant,
+        formatString = defaults.formatString,
+        placeholder = defaults.placeholder,
+        icon = defaults.icon,
+        align = defaults.align,
+        presets = defaultPresets,
+        presetPlaceholder = defaults.presetPlaceholder,
+        disabled = false,
+        minDate,
+        maxDate,
+    }) => {
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <Button
-                    variant={buttonVariant}
+                    variant={variant}
                     className={cn(
                         "w-[240px] justify-start text-left font-normal",
                         !value && "text-muted-foreground",
@@ -229,7 +232,7 @@ export const MatrxDatePickerWithPresets: React.FC<MatrxDatePickerWithPresetsProp
                     disabled={disabled}
                 >
                     <SelectTrigger>
-                        <SelectValue placeholder={presetPlaceholder} />
+                        <SelectValue placeholder={presetPlaceholder}/>
                     </SelectTrigger>
                     <SelectContent position="popper">
                         {presets.map((preset) => (

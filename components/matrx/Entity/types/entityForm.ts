@@ -2,6 +2,7 @@
 
 import {EntityNameOfficial} from "@/types/schema";
 import {TypeBrand} from "@/types/entityTypes";
+import {AnimationPreset, FormDensity, FormState} from "@/components/matrx/ArmaniForm/ArmaniForm";
 
 export type FormFieldType =
     'text'
@@ -81,7 +82,6 @@ export interface EntityFlexFormField {
     actionKeys?: string[];
     actionProps?: any;
     inlineFields?: object[]; // TODO: Type this correctly.
-
     defaultValue?: any;
     validationFunctions?: string[];
     maxLength?: number;
@@ -107,9 +107,12 @@ export interface EntityFormState {
 
 export interface FlexEntityFormProps {
     fields: EntityFlexFormField[];
-    formState: EntityFormState;
+    formState: FormState;
     onUpdateField: (name: string, value: any) => void;
-    onSubmit: () => void;
+    onSubmit?: () => void;
+    onSubmitUpdate?: (data: FormState) => void;
+    onSubmitCreate?: (data: FormState) => void;
+    onSubmitDelete?: () => void;
     currentStep?: number;
     onNextStep?: () => void;
     onPrevStep?: () => void;
@@ -120,6 +123,8 @@ export interface FlexEntityFormProps {
     layout?: 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
     enableSearch?: boolean;
     direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
+    density?: FormDensity;
+    animationPreset?: AnimationPreset;
 }
 
 

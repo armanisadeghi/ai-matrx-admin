@@ -62,7 +62,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<EntityData<TEntity>>
                         ) => {
-                            entityLogger.log('debug', 'fetchOneSuccess', action.payload);
+                            entityLogger.log('info', 'fetchOneSuccess', action.payload);
 
                             const record = action.payload;
                             const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
@@ -373,9 +373,23 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<MatrxRecordId>
                         ) => {
                             entityLogger.log('debug', 'setSwitchSlectedRecord', action.payload);
-                            removeSelections(state);
-                            state.selection.selectedRecords.push(action.payload);
-                            state.selection.selectionMode = 'single';
+
+                            if (state.selection.selectedRecords.includes(action.payload)) {
+                                entityLogger.log('debug', 'Record does not need to be added. already in selection');
+                                entityLogger.log('debug', 'Current Selectted Records', state.selection.selectedRecords);
+                                entityLogger.log('debug', 'Current active record', state.selection.activeRecord);
+                                if (state.selection.activeRecord !== action.payload) {
+                                    entityLogger.log('debug', 'Active Record is not the same as the selected record. Setting active record');
+                                    state.selection.activeRecord = action.payload;
+                                }
+                                return;
+                            } else {
+                                console.log('Record not in selection. Adding to selection by clearing everything first.');
+                                removeSelections(state);
+                                state.selection.selectedRecords.push(action.payload);
+                                state.selection.selectionMode = 'single';
+                                state.selection.activeRecord = action.payload;
+                            }
                         },
 
                         addToSelection: (

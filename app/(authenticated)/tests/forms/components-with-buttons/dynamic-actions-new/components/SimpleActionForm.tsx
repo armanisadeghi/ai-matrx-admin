@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { X } from 'lucide-react';
-import FieldAction from "./FieldAction";
+import ActionPresentation from "./ActionPresentation";
 
 const InlineFormCard = ({
   parentField,
@@ -34,13 +34,13 @@ const InlineFormCard = ({
               />
               <div className="absolute right-1 flex gap-1 scale-90">
                 {field.actions?.map((action, index) => (
-                  <FieldAction
+                  <ActionPresentation
                     key={index}
                     action={action}
                     field={field}
                     value={values[field.id]}
                     onChange={(e) => onValuesChange(field.id, e)}
-                    fieldComponentProps={field.componentProps}
+                    actionProps={field.actionProps}
                   />
                 ))}
               </div>
@@ -95,13 +95,13 @@ const SimpleActionForm = ({ fields }) => {
             />
             <div className="absolute right-2 flex gap-1">
               {field.actions?.map((action, index) => (
-                <FieldAction
+                <ActionPresentation
                   key={index}
                   action={action}
                   field={field}
                   value={values[field.id]}
                   onChange={(e) => handleChange(field.id, e)}
-                  fieldComponentProps={field.componentProps}
+                  actionProps={field.actionProps}
                   onActionComplete={(isOpen) => handleActionComplete(field.id, isOpen)}
                 />
               ))}

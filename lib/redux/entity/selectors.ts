@@ -66,14 +66,29 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectRecordsByPrimaryKeys = createSelector(
         [selectEntity, (_: RootState, primaryKeyValuesList: Record<string, MatrxRecordId>[]) => primaryKeyValuesList],
         (entity, primaryKeyValuesList) => {
-            return primaryKeyValuesList
-                .map(primaryKeyValues => {
-                    const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
-                    return entity.records[recordKey];
-                })
-                .filter(Boolean);
+            return primaryKeyValuesList.map(primaryKeyValues => {
+                const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+                return entity.records[recordKey];
+            }).filter(Boolean); // Ensure stable reference
         }
     );
+
+    const selectMatrxRecordIdByPrimaryKey = createSelector(
+        [selectEntity, (_: RootState, primaryKeyValues: Record<string, MatrxRecordId>) => primaryKeyValues],
+        (entity, primaryKeyValues): MatrxRecordId => {
+            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+        }
+    );
+
+    const selectMatrxRecordIdsByPrimaryKeys = createSelector(
+        [selectEntity, (_: RootState, primaryKeyValuesList: Record<string, MatrxRecordId>[]) => primaryKeyValuesList],
+        (entity, primaryKeyValuesList) => {
+            return primaryKeyValuesList.map(primaryKeyValues =>
+                createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues)
+            );
+        }
+    );
+
 
     // Quick Reference Selectors
     const selectQuickReference = createSelector(
@@ -702,6 +717,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
         selectFlexFormField,
 
+        selectMatrxRecordIdByPrimaryKey,
+        selectMatrxRecordIdsByPrimaryKeys,
 
     };
 };

@@ -132,6 +132,8 @@ export interface SelectionState {
 
 
 export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
+    console.log('addRecordToSelection called', {recordKey});
+
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
         utilsLogger.log('debug', 'Added new record to selection. Current selection:', {
@@ -253,11 +255,13 @@ export const switchToSingleSelectionMode = (state, recordKey = null) => {
 
 export const switchToMultipleSelectionMode = (state) => {
     state.selection.selectionMode = 'multiple';
+    console.log('switchToMultipleSelectionMode called');
     removeActiveRecord(state);
 }
 
 export const switchToNoSelectionMode = (state) => {
     state.selection.selectionMode = 'none';
+    console.log('switchToNoSelectionMode called');
     removeSelections(state);
 }
 
@@ -280,6 +284,13 @@ export const toggleSelectionMode = (state) => {
 };
 
 export const removeSelections = (state) => {
+    console.log('removeSelections called');
+    console.log('- Current selection:', state.selection.selectedRecords);
+    console.log('- Current active record:', state.selection.activeRecord);
+    console.log('- Current last selected:', state.selection.lastSelected);
+    console.log('- Current last active record:', state.selection.lastActiveRecord);
+
+
     if (state.selection.selectedRecords.length > 0) {
         state.selection.lastSelected = state.selection.selectedRecords[0]
     }
@@ -294,6 +305,7 @@ export const handleSelectionForDeletedRecord = (state, recordKey) => {
     }
     if (state.selection.activeRecord === recordKey) {
         removeActiveRecord(state);
+        console.log('handleSelectionForDeletedRecord called to delete', {recordKey});
     }
 }
 

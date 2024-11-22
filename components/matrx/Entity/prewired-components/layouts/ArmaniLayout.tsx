@@ -33,7 +33,7 @@ import {ComponentDensity} from "@/types/componentConfigTypes";
 import {
     cardVariants, containerVariants,
     densityConfig, getAnimationVariants, layoutTransitions
-} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/config";
+} from "@/config/ui/entity-layout-config";
 import {ArmaniLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/types";
 
 

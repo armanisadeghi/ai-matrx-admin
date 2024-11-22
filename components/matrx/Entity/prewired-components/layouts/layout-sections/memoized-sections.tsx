@@ -8,7 +8,7 @@ import {
     layoutTransitions,
     getAnimationVariants,
     densityConfig
-} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/config";
+} from "@/config/ui/entity-layout-config";
 
 
 import EntitySelection from '../../entity-management/EntitySelection';

@@ -117,16 +117,16 @@ const ACTION_REGISTRY = {
 };
 
 
-export function createActions(dispatch) {
+export function createMatrxActions(dispatch) {
     const createActionHandler = (type, config) => {
+        if (type === ACTION_TYPES.DIRECT) return config.handler;
+        return () => console.log('Action not implemented');
         if (type === ACTION_TYPES.REDUX) {
             return (field, value) => dispatch({
                 type: config.actionType,
                 payload: {field, value, ...config.payload}
             });
         }
-        if (type === ACTION_TYPES.DIRECT) return config.handler;
-        return () => console.log('Action not implemented');
     };
     return Object.fromEntries(
         Object.entries(ACTION_REGISTRY).map(([key, config]) => [
@@ -140,7 +140,7 @@ export function createActions(dispatch) {
 }
 
 export function mapFields(dispatch, fieldDefinitions) {
-    const actionMap = createActions(dispatch);
+    const actionMap = createMatrxActions(dispatch);
 
     const generateId = () =>
         crypto.randomUUID?.() || `field-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
@@ -152,7 +152,7 @@ export function mapFields(dispatch, fieldDefinitions) {
             value = '',
             dataType = 'text',
             type = 'simple',
-            componentProps = {},
+            actionProps = {},
             inlineFields = [],
             actionKeys = [],
             defaultComponent = 'input',
@@ -166,7 +166,7 @@ export function mapFields(dispatch, fieldDefinitions) {
             value,
             dataType,
             type,
-            componentProps,
+            actionProps,
             defaultComponent,
             subComponent,
             inlineFields: inlineFields.map(processField),

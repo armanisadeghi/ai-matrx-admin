@@ -13,6 +13,7 @@ interface QuickReferenceSidebarProps<TEntity extends EntityKeys> {
     onCreateEntityClick?: () => void;
     showCreateNewButton?: boolean;
     className?: string;
+    onAnyChange?: (entityKey: EntityKeys, selectionMode: string, selectedRecordIds: string[], selectedRecords: Record<string, any>[]) => void;
 }
 
 export function QuickReferenceSidebar<TEntity extends EntityKeys>(
@@ -28,6 +29,8 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
         isSelected,
         handleRecordSelect,
         toggleSelectionMode,
+        selectedRecords,
+        selectedRecordIds,
     } = useQuickReference(entityKey);
 
     const getCardClassName = React.useCallback((recordKey: string) => {

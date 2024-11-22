@@ -9,8 +9,7 @@ import {mapFields} from "./action-creator";
 export default function Page() {
     const fieldDefinitions = [
         {
-            id: '1001-func-name',
-            label: 'Function Name',
+            label: 'Function 1 Name',
             defaultComponent: 'select',
             enumValues: [
                 {value: 'someName', label: 'Some name'},
@@ -24,16 +23,14 @@ export default function Page() {
             actionProps: {}
         },
         {
-            id: '1001-module_name',
             label: 'Module Name',
             defaultComponent: 'input',
             subComponent: null,
             type: 'simple',
             actionKeys: ['entityQuickSidebar'],
-            componentProps: {entityKey: 'emails'},
+            actionProps: {entityKey: 'emails'},
         },
         {
-            id: 'func_description',
             label: 'Function Description',
             defaultComponent: 'Textarea',
             subComponent: "RichText",
@@ -41,34 +38,29 @@ export default function Page() {
             actionKeys: []
         },
         {
-            id: '1002-args',
             label: 'Arguments',
             defaultComponent: 'input',
             type: 'relation',
             actionKeys: ['entityList'],
-            componentProps: {entityKey: 'registeredFunction'},
+            actionProps: {entityKey: 'registeredFunction'},
             inlineFields: [
                 {
-                    id: 'arg_id',
                     label: 'ID',
                     type: 'custom',
                     actionKeys: ['entityList'],
-                    componentProps: {entityKey: 'arg', showCreateNewButton: false}
+                    actionProps: {entityKey: 'arg', showCreateNewButton: false}
                 },
                 {
-                    id: 'argName',
                     label: 'Name',
                     type: 'sheet',
                     actionKeys: ['sheetTriggerAction']
                 },
                 {
-                    id: '1005',
                     label: 'Value',
                     type: 'sheet',
                     actionKeys: ['sheetTriggerAction']
                 },
                 {
-                    id: '1006',
                     label: 'Ready',
                     defaultComponent: 'select',
                     enumValues: [
@@ -79,7 +71,6 @@ export default function Page() {
                     actionKeys: ['sheetTriggerAction']
                 },
                 {
-                    id: '1007',
                     label: 'Description',
                     type: 'sheet',
                     actionKeys: ['sheetTriggerAction']
@@ -87,28 +78,24 @@ export default function Page() {
             ]
         },
         {
-            id: '1002-sys-func',
             label: 'System Function',
             defaultComponent: 'input',
             type: 'relation',
             actionKeys: ['entityList'],
-            componentProps: {entityKey: 'registeredFunction'},
+            actionProps: {entityKey: 'registeredFunction'},
             inlineFields: [
                 {
-                    id: 'sys_func_id',
                     label: 'Function ID',
                     type: 'custom',
                     actionKeys: ['entityList'],
-                    componentProps: {entityKey: 'systemFunction', showCreateNewButton: false}
+                    actionProps: {entityKey: 'systemFunction', showCreateNewButton: true}
                 },
                 {
-                    id: 'funcName',
                     label: 'Official Function Name',
                     type: 'sheet',
                     actionKeys: []
                 },
                 {
-                    id: 'description',
                     label: 'Function Description',
                     type: 'sheet',
                     actionKeys: []
@@ -116,20 +103,17 @@ export default function Page() {
             ]
         },
         {
-            id: '1002-json-test',
             label: 'Configuration',
             type: 'json',
             actionKeys: ['jsonEditor']
         },
         {
-            id: '1003-entity-list',
             label: 'Entity Selection',
             type: 'custom',
             actionKeys: ['entityList'],
-            componentProps: {entityKey: 'arg', showCreateNewButton: false}
+            actionProps: {entityKey: 'arg', showCreateNewButton: true}
         },
         {
-            id: '1004-sheet-test',
             label: 'Sheet Field',
             type: 'sheet',
             actionKeys: ['sheetTriggerAction']

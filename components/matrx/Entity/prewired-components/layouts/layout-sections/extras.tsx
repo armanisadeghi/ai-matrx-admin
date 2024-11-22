@@ -3,7 +3,7 @@ import {CardHeader, CardTitle, Tooltip, TooltipContent, TooltipProvider, Tooltip
 import {cn} from "@/lib/utils";
 import {HelpCircle} from "lucide-react";
 import {ComponentDensity} from "@/types/componentConfigTypes";
-import {densityConfig} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/config";
+import {densityConfig} from "@/config/ui/entity-layout-config";
 
 
 export const LayoutHeader: React.FC<{

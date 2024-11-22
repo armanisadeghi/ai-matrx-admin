@@ -5,6 +5,7 @@ import { motion, MotionProps } from "framer-motion";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 
 
 
@@ -16,9 +17,11 @@ const buttonVariants = cva(
                 default:
                     "bg-primary text-primary-foreground shadow hover:bg-primary/90",
                 primary:
-                    "bg-primary text-primary-foreground shadow hover:bg-primary/90", // Alias for default
+                    "bg-primary text-primary-foreground shadow hover:bg-primary/90",
                 destructive:
                     "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+                success:
+                    "bg-green-500 dark:bg-green-600 text-white shadow-sm hover:bg-green-600 dark:hover:bg-green-700",
                 outline:
                     "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
                 secondary:
@@ -48,7 +51,7 @@ export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement>,
         VariantProps<typeof buttonVariants> {
     asChild?: boolean;
-    icon?: React.ReactNode; // Icon prop for adding an icon
+    icon?: React.ReactNode;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -69,28 +72,25 @@ export { Button, buttonVariants };
 
 
 
-
-
-
-
-
-
-const EntityButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & ButtonProps & MotionProps & { disabled?: boolean }> = (
-    {
-        children,
-        className,
-        disabled = false,
-        icon,
-        ...props
-    }) => (
+const EntityButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & ButtonProps & MotionProps & {
+    disabled?: boolean;
+    variant?: MatrxVariant;
+}> = ({
+          children,
+          className,
+          disabled = false,
+          icon,
+          variant = 'default',
+          ...props
+      }) => (
     <motion.button
-        whileHover={disabled ? undefined : { scale: 1.05 }} // Disable hover effect when disabled
-        whileTap={disabled ? undefined : { scale: 0.95 }} // Disable tap effect when disabled
-        disabled={disabled} // Apply disabled to button
+        whileHover={disabled ? undefined : { scale: 1.05 }}
+        whileTap={disabled ? undefined : { scale: 0.95 }}
+        disabled={disabled}
         className={cn(
-            "px-4 py-2 bg-primary text-primary-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50",
+            buttonVariants({ variant }),
             disabled ? "opacity-50 cursor-not-allowed" : "",
-            className // Combine classNames
+            className
         )}
         {...props}
     >

@@ -484,7 +484,7 @@ const TriggerSystem = {
     [TRIGGER_TYPES.CUSTOM]: ({component}) => component,
 };
 
-const FieldAction = ({action, field, value, onChange, fieldComponentProps, onActionComplete}) => {
+const ActionPresentation = ({action, field, value, onChange, actionProps, onActionComplete}) => {
     const dispatch = useAppDispatch();
     const Trigger = TriggerSystem[action.triggerType];
     const Presentation = PresentationSystem[action.presentation];
@@ -512,12 +512,10 @@ const FieldAction = ({action, field, value, onChange, fieldComponentProps, onAct
         field,
         value,
         onChange,
-    // Include action result handler
     onResult: handleActionResult,
-    // Include initial search value
     initialSearch: action.props.getFieldValue?.(),
     ...action.props,
-    ...fieldComponentProps
+    ...actionProps
     };
 
     const containerProps = {
@@ -540,4 +538,4 @@ const FieldAction = ({action, field, value, onChange, fieldComponentProps, onAct
     );
 };
 
-export default FieldAction;
+export default ActionPresentation;

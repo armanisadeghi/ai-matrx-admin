@@ -24,15 +24,16 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-     Switch,
+    Switch,
     TooltipProvider
 } from "@/components/ui";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {PRESENTATION_TYPES, TRIGGER_TYPES} from "./action-config";
+import {ACTION_TYPES, PRESENTATION_TYPES, TRIGGER_TYPES} from "./action-config";
 import {Link} from "lucide-react";
 import {BottomDrawer, CenterDrawer, SideDrawer} from "@/components/matrx/ArmaniForm/field-components/EntityDrawer";
-import { EntityDropdownMenu } from "@/components/matrx/ArmaniForm/field-components/EntityDropdownMenu";
+import {EntityDropdownMenu} from "@/components/matrx/ArmaniForm/field-components/EntityDropdownMenu";
 import {cn} from "@/utils/cn";
+import {useEntityAction} from "./hooks/useEntityAction";
 
 type TriggerVariant = "default" | "primary" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 type TooltipSide = "top" | "right" | "bottom" | "left";
@@ -57,9 +58,11 @@ const PresentationSystem = {
     },
     [PRESENTATION_TYPES.SHEET]: ({trigger, content, containerProps}) => {
         const {onActionComplete, ...restContainerProps} = containerProps;
-
+        const handleOpenChange = (isOpen) => {
+            onActionComplete?.(isOpen, {status: isOpen ? 'opened' : 'closed'});
+        };
         return (
-            <Sheet onOpenChange={(isOpen) => onActionComplete?.(isOpen)}>{/* Trigger on close */}
+            <Sheet onOpenChange={handleOpenChange}>
                 <SheetTrigger asChild>{trigger}</SheetTrigger>
                 <SheetContent {...restContainerProps}>
                     {restContainerProps.title && (
@@ -484,58 +487,76 @@ const TriggerSystem = {
     [TRIGGER_TYPES.CUSTOM]: ({component}) => component,
 };
 
-const FieldAction = ({action, field, value, onChange, fieldComponentProps, onActionComplete, density='normal', animationPreset='smooth'}) => {
+const FieldAction = (
+    {
+        matrxAction,
+        field,
+        value,
+        onChange,
+        fieldComponentProps,
+        onActionComplete,
+        density = 'normal',
+        animationPreset = 'smooth'
+    }) => {
+    const {
+        isOpen,
+        context,
+        handleOpen,
+        handleClose,
+        handleResult,
+    } = useEntityAction();
+
     const dispatch = useAppDispatch();
-    const Trigger = TriggerSystem[action.triggerType];
-    const Presentation = PresentationSystem[action.presentation];
+    const actionType = matrxAction.actionType;
+    const triggerConfig = matrxAction.triggerConfig;
+    const presentationConfig = matrxAction.presentationConfig;
+    const actionComponentConfig = matrxAction.actionComponentConfig;
+    const reduxActionConfig = matrxAction.reduxActionConfig;
+    const hookActionConfig = matrxAction.hookActionConfig;
+    const commandActionConfig = matrxAction.commandActionConfig;
+    const directActionConfig = matrxAction.directActionConfig;
 
-  const handleActionResult = (result) => {
-    if (action.props.setFieldValue) {
-      action.props.setFieldValue(result);
-    }
-  };
+    const Trigger = TriggerSystem[matrxAction.triggerType];
+    const Presentation = PresentationSystem[matrxAction.presentation];
+    const ActionComponent = matrxAction.component;
 
-    const triggerProps = {
-        icon: action.icon,
-        label: action.label,
-    onClick: () => {
 
-      // Pass current field value to action handler
-      const currentValue = action.props.getFieldValue?.();
-
-      action.handleAction?.(field, currentValue);
-    },
-        className: "h-8 px-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center gap-1",
+    const handleActionResult = (result) => {
+        if (matrxAction.props.setFieldValue) {
+            matrxAction.props.setFieldValue(result);
+        }
     };
 
-    const ActionComponent = action.component;
+    const triggerProps = {
+        icon: matrxAction.icon,
+        label: matrxAction.label,
+        onClick: () => {
+            const currentValue = matrxAction.props.getFieldValue?.();
+            matrxAction.handleAction?.(field, currentValue);
+        },
+        className: "h-8 px-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center gap-1",
+    };
 
     const componentProps = {
         field,
         value,
         onChange,
         density: 'normal',
-        animationPreset:'smooth',
-
-    // Include action result handler
-    onResult: handleActionResult,
-
-    // Include initial search value
-    initialSearch: action.props.getFieldValue?.(),
-
-    ...action.props,
-    ...fieldComponentProps
+        animationPreset: 'smooth',
+        onResult: handleActionResult,
+        initialSearch: matrxAction.props.getFieldValue?.(),
+        ...matrxAction.props,
+        ...fieldComponentProps
     };
 
     const containerProps = {
-        ...action.containerProps,
-    // Wrap onActionComplete to handle results
-    onActionComplete: (isOpen, result) => {
-      if (!isOpen && result) {
-        handleActionResult(result);
-      }
-      onActionComplete?.(isOpen, result);
-    }
+        ...matrxAction.containerProps,
+        onActionComplete: (isOpen, result) => {
+            if (!isOpen && result) {
+                handleActionResult(result);
+            }
+            onActionComplete?.(isOpen, result);
+        }
     };
 
     return (

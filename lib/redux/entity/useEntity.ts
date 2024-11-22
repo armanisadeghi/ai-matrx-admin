@@ -2,7 +2,7 @@
 import * as React from 'react';
 import {useMemo, useCallback, useState, useEffect} from 'react';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {useAppSelector, useAppDispatch} from '@/lib/redux/hooks';
+import {useAppSelector, useAppDispatch, useAppStore} from '@/lib/redux/hooks';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {
     MatrxRecordId,
@@ -17,6 +17,13 @@ import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
 import {QueryOptions} from "@/lib/redux/entity/sagaHelpers";
 import {createRecordKey} from '@/lib/redux/entity/utils';
+import {useEntitySelection} from "@/lib/redux/entity/hooks/useEntitySelection";
+import {Callback, callbackManager} from "@/utils/callbackManager";
+import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
+import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
+
+import {useActiveRecords} from "@/lib/redux/entity/hooks/useActiveRecords";
+import { useEntityToasts } from './hooks/useEntityToasts';
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000
@@ -24,9 +31,19 @@ const entityDefaultSettings = {
 
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const store = useAppStore();
+
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
+
     const [lastError, setLastError] = useState<any>(null);
+
+    const selection = useEntitySelection(entityKey);
+    const quickReference = useQuickReference(entityKey);
+    const validation = useEntityValidation(entityKey);
+    const toasts = useEntityToasts(entityKey);
+
+    const activeRecordsAnyEntity = useActiveRecords();  // NOTE: Not Entity specific.
 
     const safeDispatch = useCallback((action: any) => {
         try {
@@ -37,21 +54,16 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         }
     }, [dispatch, entityKey]);
 
-    // Enhanced Selectors
     const allRecords = useAppSelector(selectors.selectAllRecords);
     const entityDisplayName = useAppSelector(selectors.selectEntityDisplayName);
     const fieldInfo = useAppSelector(selectors.selectFieldInfo);
     const fieldOptions = useAppSelector(selectors.selectFieldOptions);
     const tableColumns = useAppSelector(selectors.selectTableColumns);
-    const selectionSummary = useAppSelector(selectors.selectSelectionSummary);
     const metadataSummary = useAppSelector(selectors.selectMetadataSummary);
     const dataState = useAppSelector(selectors.selectDataState);
     const paginationExtended = useAppSelector(selectors.selectPaginationExtended);
     const historyState = useAppSelector(selectors.selectHistoryState);
     const currentPageFiltered = useAppSelector(selectors.selectCurrentPageFiltered);
-    const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
-    const activeRecord = useAppSelector(selectors.selectActiveRecord);
-    const selectionMode = useAppSelector(selectors.selectSelectionMode);
     const paginationInfo = useAppSelector(selectors.selectPaginationInfo);
     const currentPage = useAppSelector(selectors.selectCurrentPage);
     const currentFilters = useAppSelector(selectors.selectCurrentFilters);
@@ -64,63 +76,42 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
     const displayField = useAppSelector(selectors.selectDisplayField);
     const history = useAppSelector(selectors.selectHistory);
+    const selectedRecordsWithKey = useAppSelector(selectors.selectSelectedRecordsWithKey);
 
-    const recordByPrimaryKey = (primaryKeyValues: Record<string, MatrxRecordId>) => {
-        const selector = useMemo(
-            () => (state: RootState) => selectors.selectRecordByPrimaryKey(state, primaryKeyValues),
-            [primaryKeyValues]
-        );
-        return useAppSelector(selector);
-    };
-
-    const getRecordByPrimaryKey = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
-        if (!entityMetadata?.primaryKeyMetadata) return null;
-        const recordKey = createRecordKey(entityMetadata.primaryKeyMetadata, primaryKeyValues);
-        return allRecords[recordKey];
-    }, [allRecords, entityMetadata?.primaryKeyMetadata]);
-
-
-    const recordsByPrimaryKeys = (primaryKeyValuesList: Record<string, MatrxRecordId>[]) => {
-        const selector = useMemo(
-            () => (state: RootState) => selectors.selectRecordsByPrimaryKeys(state, primaryKeyValuesList),
-            [primaryKeyValuesList]
-        );
-        return useAppSelector(selector);
-    };
-
-    const quickReference = useAppSelector(selectors.selectQuickReference);
-
-    const quickReferenceByPrimaryKey = (primaryKeyValues: Record<string, MatrxRecordId>) => {
-        const selector = useMemo(
-            () => (state: RootState) => selectors.selectQuickReferenceByPrimaryKey(state, primaryKeyValues),
-            [primaryKeyValues]
-        );
-        return useAppSelector(selector);
-    };
-
-    const recordWithDisplay = (recordKey: string) => {
-        const selector = useMemo(
-            () => (state: RootState) => selectors.selectRecordWithDisplay(state, recordKey),
-            [recordKey]
-        );
-        return useAppSelector(selector);
-    };
-
-    const fetchRecords = useCallback((page: number, pageSize: number, options?: QueryOptions<TEntity>) => {
-        dispatch(actions.fetchRecords({page, pageSize, options}));
-    }, [dispatch, actions]);
-
-    const entityState = useAppSelector((state) => {
+    const entityState = (state: RootState) => {
         return state.entities[entityKey];
-    });
+    }
 
-    const fetchOne = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
-        dispatch(actions.fetchOne({primaryKeyValues}));
-    }, [dispatch, actions]);
+    const recordByPrimaryKey = useMemo(() => {
+        return (primaryKeyValues: Record<string, MatrxRecordId>) =>
+            selectors.selectRecordByPrimaryKey(store.getState(), primaryKeyValues);
+    }, [selectors, store]);
 
-    const fetchAll = useCallback(() => {
-        dispatch(actions.fetchAll());
-    }, [dispatch, actions]);
+    const recordsByPrimaryKeys = useMemo(() => {
+        return (primaryKeyValuesList: Record<string, MatrxRecordId>[]) =>
+            selectors.selectRecordsByPrimaryKeys(store.getState(), primaryKeyValuesList);
+    }, [selectors, store]);
+
+    const matrxRecordIdByPrimaryKey = useMemo(() => {
+        return (primaryKeyValues: Record<string, MatrxRecordId>) =>
+            selectors.selectMatrxRecordIdByPrimaryKey(store.getState(), primaryKeyValues);
+    }, [selectors, store]);
+
+    const matrxRecordIdsByPrimaryKeys = useMemo(() => {
+        return (primaryKeyValuesList: Record<string, MatrxRecordId>[]) =>
+            selectors.selectMatrxRecordIdsByPrimaryKeys(store.getState(), primaryKeyValuesList);
+    }, [selectors, store]);
+
+    const quickReferenceByPrimaryKey = useMemo(() => {
+        return (primaryKeyValues: Record<string, MatrxRecordId>) =>
+            selectors.selectQuickReferenceByPrimaryKey(store.getState(), primaryKeyValues);
+    }, [selectors, store]);
+
+    const recordWithDisplay = useMemo(() => {
+        return (recordKey: string) =>
+            selectors.selectRecordWithDisplay(store.getState(), recordKey);
+    }, [selectors, store]);
+
 
     const fetchQuickReference = useCallback((): void => {
         dispatch(actions.fetchQuickReference({maxRecords: entityDefaultSettings.maxQuickReferenceRecords}));
@@ -135,24 +126,96 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     }, [dispatch, actions]);
 
 
-    const createRecord = useCallback((data: EntityData<TEntity>) => {
-        dispatch(actions.createRecord(data));
+    const fetchRecords = useCallback((page: number, pageSize: number, options?: QueryOptions<TEntity>) => {
+        dispatch(actions.fetchRecords({page, pageSize, options}));
     }, [dispatch, actions]);
 
-    const updateRecord = useCallback((
-        primaryKeyValues: Record<string, MatrxRecordId>,
-        data: Partial<EntityData<TEntity>>
+    const fetchOne = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
+        dispatch(actions.fetchOne({primaryKeyValues}));
+    }, [dispatch, actions]);
+
+    const fetchAll = React.useCallback((callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.fetchAll({
+                callbackId,
+            })
+        );
+    }, [actions, dispatch]);
+
+    const createRecord = React.useCallback((
+        data: Partial<EntityData<TEntity>>,
+        options?: { callback?: Callback; showToast?: boolean }
     ) => {
-        dispatch(actions.updateRecord({primaryKeyValues, data}));
-    }, [dispatch, actions]);
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            if (result.success) {
+                toasts.handleCreateSuccess({ showToast: options?.showToast });
+            } else {
+                toasts.handleError(result.error, 'create', { showToast: options?.showToast });
+            }
+            options?.callback?.(result);
+        };
 
-    const deleteRecord = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
-        dispatch(actions.deleteRecord({primaryKeyValues}));
-    }, [dispatch, actions]);
+        const callbackId = callbackManager.register(wrappedCallback);
 
-    const clearSelection = useCallback(() => {
-        dispatch(actions.clearSelection());
-    }, [dispatch, actions]);
+        dispatch(
+            actions.createRecord({
+                data,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch, toasts]);
+
+    const updateRecord = React.useCallback((
+        matrxRecordId: MatrxRecordId,
+        data: Partial<EntityData<TEntity>>,
+        options?: { callback?: Callback; showToast?: boolean }
+    ) => {
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            if (result.success) {
+                toasts.handleUpdateSuccess({ showToast: options?.showToast });
+            } else {
+                toasts.handleError(result.error, 'update', { showToast: options?.showToast });
+            }
+            options?.callback?.(result);
+        };
+
+        const callbackId = callbackManager.register(wrappedCallback);
+
+        dispatch(
+            actions.updateRecord({
+                matrxRecordId,
+                data,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch, toasts]);
+
+    const deleteRecord = React.useCallback((
+        matrxRecordId: MatrxRecordId,
+        options?: { callback?: Callback; showToast?: boolean }
+    ) => {
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            if (result.success) {
+                toasts.handleDeleteSuccess({ showToast: options?.showToast });
+            } else {
+                toasts.handleError(result.error, 'delete', { showToast: options?.showToast });
+            }
+            options?.callback?.(result);
+        };
+
+        const callbackId = callbackManager.register(wrappedCallback);
+
+        dispatch(
+            actions.deleteRecord({
+                matrxRecordId,
+                callbackId,
+            })
+        );
+    }, [actions, dispatch, toasts]);
+
+
 
     const setFilters = useCallback((payload: FilterPayload) => {
         dispatch(actions.setFilters(payload));
@@ -174,13 +237,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         dispatch(actions.invalidateCache());
     }, [dispatch, actions]);
 
-    const addToSelection = useCallback((recordId: MatrxRecordId) => {
-        safeDispatch(actions.addToSelection(recordId));
-    }, [safeDispatch, actions]);
-
-    const removeFromSelection = useCallback((record: Draft<EntityData<TEntity>>) => {
-        safeDispatch(actions.removeFromSelection(record));
-    }, [safeDispatch, actions]);
 
 
     // Optimistic Update Support
@@ -201,12 +257,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         }));
     }, [safeDispatch, actions]);
 
-    const isSelected = useCallback((record: EntityData<TEntity>) => {
-        return selectedRecords.some(selected =>
-            createRecordKey(primaryKeyMetadata, selected) ===
-            createRecordKey(primaryKeyMetadata, record)
-        );
-    }, [selectedRecords, primaryKeyMetadata]);
 
     return {
         entityDisplayName,
@@ -224,15 +274,33 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         tableColumns,
 
         // Quick Reference
-        quickReference,
         quickReferenceByPrimaryKey,
 
         // Selection
-        selectedRecords,
-        activeRecord,
-        selectionMode,
-        selectionSummary,
-        isSelected,
+        // Selection Management (from useEntitySelection)
+        selectedRecordIds: selection.selectedRecordIds,
+        activeRecordId: selection.activeRecordId,
+        selectedRecords: selection.selectedRecords,
+        activeRecord: selection.activeRecord,
+        selectionMode: selection.selectionMode,
+        summary: selection.summary,
+
+        // Selection Utilities
+        isSelected: selection.isSelected,
+        isActive: selection.isActive,
+        toggleSelectionMode: selection.toggleSelectionMode,
+        clearSelection: selection.clearSelection,
+        handleSingleSelection: selection.handleSingleSelection,
+
+        addToSelection: selection.handleSelection,
+
+        // All Active Records, Quick Reference, Validation hooks extended
+        quickReference,
+        validation,
+        activeRecordsAnyEntity,
+
+
+
 
         // Pagination
         paginationInfo,
@@ -264,8 +332,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         history,
 
         // Enhanced Actions
-        addToSelection,
-        removeFromSelection,
         optimisticUpdate,
 
 
@@ -282,7 +348,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         createRecord,
         updateRecord,
         deleteRecord,
-        clearSelection,
+
         setFilters,
         setSorting,
         clearFilters,
@@ -293,5 +359,11 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         lastError,
         clearError: () => setLastError(null),
         handleError,
+
+        matrxRecordIdByPrimaryKey,
+        matrxRecordIdsByPrimaryKeys,
+        entityState,
+
+        selectedRecordsWithKey,
     };
 };

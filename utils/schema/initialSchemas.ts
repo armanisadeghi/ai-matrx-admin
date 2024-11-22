@@ -84,9 +84,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -119,7 +121,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea:3' as const,
+                defaultComponent: 'textarea' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -134,9 +136,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -184,9 +188,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -234,9 +240,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -269,7 +277,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input:50' as const,
+                defaultComponent: 'input' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -284,9 +292,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -334,9 +344,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -372,6 +384,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
+                entityName: 'action',
                 databaseTable: 'automation_matrix',
             },
             transformerReference: {
@@ -400,6 +413,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
+                entityName: 'action',
                 databaseTable: 'transformer',
             },
         },
@@ -506,9 +520,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -556,9 +572,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -606,9 +624,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -656,9 +676,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -706,9 +728,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -756,9 +780,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -806,9 +832,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -907,9 +935,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -957,9 +987,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1007,9 +1039,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1057,9 +1091,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1107,9 +1143,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1157,9 +1195,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1207,9 +1247,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1257,9 +1299,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1307,9 +1351,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1357,9 +1403,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1395,6 +1443,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
+                entityName: 'aiModel',
                 databaseTable: 'recipe_model',
             },
         },
@@ -1501,9 +1550,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1551,9 +1602,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1601,9 +1654,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1651,9 +1706,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1686,7 +1743,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -1701,9 +1758,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1751,9 +1810,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1801,9 +1862,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1839,6 +1902,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
+                entityName: 'arg',
                 databaseTable: 'registered_function',
             },
         },
@@ -1938,9 +2002,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1988,9 +2054,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2038,9 +2106,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2073,7 +2143,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2088,9 +2158,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2123,7 +2195,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2138,9 +2210,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2176,6 +2250,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'broker',
             },
             automationMatrixReference: {
@@ -2204,6 +2279,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_matrix',
             },
         },
@@ -2310,9 +2386,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2360,9 +2438,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2410,9 +2490,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2445,7 +2527,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2460,9 +2542,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2510,9 +2594,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2545,7 +2631,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2560,9 +2646,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2598,6 +2686,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+                entityName: 'automationMatrix',
                 databaseTable: 'action',
             },
             automationBoundaryBrokerInverse: {
@@ -2626,6 +2715,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_boundary_broker',
             },
         },
@@ -2746,9 +2836,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2796,9 +2888,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2846,9 +2940,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2881,7 +2977,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2896,9 +2992,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2946,9 +3044,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2981,7 +3081,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -2996,9 +3096,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3046,9 +3148,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3096,9 +3200,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3146,9 +3252,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3196,9 +3304,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3246,9 +3356,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3296,9 +3408,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3346,9 +3460,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3396,9 +3512,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3431,7 +3549,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3446,9 +3564,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3481,7 +3601,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3496,9 +3616,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3546,9 +3668,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3584,6 +3708,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'data_input_component',
             },
             recipeBrokerInverse: {
@@ -3612,6 +3737,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'recipe_broker',
             },
             registeredFunctionInverse: {
@@ -3640,6 +3766,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'registered_function',
             },
             automationBoundaryBrokerInverse: {
@@ -3668,6 +3795,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'automation_boundary_broker',
             },
         },
@@ -3802,9 +3930,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3852,9 +3982,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3902,9 +4034,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3937,7 +4071,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:float' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -3952,9 +4086,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3987,7 +4123,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:float' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4002,9 +4138,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4037,7 +4175,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:int' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4052,9 +4190,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4087,7 +4227,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4102,9 +4242,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4137,7 +4279,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4152,9 +4294,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4202,9 +4346,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4252,9 +4398,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4302,9 +4450,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4352,9 +4502,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4402,9 +4554,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4440,6 +4594,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
+                entityName: 'dataInputComponent',
                 databaseTable: 'broker',
             },
         },
@@ -4539,9 +4694,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4574,7 +4731,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -4589,9 +4746,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4639,9 +4798,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4689,9 +4850,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4739,9 +4902,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4840,9 +5005,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4890,9 +5057,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4940,9 +5109,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4990,9 +5161,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5040,9 +5213,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5078,6 +5253,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['displayOption'][]>,
+                entityName: 'displayOption',
                 databaseTable: 'recipe_display',
             },
         },
@@ -5184,9 +5360,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5234,9 +5412,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5284,9 +5464,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5334,9 +5516,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5384,9 +5568,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5434,9 +5620,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5484,9 +5672,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5585,9 +5775,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5635,9 +5827,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5670,7 +5864,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5685,9 +5879,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5735,9 +5931,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5770,7 +5968,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -5785,9 +5983,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5886,9 +6086,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5936,9 +6138,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5986,9 +6190,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6036,9 +6242,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6086,9 +6294,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6136,9 +6346,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6186,9 +6398,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6236,9 +6450,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6286,9 +6502,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6336,9 +6554,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6386,9 +6606,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6436,9 +6658,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6486,9 +6710,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6521,7 +6747,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'multi-select:uuid' as const,
+                defaultComponent: 'uuidArray' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -6536,9 +6762,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6586,9 +6814,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6636,9 +6866,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6674,6 +6906,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_history',
             },
             flashcardSetRelationsInverse: {
@@ -6702,6 +6935,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_set_relations',
             },
             flashcardImagesInverse: {
@@ -6730,6 +6964,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_images',
             },
         },
@@ -6850,9 +7085,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6900,9 +7137,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6950,9 +7189,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6985,7 +7226,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:int' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7000,9 +7241,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7035,7 +7278,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:int' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7050,9 +7293,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7085,7 +7330,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:int' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7100,9 +7345,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7150,9 +7397,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7200,9 +7449,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7238,6 +7489,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardHistory'][]>,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_data',
             },
         },
@@ -7337,9 +7589,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7387,9 +7641,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7437,9 +7693,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7487,9 +7745,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7537,9 +7797,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7572,7 +7834,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:int' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7587,9 +7849,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7637,9 +7901,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7675,6 +7941,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardImages'][]>,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_data',
             },
         },
@@ -7777,9 +8044,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7827,9 +8096,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7862,7 +8133,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:int' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -7877,9 +8148,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7915,6 +8188,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_data',
             },
             flashcardSetsReference: {
@@ -7943,6 +8217,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_sets',
             },
         },
@@ -8049,9 +8324,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8099,9 +8376,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8149,9 +8428,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8199,9 +8480,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8249,9 +8532,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8284,7 +8569,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'multi-select:uuid' as const,
+                defaultComponent: 'uuidArray' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -8299,9 +8584,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8349,9 +8636,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8399,9 +8688,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8449,9 +8740,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8499,9 +8792,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8549,9 +8844,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8587,6 +8884,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSets'][]>,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_set_relations',
             },
         },
@@ -8693,9 +8991,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8743,9 +9043,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8793,9 +9095,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8843,9 +9147,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8893,9 +9199,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8931,6 +9239,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
+                entityName: 'processor',
                 databaseTable: 'processor',
             },
             recipeProcessorInverse: {
@@ -8959,6 +9268,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
+                entityName: 'processor',
                 databaseTable: 'recipe_processor',
             },
         },
@@ -9072,9 +9382,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9122,9 +9434,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9172,9 +9486,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9222,9 +9538,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9272,9 +9590,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9322,9 +9642,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9357,7 +9679,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9372,9 +9694,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9407,7 +9731,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9422,9 +9746,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9457,7 +9783,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json-array:200' as const,
+                defaultComponent: 'json' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -9472,9 +9798,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9522,9 +9850,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9560,6 +9890,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe_broker',
             },
             recipeProcessorInverse: {
@@ -9588,6 +9919,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe_processor',
             },
             recipeModelInverse: {
@@ -9616,6 +9948,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe_model',
             },
             recipeDisplayInverse: {
@@ -9644,6 +9977,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe_display',
             },
             recipeFunctionInverse: {
@@ -9672,6 +10006,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe_function',
             },
             recipeToolInverse: {
@@ -9700,6 +10035,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe_tool',
             },
         },
@@ -9876,9 +10212,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9926,9 +10264,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9976,9 +10316,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10011,7 +10353,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -10026,9 +10368,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10076,9 +10420,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10114,6 +10460,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+                entityName: 'recipeBroker',
                 databaseTable: 'broker',
             },
             recipeReference: {
@@ -10142,6 +10489,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe',
             },
         },
@@ -10248,9 +10596,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10298,9 +10648,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10348,9 +10700,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10383,7 +10737,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -10398,9 +10752,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10448,9 +10804,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10486,6 +10844,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+                entityName: 'recipeDisplay',
                 databaseTable: 'display_option',
             },
             recipeReference: {
@@ -10514,6 +10873,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe',
             },
         },
@@ -10620,9 +10980,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10670,9 +11032,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10720,9 +11084,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10755,7 +11121,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -10770,9 +11136,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10820,9 +11188,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10858,6 +11228,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+                entityName: 'recipeFunction',
                 databaseTable: 'system_function',
             },
             recipeReference: {
@@ -10886,6 +11257,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe',
             },
         },
@@ -10992,9 +11364,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11042,9 +11416,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11092,9 +11468,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11127,7 +11505,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select:enum' as const,
+                defaultComponent: 'select' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -11142,9 +11520,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11177,7 +11557,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number:smallint' as const,
+                defaultComponent: 'number' as const,
                 componentProps: {
                     "variant": "default",
                     "placeholder": "default",
@@ -11192,9 +11572,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11230,6 +11612,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
+                entityName: 'recipeModel',
                 databaseTable: 'ai_model',
             },
             recipeReference: {
@@ -11258,6 +11641,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe',
             },
         },
@@ -11364,9 +11748,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11414,9 +11800,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11464,9 +11852,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11514,9 +11904,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11552,6 +11944,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
+                entityName: 'recipeProcessor',
                 databaseTable: 'processor',
             },
             recipeReference: {
@@ -11580,6 +11973,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe',
             },
         },
@@ -11686,9 +12080,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11736,9 +12132,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11786,9 +12184,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11836,9 +12236,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11874,6 +12276,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe',
             },
             toolReference: {
@@ -11902,6 +12305,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
+                entityName: 'recipeTool',
                 databaseTable: 'tool',
             },
         },
@@ -12008,9 +12412,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12058,9 +12464,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12108,9 +12516,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12158,9 +12568,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12208,9 +12620,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12258,9 +12672,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12296,6 +12712,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                entityName: 'registeredFunction',
                 databaseTable: 'broker',
             },
             systemFunctionInverse: {
@@ -12324,6 +12741,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                entityName: 'registeredFunction',
                 databaseTable: 'system_function',
             },
             argInverse: {
@@ -12352,6 +12770,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                entityName: 'registeredFunction',
                 databaseTable: 'arg',
             },
         },
@@ -12465,9 +12884,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12515,9 +12936,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12565,9 +12988,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12615,9 +13040,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12665,9 +13092,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12715,9 +13144,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12765,9 +13196,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12803,6 +13236,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+                entityName: 'systemFunction',
                 databaseTable: 'registered_function',
             },
             toolInverse: {
@@ -12831,6 +13265,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+                entityName: 'systemFunction',
                 databaseTable: 'tool',
             },
             recipeFunctionInverse: {
@@ -12859,6 +13294,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+                entityName: 'systemFunction',
                 databaseTable: 'recipe_function',
             },
         },
@@ -12979,9 +13415,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13029,9 +13467,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13079,9 +13519,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13129,9 +13571,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13179,9 +13623,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13229,9 +13675,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13279,9 +13727,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13329,9 +13779,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13367,6 +13819,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
+                entityName: 'tool',
                 databaseTable: 'system_function',
             },
             recipeToolInverse: {
@@ -13395,6 +13848,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
+                entityName: 'tool',
                 databaseTable: 'recipe_tool',
             },
         },
@@ -13508,9 +13962,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13558,9 +14014,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13608,9 +14066,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13658,9 +14118,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13696,6 +14158,7 @@ export const initialAutomationTableSchema = {
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
+                entityName: 'transformer',
                 databaseTable: 'action',
             },
         },
@@ -13802,9 +14265,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13852,9 +14317,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13902,9 +14369,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13952,9 +14421,11 @@ export const initialAutomationTableSchema = {
                     "className": "default",
                     "type": "default",
                     "onChange": "default",
+                    "onBlur": "default",
                     "formatString": "default",
                     "minDate": "default",
-                    "maxDate": "default"
+                    "maxDate": "default",
+                    "numberType": "default"
                 },
                 structure: 'single' as const,
                 isNative: true,

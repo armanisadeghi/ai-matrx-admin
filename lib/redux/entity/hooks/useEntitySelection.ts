@@ -45,9 +45,9 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
 ): UseEntitySelectionReturn<TEntity> => {
     const dispatch = useAppDispatch();
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { actions } = React.useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
+    const {actions} = React.useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
 
-    // Core Selection State
+
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
@@ -55,14 +55,14 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
     const summary = useAppSelector(selectors.selectSelectionSummary);
 
-    // Selection Checks
+
     const isSelected = React.useCallback((recordKey: MatrxRecordId) =>
         selectedRecordIds.includes(recordKey), [selectedRecordIds]);
 
     const isActive = React.useCallback((recordKey: MatrxRecordId) =>
         activeRecordId === recordKey, [activeRecordId]);
 
-    // Core Selection Operations
+
     const handleSelection = React.useCallback((recordKey: MatrxRecordId) => {
         dispatch(actions.addToSelection(recordKey));
     }, [dispatch, actions]);
@@ -75,7 +75,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         }
     }, [dispatch, actions, isSelected]);
 
-    // Mode Management
+
     const setSelectionMode = React.useCallback((mode: SelectionMode) => {
         dispatch(actions.setSelectionMode(mode));
     }, [dispatch, actions]);
@@ -84,7 +84,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         dispatch(actions.setToggleSelectionMode());
     }, [dispatch, actions]);
 
-    // Additional Operations
+
     const clearSelection = React.useCallback(() => {
         dispatch(actions.clearSelection());
     }, [dispatch, actions]);
@@ -94,13 +94,21 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     }, [dispatch, actions]);
 
 
-    React.useEffect(() => {
-        if (selectedRecordIds.length > 0) {
-            dispatch(actions.getOrFetchSelectedRecords(selectedRecordIds));
-        }
-        console.log('Use Effect in useEntitySelection Triggered with: ', selectedRecordIds);
+    const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
 
-    }, [selectedRecordIds]);
+    React.useEffect(() => {
+        if (selectedRecordIds.length > 0 &&
+            !areArraysEqual(lastProcessedIds, selectedRecordIds)) {
+            console.log('Use Effect in useEntitySelection Triggered with: ', selectedRecordIds);
+            setLastProcessedIds(selectedRecordIds);
+            dispatch(actions.getOrFetchSelectedRecords(selectedRecordIds));
+
+        }
+    }, [selectedRecordIds, lastProcessedIds]);
+
+    const areArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) =>
+        a.length === b.length && a.every((val, idx) => val === b[idx]);
+
 
     return {
         // State

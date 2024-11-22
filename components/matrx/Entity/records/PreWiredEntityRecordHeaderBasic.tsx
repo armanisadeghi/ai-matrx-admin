@@ -36,13 +36,12 @@ const RecordSelector: React.FC<{
     }, [entity.entityMetadata]);
 
     const quickReferenceOptions = useMemo(() => {
-        if (!entity?.quickReference) return [];
-
-        return entity.quickReference.map((record: QuickReferenceRecord) => ({
+        if (!entity.quickReference) return [];
+        return entity.quickReference.quickReferenceRecords.map((record: QuickReferenceRecord) => ({
             value: JSON.stringify(record.primaryKeyValues),
             label: record.displayValue || JSON.stringify(record.primaryKeyValues)
         }));
-    }, [entity?.quickReference]);
+    }, [entity.quickReference]);
 
     const handleRecordSelect = (value: string) => {
         setSelectedRecordKey(value);
@@ -128,7 +127,7 @@ const PreWiredEntityRecordHeader: React.FC<PreWiredEntityRecordHeaderProps> = (
                 )}
             </CardTitle>
             <CardDescription>
-                Browse and manage entity records
+                Browse and manage your records
             </CardDescription>
         </CardHeader>
     );

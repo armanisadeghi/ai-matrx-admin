@@ -4,7 +4,9 @@ import React from 'react';
 import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from '@/components/ui/dialog';
 import {Label} from '@/components/ui/label';
-import {Link, Pencil, Upload, Calendar, Clock, Globe, Code, File, Plus} from 'lucide-react';
+import {Link, Pencil, Upload, Calendar, Clock, Globe, Code, File, Plus, InfoIcon} from 'lucide-react';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
+import cn from "classnames";
 
 const actionButtonClass = "h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center gap-2";
 const iconButtonClass = "h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center justify-center";
@@ -178,13 +180,24 @@ const FormField = ({
             </div>
 
             {description && (
-                <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <InfoIcon className={cn(
+                                'text-muted-foreground hover:text-foreground transition-colors'
+                            )} />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="text-md mt-8 text-muted-foreground">{description}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             )}
 
             {optional && (
                 <div className="mt-2">
-                    <h4 className="text-sm text-muted-foreground">Optional Fields</h4>
-                    <p className="text-xs text-muted">These are columns that do not need any value</p>
+                    <h4 className="text-md mt-8 text-muted-foreground">Optional Fields</h4>
+                    <p className="text-s text-muted-foreground">These are columns that do not need any value</p>
                 </div>
             )}
         </div>

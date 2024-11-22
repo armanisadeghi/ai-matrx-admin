@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Info, MinusCircle, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MatrxVariant } from './types'
 
 // Type definitions
 export type NumberType = 'smallint' | 'integer' | 'bigint' | 'decimal'
@@ -37,15 +38,16 @@ export interface EntityNumberInputProps {
         disabled?: boolean
         hideControls?: boolean
         allowNull?: boolean
-        decimals?: number // For decimal type, specify precision
+        decimals?: number
         className?: string
-        min?: number // Override default min
-        max?: number // Override default max
-        step?: number // Override default step
+        min?: number
+        max?: number
+        step?: number
+        variant?: MatrxVariant // Added variant prop
+        buttonVariant?: MatrxVariant // Added button variant prop
     }
 }
 
-// Configuration for different number types
 const NUMBER_TYPE_CONFIGS: Record<NumberType, NumberTypeConfig> = {
     smallint: {
         min: -32768,
@@ -83,7 +85,9 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
         className,
         min: customMin,
         max: customMax,
-        step: customStep
+        step: customStep,
+        variant = 'default',
+        buttonVariant = 'outline'
     } = componentProps || {}
 
     const config = NUMBER_TYPE_CONFIGS[numberType]
@@ -95,7 +99,6 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
     const [displayValue, setDisplayValue] = useState<string>('')
     const [error, setError] = useState<string>('')
 
-    // Format number based on type and decimals
     const formatNumber = (num: number | null): string => {
         if (num === null) return ''
         return numberType === 'decimal'
@@ -103,13 +106,11 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
                : num.toString()
     }
 
-    // Initialize display value
     useEffect(() => {
         setDisplayValue(formatNumber(field.value))
     }, [field.value])
 
     const validateAndSetValue = (value: string) => {
-        // Handle empty input
         if (!value) {
             if (allowNull) {
                 field.onChange(null)
@@ -139,7 +140,6 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
             return
         }
 
-        // For decimal type, validate decimal places
         if (numberType === 'decimal') {
             const decimalPlaces = value.includes('.')
                                   ? value.split('.')[1].length
@@ -175,7 +175,6 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
     }
 
     const handleBlur = () => {
-        // Format the display value on blur
         if (field.value !== null) {
             setDisplayValue(formatNumber(field.value))
         }
@@ -209,7 +208,7 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
                 {!hideControls && (
                     <Button
                         type="button"
-                        variant="outline"
+                        variant={buttonVariant}
                         size="icon"
                         onClick={handleDecrement}
                         disabled={disabled || field.value === null || field.value <= min}
@@ -227,6 +226,7 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
                     step={step}
                     min={min}
                     max={max}
+                    variant={variant}
                     className={cn(
                         "font-mono",
                         error && "border-destructive",
@@ -236,7 +236,7 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
                 {!hideControls && (
                     <Button
                         type="button"
-                        variant="outline"
+                        variant={buttonVariant}
                         size="icon"
                         onClick={handleIncrement}
                         disabled={disabled || field.value === null || field.value >= max}

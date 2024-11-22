@@ -7,24 +7,30 @@ import { selectFormattedEntityOptions } from '@/lib/redux/schema/globalCacheSele
 
 export const useActiveRecords = () => {
     const entityOptions = useAppSelector(selectFormattedEntityOptions);
+
     const entitySelectors = React.useMemo(() => {
         return entityOptions.reduce((acc, { value: entityKey }) => {
             acc[entityKey] = createEntitySelectors(entityKey);
             return acc;
-        }, {} as EntityState<EntityKeys>);
+        }, {} as Record<EntityKeys, ReturnType<typeof createEntitySelectors>>);
     }, [entityOptions]);
 
-    // Subscribe to active records state across all entities
     const activeRecordsState = useAppSelector(state => {
         return entityOptions.reduce((acc, { value: entityKey, label: entityDisplayName }) => {
             const selectors = entitySelectors[entityKey];
+            const activeRecordId = selectors.selectActiveRecordId(state);
+            const activeRecord = selectors.selectActiveRecord(state);
+            const displayField = selectors.selectDisplayField(state);
+            const fieldInfo = selectors.selectFieldInfo(state);
+
             acc[entityKey] = {
-                entityDisplayName: entityDisplayName,
-                activeRecordId: selectors.selectActiveRecordId(state),
-                activeRecord: selectors.selectActiveRecord(state),
-                displayField: selectors.selectDisplayField(state),
-                fieldInfo: selectors.selectFieldInfo(state)
+                entityDisplayName,
+                activeRecordId,
+                activeRecord,
+                displayField,
+                fieldInfo,
             };
+
             return acc;
         }, {} as Record<EntityKeys, {
             activeRecordId: MatrxRecordId | null;
@@ -35,7 +41,6 @@ export const useActiveRecords = () => {
         }>);
     });
 
-    // Find the current active entity and its data
     const activeEntity = React.useMemo(() => {
         for (const [entityKey, state] of Object.entries(activeRecordsState)) {
             if (state.activeRecordId && state.activeRecord) {
@@ -45,7 +50,7 @@ export const useActiveRecords = () => {
                     record: state.activeRecord,
                     entityDisplayName: state.entityDisplayName,
                     displayField: state.displayField,
-                    fieldInfo: state.fieldInfo
+                    fieldInfo: state.fieldInfo,
                 };
             }
         }
@@ -57,32 +62,25 @@ export const useActiveRecords = () => {
 
         return activeEntity.fieldInfo.map(field => ({
             ...field,
-            value: activeEntity.record[field.name]
+            value: activeEntity.record[field.name],
         }));
     }, [activeEntity]);
 
+    const isRecordActive = React.useCallback(
+        (entityKey: EntityKeys, recordId: MatrxRecordId): boolean => {
+            return activeRecordsState[entityKey]?.activeRecordId === recordId;
+        },
+        [activeRecordsState]
+    );
+
     return {
-        // Active record state
         activeEntityKey: activeEntity?.entityKey ?? null,
         activeRecordId: activeEntity?.recordId ?? null,
-
-        // Display metadata
         entityDisplayName: activeEntity?.entityDisplayName ?? '',
         displayField: activeEntity?.displayField ?? '',
-
-        // Combined data
         fields: fieldsWithValues,
-
-        // Raw data access
         rawRecord: activeEntity?.record ?? null,
         rawFieldInfo: activeEntity?.fieldInfo ?? [],
-
-        // Helper function
-        isRecordActive: React.useCallback((
-            entityKey: EntityKeys,
-            recordId: MatrxRecordId
-        ): boolean => {
-            return activeRecordsState[entityKey]?.activeRecordId === recordId;
-        }, [activeRecordsState])
+        isRecordActive,
     };
 };

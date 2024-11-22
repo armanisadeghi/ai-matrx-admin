@@ -76,7 +76,10 @@ export interface FlexAnimatedFormProps {
     fields: FlexFormField[];
     formState: FormState;
     onUpdateField: (name: string, value: any) => void;
-    onSubmit: () => void;
+    onSubmit?: () => void;
+    onSubmitUpdate?: (data: FormState) => void;
+    onSubmitCreate?: (data: FormState) => void;
+    onSubmitDelete?: () => void;
     currentStep?: number;
     onNextStep?: () => void;
     onPrevStep?: () => void;
@@ -97,6 +100,9 @@ const FlexAnimatedForm: React.FC<FlexAnimatedFormProps> = (
         formState,
         onUpdateField,
         onSubmit,
+        onSubmitUpdate,
+        onSubmitCreate,
+        onSubmitDelete,
         currentStep: externalCurrentStep,
         onNextStep: externalOnNextStep,
         onPrevStep: externalOnPrevStep,

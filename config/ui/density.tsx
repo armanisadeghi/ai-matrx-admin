@@ -1578,15 +1578,6 @@ type AnimationSettings = {
     };
 };
 
-type GridSettings = {
-    cols: {
-        auto: string;
-        min: string;
-        max: string;
-    };
-    gap: string;
-};
-
 type TransitionSettings = {
     property: {
         all: string;

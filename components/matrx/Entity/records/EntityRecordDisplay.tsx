@@ -52,7 +52,7 @@ function EntityRecordDisplay(
         const record = entity.allRecords[recordKey];
 
         if (record && !entity.loadingState.loading) {
-            entity.setSelection([record], 'single');
+            entity.handleSingleSelection(recordKey);
             setError(null);
         } else if (!entity.loadingState.loading && !record) {
             setError({

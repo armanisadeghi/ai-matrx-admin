@@ -209,10 +209,11 @@ export function useQuickReference<TEntity extends EntityKeys>(
         // Selection Utilities
         isSelected: selection.isSelected,
         isActive: selection.isActive,
-        handleSelection,
         toggleSelectionMode: selection.toggleSelectionMode,
         clearSelection: selection.clearSelection,
         handleSingleSelection: selection.handleSingleSelection,
+
+        handleSelection,
 
         // Record Operations
         createRecord,

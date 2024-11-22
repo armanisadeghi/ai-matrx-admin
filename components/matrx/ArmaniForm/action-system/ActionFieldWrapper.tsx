@@ -1,19 +1,19 @@
 import React, {useState} from 'react';
-import {useAppDispatch} from '@/lib/redux/hooks';
 import FieldAction from "./FieldAction";
-import {createMatrxAction} from "./action-creator";
+import {createMatrxActions} from "./action-creator";
 import InlineFormCard from './InlineFormCard';
 
 
-const ActionFieldWrapper = ({
-                                field,
-                                value,
-                                onChange,
-                                renderBaseField,
-                                density = 'normal',
-                                animationPreset = 'smooth',
-                                renderField
-                            }) => {
+const ActionFieldWrapper = (
+    {
+        field,
+        value,
+        onChange,
+        renderBaseField,
+        density = 'normal',
+        animationPreset = 'smooth',
+        renderField
+    }) => {
     console.log('ActionFieldWrapper mounted for:', {
         fieldName: field.name,
         hasActionKeys: !!field.actionKeys,
@@ -21,24 +21,22 @@ const ActionFieldWrapper = ({
     });
 
     const [activeInlineForm, setActiveInlineForm] = useState(null);
-    const dispatch = useAppDispatch();
-    const actionMap = React.useMemo(() => createMatrxAction(dispatch), [dispatch]);
+    const matrxActionConfig = createMatrxActions(field.actionKeys);
 
-    // Move this check up to renderField
     return (
         <div className="relative w-full">
             <div className="relative">
                 {renderBaseField()}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                    {field.actionKeys?.map((actionKey, index) => {
-                        console.log('Rendering action:', actionKey);
-                        const action = actionMap[actionKey];
-                        if (!action) return null;
+                    {field.actionKeys?.map((matrxActionKey, index) => {
+                        console.log('Rendering action:', matrxActionKey);
+                        const matrxAction = matrxActionConfig[matrxActionKey];
+                        if (!matrxAction) return null;
 
                         return (
                             <FieldAction
                                 key={index}
-                                action={action}
+                                matrxAction={matrxAction}
                                 field={field}
                                 value={value}
                                 onChange={onChange}
@@ -46,9 +44,9 @@ const ActionFieldWrapper = ({
                                 density={density}
                                 animationPreset={animationPreset}
                                 onActionComplete={(isOpen) => {
-                                    console.log('Action completed:', { isOpen, actionKey });
+                                    console.log('Action completed:', {isOpen, matrxActionKey});
                                     if (!isOpen) {
-                                        setActiveInlineForm(actionKey);
+                                        setActiveInlineForm(matrxActionKey);
                                     }
                                 }}
                             />
@@ -59,7 +57,7 @@ const ActionFieldWrapper = ({
             {activeInlineForm && field.inlineFields && (
                 <InlineFormCard
                     parentField={field}
-                    actionMap={actionMap}
+                    actionMap={matrxActionConfig}
                     onClose={() => setActiveInlineForm(null)}
                     density={density}
                     animationPreset={animationPreset}

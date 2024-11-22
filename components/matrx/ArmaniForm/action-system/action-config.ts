@@ -168,6 +168,7 @@ export const PRESENTATION_COMPONENTS = {
 export const ACTION_TYPES = {
     REDUX: 'redux',
     HOOK: 'hook',
+    COMMAND: 'command',
     DIRECT: 'direct',
     COMPONENT: 'component'
 } as const;

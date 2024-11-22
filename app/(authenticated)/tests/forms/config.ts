@@ -35,8 +35,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Action Button Demo Version 4',
+        path: 'components-with-buttons/action-button-four',
         relative: true,
         description: ''
     },

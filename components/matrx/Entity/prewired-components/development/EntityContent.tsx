@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useState, useCallback, useMemo} from 'react';
 import {useEntity} from '@/lib/redux/entity/useEntity';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {
@@ -40,6 +40,41 @@ interface EntityContentProps<TEntity extends EntityKeys> {
     };
 }
 
+// Memoized field transformation function
+const createTransformedFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
+    if (!entityFields) return [];
+
+    return entityFields.map(field => {
+        const transformedField: EntityFlexFormField = {
+            name: field.name,
+            label: field.displayName || field.name,
+            type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
+            required: field.isRequired,
+            disabled: false,
+            defaultValue: field.defaultValue,
+            validationFunctions: field.validationFunctions,
+            maxLength: field.maxLength,
+            subComponent: null,
+            actionKeys: field.defaultComponent === 'inline-form:1' ? ['entityQuickSidebar'] : [],
+            actionProps: {},
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+        };
+
+        return transformedField;
+    });
+};
+
+// Memoized form configuration
+const createFormConfig = (formOptions?: EntityContentProps<any>['formOptions']) => ({
+    layout: formOptions?.formLayout ?? 'grid',
+    direction: formOptions?.formDirection ?? 'row',
+    enableSearch: formOptions?.formEnableSearch ?? false,
+    columns: formOptions?.formColumns ?? 2,
+    isSinglePage: formOptions?.formIsSinglePage ?? true,
+    isFullPage: formOptions?.formIsFullPage ?? true,
+});
+
 function EntityContent<TEntity extends EntityKeys>(
     {
         entityKey,
@@ -49,90 +84,103 @@ function EntityContent<TEntity extends EntityKeys>(
         formOptions
     }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
+    const [formData, setFormData] = useState<EntityFormState>({});
 
-    // Updated transformFieldsToFormFields with new fields and logic
-    const transformFieldsToFormFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
-        if (!entityFields) return [];
+    // Memoize the primary key generation
+    const getMatrxRecordId = useCallback(() => {
+        if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
 
-        // Helper function to handle additional transformation logic
-        const applyFieldLogic = (field: EntityFlexFormField, originalField: EntityStateField): EntityFlexFormField => {
-            if (originalField.defaultComponent === 'inline-form:1') {
-                field.actionKeys = ['entityQuickSidebar'];
-            }
-            return field;
-        };
-
-        return entityFields.map(field => {
-            // Map the base transformation
-            const transformedField: EntityFlexFormField = {
-                name: field.name,
-                label: field.displayName || field.name,
-                type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
-                required: field.isRequired,
-                disabled: false,
-                defaultValue: field.defaultValue,
-                validationFunctions: field.validationFunctions,
-                maxLength: field.maxLength,
-                subComponent: null,
-                actionKeys: [],
-                actionProps: {},
-                defaultComponent: field.defaultComponent, // New field
-                componentProps: field.componentProps,   // New field
-            };
-
-            // Apply additional field logic
-            return applyFieldLogic(transformedField, field);
-        });
-    };
-
-    const formProps: FlexEntityFormProps = React.useMemo(() => {
-        if (!entity?.activeRecord) {
-            return {
-                fields: [],
-                formState: {},
-                onUpdateField: () => {}, // No-op for field changes
-                onSubmit: () => {}, // No-op for submit
-            };
-        }
-
-        const formFields = transformFieldsToFormFields(entity.fieldInfo);
-
-        let localFormState = { ...entity.activeRecord }; // Maintain local state
-
-        return {
-            fields: formFields,
-            formState: entity.activeRecord as EntityFormState,
-            onUpdateField: (name: string, value: any) => {
-            // Update local form state, no DB interaction
-            localFormState = {
-                ...localFormState,
-                [name]: value,
-            };
-            },
-            onSubmit: () => {
-                if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
-            const primaryKeyValues = entity.primaryKeyMetadata.fields.reduce(
+        return entity.matrxRecordIdByPrimaryKey(
+            entity.primaryKeyMetadata.fields.reduce(
                 (acc, field) => ({
                     ...acc,
                     [field]: entity.activeRecord[field],
                 }),
                 {} as Record<string, MatrxRecordId>
-            );
+            )
+        );
+    }, [entity.activeRecord, entity.primaryKeyMetadata]);
 
-            entity.updateRecord(primaryKeyValues, localFormState); // Save changes to DB here
-            console.log("Form submitted:", localFormState);
-            },
-            layout: formOptions?.formLayout ?? 'grid',
-            direction: formOptions?.formDirection ?? 'row',
-            enableSearch: formOptions?.formEnableSearch ?? false,
-            columns: formOptions?.formColumns ?? 2,
-            isSinglePage: formOptions?.formIsSinglePage ?? true,
-            isFullPage: formOptions?.formIsFullPage ?? true,
-            ...(formOptions?.size && {size: formOptions.size}),
-            ...(animationPreset && {animationPreset}), // Move animationPreset here
-        ...(density && { density }), // Move density here
-        };
-    }, [entity, formOptions, animationPreset, density]); // Add dependencies
+    // Memoize field update handler
+    const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
+        setFormData(prev => ({
+            ...prev,
+            [fieldName]: value
+        }));
+    }, []);
+
+    // Memoize CRUD handlers
+    const handleUpdate = useCallback((data: EntityData<EntityKeys>) => {
+        const matrxRecordId = getMatrxRecordId();
+        if (!matrxRecordId) return;
+
+        entity.updateRecord(
+            matrxRecordId,
+            data,
+            { showToast: true }
+        );
+    }, [entity, getMatrxRecordId]);
+
+    const handleCreate = useCallback((data: EntityData<EntityKeys>) => {
+        entity.createRecord(
+            data,
+            { showToast: true }
+        );
+    }, [entity]);
+
+    const handleDelete = useCallback(() => {
+        const matrxRecordId = getMatrxRecordId();
+        if (!matrxRecordId) return;
+
+        entity.deleteRecord(
+            matrxRecordId,
+            { showToast: true }
+        );
+    }, [entity, getMatrxRecordId]);
+
+    // Sync form data with active record
+    React.useEffect(() => {
+        if (entity.activeRecord) {
+            setFormData(entity.activeRecord as EntityFormState);
+        }
+    }, [entity.activeRecord]);
+
+    // Memoize transformed fields
+    const formFields = useMemo(() =>
+            createTransformedFields(entity.fieldInfo),
+        [entity.fieldInfo]
+    );
+
+    // Memoize form configuration
+    const formConfig = useMemo(() =>
+            createFormConfig(formOptions),
+        [formOptions]
+    );
+
+    // Memoize form props
+    const formProps: FlexEntityFormProps = useMemo(() => ({
+        fields: formFields,
+        formState: formData,
+        onUpdateField: handleFieldUpdate,
+        onSubmitUpdate: handleUpdate,
+        onSubmitCreate: handleCreate,
+        onSubmitDelete: handleDelete,
+        ...formConfig,
+        ...(formOptions?.size && {size: formOptions.size}),
+        ...(animationPreset && {animationPreset}),
+        ...(density && { density }),
+    }), [
+        formFields,
+        formData,
+        handleFieldUpdate,
+        handleUpdate,
+        handleCreate,
+        handleDelete,
+        formConfig,
+        formOptions?.size,
+        animationPreset,
+        density
+    ]);
 
     if (!entity.entityMetadata) {
         return <FormLoadingTwoColumn/>;
@@ -150,11 +198,18 @@ function EntityContent<TEntity extends EntityKeys>(
 
     return (
         <div className={formClassName}>
-            {entity.activeRecord && (
+            {(entity.activeRecord || !entity.primaryKeyMetadata) && (
                 <ArmaniForm {...formProps} />
             )}
         </div>
     );
 }
 
-export default EntityContent;
+// Memoize the entire component
+export default React.memo(EntityContent, (prevProps, nextProps) => {
+    return prevProps.entityKey === nextProps.entityKey &&
+        prevProps.className === nextProps.className &&
+        prevProps.density === nextProps.density &&
+        prevProps.animationPreset === nextProps.animationPreset &&
+        JSON.stringify(prevProps.formOptions) === JSON.stringify(nextProps.formOptions);
+});
