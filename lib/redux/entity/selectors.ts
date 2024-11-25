@@ -7,6 +7,7 @@ import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
 import {createRecordKey, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
 import {FormFieldType} from "@/components/matrx/AnimatedForm/FlexAnimatedForm";
+
 const trace = "ENTITY SELECTORS";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
@@ -43,8 +44,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             const recordIdsNotInState = matrxRecordIds.filter((recordId) => !existingRecords[recordId]);
             const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
 
-            entityLogger.log('debug', 'selectRecordsForFetching - Records to fetch', { primaryKeysToFetch });
-            entityLogger.log('debug', 'selectRecordsForFetching - Existing records', { existingRecordIds });
+            entityLogger.log('debug', 'selectRecordsForFetching - Records to fetch', {primaryKeysToFetch});
+            entityLogger.log('debug', 'selectRecordsForFetching - Existing records', {existingRecordIds});
 
             return {
                 existingRecords: existingRecordIds,
@@ -144,10 +145,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-
-
-
-
     const selectActiveRecordId = createSelector(
         [selectEntity],
         (entity) => entity.selection.activeRecord
@@ -196,7 +193,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         [selectEntity, selectActiveRecordId],
         (entity, activeRecordId) => {
             if (!activeRecordId || !entity.records[activeRecordId]) {
-                return { matrxRecordId: null, record: null };
+                return {matrxRecordId: null, record: null};
             }
             return {
                 matrxRecordId: activeRecordId,
@@ -362,25 +359,28 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (metadata) => metadata.fields.map(field => ({
             name: field.name,
             displayName: field.displayName,
-            isPrimaryKey: field.isPrimaryKey,
-            isDisplayField: field.isDisplayField,
+            uniqueColumnId: field.uniqueColumnId,
+            uniqueFieldId: field.uniqueFieldId,
             dataType: field.dataType,
-            isArray: field.isArray,
-            structure: field.structure,
-            isNative: field.isNative,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
             isRequired: field.isRequired,
             maxLength: field.maxLength,
+            isArray: field.isArray,
             defaultValue: field.defaultValue,
+            isPrimaryKey: field.isPrimaryKey,
+            isDisplayField: field.isDisplayField,
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            structure: field.structure,
+            isNative: field.isNative,
+            typeReference: field.typeReference,
             enumValues: field.enumValues,
             entityName: field.entityName,
             databaseTable: field.databaseTable,
+            foreignKeyReference: field.foreignKeyReference,
             description: field.description,
-            typeReference: field.typeReference,
 
         }))
     );
@@ -389,27 +389,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         [selectEntityMetadata],
         (metadata) => metadata.fields.map(field => ({
             name: field.name,
-            label: field.displayName,
-            type: field.dataType,
-            options: field.enumValues,
-            placeholder: field.defaultValue,
-            required: field.isRequired,
-            disabled: field.isPrimaryKey,
-
-            isDisplayField: field.isDisplayField,
-            isArray: field.isArray,
-            structure: field.structure,
-            isNative: field.isNative,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
+            displayName: field.displayName,
+            uniqueColumnId: field.uniqueColumnId,
+            uniqueFieldId: field.uniqueFieldId,
+            dataType: field.dataType,
+            isRequired: field.isRequired,
             maxLength: field.maxLength,
+            isArray: field.isArray,
+            defaultValue: field.defaultValue,
+            isPrimaryKey: field.isPrimaryKey,
+            isDisplayField: field.isDisplayField,
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            structure: field.structure,
+            isNative: field.isNative,
+            typeReference: field.typeReference,
+            enumValues: field.enumValues,
             entityName: field.entityName,
             databaseTable: field.databaseTable,
+            foreignKeyReference: field.foreignKeyReference,
             description: field.description,
-            typeReference: field.typeReference,
+
         }))
     );
 
@@ -441,26 +444,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (fields) => fields.map(field => ({
             key: field.name,
             title: field.displayName,
-            isPrimaryKey: field.isPrimaryKey,
-            isDisplayField: field.isDisplayField,
+            name: field.name,
+            displayName: field.displayName,
+            uniqueColumnId: field.uniqueColumnId,
+            uniqueFieldId: field.uniqueFieldId,
             dataType: field.dataType,
-            isArray: field.isArray,
-            structure: field.structure,
-            isNative: field.isNative,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
             isRequired: field.isRequired,
             maxLength: field.maxLength,
+            isArray: field.isArray,
             defaultValue: field.defaultValue,
+            isPrimaryKey: field.isPrimaryKey,
+            isDisplayField: field.isDisplayField,
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            structure: field.structure,
+            isNative: field.isNative,
+            typeReference: field.typeReference,
             enumValues: field.enumValues,
             entityName: field.entityName,
             databaseTable: field.databaseTable,
+            foreignKeyReference: field.foreignKeyReference,
             description: field.description,
-            typeReference: field.typeReference,
-
         }))
     );
 

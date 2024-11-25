@@ -50,7 +50,6 @@ export interface FlexFormField {
     name: string;
     label: string;
     type: FormFieldType;
-    options?: string[];
     placeholder?: string;
     required?: boolean;
     disabled?: boolean;
@@ -58,11 +57,16 @@ export interface FlexFormField {
     min?: number;
     max?: number;
     step?: number;
-    accept?: string;
-    multiple?: boolean;
-    src?: string;
-    alt?: string;
-    jsonSchema?: object;
+
+
+    // Unused or unnecessary props
+    src?: string;  // Just Value
+    alt?: string;  // Either can't know or settings or just the value
+    jsonSchema?: object;  // Not sure the intent, but based on usage, it's likely something from the schema selectors
+    multiple?: boolean; // I think this is an attempt at handling isArray
+    options?: string[];  // I think this is an attempt at handling enums
+    accept?: string;  // I think this is an attempt at handling file types
+
 }
 
 export interface FormState {

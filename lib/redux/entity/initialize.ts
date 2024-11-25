@@ -1,5 +1,5 @@
 import {AllEntityFieldKeys, AutomationEntity, EntityField, EntityKeys} from "@/types/entityTypes";
-import {EntityMetadata, EntityMetrics, EntityState, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {EntityMetadata, EntityMetrics, EntityState} from "@/lib/redux/entity/types";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
 import {EntityNameOfficial, SchemaField} from "@/types/schema";
 import {TypeBrand} from "@/utils/schema/initialSchemas";
@@ -59,51 +59,58 @@ export function extractFieldsFromSchema<TEntity extends EntityKeys>(
             return {
                 name: key as AllEntityFieldKeys,
                 displayName: key as AllEntityFieldKeys,
-                isDisplayField: false,
-                isPrimaryKey: false,
+                uniqueColumnId: key,
+                uniqueFieldId: key,
                 dataType: 'string',
-                isArray: false,
-                structure: 'single',
-                isNative: true,
-                defaultComponent: 'input',
-                componentProps: {},
                 isRequired: false,
                 maxLength: null,
+                isArray: false,
                 defaultValue: "",
+                isPrimaryKey: false,
+                isDisplayField: false,
                 defaultGeneratorFunction: null,
                 validationFunctions: null,
                 exclusionRules: null,
+                defaultComponent: 'INPUT',
+                componentProps: {
+                    "subComponent": "default",
+                },
+                structure: 'single',
+                isNative: true,
+                typeReference: {} as TypeBrand<string>,
                 enumValues: null,
                 entityName: entityKey as EntityKeys,
                 databaseTable: null,
+                foreignKeyReference: {},
                 description: "",
-                typeReference: {} as TypeBrand<string>
             };
         }
 
         return {
             name: key as AllEntityFieldKeys,
             displayName: field.fieldNameFormats.pretty,
-            isDisplayField: field.isDisplayField,
-            isPrimaryKey: field.isPrimaryKey,
+            uniqueColumnId: field.uniqueColumnId,
+            uniqueFieldId: field.uniqueFieldId,
             dataType: field.dataType,
-            isArray: field.isArray,
-            structure: field.structure,
-            isNative: field.isNative,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
             isRequired: field.isRequired,
             maxLength: field.maxLength,
+            isArray: field.isArray,
             defaultValue: field.defaultValue,
+            isPrimaryKey: field.isPrimaryKey,
+            isDisplayField: field.isDisplayField,
             defaultGeneratorFunction: field.defaultGeneratorFunction,
             validationFunctions: field.validationFunctions,
             exclusionRules: field.exclusionRules,
+            defaultComponent: field.defaultComponent,
+            componentProps: field.componentProps,
+            structure: field.structure,
+            isNative: field.isNative,
+            typeReference: field.typeReference,
             enumValues: field.enumValues,
             entityName: field.entityName,
             databaseTable: field.databaseTable,
+            foreignKeyReference: field.foreignKeyReference,
             description: field.description,
-            typeReference: field.typeReference,
-
         };
     });
 }

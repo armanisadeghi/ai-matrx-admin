@@ -63,8 +63,7 @@ import {
     Heart,         // Like
     RefreshCw,     // Refresh
 } from 'lucide-react';
-
-
+import DataTable from "@/components/matrx/Entity/DataTable/DataTable";
 
 const iconRegistry = {
     Link,
@@ -118,58 +117,4 @@ const iconRegistry = {
 };
 
 
-export const PRESENTATION_TYPES = {
-    MODAL: 'modal',
-    SHEET: 'sheet',
-    POPOVER: 'popover',
-    INLINE: 'inline',
-    CUSTOM: 'custom',
-    DROPDOWN: 'dropdown',
-    TOOLTIP: 'tooltip',
-    DRAWER: 'drawer',
-    COLLAPSE: 'collapse',
-    HOVER_CARD: 'hoverCard',
-    CONTEXT_MENU: 'contextMenu',
-    DRAWER_BOTTOM: 'drawerBottom',
-    DRAWER_SIDE: 'drawerSide',
-    DRAWER_CENTER: 'drawerCenter',
-} as const;
-
-
-export const TRIGGER_TYPES = {
-    BUTTON: 'button',
-    ICON: 'icon',
-    LINK: 'link',
-    TEXT: 'text',
-    CHIP: 'chip',
-    BADGE: 'badge',
-    CARD: 'card',
-    CUSTOM: 'custom',
-    FLOATING_BUTTON: 'floatingButton',
-    TOGGLE: 'toggle',
-    DROPDOWN: 'dropdown',
-    DROPDOWN_BASIC: 'dropdownBasic',
-    DROPDOWN_CHECKBOX: 'dropdownCheckbox',
-    DROPDOWN_RADIO: 'dropdownRadio',
-    IMAGE: 'image',
-    TOOLTIP: 'tooltip',
-    TAB: 'tab'
-} as const;
-
-
-export const PRESENTATION_COMPONENTS = {
-    QUICK_LIST: 'QuickReferenceList',
-    SIMPLE_TABLE: 'SimpleTable',
-    DATA_TABLE: 'DataTable',
-    CUSTOM: 'custom'
-} as const;
-
-
-export const ACTION_TYPES = {
-    REDUX: 'redux',
-    HOOK: 'hook',
-    COMMAND: 'command',
-    DIRECT: 'direct',
-    COMPONENT: 'component'
-} as const;
 

@@ -1,5 +1,7 @@
-import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {DisplayFieldMetadata, EntityStateField, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
 import {
+    AnyDatabaseColumnForEntity,
+    AnyEntityDatabaseTable,
     AutomationEntities,
     EntityComponentProps,
     EntityDefaultFetchStrategy,
@@ -60,7 +62,7 @@ interface GlobalCacheState {
     readonly schema: AutomationEntities;
     entityNames: EntityKeys[];
     entities: Partial<Record<EntityKeys, SchemaEntity>>;
-    fields: Record<string, SchemaField>;
+    fields: Record<string, EntityStateField>;
     fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
     entityNameToCanonical: Record<string, EntityKeys>;
     fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
@@ -73,10 +75,18 @@ interface GlobalCacheState {
     isInitialized: boolean;
 }
 
-export interface SchemaField {
+export type ForeignKeyReference = {
+    table: AnyEntityDatabaseTable;
+    column: AnyDatabaseColumnForEntity<EntityKeys>;
+}
+
+
+interface SchemaField {
     fieldName: string;
     entityName: EntityNameOfficial;
     dataType: FieldDataOptionsType;
+    uniqueColumnId: string;
+    uniqueFieldId: string;
     isArray: boolean;
     structure: DataStructure;
     isNative: boolean;
@@ -92,6 +102,7 @@ export interface SchemaField {
     validationFunctions: string[];
     exclusionRules: string[];
     databaseTable: string;
+    foreignKeyReference: ForeignKeyReference | null;
     description: string;
 }
 

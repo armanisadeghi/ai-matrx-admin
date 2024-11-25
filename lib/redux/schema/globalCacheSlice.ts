@@ -5,14 +5,15 @@ import {
     UnifiedSchemaCache,
     AutomationEntities
 } from "@/types/entityTypes";
-import { SchemaEntity, SchemaField } from "@/types/schema";
+import { SchemaEntity } from "@/types/schema";
+import {EntityStateField} from "@/lib/redux/entity/types";
 
 
 export interface GlobalCacheState {
     readonly schema: AutomationEntities;
     entityNames: EntityKeys[];
     entities: Partial<Record<EntityKeys, SchemaEntity>>;
-    fields: Record<string, SchemaField>;
+    fields: Record<string, EntityStateField>;
     fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
     entityNameToCanonical: Record<string, EntityKeys>;
     fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
@@ -48,7 +49,7 @@ export function createGlobalCacheSlice(initialData: UnifiedSchemaCache) {
 
             updateField: (state, action: PayloadAction<{
                 fieldId: string;
-                field: SchemaField;
+                field: EntityStateField;
             }>) => {
                 const { fieldId, field } = action.payload;
                 state.fields[fieldId] = field;

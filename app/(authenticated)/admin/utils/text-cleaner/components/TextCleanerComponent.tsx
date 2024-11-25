@@ -381,6 +381,7 @@ export const TextCleanerComponent: React.FC = () => {
             <div className={`grid gap-4 ${errorMode ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
                 {/* Input textarea remains the same */}
                 <div className="space-y-2">
+                    <div className="relative">
                     <Textarea
                         value={inputText}
                         onChange={(e) => handleInputChange(e.target.value)}
@@ -388,6 +389,13 @@ export const TextCleanerComponent: React.FC = () => {
                         className="w-full resize-y"
                         placeholder={errorMode ? "Paste your error message here" : "Paste your text here"}
                     />
+                    <Button
+                        className="absolute right-2 bottom-2 p-2 h-[40px] min-h-[40px]"
+                        onClick={() => copyText(inputText)}
+                    >
+                        <Copy size={20}/>
+                    </Button>
+                    </div>
                     <Card className="border bg-muted">
                         <CardContent className="p-3">
                             <p className="text-sm text-muted-foreground">

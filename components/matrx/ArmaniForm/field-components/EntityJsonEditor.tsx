@@ -768,7 +768,7 @@ export const EntityJsonEditor: React.FC<EntityJsonEditorProps> = (
             className={cn("relative", className)}
             transition={{type: "spring", bounce: 0.2, duration: 0.3}}
         >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 {isMinimized ? minimizedContent : expandedContent}
             </AnimatePresence>
         </motion.div>

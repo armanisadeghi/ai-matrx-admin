@@ -62,7 +62,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<EntityData<TEntity>>
                         ) => {
-                            entityLogger.log('info', 'fetchOneSuccess', action.payload);
+                            entityLogger.log('debug', 'fetchOneSuccess', action.payload);
 
                             const record = action.payload;
                             const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
@@ -221,10 +221,10 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 );
                                 if (existingIndex !== -1) {
                                     state.quickReference.records[existingIndex] = newRecord;
-                                    entityLogger.log('info', 'Replaced existing quick reference record', newRecord);
+                                    entityLogger.log('debug', 'Replaced existing quick reference record', newRecord);
                                 } else {
                                     state.quickReference.records.push(newRecord);
-                                    entityLogger.log('info', 'Added new quick reference record', newRecord);
+                                    entityLogger.log('debug', 'Added new quick reference record', newRecord);
                                 }
                             });
                             state.quickReference.lastUpdated = new Date().toISOString();
@@ -252,7 +252,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<EntityData<TEntity>[]>
                         ) => {
                             const {primaryKeyMetadata} = state.entityMetadata;
-                            entityLogger.log('info', 'fetchSelectedRecordsSuccess', action.payload);
+                            entityLogger.log('debug', 'fetchSelectedRecordsSuccess', action.payload);
 
                             action.payload.forEach(record => {
                                 const recordKey: MatrxRecordId = createRecordKey(primaryKeyMetadata, record);
@@ -364,7 +364,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         },
 
                         clearSelection: (state) => {
-                            entityLogger.log('info', 'clearSelection');
+                            entityLogger.log('debug', 'clearSelection');
                             removeSelections(state);
                         },
 
@@ -396,7 +396,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-                            entityLogger.log('info', 'addToSelection start', action.payload);
+                            entityLogger.log('debug', 'addToSelection start', action.payload);
 
                             if (isMatrxRecordId(action.payload)) {
                                 console.log('It is a MatrxRecordId. Adding to selection');
@@ -423,18 +423,18 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-                            entityLogger.log('info', 'setActiveRecord', action.payload);
-                            entityLogger.log('info', 'Active Record Before', state.selection.activeRecord);
-                            entityLogger.log('info', 'Last Active Record Before', state.selection.lastActiveRecord);
+                            entityLogger.log('debug', 'setActiveRecord', action.payload);
+                            entityLogger.log('debug', 'Active Record Before', state.selection.activeRecord);
+                            entityLogger.log('debug', 'Last Active Record Before', state.selection.lastActiveRecord);
                             state.selection.lastActiveRecord = state.selection.activeRecord;
-                            entityLogger.log('info', 'Last Active Record After', state.selection.lastActiveRecord);
+                            entityLogger.log('debug', 'Last Active Record After', state.selection.lastActiveRecord);
                             state.selection.activeRecord = action.payload;
-                            entityLogger.log('info', 'Active Record After', state.selection.activeRecord);
+                            entityLogger.log('debug', 'Active Record After', state.selection.activeRecord);
 
                             if (!state.selection.selectedRecords.includes(action.payload)) {
-                                entityLogger.log('info', 'Active Record not in selected records. Adding to selection');
+                                entityLogger.log('debug', 'Active Record not in selected records. Adding to selection');
                                 addRecordToSelection(state, action.payload);
-                                entityLogger.log('info', 'Active Record added to selection');
+                                entityLogger.log('debug', 'Active Record added to selection');
                             }
                         },
 

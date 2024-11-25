@@ -29,12 +29,31 @@ import {
     EntityQuickReferenceList,
     EntityQuickReferenceSelect
 } from '../quick-reference';
-import {ComponentDensity} from "@/types/componentConfigTypes";
 import {
     cardVariants, containerVariants,
     densityConfig, getAnimationVariants, layoutTransitions
 } from "@/config/ui/entity-layout-config";
 import {ArmaniLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/types";
+import {FormDensity, FormState} from "@/components/matrx/ArmaniForm/ArmaniForm";
+import {EntityFormState} from "@/components/matrx/Entity/types/entityForm";
+
+type LayoutVariant = 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
+type ComponentDensity = 'compact' | 'normal' | 'comfortable';
+type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
+type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+type QuickReferenceComponentType =
+    | 'cards'
+    | 'cardsEnhanced'
+    | 'accordion'
+    | 'accordionEnhanced'
+    | 'list'
+    | 'select';
+
+type FormLayoutOptions = 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
+type FormColumnOptions = number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
+type FormDirectionOptions = 'row' | 'column' | 'row-reverse' | 'column-reverse';
+
+
 
 
 const LayoutHeader: React.FC<{
@@ -107,10 +126,10 @@ interface EnhancedCardProps {
     cardRef?: React.RefObject<HTMLDivElement>,
     ref?: MutableRefObject<HTMLDivElement>
 }
-
-
 const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
     {
+
+
         className,
         density = 'normal',
         animationPreset = 'smooth',
@@ -127,6 +146,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
     const [recordLabel, setRecordLabel] = useState<string>('Select Record');
     const [selectHeight, setSelectHeight] = useState<number>(0);
     const rightColumnRef = useRef<HTMLDivElement>(null);
+    const [floatingLabel, setFloatingLabel] = useState(false);
 
     useEffect(() => {
         if (layoutVariant !== 'stacked' && rightColumnRef.current) {
@@ -211,8 +231,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
             <Card
                 ref={cardRef}
                 className={cn(
-                    'relative border shadow-sm',
-                    densityConfig[density].padding[size],
+                    'relative border bg-card-background shadow-lg mt-2 p-0 m-0',
                     className
                 )}
             >
@@ -230,7 +249,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                 >
                     <motion.div
                         className={cn(
-                            "grid h-full overflow-hidden mt-12", // added margin-top for the slider
+                            "grid h-full overflow-hidden ", // added margin-top for the slider
                             isExpanded ? 'grid-cols-1' : 'grid-cols-[minmax(300px,1fr)_1fr]',
                             densityConfig[density].spacing
                         )}
@@ -241,7 +260,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                         initial="initial"
                         animate="animate"
                         exit="exit">
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {!isExpanded && (
                                 <motion.div
                                     className="flex flex-col gap-4 min-w-0"
@@ -250,7 +269,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                                     exit={{opacity: 0, x: -20}}
                                 >
                                     <EnhancedCard>
-                                        <CardContent>
+                                        <CardContent className="p-2 ">
                                             <EntitySelection
                                                 selectedEntity={selectedEntity}
                                                 onEntityChange={handleEntityChange}
@@ -264,7 +283,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
 
                                     {selectedEntity && (
                                         <EnhancedCard cardRef={rightColumnRef}>
-                                            <CardHeader className="space-y-1.5">
+                                            <CardHeader>
                                                 <CardTitle className={densityConfig[density].fontSize}>
                                                     Quick Reference
                                                 </CardTitle>
@@ -284,7 +303,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                             className="min-w-0 relative"
                             layout
                         >
-                            <AnimatePresence mode="wait">
+                            <AnimatePresence mode="sync">
                                 {selectedEntity ? (
                                     <EnhancedCard className="h-full">
                                         <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -308,12 +327,15 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                                                 </Tooltip>
                                             </TooltipProvider>
                                         </div>
+                                        <CardContent className="p-0 pr-4">
+
                                         <EntityContent
                                             entityKey={selectedEntity}
                                             density={density}
                                             animationPreset={animationPreset}
                                             formOptions={formOptions}
                                         />
+                                        </CardContent>
                                     </EnhancedCard>
                                 ) : null}
                             </AnimatePresence>
@@ -334,7 +356,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                     animate="animate"
                     exit="exit"
                 >
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                         {!isExpanded && (
                             <motion.div
                                 className="flex flex-col min-w-0"
@@ -361,7 +383,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                                     </CardContent>
                                 </EnhancedCard>
 
-                                <AnimatePresence mode="wait">
+                                <AnimatePresence mode="sync">
                                     {selectedEntity && (
                                         <EnhancedCard
                                             className="flex-1 overflow-hidden"
@@ -392,7 +414,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                         variants={layoutTransitions.sideBySide.right}
                         layout
                     >
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {selectedEntity ? (
                                 <EnhancedCard className="h-full relative">
                                     <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -464,12 +486,13 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                                     selectHeight={selectHeight}
                                     density={density}
                                     animationPreset={animationPreset}
+                                    floatingLabel={floatingLabel}
                                 />
                             </CardContent>
                         </EnhancedCard>
                     </motion.div>
 
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                         {selectedEntity && (
                             <>
                                 <motion.div
@@ -533,7 +556,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
             densityConfig[density].spacing,
             className
         )}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 <motion.div
                     className="h-full"
                     variants={containerVariants[animationPreset]}

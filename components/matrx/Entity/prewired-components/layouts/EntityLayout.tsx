@@ -24,7 +24,7 @@ import {
 
 import {FormColumnOptions, FormDirectionOptions, FormLayoutOptions} from "@/types/componentConfigTypes";
 
-export type LayoutVariant = 'split' | 'sideBySide' | 'stacked';
+export type LayoutVariant = 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
 export type ComponentDensity = 'compact' | 'normal' | 'comfortable';
 export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
 export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -226,7 +226,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
                             </CardHeader>
                         </Card>
 
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {selectedEntity && (
                                 <motion.div
                                     initial={{opacity: 0, y: 20}}
@@ -251,7 +251,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
                             isExpanded && 'col-span-2'
                         )}
                     >
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {selectedEntity ? (
                                 <Card {...commonCardProps} className="h-full">
                                     <div className="absolute top-4 right-4 z-20">
@@ -313,7 +313,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
                             </CardHeader>
                         </Card>
 
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {selectedEntity && (
                                 <motion.div
                                     initial={{opacity: 0, scale: 0.95}}
@@ -332,7 +332,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
                         variants={layoutTransitionVariants.sideBySide.right}
                         className="h-full"
                     >
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {selectedEntity ? (
                                 <Card {...commonCardProps} className="h-full">
                                     <EntityContent
@@ -383,7 +383,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
                         </Card>
                     </motion.div>
 
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                         {selectedEntity && (
                             <motion.div
                                 variants={layoutTransitionVariants.stacked.item}
@@ -398,7 +398,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
                         )}
                     </AnimatePresence>
 
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                         {selectedEntity && (
                             <motion.div variants={layoutTransitionVariants.stacked.item}>
                                 <Card {...commonCardProps}>
@@ -425,7 +425,7 @@ const EntityLayout: React.FC<EntityLayoutProps> = (
             densityStyles.spacing,
             className
         )}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 <motion.div
                     className="h-full"
                     {...animation}

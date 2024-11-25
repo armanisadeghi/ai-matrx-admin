@@ -301,3 +301,5 @@ export function EntityPhoneInput({ field, componentProps }: EntityPhoneInputProp
         </div>
     )
 }
+
+export default EntityPhoneInput

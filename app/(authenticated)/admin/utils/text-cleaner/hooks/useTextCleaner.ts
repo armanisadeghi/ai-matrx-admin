@@ -2,12 +2,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { patterns, ActionConfig, PatternConfig } from "@/app/(authenticated)/admin/utils/configs/patterns";
 import { textContext, TextContextEntry } from "@/app/(authenticated)/admin/utils/text-cleaner/configs";
-import {
-    DetailedError,
-    FormattedError,
-    ErrorFormat,
-    EnhancedErrorParser
-} from "../utilities/ErrorParser";
+import {ErrorSeverity, ErrorFormat, ParsedError, DetailedError, FormattedError} from "../utilities/types";
+import { ErrorManager } from '../utilities/ErrorManager';
 
 interface TextCleanerError {
     original: string;
@@ -223,21 +219,48 @@ export function useTextCleaner() {
 
     const processErrorText = useCallback((text: string) => {
         try {
-            // Split text into potential separate errors
-            const errorSegments = text.split(/(?=<html>|Error:|TypeError:|ReferenceError:)/g)
-                .filter(segment => segment.trim());
+            // First, identify complete HTML-formatted errors
+            const htmlErrorPattern = /<html>TS\d{4}:.+?(?=(?:<html>TS\d{4}:|$))/gs;
+            const plainErrorPattern = /(?<!<html>)TS\d{4}:.+?(?=(?:TS\d{4}:|$))/gs;
 
-            const newErrors: TextCleanerError[] = errorSegments.map(errorText => ({
-                original: errorText,
-                parsed: EnhancedErrorParser.parseError(errorText),
-                timestamp: Date.now()
-            }));
+            // Collect all errors
+            const htmlErrors = [...text.matchAll(htmlErrorPattern)].map(m => m[0]);
+            const plainErrors = [...text.matchAll(plainErrorPattern)].map(m => m[0]);
+
+            // Combine all unique errors
+            const errorSegments = [...new Set([...htmlErrors, ...plainErrors])]
+                .filter(Boolean)
+                .map(segment => segment.trim());
+
+            const newErrors: TextCleanerError[] = errorSegments.map(errorText => {
+                // Clean up HTML entities before parsing
+                const cleanedError = errorText
+                    .replace(/<br\s*\/?>/g, '\n')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&apos;/g, "'")
+                    .replace(/&amp;/g, '&')
+                    .replace(/<html>/g, ''); // Remove the <html> tag completely
+
+                return {
+                    original: errorText,
+                    parsed: ErrorManager.parseError(cleanedError),
+                    timestamp: Date.now()
+                };
+            });
 
             setParsedErrors(newErrors);
 
-            // Update cleaned text with formatted errors
+            // Format errors based on selected format
             const formattedErrors = newErrors
-                .map(error => error.parsed?.[errorFormat] || error.original)
+                .map(error => {
+                    const formatted = error.parsed?.[errorFormat];
+                    if (!formatted) return error.original;
+
+                    // Add separator between errors for better readability
+                    return `${formatted}\n${'-'.repeat(40)}`;
+                })
                 .join('\n\n');
 
             setCleanedText(formattedErrors);

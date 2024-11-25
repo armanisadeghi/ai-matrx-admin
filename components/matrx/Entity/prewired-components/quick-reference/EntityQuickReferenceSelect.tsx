@@ -44,29 +44,23 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
     const densityConfig = React.useMemo(() => {
         const configs = {
             compact: {
-                height: 'h-8',
                 padding: 'px-2 py-1',
                 fontSize: 'text-xs',
                 itemPadding: 'py-0.5 px-1.5',
-                maxHeight: 'max-h-[150px]',
                 gap: 'gap-0.5',
                 itemHeight: 'h-7',
             },
             normal: {
-                height: 'h-10',
                 padding: 'px-3 py-2',
                 fontSize: 'text-sm',
                 itemPadding: 'py-1.5 px-2',
-                maxHeight: 'max-h-[300px]',
                 gap: 'gap-1',
                 itemHeight: 'h-9',
             },
             comfortable: {
-                height: 'h-12',
                 padding: 'px-4 py-2.5',
                 fontSize: 'text-base',
                 itemPadding: 'py-2 px-3',
-                maxHeight: 'max-h-[400px]',
                 gap: 'gap-1.5',
                 itemHeight: 'h-11',
             },
@@ -177,8 +171,6 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
     }));
 
     const MotionSelectTrigger = motion(SelectTrigger);
-    const MotionSelectContent = motion(SelectContent);
-    const MotionSelectItem = motion(SelectItem);
 
     return (
         <Select
@@ -190,7 +182,6 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
             <MotionSelectTrigger
                 className={cn(
                     "bg-card text-card-foreground border-border",
-                    densityConfig.height,
                     densityConfig.padding,
                     densityConfig.fontSize
                 )}
@@ -200,37 +191,25 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
             </MotionSelectTrigger>
 
             <AnimatePresence>
-                <MotionSelectContent
+                <SelectContent
                     className={cn(
-                        "bg-card border-border",
-                        densityConfig.gap,
-                        densityConfig.fontSize
+                        "bg-card overflow-y-auto",
                     )}
-                    style={{
-                        maxHeight: densityConfig.maxHeight,
-                    }}
-                    {...(animationPreset !== 'none' ? {
-                        initial: animationConfig.content.initial,
-                        animate: animationConfig.content.animate,
-                        exit: animationConfig.content.exit,
-                        transition: { duration: 0.2 }
-                    } : {})}
+                    align="start"
+                    side="bottom"
                 >
                     {quickReferenceOptions.map(({value, label}) => (
-                        <MotionSelectItem
+                        <SelectItem
                             key={value}
                             value={value}
                             className={cn(
                                 "bg-card text-card-foreground hover:bg-muted",
-                                densityConfig.itemPadding,
-                                densityConfig.itemHeight
                             )}
-                            {...(animationPreset !== 'none' ? animationConfig.item : {})}
                         >
                             {label}
-                        </MotionSelectItem>
+                        </SelectItem>
                     ))}
-                </MotionSelectContent>
+                </SelectContent>
             </AnimatePresence>
         </Select>
     );

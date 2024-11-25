@@ -116,3 +116,5 @@ export const EntityDropdownMenu: React.FC<EntityDropdownMenuProps> = (
         </DropdownMenu>
     );
 };
+
+export default EntityDropdownMenu;

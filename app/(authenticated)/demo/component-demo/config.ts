@@ -17,6 +17,48 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Floating Labels Components Demo',
+        path: 'floating-labels',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Chip Demo',
+        path: 'chip-demo',
+        relative: true,
+        description: ''
+    },
+    {
         title: 'UUID Generator Page Demo',
         path: 'uuid-generator',
         relative: true,

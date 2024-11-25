@@ -141,7 +141,7 @@ const EntityForm: React.FC<EntityFormProps & { className?: string }> = (
                             {fields[currentStep].label}
                         </motion.h2>
 
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             <motion.div
                                 key={currentStep}
                                 initial={{ opacity: 0, x: 50 }}

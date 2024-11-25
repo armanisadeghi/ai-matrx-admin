@@ -19,7 +19,7 @@ interface TimePickerProps {
     is24Hour?: boolean;
 }
 
-export const TimePicker: React.FC<TimePickerProps> = ({
+export const EntityTimePicker: React.FC<TimePickerProps> = ({
                                                           onChange,
                                                           value,
                                                           placeholder = "Pick a time",
@@ -98,12 +98,14 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     );
 };
 
+export default EntityTimePicker;
+
 // Usage example:
 export const TimePickerExample: React.FC = () => {
     const [selectedTime, setSelectedTime] = useState<string>("");
 
     return (
-        <TimePicker
+        <EntityTimePicker
             onChange={setSelectedTime}
             value={selectedTime}
             placeholder="Select event time"

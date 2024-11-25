@@ -25,4 +25,4 @@ const EntitySlider = React.forwardRef<
 ))
 EntitySlider.displayName = SliderPrimitive.Root.displayName
 
-export { EntitySlider }
+export default EntitySlider

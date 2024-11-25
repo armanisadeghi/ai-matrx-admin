@@ -2,14 +2,15 @@
 
 import React, {useState} from 'react';
 import FieldAction from '@/components/matrx/ArmaniForm/action-system/FieldAction';
-import {useDispatch} from 'react-redux';
-import {createMatrxAction} from '@/components/matrx/ArmaniForm/action-system/action-creator';
 import {EntityTextarea} from '@/components/matrx/ArmaniForm/field-components';
+import {ACTION_COMPONENTS_REGISTRY} from "@/components/matrx/ArmaniForm/action-system/action-components/new";
+
 
 const TestFieldActionPage = () => {
-    const dispatch = useDispatch();
-    const actions = createMatrxAction(dispatch);
-    const matrxAction = actions.entityQuickSidebar;
+    const matrxActionKeys = ['entityQuickSidebar'];
+    const matrxAction = ACTION_COMPONENTS_REGISTRY;
+
+    console.log('matrxAction:', matrxAction);
 
     const [log, setLog] = useState('');
 
@@ -26,6 +27,15 @@ const TestFieldActionPage = () => {
         );
     }
 
+    const fieldProps = {
+        componentProps: {
+            entityName: 'registeredFunction',
+        },
+        name: 'exampleField',
+        value: 'exampleValue',
+    }
+
+
     return (
         <div className="p-4">
 
@@ -35,20 +45,19 @@ const TestFieldActionPage = () => {
                 rows={10}
                 placeholder="Logs will appear here..."
                 field={{'name': 'exampleField'}}
-                    onChange={function (value: string): void {
-                throw new Error('Function not implemented.');
-            }}
+                onChange={function (value: string): void {
+                    throw new Error('Function not implemented.');
+                }}
             />
 
             <FieldAction
                 matrxAction={matrxAction}
-                field="exampleField"
-                value="exampleValue"
+                field={fieldProps}
+                value="This is some random value"
                 onChange={(newValue) => {
                     console.log('Field Changed:', newValue);
                     appendToLog(`Field Changed: ${newValue}`);
                 }}
-                fieldComponentProps={{entityKey: 'registeredFunction'}}
                 onActionComplete={(isOpen, result) => {
                     console.log('Action Completed. Open:', isOpen, 'Result:', result);
                     appendToLog(`Action Completed. Open: ${isOpen}, Result: ${JSON.stringify(result)}`);
@@ -61,3 +70,5 @@ const TestFieldActionPage = () => {
 };
 
 export default TestFieldActionPage;
+
+

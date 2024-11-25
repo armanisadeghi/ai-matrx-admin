@@ -43,7 +43,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const validation = useEntityValidation(entityKey);
     const toasts = useEntityToasts(entityKey);
 
-    const activeRecordsAnyEntity = useActiveRecords();  // NOTE: Not Entity specific.
+    // const activeRecordsAnyEntity = useActiveRecords();  // NOTE: Not Entity specific.
 
     const safeDispatch = useCallback((action: any) => {
         try {
@@ -297,7 +297,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         // All Active Records, Quick Reference, Validation hooks extended
         quickReference,
         validation,
-        activeRecordsAnyEntity,
+        // activeRecordsAnyEntity,
 
 
 

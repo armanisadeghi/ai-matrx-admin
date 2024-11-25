@@ -197,7 +197,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
             animate="animate"
             exit="exit"
         >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 {!isExpanded && (
                     <motion.div
                         className="flex flex-col gap-4 min-w-0"
@@ -226,7 +226,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
             </AnimatePresence>
 
             <motion.div className="min-w-0 relative" layout>
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync">
                     {selectedEntity && (
                         <EnhancedCard
                             className="h-full"
@@ -266,7 +266,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
             animate="animate"
             exit="exit"
         >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 {!isExpanded && (
                     <motion.div
                         className="flex flex-col min-w-0"
@@ -298,7 +298,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
                             </CardContent>
                         </EnhancedCard>
 
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode="sync">
                             {selectedEntity && (
                                 <EnhancedCard
                                     className="flex-1 overflow-hidden"
@@ -332,7 +332,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
                 variants={layoutTransitions.sideBySide.right}
                 layout
             >
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync">
                     {selectedEntity ? (
                         <EnhancedCard
                             className="h-full relative"
@@ -423,7 +423,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
                 </EnhancedCard>
             </motion.div>
 
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 {selectedEntity && (
                     <>
                         <motion.div
@@ -502,7 +502,7 @@ const ArmaniLayout: React.FC<EntityLayoutProps> = React.memo((
             densityConfig[density].spacing,
             className
         )}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
                 <motion.div
                     className="h-full"
                     variants={containerVariants[animationPreset]}

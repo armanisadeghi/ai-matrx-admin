@@ -199,7 +199,7 @@ function EntityQuickReferenceList<TEntity extends EntityKeys>(
                     animate="animate"
                     variants={animationConfig.listItem}
                 >
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                         {quickReferenceRecords.map((ref, index) => (
                             <motion.div
                                 key={ref.recordKey}

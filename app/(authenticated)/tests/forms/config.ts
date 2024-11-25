@@ -17,20 +17,20 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Trying to Learn How handlers Work',
+        path: 'components-with-buttons/learn-handlers',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Presentation Direct Component Tests',
+        path: 'components-with-buttons/armani-action-test/presentation-tests/direct-tests',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Presentation Tests',
+        path: 'components-with-buttons/armani-action-test/presentation-tests',
         relative: true,
         description: ''
     },

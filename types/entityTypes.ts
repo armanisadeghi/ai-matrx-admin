@@ -314,9 +314,18 @@ export type FieldDatabaseTable<
 /**
  * Comprehensive field configuration type containing all field-level settings
  */
+
+export type ForeignKeyReference = {
+    table: AnyEntityDatabaseTable;
+    column: AnyDatabaseColumnForEntity<EntityKeys>;
+}
+
+
 export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>> = {
     fieldNameFormats: FieldNameFormats<TEntity, TField>;
     value: any;
+    uniqueColumnId: string;
+    uniqueFieldId: string;
     dataType: FieldDataType<TEntity, TField>;
     isArray: FieldIsArray<TEntity, TField>;
     structure: FieldStructure<TEntity, TField>;
@@ -335,6 +344,7 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
     enumValues: FieldEnumValues<TEntity, TField>;
     entityName: EntityKeys;
     databaseTable: FieldDatabaseTable<TEntity, TField>;
+    foreignKeyReference: ForeignKeyReference | null;
     description: string;
 };
 

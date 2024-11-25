@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { Toggle } from '@/components/ui/toggle';
 import { cn } from '@/lib/utils';
 import {createEntityCommands} from "@/components/matrx/MatrxCommands/EntityCommand";

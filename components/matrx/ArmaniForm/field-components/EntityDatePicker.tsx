@@ -191,3 +191,5 @@ export const EntityDatePicker: React.FC<EntityCommonProps> = (props) => {
 
     return renderComponent();
 };
+
+export default EntityDatePicker;

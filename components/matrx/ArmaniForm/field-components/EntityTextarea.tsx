@@ -1,31 +1,90 @@
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 import {motion} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {FormField} from "@/types/AnimatedFormTypes";
 import {MatrxVariant} from './types';
+import {
+    AllEntityFieldKeys,
+    AnyEntityDatabaseTable,
+    EntityKeys,
+    ForeignKeyReference,
+    TypeBrand
+} from "@/types/entityTypes";
+import {ComponentProps, EntityStateField} from "@/lib/redux/entity/types";
+import {DataStructure, FieldDataOptionsType} from "@/components/matrx/Entity/types/entityForm";
+
+
+export interface EntityBaseFieldProps {
+    entityKey: EntityKeys;
+    value: any;
+    onChange: (value: any) => void;
+    density?: 'compact' | 'normal' | 'comfortable';
+    animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
+    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    dynamicFieldInfo: {
+        name: AllEntityFieldKeys;
+        displayName: string;
+        uniqueColumnId: string;
+        uniqueFieldId: string;
+        dataType: FieldDataOptionsType;
+        isRequired: boolean;
+        maxLength: number;
+        isArray: boolean;
+        defaultValue: any;
+        isPrimaryKey: boolean;
+        isDisplayField?: boolean;
+        defaultGeneratorFunction: string;
+        validationFunctions: string[];
+        exclusionRules: string[];
+        defaultComponent?: string;
+        componentProps: ComponentProps;
+        structure: DataStructure;
+        isNative: boolean;
+        typeReference: TypeBrand<any>;
+        enumValues: string[];
+        entityName: EntityKeys;
+        databaseTable: AnyEntityDatabaseTable;
+        foreignKeyReference: ForeignKeyReference | null;
+        description: string;
+    };
+}
 
 interface EntityTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
-    field: FormField;
-    value: string;
-    onChange: (value: string) => void;
+    entityKey: EntityKeys;
+    dynamicFieldInfo: EntityStateField;
+    value: any;
+    onChange: (value: any) => void;
+    density?: 'compact' | 'normal' | 'comfortable';
+    animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
+    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
     className?: string;
-    variant?: MatrxVariant;
+    variant: MatrxVariant;
+    floatingLabel?: boolean;
 }
 
 const EntityTextarea: React.FC<EntityTextareaProps> = (
     {
-        field,
-        value,
+        entityKey,
+        dynamicFieldInfo: field,
+        value = " ",
         onChange,
+        density = 'normal',
+        animationPreset = 'subtle',
+        size = 'default',
         className,
-        disabled = false,
         variant = "default",
+        disabled = false,
+        floatingLabel = true,
         ...props
     }) => {
+
+    const customProps = field.componentProps as Record<string, unknown>;
+    const [isFocused, setIsFocused] = useState(false);
+
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChange(e.target.value);
     };
@@ -51,14 +110,9 @@ const EntityTextarea: React.FC<EntityTextareaProps> = (
         }
     };
 
-    return (
-        <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            exit={{opacity: 0, y: -20}}
-            transition={{duration: 0.3}}
-            className={cn("mb-4", className)}
-        >
+    // Standard layout
+    const standardLayout = (
+        <>
             <Label
                 htmlFor={field.name}
                 className={cn(
@@ -66,14 +120,13 @@ const EntityTextarea: React.FC<EntityTextareaProps> = (
                     disabled ? "text-muted-foreground" : "text-foreground"
                 )}
             >
-                {field.label}
+                {field.displayName}
             </Label>
             <Textarea
                 id={field.name}
                 value={value}
                 onChange={handleChange}
-                placeholder={field.placeholder}
-                required={field.required}
+                required={field.isRequired}
                 disabled={disabled}
                 className={cn(
                     "text-md",
@@ -83,6 +136,63 @@ const EntityTextarea: React.FC<EntityTextareaProps> = (
                 )}
                 {...props}
             />
+        </>
+    );
+
+    // Floating label layout
+
+    const floatingLabelLayout = (
+        <div className="relative mt-2">
+            <Textarea
+                id={field.name}
+                value={value}
+                onChange={handleChange}
+                required={field.isRequired}
+                disabled={disabled}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className={cn(
+                    "text-md",
+                    "min-h-[132px]",
+                    "pt-6 pb-2",
+                    getVariantStyles(variant),
+                    disabled ? "cursor-not-allowed opacity-50 bg-muted" : ""
+                )}
+                {...props}
+            />
+            <Label
+                htmlFor={field.name}
+                className={`absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm ${
+                    (isFocused || value)
+                    ? `absolute -top-2 text-xs ${
+                        disabled
+                        ? '[&]:text-gray-400 dark:[&]:text-gray-400'
+                        : '[&]:text-blue-500 dark:[&]:text-blue-500'
+                    }`
+                    : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
+                }`}
+            >
+                <span className="px-1 relative z-20">
+                    {field.displayName}
+                </span>
+            </Label>
+
+        </div>
+    );
+
+    return (
+        <motion.div
+            initial={{opacity: 0, y: 20}}
+            animate={{opacity: 1, y: 0}}
+            exit={{opacity: 0, y: -20}}
+            transition={{duration: 0.3}}
+            className={cn(
+                "mb-4",
+                floatingLabel && "pt-1",
+                className
+            )}
+        >
+            {floatingLabel ? floatingLabelLayout : standardLayout}
         </motion.div>
     );
 };

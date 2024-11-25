@@ -18,8 +18,8 @@ interface LogEntry {
 class EntityLogger {
     private static logs: LogEntry[] = [];
     private static subscribers: ((logs: LogEntry[]) => void)[] = [];
-    private static logLevel: LogLevel = 'debug';
-    private static consoleLogLevel: LogLevel = 'debug';
+    private static logLevel: LogLevel = 'info';
+    private static consoleLogLevel: LogLevel = 'info';
     private static detailLevel: DetailLevel = 'standard';
     private static featureFilter: Set<string> = new Set();
     private static duplicateSuppressionInterval = 500;
@@ -163,7 +163,7 @@ class EntityLogger {
                 // Color only the message and include details separately
                 console.log(`[${trace}: ${entityKey}] ${color}${message}${reset}`);
                 if (details !== undefined) {
-                    console.log(`Details: ${color}${details}${reset}`);
+                    console.log(`${color}${details}${reset}`);
                 }
                 break;
 
@@ -172,7 +172,7 @@ class EntityLogger {
                 console.log(`[${trace}: ${entityKey}] ${feature ? `[${feature}]` : ''}`);
                 console.log(color + message + reset);
                 if (details !== undefined) {
-                    console.log(`Details: ${color}${details}${reset}`);
+                    console.log(`${color}${details}${reset}`);
                     console.log('---');
                 }
                 break;

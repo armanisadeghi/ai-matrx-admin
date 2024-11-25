@@ -9,9 +9,10 @@ import {
     AllEntityFieldKeys,
     AnyEntityDatabaseTable,
     Relationship,
-    AutomationEntity
+    AutomationEntity, ForeignKeyReference
 } from "@/types/entityTypes";
 import {TypeBrand} from "@/utils/schema/initialSchemas";
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 
 // --- Basic Types ---
 export type MatrxRecordId = string;
@@ -42,37 +43,50 @@ export interface DisplayFieldMetadata {
     databaseFieldName: string | null;
 }
 
+export type ComponentProps = {
+    subComponent: 'default' | string;
+    variant: MatrxVariant;
+    size?: string;
+    textSize?: string;
+    textColor?: string;
+    animation?: string;
+    fullWidthValue?: string;
+    fullWidth?: string;
+    disabled?: string;
+    placeholder?: string;
+    className?: string;
+    type?: string;
+    rows?: string;
+    onChange?: string;
+    formatString?: string;
+    [key: string]: string;
+};
+
 export interface EntityStateField {
     name: AllEntityFieldKeys;
     displayName: string;
-    isPrimaryKey: boolean;
-    isDisplayField?: boolean;
-
-    enumValues: string[];
-    defaultValue: any;
-    defaultGeneratorFunction: string;
-
-
+    uniqueColumnId: string;
+    uniqueFieldId: string;
     dataType: FieldDataOptionsType;
-
-    isArray: boolean;
-
-    structure: DataStructure;
-
-    isNative: boolean;
-
-    defaultComponent?: string;
-    componentProps: ComponentProps;
-
     isRequired: boolean;
     maxLength: number;
+    isArray: boolean;
+    defaultValue: any;
+    isPrimaryKey: boolean;
+    isDisplayField?: boolean;
+    defaultGeneratorFunction: string;
     validationFunctions: string[];
     exclusionRules: string[];
-
+    defaultComponent?: string;
+    componentProps: ComponentProps;
+    structure: DataStructure;
+    isNative: boolean;
+    typeReference: TypeBrand<any>;
+    enumValues: string[];
     entityName: EntityKeys;
     databaseTable: AnyEntityDatabaseTable;
+    foreignKeyReference: ForeignKeyReference | null;
     description: string;
-    typeReference: TypeBrand<any>;
 }
 
 export interface EntityStateFieldWithValue extends EntityStateField {
@@ -107,25 +121,6 @@ export interface EntityMetadata {
     relationships: Relationship[];
 }
 
-export type ComponentProps = {
-    variant: string;
-    placeholder: string;
-    size: string;
-    textSize: string;
-    textColor: string;
-    rows: string;
-    animation: string;
-    fullWidthValue: string;
-    fullWidth: string;
-    disabled: string;
-    className: string;
-    type: string;
-    onChange: string;
-    formatString: string;
-    minDate: string;
-    maxDate: string;
-    [key: string]: string;
-};
 
 // --- Pagination State ---
 export interface PaginationState {

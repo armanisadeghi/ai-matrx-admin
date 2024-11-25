@@ -11,8 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {Switch} from "@/components/ui/switch";
-import {Label} from "@/components/ui/label";
-import {Button} from "@/components/ui/button";
+import {Button} from "@/components/ui";
 import {
     Settings2,
     Layout,
@@ -23,7 +22,7 @@ import {
     PanelLeftOpen,
     Grid,
     List,
-    ArrowRightLeft, Maximize2, Sparkles, Columns, Maximize, Columns2,
+    ArrowRightLeft, Maximize2, Sparkles, Columns, Maximize, Columns2, Type,
 } from 'lucide-react';
 import {
     Sheet,
@@ -46,9 +45,10 @@ import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/
 import {Slider} from "@/components/ui";
 import {cn} from "@/utils/cn";
 
-const layoutOptions: LayoutVariant[] = ['split', 'sideBySide', 'stacked'];
+const layoutOptions = ['split', 'sideBySide', 'stacked'];
 const densityOptions: ComponentDensity[] = ['compact', 'normal', 'comfortable'];
 const quickReferenceOptions: QuickReferenceComponentType[] = ['cards', 'cardsEnhanced', 'accordion', 'accordionEnhanced', 'list', 'select'];
+
 const formVariationOptions = [
     'fullWidthSinglePage',
     'fullWidthMultiStep',
@@ -58,6 +58,7 @@ const formVariationOptions = [
     'singlePageModal',
     'multiStepModal'
 ] as const;
+
 const formLayoutOptions: FormLayoutOptions[] = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline'];
 const directionOptions: FormDirectionOptions[] = ['row', 'column', 'row-reverse', 'column-reverse'];
 
@@ -69,17 +70,18 @@ const EntityPageClient = () => {
     const [settings, setSettings] = useState({
         layout: 'split' as LayoutVariant,
         density: 'normal' as ComponentDensity,
-        animation: 'smooth' as AnimationPreset,
+        animation: 'subtle' as AnimationPreset,
         size: 'md' as ComponentSize,
         quickReferenceType: 'list' as QuickReferenceComponentType,
         isFullScreen: false,
         splitRatio: 20,
         formOptions: {
-            formLayout: 'grid' as FormLayoutOptions,
+            formLayout: 'grid',
             formColumns: '2',
             formDirection: 'row' as FormDirectionOptions,
             formEnableSearch: false,
             formVariation: 'fullWidthSinglePage' as typeof formVariationOptions[number],
+            floatingLabel: true,
         }
     });
 
@@ -197,6 +199,17 @@ const EntityPageClient = () => {
                         formOptions: {...prev.formOptions, formDirection: value}
                     }))}
                 />
+                <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
+                    <Type className="h-4 w-4 text-muted-foreground"/>
+                    <Switch
+                        checked={settings.formOptions.floatingLabel}
+                        onCheckedChange={(checked) => setSettings(prev => ({
+                            ...prev,
+                            formOptions: {...prev.formOptions, floatingLabel: checked}
+                        }))}
+                        className="data-[state=checked]:bg-primary"
+                    />
+                </div>
             </ControlGroup>
 
             <ControlGroup>
@@ -291,6 +304,7 @@ const EntityPageClient = () => {
                                 formEnableSearch: settings.formOptions.formEnableSearch,
                                 formIsSinglePage: !settings.formOptions.formVariation.includes('MultiStep'),
                                 formIsFullPage: settings.formOptions.formVariation.includes('fullWidth'),
+                                floatingLabel: settings.formOptions.floatingLabel,
                             }}
                             className="h-full"
                         />

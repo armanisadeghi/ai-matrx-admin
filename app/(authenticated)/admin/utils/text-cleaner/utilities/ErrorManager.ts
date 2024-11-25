@@ -1,34 +1,9 @@
-// types/error.ts
-export type ErrorSeverity = 'error' | 'warning' | 'info';
-export type ErrorFormat = 'essential' | 'basic' | 'verbose' | 'json';
+import { extractTypeScriptError } from "./errorProcessors";
+import {DetailedError, FormattedError} from "./types";
 
-export interface DetailedError {
-    errorCode: string;
-    errorType: string;
-    component?: string;
-    property?: string;
-    expectedType?: string;
-    providedType?: string;
-    summary: string;
-    fullError: string;
-    reference: string;
-    rawError: string;
-    details: Record<string, unknown>;
-    severity: ErrorSeverity;
-    suggestions: string[];
-    context?: string;
-}
 
-export interface FormattedError {
-    essential: string;
-    basic: string;
-    verbose: string;
-    json: string;
-    error: DetailedError;
-}
 
-// EnhancedErrorParser.ts
-export class EnhancedErrorParser {
+export class ErrorManager {
     private static readonly PATTERNS = {
         typeScript: /TS(\d{4})/,
         propertyError: /Types of property '(.+)' are incompatible/,
@@ -70,7 +45,7 @@ export class EnhancedErrorParser {
     }
 
     private static generateReference(): string {
-        return `ERR_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `ERR_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
     }
 
     private static handleError(error: string): Partial<DetailedError> {
@@ -103,6 +78,41 @@ export class EnhancedErrorParser {
         const errorCodeMatch = cleanedError.match(this.PATTERNS.typeScript);
         const errorCode = errorCodeMatch ? `TS${errorCodeMatch[1]}` : 'Unknown';
 
+        // Try to use specific error processor first
+        if (errorCode !== 'Unknown') {
+            const processorName = `parse${errorCode}Error`;
+            try {
+                const errorProcessors = require('./errorProcessors');
+                const processor = errorProcessors[processorName];
+
+                if (typeof processor === 'function') {
+                    const processed = processor(cleanedError);
+                    if (processed && processed.essential) {
+                        return {
+                            essential: processed.essential,
+                            basic: processed.basic,
+                            verbose: processed.verbose,
+                            json: JSON.stringify(processed, null, 2),
+                            error: {
+                                errorCode,
+                                errorType: processed.errorType || 'TypeError',
+                                summary: processed.essential,
+                                fullError: cleanedError,
+                                reference: this.generateReference(),
+                                rawError,
+                                details: processed,
+                                severity: 'error',
+                                suggestions: []
+                            }
+                        };
+                    }
+                }
+            } catch (e) {
+                // Silently continue to default handling if processor not found or fails
+            }
+        }
+
+        // Original error handling logic
         try {
             const handled = this.handleError(cleanedError);
 
@@ -149,6 +159,7 @@ export class EnhancedErrorParser {
             };
         }
     }
+
 
     private static generateSummary(error: Partial<DetailedError>): string {
         const { property, expectedType, providedType, component } = error;

@@ -4,6 +4,7 @@
 
 
 export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
+export type DensityOptions = 'compact' | 'normal' | 'comfortable';
 
 export const layoutTransitions = {
     split: {
@@ -183,11 +184,11 @@ export const densityConfig = {
     normal: {
         spacing: 'gap-4',
         padding: {
-            xs: 'p-2',
-            sm: 'p-3',
-            md: 'p-4',
-            lg: 'p-5',
-            xl: 'p-7'
+            xs: 'pr-2 pl-2 pt-2 pb-2',
+            sm: 'pr-3 pl-3 pt-3 pb-3',
+            md: 'pr-4 pl-4 pt-4 pb-4',
+            lg: 'pr-5 pl-5 pt-5 pb-5',
+            xl: 'pr-6 pl-6 pt-6 pb-6'
         },
         fontSize: 'text-base',
         iconSize: 'h-5 w-5',

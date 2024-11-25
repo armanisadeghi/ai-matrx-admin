@@ -1,6 +1,6 @@
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 import {motion} from "framer-motion";
 import {cn} from "@/utils/cn";
 import {Input} from "@/components/ui/input";
@@ -9,15 +9,15 @@ import {getAnimationVariants, densityConfig, spacingConfig, AnimationPreset} fro
 import { MatrxVariant, EntityField  } from './types';
 
 export interface EntityInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-    field: EntityField ;
+    field: EntityField;
     value: string;
     onChange: (value: string) => void;
     className?: string;
     density?: 'compact' | 'normal' | 'comfortable';
     animationPreset?: AnimationPreset;
     variant?: MatrxVariant;
+    floatingLabel?: boolean;
 }
-
 
 const EntityInput: React.FC<EntityInputProps> = (
     {
@@ -29,8 +29,11 @@ const EntityInput: React.FC<EntityInputProps> = (
         density = 'normal',
         animationPreset = 'smooth',
         variant = 'default',
+        floatingLabel = true,
         ...props
     }) => {
+    const [isFocused, setIsFocused] = useState(false);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.value);
     };
@@ -57,17 +60,9 @@ const EntityInput: React.FC<EntityInputProps> = (
         }
     };
 
-    return (
-        <motion.div
-            variants={animations}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className={cn(
-                densityStyles.section,
-                className
-            )}
-        >
+    // Standard label and input layout
+    const standardLayout = (
+        <>
             <Label
                 htmlFor={field.name}
                 className={cn(
@@ -95,6 +90,63 @@ const EntityInput: React.FC<EntityInputProps> = (
                 )}
                 {...props}
             />
+        </>
+    );
+
+    // Floating label layout
+    const floatingLabelLayout = (
+        <div className="relative mt-2">
+            <Input
+                id={field.name}
+                type={field.type}
+                value={value}
+                onChange={handleChange}
+                required={field.required}
+                disabled={disabled}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className={cn(
+                    "pt-4 pb-2", // Adjusted padding for floating label
+                    densityConfig[density].fontSize,
+                    densityStyles.inputSize,
+                    getVariantStyles(variant),
+                    disabled ? "bg-muted cursor-not-allowed opacity-50" : ""
+                )}
+                {...props}
+            />
+            <Label
+                htmlFor={field.name}
+                className={`absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm ${
+                    (isFocused || value)
+                    ? `absolute -top-2 text-xs ${
+                        disabled
+                        ? '[&]:text-gray-400 dark:[&]:text-gray-400'
+                        : '[&]:text-blue-500 dark:[&]:text-blue-500'
+                    }`
+                    : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
+                }`}
+            >
+                <span className="px-1 relative z-20">
+                    {field.label}
+                </span>
+            </Label>
+        </div>
+    );
+
+    return (
+        <motion.div
+            variants={animations}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className={cn(
+                densityStyles.section,
+                // Add padding to top of container when using floating label
+                floatingLabel && "pt-1",
+                className
+            )}
+        >
+            {floatingLabel ? floatingLabelLayout : standardLayout}
         </motion.div>
     );
 };

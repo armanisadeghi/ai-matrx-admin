@@ -12,6 +12,8 @@ import {AutomationEntity} from '@/types/entityTypes';
 export const initialAutomationTableSchema = {
     action: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:action',
+        uniqueEntityId: 'supabase_automation_matrix:action',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -28,6 +30,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -41,9 +44,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -59,6 +64,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:action:id',
+                uniqueFieldId: 'supabase_automation_matrix:action:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -69,26 +78,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -96,6 +89,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
+                foreignKeyReference: null,
                 description: '"Id" field for action. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -111,6 +105,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:action:name',
+                uniqueFieldId: 'supabase_automation_matrix:action:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: 255,
@@ -121,26 +119,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 3
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -148,6 +131,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
+                foreignKeyReference: null,
                 description: '"Name" field for action. This is a required field. Your entry must be an string data type. Maximum Length: 255',
             },
             matrix: {
@@ -163,6 +147,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "matrix",
                     "custom": "matrix"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:action:matrix',
+                uniqueFieldId: 'supabase_automation_matrix:action:matrix',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -173,26 +161,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -200,6 +172,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
+                foreignKeyReference: {'table': 'automation_matrix', 'column': 'description'},
                 description: '"Matrix" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
             },
             transformer: {
@@ -215,6 +188,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "transformer",
                     "custom": "transformer"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:action:transformer',
+                uniqueFieldId: 'supabase_automation_matrix:action:transformer',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -225,26 +202,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -252,6 +213,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
+                foreignKeyReference: {'table': 'transformer', 'column': 'output_params'},
                 description: '"Transformer" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Transformer.',
             },
             nodeType: {
@@ -267,6 +229,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "nodeType",
                     "custom": "nodeType"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:action:node_type',
+                uniqueFieldId: 'supabase_automation_matrix:action:nodeType',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: 50,
@@ -277,26 +243,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -304,6 +254,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
+                foreignKeyReference: null,
                 description: '"Node Type" field for action. This is a required field. Your entry must be an string data type. Maximum Length: 50',
             },
             referenceId: {
@@ -319,6 +270,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "referenceId",
                     "custom": "referenceId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:action:reference_id',
+                uniqueFieldId: 'supabase_automation_matrix:action:referenceId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -329,26 +284,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -356,6 +295,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
+                foreignKeyReference: null,
                 description: '"Reference Id" field for action. This is a required field. Your entry must be an uuid data type.',
             },
             automationMatrixReference: {
@@ -371,6 +311,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "automationMatrixReference",
                     "custom": "automationMatrixReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:automation_matrix',
+                uniqueEntityId: 'supabase_automation_matrix:automationMatrix',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -378,13 +320,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
-                entityName: 'action',
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
             },
             transformerReference: {
@@ -400,6 +342,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "transformerReference",
                     "custom": "transformerReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:transformer',
+                uniqueEntityId: 'supabase_automation_matrix:transformer',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -407,13 +351,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
-                entityName: 'action',
+                typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
+                entityName: 'transformer',
                 databaseTable: 'transformer',
             },
         },
@@ -448,6 +392,8 @@ export const initialAutomationTableSchema = {
     },
     aiEndpoint: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:ai_endpoint',
+        uniqueEntityId: 'supabase_automation_matrix:aiEndpoint',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -464,6 +410,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'simple',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -477,9 +424,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -495,6 +444,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:id',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -505,26 +458,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -532,6 +469,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Id" field for aiEndpoint. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -547,6 +485,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:name',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -557,26 +499,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -584,6 +511,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Name" field for aiEndpoint. This is a required field. Your entry must be an string data type.',
             },
             provider: {
@@ -599,6 +527,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "provider",
                     "custom": "provider"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:provider',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:provider',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -609,26 +541,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -636,6 +553,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Provider" field for aiEndpoint. This is an optional field. Your entry must be an string data type.',
             },
             description: {
@@ -651,6 +569,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:description',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -661,26 +583,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -688,6 +595,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Description" field for aiEndpoint. This is an optional field. Your entry must be an string data type.',
             },
             additionalCost: {
@@ -703,6 +611,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "additionalCost",
                     "custom": "additionalCost"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:additional_cost',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:additionalCost',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -713,26 +625,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -740,6 +636,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Additional Cost" field for aiEndpoint. This is an optional field. Your entry must be an boolean data type.',
             },
             costDetails: {
@@ -755,6 +652,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "costDetails",
                     "custom": "costDetails"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:cost_details',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:costDetails',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -765,26 +666,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -792,6 +677,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Cost Details" field for aiEndpoint. This is an optional field. Your entry must be an object data type.',
             },
             params: {
@@ -807,6 +693,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "params",
                     "custom": "params"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:params',
+                uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:params',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -817,26 +707,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -844,6 +718,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiEndpoint',
                 databaseTable: 'ai_endpoint',
+                foreignKeyReference: null,
                 description: '"Params" field for aiEndpoint. This is an optional field. Your entry must be an object data type.',
             },
         },
@@ -863,6 +738,8 @@ export const initialAutomationTableSchema = {
     },
     aiModel: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:ai_model',
+        uniqueEntityId: 'supabase_automation_matrix:aiModel',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -879,6 +756,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -892,9 +770,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -910,6 +790,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:id',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -920,26 +804,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -947,6 +815,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Id" field for aiModel. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -962,6 +831,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:name',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -972,26 +845,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -999,6 +857,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Name" field for aiModel. This is a required field. Your entry must be an string data type.',
             },
             commonName: {
@@ -1014,6 +873,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "commonName",
                     "custom": "commonName"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:common_name',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:commonName',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1024,26 +887,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1051,6 +899,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Common Name" field for aiModel. This is an optional field. Your entry must be an string data type.',
             },
             modelClass: {
@@ -1066,6 +915,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "modelClass",
                     "custom": "modelClass"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:model_class',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:modelClass',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -1076,26 +929,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1103,6 +941,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Model Class" field for aiModel. This is a required field. Your entry must be an string data type.',
             },
             provider: {
@@ -1118,6 +957,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "provider",
                     "custom": "provider"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:provider',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:provider',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1128,26 +971,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1155,6 +983,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Provider" field for aiModel. This is an optional field. Your entry must be an string data type.',
             },
             endpoints: {
@@ -1170,6 +999,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "endpoints",
                     "custom": "endpoints"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:endpoints',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:endpoints',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1180,26 +1013,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1207,6 +1024,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Endpoints" field for aiModel. This is an optional field. Your entry must be an object data type.',
             },
             contextWindow: {
@@ -1222,6 +1040,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "contextWindow",
                     "custom": "contextWindow"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:context_window',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:contextWindow',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1232,26 +1054,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "bigint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1259,6 +1066,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Context Window" field for aiModel. This is an optional field. Your entry must be an number data type.',
             },
             maxTokens: {
@@ -1274,6 +1082,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "maxTokens",
                     "custom": "maxTokens"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:max_tokens',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:maxTokens',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1284,26 +1096,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "bigint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1311,6 +1108,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Max Tokens" field for aiModel. This is an optional field. Your entry must be an number data type.',
             },
             capabilities: {
@@ -1326,6 +1124,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "capabilities",
                     "custom": "capabilities"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:capabilities',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:capabilities',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1336,26 +1138,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1363,6 +1149,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Capabilities" field for aiModel. This is an optional field. Your entry must be an object data type.',
             },
             controls: {
@@ -1378,6 +1165,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "controls",
                     "custom": "controls"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:ai_model:controls',
+                uniqueFieldId: 'supabase_automation_matrix:aiModel:controls',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1388,26 +1179,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1415,6 +1190,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                foreignKeyReference: null,
                 description: '"Controls" field for aiModel. This is an optional field. Your entry must be an object data type.',
             },
             recipeModelInverse: {
@@ -1430,6 +1206,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeModelInverse",
                     "custom": "recipeModelInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_model',
+                uniqueEntityId: 'supabase_automation_matrix:recipeModel',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1437,13 +1215,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
-                entityName: 'aiModel',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
             },
         },
@@ -1478,6 +1256,8 @@ export const initialAutomationTableSchema = {
     },
     arg: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:arg',
+        uniqueEntityId: 'supabase_automation_matrix:arg',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -1494,6 +1274,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'fk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -1507,9 +1288,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -1525,6 +1308,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:id',
+                uniqueFieldId: 'supabase_automation_matrix:arg:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -1535,26 +1322,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1562,6 +1333,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: null,
                 description: '"Id" field for arg. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -1577,6 +1349,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:name',
+                uniqueFieldId: 'supabase_automation_matrix:arg:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -1587,26 +1363,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1614,6 +1375,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: null,
                 description: '"Name" field for arg. This is a required field. Your entry must be an string data type.',
             },
             required: {
@@ -1629,6 +1391,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "required",
                     "custom": "required"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:required',
+                uniqueFieldId: 'supabase_automation_matrix:arg:required',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1639,26 +1405,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1666,6 +1416,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: null,
                 description: '"Required" field for arg. This is an optional field. Your entry must be an boolean data type.',
             },
             default: {
@@ -1681,6 +1432,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "default",
                     "custom": "default"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:default',
+                uniqueFieldId: 'supabase_automation_matrix:arg:default',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1691,26 +1446,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1718,6 +1458,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: null,
                 description: '"Default" field for arg. This is an optional field. Your entry must be an string data type.',
             },
             dataType: {
@@ -1733,6 +1474,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "dataType",
                     "custom": "dataType"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:data_type',
+                uniqueFieldId: 'supabase_automation_matrix:arg:dataType',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1743,26 +1488,40 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Bool",
+                            "value": "bool"
+                        },
+                        {
+                            "label": "Dict",
+                            "value": "dict"
+                        },
+                        {
+                            "label": "Float",
+                            "value": "float"
+                        },
+                        {
+                            "label": "Int",
+                            "value": "int"
+                        },
+                        {
+                            "label": "List",
+                            "value": "list"
+                        },
+                        {
+                            "label": "Str",
+                            "value": "str"
+                        },
+                        {
+                            "label": "Url",
+                            "value": "url"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1770,6 +1529,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: null,
                 description: '"Data Type" field for arg. This is an optional field. Your entry must be an string data type.',
             },
             ready: {
@@ -1785,6 +1545,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "ready",
                     "custom": "ready"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:ready',
+                uniqueFieldId: 'supabase_automation_matrix:arg:ready',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1795,26 +1559,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1822,6 +1570,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: null,
                 description: '"Ready" field for arg. This is an optional field. Your entry must be an boolean data type.',
             },
             registeredFunction: {
@@ -1837,6 +1586,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "registeredFunction",
                     "custom": "registeredFunction"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:arg:registered_function',
+                uniqueFieldId: 'supabase_automation_matrix:arg:registeredFunction',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1847,26 +1600,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -1874,6 +1611,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
+                foreignKeyReference: {'table': 'registered_function', 'column': '........pg.dropped.7........'},
                 description: '"Registered Function" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
             },
             registeredFunctionReference: {
@@ -1889,6 +1627,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "registeredFunctionReference",
                     "custom": "registeredFunctionReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:registered_function',
+                uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1896,13 +1636,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
-                entityName: 'arg',
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
             },
         },
@@ -1930,6 +1670,8 @@ export const initialAutomationTableSchema = {
     },
     automationBoundaryBroker: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:automation_boundary_broker',
+        uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -1946,6 +1688,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -1959,9 +1702,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -1977,6 +1722,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:id',
+                uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -1987,26 +1736,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2014,6 +1747,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                foreignKeyReference: null,
                 description: '"Id" field for automationBoundaryBroker. This is a required field. Your entry must be an uuid data type.',
             },
             matrix: {
@@ -2029,6 +1763,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "matrix",
                     "custom": "matrix"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:matrix',
+                uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:matrix',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2039,26 +1777,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2066,6 +1788,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                foreignKeyReference: {'table': 'automation_matrix', 'column': 'name'},
                 description: '"Matrix" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
             },
             broker: {
@@ -2081,6 +1804,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "broker",
                     "custom": "broker"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:broker',
+                uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:broker',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2091,26 +1818,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2118,6 +1829,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                foreignKeyReference: {'table': 'broker', 'column': 'value'},
                 description: '"Broker" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             sparkSource: {
@@ -2133,6 +1845,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sparkSource",
                     "custom": "sparkSource"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:spark_source',
+                uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:sparkSource',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2143,26 +1859,48 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Api",
+                            "value": "api"
+                        },
+                        {
+                            "label": "Chance",
+                            "value": "chance"
+                        },
+                        {
+                            "label": "Database",
+                            "value": "database"
+                        },
+                        {
+                            "label": "Environment",
+                            "value": "environment"
+                        },
+                        {
+                            "label": "File",
+                            "value": "file"
+                        },
+                        {
+                            "label": "Function",
+                            "value": "function"
+                        },
+                        {
+                            "label": "Generated Data",
+                            "value": "generated_data"
+                        },
+                        {
+                            "label": "None",
+                            "value": "none"
+                        },
+                        {
+                            "label": "User Input",
+                            "value": "user_input"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2170,6 +1908,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['api', 'chance', 'database', 'environment', 'file', 'function', 'generated_data', 'none', 'user_input'] as const,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                foreignKeyReference: null,
                 description: '"Spark Source" field for automationBoundaryBroker. This is an optional field. Your entry must be an string data type.',
             },
             beaconDestination: {
@@ -2185,6 +1924,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "beaconDestination",
                     "custom": "beaconDestination"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:beacon_destination',
+                uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:beaconDestination',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2195,26 +1938,32 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Api Response",
+                            "value": "api_response"
+                        },
+                        {
+                            "label": "Database",
+                            "value": "database"
+                        },
+                        {
+                            "label": "File",
+                            "value": "file"
+                        },
+                        {
+                            "label": "Function",
+                            "value": "function"
+                        },
+                        {
+                            "label": "User Output",
+                            "value": "user_output"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2222,6 +1971,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['api_response', 'database', 'file', 'function', 'user_output'] as const,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
+                foreignKeyReference: null,
                 description: '"Beacon Destination" field for automationBoundaryBroker. This is an optional field. Your entry must be an string data type.',
             },
             brokerReference: {
@@ -2237,6 +1987,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "brokerReference",
                     "custom": "brokerReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:broker',
+                uniqueEntityId: 'supabase_automation_matrix:broker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2244,13 +1996,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
-                entityName: 'automationBoundaryBroker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'broker',
             },
             automationMatrixReference: {
@@ -2266,6 +2018,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "automationMatrixReference",
                     "custom": "automationMatrixReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:automation_matrix',
+                uniqueEntityId: 'supabase_automation_matrix:automationMatrix',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2273,13 +2027,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
-                entityName: 'automationBoundaryBroker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
+                entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
             },
         },
@@ -2314,6 +2068,8 @@ export const initialAutomationTableSchema = {
     },
     automationMatrix: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:automation_matrix',
+        uniqueEntityId: 'supabase_automation_matrix:automationMatrix',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -2330,6 +2086,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -2343,9 +2100,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -2361,6 +2120,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:id',
+                uniqueFieldId: 'supabase_automation_matrix:automationMatrix:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -2371,26 +2134,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2398,6 +2145,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                foreignKeyReference: null,
                 description: '"Id" field for automationMatrix. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -2413,6 +2161,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:name',
+                uniqueFieldId: 'supabase_automation_matrix:automationMatrix:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -2423,26 +2175,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2450,6 +2187,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                foreignKeyReference: null,
                 description: '"Name" field for automationMatrix. This is a required field. Your entry must be an string data type.',
             },
             description: {
@@ -2465,6 +2203,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:description',
+                uniqueFieldId: 'supabase_automation_matrix:automationMatrix:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2475,26 +2217,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2502,6 +2229,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                foreignKeyReference: null,
                 description: '"Description" field for automationMatrix. This is an optional field. Your entry must be an string data type.',
             },
             averageSeconds: {
@@ -2517,6 +2245,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "averageSeconds",
                     "custom": "averageSeconds"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:average_seconds',
+                uniqueFieldId: 'supabase_automation_matrix:automationMatrix:averageSeconds',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2527,26 +2259,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2554,6 +2271,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                foreignKeyReference: null,
                 description: '"Average Seconds" field for automationMatrix. This is an optional field. Your entry must be an number data type.',
             },
             isAutomated: {
@@ -2569,6 +2287,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "isAutomated",
                     "custom": "isAutomated"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:is_automated',
+                uniqueFieldId: 'supabase_automation_matrix:automationMatrix:isAutomated',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2579,26 +2301,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2606,6 +2312,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                foreignKeyReference: null,
                 description: '"Is Automated" field for automationMatrix. This is an optional field. Your entry must be an boolean data type.',
             },
             cognitionMatrices: {
@@ -2621,6 +2328,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "cognitionMatrices",
                     "custom": "cognitionMatrices"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:cognition_matrices',
+                uniqueFieldId: 'supabase_automation_matrix:automationMatrix:cognitionMatrices',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2631,26 +2342,44 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Agent Crew",
+                            "value": "agent_crew"
+                        },
+                        {
+                            "label": "Agent Mixture",
+                            "value": "agent_mixture"
+                        },
+                        {
+                            "label": "Conductor",
+                            "value": "conductor"
+                        },
+                        {
+                            "label": "Hypercluster",
+                            "value": "hypercluster"
+                        },
+                        {
+                            "label": "Knowledge Matrix",
+                            "value": "knowledge_matrix"
+                        },
+                        {
+                            "label": "Monte Carlo",
+                            "value": "monte_carlo"
+                        },
+                        {
+                            "label": "The Matrix",
+                            "value": "the_matrix"
+                        },
+                        {
+                            "label": "Workflow",
+                            "value": "workflow"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2658,6 +2387,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['agent_crew', 'agent_mixture', 'conductor', 'hypercluster', 'knowledge_matrix', 'monte_carlo', 'the_matrix', 'workflow'] as const,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                foreignKeyReference: null,
                 description: '"Cognition Matrices" field for automationMatrix. This is an optional field. Your entry must be an string data type.',
             },
             actionInverse: {
@@ -2673,6 +2403,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "actionInverse",
                     "custom": "actionInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:action',
+                uniqueEntityId: 'supabase_automation_matrix:action',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2680,13 +2412,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
-                entityName: 'automationMatrix',
+                typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
+                entityName: 'action',
                 databaseTable: 'action',
             },
             automationBoundaryBrokerInverse: {
@@ -2702,6 +2434,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "automationBoundaryBrokerInverse",
                     "custom": "automationBoundaryBrokerInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:automation_boundary_broker',
+                uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2709,13 +2443,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
-                entityName: 'automationMatrix',
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
             },
         },
@@ -2764,6 +2498,8 @@ export const initialAutomationTableSchema = {
     },
     broker: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:broker',
+        uniqueEntityId: 'supabase_automation_matrix:broker',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -2780,6 +2516,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -2793,9 +2530,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -2811,6 +2550,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:id',
+                uniqueFieldId: 'supabase_automation_matrix:broker:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -2821,26 +2564,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2848,6 +2575,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Id" field for broker. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -2863,6 +2591,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:name',
+                uniqueFieldId: 'supabase_automation_matrix:broker:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -2873,26 +2605,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2900,6 +2617,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Name" field for broker. This is a required field. Your entry must be an string data type.',
             },
             value: {
@@ -2915,6 +2633,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "value",
                     "custom": "value"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:value',
+                uniqueFieldId: 'supabase_automation_matrix:broker:value',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2925,26 +2647,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -2952,6 +2658,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Value" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             dataType: {
@@ -2967,6 +2674,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "dataType",
                     "custom": "dataType"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:data_type',
+                uniqueFieldId: 'supabase_automation_matrix:broker:dataType',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -2977,26 +2688,40 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Bool",
+                            "value": "bool"
+                        },
+                        {
+                            "label": "Dict",
+                            "value": "dict"
+                        },
+                        {
+                            "label": "Float",
+                            "value": "float"
+                        },
+                        {
+                            "label": "Int",
+                            "value": "int"
+                        },
+                        {
+                            "label": "List",
+                            "value": "list"
+                        },
+                        {
+                            "label": "Str",
+                            "value": "str"
+                        },
+                        {
+                            "label": "Url",
+                            "value": "url"
+                        }
+                    ],
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3004,6 +2729,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Data Type" field for broker. This is a required field. Your entry must be an string data type.',
             },
             ready: {
@@ -3019,6 +2745,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "ready",
                     "custom": "ready"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:ready',
+                uniqueFieldId: 'supabase_automation_matrix:broker:ready',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3029,26 +2759,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3056,6 +2770,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Ready" field for broker. This is an optional field. Your entry must be an boolean data type.',
             },
             defaultSource: {
@@ -3071,6 +2786,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "defaultSource",
                     "custom": "defaultSource"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:default_source',
+                uniqueFieldId: 'supabase_automation_matrix:broker:defaultSource',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3081,26 +2800,48 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Api",
+                            "value": "api"
+                        },
+                        {
+                            "label": "Chance",
+                            "value": "chance"
+                        },
+                        {
+                            "label": "Database",
+                            "value": "database"
+                        },
+                        {
+                            "label": "Environment",
+                            "value": "environment"
+                        },
+                        {
+                            "label": "File",
+                            "value": "file"
+                        },
+                        {
+                            "label": "Function",
+                            "value": "function"
+                        },
+                        {
+                            "label": "Generated Data",
+                            "value": "generated_data"
+                        },
+                        {
+                            "label": "None",
+                            "value": "none"
+                        },
+                        {
+                            "label": "User Input",
+                            "value": "user_input"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3108,6 +2849,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['api', 'chance', 'database', 'environment', 'file', 'function', 'generated_data', 'none', 'user_input'] as const,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Default Source" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             displayName: {
@@ -3123,6 +2865,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "displayName",
                     "custom": "displayName"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:display_name',
+                uniqueFieldId: 'supabase_automation_matrix:broker:displayName',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3133,26 +2879,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3160,6 +2891,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Display Name" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             description: {
@@ -3175,6 +2907,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:description',
+                uniqueFieldId: 'supabase_automation_matrix:broker:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3185,26 +2921,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3212,6 +2933,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Description" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             tooltip: {
@@ -3227,6 +2949,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "tooltip",
                     "custom": "tooltip"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:tooltip',
+                uniqueFieldId: 'supabase_automation_matrix:broker:tooltip',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3237,26 +2963,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3264,6 +2975,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Tooltip" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             validationRules: {
@@ -3279,6 +2991,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "validationRules",
                     "custom": "validationRules"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:validation_rules',
+                uniqueFieldId: 'supabase_automation_matrix:broker:validationRules',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3289,26 +3005,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3316,6 +3016,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Validation Rules" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             sampleEntries: {
@@ -3331,6 +3032,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sampleEntries",
                     "custom": "sampleEntries"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:sample_entries',
+                uniqueFieldId: 'supabase_automation_matrix:broker:sampleEntries',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3341,26 +3046,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3368,6 +3058,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Sample Entries" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             customSourceComponent: {
@@ -3383,6 +3074,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "customSourceComponent",
                     "custom": "customSourceComponent"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:custom_source_component',
+                uniqueFieldId: 'supabase_automation_matrix:broker:customSourceComponent',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3393,26 +3088,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3420,6 +3099,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: {'table': 'data_input_component', 'column': 'color_overrides'},
                 description: '"Custom Source Component" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.',
             },
             additionalParams: {
@@ -3435,6 +3115,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "additionalParams",
                     "custom": "additionalParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:additional_params',
+                uniqueFieldId: 'supabase_automation_matrix:broker:additionalParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3445,26 +3129,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3472,6 +3140,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Additional Params" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             otherSourceParams: {
@@ -3487,6 +3156,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "otherSourceParams",
                     "custom": "otherSourceParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:other_source_params',
+                uniqueFieldId: 'supabase_automation_matrix:broker:otherSourceParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3497,26 +3170,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3524,6 +3181,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Other Source Params" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             defaultDestination: {
@@ -3539,6 +3197,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "defaultDestination",
                     "custom": "defaultDestination"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:default_destination',
+                uniqueFieldId: 'supabase_automation_matrix:broker:defaultDestination',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3549,26 +3211,32 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Api Response",
+                            "value": "api_response"
+                        },
+                        {
+                            "label": "Database",
+                            "value": "database"
+                        },
+                        {
+                            "label": "File",
+                            "value": "file"
+                        },
+                        {
+                            "label": "Function",
+                            "value": "function"
+                        },
+                        {
+                            "label": "User Output",
+                            "value": "user_output"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3576,6 +3244,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['api_response', 'database', 'file', 'function', 'user_output'] as const,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Default Destination" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             outputComponent: {
@@ -3591,6 +3260,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "outputComponent",
                     "custom": "outputComponent"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:output_component',
+                uniqueFieldId: 'supabase_automation_matrix:broker:outputComponent',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3601,26 +3274,276 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "3 D Model Viewer",
+                            "value": "3DModelViewer"
+                        },
+                        {
+                            "label": "Audio Output",
+                            "value": "AudioOutput"
+                        },
+                        {
+                            "label": "Bucket List",
+                            "value": "BucketList"
+                        },
+                        {
+                            "label": "Budget Visualizer",
+                            "value": "BudgetVisualizer"
+                        },
+                        {
+                            "label": "Calendar",
+                            "value": "Calendar"
+                        },
+                        {
+                            "label": "Carousel",
+                            "value": "Carousel"
+                        },
+                        {
+                            "label": "Checklist",
+                            "value": "Checklist"
+                        },
+                        {
+                            "label": "Clock",
+                            "value": "Clock"
+                        },
+                        {
+                            "label": "Code View",
+                            "value": "CodeView"
+                        },
+                        {
+                            "label": "Complex Multi",
+                            "value": "ComplexMulti"
+                        },
+                        {
+                            "label": "Data Flow Diagram",
+                            "value": "DataFlowDiagram"
+                        },
+                        {
+                            "label": "Decision Tree",
+                            "value": "DecisionTree"
+                        },
+                        {
+                            "label": "Diff Viewer",
+                            "value": "DiffViewer"
+                        },
+                        {
+                            "label": "File Output",
+                            "value": "FileOutput"
+                        },
+                        {
+                            "label": "Fitness Tracker",
+                            "value": "FitnessTracker"
+                        },
+                        {
+                            "label": "Flowchart",
+                            "value": "Flowchart"
+                        },
+                        {
+                            "label": "Form",
+                            "value": "Form"
+                        },
+                        {
+                            "label": "Gantt Chart",
+                            "value": "GanttChart"
+                        },
+                        {
+                            "label": "Geographic Map",
+                            "value": "GeographicMap"
+                        },
+                        {
+                            "label": "Glossary View",
+                            "value": "GlossaryView"
+                        },
+                        {
+                            "label": "Heatmap",
+                            "value": "Heatmap"
+                        },
+                        {
+                            "label": "Horizontal List",
+                            "value": "HorizontalList"
+                        },
+                        {
+                            "label": "Image View",
+                            "value": "ImageView"
+                        },
+                        {
+                            "label": "Interactive Chart",
+                            "value": "InteractiveChart"
+                        },
+                        {
+                            "label": "Json Viewer",
+                            "value": "JsonViewer"
+                        },
+                        {
+                            "label": "Kanban Board",
+                            "value": "KanbanBoard"
+                        },
+                        {
+                            "label": "La Te X Renderer",
+                            "value": "LaTeXRenderer"
+                        },
+                        {
+                            "label": "Live Traffic",
+                            "value": "LiveTraffic"
+                        },
+                        {
+                            "label": "Local Events",
+                            "value": "LocalEvents"
+                        },
+                        {
+                            "label": "Markdown Viewer",
+                            "value": "MarkdownViewer"
+                        },
+                        {
+                            "label": "Meal Planner",
+                            "value": "MealPlanner"
+                        },
+                        {
+                            "label": "Mind Map",
+                            "value": "MindMap"
+                        },
+                        {
+                            "label": "Need New Option",
+                            "value": "NeedNewOption"
+                        },
+                        {
+                            "label": "Network Graph",
+                            "value": "NetworkGraph"
+                        },
+                        {
+                            "label": "News Aggregator",
+                            "value": "NewsAggregator"
+                        },
+                        {
+                            "label": "P D F Viewer",
+                            "value": "PDFViewer"
+                        },
+                        {
+                            "label": "Pivot Table",
+                            "value": "PivotTable"
+                        },
+                        {
+                            "label": "Plain Text",
+                            "value": "PlainText"
+                        },
+                        {
+                            "label": "Presentation",
+                            "value": "Presentation"
+                        },
+                        {
+                            "label": "Public Live Cam",
+                            "value": "PublicLiveCam"
+                        },
+                        {
+                            "label": "Rich Text Editor",
+                            "value": "RichTextEditor"
+                        },
+                        {
+                            "label": "Run Code Back",
+                            "value": "RunCodeBack"
+                        },
+                        {
+                            "label": "Run Code Front",
+                            "value": "RunCodeFront"
+                        },
+                        {
+                            "label": "S V G Editor",
+                            "value": "SVGEditor"
+                        },
+                        {
+                            "label": "Sankey Diagram",
+                            "value": "SankeyDiagram"
+                        },
+                        {
+                            "label": "Satellite View",
+                            "value": "SatelliteView"
+                        },
+                        {
+                            "label": "Social Media Info",
+                            "value": "SocialMediaInfo"
+                        },
+                        {
+                            "label": "Spectrum Analyzer",
+                            "value": "SpectrumAnalyzer"
+                        },
+                        {
+                            "label": "Spreadsheet",
+                            "value": "Spreadsheet"
+                        },
+                        {
+                            "label": "Table",
+                            "value": "Table"
+                        },
+                        {
+                            "label": "Task Prioritization",
+                            "value": "TaskPrioritization"
+                        },
+                        {
+                            "label": "Textarea",
+                            "value": "Textarea"
+                        },
+                        {
+                            "label": "Thermometer",
+                            "value": "Thermometer"
+                        },
+                        {
+                            "label": "Timeline",
+                            "value": "Timeline"
+                        },
+                        {
+                            "label": "Travel Planner",
+                            "value": "TravelPlanner"
+                        },
+                        {
+                            "label": "Tree View",
+                            "value": "TreeView"
+                        },
+                        {
+                            "label": "U M L Diagram",
+                            "value": "UMLDiagram"
+                        },
+                        {
+                            "label": "Vertical List",
+                            "value": "VerticalList"
+                        },
+                        {
+                            "label": "Voice Sentiment Analysis",
+                            "value": "VoiceSentimentAnalysis"
+                        },
+                        {
+                            "label": "Weather Dashboard",
+                            "value": "WeatherDashboard"
+                        },
+                        {
+                            "label": "Weather Map",
+                            "value": "WeatherMap"
+                        },
+                        {
+                            "label": "Word Highlighter",
+                            "value": "WordHighlighter"
+                        },
+                        {
+                            "label": "Word Map",
+                            "value": "WordMap"
+                        },
+                        {
+                            "label": "Chat Response",
+                            "value": "chatResponse"
+                        },
+                        {
+                            "label": "None",
+                            "value": "none"
+                        },
+                        {
+                            "label": "Video",
+                            "value": "video"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3628,6 +3551,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['3DModelViewer', 'AudioOutput', 'BucketList', 'BudgetVisualizer', 'Calendar', 'Carousel', 'Checklist', 'Clock', 'CodeView', 'ComplexMulti', 'DataFlowDiagram', 'DecisionTree', 'DiffViewer', 'FileOutput', 'FitnessTracker', 'Flowchart', 'Form', 'GanttChart', 'GeographicMap', 'GlossaryView', 'Heatmap', 'HorizontalList', 'ImageView', 'InteractiveChart', 'JsonViewer', 'KanbanBoard', 'LaTeXRenderer', 'LiveTraffic', 'LocalEvents', 'MarkdownViewer', 'MealPlanner', 'MindMap', 'NeedNewOption', 'NetworkGraph', 'NewsAggregator', 'PDFViewer', 'PivotTable', 'PlainText', 'Presentation', 'PublicLiveCam', 'RichTextEditor', 'RunCodeBack', 'RunCodeFront', 'SVGEditor', 'SankeyDiagram', 'SatelliteView', 'SocialMediaInfo', 'SpectrumAnalyzer', 'Spreadsheet', 'Table', 'TaskPrioritization', 'Textarea', 'Thermometer', 'Timeline', 'TravelPlanner', 'TreeView', 'UMLDiagram', 'VerticalList', 'VoiceSentimentAnalysis', 'WeatherDashboard', 'WeatherMap', 'WordHighlighter', 'WordMap', 'chatResponse', 'none', 'video'] as const,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Output Component" field for broker. This is an optional field. Your entry must be an string data type.',
             },
             tags: {
@@ -3643,6 +3567,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "tags",
                     "custom": "tags"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:broker:tags',
+                uniqueFieldId: 'supabase_automation_matrix:broker:tags',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3653,26 +3581,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3680,6 +3592,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                foreignKeyReference: null,
                 description: '"Tags" field for broker. This is an optional field. Your entry must be an object data type.',
             },
             dataInputComponentReference: {
@@ -3695,6 +3608,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "dataInputComponentReference",
                     "custom": "dataInputComponentReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:data_input_component',
+                uniqueEntityId: 'supabase_automation_matrix:dataInputComponent',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3702,13 +3617,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
-                entityName: 'broker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
+                entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
             },
             recipeBrokerInverse: {
@@ -3724,6 +3639,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeBrokerInverse",
                     "custom": "recipeBrokerInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_broker',
+                uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3731,13 +3648,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
-                entityName: 'broker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
             },
             registeredFunctionInverse: {
@@ -3753,6 +3670,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "registeredFunctionInverse",
                     "custom": "registeredFunctionInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:registered_function',
+                uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3760,13 +3679,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
-                entityName: 'broker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
             },
             automationBoundaryBrokerInverse: {
@@ -3782,6 +3701,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "automationBoundaryBrokerInverse",
                     "custom": "automationBoundaryBrokerInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:automation_boundary_broker',
+                uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3789,13 +3710,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
-                entityName: 'broker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['automationBoundaryBroker'][]>,
+                entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
             },
         },
@@ -3858,6 +3779,8 @@ export const initialAutomationTableSchema = {
     },
     dataInputComponent: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:data_input_component',
+        uniqueEntityId: 'supabase_automation_matrix:dataInputComponent',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -3874,6 +3797,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'ifk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -3887,9 +3811,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -3905,6 +3831,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:id',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -3915,26 +3845,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3942,6 +3856,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Id" field for dataInputComponent. This is a required field. Your entry must be an uuid data type.',
             },
             options: {
@@ -3957,6 +3872,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "options",
                     "custom": "options"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:options',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:options',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3967,26 +3886,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -3994,6 +3897,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Options" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             includeOther: {
@@ -4009,6 +3913,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "includeOther",
                     "custom": "includeOther"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:include_other',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:includeOther',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4019,26 +3927,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4046,6 +3938,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Include Other" field for dataInputComponent. This is an optional field. Your entry must be an boolean data type.',
             },
             min: {
@@ -4061,6 +3954,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "min",
                     "custom": "min"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:min',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4071,26 +3968,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "real"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4098,6 +3980,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Min" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             max: {
@@ -4113,6 +3996,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "max",
                     "custom": "max"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:max',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4123,26 +4010,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "real"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4150,6 +4022,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Max" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             step: {
@@ -4165,6 +4038,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "step",
                     "custom": "step"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:step',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:step',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4175,26 +4052,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "integer"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4202,6 +4064,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Step" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             minRows: {
@@ -4217,6 +4080,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "minRows",
                     "custom": "minRows"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min_rows',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:minRows',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4227,26 +4094,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4254,6 +4106,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Min Rows" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             maxRows: {
@@ -4269,6 +4122,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "maxRows",
                     "custom": "maxRows"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max_rows',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:maxRows',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4279,26 +4136,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4306,6 +4148,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Max Rows" field for dataInputComponent. This is an optional field. Your entry must be an number data type.',
             },
             acceptableFiletypes: {
@@ -4321,6 +4164,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "acceptableFiletypes",
                     "custom": "acceptableFiletypes"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:acceptable_filetypes',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:acceptableFiletypes',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4331,26 +4178,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4358,6 +4189,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Acceptable Filetypes" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             src: {
@@ -4373,6 +4205,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "src",
                     "custom": "src"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:src',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:src',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4383,26 +4219,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4410,6 +4231,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Src" field for dataInputComponent. This is an optional field. Your entry must be an string data type.',
             },
             classes: {
@@ -4425,6 +4247,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "classes",
                     "custom": "classes"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:classes',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:classes',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4435,26 +4261,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4462,6 +4273,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Classes" field for dataInputComponent. This is an optional field. Your entry must be an string data type.',
             },
             colorOverrides: {
@@ -4477,6 +4289,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "colorOverrides",
                     "custom": "colorOverrides"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:color_overrides',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:colorOverrides',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4487,26 +4303,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4514,6 +4314,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Color Overrides" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             additionalParams: {
@@ -4529,6 +4330,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "additionalParams",
                     "custom": "additionalParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:additional_params',
+                uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:additionalParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4539,26 +4344,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4566,6 +4355,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                foreignKeyReference: null,
                 description: '"Additional Params" field for dataInputComponent. This is an optional field. Your entry must be an object data type.',
             },
             brokerInverse: {
@@ -4581,6 +4371,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "brokerInverse",
                     "custom": "brokerInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:broker',
+                uniqueEntityId: 'supabase_automation_matrix:broker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4588,13 +4380,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
-                entityName: 'dataInputComponent',
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'broker',
             },
         },
@@ -4622,6 +4414,8 @@ export const initialAutomationTableSchema = {
     },
     dataOutputComponent: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:data_output_component',
+        uniqueEntityId: 'supabase_automation_matrix:dataOutputComponent',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -4638,6 +4432,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'simple',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -4651,9 +4446,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -4669,6 +4466,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:id',
+                uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -4679,26 +4480,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4706,6 +4491,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                foreignKeyReference: null,
                 description: '"Id" field for dataOutputComponent. This is a required field. Your entry must be an uuid data type.',
             },
             componentType: {
@@ -4721,6 +4507,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "componentType",
                     "custom": "componentType"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:component_type',
+                uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:componentType',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4731,26 +4521,276 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "3 D Model Viewer",
+                            "value": "3DModelViewer"
+                        },
+                        {
+                            "label": "Audio Output",
+                            "value": "AudioOutput"
+                        },
+                        {
+                            "label": "Bucket List",
+                            "value": "BucketList"
+                        },
+                        {
+                            "label": "Budget Visualizer",
+                            "value": "BudgetVisualizer"
+                        },
+                        {
+                            "label": "Calendar",
+                            "value": "Calendar"
+                        },
+                        {
+                            "label": "Carousel",
+                            "value": "Carousel"
+                        },
+                        {
+                            "label": "Checklist",
+                            "value": "Checklist"
+                        },
+                        {
+                            "label": "Clock",
+                            "value": "Clock"
+                        },
+                        {
+                            "label": "Code View",
+                            "value": "CodeView"
+                        },
+                        {
+                            "label": "Complex Multi",
+                            "value": "ComplexMulti"
+                        },
+                        {
+                            "label": "Data Flow Diagram",
+                            "value": "DataFlowDiagram"
+                        },
+                        {
+                            "label": "Decision Tree",
+                            "value": "DecisionTree"
+                        },
+                        {
+                            "label": "Diff Viewer",
+                            "value": "DiffViewer"
+                        },
+                        {
+                            "label": "File Output",
+                            "value": "FileOutput"
+                        },
+                        {
+                            "label": "Fitness Tracker",
+                            "value": "FitnessTracker"
+                        },
+                        {
+                            "label": "Flowchart",
+                            "value": "Flowchart"
+                        },
+                        {
+                            "label": "Form",
+                            "value": "Form"
+                        },
+                        {
+                            "label": "Gantt Chart",
+                            "value": "GanttChart"
+                        },
+                        {
+                            "label": "Geographic Map",
+                            "value": "GeographicMap"
+                        },
+                        {
+                            "label": "Glossary View",
+                            "value": "GlossaryView"
+                        },
+                        {
+                            "label": "Heatmap",
+                            "value": "Heatmap"
+                        },
+                        {
+                            "label": "Horizontal List",
+                            "value": "HorizontalList"
+                        },
+                        {
+                            "label": "Image View",
+                            "value": "ImageView"
+                        },
+                        {
+                            "label": "Interactive Chart",
+                            "value": "InteractiveChart"
+                        },
+                        {
+                            "label": "Json Viewer",
+                            "value": "JsonViewer"
+                        },
+                        {
+                            "label": "Kanban Board",
+                            "value": "KanbanBoard"
+                        },
+                        {
+                            "label": "La Te X Renderer",
+                            "value": "LaTeXRenderer"
+                        },
+                        {
+                            "label": "Live Traffic",
+                            "value": "LiveTraffic"
+                        },
+                        {
+                            "label": "Local Events",
+                            "value": "LocalEvents"
+                        },
+                        {
+                            "label": "Markdown Viewer",
+                            "value": "MarkdownViewer"
+                        },
+                        {
+                            "label": "Meal Planner",
+                            "value": "MealPlanner"
+                        },
+                        {
+                            "label": "Mind Map",
+                            "value": "MindMap"
+                        },
+                        {
+                            "label": "Need New Option",
+                            "value": "NeedNewOption"
+                        },
+                        {
+                            "label": "Network Graph",
+                            "value": "NetworkGraph"
+                        },
+                        {
+                            "label": "News Aggregator",
+                            "value": "NewsAggregator"
+                        },
+                        {
+                            "label": "P D F Viewer",
+                            "value": "PDFViewer"
+                        },
+                        {
+                            "label": "Pivot Table",
+                            "value": "PivotTable"
+                        },
+                        {
+                            "label": "Plain Text",
+                            "value": "PlainText"
+                        },
+                        {
+                            "label": "Presentation",
+                            "value": "Presentation"
+                        },
+                        {
+                            "label": "Public Live Cam",
+                            "value": "PublicLiveCam"
+                        },
+                        {
+                            "label": "Rich Text Editor",
+                            "value": "RichTextEditor"
+                        },
+                        {
+                            "label": "Run Code Back",
+                            "value": "RunCodeBack"
+                        },
+                        {
+                            "label": "Run Code Front",
+                            "value": "RunCodeFront"
+                        },
+                        {
+                            "label": "S V G Editor",
+                            "value": "SVGEditor"
+                        },
+                        {
+                            "label": "Sankey Diagram",
+                            "value": "SankeyDiagram"
+                        },
+                        {
+                            "label": "Satellite View",
+                            "value": "SatelliteView"
+                        },
+                        {
+                            "label": "Social Media Info",
+                            "value": "SocialMediaInfo"
+                        },
+                        {
+                            "label": "Spectrum Analyzer",
+                            "value": "SpectrumAnalyzer"
+                        },
+                        {
+                            "label": "Spreadsheet",
+                            "value": "Spreadsheet"
+                        },
+                        {
+                            "label": "Table",
+                            "value": "Table"
+                        },
+                        {
+                            "label": "Task Prioritization",
+                            "value": "TaskPrioritization"
+                        },
+                        {
+                            "label": "Textarea",
+                            "value": "Textarea"
+                        },
+                        {
+                            "label": "Thermometer",
+                            "value": "Thermometer"
+                        },
+                        {
+                            "label": "Timeline",
+                            "value": "Timeline"
+                        },
+                        {
+                            "label": "Travel Planner",
+                            "value": "TravelPlanner"
+                        },
+                        {
+                            "label": "Tree View",
+                            "value": "TreeView"
+                        },
+                        {
+                            "label": "U M L Diagram",
+                            "value": "UMLDiagram"
+                        },
+                        {
+                            "label": "Vertical List",
+                            "value": "VerticalList"
+                        },
+                        {
+                            "label": "Voice Sentiment Analysis",
+                            "value": "VoiceSentimentAnalysis"
+                        },
+                        {
+                            "label": "Weather Dashboard",
+                            "value": "WeatherDashboard"
+                        },
+                        {
+                            "label": "Weather Map",
+                            "value": "WeatherMap"
+                        },
+                        {
+                            "label": "Word Highlighter",
+                            "value": "WordHighlighter"
+                        },
+                        {
+                            "label": "Word Map",
+                            "value": "WordMap"
+                        },
+                        {
+                            "label": "Chat Response",
+                            "value": "chatResponse"
+                        },
+                        {
+                            "label": "None",
+                            "value": "none"
+                        },
+                        {
+                            "label": "Video",
+                            "value": "video"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4758,6 +4798,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['3DModelViewer', 'AudioOutput', 'BucketList', 'BudgetVisualizer', 'Calendar', 'Carousel', 'Checklist', 'Clock', 'CodeView', 'ComplexMulti', 'DataFlowDiagram', 'DecisionTree', 'DiffViewer', 'FileOutput', 'FitnessTracker', 'Flowchart', 'Form', 'GanttChart', 'GeographicMap', 'GlossaryView', 'Heatmap', 'HorizontalList', 'ImageView', 'InteractiveChart', 'JsonViewer', 'KanbanBoard', 'LaTeXRenderer', 'LiveTraffic', 'LocalEvents', 'MarkdownViewer', 'MealPlanner', 'MindMap', 'NeedNewOption', 'NetworkGraph', 'NewsAggregator', 'PDFViewer', 'PivotTable', 'PlainText', 'Presentation', 'PublicLiveCam', 'RichTextEditor', 'RunCodeBack', 'RunCodeFront', 'SVGEditor', 'SankeyDiagram', 'SatelliteView', 'SocialMediaInfo', 'SpectrumAnalyzer', 'Spreadsheet', 'Table', 'TaskPrioritization', 'Textarea', 'Thermometer', 'Timeline', 'TravelPlanner', 'TreeView', 'UMLDiagram', 'VerticalList', 'VoiceSentimentAnalysis', 'WeatherDashboard', 'WeatherMap', 'WordHighlighter', 'WordMap', 'chatResponse', 'none', 'video'] as const,
                 entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                foreignKeyReference: null,
                 description: '"Component Type" field for dataOutputComponent. This is an optional field. Your entry must be an string data type.',
             },
             uiComponent: {
@@ -4773,6 +4814,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "uiComponent",
                     "custom": "uiComponent"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:ui_component',
+                uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:uiComponent',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4783,26 +4828,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4810,6 +4840,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                foreignKeyReference: null,
                 description: '"Ui Component" field for dataOutputComponent. This is an optional field. Your entry must be an string data type.',
             },
             props: {
@@ -4825,6 +4856,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "props",
                     "custom": "props"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:props',
+                uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:props',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4835,26 +4870,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4862,6 +4881,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                foreignKeyReference: null,
                 description: '"Props" field for dataOutputComponent. This is an optional field. Your entry must be an object data type.',
             },
             additionalParams: {
@@ -4877,6 +4897,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "additionalParams",
                     "custom": "additionalParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:additional_params',
+                uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:additionalParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4887,26 +4911,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -4914,6 +4922,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'dataOutputComponent',
                 databaseTable: 'data_output_component',
+                foreignKeyReference: null,
                 description: '"Additional Params" field for dataOutputComponent. This is an optional field. Your entry must be an object data type.',
             },
         },
@@ -4933,6 +4942,8 @@ export const initialAutomationTableSchema = {
     },
     displayOption: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:display_option',
+        uniqueEntityId: 'supabase_automation_matrix:displayOption',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -4949,6 +4960,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -4962,9 +4974,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -4980,6 +4994,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:display_option:id',
+                uniqueFieldId: 'supabase_automation_matrix:displayOption:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -4990,26 +5008,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5017,6 +5019,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'displayOption',
                 databaseTable: 'display_option',
+                foreignKeyReference: null,
                 description: '"Id" field for displayOption. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -5032,6 +5035,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:display_option:name',
+                uniqueFieldId: 'supabase_automation_matrix:displayOption:name',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5042,26 +5049,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5069,6 +5061,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'displayOption',
                 databaseTable: 'display_option',
+                foreignKeyReference: null,
                 description: '"Name" field for displayOption. This is an optional field. Your entry must be an string data type.',
             },
             defaultParams: {
@@ -5084,6 +5077,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "defaultParams",
                     "custom": "defaultParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:display_option:default_params',
+                uniqueFieldId: 'supabase_automation_matrix:displayOption:defaultParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5094,26 +5091,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5121,6 +5102,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'displayOption',
                 databaseTable: 'display_option',
+                foreignKeyReference: null,
                 description: '"Default Params" field for displayOption. This is an optional field. Your entry must be an object data type.',
             },
             customizableParams: {
@@ -5136,6 +5118,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "customizableParams",
                     "custom": "customizableParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:display_option:customizable_params',
+                uniqueFieldId: 'supabase_automation_matrix:displayOption:customizableParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5146,26 +5132,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5173,6 +5143,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'displayOption',
                 databaseTable: 'display_option',
+                foreignKeyReference: null,
                 description: '"Customizable Params" field for displayOption. This is an optional field. Your entry must be an object data type.',
             },
             additionalParams: {
@@ -5188,6 +5159,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "additionalParams",
                     "custom": "additionalParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:display_option:additional_params',
+                uniqueFieldId: 'supabase_automation_matrix:displayOption:additionalParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5198,26 +5173,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5225,6 +5184,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'displayOption',
                 databaseTable: 'display_option',
+                foreignKeyReference: null,
                 description: '"Additional Params" field for displayOption. This is an optional field. Your entry must be an object data type.',
             },
             recipeDisplayInverse: {
@@ -5240,6 +5200,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeDisplayInverse",
                     "custom": "recipeDisplayInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_display',
+                uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5247,13 +5209,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['displayOption'][]>,
-                entityName: 'displayOption',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
             },
         },
@@ -5288,6 +5250,8 @@ export const initialAutomationTableSchema = {
     },
     emails: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:emails',
+        uniqueEntityId: 'supabase_automation_matrix:emails',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -5304,6 +5268,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'simple',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -5317,9 +5282,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -5335,6 +5302,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:id',
+                uniqueFieldId: 'supabase_automation_matrix:emails:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5345,26 +5316,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5372,6 +5327,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Id" field for emails. This is a required field. Your entry must be an uuid data type.',
             },
             sender: {
@@ -5387,6 +5343,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sender",
                     "custom": "sender"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:sender',
+                uniqueFieldId: 'supabase_automation_matrix:emails:sender',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5397,26 +5357,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5424,6 +5369,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Sender" field for emails. This is a required field. Your entry must be an string data type.',
             },
             recipient: {
@@ -5439,6 +5385,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipient",
                     "custom": "recipient"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:recipient',
+                uniqueFieldId: 'supabase_automation_matrix:emails:recipient',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5449,26 +5399,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5476,6 +5411,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Recipient" field for emails. This is a required field. Your entry must be an string data type.',
             },
             subject: {
@@ -5491,6 +5427,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "subject",
                     "custom": "subject"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:subject',
+                uniqueFieldId: 'supabase_automation_matrix:emails:subject',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5501,26 +5441,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5528,6 +5453,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Subject" field for emails. This is a required field. Your entry must be an string data type.',
             },
             body: {
@@ -5543,6 +5469,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "body",
                     "custom": "body"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:body',
+                uniqueFieldId: 'supabase_automation_matrix:emails:body',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5553,26 +5483,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5580,6 +5495,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Body" field for emails. This is a required field. Your entry must be an string data type.',
             },
             timestamp: {
@@ -5595,6 +5511,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "timestamp",
                     "custom": "timestamp"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:timestamp',
+                uniqueFieldId: 'supabase_automation_matrix:emails:timestamp',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5605,26 +5525,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5632,6 +5536,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Timestamp" field for emails. This is an optional field. Your entry must be an date data type.',
             },
             isRead: {
@@ -5647,6 +5552,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "isRead",
                     "custom": "isRead"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:emails:is_read',
+                uniqueFieldId: 'supabase_automation_matrix:emails:isRead',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5657,26 +5566,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5684,6 +5577,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'emails',
                 databaseTable: 'emails',
+                foreignKeyReference: null,
                 description: '"Is Read" field for emails. This is an optional field. Your entry must be an boolean data type.',
             },
         },
@@ -5703,6 +5597,8 @@ export const initialAutomationTableSchema = {
     },
     extractor: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:extractor',
+        uniqueEntityId: 'supabase_automation_matrix:extractor',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -5719,6 +5615,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'simple',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -5732,9 +5629,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -5750,6 +5649,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:extractor:id',
+                uniqueFieldId: 'supabase_automation_matrix:extractor:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5760,26 +5663,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5787,6 +5674,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'extractor',
                 databaseTable: 'extractor',
+                foreignKeyReference: null,
                 description: '"Id" field for extractor. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -5802,6 +5690,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:extractor:name',
+                uniqueFieldId: 'supabase_automation_matrix:extractor:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -5812,26 +5704,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5839,6 +5716,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'extractor',
                 databaseTable: 'extractor',
+                foreignKeyReference: null,
                 description: '"Name" field for extractor. This is a required field. Your entry must be an string data type.',
             },
             outputType: {
@@ -5854,6 +5732,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "outputType",
                     "custom": "outputType"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:extractor:output_type',
+                uniqueFieldId: 'supabase_automation_matrix:extractor:outputType',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5864,26 +5746,40 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Bool",
+                            "value": "bool"
+                        },
+                        {
+                            "label": "Dict",
+                            "value": "dict"
+                        },
+                        {
+                            "label": "Float",
+                            "value": "float"
+                        },
+                        {
+                            "label": "Int",
+                            "value": "int"
+                        },
+                        {
+                            "label": "List",
+                            "value": "list"
+                        },
+                        {
+                            "label": "Str",
+                            "value": "str"
+                        },
+                        {
+                            "label": "Url",
+                            "value": "url"
+                        }
+                    ],
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5891,6 +5787,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['bool', 'dict', 'float', 'int', 'list', 'str', 'url'] as const,
                 entityName: 'extractor',
                 databaseTable: 'extractor',
+                foreignKeyReference: null,
                 description: '"Output Type" field for extractor. This is an optional field. Your entry must be an string data type.',
             },
             defaultIdentifier: {
@@ -5906,6 +5803,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "defaultIdentifier",
                     "custom": "defaultIdentifier"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:extractor:default_identifier',
+                uniqueFieldId: 'supabase_automation_matrix:extractor:defaultIdentifier',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5916,26 +5817,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5943,6 +5829,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'extractor',
                 databaseTable: 'extractor',
+                foreignKeyReference: null,
                 description: '"Default Identifier" field for extractor. This is an optional field. Your entry must be an string data type.',
             },
             defaultIndex: {
@@ -5958,6 +5845,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "defaultIndex",
                     "custom": "defaultIndex"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:extractor:default_index',
+                uniqueFieldId: 'supabase_automation_matrix:extractor:defaultIndex',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5968,26 +5859,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -5995,6 +5871,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'extractor',
                 databaseTable: 'extractor',
+                foreignKeyReference: null,
                 description: '"Default Index" field for extractor. This is an optional field. Your entry must be an number data type.',
             },
         },
@@ -6014,6 +5891,8 @@ export const initialAutomationTableSchema = {
     },
     flashcardData: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:flashcard_data',
+        uniqueEntityId: 'supabase_automation_matrix:flashcardData',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -6030,6 +5909,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -6043,9 +5923,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -6061,6 +5943,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -6071,26 +5957,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6098,6 +5968,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Id" field for flashcardData. This is a required field. Your entry must be an uuid data type.',
             },
             userId: {
@@ -6113,6 +5984,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "userId",
                     "custom": "userId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:user_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:userId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -6123,26 +5998,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6150,6 +6009,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: {'table': 'auth.users', 'column': 'id'},
                 description: '"User Id" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             topic: {
@@ -6165,6 +6025,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "topic",
                     "custom": "topic"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:topic',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:topic',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6175,26 +6039,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6202,6 +6051,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Topic" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             lesson: {
@@ -6217,6 +6067,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "lesson",
                     "custom": "lesson"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:lesson',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:lesson',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6227,26 +6081,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6254,6 +6093,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Lesson" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             difficulty: {
@@ -6269,6 +6109,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "difficulty",
                     "custom": "difficulty"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:difficulty',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:difficulty',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6279,26 +6123,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6306,6 +6135,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Difficulty" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             front: {
@@ -6321,6 +6151,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "front",
                     "custom": "front"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:front',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:front',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -6331,26 +6165,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6358,6 +6177,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Front" field for flashcardData. This is a required field. Your entry must be an string data type.',
             },
             back: {
@@ -6373,6 +6193,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "back",
                     "custom": "back"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:back',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:back',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -6383,26 +6207,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6410,6 +6219,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Back" field for flashcardData. This is a required field. Your entry must be an string data type.',
             },
             example: {
@@ -6425,6 +6235,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "example",
                     "custom": "example"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:example',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:example',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6435,26 +6249,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6462,6 +6261,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Example" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             detailedExplanation: {
@@ -6477,6 +6277,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "detailedExplanation",
                     "custom": "detailedExplanation"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:detailed_explanation',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:detailedExplanation',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6487,26 +6291,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6514,6 +6303,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Detailed Explanation" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             audioExplanation: {
@@ -6529,6 +6319,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "audioExplanation",
                     "custom": "audioExplanation"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:audio_explanation',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:audioExplanation',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6539,26 +6333,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6566,6 +6345,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Audio Explanation" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             personalNotes: {
@@ -6581,6 +6361,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "personalNotes",
                     "custom": "personalNotes"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:personal_notes',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:personalNotes',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6591,26 +6375,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6618,6 +6387,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Personal Notes" field for flashcardData. This is an optional field. Your entry must be an string data type.',
             },
             isDeleted: {
@@ -6633,6 +6403,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "isDeleted",
                     "custom": "isDeleted"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:is_deleted',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:isDeleted',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6643,26 +6417,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6670,6 +6428,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Is Deleted" field for flashcardData. This is an optional field. Your entry must be an boolean data type.',
             },
             public: {
@@ -6685,6 +6444,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "public",
                     "custom": "public"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:public',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:public',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6695,26 +6458,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6722,6 +6469,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Public" field for flashcardData. This is an optional field. Your entry must be an boolean data type.',
             },
             sharedWith: {
@@ -6737,6 +6485,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sharedWith",
                     "custom": "sharedWith"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:shared_with',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:sharedWith',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6747,26 +6499,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'uuidArray' as const,
+                defaultComponent: 'UUID_ARRAY' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6774,6 +6510,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Shared With" field for flashcardData. This is an optional field. Your entry must be an uuid data type. You can enter one or more entries.',
             },
             createdAt: {
@@ -6789,6 +6526,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "createdAt",
                     "custom": "createdAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:created_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:createdAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6799,26 +6540,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6826,6 +6551,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Created At" field for flashcardData. This is an optional field. Your entry must be an date data type.',
             },
             updatedAt: {
@@ -6841,6 +6567,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "updatedAt",
                     "custom": "updatedAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:updated_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardData:updatedAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6851,26 +6581,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -6878,6 +6592,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                foreignKeyReference: null,
                 description: '"Updated At" field for flashcardData. This is an optional field. Your entry must be an date data type.',
             },
             flashcardHistoryInverse: {
@@ -6893,6 +6608,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardHistoryInverse",
                     "custom": "flashcardHistoryInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_history',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardHistory',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6900,13 +6617,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
-                entityName: 'flashcardData',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardHistory'][]>,
+                entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
             },
             flashcardSetRelationsInverse: {
@@ -6922,6 +6639,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardSetRelationsInverse",
                     "custom": "flashcardSetRelationsInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_set_relations',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6929,13 +6648,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
-                entityName: 'flashcardData',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
             },
             flashcardImagesInverse: {
@@ -6951,6 +6670,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardImagesInverse",
                     "custom": "flashcardImagesInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_images',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardImages',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6958,13 +6679,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
-                entityName: 'flashcardData',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardImages'][]>,
+                entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
             },
         },
@@ -7013,6 +6734,8 @@ export const initialAutomationTableSchema = {
     },
     flashcardHistory: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:flashcard_history',
+        uniqueEntityId: 'supabase_automation_matrix:flashcardHistory',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -7029,6 +6752,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'fk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -7042,9 +6766,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -7060,6 +6786,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7070,26 +6800,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7097,6 +6811,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: null,
                 description: '"Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type.',
             },
             flashcardId: {
@@ -7112,6 +6827,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardId",
                     "custom": "flashcardId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:flashcard_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:flashcardId',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7122,26 +6841,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7149,6 +6852,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: {'table': 'flashcard_data', 'column': 'user_id'},
                 description: '"Flashcard Id" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             userId: {
@@ -7164,6 +6868,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "userId",
                     "custom": "userId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:user_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:userId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7174,26 +6882,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7201,6 +6893,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: {'table': 'auth.users', 'column': 'aud'},
                 description: '"User Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             reviewCount: {
@@ -7216,6 +6909,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "reviewCount",
                     "custom": "reviewCount"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:review_count',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:reviewCount',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7226,26 +6923,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "integer"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7253,6 +6935,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: null,
                 description: '"Review Count" field for flashcardHistory. This is an optional field. Your entry must be an number data type.',
             },
             correctCount: {
@@ -7268,6 +6951,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "correctCount",
                     "custom": "correctCount"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:correct_count',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:correctCount',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7278,26 +6965,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "integer"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7305,6 +6977,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: null,
                 description: '"Correct Count" field for flashcardHistory. This is an optional field. Your entry must be an number data type.',
             },
             incorrectCount: {
@@ -7320,6 +6993,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "incorrectCount",
                     "custom": "incorrectCount"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:incorrect_count',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:incorrectCount',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7330,26 +7007,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "integer"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7357,6 +7019,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: null,
                 description: '"Incorrect Count" field for flashcardHistory. This is an optional field. Your entry must be an number data type.',
             },
             createdAt: {
@@ -7372,6 +7035,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "createdAt",
                     "custom": "createdAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:created_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:createdAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7382,26 +7049,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7409,6 +7060,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: null,
                 description: '"Created At" field for flashcardHistory. This is an optional field. Your entry must be an date data type.',
             },
             updatedAt: {
@@ -7424,6 +7076,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "updatedAt",
                     "custom": "updatedAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:updated_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:updatedAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7434,26 +7090,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7461,6 +7101,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
+                foreignKeyReference: null,
                 description: '"Updated At" field for flashcardHistory. This is an optional field. Your entry must be an date data type.',
             },
             flashcardDataReference: {
@@ -7476,6 +7117,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardDataReference",
                     "custom": "flashcardDataReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_data',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardData',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7483,13 +7126,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardHistory'][]>,
-                entityName: 'flashcardHistory',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
             },
         },
@@ -7517,6 +7160,8 @@ export const initialAutomationTableSchema = {
     },
     flashcardImages: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:flashcard_images',
+        uniqueEntityId: 'supabase_automation_matrix:flashcardImages',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -7533,6 +7178,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'fileName', databaseFieldName: 'file_name'},
         defaultFetchStrategy: 'fk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -7546,9 +7192,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -7564,6 +7212,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7574,26 +7226,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7601,6 +7237,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: null,
                 description: '"Id" field for flashcardImages. This is a required field. Your entry must be an uuid data type.',
             },
             flashcardId: {
@@ -7616,6 +7253,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardId",
                     "custom": "flashcardId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:flashcard_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:flashcardId',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7626,26 +7267,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7653,6 +7278,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: {'table': 'flashcard_data', 'column': 'user_id'},
                 description: '"Flashcard Id" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             filePath: {
@@ -7668,6 +7294,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "filePath",
                     "custom": "filePath"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:file_path',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:filePath',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7678,26 +7308,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7705,6 +7320,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: null,
                 description: '"File Path" field for flashcardImages. This is a required field. Your entry must be an string data type.',
             },
             fileName: {
@@ -7720,6 +7336,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "fileName",
                     "custom": "fileName"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:file_name',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:fileName',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7730,26 +7350,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7757,6 +7362,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: null,
                 description: '"File Name" field for flashcardImages. This is a required field. Your entry must be an string data type.',
             },
             mimeType: {
@@ -7772,6 +7378,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "mimeType",
                     "custom": "mimeType"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:mime_type',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:mimeType',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7782,26 +7392,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7809,6 +7404,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: null,
                 description: '"Mime Type" field for flashcardImages. This is a required field. Your entry must be an string data type.',
             },
             size: {
@@ -7824,6 +7420,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "size",
                     "custom": "size"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:size',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:size',
+
                 dataType: 'number' as const,
                 isRequired: true,
                 maxLength: null,
@@ -7834,26 +7434,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "numberType": "integer"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7861,6 +7446,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: null,
                 description: '"Size" field for flashcardImages. This is a required field. Your entry must be an number data type.',
             },
             createdAt: {
@@ -7876,6 +7462,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "createdAt",
                     "custom": "createdAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:created_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardImages:createdAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7886,26 +7476,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -7913,6 +7487,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
+                foreignKeyReference: null,
                 description: '"Created At" field for flashcardImages. This is an optional field. Your entry must be an date data type.',
             },
             flashcardDataReference: {
@@ -7928,6 +7503,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardDataReference",
                     "custom": "flashcardDataReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_data',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardData',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -7935,13 +7512,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardImages'][]>,
-                entityName: 'flashcardImages',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
             },
         },
@@ -7969,6 +7546,8 @@ export const initialAutomationTableSchema = {
     },
     flashcardSetRelations: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:flashcard_set_relations',
+        uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
         primaryKey: 'flashcardId, setId',
         primaryKeyMetadata: {
             "type": "composite",
@@ -7988,6 +7567,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'flashcardId', databaseFieldName: 'flashcard_id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -8001,9 +7581,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             flashcardId: {
@@ -8019,6 +7601,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardId",
                     "custom": "flashcardId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:flashcard_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:flashcardId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -8029,26 +7615,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8056,6 +7626,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
+                foreignKeyReference: {'table': 'flashcard_data', 'column': 'id'},
                 description: '"Flashcard Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             setId: {
@@ -8071,6 +7642,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "setId",
                     "custom": "setId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:set_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:setId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -8081,26 +7656,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8108,6 +7667,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
+                foreignKeyReference: {'table': 'flashcard_sets', 'column': 'user_id'},
                 description: '"Set Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardSets.',
             },
             order: {
@@ -8123,6 +7683,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "order",
                     "custom": "order"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:order',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:order',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8133,26 +7697,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "integer"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8160,6 +7709,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
+                foreignKeyReference: null,
                 description: '"Order" field for flashcardSetRelations. This is an optional field. Your entry must be an number data type.',
             },
             flashcardDataReference: {
@@ -8175,6 +7725,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardDataReference",
                     "custom": "flashcardDataReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_data',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardData',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8182,13 +7734,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
-                entityName: 'flashcardSetRelations',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
+                entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
             },
             flashcardSetsReference: {
@@ -8204,6 +7756,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardSetsReference",
                     "custom": "flashcardSetsReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_sets',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardSets',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8211,13 +7765,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
-                entityName: 'flashcardSetRelations',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSets'][]>,
+                entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
             },
         },
@@ -8252,6 +7806,8 @@ export const initialAutomationTableSchema = {
     },
     flashcardSets: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:flashcard_sets',
+        uniqueEntityId: 'supabase_automation_matrix:flashcardSets',
         primaryKey: 'setId',
         primaryKeyMetadata: {
             "type": "single",
@@ -8268,6 +7824,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -8281,9 +7838,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             setId: {
@@ -8299,6 +7858,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "setId",
                     "custom": "setId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:set_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:setId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -8309,26 +7872,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8336,6 +7883,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Set Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type.',
             },
             userId: {
@@ -8351,6 +7899,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "userId",
                     "custom": "userId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:user_id',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:userId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -8361,26 +7913,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8388,6 +7924,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: {'table': 'auth.users', 'column': 'id'},
                 description: '"User Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             name: {
@@ -8403,6 +7940,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:name',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -8413,26 +7954,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8440,6 +7966,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Name" field for flashcardSets. This is a required field. Your entry must be an string data type.',
             },
             createdAt: {
@@ -8455,6 +7982,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "createdAt",
                     "custom": "createdAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:created_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:createdAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8465,26 +7996,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8492,6 +8007,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Created At" field for flashcardSets. This is an optional field. Your entry must be an date data type.',
             },
             updatedAt: {
@@ -8507,6 +8023,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "updatedAt",
                     "custom": "updatedAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:updated_at',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:updatedAt',
+
                 dataType: 'date' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8517,26 +8037,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8544,6 +8048,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Updated At" field for flashcardSets. This is an optional field. Your entry must be an date data type.',
             },
             sharedWith: {
@@ -8559,6 +8064,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sharedWith",
                     "custom": "sharedWith"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:shared_with',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:sharedWith',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8569,26 +8078,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'uuidArray' as const,
+                defaultComponent: 'UUID_ARRAY' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8596,6 +8089,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Shared With" field for flashcardSets. This is an optional field. Your entry must be an uuid data type. You can enter one or more entries.',
             },
             public: {
@@ -8611,6 +8105,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "public",
                     "custom": "public"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:public',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:public',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8621,26 +8119,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8648,6 +8130,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Public" field for flashcardSets. This is an optional field. Your entry must be an boolean data type.',
             },
             topic: {
@@ -8663,6 +8146,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "topic",
                     "custom": "topic"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:topic',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:topic',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8673,26 +8160,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8700,6 +8172,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Topic" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             lesson: {
@@ -8715,6 +8188,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "lesson",
                     "custom": "lesson"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:lesson',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:lesson',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8725,26 +8202,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8752,6 +8214,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Lesson" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             difficulty: {
@@ -8767,6 +8230,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "difficulty",
                     "custom": "difficulty"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:difficulty',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:difficulty',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8777,26 +8244,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8804,6 +8256,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Difficulty" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             audioOverview: {
@@ -8819,6 +8272,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "audioOverview",
                     "custom": "audioOverview"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:audio_overview',
+                uniqueFieldId: 'supabase_automation_matrix:flashcardSets:audioOverview',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8829,26 +8286,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -8856,6 +8298,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                foreignKeyReference: null,
                 description: '"Audio Overview" field for flashcardSets. This is an optional field. Your entry must be an string data type.',
             },
             flashcardSetRelationsInverse: {
@@ -8871,6 +8314,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "flashcardSetRelationsInverse",
                     "custom": "flashcardSetRelationsInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:flashcard_set_relations',
+                uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8878,13 +8323,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSets'][]>,
-                entityName: 'flashcardSets',
+                typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSetRelations'][]>,
+                entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
             },
         },
@@ -8919,6 +8364,8 @@ export const initialAutomationTableSchema = {
     },
     processor: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:processor',
+        uniqueEntityId: 'supabase_automation_matrix:processor',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -8935,6 +8382,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -8948,9 +8396,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -8966,6 +8416,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:processor:id',
+                uniqueFieldId: 'supabase_automation_matrix:processor:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -8976,26 +8430,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9003,6 +8441,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                foreignKeyReference: null,
                 description: '"Id" field for processor. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -9018,6 +8457,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:processor:name',
+                uniqueFieldId: 'supabase_automation_matrix:processor:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -9028,26 +8471,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9055,6 +8483,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                foreignKeyReference: null,
                 description: '"Name" field for processor. This is a required field. Your entry must be an string data type.',
             },
             dependsDefault: {
@@ -9070,6 +8499,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "dependsDefault",
                     "custom": "dependsDefault"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:processor:depends_default',
+                uniqueFieldId: 'supabase_automation_matrix:processor:dependsDefault',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9080,26 +8513,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9107,6 +8524,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                foreignKeyReference: {'table': 'processor', 'column': 'depends_default'},
                 description: '"Depends Default" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Processor.',
             },
             defaultExtractors: {
@@ -9122,6 +8540,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "defaultExtractors",
                     "custom": "defaultExtractors"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:processor:default_extractors',
+                uniqueFieldId: 'supabase_automation_matrix:processor:defaultExtractors',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9132,26 +8554,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9159,6 +8565,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                foreignKeyReference: null,
                 description: '"Default Extractors" field for processor. This is an optional field. Your entry must be an object data type.',
             },
             params: {
@@ -9174,6 +8581,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "params",
                     "custom": "params"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:processor:params',
+                uniqueFieldId: 'supabase_automation_matrix:processor:params',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9184,26 +8595,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9211,6 +8606,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                foreignKeyReference: null,
                 description: '"Params" field for processor. This is an optional field. Your entry must be an object data type.',
             },
             processorReference: {
@@ -9226,6 +8622,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "processorReference",
                     "custom": "processorReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:processor',
+                uniqueEntityId: 'supabase_automation_matrix:processor',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9233,9 +8631,9 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
                 typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
@@ -9255,6 +8653,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeProcessorInverse",
                     "custom": "recipeProcessorInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_processor',
+                uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9262,13 +8662,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
-                entityName: 'processor',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
             },
         },
@@ -9310,6 +8710,8 @@ export const initialAutomationTableSchema = {
     },
     recipe: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe',
+        uniqueEntityId: 'supabase_automation_matrix:recipe',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -9326,6 +8728,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -9339,9 +8742,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -9357,6 +8762,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -9367,26 +8776,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9394,6 +8787,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Id" field for recipe. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -9409,6 +8803,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:name',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -9419,26 +8817,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9446,6 +8829,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Name" field for recipe. This is a required field. Your entry must be an string data type.',
             },
             description: {
@@ -9461,6 +8845,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:description',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9471,26 +8859,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9498,6 +8871,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Description" field for recipe. This is an optional field. Your entry must be an string data type.',
             },
             tags: {
@@ -9513,6 +8887,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "tags",
                     "custom": "tags"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:tags',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:tags',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9523,26 +8901,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9550,6 +8912,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Tags" field for recipe. This is an optional field. Your entry must be an object data type.',
             },
             sampleOutput: {
@@ -9565,6 +8928,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sampleOutput",
                     "custom": "sampleOutput"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:sample_output',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:sampleOutput',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9575,26 +8942,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9602,6 +8954,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Sample Output" field for recipe. This is an optional field. Your entry must be an string data type.',
             },
             isPublic: {
@@ -9617,6 +8970,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "isPublic",
                     "custom": "isPublic"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:is_public',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:isPublic',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9627,26 +8984,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9654,6 +8995,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Is Public" field for recipe. This is an optional field. Your entry must be an boolean data type.',
             },
             status: {
@@ -9669,6 +9011,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "status",
                     "custom": "status"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:status',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:status',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -9679,26 +9025,36 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Active Testing",
+                            "value": "active_testing"
+                        },
+                        {
+                            "label": "Archived",
+                            "value": "archived"
+                        },
+                        {
+                            "label": "Draft",
+                            "value": "draft"
+                        },
+                        {
+                            "label": "In Review",
+                            "value": "in_review"
+                        },
+                        {
+                            "label": "Live",
+                            "value": "live"
+                        },
+                        {
+                            "label": "Other",
+                            "value": "other"
+                        }
+                    ],
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9706,6 +9062,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['active_testing', 'archived', 'draft', 'in_review', 'live', 'other'] as const,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Status" field for recipe. This is a required field. Your entry must be an string data type.',
             },
             version: {
@@ -9721,6 +9078,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "version",
                     "custom": "version"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:version',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:version',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9731,26 +9092,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9758,6 +9104,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Version" field for recipe. This is an optional field. Your entry must be an number data type.',
             },
             messages: {
@@ -9773,6 +9120,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "messages",
                     "custom": "messages"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:messages',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:messages',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9783,26 +9134,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "jsonArray",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9810,6 +9145,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Messages" field for recipe. This is an optional field. Your entry must be an object data type. You can enter one or more entries.',
             },
             postResultOptions: {
@@ -9825,6 +9161,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "postResultOptions",
                     "custom": "postResultOptions"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe:post_result_options',
+                uniqueFieldId: 'supabase_automation_matrix:recipe:postResultOptions',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9835,26 +9175,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -9862,6 +9186,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                foreignKeyReference: null,
                 description: '"Post Result Options" field for recipe. This is an optional field. Your entry must be an object data type.',
             },
             recipeBrokerInverse: {
@@ -9877,6 +9202,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeBrokerInverse",
                     "custom": "recipeBrokerInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_broker',
+                uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9884,13 +9211,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
-                entityName: 'recipe',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+                entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
             },
             recipeProcessorInverse: {
@@ -9906,6 +9233,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeProcessorInverse",
                     "custom": "recipeProcessorInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_processor',
+                uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9913,13 +9242,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
-                entityName: 'recipe',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
+                entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
             },
             recipeModelInverse: {
@@ -9935,6 +9264,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeModelInverse",
                     "custom": "recipeModelInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_model',
+                uniqueEntityId: 'supabase_automation_matrix:recipeModel',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9942,13 +9273,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
-                entityName: 'recipe',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
+                entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
             },
             recipeDisplayInverse: {
@@ -9964,6 +9295,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeDisplayInverse",
                     "custom": "recipeDisplayInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_display',
+                uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9971,13 +9304,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
-                entityName: 'recipe',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+                entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
             },
             recipeFunctionInverse: {
@@ -9993,6 +9326,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeFunctionInverse",
                     "custom": "recipeFunctionInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_function',
+                uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10000,13 +9335,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
-                entityName: 'recipe',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
             },
             recipeToolInverse: {
@@ -10022,6 +9357,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeToolInverse",
                     "custom": "recipeToolInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_tool',
+                uniqueEntityId: 'supabase_automation_matrix:recipeTool',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10029,13 +9366,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
-                entityName: 'recipe',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
             },
         },
@@ -10140,6 +9477,8 @@ export const initialAutomationTableSchema = {
     },
     recipeBroker: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe_broker',
+        uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -10156,6 +9495,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -10169,9 +9509,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -10187,6 +9529,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipeBroker:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10197,26 +9543,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10224,6 +9554,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                foreignKeyReference: null,
                 description: '"Id" field for recipeBroker. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
@@ -10239,6 +9570,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipe",
                     "custom": "recipe"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:recipe',
+                uniqueFieldId: 'supabase_automation_matrix:recipeBroker:recipe',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10249,26 +9584,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10276,6 +9595,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
                 description: '"Recipe" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             broker: {
@@ -10291,6 +9611,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "broker",
                     "custom": "broker"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:broker',
+                uniqueFieldId: 'supabase_automation_matrix:recipeBroker:broker',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10301,26 +9625,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10328,6 +9636,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                foreignKeyReference: {'table': 'broker', 'column': 'value'},
                 description: '"Broker" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             brokerRole: {
@@ -10343,6 +9652,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "brokerRole",
                     "custom": "brokerRole"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:broker_role',
+                uniqueFieldId: 'supabase_automation_matrix:recipeBroker:brokerRole',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10353,26 +9666,20 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Input Broker",
+                            "value": "input_broker"
+                        },
+                        {
+                            "label": "Output Broker",
+                            "value": "output_broker"
+                        }
+                    ],
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10380,6 +9687,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['input_broker', 'output_broker'] as const,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                foreignKeyReference: null,
                 description: '"Broker Role" field for recipeBroker. This is a required field. Your entry must be an string data type.',
             },
             required: {
@@ -10395,6 +9703,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "required",
                     "custom": "required"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:required',
+                uniqueFieldId: 'supabase_automation_matrix:recipeBroker:required',
+
                 dataType: 'boolean' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10405,26 +9717,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'switch' as const,
+                defaultComponent: 'SWITCH' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10432,6 +9728,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
+                foreignKeyReference: null,
                 description: '"Required" field for recipeBroker. This is an optional field. Your entry must be an boolean data type.',
             },
             brokerReference: {
@@ -10447,6 +9744,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "brokerReference",
                     "custom": "brokerReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:broker',
+                uniqueEntityId: 'supabase_automation_matrix:broker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10454,13 +9753,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
-                entityName: 'recipeBroker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'broker',
             },
             recipeReference: {
@@ -10476,6 +9775,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeReference",
                     "custom": "recipeReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe',
+                uniqueEntityId: 'supabase_automation_matrix:recipe',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10483,13 +9784,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
-                entityName: 'recipeBroker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
             },
         },
@@ -10524,6 +9825,8 @@ export const initialAutomationTableSchema = {
     },
     recipeDisplay: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe_display',
+        uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -10540,6 +9843,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -10553,9 +9857,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -10571,6 +9877,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10581,26 +9891,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10608,6 +9902,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                foreignKeyReference: null,
                 description: '"Id" field for recipeDisplay. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
@@ -10623,6 +9918,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipe",
                     "custom": "recipe"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:recipe',
+                uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:recipe',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10633,26 +9932,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10660,6 +9943,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
                 description: '"Recipe" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             display: {
@@ -10675,6 +9959,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "display",
                     "custom": "display"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:display',
+                uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:display',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10685,26 +9973,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10712,6 +9984,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                foreignKeyReference: {'table': 'display_option', 'column': 'default_params'},
                 description: '"Display" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a DisplayOption.',
             },
             priority: {
@@ -10727,6 +10000,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "priority",
                     "custom": "priority"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:priority',
+                uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:priority',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10737,26 +10014,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10764,6 +10026,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                foreignKeyReference: null,
                 description: '"Priority" field for recipeDisplay. This is an optional field. Your entry must be an number data type.',
             },
             displaySettings: {
@@ -10779,6 +10042,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "displaySettings",
                     "custom": "displaySettings"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:display_settings',
+                uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:displaySettings',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10789,26 +10056,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10816,6 +10067,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
+                foreignKeyReference: null,
                 description: '"Display Settings" field for recipeDisplay. This is an optional field. Your entry must be an object data type.',
             },
             displayOptionReference: {
@@ -10831,6 +10083,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "displayOptionReference",
                     "custom": "displayOptionReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:display_option',
+                uniqueEntityId: 'supabase_automation_matrix:displayOption',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10838,13 +10092,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
-                entityName: 'recipeDisplay',
+                typeReference: {} as TypeBrand<TableSchemaStructure['displayOption'][]>,
+                entityName: 'displayOption',
                 databaseTable: 'display_option',
             },
             recipeReference: {
@@ -10860,6 +10114,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeReference",
                     "custom": "recipeReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe',
+                uniqueEntityId: 'supabase_automation_matrix:recipe',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10867,13 +10123,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
-                entityName: 'recipeDisplay',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
             },
         },
@@ -10908,6 +10164,8 @@ export const initialAutomationTableSchema = {
     },
     recipeFunction: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe_function',
+        uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -10924,6 +10182,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -10937,9 +10196,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -10955,6 +10216,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipeFunction:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -10965,26 +10230,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -10992,6 +10241,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                foreignKeyReference: null,
                 description: '"Id" field for recipeFunction. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
@@ -11007,6 +10257,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipe",
                     "custom": "recipe"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:recipe',
+                uniqueFieldId: 'supabase_automation_matrix:recipeFunction:recipe',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11017,26 +10271,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11044,6 +10282,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
                 description: '"Recipe" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             function: {
@@ -11059,6 +10298,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "function",
                     "custom": "function"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:function',
+                uniqueFieldId: 'supabase_automation_matrix:recipeFunction:function',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11069,26 +10312,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11096,6 +10323,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                foreignKeyReference: {'table': 'system_function', 'column': 'description'},
                 description: '"Function" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
             },
             role: {
@@ -11111,6 +10339,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "role",
                     "custom": "role"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:role',
+                uniqueFieldId: 'supabase_automation_matrix:recipeFunction:role',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11121,26 +10353,44 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Comparison",
+                            "value": "comparison"
+                        },
+                        {
+                            "label": "Decision",
+                            "value": "decision"
+                        },
+                        {
+                            "label": "Other",
+                            "value": "other"
+                        },
+                        {
+                            "label": "Post Processing",
+                            "value": "post_processing"
+                        },
+                        {
+                            "label": "Pre Processing",
+                            "value": "pre-Processing"
+                        },
+                        {
+                            "label": "Rating",
+                            "value": "rating"
+                        },
+                        {
+                            "label": "Save Data",
+                            "value": "save_data"
+                        },
+                        {
+                            "label": "Validation",
+                            "value": "validation"
+                        }
+                    ],
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11148,6 +10398,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['comparison', 'decision', 'other', 'post_processing', 'pre-Processing', 'rating', 'save_data', 'validation'] as const,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                foreignKeyReference: null,
                 description: '"Role" field for recipeFunction. This is a required field. Your entry must be an string data type.',
             },
             params: {
@@ -11163,6 +10414,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "params",
                     "custom": "params"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:params',
+                uniqueFieldId: 'supabase_automation_matrix:recipeFunction:params',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11173,26 +10428,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11200,6 +10439,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
+                foreignKeyReference: null,
                 description: '"Params" field for recipeFunction. This is an optional field. Your entry must be an object data type.',
             },
             systemFunctionReference: {
@@ -11215,6 +10455,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "systemFunctionReference",
                     "custom": "systemFunctionReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:system_function',
+                uniqueEntityId: 'supabase_automation_matrix:systemFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11222,13 +10464,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
-                entityName: 'recipeFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
             },
             recipeReference: {
@@ -11244,6 +10486,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeReference",
                     "custom": "recipeReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe',
+                uniqueEntityId: 'supabase_automation_matrix:recipe',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11251,13 +10495,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
-                entityName: 'recipeFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
             },
         },
@@ -11292,6 +10536,8 @@ export const initialAutomationTableSchema = {
     },
     recipeModel: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe_model',
+        uniqueEntityId: 'supabase_automation_matrix:recipeModel',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -11308,6 +10554,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -11321,9 +10568,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -11339,6 +10588,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipeModel:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11349,26 +10602,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11376,6 +10613,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                foreignKeyReference: null,
                 description: '"Id" field for recipeModel. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
@@ -11391,6 +10629,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipe",
                     "custom": "recipe"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:recipe',
+                uniqueFieldId: 'supabase_automation_matrix:recipeModel:recipe',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11401,26 +10643,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11428,6 +10654,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
                 description: '"Recipe" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             aiModel: {
@@ -11443,6 +10670,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "aiModel",
                     "custom": "aiModel"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:ai_model',
+                uniqueFieldId: 'supabase_automation_matrix:recipeModel:aiModel',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11453,26 +10684,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11480,6 +10695,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                foreignKeyReference: {'table': 'ai_model', 'column': 'common_name'},
                 description: '"Ai Model" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a AiModel.',
             },
             role: {
@@ -11495,6 +10711,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "role",
                     "custom": "role"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:role',
+                uniqueFieldId: 'supabase_automation_matrix:recipeModel:role',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11505,26 +10725,24 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'select' as const,
+                defaultComponent: 'SELECT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "enumSelect",
+                    "options": [
+                        {
+                            "label": "Primary Model",
+                            "value": "primary_model"
+                        },
+                        {
+                            "label": "Trial Model",
+                            "value": "trial_model"
+                        },
+                        {
+                            "label": "Verified Model",
+                            "value": "verified_model"
+                        }
+                    ],
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11532,6 +10750,7 @@ export const initialAutomationTableSchema = {
                 enumValues: ['primary_model', 'trial_model', 'verified_model'] as const,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                foreignKeyReference: null,
                 description: '"Role" field for recipeModel. This is a required field. Your entry must be an string data type.',
             },
             priority: {
@@ -11547,6 +10766,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "priority",
                     "custom": "priority"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:priority',
+                uniqueFieldId: 'supabase_automation_matrix:recipeModel:priority',
+
                 dataType: 'number' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11557,26 +10780,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'number' as const,
+                defaultComponent: 'NUMBER_INPUT' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "numberType": "smallint"
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11584,6 +10792,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
+                foreignKeyReference: null,
                 description: '"Priority" field for recipeModel. This is an optional field. Your entry must be an number data type.',
             },
             aiModelReference: {
@@ -11599,6 +10808,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "aiModelReference",
                     "custom": "aiModelReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:ai_model',
+                uniqueEntityId: 'supabase_automation_matrix:aiModel',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11606,13 +10817,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
-                entityName: 'recipeModel',
+                typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
+                entityName: 'aiModel',
                 databaseTable: 'ai_model',
             },
             recipeReference: {
@@ -11628,6 +10839,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeReference",
                     "custom": "recipeReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe',
+                uniqueEntityId: 'supabase_automation_matrix:recipe',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11635,13 +10848,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeModel'][]>,
-                entityName: 'recipeModel',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
             },
         },
@@ -11676,6 +10889,8 @@ export const initialAutomationTableSchema = {
     },
     recipeProcessor: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe_processor',
+        uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -11692,6 +10907,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -11705,9 +10921,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -11723,6 +10941,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11733,26 +10955,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11760,6 +10966,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                foreignKeyReference: null,
                 description: '"Id" field for recipeProcessor. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
@@ -11775,6 +10982,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipe",
                     "custom": "recipe"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:recipe',
+                uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:recipe',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11785,26 +10996,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11812,6 +11007,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
                 description: '"Recipe" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             processor: {
@@ -11827,6 +11023,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "processor",
                     "custom": "processor"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:processor',
+                uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:processor',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -11837,26 +11037,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11864,6 +11048,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                foreignKeyReference: {'table': 'processor', 'column': 'depends_default'},
                 description: '"Processor" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Processor.',
             },
             params: {
@@ -11879,6 +11064,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "params",
                     "custom": "params"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:params',
+                uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:params',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11889,26 +11078,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -11916,6 +11089,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
+                foreignKeyReference: null,
                 description: '"Params" field for recipeProcessor. This is an optional field. Your entry must be an object data type.',
             },
             processorReference: {
@@ -11931,6 +11105,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "processorReference",
                     "custom": "processorReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:processor',
+                uniqueEntityId: 'supabase_automation_matrix:processor',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11938,13 +11114,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
-                entityName: 'recipeProcessor',
+                typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
+                entityName: 'processor',
                 databaseTable: 'processor',
             },
             recipeReference: {
@@ -11960,6 +11136,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeReference",
                     "custom": "recipeReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe',
+                uniqueEntityId: 'supabase_automation_matrix:recipe',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11967,13 +11145,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeProcessor'][]>,
-                entityName: 'recipeProcessor',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
             },
         },
@@ -12008,6 +11186,8 @@ export const initialAutomationTableSchema = {
     },
     recipeTool: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:recipe_tool',
+        uniqueEntityId: 'supabase_automation_matrix:recipeTool',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -12024,6 +11204,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -12037,9 +11218,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -12055,6 +11238,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:id',
+                uniqueFieldId: 'supabase_automation_matrix:recipeTool:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12065,26 +11252,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12092,6 +11263,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                foreignKeyReference: null,
                 description: '"Id" field for recipeTool. This is a required field. Your entry must be an uuid data type.',
             },
             recipe: {
@@ -12107,6 +11279,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipe",
                     "custom": "recipe"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:recipe',
+                uniqueFieldId: 'supabase_automation_matrix:recipeTool:recipe',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12117,26 +11293,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12144,6 +11304,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
                 description: '"Recipe" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             tool: {
@@ -12159,6 +11320,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "tool",
                     "custom": "tool"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:tool',
+                uniqueFieldId: 'supabase_automation_matrix:recipeTool:tool',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12169,26 +11334,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12196,6 +11345,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                foreignKeyReference: {'table': 'tool', 'column': 'source'},
                 description: '"Tool" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Tool.',
             },
             params: {
@@ -12211,6 +11361,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "params",
                     "custom": "params"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:params',
+                uniqueFieldId: 'supabase_automation_matrix:recipeTool:params',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12221,26 +11375,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12248,6 +11386,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
+                foreignKeyReference: null,
                 description: '"Params" field for recipeTool. This is an optional field. Your entry must be an object data type.',
             },
             recipeReference: {
@@ -12263,6 +11402,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeReference",
                     "custom": "recipeReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe',
+                uniqueEntityId: 'supabase_automation_matrix:recipe',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12270,13 +11411,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
-                entityName: 'recipeTool',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
+                entityName: 'recipe',
                 databaseTable: 'recipe',
             },
             toolReference: {
@@ -12292,6 +11433,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "toolReference",
                     "custom": "toolReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:tool',
+                uniqueEntityId: 'supabase_automation_matrix:tool',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12299,13 +11442,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
-                entityName: 'recipeTool',
+                typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
+                entityName: 'tool',
                 databaseTable: 'tool',
             },
         },
@@ -12340,6 +11483,8 @@ export const initialAutomationTableSchema = {
     },
     registeredFunction: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:registered_function',
+        uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -12356,6 +11501,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'fkAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -12369,9 +11515,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -12387,6 +11535,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:registered_function:id',
+                uniqueFieldId: 'supabase_automation_matrix:registeredFunction:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12397,26 +11549,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12424,6 +11560,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                foreignKeyReference: null,
                 description: '"Id" field for registeredFunction. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -12439,6 +11576,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:registered_function:name',
+                uniqueFieldId: 'supabase_automation_matrix:registeredFunction:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12449,26 +11590,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12476,6 +11602,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                foreignKeyReference: null,
                 description: '"Name" field for registeredFunction. This is a required field. Your entry must be an string data type.',
             },
             modulePath: {
@@ -12491,6 +11618,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "modulePath",
                     "custom": "modulePath"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:registered_function:module_path',
+                uniqueFieldId: 'supabase_automation_matrix:registeredFunction:modulePath',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12501,26 +11632,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12528,6 +11644,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                foreignKeyReference: null,
                 description: '"Module Path" field for registeredFunction. This is a required field. Your entry must be an string data type.',
             },
             className: {
@@ -12543,6 +11660,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "className",
                     "custom": "className"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:registered_function:class_name',
+                uniqueFieldId: 'supabase_automation_matrix:registeredFunction:className',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12553,26 +11674,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12580,6 +11686,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                foreignKeyReference: null,
                 description: '"Class Name" field for registeredFunction. This is an optional field. Your entry must be an string data type.',
             },
             description: {
@@ -12595,6 +11702,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:registered_function:description',
+                uniqueFieldId: 'supabase_automation_matrix:registeredFunction:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12605,26 +11716,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12632,6 +11728,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                foreignKeyReference: null,
                 description: '"Description" field for registeredFunction. This is an optional field. Your entry must be an string data type.',
             },
             returnBroker: {
@@ -12647,6 +11744,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "returnBroker",
                     "custom": "returnBroker"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:registered_function:return_broker',
+                uniqueFieldId: 'supabase_automation_matrix:registeredFunction:returnBroker',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12657,26 +11758,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12684,6 +11769,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                foreignKeyReference: {'table': 'broker', 'column': 'display_name'},
                 description: '"Return Broker" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             brokerReference: {
@@ -12699,6 +11785,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "brokerReference",
                     "custom": "brokerReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:broker',
+                uniqueEntityId: 'supabase_automation_matrix:broker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12706,13 +11794,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
-                entityName: 'registeredFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
+                entityName: 'broker',
                 databaseTable: 'broker',
             },
             systemFunctionInverse: {
@@ -12728,6 +11816,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "systemFunctionInverse",
                     "custom": "systemFunctionInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:system_function',
+                uniqueEntityId: 'supabase_automation_matrix:systemFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12735,13 +11825,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
-                entityName: 'registeredFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
             },
             argInverse: {
@@ -12757,6 +11847,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "argInverse",
                     "custom": "argInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:arg',
+                uniqueEntityId: 'supabase_automation_matrix:arg',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12764,13 +11856,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
-                entityName: 'registeredFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['arg'][]>,
+                entityName: 'arg',
                 databaseTable: 'arg',
             },
         },
@@ -12812,6 +11904,8 @@ export const initialAutomationTableSchema = {
     },
     systemFunction: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:system_function',
+        uniqueEntityId: 'supabase_automation_matrix:systemFunction',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -12828,6 +11922,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -12841,9 +11936,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -12859,6 +11956,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:id',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12869,26 +11970,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12896,6 +11981,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: null,
                 description: '"Id" field for systemFunction. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -12911,6 +11997,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:name',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -12921,26 +12011,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -12948,6 +12023,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: null,
                 description: '"Name" field for systemFunction. This is a required field. Your entry must be an string data type.',
             },
             description: {
@@ -12963,6 +12039,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:description',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12973,26 +12053,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13000,6 +12065,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: null,
                 description: '"Description" field for systemFunction. This is an optional field. Your entry must be an string data type.',
             },
             sample: {
@@ -13015,6 +12081,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "sample",
                     "custom": "sample"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:sample',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:sample',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13025,26 +12095,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13052,6 +12107,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: null,
                 description: '"Sample" field for systemFunction. This is an optional field. Your entry must be an string data type.',
             },
             inputParams: {
@@ -13067,6 +12123,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "inputParams",
                     "custom": "inputParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:input_params',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:inputParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13077,26 +12137,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13104,6 +12148,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: null,
                 description: '"Input Params" field for systemFunction. This is an optional field. Your entry must be an object data type.',
             },
             outputOptions: {
@@ -13119,6 +12164,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "outputOptions",
                     "custom": "outputOptions"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:output_options',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:outputOptions',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13129,26 +12178,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13156,6 +12189,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: null,
                 description: '"Output Options" field for systemFunction. This is an optional field. Your entry must be an object data type.',
             },
             rfId: {
@@ -13171,6 +12205,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "rfId",
                     "custom": "rfId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:system_function:rf_id',
+                uniqueFieldId: 'supabase_automation_matrix:systemFunction:rfId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -13181,26 +12219,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13208,6 +12230,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                foreignKeyReference: {'table': 'registered_function', 'column': '........pg.dropped.7........'},
                 description: '"Rf Id" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
             },
             registeredFunctionReference: {
@@ -13223,6 +12246,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "registeredFunctionReference",
                     "custom": "registeredFunctionReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:registered_function',
+                uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13230,13 +12255,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
-                entityName: 'systemFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
+                entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
             },
             toolInverse: {
@@ -13252,6 +12277,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "toolInverse",
                     "custom": "toolInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:tool',
+                uniqueEntityId: 'supabase_automation_matrix:tool',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13259,13 +12286,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
-                entityName: 'systemFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
+                entityName: 'tool',
                 databaseTable: 'tool',
             },
             recipeFunctionInverse: {
@@ -13281,6 +12308,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeFunctionInverse",
                     "custom": "recipeFunctionInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_function',
+                uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13288,13 +12317,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
-                entityName: 'systemFunction',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+                entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
             },
         },
@@ -13343,6 +12372,8 @@ export const initialAutomationTableSchema = {
     },
     tool: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:tool',
+        uniqueEntityId: 'supabase_automation_matrix:tool',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -13359,6 +12390,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'fkIfkAndM2M',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -13372,9 +12404,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -13390,6 +12424,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:id',
+                uniqueFieldId: 'supabase_automation_matrix:tool:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -13400,26 +12438,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13427,6 +12449,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Id" field for tool. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -13442,6 +12465,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:name',
+                uniqueFieldId: 'supabase_automation_matrix:tool:name',
+
                 dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
@@ -13452,26 +12479,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13479,6 +12491,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Name" field for tool. This is a required field. Your entry must be an string data type.',
             },
             source: {
@@ -13494,6 +12507,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "source",
                     "custom": "source"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:source',
+                uniqueFieldId: 'supabase_automation_matrix:tool:source',
+
                 dataType: 'object' as const,
                 isRequired: true,
                 maxLength: null,
@@ -13504,26 +12521,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13531,6 +12532,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Source" field for tool. This is a required field. Your entry must be an object data type.',
             },
             description: {
@@ -13546,6 +12548,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "description",
                     "custom": "description"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:description',
+                uniqueFieldId: 'supabase_automation_matrix:tool:description',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13556,26 +12562,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13583,6 +12574,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Description" field for tool. This is an optional field. Your entry must be an string data type.',
             },
             parameters: {
@@ -13598,6 +12590,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "parameters",
                     "custom": "parameters"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:parameters',
+                uniqueFieldId: 'supabase_automation_matrix:tool:parameters',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13608,26 +12604,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13635,6 +12615,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Parameters" field for tool. This is an optional field. Your entry must be an object data type.',
             },
             requiredArgs: {
@@ -13650,6 +12631,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "requiredArgs",
                     "custom": "requiredArgs"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:required_args',
+                uniqueFieldId: 'supabase_automation_matrix:tool:requiredArgs',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13660,26 +12645,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13687,6 +12656,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Required Args" field for tool. This is an optional field. Your entry must be an object data type.',
             },
             systemFunction: {
@@ -13702,6 +12672,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "systemFunction",
                     "custom": "systemFunction"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:system_function',
+                uniqueFieldId: 'supabase_automation_matrix:tool:systemFunction',
+
                 dataType: 'uuid' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13712,26 +12686,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13739,6 +12697,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: {'table': 'system_function', 'column': 'rf_id'},
                 description: '"System Function" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
             },
             additionalParams: {
@@ -13754,6 +12713,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "additionalParams",
                     "custom": "additionalParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:tool:additional_params',
+                uniqueFieldId: 'supabase_automation_matrix:tool:additionalParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13764,26 +12727,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13791,6 +12738,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                foreignKeyReference: null,
                 description: '"Additional Params" field for tool. This is an optional field. Your entry must be an object data type.',
             },
             systemFunctionReference: {
@@ -13806,6 +12754,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "systemFunctionReference",
                     "custom": "systemFunctionReference"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:system_function',
+                uniqueEntityId: 'supabase_automation_matrix:systemFunction',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13813,13 +12763,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
-                entityName: 'tool',
+                typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
+                entityName: 'systemFunction',
                 databaseTable: 'system_function',
             },
             recipeToolInverse: {
@@ -13835,6 +12785,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "recipeToolInverse",
                     "custom": "recipeToolInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_tool',
+                uniqueEntityId: 'supabase_automation_matrix:recipeTool',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13842,13 +12794,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
-                entityName: 'tool',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeTool'][]>,
+                entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
             },
         },
@@ -13890,6 +12842,8 @@ export const initialAutomationTableSchema = {
     },
     transformer: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:transformer',
+        uniqueEntityId: 'supabase_automation_matrix:transformer',
         primaryKey: 'id',
         primaryKeyMetadata: {
             "type": "single",
@@ -13906,6 +12860,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'name', databaseFieldName: 'name'},
         defaultFetchStrategy: 'm2mAndIfk',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -13919,9 +12874,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             id: {
@@ -13937,6 +12894,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "id",
                     "custom": "id"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:transformer:id',
+                uniqueFieldId: 'supabase_automation_matrix:transformer:id',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -13947,26 +12908,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -13974,6 +12919,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'transformer',
                 databaseTable: 'transformer',
+                foreignKeyReference: null,
                 description: '"Id" field for transformer. This is a required field. Your entry must be an uuid data type.',
             },
             name: {
@@ -13989,6 +12935,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "name",
                     "custom": "name"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:transformer:name',
+                uniqueFieldId: 'supabase_automation_matrix:transformer:name',
+
                 dataType: 'string' as const,
                 isRequired: false,
                 maxLength: null,
@@ -13999,26 +12949,11 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'textarea' as const,
+                defaultComponent: 'TEXTAREA' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false,
+                    "rows": 5
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14026,6 +12961,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'transformer',
                 databaseTable: 'transformer',
+                foreignKeyReference: null,
                 description: '"Name" field for transformer. This is an optional field. Your entry must be an string data type.',
             },
             inputParams: {
@@ -14041,6 +12977,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "inputParams",
                     "custom": "inputParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:transformer:input_params',
+                uniqueFieldId: 'supabase_automation_matrix:transformer:inputParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -14051,26 +12991,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14078,6 +13002,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'transformer',
                 databaseTable: 'transformer',
+                foreignKeyReference: null,
                 description: '"Input Params" field for transformer. This is an optional field. Your entry must be an object data type.',
             },
             outputParams: {
@@ -14093,6 +13018,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "outputParams",
                     "custom": "outputParams"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:transformer:output_params',
+                uniqueFieldId: 'supabase_automation_matrix:transformer:outputParams',
+
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -14103,26 +13032,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": false
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14130,6 +13043,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'transformer',
                 databaseTable: 'transformer',
+                foreignKeyReference: null,
                 description: '"Output Params" field for transformer. This is an optional field. Your entry must be an object data type.',
             },
             actionInverse: {
@@ -14145,6 +13059,8 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "actionInverse",
                     "custom": "actionInverse"
                 } as const,
+                uniqueTableId: 'supabase_automation_matrix:action',
+                uniqueEntityId: 'supabase_automation_matrix:action',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -14152,13 +13068,13 @@ export const initialAutomationTableSchema = {
                 defaultValue: [],
                 isPrimaryKey: false,
                 defaultGeneratorFunction: null,
-                validationFunctions: [],
+                validationFunctions: ['isValidDatabaseEntry'],
                 exclusionRules: ['notCoreField'],
-                defaultComponent: 'inline-form:1' as const,
+                defaultComponent: 'ACCORDION_VIEW' as const,
                 structure: 'foreignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
-                entityName: 'transformer',
+                typeReference: {} as TypeBrand<TableSchemaStructure['action'][]>,
+                entityName: 'action',
                 databaseTable: 'action',
             },
         },
@@ -14193,6 +13109,8 @@ export const initialAutomationTableSchema = {
     },
     userPreferences: {
         schemaType: 'table' as const,
+        uniqueTableId: 'supabase_automation_matrix:public:user_preferences',
+        uniqueEntityId: 'supabase_automation_matrix:userPreferences',
         primaryKey: 'userId',
         primaryKeyMetadata: {
             "type": "single",
@@ -14209,6 +13127,7 @@ export const initialAutomationTableSchema = {
         displayFieldMetadata: {fieldName: 'userId', databaseFieldName: 'user_id'},
         defaultFetchStrategy: 'simple',
         componentProps: {
+            "subComponent": "default",
             "variant": "default",
             "placeholder": "default",
             "size": "default",
@@ -14222,9 +13141,11 @@ export const initialAutomationTableSchema = {
             "className": "default",
             "type": "default",
             "onChange": "default",
+            "onBlur": "default",
             "formatString": "default",
             "minDate": "default",
-            "maxDate": "default"
+            "maxDate": "default",
+            "numberType": "default"
         },
         entityFields: {
             userId: {
@@ -14240,6 +13161,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "userId",
                     "custom": "userId"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:user_id',
+                uniqueFieldId: 'supabase_automation_matrix:userPreferences:userId',
+
                 dataType: 'uuid' as const,
                 isRequired: true,
                 maxLength: null,
@@ -14250,26 +13175,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'input' as const,
+                defaultComponent: 'UUID_FIELD' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14277,6 +13186,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                foreignKeyReference: {'table': 'auth.users', 'column': 'instance_id'},
                 description: '"User Id" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
             },
             preferences: {
@@ -14292,6 +13202,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "preferences",
                     "custom": "preferences"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:preferences',
+                uniqueFieldId: 'supabase_automation_matrix:userPreferences:preferences',
+
                 dataType: 'object' as const,
                 isRequired: true,
                 maxLength: null,
@@ -14302,26 +13216,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'json' as const,
+                defaultComponent: 'JSON_EDITOR' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "default",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14329,6 +13227,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                foreignKeyReference: null,
                 description: '"Preferences" field for userPreferences. This is a required field. Your entry must be an object data type.',
             },
             createdAt: {
@@ -14344,6 +13243,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "createdAt",
                     "custom": "createdAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:created_at',
+                uniqueFieldId: 'supabase_automation_matrix:userPreferences:createdAt',
+
                 dataType: 'date' as const,
                 isRequired: true,
                 maxLength: null,
@@ -14354,26 +13257,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14381,6 +13268,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                foreignKeyReference: null,
                 description: '"Created At" field for userPreferences. This is a required field. Your entry must be an date data type.',
             },
             updatedAt: {
@@ -14396,6 +13284,10 @@ export const initialAutomationTableSchema = {
                     "GraphQL": "updatedAt",
                     "custom": "updatedAt"
                 } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:updated_at',
+                uniqueFieldId: 'supabase_automation_matrix:userPreferences:updatedAt',
+
                 dataType: 'date' as const,
                 isRequired: true,
                 maxLength: null,
@@ -14406,26 +13298,10 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: "getCurrentTime()",
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'datetime' as const,
+                defaultComponent: 'DATE_PICKER' as const,
                 componentProps: {
-                    "variant": "default",
-                    "placeholder": "default",
-                    "size": "default",
-                    "textSize": "default",
-                    "textColor": "default",
-                    "rows": "default",
-                    "animation": "default",
-                    "fullWidthValue": "default",
-                    "fullWidth": "default",
-                    "disabled": "default",
-                    "className": "default",
-                    "type": "default",
-                    "onChange": "default",
-                    "onBlur": "default",
-                    "formatString": "default",
-                    "minDate": "default",
-                    "maxDate": "default",
-                    "numberType": "default"
+                    "subComponent": "datetime",
+                    "required": true
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -14433,6 +13309,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
+                foreignKeyReference: null,
                 description: '"Updated At" field for userPreferences. This is a required field. Your entry must be an date data type.',
             },
         },
@@ -14501,5 +13378,3 @@ export type InitialTableSchema = {
 export type TableSchemaStructure = {
     [entityName in AutomationTableName]: InitialTableSchema;
 };
-
-

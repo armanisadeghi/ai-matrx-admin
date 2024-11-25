@@ -10,11 +10,11 @@ import {
     EntitySelectOption,
     PrettyEntityName, AllEntityFieldKeys, AnyDatabaseColumnForEntity
 } from "@/types/entityTypes";
-import {SchemaEntity, SchemaField} from "@/types/schema";
+import {SchemaEntity} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
 
 import {GlobalCacheState} from "./globalCacheSlice";
-import {DisplayFieldMetadata, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types";
+import {DisplayFieldMetadata, EntityStateField, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types";
 import {createMatrxRecordId, parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
 import {FlexibleQueryOptions, QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject} from "../entity/sagaHelpers";
@@ -115,7 +115,7 @@ export const selectEntity = createSelector(
 // Field selectors
 export const selectEntityFields = createSelector(
     [selectFields, selectFieldsByEntity, (_: RootState, entityName: EntityKeys) => entityName],
-    (fields, fieldsByEntity, entityName): SchemaField[] => {
+    (fields, fieldsByEntity, entityName): EntityStateField[] => {
         const fieldIds = fieldsByEntity[entityName] || [];
         if (fieldIds.length === 0) return [];
         const result = fieldIds.map(id => fields[id]).filter(Boolean);
@@ -128,7 +128,7 @@ export const selectField = createSelector(
         selectFields,
         (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
     ],
-    (fields, params): SchemaField | undefined => {
+    (fields, params): EntityStateField | undefined => {
         const fieldId = `${params.entityName}__${params.fieldName}`;
         return fields[fieldId];
     }
@@ -140,7 +140,7 @@ export const selectEntityPrimaryKeyField = createSelector(
     [selectEntityFields],
     (fields): string | undefined => {
         const primaryKeyField = fields.find(field => field.isPrimaryKey);
-        return primaryKeyField ? primaryKeyField.fieldName : undefined;
+        return primaryKeyField ? primaryKeyField.displayName : undefined;
     }
 );
 
@@ -149,7 +149,7 @@ export const selectEntityDisplayField = createSelector(
     [selectEntityFields],
     (fields): string | undefined => {
         const displayField = fields.find(field => field.isDisplayField);
-        return displayField ? displayField.fieldName : undefined;
+        return displayField ? displayField.displayName : undefined;
     }
 );
 

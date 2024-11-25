@@ -30,7 +30,7 @@ export const AnimatedTransition: React.FC<AnimatedTransitionProps> = (
     };
 
     return (
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
             <motion.div
                 {...animations[type]}
                 transition={{duration: 0.2}}

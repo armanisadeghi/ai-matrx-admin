@@ -21,59 +21,62 @@ interface EntitySelectionProps {
     selectHeight: number;
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
+    className?: string; // Added to allow parent control of outer spacing
 }
 
-const EntitySelection: React.FC<EntitySelectionProps> = (
-    {
-        selectedEntity,
-        onEntityChange,
-        layout,
-        selectHeight,
-    }) => {
+const EntitySelection: React.FC<EntitySelectionProps> = ({
+                                                             selectedEntity,
+                                                             onEntityChange,
+                                                             layout,
+                                                             selectHeight,
+                                                             className
+                                                         }) => {
     const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);
 
     return (
-        <Select
-            value={selectedEntity || undefined}
-            onValueChange={(value) => onEntityChange(value as EntityKeys)}
-        >
-            <SelectTrigger
-                className={cn(
-                    "w-full bg-card text-card-foreground border-matrxBorder",
-                    "h-auto p-2 text-sm" // Adjust padding for compact design
-                )}
+        <div className={cn(
+            "flex items-center justify-center w-full", // Centers the select both horizontally and vertically
+            className
+        )}>
+            <Select
+                value={selectedEntity || undefined}
+                onValueChange={(value) => onEntityChange(value as EntityKeys)}
             >
-                <SelectValue placeholder={
-                    <span className="text-sm">
-                        {selectedEntity
-                         ? entitySelectOptions.find(option => option.value === selectedEntity)?.label
-                         : 'Select Entity...'}
-                    </span>
-                }/>
-            </SelectTrigger>
-            <SelectContent
-                position={layout === 'sideBySide' ? 'popper' : 'item-aligned'}
-                className={cn(
-                    "bg-card max-h-[50vh] overflow-y-auto", // Max height for responsiveness
-                    layout === 'sideBySide' && `max-h-[${selectHeight || 200}px]`
-                )}
-                sideOffset={0}
-                align="start"
-                side="bottom"
-            >
-                <div className="overflow-y-auto">
+                <SelectTrigger
+                    className={cn(
+                        "w-full bg-card text-card-foreground border-matrxBorder",
+                    )}
+                >
+                    <SelectValue placeholder={
+                        <span className="text-sm">
+                            {selectedEntity
+                             ? entitySelectOptions.find(option => option.value === selectedEntity)?.label
+                             : 'Select Entity...'}
+                        </span>
+                    }/>
+                </SelectTrigger>
+                <SelectContent
+                    position={layout === 'sideBySide' ? 'popper' : 'item-aligned'}
+                    className={cn(
+                        "bg-card overflow-y-auto",
+                    )}
+                    align="start"
+                    side="bottom"
+                >
                     {entitySelectOptions.map(({ value, label }) => (
                         <SelectItem
                             key={value}
                             value={value}
-                            className="bg-card text-card-foreground hover:bg-muted py-2 px-3 text-sm"
+                            className={cn(
+                                "bg-card text-card-foreground hover:bg-muted",
+                            )}
                         >
                             {label}
                         </SelectItem>
                     ))}
-                </div>
-            </SelectContent>
-        </Select>
+                </SelectContent>
+            </Select>
+        </div>
     );
 };
 

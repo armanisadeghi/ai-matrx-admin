@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import {Switch} from "@/components/ui/switch";
 import {Label} from "@/components/ui/label";
-import {Button} from "@/components/ui/button";
+import {Button} from "@/components/ui";
 import {
     Settings2,
     Layout,

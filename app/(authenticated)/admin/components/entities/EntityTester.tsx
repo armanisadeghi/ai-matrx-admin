@@ -13,7 +13,7 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table';
-import {Button} from '@/components/ui/button';
+import {Button} from '@/components/ui';
 import {Input} from '@/components/ui/input';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Alert, AlertDescription} from '@/components/ui/alert';
@@ -187,7 +187,7 @@ const EntityTester: React.FC = () => {
                 </TabsList>
 
                 <div className="flex-1 overflow-hidden">
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="sync">
                         <motion.div
                             key={activeTab}
                             initial={{opacity: 0}}

@@ -21,6 +21,7 @@ const ActionFieldWrapper = (
     });
 
     const [activeInlineForm, setActiveInlineForm] = useState(null);
+
     const matrxActionConfig = createMatrxActions(field.actionKeys);
 
     return (

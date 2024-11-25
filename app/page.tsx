@@ -1,57 +1,18 @@
 import React from 'react';
 import {
     LucideIcon,
-    Infinity,
-    Code,
     Wand2,
     ArrowUpCircle,
     Brain,
     Workflow,
-    Rocket,
-    Zap,
-    Shield,
-    ChartBar
 } from 'lucide-react';
-import {Button} from "@/components/ui/button";
 import {CardBody, CardContainer, CardItem} from "@/components/ui/3d-card";
-import Link from 'next/link';
 import {Cover} from "@/components/ui/cover";
 import {BackgroundBeamsWithCollision} from "@/components/ui/background-beams-with-collision";
-import {StandaloneThemeSwitcher} from "@/styles/themes/StandaloneThemeSwitcher";
-import {SimplePricingWithFourTiers, SimplePricingWithThreeTiers} from "@/components/packs/PricingSection";
-import { LogoHorizontal } from '@/public/MatrixLogo';
+import {SimplePricingWithFourTiers} from "@/components/packs/PricingSection";
+import TopMenu from '@/components/layout/PublicTopMenu';
 
-interface TopMenuProps {
-}
 
-const TopMenu: React.FC<TopMenuProps> = () => {
-
-    return (
-        <header
-            className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <LogoHorizontal size="lg" />
-                    <nav className="hidden md:flex space-x-4">
-                        <a href="#" className="text-foreground/60 hover:text-foreground">Solution</a>
-                        <a href="#" className="text-foreground/60 hover:text-foreground">Developers</a>
-                        <a href="#" className="text-foreground/60 hover:text-foreground">Pricing</a>
-                        <a href="#" className="text-foreground/60 hover:text-foreground">Docs</a>
-                        <a href="#" className="text-foreground/60 hover:text-foreground">Blog</a>
-                    </nav>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                    <StandaloneThemeSwitcher initialTheme={'dark'}/>
-                    <Link href="/dashboard" className="flex items-center">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <Button>Start your project</Button>
-                </div>
-            </div>
-        </header>
-    );
-};
 
 interface FeatureCardProps {
     Icon: LucideIcon;

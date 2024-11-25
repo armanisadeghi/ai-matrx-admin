@@ -2,7 +2,7 @@
 
 import React, {useState, useCallback, useMemo} from 'react';
 import {Card} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
+import {Button} from '@/components/ui';
 import {cn} from '@/lib/utils';
 import {motion, AnimatePresence} from 'framer-motion';
 import {Copy, ChevronDown, ChevronRight, ChevronUp, Maximize2, Minimize2, BracketsIcon, Expand} from 'lucide-react';

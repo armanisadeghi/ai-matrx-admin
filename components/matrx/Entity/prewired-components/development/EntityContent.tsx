@@ -3,18 +3,9 @@
 import React, {useState, useCallback, useMemo} from 'react';
 import {useEntity} from '@/lib/redux/entity/useEntity';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {
-    EntityFormState,
-    FlexEntityFormProps,
-    EntityFlexFormField,
-    FormFieldType
-} from '@/components/matrx/Entity/types/entityForm';
+import {ArmaniFormProps, EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
 import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types';
-import {
-    mapFieldDataTypeToFormFieldType,
-    transformFieldsToFormFields
-} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 import {
     AnimationPreset,
     ComponentDensity,
@@ -24,7 +15,7 @@ import {
 } from '@/types/componentConfigTypes';
 import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
 
-interface EntityContentProps<TEntity extends EntityKeys> {
+export interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
     className?: string;
     density?: ComponentDensity;
@@ -37,42 +28,19 @@ interface EntityContentProps<TEntity extends EntityKeys> {
         formEnableSearch?: boolean;
         formIsSinglePage?: boolean;
         formIsFullPage?: boolean;
+        floatingLabel?: boolean;
     };
 }
-
-// Memoized field transformation function
-const createTransformedFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
-    if (!entityFields) return [];
-
-    return entityFields.map(field => {
-        const transformedField: EntityFlexFormField = {
-            name: field.name,
-            label: field.displayName || field.name,
-            type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
-            required: field.isRequired,
-            disabled: false,
-            defaultValue: field.defaultValue,
-            validationFunctions: field.validationFunctions,
-            maxLength: field.maxLength,
-            subComponent: null,
-            actionKeys: field.defaultComponent === 'inline-form:1' ? ['entityQuickSidebar'] : [],
-            actionProps: {},
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
-        };
-
-        return transformedField;
-    });
-};
 
 // Memoized form configuration
 const createFormConfig = (formOptions?: EntityContentProps<any>['formOptions']) => ({
     layout: formOptions?.formLayout ?? 'grid',
     direction: formOptions?.formDirection ?? 'row',
-    enableSearch: formOptions?.formEnableSearch ?? false,
+    enableSearch: false,  // TODO: Hard-coded to False for now
     columns: formOptions?.formColumns ?? 2,
     isSinglePage: formOptions?.formIsSinglePage ?? true,
     isFullPage: formOptions?.formIsFullPage ?? true,
+    floatingLabel: formOptions?.floatingLabel ?? true,
 });
 
 function EntityContent<TEntity extends EntityKeys>(
@@ -84,9 +52,9 @@ function EntityContent<TEntity extends EntityKeys>(
         formOptions
     }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
-    const [formData, setFormData] = useState<EntityFormState>({});
+    const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Memoize the primary key generation
     const getMatrxRecordId = useCallback(() => {
         if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
 
@@ -138,29 +106,12 @@ function EntityContent<TEntity extends EntityKeys>(
         );
     }, [entity, getMatrxRecordId]);
 
-    // Sync form data with active record
-    React.useEffect(() => {
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord as EntityFormState);
-        }
-    }, [entity.activeRecord]);
+    // Memoize the form configuration
+    const formConfig = useMemo(() => createFormConfig(formOptions), [formOptions]);
 
-    // Memoize transformed fields
-    const formFields = useMemo(() =>
-            createTransformedFields(entity.fieldInfo),
-        [entity.fieldInfo]
-    );
-
-    // Memoize form configuration
-    const formConfig = useMemo(() =>
-            createFormConfig(formOptions),
-        [formOptions]
-    );
-
-    // Memoize form props
-    const formProps: FlexEntityFormProps = useMemo(() => ({
-        fields: formFields,
-        formState: formData,
+    // Split formProps into stable and dynamic parts
+    const stableFormProps = useMemo(() => ({
+        entityKey,
         onUpdateField: handleFieldUpdate,
         onSubmitUpdate: handleUpdate,
         onSubmitCreate: handleCreate,
@@ -170,8 +121,7 @@ function EntityContent<TEntity extends EntityKeys>(
         ...(animationPreset && {animationPreset}),
         ...(density && { density }),
     }), [
-        formFields,
-        formData,
+        entityKey,
         handleFieldUpdate,
         handleUpdate,
         handleCreate,
@@ -179,13 +129,18 @@ function EntityContent<TEntity extends EntityKeys>(
         formConfig,
         formOptions?.size,
         animationPreset,
-        density
+        density,
     ]);
 
-    if (!entity.entityMetadata) {
-        return <FormLoadingTwoColumn/>;
-    }
+    React.useEffect(() => {
+        setIsLoading(entity.loadingState.loading);
+        if (entity.activeRecord) {
+            setFormData(entity.activeRecord);
+            setIsLoading(false);
+        }
+    }, [entity.activeRecord, entity.loadingState]);
 
+    if (!entity.entityMetadata) return <FormLoadingTwoColumn/>;
     if (entity.loadingState.error) {
         return (
             <div className="p-4 text-red-500">
@@ -193,19 +148,20 @@ function EntityContent<TEntity extends EntityKeys>(
             </div>
         );
     }
-
-    const formClassName = className || "p-2";
+    if (isLoading) return <FormLoadingTwoColumn/>;
+    if (!entity.activeRecord) return null;
 
     return (
-        <div className={formClassName}>
-            {(entity.activeRecord || !entity.primaryKeyMetadata) && (
-                <ArmaniForm {...formProps} />
-            )}
+        <div className={className || "p-2"}>
+            <ArmaniForm
+                {...stableFormProps}
+                formData={formData}
+            />
         </div>
     );
 }
 
-// Memoize the entire component
+
 export default React.memo(EntityContent, (prevProps, nextProps) => {
     return prevProps.entityKey === nextProps.entityKey &&
         prevProps.className === nextProps.className &&

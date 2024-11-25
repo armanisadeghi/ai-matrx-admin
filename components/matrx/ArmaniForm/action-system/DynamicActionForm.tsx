@@ -8,7 +8,7 @@ import { X } from 'lucide-react';
 import FieldAction from "./FieldAction";  // Your existing FieldAction component
 import { useAppDispatch } from '@/lib/redux/hooks';
 import {
-    createMatrxAction
+    createMatrxActions
 } from "./action-creator";
 
 // Base field renderer without actions
@@ -77,11 +77,10 @@ const FieldWrapper = ({ field, value, onChange, onActionComplete, actionMap, den
                         return (
                             <FieldAction
                                 key={index}
-                                action={action}
+                                matrxAction={action}
                                 field={field}
                                 value={value}
                                 onChange={onChange}
-                                fieldComponentProps={field.componentProps}
                                 density={density}
                                 animationPreset={animationPreset}
                                 onActionComplete={onActionComplete}
@@ -165,7 +164,7 @@ const ActionForm = ({ fields, density='normal', animationPreset='smooth' }) => {
     const [values, setValues] = useState({});
     const [activeInlineForms, setActiveInlineForms] = useState(new Set());
     const dispatch = useAppDispatch();
-    const actionMap = React.useMemo(() => createMatrxAction(dispatch), [dispatch]);
+    const actionMap = React.useMemo(() => createMatrxActions(dispatch), [dispatch]);
 
     const handleChange = (fieldId, e) => {
         setValues(prev => ({

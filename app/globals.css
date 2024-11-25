@@ -32,6 +32,11 @@
         --ring: 240 5% 64.9%;
         --radius: 0.5rem;
         --success: 142 76% 36%;
+        --success-foreground: 144 70% 98%;
+        --warning: 38 92% 50%;
+        --warning-foreground: 48 96% 98%;
+
+
         --chart-1: 12 76% 61%;
         --chart-2: 173 58% 39%;
         --chart-3: 197 37% 24%;
@@ -41,7 +46,6 @@
         /* Enhanced accent colors */
         --accent-2: 280 70% 50%;  /* More saturated */
         --accent-3: 200 95% 40%;  /* Brighter */
-        --warning: 38 92% 50%;
         --info: 200 98% 39%;
 
         /* Adjusted hover state colors for more contrast */
@@ -85,7 +89,7 @@
 
     .dark {
         --background: 0 0% 12%;
-        --matrx-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.17'/%3E%3C/svg%3E");
+        --matrix-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='.1'/%3E%3C/svg%3E");
         --matrx-old-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
         --matrx-card-background: url('/dark-turbulence-noise.svg');
         --foreground: 0 0% 98%;
@@ -110,6 +114,10 @@
         --ring: 240 4.9% 83.9%;
         --radius: 0.5rem;
         --success: 142 69% 58%;
+        --success-foreground: 144 70% 98%;
+        --warning: 48 96% 58%;
+        --warning-foreground: 48 96% 98%;
+
         --chart-1: 220 70% 50%;
         --chart-2: 160 60% 45%;
         --chart-3: 30 80% 55%;
@@ -119,7 +127,6 @@
         /* New colors */
         --accent-2: 280 65% 60%;
         --accent-3: 200 95% 40%;
-        --warning: 38 92% 60%;
         --info: 200 98% 50%;
 
         /* Hover state colors */
@@ -399,4 +406,27 @@
   body {
     @apply bg-background text-foreground;
     }
+}
+
+/* Portal styles */
+#help-panel-portal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 50;
+}
+
+#help-panel-portal > * {
+    pointer-events: auto;
+}
+
+.pointer-events-none {
+    pointer-events: none !important;
+}
+
+.pointer-events-auto {
+    pointer-events: auto !important;
 }

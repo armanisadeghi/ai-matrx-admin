@@ -251,3 +251,5 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
         </div>
     )
 }
+
+export default EntityNumberInput

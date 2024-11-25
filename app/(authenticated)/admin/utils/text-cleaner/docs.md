@@ -41,7 +41,7 @@ interface TruncationRules {
 ```
 
 ### Action Items
-1. Add length thresholds to `EnhancedErrorParser` configuration
+1. Add length thresholds to `ErrorManager` configuration
 2. Create truncation rules for different length scenarios
 3. Implement smart truncation logic for type definitions
 4. Add configuration options for customizing thresholds
@@ -123,10 +123,10 @@ interface ErrorProcessingOptions {
 
 ## Detailed Implementation Guide
 
-### 1. Update EnhancedErrorParser Class
+### 1. Update ErrorManager Class
 
 ```typescript
-class EnhancedErrorParser {
+class ErrorManager {
   // Add new configuration
   private static readonly CONFIG = {
     thresholds: {

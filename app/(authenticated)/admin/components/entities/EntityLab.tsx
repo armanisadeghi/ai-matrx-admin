@@ -17,7 +17,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import {
     Table,
