@@ -106,6 +106,14 @@ interface SchemaField {
     description: string;
 }
 
+export const createFieldId = (entityName: EntityNameOfficial, fieldName: string) =>
+    `${entityName}__${fieldName}`;
+
+export const parseFieldId = (fieldId: string): [EntityNameOfficial, string] => {
+    const [entityName, fieldName] = fieldId.split('__') as [EntityNameOfficial, string];
+    return [entityName, fieldName];
+};
+
 export interface relationships {
     relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
     column: string;
@@ -114,13 +122,6 @@ export interface relationships {
     junctionTable: string | null;
 }
 
-export const createFieldId = (entityName: EntityNameOfficial, fieldName: string) =>
-    `${entityName}__${fieldName}`;
-
-export const parseFieldId = (fieldId: string): [EntityNameOfficial, string] => {
-    const [entityName, fieldName] = fieldId.split('__') as [EntityNameOfficial, string];
-    return [entityName, fieldName];
-};
 
 export interface SchemaEntity {
     entityName: EntityNameOfficial;
@@ -150,7 +151,13 @@ interface FullSchemaEntity {
     }
     defaultFetchStrategy:  "m2mAndFk" | "simple" | "m2mAndIfk" | "fk" | "none" | "fkIfkAndM2M" | "ifk" | "fkAndIfk" | "m2m";
     componentProps?: Record<string, any>;
-    relationships: relationships[];
+    relationships: {
+        relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
+        column: string;
+        relatedTable: string;
+        relatedColumn: string;
+        junctionTable: string | null;
+    }[];
 }
 
 

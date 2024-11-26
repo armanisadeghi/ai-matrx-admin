@@ -1,7 +1,6 @@
 import {AllEntityFieldKeys, AutomationEntity, EntityField, EntityKeys} from "@/types/entityTypes";
 import {EntityMetadata, EntityMetrics, EntityState} from "@/lib/redux/entity/types";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
-import {EntityNameOfficial, SchemaField} from "@/types/schema";
 import {TypeBrand} from "@/utils/schema/initialSchemas";
 
 

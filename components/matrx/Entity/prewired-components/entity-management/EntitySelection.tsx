@@ -6,11 +6,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectFormattedEntityOptions } from '@/lib/redux/schema/globalCacheSelectors';
-import { EntityKeys } from '@/types/entityTypes';
-import { cn } from '@nextui-org/react';
-import { AnimationPreset, ComponentDensity } from "@/types/componentConfigTypes";
+import {useAppSelector} from '@/lib/redux/hooks';
+import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
+import {EntityKeys} from '@/types/entityTypes';
+import {cn} from '@nextui-org/react';
+import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 
 type LayoutType = 'stacked' | 'sideBySide';
 
@@ -24,13 +24,14 @@ interface EntitySelectionProps {
     className?: string; // Added to allow parent control of outer spacing
 }
 
-const EntitySelection: React.FC<EntitySelectionProps> = ({
-                                                             selectedEntity,
-                                                             onEntityChange,
-                                                             layout,
-                                                             selectHeight,
-                                                             className
-                                                         }) => {
+const EntitySelection: React.FC<EntitySelectionProps> = (
+    {
+        selectedEntity,
+        onEntityChange,
+        layout,
+        selectHeight,
+        className
+    }) => {
     const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);
 
     return (
@@ -63,7 +64,7 @@ const EntitySelection: React.FC<EntitySelectionProps> = ({
                     align="start"
                     side="bottom"
                 >
-                    {entitySelectOptions.map(({ value, label }) => (
+                    {entitySelectOptions.map(({value, label}) => (
                         <SelectItem
                             key={value}
                             value={value}

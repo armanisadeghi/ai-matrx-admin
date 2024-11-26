@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { normalizeColorInput } from '@/utils/color-utils/color-change-util';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import FullJsonViewer from "@/components/ui/JsonComponents/JsonViewer";
+import {JsonViewer} from '@/components/ui';
 
 const testColorValues = [
     "hwb(199 24% 20%)",
@@ -164,7 +164,7 @@ const ColorTester = () => {
                 </TableBody>
             </Table>
 
-            <FullJsonViewer
+            <JsonViewer
                 data={jsonData}
                 title="Color Test Results"
             />

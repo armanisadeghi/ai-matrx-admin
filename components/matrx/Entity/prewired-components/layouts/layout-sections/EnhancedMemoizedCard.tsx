@@ -6,12 +6,6 @@ import {cn} from '@/lib/utils';
 import {ComponentDensity, AnimationPreset, ComponentSize} from '@/types/componentConfigTypes';
 import {EntityKeys} from "@/types/entityTypes";
 import EntitySelection from '../../entity-management/EntitySelection';
-import {
-    EntityQuickReferenceAccordionEnhanced,
-    EntityQuickReferenceCardsEnhanced,
-    EntityQuickReferenceList,
-    EntityQuickReferenceSelect
-} from '../../quick-reference';
 import {ScrollArea} from "@/components/ui";
 import {LayoutHeader} from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/extras";
 import {densityConfig} from "@/config/ui/entity-layout-config";

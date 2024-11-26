@@ -22,19 +22,16 @@ import {
 
 
 
-import {FormColumnOptions, FormDirectionOptions, FormLayoutOptions} from "@/types/componentConfigTypes";
+import {
+    AnimationPreset,
+    ComponentDensity,
+    ComponentSize,
+    FormColumnOptions,
+    FormDirectionOptions,
+    FormLayoutOptions,
+    LayoutVariant, QuickReferenceComponentType
+} from "@/types/componentConfigTypes";
 
-export type LayoutVariant = 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
-export type ComponentDensity = 'compact' | 'normal' | 'comfortable';
-export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
-export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type QuickReferenceComponentType =
-    | 'cards'
-    | 'cardsEnhanced'
-    | 'accordion'
-    | 'accordionEnhanced'
-    | 'list'
-    | 'select';
 
 const layoutTransitionVariants = {
     split: {

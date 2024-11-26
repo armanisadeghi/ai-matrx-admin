@@ -135,6 +135,7 @@
     "react-use-websocket": "latest",
     "react-webcam": "latest",
     "react-wrap-balancer": "latest",
+    "reactflow": "^11.11.4",
     "recharts": "latest",
     "recoil": "latest",
     "redis": "latest",

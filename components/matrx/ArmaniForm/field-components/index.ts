@@ -55,7 +55,9 @@ export { default as EntityUUIDArray } from './EntityUUIDArray';
 export { default as EntityUUIDField } from './EntityUUIDField';
 export { FileUpload } from './file-upload';
 export { default as ImageDisplay } from './image-display';
-import {EntityShowSelectedAccordion} from '@/components/matrx/Entity';
+import EntityShowSelectedAccordion from './wired/EntityShowSelectedAccordion';
+import EntityFetchByPkAccordion from "./wired/EntityFetchByPkAccordion";
+import EntityFkAccordion from "@/components/matrx/ArmaniForm/field-components/wired/EntityFkAccordion";
 
 export const ENTITY_FIELD_COMPONENTS = {
     INPUT: EntityInput,
@@ -63,10 +65,8 @@ export const ENTITY_FIELD_COMPONENTS = {
     SWITCH: EntitySwitch,
     SELECT: EntitySelect,
     SLIDER: EntitySlider,
-
     UUID_FIELD: EntityUUIDField,
     UUID_ARRAY: EntityUUIDArray,
-
     BUTTON: EntityButton,
     CHECKBOX: EntityCheckbox,
     CHIP: EntityChip,
@@ -86,8 +86,8 @@ export const ENTITY_FIELD_COMPONENTS = {
     SHEET: EntitySheet,
     STAR_RATING: EntityStarRating,
     TIME_PICKER: EntityTimePicker,
-    ACCORDION_VIEW: EntityShowSelectedAccordion,
-
+    ACCORDION_VIEW: EntityFkAccordion,
+    ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 
 

@@ -25,6 +25,7 @@ import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
 import jsonlint from 'jsonlint-mod';
+import {EntityBaseFieldProps} from "../EntityBaseField";
 
 export interface ValidationError {
     line: number;
@@ -289,7 +290,13 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
         readOnly = false,
         ...props
     }) => {
-    const [parsedData, setParsedData] = useState<object>({});
+    const [parsedData, setParsedData] = useState<object>(() => {
+        if (data === null || data === undefined) return {};
+        return typeof data === 'string' ? JSON.parse(data || '{}') : data;
+    });
+    const isReadOnly = readOnly || false;
+
+
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [isCopied, setIsCopied] = useState(false);
     const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
@@ -498,40 +505,51 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = (
                     {Object.entries(parsedData).length > 0 ? (
                         Object.entries(parsedData).map(([key, value], index) => (
                             <JsonEditorItem
-                                key={key}
+                                key={`${key}-${index}`}  // More unique key
                                 keyName={key}
                                 value={value}
                                 depth={0}
                                 isExpanded={expandedKeys.has(key)}
                                 onToggle={() => toggleExpand(key)}
                                 onEdit={(newKey, newValue) => {
-                                    if (readOnly) return;
+                                    if (isReadOnly) return;
                                     const newData = {...parsedData};
                                     delete newData[key];
                                     newData[newKey] = newValue;
                                     handleChange(newData);
                                 }}
                                 onAdd={(newKey, newValue, index) => {
-                                    if (readOnly) return;
+                                    if (isReadOnly) return;
                                     const entries = Object.entries(parsedData);
                                     entries.splice(index, 0, [newKey, newValue]);
                                     const newData = Object.fromEntries(entries);
                                     handleChange(newData);
                                 }}
                                 onDelete={() => {
-                                    if (readOnly) return;
+                                    if (isReadOnly) return;
                                     const newData = {...parsedData};
                                     delete newData[key];
                                     handleChange(newData);
                                 }}
                                 error={validationErrors.find(error => error.line === index + 1)}
                                 lockKeys={lockKeys}
-                                readOnly={readOnly}
+                                readOnly={isReadOnly}
                                 index={index}
                             />
                         ))
                     ) : (
-                         <div className="text-muted-foreground text-sm">No data available</div>
+                         <div className="text-muted-foreground text-sm flex justify-between items-center p-2">
+                             <span>No data available</span>
+                             {!readOnly && (
+                                 <Button
+                                     variant="ghost"
+                                     size="sm"
+                                     onClick={() => handleChange({newKey: null})}
+                                 >
+                                     Add Property
+                                 </Button>
+                             )}
+                         </div>
                      )}
                 </div>
             ) : (
@@ -586,56 +604,79 @@ export const FullEditableJsonViewer: React.FC<EditableJsonViewerProps & { title?
 };
 
 
-export interface EntityJsonEditorProps extends React.HTMLAttributes<HTMLDivElement> {
-    data: object | string;
-    title?: string;
-    onSave?: (data: object) => void;
-    onChange?: (data: object) => void;
+interface EntityJsonEditorProps extends EntityBaseFieldProps {
+    value: object | string | null;
+    onChange: (value: object | string) => void;
     className?: string;
-    allowMinimize?: boolean;
-    isMinimized?: boolean;
-    onMinimizeChange?: (isMinimized: boolean) => void;
-    id?: string;
-    readOnly?: boolean;
-    hideHeader?: boolean;
 }
 
-export const EntityJsonEditor: React.FC<EntityJsonEditorProps> = (
+const EntityJsonEditor = (
     {
-        data,
-        title,
-        onSave,
+        entityKey,
+        dynamicFieldInfo: field,
+        value,
         onChange,
+        density = 'normal',
+        animationPreset = 'subtle',
+        size = 'default',
         className,
-        allowMinimize = false,
-        isMinimized: controlledIsMinimized,
-        onMinimizeChange,
-        id,
-        readOnly = false,
-        hideHeader = false,
+        variant = "default",
+        disabled = false,
+        floatingLabel = true,
+        labelPosition = 'default',
         ...props
-    }) => {
-    const [localIsMinimized, setLocalIsMinimized] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
-    const [localData, setLocalData] = useState(data);
-    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-    const isMinimized = controlledIsMinimized ?? localIsMinimized;
+    }: EntityJsonEditorProps) => {
+    const customProps = field.componentProps as Record<string, unknown>;
+    const allowMinimize = customProps?.allowMinimize as boolean ?? false;
+    const hideHeader = customProps?.hideHeader as boolean ?? false;
+    const isMinimized = customProps?.isMinimized as boolean ?? false;
+    const readOnly = disabled;
 
-    useEffect(() => {
-        setLocalData(data);
-        setHasChanges(false);
-    }, [data]);
-
-    const handleMinimizeToggle = () => {
-        const newValue = !isMinimized;
-        setLocalIsMinimized(newValue);
-        onMinimizeChange?.(newValue);
+    // Initialize localData with a safe default
+    const initializeData = (inputValue: object | string | null) => {
+        if (inputValue === null || inputValue === undefined) {
+            return {};
+        }
+        if (typeof inputValue === 'string') {
+            try {
+                return inputValue.trim() ? JSON.parse(inputValue) : {};
+            } catch {
+                return {};
+            }
+        }
+        return inputValue;
     };
 
-    const handleChange = (newData: object) => {
-        setLocalData(newData);
-        setHasChanges(true);
-        onChange?.(newData);
+    const [localData, setLocalData] = useState(initializeData(value));
+    const [hasChanges, setHasChanges] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+    useEffect(() => {
+        const safeValue = initializeData(value);
+        setLocalData(safeValue);
+        setHasChanges(false);
+    }, [value]);
+
+    const handleChange = (newData: object | string) => {
+        try {
+            const processedData = typeof newData === 'string' && newData.trim()
+                                  ? JSON.parse(newData)
+                                  : newData;
+
+            setLocalData(processedData);
+            setHasChanges(true);
+            onChange(processedData);
+        } catch (error) {
+            console.warn('Invalid JSON data:', error);
+            setLocalData(newData); // Keep the invalid string for editing
+            setHasChanges(true);
+        }
+    };
+
+    const handleReset = () => {
+        const safeValue = initializeData(value);
+        setLocalData(safeValue);
+        setHasChanges(false);
     };
 
     const handleSave = async () => {
@@ -644,25 +685,18 @@ export const EntityJsonEditor: React.FC<EntityJsonEditorProps> = (
         setSaveStatus('saving');
         try {
             const dataToSave = typeof localData === 'string'
-                               ? (localData.trim().startsWith('{') || localData.trim().startsWith('[')
-                                  ? JSON.parse(localData)
-                                  : localData)
+                               ? (localData.trim() ? JSON.parse(localData) : {})
                                : localData;
 
-            await onSave?.(dataToSave);
+            onChange(dataToSave);
             setSaveStatus('saved');
             setHasChanges(false);
             setTimeout(() => setSaveStatus('idle'), 2000);
         } catch (error) {
-            console.error('Save error:', error);
+            console.warn('Save error:', error);
             setSaveStatus('error');
             setTimeout(() => setSaveStatus('idle'), 3000);
         }
-    };
-
-    const handleReset = () => {
-        setLocalData(data);
-        setHasChanges(false);
     };
 
     const renderEditorContent = () => (
@@ -670,110 +704,91 @@ export const EntityJsonEditor: React.FC<EntityJsonEditorProps> = (
             data={localData}
             onChange={handleChange}
             readOnly={readOnly}
-            title={hideHeader ? title : undefined} // Pass title only if header is hidden
+            defaultEnhancedMode={true}
+            validateDelay={500}
             {...props}
         />
     );
 
     const minimizedContent = (
-        <motion.div
-            key="minimized"
-            initial={{opacity: 0, scale: 0.8}}
-            animate={{opacity: 1, scale: 1}}
-            exit={{opacity: 0, scale: 0.8}}
+        <div
             className={cn(
-                "flex items-center gap-2 bg-card rounded-full px-3 py-1.5 shadow-sm border cursor-pointer",
+                "flex items-center gap-2 bg-card rounded-full px-3 py-1.5 shadow-sm border",
                 hasChanges && "border-orange-500",
                 readOnly && "border-muted"
             )}
-            onClick={handleMinimizeToggle}
         >
-            <span className="text-sm font-medium truncate max-w-[200px]">{title}</span>
+            <span className="text-sm font-medium truncate max-w-[200px]">{field.displayName}</span>
             {hasChanges && <span className="w-1.5 h-1.5 rounded-full bg-orange-500"/>}
             {readOnly && <span className="text-xs text-muted-foreground">(Read Only)</span>}
             <Maximize2 className="h-3.5 w-3.5 text-muted-foreground"/>
-        </motion.div>
+        </div>
     );
 
     const expandedContent = (
-        <motion.div
-            key="expanded"
-            initial={{opacity: 0, scale: 0.95}}
-            animate={{opacity: 1, scale: 1}}
-            exit={{opacity: 0, scale: 0.95}}
-        >
-            <Card className="bg-card">
-                {!hideHeader && (
-                    <div className="px-3 py-2 border-b flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            {readOnly && (
-                                <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded-full">
-                                    Read Only
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            {!readOnly && hasChanges && (
-                                <>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleReset}
-                                        className="h-7 px-2 text-xs"
-                                    >
-                                        <RotateCcw className="h-3.5 w-3.5 mr-1"/>
-                                        Reset
-                                    </Button>
-                                    <Button
-                                        variant="default"
-                                        size="sm"
-                                        onClick={handleSave}
-                                        className="h-7 px-2 text-xs"
-                                        disabled={saveStatus === 'saving'}
-                                    >
-                                        {saveStatus === 'saving' ? (
-                                            <>Saving...</>
-                                        ) : saveStatus === 'saved' ? (
-                                            <><Check className="h-3.5 w-3.5 mr-1"/> Saved</>
-                                        ) : (
-                                                <><Save className="h-3.5 w-3.5 mr-1"/> Save</>
-                                            )}
-                                    </Button>
-                                </>
-                            )}
-                            {allowMinimize && (
+        <Card className="bg-card">
+            {!hideHeader && (
+                <div className="px-3 py-2 border-b flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{field.displayName}</span>
+                        {readOnly && (
+                            <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded-full">
+                                Read Only
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        {!readOnly && hasChanges && (
+                            <>
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={handleMinimizeToggle}
-                                    className="h-7 w-7 p-0"
+                                    onClick={handleReset}
+                                    className="h-7 px-2 text-xs"
                                 >
-                                    <Minimize2 className="h-3.5 w-3.5"/>
+                                    <RotateCcw className="h-3.5 w-3.5 mr-1"/>
+                                    Reset
                                 </Button>
-                            )}
-                        </div>
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={handleSave}
+                                    className="h-7 px-2 text-xs"
+                                    disabled={saveStatus === 'saving'}
+                                >
+                                    {saveStatus === 'saving' ? (
+                                        <>Saving...</>
+                                    ) : saveStatus === 'saved' ? (
+                                        <><Check className="h-3.5 w-3.5 mr-1"/> Saved</>
+                                    ) : (
+                                            <><Save className="h-3.5 w-3.5 mr-1"/> Save</>
+                                        )}
+                                </Button>
+                            </>
+                        )}
+                        {allowMinimize && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                            >
+                                <Minimize2 className="h-3.5 w-3.5"/>
+                            </Button>
+                        )}
                     </div>
-                )}
-                <div className={cn("p-3", hideHeader && "pt-0")}>
-                    {renderEditorContent()}
                 </div>
-            </Card>
-        </motion.div>
+            )}
+            <div className={cn("p-3", hideHeader && "pt-0")}>
+                {renderEditorContent()}
+            </div>
+        </Card>
     );
 
     return (
-        <motion.div
-            layout
-            initial={false}
-            className={cn("relative", className)}
-            transition={{type: "spring", bounce: 0.2, duration: 0.3}}
-        >
-            <AnimatePresence mode="sync">
-                {isMinimized ? minimizedContent : expandedContent}
-            </AnimatePresence>
-        </motion.div>
+        <div className={cn("relative", className)}>
+            {isMinimized ? minimizedContent : expandedContent}
+        </div>
     );
 };
-
 
 export default EntityJsonEditor;

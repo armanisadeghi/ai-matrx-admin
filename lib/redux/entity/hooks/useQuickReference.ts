@@ -158,17 +158,18 @@ export function useQuickReference<TEntity extends EntityKeys>(
         return record[displayField.name] || 'Unnamed Record';
     }, [fieldInfo]);
 
-    React.useEffect(() => {
-        const handleModifierKey = (e: KeyboardEvent) => {
-            const isModifierPressed = e.ctrlKey || e.metaKey;
-            if (isModifierPressed && selection.selectionMode !== 'multiple') {
-                selection.toggleSelectionMode();
-            }
-        };
-
-        window.addEventListener('keydown', handleModifierKey);
-        return () => window.removeEventListener('keydown', handleModifierKey);
-    }, [selection]);
+    // TODO: Find a better and local solution for multi-select
+    // React.useEffect(() => {
+    //     const handleModifierKey = (e: KeyboardEvent) => {
+    //         const isModifierPressed = e.ctrlKey || e.metaKey;
+    //         if (isModifierPressed && selection.selectionMode !== 'multiple') {
+    //             selection.toggleSelectionMode();
+    //         }
+    //     };
+    //
+    //     window.addEventListener('keydown', handleModifierKey);
+    //     return () => window.removeEventListener('keydown', handleModifierKey);
+    // }, [selection]);
 
     const handleRecordSelect = React.useCallback((recordKey: MatrxRecordId) => {
         dispatch(actions.setActiveRecord(recordKey));

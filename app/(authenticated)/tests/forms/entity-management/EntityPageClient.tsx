@@ -33,57 +33,61 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import {Separator} from "@/components/ui/separator";
-import EntityLayout, {
-    LayoutVariant,
-    ComponentDensity,
+import {
     AnimationPreset,
-    ComponentSize,
-    QuickReferenceComponentType,
-} from '@/components/matrx/Entity/prewired-components/layouts/EntityLayout';
-import {FormDirectionOptions, FormLayoutOptions} from '@/types/componentConfigTypes';
+    animationPresetOptions,
+    ComponentDensity,
+    ComponentSize, componentSizeOptions,
+    densityOptions,
+    formColumnOptions,
+    FormColumnsOptions,
+    formDirectionOptions,
+    FormDirectionOptions,
+    formLayoutOptions,
+    FormLayoutOptions,
+    inlineEntityColumnOptions,
+    InlineEntityColumnsOptions,
+    inlineEntityStyleOptions,
+    InlineEntityComponentStyles,
+    pageLayoutOptions,
+    PageLayoutOptions,
+    textSizeOptions,
+    TextSizeOptions,
+    formVariationOptions, FormVariationOptions, QuickReferenceComponentType,
+    SelectOption,
+} from '@/types/componentConfigTypes';
 import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout';
 import {Slider} from "@/components/ui";
 import {cn} from "@/utils/cn";
 
-const layoutOptions = ['split', 'sideBySide', 'stacked'];
-const densityOptions: ComponentDensity[] = ['compact', 'normal', 'comfortable'];
-const quickReferenceOptions: QuickReferenceComponentType[] = ['cards', 'cardsEnhanced', 'accordion', 'accordionEnhanced', 'list', 'select'];
-
-const formVariationOptions = [
-    'fullWidthSinglePage',
-    'fullWidthMultiStep',
-    'twoColumnSinglePage',
-    'threeColumnSinglePage',
-    'restrictedWidthSinglePage',
-    'singlePageModal',
-    'multiStepModal'
-] as const;
-
-const formLayoutOptions: FormLayoutOptions[] = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline'];
-const directionOptions: FormDirectionOptions[] = ['row', 'column', 'row-reverse', 'column-reverse'];
-
-const animationOptions: AnimationPreset[] = ['none', 'subtle', 'smooth', 'energetic', 'playful'];
-const sizeOptions: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl'];
-const columnOptions = ['1', '2', '3', '4', '5', '6', 'auto'] as const;
+export const ENTITY_PAGE_DEFAULTS = {
+    layout: 'split' as PageLayoutOptions,
+    density: 'normal' as ComponentDensity,
+    animation: 'subtle' as AnimationPreset,
+    size: 'md' as ComponentSize,
+    quickReferenceType: 'list' as QuickReferenceComponentType,
+    isFullScreen: false,
+    splitRatio: 20,
+    formOptions: {
+        formLayout: 'grid' as FormLayoutOptions,
+        formColumns: '2' as FormColumnsOptions,
+        formDirection: 'row' as FormDirectionOptions,
+        formEnableSearch: false,
+        formVariation: 'fullWidthSinglePage' as FormVariationOptions,
+        floatingLabel: true,
+        showLabel: true,
+        textSize: 'md' as TextSizeOptions,
+    },
+    inlineEntityOptions: {
+        showInlineEntities: true,
+        inlineEntityStyle: 'accordion' as InlineEntityComponentStyles,
+        inlineEntityColumns: '2' as InlineEntityColumnsOptions,
+        editableInlineEntities: false,
+    },
+};
 
 const EntityPageClient = () => {
-    const [settings, setSettings] = useState({
-        layout: 'split' as LayoutVariant,
-        density: 'normal' as ComponentDensity,
-        animation: 'subtle' as AnimationPreset,
-        size: 'md' as ComponentSize,
-        quickReferenceType: 'list' as QuickReferenceComponentType,
-        isFullScreen: false,
-        splitRatio: 20,
-        formOptions: {
-            formLayout: 'grid',
-            formColumns: '2',
-            formDirection: 'row' as FormDirectionOptions,
-            formEnableSearch: false,
-            formVariation: 'fullWidthSinglePage' as typeof formVariationOptions[number],
-            floatingLabel: true,
-        }
-    });
+    const [settings, setSettings] = useState(ENTITY_PAGE_DEFAULTS);
 
     const [showControls, setShowControls] = useState(true);
 
@@ -94,7 +98,14 @@ const EntityPageClient = () => {
             value,
             options,
             onChange,
-        }) => (
+        }: {
+            label: string;
+            icon: React.ComponentType<any>;
+            value: any;
+            options: SelectOption<string | number>[];
+            onChange: (value: any) => void;
+        }
+    ) => (
         <div className="flex items-center gap-1 bg-secondary/50 rounded-md px-2 py-1">
             <Icon className="h-4 w-4 text-muted-foreground shrink-0"/>
             <Select value={value} onValueChange={onChange}>
@@ -103,8 +114,8 @@ const EntityPageClient = () => {
                 </SelectTrigger>
                 <SelectContent>
                     {options.map(option => (
-                        <SelectItem key={option} value={option}>
-                            {option.charAt(0).toUpperCase() + option.slice(1)}
+                        <SelectItem key={option.key} value={option.value}>
+                            {option.label.charAt(0).toUpperCase() + option.label.slice(1)}
                         </SelectItem>
                     ))}
                 </SelectContent>
@@ -120,21 +131,26 @@ const EntityPageClient = () => {
     );
 
     const Controls = () => (
-        <div className="flex items-center">
+        <div className="flex items-center flex-wrap gap-4">
+            {/* Page Layout Options */}
             <ControlGroup>
                 <CompactSelectControl
                     label="Layout"
                     icon={Layout}
                     value={settings.layout}
-                    options={layoutOptions}
-                    onChange={(value) => setSettings(prev => ({...prev, layout: value}))}
+                    options={pageLayoutOptions}
+                    onChange={(value: PageLayoutOptions) =>
+                        setSettings((prev) => ({ ...prev, layout: value }))
+                    }
                 />
                 {settings.layout === 'split' && (
                     <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
-                        <Columns2 className="h-4 w-4 text-muted-foreground"/>
+                        <Columns2 className="h-4 w-4 text-muted-foreground" />
                         <Slider
                             value={[settings.splitRatio]}
-                            onValueChange={([value]) => setSettings(prev => ({...prev, splitRatio: value}))}
+                            onValueChange={([value]) =>
+                                setSettings((prev) => ({ ...prev, splitRatio: value }))
+                            }
                             min={10}
                             max={90}
                             step={10}
@@ -144,93 +160,166 @@ const EntityPageClient = () => {
                 )}
             </ControlGroup>
 
+            {/* Component Density, Animation Preset, and Size */}
             <ControlGroup>
                 <CompactSelectControl
                     label="Size"
                     icon={Maximize2}
                     value={settings.size}
-                    options={sizeOptions}
-                    onChange={(value) => setSettings(prev => ({...prev, size: value}))}
+                    options={componentSizeOptions}
+                    onChange={(value: ComponentSize) =>
+                        setSettings((prev) => ({ ...prev, size: value }))
+                    }
                 />
                 <CompactSelectControl
                     label="Density"
                     icon={Layers}
                     value={settings.density}
                     options={densityOptions}
-                    onChange={(value) => setSettings(prev => ({...prev, density: value}))}
+                    onChange={(value: ComponentDensity) =>
+                        setSettings((prev) => ({ ...prev, density: value }))
+                    }
                 />
                 <CompactSelectControl
                     label="Animation"
                     icon={Sparkles}
                     value={settings.animation}
-                    options={animationOptions}
-                    onChange={(value) => setSettings(prev => ({...prev, animation: value}))}
+                    options={animationPresetOptions}
+                    onChange={(value: AnimationPreset) =>
+                        setSettings((prev) => ({ ...prev, animation: value }))
+                    }
                 />
             </ControlGroup>
 
+            {/* Form Options */}
             <ControlGroup>
                 <CompactSelectControl
                     label="Form Layout"
                     icon={Grid}
                     value={settings.formOptions.formLayout}
                     options={formLayoutOptions}
-                    onChange={(value) => setSettings(prev => ({
-                        ...prev,
-                        formOptions: {...prev.formOptions, formLayout: value}
-                    }))}
+                    onChange={(value: FormLayoutOptions) =>
+                        setSettings((prev) => ({
+                            ...prev,
+                            formOptions: { ...prev.formOptions, formLayout: value },
+                        }))
+                    }
                 />
                 <CompactSelectControl
                     label="Columns"
                     icon={Columns}
-                    value={settings.formOptions.formColumns}
-                    options={columnOptions}
-                    onChange={(value) => setSettings(prev => ({
-                        ...prev,
-                        formOptions: {...prev.formOptions, formColumns: value}
-                    }))}
+                    value={
+                        typeof settings.formOptions.formColumns === 'number'
+                        ? settings.formOptions.formColumns.toString()
+                        : settings.formOptions.formColumns
+                    }
+                    options={[...formColumnOptions]}
+                    onChange={(value) =>
+                        setSettings((prev) => ({
+                            ...prev,
+                            formOptions: {
+                                ...prev.formOptions,
+                                formColumns: value === 'auto' ? 'auto' : parseInt(value, 10),
+                            },
+                        }))
+                    }
                 />
                 <CompactSelectControl
                     label="Direction"
                     icon={ArrowRightLeft}
                     value={settings.formOptions.formDirection}
-                    options={directionOptions}
-                    onChange={(value) => setSettings(prev => ({
-                        ...prev,
-                        formOptions: {...prev.formOptions, formDirection: value}
-                    }))}
+                    options={formDirectionOptions}
+                    onChange={(value: FormDirectionOptions) =>
+                        setSettings((prev) => ({
+                            ...prev,
+                            formOptions: { ...prev.formOptions, formDirection: value },
+                        }))
+                    }
                 />
                 <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
-                    <Type className="h-4 w-4 text-muted-foreground"/>
+                    <Type className="h-4 w-4 text-muted-foreground" />
                     <Switch
                         checked={settings.formOptions.floatingLabel}
-                        onCheckedChange={(checked) => setSettings(prev => ({
-                            ...prev,
-                            formOptions: {...prev.formOptions, floatingLabel: checked}
-                        }))}
+                        onCheckedChange={(checked) =>
+                            setSettings((prev) => ({
+                                ...prev,
+                                formOptions: { ...prev.formOptions, floatingLabel: checked },
+                            }))
+                        }
                         className="data-[state=checked]:bg-primary"
                     />
                 </div>
             </ControlGroup>
 
+            {/* Text Size */}
             <ControlGroup>
                 <CompactSelectControl
-                    label="Reference"
+                    label="Text Size"
+                    icon={Type}
+                    value={settings.formOptions.textSize}
+                    options={textSizeOptions}
+                    onChange={(value: TextSizeOptions) =>
+                        setSettings((prev) => ({
+                            ...prev,
+                            formOptions: { ...prev.formOptions, textSize: value },
+                        }))
+                    }
+                />
+            </ControlGroup>
+
+            {/* Inline Entity Options */}
+            <ControlGroup>
+                <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
+                    <Switch
+                        checked={settings.inlineEntityOptions.showInlineEntities}
+                        onCheckedChange={(checked) =>
+                            setSettings((prev) => ({
+                                ...prev,
+                                inlineEntityOptions: { ...prev.inlineEntityOptions, showInlineEntities: checked },
+                            }))
+                        }
+                    />
+                    <span className="text-sm text-muted-foreground">Show Inline Entities</span>
+                </div>
+                <CompactSelectControl
+                    label="Entity Style"
                     icon={List}
-                    value={settings.quickReferenceType}
-                    options={quickReferenceOptions}
-                    onChange={(value) => setSettings(prev => ({
-                        ...prev,
-                        quickReferenceType: value
-                    }))}
+                    value={settings.inlineEntityOptions.inlineEntityStyle}
+                    options={inlineEntityStyleOptions}
+                    onChange={(value: InlineEntityColumnsOptions) =>
+                        setSettings((prev) => ({
+                            ...prev,
+                            InlineEntityComponentStyles: { ...prev.inlineEntityOptions, inlineEntityStyle: value },
+                        }))
+                    }
+                />
+                <CompactSelectControl
+                    label="Entity Columns"
+                    icon={Columns}
+                    value={settings.inlineEntityOptions.inlineEntityColumns.toString()} // Convert to string
+                    options={inlineEntityColumnOptions} // Options are all strings
+                    onChange={(value) =>
+                        setSettings((prev) => ({
+                            ...prev,
+                            inlineEntityOptions: {
+                                ...prev.inlineEntityOptions,
+                                inlineEntityColumns:
+                                    value === 'auto' ? 'auto' : (parseInt(value, 10) as InlineEntityColumnsOptions), // Convert to number or 'auto'
+                            },
+                        }))
+                    }
                 />
                 <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
-                    <Maximize className="h-4 w-4 text-muted-foreground"/>
                     <Switch
-                        id="fullscreen"
-                        checked={settings.isFullScreen}
-                        onCheckedChange={(checked) => setSettings(prev => ({...prev, isFullScreen: checked}))}
-                        className="data-[state=checked]:bg-primary"
+                        checked={settings.inlineEntityOptions.editableInlineEntities}
+                        onCheckedChange={(checked) =>
+                            setSettings((prev) => ({
+                                ...prev,
+                                inlineEntityOptions: { ...prev.inlineEntityOptions, editableInlineEntities: checked },
+                            }))
+                        }
                     />
+                    <span className="text-sm text-muted-foreground">Editable Entities</span>
                 </div>
             </ControlGroup>
         </div>
@@ -298,13 +387,21 @@ const EntityPageClient = () => {
                             formOptions={{
                                 size: settings.size,
                                 formLayout: settings.formOptions.formLayout,
-                                formColumns: settings.formOptions.formColumns === 'auto' ? 'auto'
-                                                                                         : parseInt(settings.formOptions.formColumns),
+                                formColumns: settings.formOptions.formColumns === 'auto' ? 'auto' : parseInt(settings.formOptions.formColumns),
                                 formDirection: settings.formOptions.formDirection,
                                 formEnableSearch: settings.formOptions.formEnableSearch,
                                 formIsSinglePage: !settings.formOptions.formVariation.includes('MultiStep'),
                                 formIsFullPage: settings.formOptions.formVariation.includes('fullWidth'),
                                 floatingLabel: settings.formOptions.floatingLabel,
+                                showLabel: settings.formOptions.showLabel,
+                                textSize: settings.formOptions.textSize,
+                                inlineEntityOptions: {
+                                    showInlineEntities:settings.inlineEntityOptions.showInlineEntities,
+                                    inlineEntityStyle: settings.inlineEntityOptions.inlineEntityStyle,
+                                    inlineEntityColumns: settings.inlineEntityOptions.inlineEntityColumns === 'auto' ? 'auto' : parseInt(settings.inlineEntityOptions.inlineEntityColumns),
+                                    editableInlineEntities: settings.inlineEntityOptions.editableInlineEntities,
+                                },
+
                             }}
                             className="h-full"
                         />

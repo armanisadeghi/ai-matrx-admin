@@ -13,7 +13,7 @@ import {
     EntityError, EntityStateField,
 } from '@/lib/redux/entity/types';
 import {RootState} from '@/lib/redux/store';
-import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
 import {QueryOptions} from "@/lib/redux/entity/sagaHelpers";
 import {createRecordKey} from '@/lib/redux/entity/utils';
@@ -23,7 +23,7 @@ import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
 
 import {useActiveRecords} from "@/lib/redux/entity/hooks/useActiveRecords";
-import { useEntityToasts } from './hooks/useEntityToasts';
+import {useEntityToasts} from './hooks/useEntityToasts';
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000
@@ -130,8 +130,15 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         dispatch(actions.fetchRecords({page, pageSize, options}));
     }, [dispatch, actions]);
 
-    const fetchOne = useCallback((primaryKeyValues: Record<string, MatrxRecordId>) => {
-        dispatch(actions.fetchOne({primaryKeyValues}));
+    const fetchOne = useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.fetchOne({
+                matrxRecordId,
+                callbackId,
+            })
+        );
     }, [dispatch, actions]);
 
     const fetchAll = React.useCallback((callback?: Callback) => {
@@ -150,9 +157,9 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     ) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
             if (result.success) {
-                toasts.handleCreateSuccess({ showToast: options?.showToast });
+                toasts.handleCreateSuccess({showToast: options?.showToast});
             } else {
-                toasts.handleError(result.error, 'create', { showToast: options?.showToast });
+                toasts.handleError(result.error, 'create', {showToast: options?.showToast});
             }
             options?.callback?.(result);
         };
@@ -174,9 +181,9 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     ) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
             if (result.success) {
-                toasts.handleUpdateSuccess({ showToast: options?.showToast });
+                toasts.handleUpdateSuccess({showToast: options?.showToast});
             } else {
-                toasts.handleError(result.error, 'update', { showToast: options?.showToast });
+                toasts.handleError(result.error, 'update', {showToast: options?.showToast});
             }
             options?.callback?.(result);
         };
@@ -198,9 +205,9 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     ) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
             if (result.success) {
-                toasts.handleDeleteSuccess({ showToast: options?.showToast });
+                toasts.handleDeleteSuccess({showToast: options?.showToast});
             } else {
-                toasts.handleError(result.error, 'delete', { showToast: options?.showToast });
+                toasts.handleError(result.error, 'delete', {showToast: options?.showToast});
             }
             options?.callback?.(result);
         };
@@ -214,7 +221,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             })
         );
     }, [actions, dispatch, toasts]);
-
 
 
     const setFilters = useCallback((payload: FilterPayload) => {
@@ -236,7 +242,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const invalidateCache = useCallback(() => {
         dispatch(actions.invalidateCache());
     }, [dispatch, actions]);
-
 
 
     // Optimistic Update Support
@@ -298,8 +303,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         quickReference,
         validation,
         // activeRecordsAnyEntity,
-
-
 
 
         // Pagination

@@ -80,6 +80,57 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
         }
     );
+    const selectMatrxRecordIdFromValue = createSelector(
+        [selectEntity, (_: RootState, value: any) => value],
+        (entity, value): MatrxRecordId | null => {
+            if (value === undefined || value === null) {
+                return null;
+            }
+            const primaryKeyField = entity.entityMetadata.primaryKeyMetadata.fields[0];
+            if (!primaryKeyField) {
+                return null;
+            }
+            const record = {[primaryKeyField]: value};
+            try {
+                return createRecordKey(entity.entityMetadata.primaryKeyMetadata, record);
+            } catch (e) {
+                return null;
+            }
+        }
+    );
+
+
+    const selectMatrxRecordIdByValues = createSelector(
+        [selectEntity, (_: RootState, values: any[]) => values],
+        (entity, values): MatrxRecordId => {
+            const primaryKeyFields = Object.keys(entity.entityMetadata.primaryKeyMetadata);
+            if (values.length !== primaryKeyFields.length) {
+                throw new Error(`Expected ${primaryKeyFields.length} values but received ${values.length}`);
+            }
+
+            const primaryKeyValues = primaryKeyFields.reduce((acc, field, index) => {
+                acc[field] = values[index];
+                return acc;
+            }, {} as Record<string, any>);
+
+            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+        }
+    );
+
+    const selectMatrxRecordIdByKeyValuePairs = createSelector(
+        [selectEntity, (_: RootState, keyValuePairs: Array<[string, any]>) => keyValuePairs],
+        (entity, keyValuePairs): MatrxRecordId => {
+            const primaryKeyFields = Object.keys(entity.entityMetadata.primaryKeyMetadata);
+            const providedFields = keyValuePairs.map(([field]) => field);
+
+            if (!primaryKeyFields.every(field => providedFields.includes(field))) {
+                throw new Error('Missing required primary key fields');
+            }
+
+            const primaryKeyValues = Object.fromEntries(keyValuePairs);
+            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+        }
+    );
 
     const selectMatrxRecordIdsByPrimaryKeys = createSelector(
         [selectEntity, (_: RootState, primaryKeyValuesList: Record<string, MatrxRecordId>[]) => primaryKeyValuesList],
@@ -726,6 +777,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
         selectMatrxRecordIdByPrimaryKey,
         selectMatrxRecordIdsByPrimaryKeys,
+
+        selectMatrxRecordIdFromValue,
+        selectMatrxRecordIdByValues,
+        selectMatrxRecordIdByKeyValuePairs,
+
 
     };
 };

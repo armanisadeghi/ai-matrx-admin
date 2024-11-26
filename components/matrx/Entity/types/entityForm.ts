@@ -274,38 +274,6 @@ export interface EntityFlexFormField {
 }
 
 
-export interface EntityFormState {
-    [key: string]: any;
-}
-
-export type FormLayoutOptions = 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
-export type FormColumnOptions = number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
-export type FormDirectionOptions = 'row' | 'column' | 'row-reverse' | 'column-reverse';
-
-export interface ArmaniFormProps {
-    entityKey: EntityKeys;
-    formData: EntityFormState;
-    onUpdateField: (name: string, value: any) => void;
-    onSubmit?: () => void;
-    onSubmitUpdate?: (data: FormState) => void;
-    onSubmitCreate?: (data: FormState) => void;
-    onSubmitDelete?: () => void;
-    currentStep?: number;
-    onNextStep?: () => void;
-    onPrevStep?: () => void;
-    isSinglePage?: boolean;
-    isFullPage?: boolean;
-    columns?: FormColumnOptions & (number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number });
-    layout?: FormLayoutOptions & ('grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline');
-    enableSearch?: boolean;
-    direction?: FormDirectionOptions & ('row' | 'column' | 'row-reverse' | 'column-reverse');
-    density?: FormDensity;
-    animationPreset?: AnimationPreset;
-    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
-    variant?: MatrxVariant;
-    floatingLabel?: boolean;
-    className?: string;
-}
 
 
 

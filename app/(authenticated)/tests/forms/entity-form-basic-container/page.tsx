@@ -6,13 +6,13 @@ import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
 import {useEntity} from '@/lib/redux/entity/useEntity';
 import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {
-    EntityFormState,
     FlexEntityFormProps,
     EntityFlexFormField,
     FormFieldType
 } from '@/components/matrx/Entity/types/entityForm';
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeaderBasic';
+import { EntityFormState } from '@/types/componentConfigTypes';
 
 // Memoized field transformation function
 const createTransformedFields = (entityFields: any[]): EntityFlexFormField[] => {
@@ -77,7 +77,7 @@ const EntityFormContainer = React.memo((
     // Effects
     React.useEffect(() => {
         if (primaryKeyValues) {
-            entity.fetchOne(primaryKeyValues);
+            entity.fetchOne(matrxRecordId);
         }
     }, [primaryKeyValues, entity]);
 

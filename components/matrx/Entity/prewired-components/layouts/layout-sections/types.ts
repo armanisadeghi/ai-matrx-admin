@@ -1,4 +1,9 @@
-import {FormColumnOptions, FormDirectionOptions, FormLayoutOptions} from "@/types/componentConfigTypes";
+import {
+    FormColumnOptions,
+    FormDirectionOptions,
+    FormLayoutOptions, InlineEntityColumnsOptions, inlineEntityOptions, InlineEntityStyleOptions,
+    TextSizeOptions
+} from "@/types/componentConfigTypes";
 
 // Types
 export type LayoutVariant = 'split' | 'sideBySide' | 'stacked';
@@ -48,5 +53,14 @@ export interface ArmaniLayoutProps {
         formEnableSearch?: boolean;
         formIsSinglePage?: boolean;
         formIsFullPage?: boolean;
+        floatingLabel?: boolean;
+        showLabel?: boolean;
+        textSize?: TextSizeOptions;
+        inlineEntityOptions?: {
+            showInlineEntities: boolean;
+            inlineEntityStyle: InlineEntityStyleOptions;
+            inlineEntityColumns: InlineEntityColumnsOptions;
+            editableInlineEntities: boolean;
+        };
     };
 }

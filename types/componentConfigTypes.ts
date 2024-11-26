@@ -1,14 +1,31 @@
 // types.ts
 import { Card } from "@/components/ui";
 import { HTMLMotionProps } from "framer-motion";
-import React from "react";
+import React, { MutableRefObject } from "react";
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+import {EntityKeys} from "@/types/entityTypes";
+import {EntityStateField} from "@/lib/redux/entity/types";
+import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 
 
-export type FormLayoutOptions = 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
-export type FormColumnOptions = number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
-export type FormDirectionOptions = 'row' | 'column' | 'row-reverse' | 'column-reverse';
+export interface LayoutProps {
+    selectedEntity: EntityKeys | null;
+    isExpanded?: boolean;
+    setIsExpanded?: (expanded: boolean) => void;
+    handleEntityChange: (value: EntityKeys) => void;
+    QuickReferenceComponent: React.ReactNode;
+    rightColumnRef: MutableRefObject<HTMLDivElement | null>;
+    selectHeight: number;
+    density: ComponentDensity;
+    animationPreset: AnimationPreset;
+    formOptions?: any;
+    splitRatio?: number;
+    onCreateEntityClick?: () => void;
+    floatingLabel?: boolean;
+}
 
-export interface FlexAnimatedFormProps {
+
+interface FlexAnimatedFormProps {
     fields: FlexFormField[];
     formState: FormState;
     onUpdateField: (name: string, value: any) => void;
@@ -25,13 +42,165 @@ export interface FlexAnimatedFormProps {
     direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
 }
 
+export interface ResponsiveColumns {
+    xs: number;
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number;
+}
 
-// Core Types
-export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type ComponentDensity = 'compact' | 'normal' | 'comfortable';
-export type ComponentVariant = 'default' | 'primary' | 'secondary' | 'destructive' | 'ghost' | 'link';
-export type ComponentState = 'idle' | 'loading' | 'success' | 'error' | 'disabled';
-export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
+
+export const FORM_VARIATIONS = [
+    'fullWidthSinglePage',
+    'fullWidthMultiStep',
+    'twoColumnSinglePage',
+    'threeColumnSinglePage',
+    'restrictedWidthSinglePage',
+    'singlePageModal',
+    'multiStepModal',
+] as const;
+export type FormVariationOptions = typeof FORM_VARIATIONS[number];
+
+// Component Display Options
+export const ANIMATION_PRESETS = ['none', 'subtle', 'smooth', 'energetic', 'playful', 'feedback', 'error'] as const;
+export type AnimationPreset = typeof ANIMATION_PRESETS[number];
+
+export const DENSITIES = ['compact', 'normal', 'comfortable'] as const;
+export type ComponentDensity = typeof DENSITIES[number];
+
+export const COMPONENT_SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
+export type ComponentSize = typeof COMPONENT_SIZES[number];
+
+export const TEXT_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+export type TextSizeOptions = typeof TEXT_SIZES[number];
+
+export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disabled'] as const;
+export type ComponentState = typeof COMPONENT_STATES[number];
+
+// Layout Options
+export const PAGE_LAYOUTS = ['split', 'sideBySide', 'stacked'] as const;
+export type PageLayoutOptions = typeof PAGE_LAYOUTS[number];
+
+export const FORM_LAYOUTS = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline'] as const;
+export type FormLayoutOptions = typeof FORM_LAYOUTS[number];
+export type LayoutVariant = FormLayoutOptions;
+
+export const FORM_DIRECTIONS = ['row', 'column', 'row-reverse', 'column-reverse'] as const;
+export type FormDirectionOptions = typeof FORM_DIRECTIONS[number];
+
+export const FORM_COLUMNS = [1, 2, 3, 4, 5, 6, 'auto'] as const;
+export type FormColumnsOptions = typeof FORM_COLUMNS[number];
+export type GridColumnOptions = FormColumnsOptions | ResponsiveColumns;
+
+// Column Configuration
+export type FormColumnWidthOptions = number | 'auto' | {
+    xs: number;
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number;
+};
+
+// Inline Entity Options
+export const INLINE_ENTITY_COMPONENT_STYLES = ['accordion', 'tabs', 'list'] as const;
+export type InlineEntityComponentStyles = typeof INLINE_ENTITY_COMPONENT_STYLES[number];
+
+export const INLINE_ENTITY_COLUMNS = [1, 2, 3, 4, 5, 6, 'auto'] as const;
+export type InlineEntityColumnsOptions = typeof INLINE_ENTITY_COLUMNS[number];
+
+// Component Types
+export const QUICK_REFERENCE_COMPONENT_TYPES = [
+    'cards',
+    'cardsEnhanced',
+    'accordion',
+    'accordionEnhanced',
+    'list',
+    'select'
+] as const;
+export type QuickReferenceComponentType = typeof QUICK_REFERENCE_COMPONENT_TYPES[number];
+
+export type ComponentVariant = MatrxVariant;
+
+// Type for select options with proper handling of number values
+export interface SelectOption<T = string | number> {
+    label: string;
+    value: T;
+    key: string;
+    disabled?: boolean;
+    description?: string;
+    icon?: React.ReactNode;
+}
+
+// Improved utility function with proper key generation
+export const createSelectOptions = <T extends string | number>(values: readonly T[]): SelectOption<T>[] => {
+    return values.map(value => ({
+        label: value.toString(),
+        value: value,
+        key: `option-${value}`
+    }));
+};
+
+// Define option creators for string-only options
+export const createStringSelectOptions = createSelectOptions<string>;
+// Define option creators for number|string options
+export const createMixedSelectOptions = createSelectOptions<string | number>;
+
+// String-only options
+export const animationPresetOptions = createStringSelectOptions(ANIMATION_PRESETS);
+export const densityOptions = createStringSelectOptions(DENSITIES);
+export const componentSizeOptions = createStringSelectOptions(COMPONENT_SIZES);
+export const textSizeOptions = createStringSelectOptions(TEXT_SIZES);
+export const formLayoutOptions = createStringSelectOptions(FORM_LAYOUTS);
+export const formDirectionOptions = createStringSelectOptions(FORM_DIRECTIONS);
+export const pageLayoutOptions = createStringSelectOptions(PAGE_LAYOUTS);
+export const inlineEntityStyleOptions = createStringSelectOptions(INLINE_ENTITY_COMPONENT_STYLES);
+export const componentStateOptions = createStringSelectOptions(COMPONENT_STATES);
+export const quickReferenceComponentOptions = createStringSelectOptions(QUICK_REFERENCE_COMPONENT_TYPES);
+export const formVariationOptions = createStringSelectOptions(FORM_VARIATIONS);
+
+// Mixed number|string options
+export const formColumnOptions = createMixedSelectOptions(FORM_COLUMNS);
+export const inlineEntityColumnOptions = createMixedSelectOptions(INLINE_ENTITY_COLUMNS);
+
+
+export type inlineEntityOptions = {
+    showInlineEntities: boolean;
+    inlineEntityStyle: InlineEntityComponentStyles;
+    inlineEntityColumns: InlineEntityColumnsOptions;
+    editableInlineEntities: boolean;
+};
+
+export interface EntityFormState {
+    [key: string]: any;
+}
+
+
+export interface ArmaniFormProps {
+    entityKey: EntityKeys;
+    dynamicFieldInfo: EntityStateField[];
+    formData: EntityFormState;
+    onUpdateField: (name: string, value: any) => void;
+    onSubmit?: () => void;
+    onSubmitUpdate?: (data: FormState) => void;
+    onSubmitCreate?: (data: FormState) => void;
+    onSubmitDelete?: () => void;
+    currentStep?: number;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
+    isSinglePage?: boolean;
+    isFullPage?: boolean;
+    columns?: FormColumnsOptions;
+    layout?: FormLayoutOptions;
+    enableSearch?: boolean;
+    direction?: FormDirectionOptions;
+    density?: FormDensity;
+    animationPreset?: AnimationPreset;
+    size?: TextSizeOptions;
+    variant?: MatrxVariant;
+    floatingLabel?: boolean;
+    className?: string;
+}
 
 
 // Base Props Interface
@@ -152,14 +321,6 @@ export interface MatrxRadioGroupProps extends BaseMatrxProps {
     layout?: 'horizontal' | 'vertical' | 'grid';
     columns?: number;
     showSelectAll?: boolean;
-}
-
-export interface SelectOption {
-    label: string;
-    value: string;
-    disabled?: boolean;
-    description?: string;
-    icon?: React.ReactNode;
 }
 
 export interface MatrxSelectProps extends BaseMatrxProps {

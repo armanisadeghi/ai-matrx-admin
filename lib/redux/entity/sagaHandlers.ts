@@ -30,18 +30,22 @@ function* handleFetchOne<TEntity extends EntityKeys>(
         unifiedDatabaseObject
     }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOne', entityKey);
-    entityLogger.log('debug', 'Starting fetchOne', action.payload);
+    entityLogger.log('info', 'Starting fetchOne', action.payload);
 
     let query = api.select("*");
 
-    Object.entries(action.payload.primaryKeyValues).forEach(([key, value]) => {
+    Object.entries(unifiedDatabaseObject.primaryKeysAndValues).forEach(([key, value]) => {
         query = query.eq(key, value);
     });
 
+    console.log('query', query);
+
     const {data, error} = yield query.single();
+    console.log('data', data);
+
     if (error) throw error;
 
-    entityLogger.log('debug', 'Fetched data', data);
+    entityLogger.log('info', 'Fetched data', data);
     return data;
 }
 
@@ -58,7 +62,7 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneAdvanced', entityKey);
 
     try {
-        entityLogger.log('debug', 'Starting fetchOne', action.payload);
+        entityLogger.log('info', 'Starting fetchOne', action.payload);
 
         let query = api.select("*");
 
@@ -72,7 +76,7 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        entityLogger.log('debug', 'Fetch one response', frontendResponse);
+        entityLogger.log('info', 'Fetch one response', frontendResponse);
 
         yield put(actions.fetchOneSuccess(frontendResponse));
     } catch (error: any) {

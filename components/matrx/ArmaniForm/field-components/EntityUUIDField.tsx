@@ -1,7 +1,11 @@
+'use client';
+
 import React, {useState} from 'react';
 import {Wand2, Copy, Check, RotateCcw, History, Trash} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {cn} from "@/utils/cn";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,32 +14,50 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import {EntityBaseFieldProps} from '../EntityBaseField';
 
-interface EntityUUIDFieldProps {
-    value?: string;
-    onChange?: (value: string) => void;
-    placeholder?: string;
-    showHistory?: boolean;
-    maxHistory?: number;
+interface EntityUUIDFieldProps extends EntityBaseFieldProps,
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'size' | 'value'> {
 }
 
 const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
     {
-        value = '',
-        onChange = (value: string) => {
-        },
-        placeholder = "UUID...",
-        showHistory = true,
-        maxHistory = 5
+        entityKey,
+        dynamicFieldInfo: field,
+        value = " ",
+        onChange,
+        density = 'normal',
+        animationPreset = 'subtle',
+        size = 'default',
+        className,
+        variant = "default",
+        disabled = false,
+        floatingLabel = true,
+        labelPosition = 'default',
+        ...props
     }) => {
     const [copied, setCopied] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
-    const [version] = useState(4); // UUID version (4 is random)
+    const [isFocused, setIsFocused] = useState(false);
+
+    const customProps = field.componentProps as Record<string, unknown>;
+    const showHistory = customProps?.showHistory as boolean ?? true;
+    const maxHistory = customProps?.maxHistory as number ?? 5;
 
     // UUID validation regex
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
     const isValidUUID = (uuid: string): boolean => uuidRegex.test(uuid);
+
+    const variantStyles = {
+        destructive: "border-destructive text-destructive",
+        success: "border-success text-success",
+        outline: "border-2",
+        secondary: "bg-secondary text-secondary-foreground",
+        ghost: "border-none bg-transparent",
+        link: "text-primary underline-offset-4 hover:underline",
+        primary: "bg-primary text-primary-foreground",
+        default: "",
+    }[variant];
 
     const generateUUID = () => {
         const oldValue = value;
@@ -47,7 +69,6 @@ const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
 
         onChange(newUuid);
 
-        // Add to history if it's a valid UUID and different from the last one
         if (oldValue && isValidUUID(oldValue) && !history.includes(oldValue)) {
             setHistory(prev => [oldValue, ...prev].slice(0, maxHistory));
         }
@@ -82,34 +103,44 @@ const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
         return isValidUUID(value) ? 'border-green-500' : 'border-red-500';
     };
 
-    return (
+    const renderUUIDInput = () => (
         <div className="relative">
-            <div className="relative">
-                <Input
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
-                    className={`font-mono text-sm pr-32 ${getInputVariantClass()}`}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                    {/* Generate Button */}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0"
-                                onClick={generateUUID}
-                            >
-                                <Wand2 className="h-4 w-4"/>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Generate UUID</TooltipContent>
-                    </Tooltip>
+            <Input
+                id={field.name}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                required={field.isRequired}
+                disabled={disabled}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className={cn(
+                    "font-mono text-sm pr-32",
+                    floatingLabel && "pt-6 pb-2",
+                    variantStyles,
+                    getInputVariantClass(),
+                    disabled ? "cursor-not-allowed opacity-50 bg-muted" : ""
+                )}
+                {...props}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={generateUUID}
+                            disabled={disabled}
+                        >
+                            <Wand2 className="h-4 w-4"/>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Generate UUID</TooltipContent>
+                </Tooltip>
 
-                    {/* Copy Button */}
-                    {value && (
+                {value && (
+                    <>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
@@ -118,20 +149,14 @@ const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
                                     size="sm"
                                     className="h-7 w-7 p-0"
                                     onClick={copyToClipboard}
+                                    disabled={disabled}
                                 >
-                                    {copied ? (
-                                        <Check className="h-4 w-4"/>
-                                    ) : (
-                                         <Copy className="h-4 w-4"/>
-                                     )}
+                                    {copied ? <Check className="h-4 w-4"/> : <Copy className="h-4 w-4"/>}
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>Copy to clipboard</TooltipContent>
                         </Tooltip>
-                    )}
 
-                    {/* Clear Button */}
-                    {value && (
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
@@ -140,57 +165,99 @@ const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
                                     size="sm"
                                     className="h-7 w-7 p-0"
                                     onClick={clearValue}
+                                    disabled={disabled}
                                 >
                                     <Trash className="h-4 w-4"/>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>Clear</TooltipContent>
                         </Tooltip>
-                    )}
+                    </>
+                )}
 
-                    {/* History Dropdown */}
-                    {showHistory && history.length > 0 && (
-                        <DropdownMenu>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-7 w-7 p-0"
-                                        >
-                                            <History className="h-4 w-4"/>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                </TooltipTrigger>
-                                <TooltipContent>History</TooltipContent>
-                            </Tooltip>
-                            <DropdownMenuContent align="end" className="w-[300px]">
-                                {history.map((uuid, index) => (
-                                    <DropdownMenuItem
-                                        key={index}
-                                        onClick={() => restoreFromHistory(uuid)}
-                                        className="flex justify-between items-center font-mono"
+                {showHistory && history.length > 0 && (
+                    <DropdownMenu>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 w-7 p-0"
+                                        disabled={disabled}
                                     >
-                                        <span className="truncate">{uuid}</span>
-                                        <RotateCcw className="h-3 w-3 ml-2 flex-shrink-0"/>
-                                    </DropdownMenuItem>
-                                ))}
-                                <DropdownMenuSeparator/>
+                                        <History className="h-4 w-4"/>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>History</TooltipContent>
+                        </Tooltip>
+                        <DropdownMenuContent align="end" className="w-[300px]">
+                            {history.map((uuid, index) => (
                                 <DropdownMenuItem
-                                    onClick={() => setHistory([])}
-                                    className="text-destructive"
+                                    key={index}
+                                    onClick={() => restoreFromHistory(uuid)}
+                                    className="flex justify-between items-center font-mono"
                                 >
-                                    Clear History
+                                    <span className="truncate">{uuid}</span>
+                                    <RotateCcw className="h-3 w-3 ml-2 flex-shrink-0"/>
                                 </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
-                </div>
+                            ))}
+                            <DropdownMenuSeparator/>
+                            <DropdownMenuItem
+                                onClick={() => setHistory([])}
+                                className="text-destructive"
+                            >
+                                Clear History
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
+        </div>
+    );
 
-            {/* Validation Message */}
+    const standardLayout = (
+        <>
+            <Label
+                htmlFor={field.name}
+                className={cn(
+                    "block text-sm font-medium mb-1",
+                    disabled ? "text-muted-foreground" : "text-foreground"
+                )}
+            >
+                {field.displayName}
+            </Label>
+            {renderUUIDInput()}
+        </>
+    );
+
+    const floatingLabelLayout = (
+        <div className="relative mt-2">
+            {renderUUIDInput()}
+            <Label
+                htmlFor={field.name}
+                className={`absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm ${
+                    (isFocused || value)
+                    ? `absolute -top-2 text-sm ${
+                        disabled
+                        ? '[&]:text-gray-400 dark:[&]:text-gray-400'
+                        : '[&]:text-blue-500 dark:[&]:text-blue-500'
+                    }`
+                    : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
+                }`}
+            >
+                <span className="px-1 relative z-20">
+                    {field.displayName}
+                </span>
+            </Label>
+        </div>
+    );
+
+    return (
+        <div className={cn("relative", className)}>
+            {floatingLabel ? floatingLabelLayout : standardLayout}
             {value && !isValidUUID(value) && (
                 <div className="absolute -bottom-5 left-0 text-xs text-red-500">
                     Invalid UUID format

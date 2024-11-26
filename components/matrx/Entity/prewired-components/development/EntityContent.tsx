@@ -3,17 +3,16 @@
 import React, {useState, useCallback, useMemo} from 'react';
 import {useEntity} from '@/lib/redux/entity/useEntity';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {ArmaniFormProps, EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
-import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types';
 import {
     AnimationPreset,
     ComponentDensity,
-    ComponentSize,
-    FormColumnOptions, FormDirectionOptions,
+    ComponentSize, FormColumnsOptions,
+    FormDirectionOptions,
     FormLayoutOptions
 } from '@/types/componentConfigTypes';
 import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
+import {MatrxRecordId} from "@/lib/redux/entity/types";
 
 export interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -23,7 +22,7 @@ export interface EntityContentProps<TEntity extends EntityKeys> {
     formOptions?: {
         size?: ComponentSize;
         formLayout?: FormLayoutOptions;
-        formColumns?: FormColumnOptions;
+        formColumns?: FormColumnsOptions;
         formDirection?: FormDirectionOptions;
         formEnableSearch?: boolean;
         formIsSinglePage?: boolean;
@@ -36,7 +35,7 @@ export interface EntityContentProps<TEntity extends EntityKeys> {
 const createFormConfig = (formOptions?: EntityContentProps<any>['formOptions']) => ({
     layout: formOptions?.formLayout ?? 'grid',
     direction: formOptions?.formDirection ?? 'row',
-    enableSearch: false,  // TODO: Hard-coded to False for now
+    enableSearch: formOptions?.formEnableSearch ?? false,
     columns: formOptions?.formColumns ?? 2,
     isSinglePage: formOptions?.formIsSinglePage ?? true,
     isFullPage: formOptions?.formIsFullPage ?? true,
@@ -53,7 +52,6 @@ function EntityContent<TEntity extends EntityKeys>(
     }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
     const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
-    const [isLoading, setIsLoading] = useState(true);
 
     const getMatrxRecordId = useCallback(() => {
         if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
@@ -106,12 +104,24 @@ function EntityContent<TEntity extends EntityKeys>(
         );
     }, [entity, getMatrxRecordId]);
 
-    // Memoize the form configuration
-    const formConfig = useMemo(() => createFormConfig(formOptions), [formOptions]);
+    // Sync form data with active record
+    React.useEffect(() => {
+        if (entity.activeRecord) {
+            setFormData(entity.activeRecord);
+        }
+    }, [entity.activeRecord]);
 
-    // Split formProps into stable and dynamic parts
-    const stableFormProps = useMemo(() => ({
+    // Memoize form configuration
+    const formConfig = useMemo(() =>
+            createFormConfig(formOptions),
+        [formOptions]
+    );
+
+    const formProps = useMemo(() => ({
         entityKey,
+        dynamicFieldInfo: entity.fieldInfo,
+        formData,
+
         onUpdateField: handleFieldUpdate,
         onSubmitUpdate: handleUpdate,
         onSubmitCreate: handleCreate,
@@ -122,6 +132,8 @@ function EntityContent<TEntity extends EntityKeys>(
         ...(density && { density }),
     }), [
         entityKey,
+        entity.fieldInfo,
+        formData,
         handleFieldUpdate,
         handleUpdate,
         handleCreate,
@@ -132,15 +144,10 @@ function EntityContent<TEntity extends EntityKeys>(
         density,
     ]);
 
-    React.useEffect(() => {
-        setIsLoading(entity.loadingState.loading);
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord);
-            setIsLoading(false);
-        }
-    }, [entity.activeRecord, entity.loadingState]);
+    if (!entity.entityMetadata) {
+        return <FormLoadingTwoColumn/>;
+    }
 
-    if (!entity.entityMetadata) return <FormLoadingTwoColumn/>;
     if (entity.loadingState.error) {
         return (
             <div className="p-4 text-red-500">
@@ -148,20 +155,19 @@ function EntityContent<TEntity extends EntityKeys>(
             </div>
         );
     }
-    if (isLoading) return <FormLoadingTwoColumn/>;
-    if (!entity.activeRecord) return null;
+
+    const formClassName = className || "p-2";
 
     return (
-        <div className={className || "p-2"}>
-            <ArmaniForm
-                {...stableFormProps}
-                formData={formData}
-            />
+        <div className={formClassName}>
+            {(entity.activeRecord || !entity.primaryKeyMetadata) && (
+                <ArmaniForm {...formProps} />
+            )}
         </div>
     );
 }
 
-
+// Memoize the entire component
 export default React.memo(EntityContent, (prevProps, nextProps) => {
     return prevProps.entityKey === nextProps.entityKey &&
         prevProps.className === nextProps.className &&

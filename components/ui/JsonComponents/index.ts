@@ -5,20 +5,20 @@ import FullEditableJsonViewer, { EditableJsonViewer } from './JsonEditor';
 import SchemaBasedJsonEditor from "./SchemaBasedJsonEditor";
 import UniversalJsonGroup, {createJsonComponent} from "./UniversalJsonGroup";
 
-// Composite object with all components
-const MatrxJson = {
-    Viewer: JsonViewer,
-    FullViewer: FullJsonViewer,
-    EnhancedViewer: EnhancedJsonViewer,
-    EnhancedViewerGroup: EnhancedJsonViewerGroup,
-    Editor: EditableJsonViewer,
-    FullEditor: FullEditableJsonViewer,
-    SchemaEditor: SchemaBasedJsonEditor,
-    universalGroup: UniversalJsonGroup,
-};
+// // Composite object with all components
+// const MatrxJson = {
+//     Viewer: JsonViewer,
+//     FullViewer: FullJsonViewer,
+//     EnhancedViewer: EnhancedJsonViewer,
+//     EnhancedViewerGroup: EnhancedJsonViewerGroup,
+//     Editor: EditableJsonViewer,
+//     FullEditor: FullEditableJsonViewer,
+//     SchemaEditor: SchemaBasedJsonEditor,
+//     universalGroup: UniversalJsonGroup,
+// };
 
 // Default export
-export default MatrxJson;
+// export default MatrxJson;
 
 // Named exports
 export {

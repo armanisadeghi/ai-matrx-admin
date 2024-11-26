@@ -1,37 +1,40 @@
 'use client';
 
-import React, {useState, useRef, useCallback, useMemo} from "react";
+import React, {useState, useRef} from "react";
 import {motion, AnimatePresence} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {EntityButton, EntitySearchInput,} from "./field-components";
 import {
-    EntityButton,
-    EntitySearchInput,
-} from "./field-components";
-
-import {
-    cardVariants, containerVariants,
+    cardVariants,
+    containerVariants,
     densityConfig,
-    getAnimationVariants,
     spacingConfig,
+    getAnimationVariants,
 } from "@/config/ui/entity-layout-config";
-import {ArmaniFormProps, EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 import EntityBaseField, {EntityBaseFieldProps} from "./EntityBaseField";
-import {useEntity} from "@/lib/redux/entity/useEntity";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
 import {EntityStateField} from "@/lib/redux/entity/types";
+import {
+    AccordionLayout,
+    CarouselLayout,
+    GridLayout,
+    MasonryLayout,
+    SectionsLayout,
+    TabsLayout,
+    TimelineLayout
+} from "./FormLayouts";
+import EntityRelationshipWrapper from "./EntityRelationshipWrapper";
+import {ArmaniFormProps, FormColumnsOptions, GridColumnOptions, TextSizeOptions} from "@/types/componentConfigTypes";
 
 export interface FormState {
     [key: string]: any;
 }
 
 export type FormDensity = 'normal' | 'compact' | 'comfortable';
-export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
 
 const ArmaniForm: React.FC<ArmaniFormProps> = (
     {
         entityKey,
+        dynamicFieldInfo,
         formData,
         onUpdateField,
         onSubmit,
@@ -44,26 +47,23 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
         isSinglePage = false,
         className,
         isFullPage = false,
-        columns = 1,
+        columns = 1 as FormColumnsOptions,
         layout = 'grid',
         enableSearch = false,
         direction = 'row',
         density = 'normal',
         animationPreset = 'smooth',
-        size = 'default',
+        size = 'default' as TextSizeOptions,
         variant = 'default',
         floatingLabel = true,
         ...props
     }) => {
-    const entity = useEntity(entityKey);
-    const dynamicFieldInfo = entity?.fieldInfo || [];
-
     const [internalCurrentStep, setInternalCurrentStep] = useState(0);
     const currentStep = externalCurrentStep !== undefined ? externalCurrentStep : internalCurrentStep;
     const formRef = useRef<HTMLDivElement>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [carouselActiveIndex, setCarouselActiveIndex] = useState(0);
-    const formVariants = getAnimationVariants(animationPreset);
+    const animationVariants = getAnimationVariants(animationPreset);
     const containerSpacing = densityConfig[density].spacing;
     const densityStyles = spacingConfig[density];
 
@@ -78,67 +78,57 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
     const onNextStep = externalOnNextStep || internalOnNextStep;
     const onPrevStep = externalOnPrevStep || internalOnPrevStep;
 
-    const filteredFields = useMemo(() => {
-        if (!enableSearch) return dynamicFieldInfo;
-        return dynamicFieldInfo.filter(field =>
+    const filteredFields = enableSearch
+                           ? dynamicFieldInfo.filter(field =>
             field.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             field.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [dynamicFieldInfo, enableSearch, searchTerm]);
+        ) : dynamicFieldInfo;
 
-
-    const entityLogger = EntityLogger.createLoggerWithDefaults(`ArmaniForm`, entityKey);
-
-    const createFieldChangeHandler = useCallback((fieldName: string) => {
-        return (value: any) => {
-            entityLogger.log('info', `Field ${fieldName} changed to:`, value);
-            onUpdateField(fieldName, value);
+    const renderField = (dynamicFieldInfo: EntityStateField) => {
+        const commonProps: EntityBaseFieldProps = {
+            entityKey,
+            dynamicFieldInfo,
+            value: formData[dynamicFieldInfo.name] || '',
+            onChange: (value: any) => onUpdateField(dynamicFieldInfo.name, value),
+            density,
+            animationPreset,
+            size,
+            variant,
+            floatingLabel,
         };
-    }, [onUpdateField]);
+
+        if (dynamicFieldInfo.isNative) {
+            return <EntityBaseField {...commonProps} />;
+        } else {
+            return (
+                <EntityRelationshipWrapper
+                    {...commonProps}
+                    formData={formData}
+                />
+            );
+        }
+    };
 
 
-
-    const renderField = useCallback((dynamicFieldInfo: EntityStateField) => {
-        const fieldName = dynamicFieldInfo.name;
-        const fieldValue = formData[fieldName];
-
-        entityLogger.log('debug', `Rendering field ${fieldName} with value:`, fieldValue);
-
-        return (
-            <EntityBaseField
-                key={`${fieldName}-${dynamicFieldInfo.uniqueFieldId}`}
-                entityKey={entityKey}
-                dynamicFieldInfo={dynamicFieldInfo}
-                value={fieldValue}
-                onChange={createFieldChangeHandler(fieldName)}
-                density={density}
-                animationPreset={animationPreset}
-                size={size}
-                variant={variant}
-                floatingLabel={floatingLabel}
-            />
-        );
-    }, [
-        formData,
-        entityKey,
-        density,
-        animationPreset,
-        size,
-        variant,
-        floatingLabel,
-        createFieldChangeHandler
-    ]);
-
-
-
-    const getGridColumns = () => {
-        if (typeof columns === 'object') {
+    const getGridColumns = (columns: GridColumnOptions, dynamicFieldInfo: any[]) => {
+        if (typeof columns === 'object' && 'xs' in columns) {
             return `grid-cols-${columns.xs} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
         }
-        if (columns === 'auto') {
-            return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+
+        let colValue = columns;
+
+        if (colValue === 'auto') {
+            const fieldCount = dynamicFieldInfo.length;
+
+            if (fieldCount < 7) colValue = 1;
+            else if (fieldCount <= 9) colValue = 2;
+            else if (fieldCount <= 11) colValue = 3;
+            else if (fieldCount <= 13) colValue = 4;
+            else if (fieldCount <= 15) colValue = 5;
+            else colValue = 6;
         }
-        switch (columns) {
+
+        switch (colValue) {
             case 1:
                 return 'grid-cols-1';
             case 2:
@@ -171,249 +161,38 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
         }
     };
 
-    const renderGridLayout = () => (
-        <div className={cn("grid", containerSpacing, getGridColumns(), getFlexDirection())}>
-            <AnimatePresence>
-                {filteredFields.map((field, index) => (
-                    <motion.div
-                        key={`${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`}
-                        variants={cardVariants[animationPreset]}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        transition={{delay: index * 0.1}}
-                    >
-                        {renderField(field)}
-                    </motion.div>
-                ))}
-            </AnimatePresence>
-        </div>
-    );
-
-    const renderSectionFields = (fields: EntityFlexFormField[]) => (
-        <div className={cn(
-            "grid",
-            densityConfig[density].spacing,
-            getGridColumns()
-        )}>
-            {fields.map(field => (
-                <div key={`${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`}>
-                    {renderField(field)}
-                </div>
-            ))}
-        </div>
-    );
-
-    const renderSectionsLayout = () => {
-        const sections = [...new Set(filteredFields.map(field => field.componentProps.section || 'Default'))];
-
-        return (
-            <div className={densityStyles.container}>
-                {sections.map(section => (
-                    <div key={section} className={cn("border-b", densityStyles.padding)}>
-                        <h3 className={cn(
-                            "font-semibold mb-4",
-                            densityConfig[density].fontSize
-                        )}>{section}</h3>
-                        <div className={cn(
-                            "grid",
-                            densityConfig[density].spacing,
-                            getGridColumns()
-                        )}>
-                            {filteredFields
-                                .filter(field => (field.componentProps.section || 'Default') === section)
-                                .map(field => (
-                                    <div
-                                        key={`${section}-${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`}>
-                                        {renderField(field)}
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
-    const renderAccordionLayout = () => {
-        const sections = [...new Set(filteredFields.map(field => field.componentProps.section || 'Default'))];
-        return (
-            <Accordion
-                type="single"
-                collapsible
-                className={cn("w-full", densityStyles.container)}
-            >
-                {sections.map(section => (
-                    <AccordionItem key={section} value={section}>
-                        <AccordionTrigger className={densityConfig[density].fontSize}>
-                            {section}
-                        </AccordionTrigger>
-                        <AccordionContent className={densityStyles.padding}>
-                            <div className={cn(
-                                "grid",
-                                densityConfig[density].spacing,
-                                getGridColumns()
-                            )}>
-                                {filteredFields
-                                    .filter(field => (field.componentProps.section || 'Default') === section)
-                                    .map(field => (
-                                        <div
-                                            key={`${section}-${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`}>
-                                            {renderField(field)}
-                                        </div>
-                                    ))}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-        );
-    };
-
-    const renderTabsLayout = () => {
-        const sections = [...new Set(filteredFields.map(field => field.componentProps.section || 'Default'))];
-        return (
-            <Tabs defaultValue={sections[0]} className={cn("w-full", densityStyles.container)}>
-                <TabsList className={densityConfig[density].fontSize}>
-                    {sections.map(section => (
-                        <TabsTrigger key={section} value={section}>
-                            {section}
-                        </TabsTrigger>
-                    ))}
-                </TabsList>
-                {sections.map(section => (
-                    <TabsContent
-                        key={section}
-                        value={section}
-                        className={densityStyles.padding}
-                    >
-                        <div className={cn(
-                            "grid",
-                            densityConfig[density].spacing,
-                            getGridColumns()
-                        )}>
-                            {filteredFields
-                                .filter(field => (field.componentProps.section || 'Default') === section)
-                                .map(field => (
-                                    <div
-                                        key={`${section}-${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`}>
-                                        {renderField(field)}
-                                    </div>
-                                ))}
-                        </div>
-                    </TabsContent>
-                ))}
-            </Tabs>
-        );
-    };
-
-    const renderMasonryLayout = () => (
-        <div className={cn(
-            "columns-1 sm:columns-2 lg:columns-3 xl:columns-4",
-            densityConfig[density].spacing,
-            getFlexDirection()
-        )}>
-            {filteredFields.map((field) => (
-                <div key={`${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`} className={cn(
-                    "break-inside-avoid",
-                    densityStyles.padding
-                )}>
-                    {renderField(field)}
-                </div>
-            ))}
-        </div>
-    );
-
-    const renderCarouselLayout = () => {
-        return (
-            <div className="relative overflow-hidden">
-                <div className={cn(
-                    "flex transition-transform duration-300 ease-in-out",
-                    densityConfig[density].spacing,
-                    getFlexDirection()
-                )}
-                     style={{transform: `translateX(-${carouselActiveIndex * 100}%)`}}>
-                    {filteredFields.map((field) => (
-                        <div key={`${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`} className={cn(
-                            "w-full flex-shrink-0",
-                            densityStyles.padding
-                        )}>
-                            {renderField(field)}
-                        </div>
-                    ))}
-                </div>
-                <button
-                    onClick={() => setCarouselActiveIndex((prev) => Math.max(prev - 1, 0))}
-                    className={cn(
-                        "absolute left-0 top-1/2 transform -translate-y-1/2",
-                        "bg-primary text-primary-foreground rounded-full",
-                        densityStyles.padding
-                    )}
-                >
-                    &lt;
-                </button>
-                <button
-                    onClick={() => setCarouselActiveIndex((prev) =>
-                        Math.min(prev + 1, filteredFields.length - 1)
-                    )}
-                    className={cn(
-                        "absolute right-0 top-1/2 transform -translate-y-1/2",
-                        "bg-primary text-primary-foreground rounded-full",
-                        densityStyles.padding
-                    )}
-                >
-                    &gt;
-                </button>
-            </div>
-        );
-    };
-
-    const renderTimelineLayout = () => (
-        <div className={cn(
-            "relative",
-            densityStyles.container,
-            getFlexDirection()
-        )}>
-            {filteredFields.map((field, index) => (
-                <div key={`${field.uniqueFieldId}-${Math.random().toString(36).slice(2, 7)}`} className={cn(
-                    "flex",
-                    densityStyles.padding
-                )}>
-                    <div className={cn(
-                        "flex-shrink-0 rounded-full bg-primary",
-                        "flex items-center justify-center text-primary-foreground",
-                        densityConfig[density].iconSize
-                    )}>
-                        {index + 1}
-                    </div>
-                    <div className={cn(
-                        "flex-grow",
-                        densityStyles.padding
-                    )}>
-                        {renderField(field)}
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-
     const renderLayout = () => {
+        const commonProps = {
+            filteredFields,
+            renderField,
+            density,
+            densityStyles,
+            containerSpacing,
+            getGridColumns,
+            getFlexDirection,
+            animationPreset,
+            containerVariants,
+            cardVariants
+        };
+
         switch (layout) {
             case 'sections':
-                return renderSectionsLayout();
+                return <SectionsLayout {...commonProps} />;
             case 'accordion':
-                return renderAccordionLayout();
+                return <AccordionLayout {...commonProps} />;
             case 'tabs':
-                return renderTabsLayout();
+                return <TabsLayout {...commonProps} />;
             case 'masonry':
-                return renderMasonryLayout();
+                return <MasonryLayout {...commonProps} />;
             case 'carousel':
-                return renderCarouselLayout();
+                return <CarouselLayout {...commonProps}
+                                       carouselActiveIndex={carouselActiveIndex}
+                                       setCarouselActiveIndex={setCarouselActiveIndex}/>;
             case 'timeline':
-                return renderTimelineLayout();
+                return <TimelineLayout {...commonProps} />;
             case 'grid':
             default:
-                return renderGridLayout();
+                return <GridLayout {...commonProps} />;
         }
     };
 
@@ -438,12 +217,15 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
                 }}
                 className={cn("h-full", densityStyles.container)}
             >
+
                 {enableSearch && (
                     <EntitySearchInput
-                        type="text"
-                        placeholder="Search fields..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        dynamicFieldInfo={dynamicFieldInfo}
+                        onSearchChange={setSearchTerm}
+                        density={density}
+                        animationPreset={animationPreset}
+                        size={size}
+                        variant={variant}
                         className={densityStyles.inputSize}
                     />
                 )}

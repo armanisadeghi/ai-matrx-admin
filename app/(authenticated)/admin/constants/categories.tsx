@@ -49,6 +49,8 @@ import EntityBrowser from "../components/entities/EntityBrowser";
 import EntityLab from "../components/entities/EntityLab";
 import { Database, DatabaseZap } from "lucide-react";
 import LocalStorageAdmin from "@/app/(authenticated)/admin/components/LocalStorageAdmin";
+import SchemaVisualizer from "../components/SchemaVisualizer";
+import { SchemaVisualizerLayout } from "../components/SchemaVisualizer/SchemaVisualizerLayout";
 
 export const adminCategories = [
     {
@@ -132,25 +134,33 @@ export const adminCategories = [
                 description: "Test Entity Data in the Matrx Table.",
                 icon: <DatabaseZap />,
                 component: <EntityBrowser />
-            }
+            },
+            {
+                title: "Entity Performance Metrics",
+                description: "Monitor and analyze entity operation performance, caching efficiency, and state management.",
+                icon: <Database />,
+                component: <EntityMetrics />
+            },
         ]
     },
     {
-        name: "Local Storage Management",
+        name: "Schema Visualizer",
         icon: <IconFlag className="w-6 h-6"/>,
         features: [
             {
-                title: "Manage Local Storage",
-                description: "Review your local storage and interact with the various options",
+                title: "Schema Visualizer",
+                description: "Visualize the full schema",
                 icon: <IconFlag/>,
-                component: <LocalStorageAdmin/>
+                component:
+                    <SchemaVisualizer/>
+
             },
-            // {
-            //     title: "A/B Testing",
-            //     description: "Manage and track experimental features",
-            //     icon: <IconAdjustmentsBolt/>,
-            //     component: <AdminComponentOne/>
-            // }
+            {
+                title: "Enhanced Schema Visualizer",
+                description: "Visualize the full schema",
+                icon: <IconAdjustmentsBolt/>,
+                component: <SchemaVisualizerLayout/>
+            }
         ]
     },
     {

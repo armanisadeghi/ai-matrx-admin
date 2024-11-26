@@ -1,54 +1,43 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger
-} from '@/components/ui/tooltip'
-import { Info, MinusCircle, PlusCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { MatrxVariant } from './types'
+import React, {useEffect, useState} from 'react';
+import {Input} from '@/components/ui/input';
+import {cn} from '@/lib/utils';
+import {Button} from '@/components/ui/button';
+import {MinusCircle, PlusCircle} from 'lucide-react';
+import {Label} from '@/components/ui/label';
+import {EntityBaseFieldProps} from "../EntityBaseField";
+import {MatrxVariant} from './types';
 
-// Type definitions
-export type NumberType = 'smallint' | 'integer' | 'bigint' | 'decimal'
+type NumberType =
+    'default'
+    | 'smallint'
+    | 'integer'
+    | 'bigint'
+    | 'decimal'
+    | 'real'
+    | 'double'
+    | 'serial'
+    | 'bigserial';
 
 interface NumberTypeConfig {
-    min: number
-    max: number
-    step: number
-    decimals?: number
+    min: number;
+    max: number;
+    step: number;
+    decimals?: number;
 }
 
-export interface EntityNumberInputProps {
-    field: {
-        value: number | null
-        onChange: (value: number | null) => void
-        onBlur?: () => void
-        name: string
-    }
-    componentProps?: {
-        numberType: NumberType
-        label?: string
-        placeholder?: string
-        required?: boolean
-        disabled?: boolean
-        hideControls?: boolean
-        allowNull?: boolean
-        decimals?: number
-        className?: string
-        min?: number
-        max?: number
-        step?: number
-        variant?: MatrxVariant // Added variant prop
-        buttonVariant?: MatrxVariant // Added button variant prop
-    }
+interface EntityNumberInputProps extends EntityBaseFieldProps,
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'size' | 'value'> {
+    value: number | null;
 }
 
 const NUMBER_TYPE_CONFIGS: Record<NumberType, NumberTypeConfig> = {
+    default: {
+        min: -2147483648,
+        max: 2147483647,
+        step: 1
+    },
     smallint: {
         min: -32768,
         max: 32767,
@@ -69,169 +58,189 @@ const NUMBER_TYPE_CONFIGS: Record<NumberType, NumberTypeConfig> = {
         max: 999999999999.999999,
         step: 0.000001,
         decimals: 6
+    },
+    real: {
+        min: -3.4E+38,
+        max: 3.4E+38,
+        step: 0.000001,
+        decimals: 6
+    },
+    double: {
+        min: -1.7E+308,
+        max: 1.7E+308,
+        step: 0.000001,
+        decimals: 15
+    },
+    serial: {
+        min: 1,
+        max: 2147483647,
+        step: 1
+    },
+    bigserial: {
+        min: 1,
+        max: Number.MAX_SAFE_INTEGER,
+        step: 1
     }
-}
+};
 
-export function EntityNumberInput({ field, componentProps }: EntityNumberInputProps) {
-    const {
-        numberType = 'integer',
-        label,
-        placeholder,
-        required = false,
-        disabled = false,
-        hideControls = false,
-        allowNull = true,
-        decimals,
+
+const EntityNumberInput = React.forwardRef<HTMLInputElement, EntityNumberInputProps>((
+    {
+        entityKey,
+        dynamicFieldInfo: field,
+        value,
+        onChange,
+        density = 'normal',
+        animationPreset = 'subtle',
+        size = 'default',
         className,
-        min: customMin,
-        max: customMax,
-        step: customStep,
         variant = 'default',
-        buttonVariant = 'outline'
-    } = componentProps || {}
+        disabled = false,
+        floatingLabel = true,
+        labelPosition = 'default',
+        ...props
+    }, ref) => {
+    const customProps = field.componentProps as Record<string, any>;
 
-    const config = NUMBER_TYPE_CONFIGS[numberType]
-    const min = customMin ?? config.min
-    const max = customMax ?? config.max
-    const step = customStep ?? config.step
-    const actualDecimals = decimals ?? config.decimals ?? 0
+    const numberType = (customProps?.numberType || 'default') as NumberType;
+    const hideControls = customProps?.hideControls === true;
+    const allowNull = customProps?.allowNull !== false;
+    const buttonVariant = (customProps?.buttonVariant || 'outline') as MatrxVariant;
 
-    const [displayValue, setDisplayValue] = useState<string>('')
-    const [error, setError] = useState<string>('')
+    const config = NUMBER_TYPE_CONFIGS[numberType];
+    const min = customProps?.min === 'default' ? config.min : Number(customProps?.min) ?? config.min;
+    const max = customProps?.max === 'default' ? config.max : Number(customProps?.max) ?? config.max;
+    const step = customProps?.step === 'default' ? config.step : Number(customProps?.step) ?? config.step;
+    const decimals = customProps?.decimals === 'default' ? config.decimals
+                                                         : Number(customProps?.decimals) ?? config.decimals ?? 0;
+
+    const [displayValue, setDisplayValue] = useState<string>('');
+    const [error, setError] = useState<string>('');
 
     const formatNumber = (num: number | null): string => {
-        if (num === null) return ''
-        return numberType === 'decimal'
-               ? num.toFixed(actualDecimals)
-               : num.toString()
-    }
+        if (num === null) return '';
+        return numberType === 'decimal' || numberType === 'real' || numberType === 'double'
+               ? num.toFixed(decimals)
+               : num.toString();
+    };
 
     useEffect(() => {
-        setDisplayValue(formatNumber(field.value))
-    }, [field.value])
+        setDisplayValue(formatNumber(value));
+    }, [value]);
 
     const validateAndSetValue = (value: string) => {
         if (!value) {
             if (allowNull) {
-                field.onChange(null)
-                setError('')
+                onChange(null);
+                setError('');
             } else {
-                setError('This field is required')
+                setError('This field is required');
             }
-            return
+            return;
         }
 
-        const numValue = numberType === 'decimal'
+        const numValue = ['decimal', 'real', 'double'].includes(numberType)
                          ? parseFloat(value)
-                         : parseInt(value)
+                         : parseInt(value);
 
         if (isNaN(numValue)) {
-            setError('Please enter a valid number')
-            return
+            setError('Please enter a valid number');
+            return;
         }
 
         if (numValue < min) {
-            setError(`Minimum value is ${min}`)
-            return
+            setError(`Minimum value is ${min}`);
+            return;
         }
 
         if (numValue > max) {
-            setError(`Maximum value is ${max}`)
-            return
+            setError(`Maximum value is ${max}`);
+            return;
         }
 
-        if (numberType === 'decimal') {
+        if (['decimal', 'real', 'double'].includes(numberType)) {
             const decimalPlaces = value.includes('.')
                                   ? value.split('.')[1].length
-                                  : 0
-            if (decimalPlaces > actualDecimals) {
-                setError(`Maximum ${actualDecimals} decimal places allowed`)
-                return
+                                  : 0;
+            if (decimalPlaces > decimals) {
+                setError(`Maximum ${decimals} decimal places allowed`);
+                return;
             }
         }
 
-        setError('')
-        field.onChange(numValue)
-    }
+        setError('');
+        onChange(numValue);
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setDisplayValue(value)
-        validateAndSetValue(value)
-    }
+        const value = e.target.value;
+        setDisplayValue(value);
+        validateAndSetValue(value);
+    };
 
     const handleIncrement = () => {
-        const currentValue = field.value ?? 0
-        const newValue = Math.min(currentValue + step, max)
-        field.onChange(newValue)
-        setDisplayValue(formatNumber(newValue))
-    }
+        const currentValue = value ?? 0;
+        const newValue = Math.min(currentValue + step, max);
+        onChange(newValue);
+        setDisplayValue(formatNumber(newValue));
+    };
 
     const handleDecrement = () => {
-        const currentValue = field.value ?? 0
-        const newValue = Math.max(currentValue - step, min)
-        field.onChange(newValue)
-        setDisplayValue(formatNumber(newValue))
-    }
+        const currentValue = value ?? 0;
+        const newValue = Math.max(currentValue - step, min);
+        onChange(newValue);
+        setDisplayValue(formatNumber(newValue));
+    };
 
-    const handleBlur = () => {
-        if (field.value !== null) {
-            setDisplayValue(formatNumber(field.value))
-        }
-        field.onBlur?.()
-    }
+    const densityClasses = {
+        compact: "h-8 text-sm",
+        normal: "h-10 text-base",
+        comfortable: "h-12 text-lg"
+    }[density];
 
     return (
-        <div className="space-y-2">
-            {label && (
-                <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium">
-                        {label}
-                        {required && <span className="text-destructive">*</span>}
-                    </label>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Range: {min} to {max}</p>
-                                {numberType === 'decimal' && (
-                                    <p>Decimal places: {actualDecimals}</p>
-                                )}
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
+        <div className="w-full">
+            {field.displayName && (
+                <Label
+                    htmlFor={`${entityKey}-${field.name}`}
+                    className={cn(
+                        "block mb-1.5",
+                        disabled && "text-muted-foreground"
+                    )}
+                >
+                    {field.displayName}
+                </Label>
             )}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
                 {!hideControls && (
                     <Button
                         type="button"
                         variant={buttonVariant}
                         size="icon"
                         onClick={handleDecrement}
-                        disabled={disabled || field.value === null || field.value <= min}
+                        disabled={disabled || value === null || value <= min}
+                        className="flex-shrink-0"
                     >
-                        <MinusCircle className="h-4 w-4" />
+                        <MinusCircle className="h-4 w-4"/>
                     </Button>
                 )}
                 <Input
+                    ref={ref}
+                    id={`${entityKey}-${field.name}`}
                     type="number"
                     value={displayValue}
                     onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder={placeholder}
                     disabled={disabled}
                     step={step}
                     min={min}
                     max={max}
-                    variant={variant}
                     className={cn(
                         "font-mono",
+                        densityClasses,
                         error && "border-destructive",
                         className
                     )}
+                    {...props}
                 />
                 {!hideControls && (
                     <Button
@@ -239,17 +248,20 @@ export function EntityNumberInput({ field, componentProps }: EntityNumberInputPr
                         variant={buttonVariant}
                         size="icon"
                         onClick={handleIncrement}
-                        disabled={disabled || field.value === null || field.value >= max}
+                        disabled={disabled || value === null || value >= max}
+                        className="flex-shrink-0"
                     >
-                        <PlusCircle className="h-4 w-4" />
+                        <PlusCircle className="h-4 w-4"/>
                     </Button>
                 )}
             </div>
             {error && (
-                <p className="text-sm text-destructive">{error}</p>
+                <p className="text-sm text-destructive mt-1">{error}</p>
             )}
         </div>
-    )
-}
+    );
+});
 
-export default EntityNumberInput
+EntityNumberInput.displayName = "EntityNumberInput";
+
+export default EntityNumberInput;
