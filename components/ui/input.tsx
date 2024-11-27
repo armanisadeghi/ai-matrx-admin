@@ -94,4 +94,29 @@ const BasicInput = React.forwardRef<HTMLInputElement, InputProps>(
 )
 BasicInput.displayName = "BasicInput"
 
-export { Input, BasicInput };
+interface InputWithPrefixProps extends Omit<InputProps, 'prefix'> {
+    prefix?: React.ReactNode;
+    wrapperClassName?: string;
+}
+
+const InputWithPrefix = React.forwardRef<HTMLInputElement, InputWithPrefixProps>(
+    ({ prefix, className, wrapperClassName, ...props }, ref) => {
+        return (
+            <div className={cn("relative", wrapperClassName)}>
+                {prefix && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        {prefix}
+                    </div>
+                )}
+                <Input
+                    ref={ref}
+                    className={cn(prefix && "pl-10", className)}
+                    {...props}
+                />
+            </div>
+        );
+    }
+);
+InputWithPrefix.displayName = "InputWithPrefix";
+
+export { Input, BasicInput, InputWithPrefix  };

@@ -1,12 +1,4 @@
 import React from 'react';
-import {cn} from "@/lib/utils";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {
     FormLabel,
@@ -25,7 +17,7 @@ import {
     Plus,
     X
 } from "lucide-react";
-import {EntityStateField} from '@/lib/types/schema';
+import { EntityStateField } from '@/lib/redux/entity/types';
 
 interface SmartFieldWrapperProps {
     field: EntityStateField;

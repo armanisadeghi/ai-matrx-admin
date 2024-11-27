@@ -1,7 +1,9 @@
 'use client';
 
+import TextToSpeechPlayer from '@/app/(authenticated)/flash-cards/audio/TextToSpeechPlayerThree';
 import React from 'react';
-import TextToSpeechPlayer from '../TextToSpeechPlayerThree';
+
+
 
 const Page: React.FC = () => {
     return (

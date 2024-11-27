@@ -1,6 +1,8 @@
 // File: actions/ai.ts
 'use server'
 
+// https://claude.ai/chat/af737380-96d6-47ac-931e-cd7e7ef81e5b
+
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import MultiApiBaseAdapter from '@/lib/ai/adapters/multiApiBaseAdapter'

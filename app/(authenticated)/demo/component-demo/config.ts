@@ -41,8 +41,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Entity Select Demo',
+        path: 'entity-select-demo',
         relative: true,
         description: ''
     },

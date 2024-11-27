@@ -172,11 +172,12 @@ export function useQuickReference<TEntity extends EntityKeys>(
     // }, [selection]);
 
     const handleRecordSelect = React.useCallback((recordKey: MatrxRecordId) => {
-        dispatch(actions.setActiveRecord(recordKey));
         if (selection.selectionMode === 'multiple') {
             selection.handleToggleSelection(recordKey);
+            dispatch(actions.setActiveRecord(recordKey));
         } else {
             selection.handleSingleSelection(recordKey);
+            dispatch(actions.setActiveRecord(recordKey));
         }
     }, [selection.selectionMode, actions, dispatch]);
 

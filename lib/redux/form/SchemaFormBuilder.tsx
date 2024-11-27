@@ -1,8 +1,11 @@
 // lib/forms/SchemaFormBuilder.tsx
+import React from "react";
+
 import {FlexAnimatedFormProps} from "@/types/AnimatedFormTypes";
 import {useEntityForm} from "@/lib/redux/form/useEntityForm";
 import {useMemo} from "react";
 import {FlexAnimatedForm} from "@/components/matrx/AnimatedForm";
+import {useSchema} from "@/lib/hooks/useSchema";
 
 interface SchemaFormBuilderProps {
     schemaId: string;

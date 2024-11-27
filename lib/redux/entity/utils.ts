@@ -130,6 +130,16 @@ export interface SelectionState {
     lastSelected?: MatrxRecordId;
 }
 
+export function getRecordIdByRecord<TEntity extends EntityKeys>(
+    entityState: EntityState<TEntity>,
+    record: EntityData<TEntity>
+): MatrxRecordId | null {
+    const entry = Object.entries(entityState.records).find(
+        ([, value]) => value === record
+    );
+    return entry ? (entry[0] as MatrxRecordId) : null;
+}
+
 
 export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
     console.log('addRecordToSelection called', {recordKey});

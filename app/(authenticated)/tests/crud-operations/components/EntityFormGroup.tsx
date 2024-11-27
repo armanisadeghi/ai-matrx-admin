@@ -1,94 +1,29 @@
 import React from 'react';
-import {Button} from '@/components/ui/button';
-import {X, Save, Plus} from 'lucide-react';
-import {DeleteRecordAction} from './helperComponents';
-import {SimpleFormField} from './SimpleFormField';
-import {useEntityForm} from "@/lib/redux/entity/hooks/useEntityForm";
-import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {LoadingState, MatrxRecordId} from '@/lib/redux/entity/types';
-import NormalFormField from './NormalFormField';
-import FormContent from "./NormalFormFieldTwo";
-import ComponentBasedFieldView from "@/app/(authenticated)/tests/crud-operations/components/NormalFormFieldThree";
-import {Callback} from "@/utils/callbackManager";
-
-// Updated component props and types
-export type FormMode = 'view' | 'edit' | 'create';
-
-export interface UseEntityFormState<TEntity extends EntityKeys> {
-    // State
-    viewMode: FormMode;
-    formData: Partial<EntityData<TEntity>>;
-    validationErrors: Record<string, string>;
-    loadingState: LoadingState;
-    lastOperation?: string;
-
-    // Derived Loading Metadata
-    hasError: boolean;
-    errorState: {
-        code?: number;
-        details?: unknown;
-        message: string;
-    };
-    isInitialized: boolean;
-    isLoading: boolean;
-
-    // Metadata
-    entityDisplayName: string;
-    fieldInfo: any[];
-    activeRecord: EntityData<TEntity> | null;
-    matrxRecordId: MatrxRecordId | null;
-    defaultValues: Partial<EntityData<TEntity>>;
-
-    // Actions
-    handleNew: () => void;
-    handleEdit: () => void;
-    handleCancel: () => void;
-    handleSave: () => Promise<void>;
-    handleDelete: () => void;
-    handleFieldChange: (fieldName: string, newValue: any) => Promise<void>;
-
-    // Utilities
-    isFieldReadOnly: (fieldName: string) => boolean;
-    getFieldValue: (fieldName: string) => any;
-    getDisplayValue: (record: EntityData<TEntity>) => string;
-
-    // Record Operations
-    createRecord: (
-        data: Partial<EntityData<TEntity>>,
-        callbacks?: Callback,
-    ) => void;
-
-    updateRecord: (
-        matrxRecordId: MatrxRecordId,
-        data: Partial<EntityData<TEntity>>,
-        callbacks?: Callback,
-    ) => void;
-
-    deleteRecord: (
-        matrxRecordId: MatrxRecordId,
-        callbacks?: Callback,
-    ) => void;
-
-    // Feature flags
-    canCreate: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
-}
+import { Button } from '@/components/ui/button';
+import { X, Save, Plus, Edit } from 'lucide-react';
+import { DeleteRecordAction } from './helperComponents';
+import { useEntityForm, UseEntityFormState } from "@/lib/redux/entity/hooks/useEntityForm";
+import { EntityKeys } from '@/types/entityTypes';
+import ComponentBasedFieldView from './ComponentBasedFieldView';
+import {Form, useToast} from '@/components/ui';
 
 interface FormHeaderProps<TEntity extends EntityKeys> {
     form: UseEntityFormState<TEntity>;
 }
 
-const FormHeader = <TEntity extends EntityKeys>({form}: FormHeaderProps<TEntity>) => {
+export const FormHeader = <TEntity extends EntityKeys>({form}: FormHeaderProps<TEntity>) => {
+    const isEditing = form.viewMode === 'edit';
+    const isCreating = form.viewMode === 'create';
+
     return (
         <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">
-                {form.viewMode === 'create'
+                {isCreating
                  ? `New ${form.entityDisplayName}`
                  : form.activeRecord ? form.getDisplayValue(form.activeRecord) : ''}
             </h1>
             <div className="flex gap-2">
-                {form.viewMode === 'view' && form.canCreate && (
+                {!isCreating && !isEditing && form.canCreate && (
                     <Button
                         onClick={form.handleNew}
                         size="sm"
@@ -98,63 +33,63 @@ const FormHeader = <TEntity extends EntityKeys>({form}: FormHeaderProps<TEntity>
                         New
                     </Button>
                 )}
-                {form.viewMode === 'view' && form.activeRecord && form.canEdit && (
+                {!isCreating && form.activeRecord && form.canEdit && (
                     <Button
-                        onClick={form.handleEdit}
+                        onClick={isEditing ? form.handleSave : form.handleEdit}
                         size="sm"
+                        disabled={isEditing}
                     >
-                        Edit
+                        {isEditing ? (
+                            <><Save className="h-4 w-4 mr-1"/>Save</>
+                        ) : (
+                             <><Edit className="h-4 w-4 mr-1"/>Edit</>
+                         )}
                     </Button>
                 )}
-                {form.viewMode === 'view' && form.activeRecord && form.canDelete && (
+                {!isCreating && !isEditing && form.activeRecord && form.canDelete && (
                     <DeleteRecordAction onDelete={form.handleDelete}/>
+                )}
+                {(isEditing || isCreating) && (
+                    <Button
+                        variant="outline"
+                        onClick={form.handleCancel}
+                        size="sm"
+                    >
+                        <X className="h-4 w-4 mr-1"/>
+                        Cancel
+                    </Button>
                 )}
             </div>
         </div>
     );
 };
 
-interface FormContentProps<TEntity extends EntityKeys> {
-    form: UseEntityFormState<TEntity>;
-}
-
-/*
-const FormContentOne = <TEntity extends EntityKeys>({form}: FormContentProps<TEntity>) => {
-    const renderField = React.useCallback((field) => (
-        <NormalFormField
-            key={field.name}
-            field={field}
-            value={form.getFieldValue(field.name)}
-            isReadOnly={form.isFieldReadOnly(field.name)}
-            onChange={(newValue) => form.handleFieldChange(field.name, newValue)}
-            error={form.validationErrors[field.name]}
-        />
-    ), [form]);
-
-    return (
-        <div className="space-y-4">
-            {form.fieldInfo.map(renderField)}
-        </div>
-    );
-};
-*/
-
 interface FormActionsProps<TEntity extends EntityKeys> {
     form: UseEntityFormState<TEntity>;
 }
 
 const FormActions = <TEntity extends EntityKeys>({form}: FormActionsProps<TEntity>) => {
-    if (form.viewMode === 'view') return null;
+    const isEditing = form.viewMode === 'edit';
+    const isCreating = form.viewMode === 'create';
+
+    if (!isEditing && !isCreating) return null;
 
     return (
-        <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={form.handleCancel}>
+        <div className="flex justify-end gap-2 sticky bottom-0 bg-background p-4 border-t">
+            <Button
+                variant="outline"
+                onClick={form.handleCancel}
+                type="button"
+            >
                 <X className="h-4 w-4 mr-1"/>
                 Cancel
             </Button>
-            <Button onClick={form.handleSave}>
+            <Button
+                type="submit"
+                disabled={form.isSubmitting}
+            >
                 <Save className="h-4 w-4 mr-1"/>
-                {form.viewMode === 'create' ? 'Create' : 'Save'}
+                {isCreating ? 'Create' : 'Save'}
             </Button>
         </div>
     );
@@ -171,7 +106,6 @@ export interface EntityFormGroupRefs {
     handleCreateNew: () => void;
 }
 
-// Updated EntityFormGroup
 function EntityFormGroup<TEntity extends EntityKeys>(
     {
         entityKey,
@@ -181,11 +115,34 @@ function EntityFormGroup<TEntity extends EntityKeys>(
     }: EntityFormGroupProps<TEntity>,
     ref: React.ForwardedRef<EntityFormGroupRefs>
 ) {
+    const { toast } = useToast();
+    const firstFieldRef = React.useRef<HTMLInputElement>(null);
+
     const form = useEntityForm<TEntity>(entityKey, {
         allowCreate,
         allowEdit,
-        allowDelete
+        allowDelete,
+        onError: (error) => {
+            toast({
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+            });
+        },
+        onSuccess: (message) => {
+            toast({
+                title: "Success",
+                description: message,
     });
+        }
+    });
+
+    // Focus first field when entering create mode
+    React.useEffect(() => {
+        if (form.viewMode === 'create' && firstFieldRef.current) {
+            firstFieldRef.current.focus();
+        }
+    }, [form.viewMode]);
 
     React.useImperativeHandle(ref, () => ({
         handleCreateNew: () => {
@@ -197,9 +154,17 @@ function EntityFormGroup<TEntity extends EntityKeys>(
         <div className="space-y-6">
             <FormHeader form={form}/>
             <div className="space-y-6">
-                {/*<FormContent form={form}/>*/}
-                <ComponentBasedFieldView entityKey={entityKey}/>
-                <FormActions form={form}/>
+                <Form {...form.form}>
+                    <form onSubmit={form.form.handleSubmit(form.handleSave)} noValidate className="space-y-6">
+                        <ComponentBasedFieldView
+                            entityKey={entityKey}
+                            form={form.form}
+                            isReadOnly={form.viewMode === 'view'}
+                            firstFieldRef={firstFieldRef}
+                        />
+                        <FormActions form={form}/>
+                    </form>
+                </Form>
             </div>
         </div>
     );

@@ -107,32 +107,32 @@ export const EntityQuickReferenceView = ({entityKey}) => {
 
     const [fetchedSelections, setFetchedSelections] = useState([]);
 
-    const handleFetchSelected = async () => {
-        if (selectedQuickReferences.length === 0) {
-            toast({
-                title: "No Selections",
-                description: "Please select items to fetch",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        try {
-            const fetchedRecords = fetchSelectedRecords(selectedQuickReferences);
-
-            setFetchedSelections(fetchedRecords);
-            toast({
-                title: "Success",
-                description: `Successfully fetched ${fetchedRecords.length} records`,
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
-        }
-    };
+    // const handleFetchSelected = async () => {
+    //     if (selectedQuickReferences.length === 0) {
+    //         toast({
+    //             title: "No Selections",
+    //             description: "Please select items to fetch",
+    //             variant: "destructive",
+    //         });
+    //         return;
+    //     }
+    //
+    //     try {
+    //         const fetchedRecords = fetchSelectedRecords(selectedQuickReferences);
+    //
+    //         setFetchedSelections(fetchedRecords);
+    //         toast({
+    //             title: "Success",
+    //             description: `Successfully fetched ${fetchedRecords.length} records`,
+    //         });
+    //     } catch (error) {
+    //         toast({
+    //             title: "Error",
+    //             description: error.message,
+    //             variant: "destructive",
+    //         });
+    //     }
+    // };
 
     const handleSubmit = (data) => {
         handleSetValidated(true);
@@ -257,11 +257,11 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                             </Button>
                             <Button
                                 variant="secondary"
-                                onClick={handleFetchSelected}
+                                // onClick={handleFetchSelected}
                                 disabled={selectedQuickReferences.length === 0}
                             >
                                 <Download className="h-4 w-4 mr-1"/>
-                                Fetch Selected
+                                Fetch Selected (Not connected anymore)
                             </Button>
                         </CardFooter>
                     </Card>

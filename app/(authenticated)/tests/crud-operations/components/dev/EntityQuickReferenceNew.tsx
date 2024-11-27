@@ -1,3 +1,4 @@
+/*
 import React, {useState, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
 import {GripVertical, X, Plus, Trash, Save, CheckSquare, Copy, Download} from 'lucide-react';
@@ -307,7 +308,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                     </Form>
                 </CardContent>
 
-                {/* Render fetched selections */}
+                {/!* Render fetched selections *!/}
                 {fetchedSelections.map((selection, index) => (
                     <div key={JSON.stringify(selection.primaryKeyValues)}>
                         <TextDivider
@@ -713,3 +714,4 @@ export const EntityQuickReferenceView = ({entityKey}) => {
 };
 
 export default EntityQuickReferenceView;
+*/

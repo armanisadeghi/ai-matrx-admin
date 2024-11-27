@@ -52,13 +52,14 @@ interface FieldComponentProps {
 const getValueOrDefault = (value: any, defaultValue: any) => value ?? defaultValue;
 
 // Base wrapper component for consistent layout
-const FieldWrapper: React.FC<FieldWrapperProps> = ({
-                                                       label,
-                                                       description,
-                                                       children,
-                                                       error,
-                                                       isRequired
-                                                   }) => (
+const FieldWrapper: React.FC<FieldWrapperProps> = (
+    {
+        label,
+        description,
+        children,
+        error,
+        isRequired
+    }) => (
     <div className="flex flex-col space-y-2">
         <div className="flex items-center gap-2">
             <div className="w-1/4 flex items-center gap-2">
@@ -77,13 +78,14 @@ const FieldWrapper: React.FC<FieldWrapperProps> = ({
 );
 
 // Individual field components
-const StringField: React.FC<FieldComponentProps> = ({
-                                                        field,
-                                                        value,
-                                                        isReadOnly,
-                                                        onChange,
-                                                        error
-                                                    }) => (
+const StringField: React.FC<FieldComponentProps> = (
+    {
+        field,
+        value,
+        isReadOnly,
+        onChange,
+        error
+    }) => (
     <FieldWrapper
         label={field.displayName}
         description={field.description}

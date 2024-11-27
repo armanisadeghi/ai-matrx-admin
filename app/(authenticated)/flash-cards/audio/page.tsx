@@ -15,3 +15,6 @@ const Page: React.FC = () => {
 };
 
 export default Page;
+
+
+// GPT: https://chatgpt.com/c/670da00b-98bc-8012-adc3-9e623ce918fa

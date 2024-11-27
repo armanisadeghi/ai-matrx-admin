@@ -60,6 +60,7 @@ export const FORM_VARIATIONS = [
     'singlePageModal',
     'multiStepModal',
 ] as const;
+
 export type FormVariationOptions = typeof FORM_VARIATIONS[number];
 
 // Component Display Options
@@ -82,7 +83,7 @@ export type ComponentState = typeof COMPONENT_STATES[number];
 export const PAGE_LAYOUTS = ['split', 'sideBySide', 'stacked'] as const;
 export type PageLayoutOptions = typeof PAGE_LAYOUTS[number];
 
-export const FORM_LAYOUTS = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline'] as const;
+export const FORM_LAYOUTS = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline', 'TrialFieldTabsLayout', 'TrialFloatingLayout', 'TrialListGroupLayout', 'TrialSplitLayout', 'TrialCardListLayout', 'ZigzagLayout','TrialStackedLayout'] as const;
 export type FormLayoutOptions = typeof FORM_LAYOUTS[number];
 export type LayoutVariant = FormLayoutOptions;
 
@@ -92,6 +93,13 @@ export type FormDirectionOptions = typeof FORM_DIRECTIONS[number];
 export const FORM_COLUMNS = [1, 2, 3, 4, 5, 6, 'auto'] as const;
 export type FormColumnsOptions = typeof FORM_COLUMNS[number];
 export type GridColumnOptions = FormColumnsOptions | ResponsiveColumns;
+
+export const ENTITY_SELECT_STYLES = ['minimal', 'compact', 'card', 'prominent', 'inline', 'floating'] as const;
+export type EntitySelectStyle = typeof ENTITY_SELECT_STYLES[number];
+
+export const ENTITY_SELECT_VARIANTS = ['default', 'grid', 'chips', 'command', 'carousel', 'tree'] as const;
+export type EntitySelectVariant = typeof ENTITY_SELECT_VARIANTS[number];
+
 
 // Column Configuration
 export type FormColumnWidthOptions = number | 'auto' | {
@@ -162,6 +170,9 @@ export const formVariationOptions = createStringSelectOptions(FORM_VARIATIONS);
 // Mixed number|string options
 export const formColumnOptions = createMixedSelectOptions(FORM_COLUMNS);
 export const inlineEntityColumnOptions = createMixedSelectOptions(INLINE_ENTITY_COLUMNS);
+export const entitySelectStyleOptions = createSelectOptions(ENTITY_SELECT_STYLES);
+export const entitySelectVariantOptions = createSelectOptions(ENTITY_SELECT_VARIANTS);
+
 
 
 export type inlineEntityOptions = {

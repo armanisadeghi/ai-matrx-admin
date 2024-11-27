@@ -10,7 +10,7 @@ import {
     clearForm
 } from './slice';
 
-export const useEntityForm = (
+export const useEntityFormOld = (
     formId: string,
     entityKey?: EntityKeys,
     options?: {

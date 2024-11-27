@@ -20,7 +20,14 @@ import {
     MasonryLayout,
     SectionsLayout,
     TabsLayout,
-    TimelineLayout
+    TimelineLayout,
+    TrialCardListLayout,
+    TrialFieldTabsLayout,
+    TrialFloatingLayout,
+    TrialListGroupLayout,
+    TrialSplitLayout,
+    TrialStackedLayout,
+    ZigzagLayout
 } from "./FormLayouts";
 import EntityRelationshipWrapper from "./EntityRelationshipWrapper";
 import {ArmaniFormProps, FormColumnsOptions, GridColumnOptions, TextSizeOptions} from "@/types/componentConfigTypes";
@@ -190,6 +197,23 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
                                        setCarouselActiveIndex={setCarouselActiveIndex}/>;
             case 'timeline':
                 return <TimelineLayout {...commonProps} />;
+
+            case 'TrialFloatingLayout':
+                return <TrialFloatingLayout {...commonProps} />;
+            case 'TrialListGroupLayout':
+                return <TrialListGroupLayout {...commonProps} />;
+            case 'TrialSplitLayout':
+                return <TrialSplitLayout {...commonProps} />;
+            case 'TrialCardListLayout':
+                return <TrialCardListLayout {...commonProps} />;
+            case 'ZigzagLayout':
+                return <ZigzagLayout {...commonProps} />;
+            case 'TrialStackedLayout':
+                return <TrialStackedLayout {...commonProps} />;
+            case 'TrialFieldTabsLayout':
+                return <TrialFieldTabsLayout {...commonProps} />;
+
+
             case 'grid':
             default:
                 return <GridLayout {...commonProps} />;

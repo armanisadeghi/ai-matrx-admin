@@ -137,6 +137,7 @@ function EntityFetchByPkAccordion(
                         <AccordionContent>
                             <div className="bg-background grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
                                 {fieldInfo.map(field => {
+                                    if (field.isPrimaryKey) return null;
                                     const fieldId = `${recordId}-${field.name}`;
                                     const isExpanded = expandedFields[fieldId];
                                     const fieldValue = record[field.name]?.toString() || '';

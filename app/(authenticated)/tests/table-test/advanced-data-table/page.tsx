@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
-import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
+import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeaderSelect';
 import AdvancedDataTable from '@/components/matrx/Entity/DataTable/AdvancedDataTable';
 import { ButtonVariant, ButtonSize } from '@/components/matrx/Entity/types/tableBuilderTypes';
 import {

@@ -120,7 +120,7 @@ const MatrxButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
                         className="absolute inset-0 pointer-events-none"
                     >
             <span
-                            className="absolute bg-white opacity-30 rounded-full animate-ripple"
+                className="absolute bg-white opacity-30 rounded-full animate-ripple"
                 style={rippleStyle}
             />
           </span>
@@ -149,8 +149,8 @@ const MatrxButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
             </span>
           </span>
                 ) : (
-                    buttonContent
-                )}
+                     buttonContent
+                 )}
             </Comp>
         )
     }
@@ -158,14 +158,13 @@ const MatrxButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
 MatrxButton.displayName = "MatrxButton"
 
 
-interface ButtonGroupProps {
+interface ButtonGroupProps extends ButtonProps{
     children: React.ReactNode;
     direction?: 'row' | 'column';
     spacing?: 'none' | 'small' | 'medium' | 'large';
     fullWidth?: boolean;
     className?: string;
 }
-
 
 const ButtonGroup: React.FC<ButtonGroupProps> = (
     {
@@ -193,13 +192,18 @@ const ButtonGroup: React.FC<ButtonGroupProps> = (
 
     return (
         <div
-            className={`flex ${direction === 'row' ? 'flex-row' : 'flex-col'} ${
-                spacingClasses[spacing]
-            } ${fullWidth ? 'w-full' : ''} ${className}`}
+            className={cn(
+                'flex',
+                direction === 'row' ? 'flex-row' : 'flex-col',
+                spacingClasses[spacing],
+                fullWidth ? 'w-full' : '',
+                className
+            )}
         >
             {React.Children.map(childrenArray, (child, index) => {
-                if (React.isValidElement(child) && child.type === MatrxButton) {
-                    return React.cloneElement(child as React.ReactElement<ButtonProps>, {
+                if (React.isValidElement(child)) {
+                    return React.cloneElement(child, {
+                        ...child.props,
                         groupPosition: groupPosition(index, childrenArray.length),
                         fullWidth: fullWidth,
                     });

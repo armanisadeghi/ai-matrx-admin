@@ -1,7 +1,7 @@
 // Export primary components in the Entity folder
 
 export { default as EntityBrowser } from './EntityBrowser';
-export { default as EntityCardHeader } from './EntityCardHeader';
+export { default as EntityCardHeader } from './EntityCardHeaderSelect';
 export { default as EntityDirectory } from './EntityDirectory';
 export { default as EntityTableContainer } from './EntityTableContainer';
 

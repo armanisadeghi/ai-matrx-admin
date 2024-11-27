@@ -47,6 +47,7 @@ function EntityFkAccordion(
         toggleFieldExpansion,
         setHoveredItem,
         truncateText,
+
     } = useFetchRelated({
         entityKey,
         dynamicFieldInfo,

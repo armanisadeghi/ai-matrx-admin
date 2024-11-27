@@ -34,19 +34,6 @@ function EntityQuickReferenceList<TEntity extends EntityKeys>(
         animationPreset = 'smooth',
         ...rest
     }: EntityQuickReferenceListProps<TEntity>) {
-
-    console.log('-- Entity Quick Reference List starting...');
-    console.log('------ entityKey:', entityKey);
-    console.log('All Props:', {
-        entityKey,
-        onCreateEntityClick,
-        showCreateNewButton,
-        className,
-        density,
-        animationPreset,
-        ...rest
-    });
-
     const {
         quickReferenceRecords,
         selectionMode,
@@ -55,7 +42,6 @@ function EntityQuickReferenceList<TEntity extends EntityKeys>(
         toggleSelectionMode,
     } = useQuickReference(entityKey);
 
-    // Density-based styling configurations
     const densityConfig = React.useMemo(() => {
         const configs = {
             compact: {

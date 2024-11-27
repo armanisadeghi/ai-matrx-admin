@@ -1,6 +1,5 @@
 // components/ui/index.tsx
 
-export {default as MatrxJson} from './JsonComponents';
 export * from './JsonComponents';
 
 export {Accordion, AccordionItem, AccordionTrigger, AccordionContent} from './accordion'

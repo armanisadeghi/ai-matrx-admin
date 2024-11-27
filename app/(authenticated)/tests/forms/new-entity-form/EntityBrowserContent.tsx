@@ -4,7 +4,7 @@
 import React, {useState} from 'react';
 import {EntityKeys} from '@/types/entityTypes';
 import {Card, CardContent} from '@/components/ui/card';
-import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
+import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeaderSelect';
 import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import {ThreePanelLayout} from "./ThreePanelLayout";

@@ -42,7 +42,6 @@ export { default as EntityJsonEditor } from './EntityJsonEditor';
 export { default as EntityNumberInput } from './EntityNumberInput';
 export { default as EntityPhoneInput } from './EntityPhoneInput';
 export { default as EntityRadioGroup } from './EntityRadioGroup';
-export { RelationalInput, RelationalButton } from './EntityRelationshipInput';
 export { default as EntitySearchInput } from './EntitySearchInput';
 export { default as EntitySelect } from './EntitySelect';
 export { default as EntitySheet } from './EntitySheet';
@@ -58,6 +57,11 @@ export { default as ImageDisplay } from './image-display';
 import EntityShowSelectedAccordion from './wired/EntityShowSelectedAccordion';
 import EntityFetchByPkAccordion from "./wired/EntityFetchByPkAccordion";
 import EntityFkAccordion from "@/components/matrx/ArmaniForm/field-components/wired/EntityFkAccordion";
+import RelatedEntityAccordion
+    from "@/components/matrx/ArmaniForm/field-components/wired/accordion-modes/RelatedEntityAccordion";
+
+
+export { RelationalInput, RelationalButton } from './EntityRelationshipInput';
 
 export const ENTITY_FIELD_COMPONENTS = {
     INPUT: EntityInput,
@@ -87,6 +91,7 @@ export const ENTITY_FIELD_COMPONENTS = {
     STAR_RATING: EntityStarRating,
     TIME_PICKER: EntityTimePicker,
     ACCORDION_VIEW: EntityFkAccordion,
+    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
     ACCORDION_SELECTED: EntityShowSelectedAccordion,
 } as const;
 

@@ -2,6 +2,7 @@
 
 import {useEntity} from "@/lib/redux/entity/useEntity";
 import {useSchema} from "@/providers/SchemaProvider";
+import {useEntityForm} from "@/lib/redux/form/useEntityForm";
 
 export const useSchemaForm = (
     schemaId: string,

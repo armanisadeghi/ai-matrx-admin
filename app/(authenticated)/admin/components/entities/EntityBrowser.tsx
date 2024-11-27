@@ -5,10 +5,9 @@ import {useState, useEffect, Suspense} from 'react';
 import {useEntity} from '@/lib/redux/entity/useEntity';
 import {EntityKeys} from '@/types/entityTypes';
 import {Card, CardContent,} from "@/components/ui/card";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import MatrxTable from '@/app/(authenticated)/tests/matrx-table/components/MatrxTable';
-import PreWiredCardHeader from './PreWiredCardHeader';
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
+import EntityCardHeaderSelect from '@/components/matrx/Entity/prewired-components/entity-management/parts/CardHeaderSelect';
 
 const EntityTableContainer = ({entityKey}: { entityKey: EntityKeys }) => {
     const entity = useEntity(entityKey);
@@ -51,7 +50,7 @@ const EntityBrowser = () => {
 
     return (
         <Card className="w-full">
-            <PreWiredCardHeader onEntityChange={setSelectedEntity}/>
+            <EntityCardHeaderSelect onEntityChange={setSelectedEntity}/>
             <CardContent>
                 <Suspense fallback={<MatrxTableLoading/>}>
                     {selectedEntity ? (

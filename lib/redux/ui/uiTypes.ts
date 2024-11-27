@@ -3,6 +3,7 @@ import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types
 import {TargetAndTransition, VariantLabels} from "framer-motion";
 import {TransitionProps} from "@vue/runtime-dom";
 import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
+import {EntityStateField} from "@/lib/redux/entity/types";
 
 
 interface UISchemaField {
@@ -37,37 +38,6 @@ interface EntityMetadata {
 }
 
 
-export interface EntityStateField {
-    name: AllEntityFieldKeys;
-    displayName: string;
-    isPrimaryKey: boolean;
-    isDisplayField?: boolean;
-
-    enumValues: string[];
-    defaultValue: any;
-    defaultGeneratorFunction: string;
-
-
-    dataType: FieldDataOptionsType;
-
-    isArray: boolean;
-
-    structure: DataStructure;
-
-    isNative: boolean;
-
-    defaultComponent?: string;
-    componentProps: ComponentProps;
-
-    isRequired: boolean;
-    maxLength: number;
-    validationFunctions: string[];
-    exclusionRules: string[];
-
-    entityName: EntityKeys;
-    databaseTable: AnyEntityDatabaseTable;
-    description: string;
-}
 
 
 interface BaseComponentProps {

@@ -8,9 +8,10 @@ import {
     ForeignKeyReference,
     TypeBrand
 } from "@/types/entityTypes";
-import {AnimationPreset, FormDensity, FormState} from "@/components/matrx/ArmaniForm/ArmaniForm";
+import {FormDensity, FormState} from "@/components/matrx/ArmaniForm/ArmaniForm";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {ComponentProps, EntityStateField} from "@/lib/redux/entity/types";
+import {AnimationPreset, EntityFormState} from "@/types/componentConfigTypes";
 
 export type FormFieldType =
     'text'

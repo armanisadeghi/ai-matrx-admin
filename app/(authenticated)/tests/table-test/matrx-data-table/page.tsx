@@ -4,7 +4,7 @@
 import {useState} from 'react';
 import {Card, CardContent} from '@/components/ui/card';
 import {EntityKeys} from '@/types/entityTypes';
-import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
+import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeaderSelect';
 import {EntityBaseTable} from "@/components/matrx/Entity/DataTable/BaseTable";
 
 export default function DataBrowserPage() {

@@ -4,17 +4,11 @@
 import React, {useState} from 'react';
 import {EntityKeys} from '@/types/entityTypes';
 import {Card, CardContent} from '@/components/ui/card';
-import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
 import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
-// import {EntityQuickReferenceView} from '../components/dev/EntityQuickReferenceView';
-// import EntityQuickReferenceNew from '../components/dev/EntityQuickReferenceNew';
-// import EntityAnalyzer from "@/components/admin/EntityAnalyzer";
-// import EntityAnalyzerEditor from '@/components/admin/redux/analyzers/EntityAnalyzerEditor';
-// import { PanelLeft } from '@/components/matrx/resizable/Panels';
-// import {EntityTestView} from "@/app/(authenticated)/tests/crud-operations/basic-crud/EntityQuickTestView";
-// import {EntityPage} from "@/app/(authenticated)/tests/crud-operations/components/EntityPage";
 import {EntityThreePanelTester} from "@/components/matrx/Entity/layouts/EntityThreePanelTester";
+import EntityCardHeaderSelect
+    from "@/components/matrx/Entity/prewired-components/entity-management/parts/CardHeaderSelect";
 
 
 const EntityBrowserContent: React.FC = () => {
@@ -24,7 +18,7 @@ const EntityBrowserContent: React.FC = () => {
     return (
         <>
             <Card>
-                <PreWiredCardHeader onEntityChange={setSelectedEntity}/>
+                <EntityCardHeaderSelect onEntityChange={setSelectedEntity}/>
                 <CardContent className="p-0">
                     {selectedEntity ? (
                         <EntityThreePanelTester entityKey={selectedEntity}/>

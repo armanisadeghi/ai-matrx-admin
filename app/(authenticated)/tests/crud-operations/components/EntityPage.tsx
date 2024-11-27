@@ -2,8 +2,8 @@
 import * as React from 'react';
 import {EntityKeys} from '@/types/entityTypes';
 import {ResizableLayout} from './ResizableLayout';
-import {QuickReferenceSidebar} from './QuickReferenceSidebar';
 import {EntityFormPanel, EntityFormPanelRefs} from './EntityFormPanel';
+import { QuickReferenceSidebar } from '@/components/matrx/Entity/prewired-components/quick-reference/QuickReferenceSidebarBasic';
 
 interface EntityPageProps<TEntity extends EntityKeys> {
     entityKey: TEntity;

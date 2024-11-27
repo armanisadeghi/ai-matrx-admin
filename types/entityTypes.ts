@@ -807,12 +807,12 @@ type EntitySliceState<TEntity extends EntityKeys> = {
  */
 export type EntityData<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
-                                                                  ? TField
-                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+      ? TField
+      : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 } & {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
-                                                                  ? TField
-                                                                  : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+          ? TField
+          : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;
@@ -834,8 +834,9 @@ type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 
 import {Draft} from 'immer';
-import {EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
+import {EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
 import {ComponentProps, DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {SchemaField} from "@/lib/redux/schema/concepts/types";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true

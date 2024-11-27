@@ -4,13 +4,12 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {Card, CardContent} from '@/components/ui/card';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeader';
+import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeaderSelect';
 import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
 import {useEntity} from '@/lib/redux/entity/useEntity';
-import {EntityKeys} from '@/types/entityTypes';
+import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {QuickReferenceRecord} from '@/lib/redux/entity/types';
 import {
-    EntityFormState,
     FlexEntityFormProps,
     EntityFlexFormField,
     FormFieldType
@@ -23,18 +22,19 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
     const [selectedRecordKey, setSelectedRecordKey] = useState<string | null>(null);
     const [currentPrimaryKeyValues, setCurrentPrimaryKeyValues] = useState<Record<string, any> | null>(null);
 
-    const currentRecord = useMemo(() => {
-        if (!currentPrimaryKeyValues || !entity.entityMetadata?.primaryKeyMetadata) return null;
+    const matrxRecordId = createRecordKey(entity.entityMetadata.primaryKeyMetadata, currentPrimaryKeyValues);
 
-        const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, currentPrimaryKeyValues);
-        return entity.allRecords[recordKey];
-    }, [currentPrimaryKeyValues, entity.allRecords, entity.entityMetadata?.primaryKeyMetadata]);
+    const currentRecord = useMemo(() => {
+        if (!matrxRecordId) return null;
+        return entity.allRecords[matrxRecordId];
+    }, [matrxRecordId]);
+
 
     useEffect(() => {
-        if (entity.entityMetadata) {
+        if (entityKey) {
             entity.fetchQuickReference();
         }
-    }, [entity.entityMetadata]);
+    }, [entityKey]);
 
 
     const handleRecordSelect = async (value: string) => {
@@ -45,7 +45,7 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
         console.log('Selected record primaryKeyValues:', primaryKeyValues);
         setCurrentPrimaryKeyValues(primaryKeyValues);
 
-        entity.fetchOne(primaryKeyValues);
+        entity.fetchOne(matrxRecordId);
     };
 
     useEffect(() => {
@@ -55,15 +55,16 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
         }
     }, [currentRecord, entity.loadingState.loading]);
 
+
     const transformFieldsToFormFields = (entityFields: any[]): EntityFlexFormField[] => {
         if (!entityFields) return [];
 
         return entityFields.map(field => ({
             name: field.name,
             label: field.displayName || field.name,
-            type: 'text' as FormFieldType,
-            required: false,
-            disabled: false
+            type: field.dataType as FormFieldType,
+            required: field.isRequired,
+            disabled: false,
         }));
     };
 
@@ -92,7 +93,7 @@ const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
 
         return {
             fields: formFields,
-            formState: entity.activeRecord as EntityFormState,
+            formState: entity.activeRecord as EntityData<EntityKeys>,
             onUpdateField: (name: string, value: any) => {
                 if (!entity.activeRecord || !entity.primaryKeyMetadata) return;
 
@@ -166,75 +167,3 @@ const DynamicEntityForm: React.FC = () => {
 };
 
 export default DynamicEntityForm;
-
-
-
-// For Reference ========================================
-
-
-/*
-interface EntityFormState {
-    [key: string]: any;
-}
-
-interface FlexEntityFormProps {
-    fields: EntityFlexFormField[];
-    formState: EntityFormState;
-    onUpdateField: (name: string, value: any) => void;
-    onSubmit: () => void;
-    currentStep?: number;
-    onNextStep?: () => void;
-    onPrevStep?: () => void;
-    isSinglePage?: boolean;
-    className?: string;
-    isFullPage?: boolean;
-    columns?: number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
-    layout?: 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
-    enableSearch?: boolean;
-    direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-}
-
-interface EntityFlexFormField {
-    name: string;
-    label: string;
-    type: FormFieldType;
-    options?: string[];
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    section?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-    accept?: string;
-    multiple?: boolean;
-    src?: string;
-    alt?: string;
-    jsonSchema?: object;
-}
-
-type FormFieldType =
-    'text'
-    | 'email'
-    | 'number'
-    | 'select'
-    | 'textarea'
-    | 'checkbox'
-    | 'radio'
-    | 'password'
-    | 'date'
-    | 'time'
-    | 'datetime-local'
-    | 'month'
-    | 'week'
-    | 'tel'
-    | 'url'
-    | 'color'
-    | 'slider'
-    | 'switch'
-    | 'json'
-    | 'file'
-    | 'image'
-    | 'rating';
-
-*/

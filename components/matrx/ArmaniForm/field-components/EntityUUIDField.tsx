@@ -268,3 +268,6 @@ const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
 };
 
 export default EntityUUIDField;
+
+
+// Original: https://claude.ai/chat/876dcb42-9321-4360-b618-89999ff43e8a

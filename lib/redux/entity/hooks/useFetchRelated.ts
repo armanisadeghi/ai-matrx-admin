@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
@@ -7,6 +7,7 @@ import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types';
 import {Callback, callbackManager} from '@/utils/callbackManager';
 import * as React from "react";
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 
 interface UseFetchRelatedParams {
     entityKey: EntityKeys;
@@ -15,15 +16,32 @@ interface UseFetchRelatedParams {
     activeEntityKey?: EntityKeys;
 }
 
+export type ViewModeOption = 'view' | 'edit' | 'create';
+
+export interface EntityBaseFieldProps {
+    entityKey: EntityKeys;
+    dynamicFieldInfo: EntityStateField;
+    value: any;
+    onChange: (value: any) => void;
+    density?: 'compact' | 'normal' | 'comfortable';
+    animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful' |  'feedback' | 'error';
+    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    variant?: MatrxVariant;
+    labelPosition?: 'default' | 'left' | 'right' | 'top' | 'bottom';
+    disabled?: boolean;
+    floatingLabel?: boolean;
+    className?: string;
+}
+
 interface UseFetchRelatedReturn {
-    records: Record<string, any>;
-    fieldInfo: any[];
+    records: Record<MatrxRecordId, any>;
     displayField: string;
     expandedFields: Record<string, boolean>;
     hoveredItem: string | null;
     toggleFieldExpansion: (fieldId: string) => void;
     setHoveredItem: (itemId: string | null) => void;
     truncateText: (text: string, maxLength?: number) => string;
+    matrxRecordId: MatrxRecordId | null;
 }
 
 export function useFetchRelated(
@@ -34,9 +52,13 @@ export function useFetchRelated(
         activeEntityKey,
     }: UseFetchRelatedParams): UseFetchRelatedReturn {
     const quickReference = useQuickReference(entityKey);
+
     const dispatch = useAppDispatch();
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+
+    const [viewMode, setViewMode] = useState<ViewModeOption>('view');
+
 
     const fieldValue = React.useMemo(() => {
         if (!formData || !dynamicFieldInfo?.entityName) {
@@ -45,7 +67,7 @@ export function useFetchRelated(
         return formData[dynamicFieldInfo.entityName];
     }, [formData, dynamicFieldInfo]);
 
-    const matrxRecordId = useAppSelector(state =>
+    const matrxRecordId: MatrxRecordId = useAppSelector(state =>
         fieldValue ? selectors.selectMatrxRecordIdFromValue(state, fieldValue) : null
     );
 
@@ -79,7 +101,7 @@ export function useFetchRelated(
         }
     }, [entityKey, matrxRecordId, fetchOne, records]);
 
-    const [expandedFields, setExpandedFields] = React.useState<Record<string, boolean>>({});
+    const [expandedFields, setExpandedFields] = React.useState<Record<MatrxRecordId, boolean>>({});
     const [hoveredItem, setHoveredItem] = React.useState<string | null>(null);
 
     const toggleFieldExpansion = (fieldId: string) => {
@@ -94,14 +116,18 @@ export function useFetchRelated(
         return text.slice(0, maxLength) + '...';
     };
 
+
+
+
+
     return {
         records,
-        fieldInfo,
         displayField,
         expandedFields,
         hoveredItem,
         toggleFieldExpansion,
         setHoveredItem,
         truncateText,
+        matrxRecordId,
     };
 }

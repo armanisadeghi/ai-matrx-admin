@@ -6,7 +6,6 @@ import { FlexAnimatedForm } from '@/components/matrx/AnimatedForm';
 import { useEntity } from '@/lib/redux/entity/useEntity';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import {
-    EntityFormState,
     FlexEntityFormProps,
     EntityFlexFormField,
     FormFieldType
@@ -16,6 +15,7 @@ import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWir
 import { EntityError, EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types';
 import { mapFieldDataTypeToFormFieldType } from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
+import {EntityFormState} from "@/types/componentConfigTypes";
 
 // Memoized Configurations
 const DEFAULT_FORM_CONFIG = {

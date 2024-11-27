@@ -4,9 +4,8 @@ import {createSelector} from '@reduxjs/toolkit';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {RootState} from "@/lib/redux/store";
 import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
-import {createRecordKey, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
+import {createRecordKey, getRecordIdByRecord, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
 import EntityLogger from "@/lib/redux/entity/entityLogger";
-import {FormFieldType} from "@/components/matrx/AnimatedForm/FlexAnimatedForm";
 
 const trace = "ENTITY SELECTORS";
 
@@ -257,12 +256,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectRecordIdByRecord = createSelector(
         [selectEntity, (_: RootState, record: EntityData<TEntity>) => record],
-        (entity, record) => {
-            const entry = Object.entries(entity.records).find(
-                ([, value]) => value === record
-            );
-            return entry ? entry[0] as MatrxRecordId : null;
-        }
+        (entityState, record) => getRecordIdByRecord(entityState, record)
     );
 
     // Pagination Selectors
@@ -766,6 +760,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectActiveRecord,
         selectIsQuickReferenceFetchComplete,
         selectQuickReferenceState,
+
         selectRecordIdByRecord,
 
         selectSelectedRecordsWithKey,

@@ -759,7 +759,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                 }
             )
         ;
-
         return {
             reducer: slice.reducer,
             actions: slice.actions,

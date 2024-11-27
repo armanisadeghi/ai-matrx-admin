@@ -49,7 +49,7 @@ export interface PrewiredComponentConfig {
 
 
 import {ReactNode} from 'react';
-import {EntityStateField} from "@/lib/redux/ui/uiTypes";
+import {EntityStateField} from "@/lib/redux/entity/types";
 
 export interface ActionTargetConfig {
     location: RenderLocation;

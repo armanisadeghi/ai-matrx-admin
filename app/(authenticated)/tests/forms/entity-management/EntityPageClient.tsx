@@ -53,8 +53,11 @@ import {
     PageLayoutOptions,
     textSizeOptions,
     TextSizeOptions,
-    formVariationOptions, FormVariationOptions, QuickReferenceComponentType,
+    formVariationOptions,
+    FormVariationOptions,
+    QuickReferenceComponentType,
     SelectOption,
+    quickReferenceComponentOptions
 } from '@/types/componentConfigTypes';
 import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout';
 import {Slider} from "@/components/ui";
@@ -320,6 +323,27 @@ const EntityPageClient = () => {
                         }
                     />
                     <span className="text-sm text-muted-foreground">Editable Entities</span>
+                </div>
+            </ControlGroup>
+            <ControlGroup>
+                <CompactSelectControl
+                    label="Reference"
+                    icon={List}
+                    value={settings.quickReferenceType}
+                    options={quickReferenceComponentOptions}
+                    onChange={(value) => setSettings(prev => ({
+                        ...prev,
+                        quickReferenceType: value
+                    }))}
+                />
+                <div className="flex items-center gap-2 bg-secondary/50 rounded-md px-2 py-1">
+                    <Maximize className="h-4 w-4 text-muted-foreground"/>
+                    <Switch
+                        id="fullscreen"
+                        checked={settings.isFullScreen}
+                        onCheckedChange={(checked) => setSettings(prev => ({...prev, isFullScreen: checked}))}
+                        className="data-[state=checked]:bg-primary"
+                    />
                 </div>
             </ControlGroup>
         </div>

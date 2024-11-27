@@ -1,169 +1,175 @@
+'use client';
+
 import React from 'react';
+import {CalendarIcon} from "lucide-react";
+import {cn} from "@/utils/cn";
+import {format, isValid} from 'date-fns';
+import {Label} from "@/components/ui/label";
 import {
     MatrxDatePicker,
     MatrxDateRangePicker,
     MatrxDatePickerWithPresets
 } from '@/components/ui';
-import {format, isValid, parse} from 'date-fns';
-import {CalendarIcon} from "lucide-react";
-import {MatrxVariant} from './types';
-import {TypeBrand} from "@/types/entityTypes";
-import {DataStructure, FieldDataOptionsType, FormFieldType} from "@/components/matrx/Entity/types/entityForm";
-import {generateClass, getValidVariant, parseDate, parsePresetOptions} from './helpers/component-utils';
+import {EntityBaseFieldProps} from "../EntityBaseField";
+import {MatrxVariant} from "../field-components/types";
 
-// Types from our Matrx components
+interface DateRange {
+    from: Date;
+    to: Date;
+}
+
 interface PresetOption {
     label: string;
     value: number;
 }
 
-type DateRange = {
-    from: Date;
-    to: Date;
-};
-
-export interface EntityFlexFormField {
-    name: string;
-    label: string;
-    type: FormFieldType;
-    options?: string[];
-    placeholder?: string;
-    required?: boolean;
-    disabled?: boolean;
-    section?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-    accept?: string;
-    multiple?: boolean;
-    src?: string;
-    alt?: string;
-    jsonSchema?: object;
-    actionKeys?: string[];
-    actionProps?: any;
-    inlineFields?: object[]; // TODO: Type this correctly.
-    defaultValue?: any;
-    validationFunctions?: string[];
-    maxLength?: number;
-    defaultComponent?: string;
-    subComponent?: string;
-    componentProps?: Record<string, unknown>;
-    isPrimaryKey?: boolean;
-    isDisplayField?: boolean;
-    isRequired?: boolean;
-    isNative?: boolean;
-    dataType?: FieldDataOptionsType;
-    isArray?: boolean;
-    structure?: DataStructure;
-    typeReference?: TypeBrand<any>;
-    defaultGeneratorFunction?: string;
-    exclusionRules?: string[];
+interface EntityDatePickerProps extends EntityBaseFieldProps {
+    value: string | Date | DateRange | null;
 }
 
+// TODO: There are some known issues with this component:
+// 1) It does not show the time
+// 2) It doesn't allow changing the time. it should either have a date and time picker or different variations for that.
+// 3) The whole thing is a bit clucky and just not well done.
 
-// System-provided props interface
-interface EntityCommonProps {
-    name: string;
-    displayName: string;
-    value: any;
-    onChange?: (value: any) => void;
-    onBlur?: (value: any) => void;
-    onFocus?: (value: any) => void;
-    onKeyDown?: (event: KeyboardEvent) => void;
-    onKeyUp?: (event: KeyboardEvent) => void;
-    onSelect?: (value: any) => void;
-    onInput?: (event: InputEvent) => void;
-    description?: string;
-    actionKeys?: string[];
-    actionProps?: any;
-    inlineFields?: object[];
-    disabled?: boolean;
-    readOnly?: boolean;
-    componentProps: {
-        subComponent: string;
-        variant: MatrxVariant;
-        placeholder: string;
-        size: string;
-        textSize: string;
-        textColor: string;
-        rows: string;
-        animation: string;
-        fullWidthValue: string;
-        fullWidth: string;
-        disabled: string;
-        className: string;
-        type: string;
-        onChange: string;
-        formatString: string;
-        minDate: string;
-        maxDate: string;
-        presets?: string;
-        numberOfMonths?: string;
-        [key: string]: any;
+const EntityDatePicker: React.FC<EntityDatePickerProps> = (
+    {
+        entityKey,
+        dynamicFieldInfo: field,
+        value,
+        onChange,
+        density = 'normal',
+        animationPreset = 'subtle',
+        size = 'default',
+        className,
+        variant = "outline",
+        disabled = false,
+        floatingLabel = true,
+        labelPosition = 'default',
+        ...props
+    }) => {
+    const customProps = field.componentProps as Record<string, unknown>;
+    const subComponent = customProps?.subComponent as ('date' | 'datetime' | 'daterange' | 'datewithpresets') ?? 'date';
+    const formatString = customProps?.formatString as string ?? (subComponent === 'datetime' ? 'PPP HH:mm:ss' : 'PPP');
+    const numberOfMonths = customProps?.numberOfMonths as number ?? 1;
+    const minDate = customProps?.minDate ? new Date(customProps.minDate as string) : undefined;
+    const maxDate = customProps?.maxDate ? new Date(customProps.maxDate as string) : undefined;
+    const customLabelPosition = customProps?.labelPosition as ('default' | 'inline' | 'above' | 'side') ?? 'default';
+    const resolvedLabelPosition = customLabelPosition === 'default' ? 'above' : customLabelPosition;
+
+    const presetOptions = customProps?.presets as PresetOption[] ?? [
+        {label: "Today", value: 0},
+        {label: "Tomorrow", value: 1},
+        {label: "In 3 days", value: 3},
+        {label: "In a week", value: 7}
+    ];
+
+    const uniqueId = `${entityKey}-${field.name}`;
+
+    // Parse date value safely
+    const parseValue = (val: any): Date | DateRange | undefined => {
+        if (!val) return undefined;
+
+        if (subComponent === 'daterange' && typeof val === 'object') {
+            const from = val.from ? new Date(val.from) : undefined;
+            const to = val.to ? new Date(val.to) : undefined;
+            return (from && isValid(from) && (!to || isValid(to))) ? {from, to} : undefined;
+        }
+
+        if (val instanceof Date && isValid(val)) return val;
+
+        if (typeof val === 'string') {
+            const parsed = new Date(val);
+            return isValid(parsed) ? parsed : undefined;
+        }
+
+        return undefined;
     };
-    [key: string]: any;
-}
 
-// Default values
-const defaultIcon = <CalendarIcon className="mr-2 h-4 w-4"/>;
+    const parsedValue = parseValue(value);
 
-const defaultPresets: PresetOption[] = [
-    {label: "Today", value: 0},
-    {label: "Tomorrow", value: 1},
-    {label: "In 3 days", value: 3},
-    {label: "In a week", value: 7}
-];
+    const densityConfig = {
+        compact: {
+            wrapper: "gap-1",
+            input: "h-8 text-sm",
+            label: "text-sm mb-1",
+            icon: "h-3.5 w-3.5",
+        },
+        normal: {
+            wrapper: "gap-2",
+            input: "h-10",
+            label: "text-base mb-1.5",
+            icon: "h-4 w-4",
+        },
+        comfortable: {
+            wrapper: "gap-3",
+            input: "h-12 text-lg",
+            label: "text-lg mb-2",
+            icon: "h-5 w-5",
+        },
+    };
 
-export const EntityDatePicker: React.FC<EntityCommonProps> = (props) => {
-    const { value, onChange, componentProps, displayName } = props;
+    const renderLabel = field.displayName && (
+        <Label
+            htmlFor={uniqueId}
+            className={cn(
+                densityConfig[density].label,
+                "font-medium",
+                disabled && "text-muted-foreground cursor-not-allowed",
+                resolvedLabelPosition === 'side' && "min-w-[120px] text-right",
+                "select-none"
+            )}
+        >
+            {field.displayName}
+        </Label>
+    );
 
-    const variant: MatrxVariant = getValidVariant(props.componentProps.variant);
-    const parsedValue = parseDate(value);
-    const className = generateClass(componentProps);
-    const presets = componentProps.presets ? parsePresetOptions(componentProps.presets, defaultPresets) : defaultPresets;
-    const minDate = parseDate(componentProps.minDate);
-    const maxDate = parseDate(componentProps.maxDate);
-    const placeholder = componentProps.placeholder !== 'default' ? componentProps.placeholder : displayName;
-    const disabled = componentProps.disabled !== 'default' && componentProps.disabled === 'true';
-    const numberOfMonths = componentProps.numberOfMonths !== 'default' ? Number(componentProps.numberOfMonths) : 2;
-    const formatString = componentProps.formatString !== 'default' ? componentProps.formatString
-                                                                   : componentProps.subComponent === 'datetime' ? 'PPP HH:mm:ss' : 'PPP';
+    const commonProps = {
+        id: uniqueId,
+        className: cn(
+            densityConfig[density].input,
+            "w-full",
+            disabled && "opacity-50 cursor-not-allowed",
+            className
+        ),
+        variant: variant as MatrxVariant,
+        disabled,
+        icon: <CalendarIcon className={cn("mr-2", densityConfig[density].icon)}/>,
+        align: "start" as const,
+        placeholder: "Select date",
+        formatString,
+        minDate,
+        maxDate,
+    };
 
-    const renderComponent = (): React.ReactElement => {
-        switch (componentProps.subComponent) {
+    const handleChange = (newValue: Date | DateRange | undefined) => {
+        if (!onChange) return;
+        onChange(newValue ?? null);
+    };
+    const handleRangeChange = (newValue: Date | { from?: Date; to?: Date } | undefined) => {
+        if (!onChange) return;
+        onChange(newValue ?? null);
+    };
+
+    const renderDatePicker = () => {
+        switch (subComponent) {
             case 'daterange':
                 return (
                     <MatrxDateRangePicker
-                        value={parsedValue ? { from: parseDate(value.from), to: parseDate(value.to) } : undefined}
-                        onChange={onChange}
-                        className={className}
-                        variant={variant}
-                        icon={defaultIcon}
-                        align="start"
-                        placeholder={placeholder}
+                        {...commonProps}
+                        value={parsedValue as DateRange}
+                        onChange={handleRangeChange}
                         numberOfMonths={numberOfMonths}
-                        formatString={formatString}
-                        disabled={disabled}
-                        minDate={minDate}
-                        maxDate={maxDate}
                     />
                 );
 
             case 'datewithpresets':
                 return (
                     <MatrxDatePickerWithPresets
-                        value={parsedValue}
-                        onChange={onChange}
-                        className={className}
-                        variant={variant}
-                        icon={defaultIcon}
-                        align="start"
-                        placeholder={placeholder}
-                        formatString={formatString}
-                        disabled={disabled}
-                        minDate={minDate}
-                        maxDate={maxDate}
-                        presets={presets}
+                        {...commonProps}
+                        value={parsedValue as Date}
+                        onChange={handleChange}
+                        presets={presetOptions}
                         presetPlaceholder="Quick select"
                     />
                 );
@@ -173,23 +179,51 @@ export const EntityDatePicker: React.FC<EntityCommonProps> = (props) => {
             default:
                 return (
                     <MatrxDatePicker
-                        value={parsedValue}
-                        onChange={onChange}
-                        className={className}
-                        variant={variant}
-                        icon={defaultIcon}
-                        align="start"
-                        placeholder={placeholder}
-                        formatString={formatString}
-                        disabled={disabled}
-                        minDate={minDate}
-                        maxDate={maxDate}
+                        {...commonProps}
+                        value={parsedValue as Date}
+                        onChange={handleChange}
                     />
                 );
         }
     };
 
-    return renderComponent();
+    const layouts = {
+        default: (
+            <div className={cn("flex flex-col", densityConfig[density].wrapper)}>
+                {renderLabel}
+                {renderDatePicker()}
+            </div>
+        ),
+        inline: (
+            <div className={cn("flex flex-col", densityConfig[density].wrapper)}>
+                {renderLabel}
+                {renderDatePicker()}
+            </div>
+        ),
+        above: (
+            <div className={cn("flex flex-col", densityConfig[density].wrapper)}>
+                {renderLabel}
+                {renderDatePicker()}
+            </div>
+        ),
+        side: (
+            <div className={cn(
+                "flex items-start",
+                densityConfig[density].wrapper
+            )}>
+                {renderLabel}
+                <div className="flex-1">
+                    {renderDatePicker()}
+                </div>
+            </div>
+        ),
+    };
+
+    return (
+        <div className={cn("w-full", className)}>
+            {layouts[resolvedLabelPosition]}
+        </div>
+    );
 };
 
 export default EntityDatePicker;

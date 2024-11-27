@@ -2,8 +2,9 @@ import * as React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {createEntitySlice} from '@/lib/redux/entity/slice';
 import {SelectionMode, MatrxRecordId} from '@/lib/redux/entity/types';
+import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
+import {getRecordIdByRecord} from "@/lib/redux/entity/utils";
 
 export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Current Selection State
@@ -38,6 +39,8 @@ export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Additional Operations
     clearSelection: () => void;
     handleSingleSelection: (recordKey: MatrxRecordId) => void;
+
+    getRecordId: (record: EntityData<TEntity>) => MatrxRecordId;
 }
 
 export const useEntitySelection = <TEntity extends EntityKeys>(
@@ -45,8 +48,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
 ): UseEntitySelectionReturn<TEntity> => {
     const dispatch = useAppDispatch();
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = React.useMemo(() => createEntitySlice(entityKey, {} as any), [entityKey]);
-
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
 
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
@@ -55,17 +57,23 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
     const summary = useAppSelector(selectors.selectSelectionSummary);
 
-
     const isSelected = React.useCallback((recordKey: MatrxRecordId) =>
         selectedRecordIds.includes(recordKey), [selectedRecordIds]);
 
     const isActive = React.useCallback((recordKey: MatrxRecordId) =>
         activeRecordId === recordKey, [activeRecordId]);
 
-
     const handleSelection = React.useCallback((recordKey: MatrxRecordId) => {
         dispatch(actions.addToSelection(recordKey));
     }, [dispatch, actions]);
+
+    const getRecordId = React.useCallback(
+        (record: EntityData<TEntity>) => {
+            const entityState = useAppSelector(selectors.selectEntity);
+            return getRecordIdByRecord(entityState, record);
+        },
+        [selectors]
+    );
 
     const handleToggleSelection = React.useCallback((recordKey: MatrxRecordId) => {
         if (isSelected(recordKey)) {
@@ -134,5 +142,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         // Additional Operations
         clearSelection,
         handleSingleSelection,
+
+        getRecordId,
     };
 };
