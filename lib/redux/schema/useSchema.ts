@@ -65,7 +65,7 @@ import {
     selectFieldNameMappingForEntity,
 } from './globalCacheSelectors';
 import { KeyMapping, UnifiedQueryOptions } from './globalCacheSelectors';
-import { QueryOptions } from '@/lib/redux/entity/sagas';
+import { QueryOptions } from '@/lib/redux/entity/sagas/watcherSaga';
 import {SchemaEntity, SchemaField} from "@/types/schema";
 
 export const useSchema = () => {

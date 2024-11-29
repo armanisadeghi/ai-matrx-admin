@@ -2,9 +2,9 @@ import * as React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {SelectionMode, MatrxRecordId} from '@/lib/redux/entity/types';
+import {SelectionMode, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
-import {getRecordIdByRecord} from "@/lib/redux/entity/utils";
+import {getRecordIdByRecord} from "@/lib/redux/entity/utils/stateHelpUtils";
 
 export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Current Selection State

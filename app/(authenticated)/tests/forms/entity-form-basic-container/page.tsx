@@ -3,7 +3,7 @@
 import React, {useState, useCallback, useMemo} from 'react';
 import {Card, CardContent} from '@/components/ui/card';
 import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
-import {useEntity} from '@/lib/redux/entity/useEntity';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {EntityData, EntityKeys} from '@/types/entityTypes';
 import {
     FlexEntityFormProps,

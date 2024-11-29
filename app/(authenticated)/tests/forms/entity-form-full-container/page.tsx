@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FlexAnimatedForm } from '@/components/matrx/AnimatedForm';
-import { useEntity } from '@/lib/redux/entity/useEntity';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import {
     FlexEntityFormProps,
@@ -12,7 +12,7 @@ import {
 } from '@/components/matrx/Entity/types/entityForm';
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeader';
-import { EntityError, EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types';
+import { EntityError, EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { mapFieldDataTypeToFormFieldType } from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
 import {EntityFormState} from "@/types/componentConfigTypes";

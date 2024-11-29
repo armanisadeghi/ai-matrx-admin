@@ -3,11 +3,12 @@ import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import {EntityData, EntityKeys} from '@/types/entityTypes';
-import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types';
+import {AllEntityNameVariations, EntityData, EntityKeys} from '@/types/entityTypes';
+import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {Callback, callbackManager} from '@/utils/callbackManager';
 import * as React from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+import {makeSelectEntityNameByFormat} from "@/lib/redux/schema/globalCacheSelectors";
 
 interface UseFetchRelatedParams {
     entityKey: EntityKeys;
@@ -42,6 +43,8 @@ interface UseFetchRelatedReturn {
     setHoveredItem: (itemId: string | null) => void;
     truncateText: (text: string, maxLength?: number) => string;
     matrxRecordId: MatrxRecordId | null;
+    individualFieldInfo: EntityStateField[] | null;
+    entityPrettyName: AllEntityNameVariations;
 }
 
 export function useFetchRelated(
@@ -56,6 +59,8 @@ export function useFetchRelated(
     const dispatch = useAppDispatch();
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const selectEntityName = makeSelectEntityNameByFormat(entityKey, "pretty");
+    const entityPrettyName = useAppSelector(selectEntityName);
 
     const [viewMode, setViewMode] = useState<ViewModeOption>('view');
 
@@ -89,7 +94,7 @@ export function useFetchRelated(
         }
     }, [dispatch, actions]);
 
-    const {records, fieldInfo, displayField} = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
+    const {records, fieldInfo: individualFieldInfo, displayField} = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
 
     React.useEffect(() => {
         if (matrxRecordId) {
@@ -117,6 +122,10 @@ export function useFetchRelated(
     };
 
 
+    // TODO: This hook needs to check for all of the relationship rules and maintain them.
+    // For example, if it's one to one, it can't allow create operations.
+    // Regardless, if there are any create operations, it needs to maintain the relationship.
+
 
 
 
@@ -129,5 +138,7 @@ export function useFetchRelated(
         setHoveredItem,
         truncateText,
         matrxRecordId,
+        individualFieldInfo,
+        entityPrettyName,
     };
 }

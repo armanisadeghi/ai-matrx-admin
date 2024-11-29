@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 
 const LogViewer = () => {
     const [logs, setLogs] = useState<any[]>([]);

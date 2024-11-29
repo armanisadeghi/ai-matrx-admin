@@ -1,5 +1,5 @@
 // components/record-display/FieldDisplay.tsx
-import {EntityStateFieldWithValue} from "@/lib/redux/entity/types";
+import {EntityStateFieldWithValue} from "@/lib/redux/entity/types/stateTypes";
 import {ActionConfig} from "@/components/matrx/Entity/field-actions/types";
 import React from "react";
 import {FieldAction} from "./FieldAction";

@@ -3,7 +3,7 @@ import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/co
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {cn} from "@/lib/utils";
 import {ChevronRight, ChevronDown} from 'lucide-react';
-import {MatrxRecordId} from "@/lib/redux/entity/types";
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {useFetchRelated, ViewModeOption} from "@/lib/redux/entity/hooks/useFetchRelated";
 
 import {EntityInlineProps, ViewModeOptions} from './types';
@@ -12,6 +12,9 @@ import {ViewMode} from "./ViewMode";
 import {EditMode} from "./EditMode";
 import {useCallback} from "react";
 import {useEntityForm} from "@/lib/redux/entity/hooks/useEntityForm";
+import {makeSelectEntityNameByFormat, selectEntityPrettyName} from '@/lib/redux/schema/globalCacheSelectors';
+import { useAppSelector } from '@/lib/redux/hooks';
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 
 
 function RelatedEntityAccordion(
@@ -38,12 +41,13 @@ function RelatedEntityAccordion(
         setHoveredItem,
         truncateText,
         matrxRecordId,
+        individualFieldInfo,
+        entityPrettyName,
     } = useFetchRelated({
         entityKey,
         dynamicFieldInfo,
         formData,
         activeEntityKey,
-
     });
 
     const [viewModeOption, setViewModeOption] = React.useState<ViewModeOptions>('view');
@@ -52,6 +56,7 @@ function RelatedEntityAccordion(
 
     const handleModeChange = useCallback((mode: ViewModeOption, matrxRecordId?: MatrxRecordId) => {
         setViewModeOption(mode);
+        console.log('Passing liveEntityFieldInfo to child:', individualFieldInfo);
 
         switch (mode) {
             case 'edit':
@@ -74,11 +79,11 @@ function RelatedEntityAccordion(
     }, [form, records]);
 
 
-    const renderContent = (recordId: MatrxRecordId, record: EntityData<EntityKeys>) => {
+    const renderContent = (matrxRecordId: MatrxRecordId, record: EntityData<EntityKeys>) => {
         const commonProps = {
-            recordId,
+            matrxRecordId,
             record,
-            dynamicFieldInfo,
+            individualFieldInfo,
             displayField,
             entityKey,
             onModeChange: handleModeChange,
@@ -105,8 +110,14 @@ function RelatedEntityAccordion(
             <Accordion
                 type="single"
                 collapsible
-                className="w-full space-y-1 border rounded-lg p-2"
+                className="w-full bg-card-background space-y-1 border rounded-lg p-2"
             >
+                <div className="mb-2">
+                    <h3 className="text-lg font-medium text-secondary-foreground px-3 py-1 inline-block rounded-md">
+                        Associated {entityPrettyName} Records
+                    </h3>
+                </div>
+
                 {viewModeOption === 'create' ? (
                     <AccordionItem value="new" className="border rounded-lg">
                         <AccordionTrigger>
@@ -121,21 +132,21 @@ function RelatedEntityAccordion(
                         </AccordionContent>
                     </AccordionItem>
                 ) : (
-                     Object.entries(records).map(([recordId, record]) => (
+                     Object.entries(records).map(([matrxRecordId, record]) => (
                          <AccordionItem
-                             key={recordId}
-                             value={recordId}
+                             key={matrxRecordId}
+                             value={matrxRecordId}
                              className={cn(
                                  "border rounded-lg transition-colors duration-200",
-                                 hoveredItem === recordId && "border-secondary"
+                                 hoveredItem === matrxRecordId && "border-secondary"
                              )}
-                             onMouseEnter={() => setHoveredItem(recordId)}
+                             onMouseEnter={() => setHoveredItem(matrxRecordId)}
                              onMouseLeave={() => setHoveredItem(null)}
                          >
                              <AccordionTrigger
                                  className={cn(
                                      "px-2 rounded-lg transition-colors duration-200",
-                                     hoveredItem === recordId && "bg-secondary/50"
+                                     hoveredItem === matrxRecordId && "bg-secondary/50"
                                  )}
                              >
                                  <div className="flex items-center space-x-2">
@@ -147,7 +158,7 @@ function RelatedEntityAccordion(
                                  </div>
                              </AccordionTrigger>
                              <AccordionContent>
-                                 {renderContent(recordId, record)}
+                                 {renderContent(matrxRecordId, record)}
                              </AccordionContent>
                          </AccordionItem>
                      ))

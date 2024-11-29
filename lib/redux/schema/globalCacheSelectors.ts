@@ -14,10 +14,10 @@ import {SchemaEntity} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
 
 import {GlobalCacheState} from "./globalCacheSlice";
-import {DisplayFieldMetadata, EntityStateField, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types";
-import {createMatrxRecordId, parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
-import {FlexibleQueryOptions, QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject} from "../entity/sagaHelpers";
+import {DisplayFieldMetadata, EntityStateField, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types/stateTypes";
+import {createMatrxRecordId, parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
+import {FlexibleQueryOptions, QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject} from "../entity/sagas/sagaHelpers";
 
 const trace = 'GLOBAL CACHE SELECTORS';
 const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
@@ -76,6 +76,18 @@ export const selectEntityNameFormats = createSelector(
     [selectGlobalCache],
     cache => cache.entityNameFormats
 );
+
+export const makeSelectEntityNameByFormat = (entityName: EntityKeys, format: NameFormat) =>
+    createSelector(
+        [selectEntityNameFormats],
+        entityNameFormats => {
+            if (!entityNameFormats || !entityNameFormats[entityName]) {
+                return null;
+            }
+            return entityNameFormats[entityName][format] as AllEntityNameVariations || null;
+        }
+    );
+
 
 export const selectFieldNameFormats = createSelector(
     [selectGlobalCache],

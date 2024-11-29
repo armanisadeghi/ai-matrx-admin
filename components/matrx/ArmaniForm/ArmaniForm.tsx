@@ -12,7 +12,7 @@ import {
     getAnimationVariants,
 } from "@/config/ui/entity-layout-config";
 import EntityBaseField, {EntityBaseFieldProps} from "./EntityBaseField";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {
     AccordionLayout,
     CarouselLayout,

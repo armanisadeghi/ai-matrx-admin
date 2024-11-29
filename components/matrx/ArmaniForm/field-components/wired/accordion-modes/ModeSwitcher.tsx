@@ -2,7 +2,7 @@
 import React from 'react';
 import { Eye, Edit, Plus } from 'lucide-react';
 import { ViewModeOptions } from './types';
-import { MatrxRecordId } from "@/lib/redux/entity/types";
+import { MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import { MatrxButton, ButtonGroup } from '@/components/ui/samples';
 
 interface ModeSwitcherProps {

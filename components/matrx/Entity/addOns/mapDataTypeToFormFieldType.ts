@@ -48,7 +48,7 @@
 
 import {FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 import {FormFieldType} from "@/components/matrx/AnimatedForm/FlexAnimatedForm";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {EntityFlexFormField} from "@/components/matrx/Entity/types/entityForm";
 
 

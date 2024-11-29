@@ -3,7 +3,7 @@
 
 import {useState, useEffect} from 'react';
 import {motion} from 'framer-motion';
-import {useEntity} from '@/lib/redux/entity/useEntity';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {
     Card,
     CardContent,

@@ -24,7 +24,7 @@ const EntityUUIDField: React.FC<EntityUUIDFieldProps> = (
     {
         entityKey,
         dynamicFieldInfo: field,
-        value = " ",
+        value = field.defaultValue,
         onChange,
         density = 'normal',
         animationPreset = 'subtle',

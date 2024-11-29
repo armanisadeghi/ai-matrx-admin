@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {ENTITY_FIELD_COMPONENTS} from './field-components';
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {EntityBaseFieldProps} from "./EntityBaseField";
 
 export interface EntityRelationshipWrapperProps extends EntityBaseFieldProps {

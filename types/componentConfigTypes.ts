@@ -4,7 +4,7 @@ import { HTMLMotionProps } from "framer-motion";
 import React, { MutableRefObject } from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {EntityKeys} from "@/types/entityTypes";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 
 

@@ -2,7 +2,7 @@
 'use client';
 
 import {EntityKeys} from "@/types/entityTypes";
-import {useEntity} from "@/lib/redux/entity/useEntity";
+import {useEntity} from "@/lib/redux/entity/hooks/useEntity";
 import {useEffect} from "react";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/components/matrx/Entity/table/MatrxTable";

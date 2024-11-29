@@ -1,9 +1,9 @@
 import {AllEntityFieldKeys, AnyEntityDatabaseTable, EntityKeys, Relationship} from "@/types/entityTypes";
-import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
 import {TargetAndTransition, VariantLabels} from "framer-motion";
 import {TransitionProps} from "@vue/runtime-dom";
 import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 
 
 interface UISchemaField {

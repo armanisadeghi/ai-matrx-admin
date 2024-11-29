@@ -1,10 +1,87 @@
-'use client';
-
-import React, {TextareaHTMLAttributes, useState} from "react";
+import React, {TextareaHTMLAttributes, useMemo, useState} from "react";
 import {cn} from "@/styles/themes/utils";
 import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui";
 import {EntityBaseFieldProps} from "../EntityBaseField";
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
+import {SmartComponentProps} from "@/components/matrx/ArmaniForm/SimpleRelationshipWrapper";
+import {updateFieldValue, initializeField} from "@/lib/redux/concepts/fields/fieldSlice";
+import {selectFieldValue} from "@/lib/redux/concepts/fields/selectors";
+import {useForm} from "@/lib/redux/concepts/fields/component-examples/fieldComponentExample";
+
+
+export const SmartTextarea: React.FC<SmartComponentProps> = (
+    {
+        entityKey,
+        matrxRecordId,
+        fieldInfo,
+        dynamicStyles,
+        ...props
+    }) => {
+    const dispatch = useAppDispatch();
+    const {mode} = useForm();
+
+    const identifier = {
+        entityKey,
+        fieldName: fieldInfo.name,
+        recordId: matrxRecordId || 'new'
+    };
+
+    const selectors = React.useMemo(
+        () => createEntitySelectors(entityKey),
+        [entityKey]
+    );
+
+    const valueFromGlobalState = useAppSelector((state) =>
+        selectors.selectFieldByKey(state, matrxRecordId, fieldInfo.name)
+    );
+
+    const localValue = useAppSelector(state =>
+        selectFieldValue(state, identifier)) ?? fieldInfo.defaultValue;
+
+    React.useEffect(() => {
+        dispatch(initializeField({
+            identifier,
+            initialValue: valueFromGlobalState ?? fieldInfo.defaultValue,
+            mode
+        }));
+    }, [
+        dispatch,
+        valueFromGlobalState,
+        fieldInfo.defaultValue,
+        matrxRecordId,
+        mode
+    ]);
+
+    const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        dispatch(updateFieldValue({
+            identifier,
+            value: e.target.value
+        }));
+    };
+
+    const isDisabled = mode === 'display' || mode === 'view';
+
+    return (
+        <EntityTextarea
+            entityKey={entityKey}
+            dynamicFieldInfo={fieldInfo}
+            value={localValue}
+            onChange={onChange}
+            density={dynamicStyles.density}
+            animationPreset={dynamicStyles.animationPreset}
+            size={dynamicStyles.size}
+            className=""
+            variant={dynamicStyles.variant}
+            disabled={isDisabled}
+            floatingLabel={true}
+            labelPosition="default"
+            {...props}
+        />
+    );
+};
+
 
 interface EntityTextareaProps extends EntityBaseFieldProps,
     Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'value'> {
@@ -14,7 +91,7 @@ const EntityTextarea: React.FC<EntityTextareaProps> = (
     {
         entityKey,
         dynamicFieldInfo: field,
-        value = " ",
+        value = field.defaultValue,
         onChange,
         density = 'normal',
         animationPreset = 'subtle',
@@ -45,6 +122,19 @@ const EntityTextarea: React.FC<EntityTextareaProps> = (
         primary: "bg-primary text-primary-foreground",
         default: "",
     }[variant];
+
+    const labelClassName = useMemo(() =>
+            `absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm ${
+                (isFocused || value)
+                ? `absolute -top-2 text-sm ${
+                    disabled
+                    ? '[&]:text-gray-400 dark:[&]:text-gray-400'
+                    : '[&]:text-blue-500 dark:[&]:text-blue-500'
+                }`
+                : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
+            }`,
+        [isFocused, value, disabled]
+    );
 
     const standardLayout = (
         <>
@@ -97,15 +187,7 @@ const EntityTextarea: React.FC<EntityTextareaProps> = (
             />
             <Label
                 htmlFor={field.name}
-                className={`absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm ${
-                    (isFocused || value)
-                    ? `absolute -top-2 text-sm ${
-                        disabled
-                        ? '[&]:text-gray-400 dark:[&]:text-gray-400'
-                        : '[&]:text-blue-500 dark:[&]:text-blue-500'
-                    }`
-                    : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
-                }`}
+                className={labelClassName}
             >
                 <span className="px-1 relative z-20">
                     {field.displayName}

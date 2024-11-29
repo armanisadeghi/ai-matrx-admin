@@ -11,13 +11,13 @@ import {
     EntityState,
     QuickReferenceRecord,
     EntityError
-} from '@/lib/redux/entity/types';
+} from '@/lib/redux/entity/types/stateTypes';
 import {RootState} from '@/lib/redux/store';
 import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
 
 import {Draft} from "immer";
-import {QueryOptions} from "@/lib/redux/entity/SagaHelpers";
-import {createRecordKey} from '@/lib/redux/entity/utils';
+import {QueryOptions} from "@/lib/redux/entity/sagas/sagaHelpers";
+import {createRecordKey} from '@/lib/redux/entity/utils/stateHelpUtils';
 import {
     ColumnDef,
     SortingState,

@@ -9,7 +9,7 @@ import {
     getAnimationVariants,
     spacingConfig,
 } from "@/config/ui/entity-layout-config";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 import {KeyIcon} from "lucide-react";
 

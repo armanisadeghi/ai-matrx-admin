@@ -2,7 +2,7 @@
 'use client';
 
 import {useState, useEffect, Suspense} from 'react';
-import {useEntity} from '@/lib/redux/entity/useEntity';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {EntityKeys} from '@/types/entityTypes';
 import {Card, CardContent,} from "@/components/ui/card";
 import MatrxTable from '@/app/(authenticated)/tests/matrx-table/components/MatrxTable';

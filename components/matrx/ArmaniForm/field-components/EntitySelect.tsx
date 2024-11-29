@@ -15,21 +15,22 @@ interface OptionType {
     label: string;
 }
 
-const EntitySelect: React.FC<EntitySelectProps> = ({
-                                                       entityKey,
-                                                       dynamicFieldInfo: field,
-                                                       value,
-                                                       onChange,
-                                                       density = 'normal',
-                                                       animationPreset = 'subtle',
-                                                       size = 'default',
-                                                       className,
-                                                       variant = 'default',
-                                                       disabled = false,
-                                                       floatingLabel = true,
-                                                       labelPosition = 'default',
-                                                       ...props
-                                                   }) => {
+const EntitySelect: React.FC<EntitySelectProps> = (
+    {
+        entityKey,
+        dynamicFieldInfo: field,
+        value = field.defaultValue,
+        onChange,
+        density = 'normal',
+        animationPreset = 'subtle',
+        size = 'default',
+        className,
+        variant = 'default',
+        disabled = false,
+        floatingLabel = true,
+        labelPosition = 'default',
+        ...props
+    }) => {
     const customProps = field.componentProps as Record<string, unknown>;
     const rawOptions = customProps?.options ?? [];
 
@@ -118,7 +119,7 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
                         disabled ? "cursor-not-allowed opacity-50 bg-muted" : ""
                     )}
                 >
-                    <SelectValue placeholder="Select an option" />
+                    <SelectValue placeholder="Select an option"/>
                 </SelectTrigger>
                 <SelectContent>
                     {options.map((option) => (

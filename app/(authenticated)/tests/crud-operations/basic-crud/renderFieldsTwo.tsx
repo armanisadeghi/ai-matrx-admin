@@ -17,7 +17,7 @@ import {
     Plus,
     X
 } from "lucide-react";
-import { EntityStateField } from '@/lib/redux/entity/types';
+import { EntityStateField } from '@/lib/redux/entity/types/stateTypes';
 
 interface SmartFieldWrapperProps {
     field: EntityStateField;

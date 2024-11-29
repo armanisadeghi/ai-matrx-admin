@@ -2,7 +2,7 @@
 import React, {useRef, useEffect, useState} from 'react';
 import {CardHeader, CardTitle, CardDescription} from '@/components/ui/card';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types';
+import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import {
     EntityQuickReferenceAccordion,
     EntityQuickReferenceAccordionEnhanced,

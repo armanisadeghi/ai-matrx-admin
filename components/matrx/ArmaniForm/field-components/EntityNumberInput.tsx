@@ -88,7 +88,7 @@ const EntityNumberInput = React.forwardRef<HTMLInputElement, EntityNumberInputPr
     {
         entityKey,
         dynamicFieldInfo: field,
-        value,
+        value = field.defaultValue,
         onChange,
         density = 'normal',
         animationPreset = 'subtle',

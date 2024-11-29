@@ -1,8 +1,7 @@
 // lib/hooks/useSchemaForm.ts
 
-import {useEntity} from "@/lib/redux/entity/useEntity";
-import {useSchema} from "@/providers/SchemaProvider";
-import {useEntityForm} from "@/lib/redux/form/useEntityForm";
+import {useEntity} from "@/lib/redux/entity/hooks/useEntity";
+import { useEntityFormOld as useEntityForm } from "./useEntityForm";
 
 export const useSchemaForm = (
     schemaId: string,
@@ -15,7 +14,7 @@ export const useSchemaForm = (
     }
 ) => {
     const schema = useSchema(schemaId);
-    const entity = schema.type === 'entity' ? useEntity(schema.name) : null;
+    const entity = schema.entityType === 'entity' ? useEntity(schema.name) : null;
     const form = useEntityForm(schemaId, schema.type === 'entity' ? schema.name : undefined, {
         mode: options?.mode,
         initialValues: options?.initialData,

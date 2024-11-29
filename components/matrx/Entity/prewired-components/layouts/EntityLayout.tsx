@@ -3,7 +3,7 @@ import React, {useState, useRef, useEffect} from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {Card, CardHeader, CardTitle} from '@/components/ui/card';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types';
+import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import { Button } from '@/components/ui/button';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import {cn} from '@/lib/utils';

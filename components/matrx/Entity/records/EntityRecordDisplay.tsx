@@ -3,15 +3,15 @@
 
 import React, {useEffect} from 'react';
 import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
-import {useEntity} from '@/lib/redux/entity/useEntity';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {
     EntityFormState,
     FlexEntityFormProps,
 } from '@/components/matrx/Entity/types/entityForm';
 import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
-import {EntityError, MatrxRecordId} from '@/lib/redux/entity/types';
-import {createRecordKey} from '@/lib/redux/entity/utils';
+import {EntityError, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
+import {createRecordKey} from '@/lib/redux/entity/utils/stateHelpUtils';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
 
 function EntityRecordDisplay(

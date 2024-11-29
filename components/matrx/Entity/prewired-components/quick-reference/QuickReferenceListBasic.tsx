@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EntityKeys } from '@/types/entityTypes';
 import { useQuickReference } from '@/lib/redux/entity/hooks/useQuickReference';
-import { MatrxRecordId } from "@/lib/redux/entity/types";
+import { MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import { cn } from '@/utils/cn';
 
 interface QuickRefBasicProps<TEntity extends EntityKeys> {

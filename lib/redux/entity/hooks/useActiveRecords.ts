@@ -2,7 +2,7 @@ import * as React from 'react';
 import {EntityKeys, EntityData, PrettyEntityName} from '@/types/entityTypes';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { createEntitySelectors } from '@/lib/redux/entity/selectors';
-import { EntityState, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types';
+import { EntityState, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import { selectFormattedEntityOptions } from '@/lib/redux/schema/globalCacheSelectors';
 
 export const useActiveRecords = () => {

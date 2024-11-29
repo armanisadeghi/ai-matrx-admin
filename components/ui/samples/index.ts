@@ -15,7 +15,6 @@ export {
     MatrxAccordionItem,
     MatrxAccordionTrigger,
     MatrxAccordionContent,
-    MatrxFullAccordion,
     MatrxAccordionSearch
 } from './accordion'
 export { MatrxCalendar } from './calendar'

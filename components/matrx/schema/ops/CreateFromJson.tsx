@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useEntity } from '@/lib/redux/entity/useEntity';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
 import SchemaSelect from './SchemaSelect';
 import { SchemaBasedJsonEditor } from '@/components/ui/JsonComponents';
 import { Button } from '@/components/ui/button';

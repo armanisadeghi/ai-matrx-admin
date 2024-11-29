@@ -4,10 +4,10 @@ import {call, put, takeLatest, delay, all, select, fork, takeEvery} from "redux-
 import {PayloadAction} from "@reduxjs/toolkit";
 import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {EntityData, EntityKeys} from "@/types/entityTypes";
-import {MatrxRecordId,} from "@/lib/redux/entity/types";
+import {MatrxRecordId,} from "@/lib/redux/entity/types/stateTypes";
 import {UnifiedQueryOptions,} from "@/lib/redux/schema/globalCacheSelectors";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
-import {createRecordKey, parseRecordKey} from "@/lib/redux/entity/utils";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
+import {createRecordKey, parseRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {
     handleFetchOne,
     handleFetchPaginated,
@@ -26,10 +26,10 @@ import {
     handleFetchMetrics,
     handleGetOrFetchSelectedRecords,
     handleFetchSelectedRecords
-} from "@/lib/redux/entity/sagaHandlers";
-import {DeleteRecordPayload} from "./actions";
-import {withConversion, withFullConversion} from "@/lib/redux/entity/sagaHelpers";
-import { getEntitySlice } from "./entitySlice";
+} from "@/lib/redux/entity/sagas/sagaHandlers";
+import {DeleteRecordPayload} from "../actions";
+import {withConversion, withFullConversion} from "@/lib/redux/entity/sagas/sagaHelpers";
+import { getEntitySlice } from "../entitySlice";
 
 
 const trace = "SAGAS";

@@ -9,9 +9,9 @@ import {
 } from "@/types/entityTypes";
 import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {PayloadAction} from "@reduxjs/toolkit";
-import {MatrxRecordId, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {MatrxRecordId, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
 import {supabase} from "@/utils/supabase/client";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import {call, put, select} from "redux-saga/effects";
 import {
     selectEntityDatabaseName, selectFrontendConversion,

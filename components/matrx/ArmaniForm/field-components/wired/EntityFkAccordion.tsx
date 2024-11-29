@@ -3,7 +3,7 @@ import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/co
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {cn} from "@/lib/utils";
 import {ChevronRight, ChevronDown} from 'lucide-react';
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {useFetchRelated} from "@/lib/redux/entity/hooks/useFetchRelated";
 import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";

@@ -8,13 +8,13 @@ import FieldFactory from "@/app/(authenticated)/tests/crud-operations/components
 export const CreateMode: React.FC<ModeComponentProps> = (
     {
         form,
-        dynamicFieldInfo,
+        individualFieldInfo,
         entityKey,
         onModeChange
     }) => (
     <div className="p-4">
         <form onSubmit={form.form.handleSubmit(form.handleSave)} className="space-y-4">
-            {dynamicFieldInfo.map(field => (
+            {individualFieldInfo.map(field => (
                 <FormField
                     key={field.name}
                     control={form.form.control}

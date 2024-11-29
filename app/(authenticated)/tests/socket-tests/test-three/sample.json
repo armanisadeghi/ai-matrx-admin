@@ -1,0 +1,27 @@
+[
+  {
+    "task": "validate_recipe",
+    "index": "0",
+    "stream": "true",
+    "taskData": {
+      "recipe_id": "6618283c8b434eb62211af43",
+      "broker_values": [
+        {
+          "id": "7c496083-a696-4b9c-b528-e8880c324703",
+          "official_name": "ANY_QUESTION_1001",
+          "name": "Ask me anything",
+          "data_type": "str",
+          "required": true,
+          "default_value": "",
+          "ready": "True",
+          "value": "How are you doing today?"
+        }
+      ],
+      "overrides": {
+        "model_override": "",
+        "processor_overrides": {},
+        "other_overrides": {}
+      }
+    }
+  }
+]

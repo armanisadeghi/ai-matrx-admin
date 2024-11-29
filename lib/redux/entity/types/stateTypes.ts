@@ -264,6 +264,7 @@ export interface SelectionState {
 export interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
     records: Record<MatrxRecordId, EntityData<TEntity>>;   // Data is here
+    unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
     quickReference: QuickReferenceState;  // Quick reference data is here
     selection: SelectionState;
     pagination: PaginationState;

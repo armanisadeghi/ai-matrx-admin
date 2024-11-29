@@ -1,5 +1,5 @@
 // types/action-types.ts
-import { EntityStateField, EntityStateFieldWithValue } from '@/lib/redux/entity/types';
+import { EntityStateField, EntityStateFieldWithValue } from '@/lib/redux/entity/types/stateTypes';
 import { Eye, List } from 'lucide-react';
 import {
     ActionConfig,

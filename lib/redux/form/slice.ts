@@ -145,7 +145,29 @@ const formSlice = createSlice({
             if (state.activeForm === formId) {
                 state.activeForm = null;
             }
-        }
+        },
+        updateFormFields: (
+            state,
+            action: PayloadAction<{
+                formId: string;
+                values: Record<string, any>;
+                touch?: boolean;
+            }>
+        ) => {
+            const { formId, values, touch = true } = action.payload;
+            const form = state.forms[formId];
+            if (form) {
+                form.values = { ...form.values, ...values };
+                if (touch) {
+                    Object.keys(values).forEach(field => {
+                        form.touched[field] = true;
+                    });
+                }
+                form.isDirty = true;
+            }
+        },
+
+
     }
 });
 

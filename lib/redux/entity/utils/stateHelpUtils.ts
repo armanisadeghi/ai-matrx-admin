@@ -8,7 +8,7 @@ import {
     FilterState,
     MatrxRecordId,
     PrimaryKeyMetadata
-} from "@/lib/redux/entity/types";
+} from "@/lib/redux/entity/types/stateTypes";
 import EntityLogger from "./entityLogger";
 
 const trace = "UTILS";
@@ -121,6 +121,22 @@ export interface SelectionSummary {
 }
 
 export type SelectionMode = 'single' | 'multiple' | 'none';
+
+export const createSelectionHelper = (selectedRecords: string[]) => ({
+    isSelected: (recordKey: string) => selectedRecords.includes(recordKey),
+    count: selectedRecords.length,
+    isEmpty: selectedRecords.length === 0,
+    toArray: () => [...selectedRecords],
+    has: (recordKey: string) => selectedRecords.includes(recordKey),
+});
+
+/*
+// Usage in component
+const selection = createSelectionHelper(selectedRecords);
+if (selection.has(recordKey)) {
+    // do something
+}
+*/
 
 // --- Selection Management ---
 export interface SelectionState {

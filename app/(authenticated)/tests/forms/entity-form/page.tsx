@@ -6,16 +6,16 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeaderSelect';
 import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
-import {useEntity} from '@/lib/redux/entity/useEntity';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {EntityData, EntityKeys} from '@/types/entityTypes';
-import {QuickReferenceRecord} from '@/lib/redux/entity/types';
+import {QuickReferenceRecord} from '@/lib/redux/entity/types/stateTypes';
 import {
     FlexEntityFormProps,
     EntityFlexFormField,
     FormFieldType
 } from '@/components/matrx/Entity/types/entityForm';
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
-import {createRecordKey} from '@/lib/redux/entity/utils';
+import {createRecordKey} from '@/lib/redux/entity/utils/stateHelpUtils';
 
 const EntityFormContainer = ({entityKey}: { entityKey: EntityKeys }) => {
     const entity = useEntity(entityKey);

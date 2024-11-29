@@ -1,7 +1,7 @@
 import {EntityKeys} from "@/types/entityTypes";
 import React from "react";
 import {useFetchRecords} from "@/lib/redux/entity/hooks/useFetchRecords";
-import {MatrxRecordId} from "@/lib/redux/entity/types";
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {RecordDisplayConfig} from "@/components/matrx/Entity/field-actions/types";
 import {EmptyState, ErrorDisplay, LoadingSpinner} from "@/components/matrx/Entity/field-actions/components/StateComponents";
 import {GridLayout} from "@/components/applet/applets/layouts/GridLayout";

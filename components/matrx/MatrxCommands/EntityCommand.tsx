@@ -23,7 +23,7 @@ import {
 import {showConfirmDialog, showErrorToast} from "@/components/matrx/MatrxCommands/helpers";
 import {cn} from '@/lib/utils';
 import {AppDispatch} from "@/lib/redux/store";
-import {EntityState} from "@/lib/redux/entity/types";
+import {EntityState} from "@/lib/redux/entity/types/stateTypes";
 // import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
 
 // Entity-specific command context

@@ -10,7 +10,7 @@ import {
 } from "@/types/entityTypes";
 import {FormDensity, FormState} from "@/components/matrx/ArmaniForm/ArmaniForm";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import {ComponentProps, EntityStateField} from "@/lib/redux/entity/types";
+import {ComponentProps, EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {AnimationPreset, EntityFormState} from "@/types/componentConfigTypes";
 
 export type FormFieldType =

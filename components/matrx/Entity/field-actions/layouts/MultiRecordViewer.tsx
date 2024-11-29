@@ -4,7 +4,7 @@ import {useFetchRecords} from '@/lib/redux/entity/hooks/useFetchRecords';
 import React, {useState} from 'react';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
-import {EntityStateFieldWithValue, MatrxRecordId} from '@/lib/redux/entity/types';
+import {EntityStateFieldWithValue, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {RecordDisplayConfig} from "@/components/matrx/Entity/field-actions/types";
 import {EmptyState, ErrorDisplay, LoadingSpinner} from "@/components/matrx/Entity/field-actions/components/StateComponents";
 import {TableLayout} from "@/components/matrx/Entity/field-actions/layouts/TableLayout";

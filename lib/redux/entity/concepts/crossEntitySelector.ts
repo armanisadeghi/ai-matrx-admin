@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux/store";
 import { EntityKeys, Relationship, AutomationEntities } from "@/types/entityTypes";
-import { EntityState } from "@/lib/redux/entity/types";
+import { EntityState } from "@/lib/redux/entity/types/stateTypes";
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import { selectSchema } from "@/lib/redux/schema/globalCacheSelectors";
 

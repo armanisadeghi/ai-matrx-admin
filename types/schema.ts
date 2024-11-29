@@ -1,4 +1,4 @@
-import {DisplayFieldMetadata, EntityStateField, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {DisplayFieldMetadata, EntityStateField, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
 import {
     AnyDatabaseColumnForEntity,
     AnyEntityDatabaseTable,

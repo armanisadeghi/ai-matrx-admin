@@ -1,4 +1,6 @@
 // components/matrx/Entity/headers/EntityPageHeader.tsx
+'use server';
+
 import {CardHeader, CardTitle} from "@/components/ui/card";
 import {Database} from "lucide-react";
 import {getEntityIcon} from "@/components/matrx/Entity/utils/getEntityIcon";
@@ -20,7 +22,7 @@ interface EntityRecordHeaderProps extends EntityHeaderBaseProps {
     fieldPrettyName?: string;
 }
 
-export function EntityHeader(
+export async function EntityHeader(
     {
         entityName,
         entityPrettyName,
@@ -60,7 +62,7 @@ export function EntityHeader(
     );
 }
 
-export function EntityRecordHeader(
+export async function EntityRecordHeader(
     {
         entityName,
         entityPrettyName,

@@ -3,7 +3,7 @@ import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityFormState, FlexEntityFormProps} from '@/components/matrx/Entity/types/entityForm';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
-import {MatrxRecordId} from '@/lib/redux/entity/types';
+import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import { useEntityForm } from '@/lib/redux/entity/hooks/useEntityForm';
 
 interface EntityFormWrapperProps<TEntity extends EntityKeys> {

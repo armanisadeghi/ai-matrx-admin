@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFormattedEntityOptions } from "@/lib/redux/schema/globalCacheSelectors";
 import { EntityKeys } from '@/types/entityTypes';
-import { useEntity } from '@/lib/redux/entity/useEntity';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
 import { Loader2 } from 'lucide-react';
 import PreWiredEntitySelectName from './PreWiredEntitySelectName';
 

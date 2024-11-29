@@ -1,9 +1,9 @@
 import React from "react";
 import {EntityKeys} from "@/types/entityTypes";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {UseFormReturn} from "react-hook-form";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import EntityBaseField, {EntityBaseFieldProps} from "@/components/matrx/ArmaniForm/EntityBaseField";
+import EntityBaseField from "@/components/matrx/ArmaniForm/EntityBaseField";
 import {InlineFormField} from "./InlineFormField";
 import EntityRelationshipWrapper from "@/components/matrx/ArmaniForm/EntityRelationshipWrapper";
 
@@ -47,7 +47,7 @@ interface FieldFactoryProps extends BaseFieldProps {
 
 export const FieldFactory: React.FC<FieldFactoryProps> = (
     {
-        dynamicFieldInfo: field,
+        dynamicFieldInfo,
         formField,
         value,
         entityKey,
@@ -86,7 +86,7 @@ export const FieldFactory: React.FC<FieldFactoryProps> = (
             return (
                 <EntityRelationshipWrapper
                     {...commonProps}
-                    formData={formData}
+                    formData={parentForm}
                 />
             );
         }
@@ -96,7 +96,7 @@ export const FieldFactory: React.FC<FieldFactoryProps> = (
     return (
         <EntityBaseField
             entityKey={entityKey}
-            dynamicFieldInfo={field}
+            dynamicFieldInfo={dynamicFieldInfo}
             value={value}
             onChange={formField.onChange}
             variant={variant}

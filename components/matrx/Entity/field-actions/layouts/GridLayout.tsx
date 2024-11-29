@@ -1,5 +1,5 @@
 // components/record-display/layouts/GridLayout.tsx
-import { EntityStateFieldWithValue } from '@/lib/redux/entity/types';
+import { EntityStateFieldWithValue } from '@/lib/redux/entity/types/stateTypes';
 import { cn } from '@/lib/utils';
 import {RecordDisplayConfig} from "@/components/matrx/Entity/field-actions/types";
 import {FieldDisplay} from "@/components/matrx/Entity/field-actions/components/FieldDisplay";

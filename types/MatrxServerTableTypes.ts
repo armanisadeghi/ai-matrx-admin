@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { TableState } from 'react-table';
-import { EntityKeys } from '@/types/entityTypes';
+import {AutomationEntity, EntityData, EntityKeys} from '@/types/entityTypes';
 
 // Component-specific configurations
 export interface ComponentConfigs {

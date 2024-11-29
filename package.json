@@ -87,6 +87,7 @@
     "cmdk": "latest",
     "cobe": "latest",
     "colord": "latest",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "latest",
     "flowbite": "latest",

@@ -1,5 +1,5 @@
 // field-actions/types.ts
-import {EntityStateFieldWithValue} from "@/lib/redux/entity/types";
+import {EntityStateFieldWithValue} from "@/lib/redux/entity/types/stateTypes";
 
 export enum ActionType {
     EDIT = 'edit',
@@ -49,7 +49,7 @@ export interface PrewiredComponentConfig {
 
 
 import {ReactNode} from 'react';
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 
 export interface ActionTargetConfig {
     location: RenderLocation;

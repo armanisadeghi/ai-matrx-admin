@@ -1,8 +1,8 @@
 // components/matrx/Entity/hooks/useAdvancedDataTable.ts
 
 import * as React from "react"
-import {useEntity} from "@/lib/redux/entity/useEntity"
-import {createRecordKey} from "@/lib/redux/entity/utils"
+import {useEntity} from "@/lib/redux/entity/hooks/useEntity"
+import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils"
 import {Draft} from "@reduxjs/toolkit"
 import {
     createActionColumn,

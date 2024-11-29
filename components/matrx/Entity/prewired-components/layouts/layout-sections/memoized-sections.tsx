@@ -28,7 +28,7 @@ import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 
 import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types';
+import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import {Button} from '@/components/ui/button';
 import {
     Maximize2,

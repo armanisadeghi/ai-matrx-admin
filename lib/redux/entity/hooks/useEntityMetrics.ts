@@ -1,6 +1,6 @@
 // lib/redux/entity/useEntityMetrics.ts
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { EntityKeys } from '@/types/entityTypes';
 import { getEntitySlice } from '@/lib/redux/entity/entitySlice';

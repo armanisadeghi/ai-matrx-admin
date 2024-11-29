@@ -1,6 +1,6 @@
 // components/record-display/layouts/TableLayout.tsx
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
-import {EntityStateFieldWithValue} from '@/lib/redux/entity/types';
+import {EntityStateFieldWithValue} from '@/lib/redux/entity/types/stateTypes';
 
 import {FieldAction} from '../components/FieldAction';
 import {RecordDisplayConfig} from "@/components/matrx/Entity/field-actions/types";

@@ -31,7 +31,7 @@ import { Loader2 } from "lucide-react";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {selectFormattedEntityOptions} from "@/lib/redux/schema/globalCacheSelectors";
 import {EntityKeys} from "@/types/entityTypes";
-import { useEntityMetrics } from '@/lib/redux/entity/useEntityMetrics';
+import { useEntityMetrics } from '@/lib/redux/entity/hooks/useEntityMetrics';
 
 const EntityMetrics = () => {
     const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);

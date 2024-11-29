@@ -22,13 +22,14 @@ interface EntityQuickReferenceAccordionBaseProps<TEntity extends EntityKeys> {
     animationPreset?: AnimationPreset;
 }
 
-export function EntityQuickReferenceAccordion<TEntity extends EntityKeys>({
-                                                                              entityKey,
-                                                                              className = '',
-                                                                              customLabel,
-                                                                              density = 'normal',
-                                                                              animationPreset = 'smooth',
-                                                                          }: EntityQuickReferenceAccordionBaseProps<TEntity>) {
+export function EntityQuickReferenceAccordion<TEntity extends EntityKeys>(
+    {
+        entityKey,
+        className = '',
+        customLabel,
+        density = 'normal',
+        animationPreset = 'smooth',
+    }: EntityQuickReferenceAccordionBaseProps<TEntity>) {
     const {
         quickReferenceRecords,
         isSelected,
@@ -80,34 +81,34 @@ export function EntityQuickReferenceAccordion<TEntity extends EntityKeys>({
     const animationConfig = React.useMemo(() => {
         const configs = {
             none: {
-                initial: { opacity: 1, x: 0 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 1, x: 0 },
+                initial: {opacity: 1, x: 0},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 1, x: 0},
                 hover: {},
             },
             subtle: {
-                initial: { opacity: 0, x: -2 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 0, x: 2 },
-                hover: { x: 2 },
+                initial: {opacity: 0, x: -2},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 0, x: 2},
+                hover: {x: 2},
             },
             smooth: {
-                initial: { opacity: 0, x: -5 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 0, x: 5 },
-                hover: { x: 4 },
+                initial: {opacity: 0, x: -5},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 0, x: 5},
+                hover: {x: 4},
             },
             energetic: {
-                initial: { opacity: 0, x: -10 },
-                animate: { opacity: 1, x: 0 },
-                exit: { opacity: 0, x: 10 },
-                hover: { x: 6 },
+                initial: {opacity: 0, x: -10},
+                animate: {opacity: 1, x: 0},
+                exit: {opacity: 0, x: 10},
+                hover: {x: 6},
             },
             playful: {
-                initial: { opacity: 0, x: -15, scale: 0.95 },
-                animate: { opacity: 1, x: 0, scale: 1 },
-                exit: { opacity: 0, x: 15, scale: 0.95 },
-                hover: { x: 8, scale: 1.02 },
+                initial: {opacity: 0, x: -15, scale: 0.95},
+                animate: {opacity: 1, x: 0, scale: 1},
+                exit: {opacity: 0, x: 15, scale: 0.95},
+                hover: {x: 8, scale: 1.02},
             },
         };
         return configs[animationPreset];
@@ -196,7 +197,7 @@ export function EntityQuickReferenceAccordion<TEntity extends EntityKeys>({
                                     >
                                         <span className="truncate">{ref.displayValue}</span>
                                         {isSelected(ref.recordKey) && (
-                                            <Check className={densityConfig.iconSize} />
+                                            <Check className={densityConfig.iconSize}/>
                                         )}
                                     </button>
                                 </motion.div>

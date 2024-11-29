@@ -1,6 +1,10 @@
 // lib/schema/registry.ts
 import {UnifiedSchemaAll} from "@/lib/redux/schema/concepts/types";
 
+type SchemaGenerator = {
+    generate(config: any): Promise<UnifiedSchemaAll>;
+}
+
 export class SchemaRegistry {
     private schemas: Map<string, UnifiedSchemaAll> = new Map();
     private generators: Map<string, SchemaGenerator> = new Map();

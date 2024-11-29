@@ -16,7 +16,7 @@ import {Button} from '@/components/ui/button';
 import {DatePicker} from '@/components/ui/date-picker';
 import {EnhancedJsonViewer, FullJsonViewer} from '@/components/ui';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 import {Badge} from '@/components/ui/badge';

@@ -24,3 +24,7 @@ export interface FormState {
     activeForm: string | null;
 }
 
+export interface FormFieldDependency {
+    fields: string[];
+    effect: (values: Record<string, any>) => Record<string, any>;
+}

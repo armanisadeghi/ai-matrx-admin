@@ -9,7 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types';
+import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 import { motion, AnimatePresence } from 'framer-motion';

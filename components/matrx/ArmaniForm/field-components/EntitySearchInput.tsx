@@ -1,6 +1,6 @@
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import React from "react";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {AnimationPreset, FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 

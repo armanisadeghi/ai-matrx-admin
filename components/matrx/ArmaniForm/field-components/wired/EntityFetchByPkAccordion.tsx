@@ -6,7 +6,7 @@ import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import {cn} from "@/lib/utils";
 import {ChevronRight, ChevronDown} from 'lucide-react';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import {EntityStateField, MatrxRecordId} from "@/lib/redux/entity/types";
+import {EntityStateField, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {useCallback} from "react";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {getEntitySlice} from "@/lib/redux/entity/entitySlice";

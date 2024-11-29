@@ -3,9 +3,9 @@
 import {channel, Channel, eventChannel, EventChannel} from 'redux-saga';
 import { all, call, take, put, fork } from 'redux-saga/effects';
 import { EntityKeys } from '@/types/entityTypes';
-import { watchEntitySagas } from '@/lib/redux/entity/sagas';
+import { watchEntitySagas } from '@/lib/redux/entity/sagas/watcherSaga';
 import {SocketManager} from "@/lib/redux/socket/manager";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import { callbackManager, Callback } from '@/utils/callbackManager';
 const trace = "SagaCoordinator";
 const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
@@ -109,16 +109,33 @@ export class SagaCoordinator {
     }
 
     *handleSocketEvent({ eventName, args }: { eventName: string; args: any[] }) {
-        // Assume eventName is like 'entity/ENTITYKEY/eventType'
-        const [prefix, entityKey, eventType] = eventName.split('/');
-        if (prefix === 'entity' && entityKey && eventType) {
+        // Handle events with dynamic naming like '<sid>_<eventName>_<taskIndex>'
+        const parts = eventName.split('_');
+
+        if (parts.length === 3) {
+            const [sid, baseEventName, taskIndex] = parts;
+
             yield put({
-                type: 'SOCKET_ENTITY_EVENT',
-                payload: { entityKey, eventType, data: args[0] }, // Assuming args[0] contains the data
+                type: `SOCKET_RESPONSE_RECEIVED`,
+                payload: {
+                    sid,
+                    eventName: baseEventName,
+                    taskIndex,
+                    data: args[0], // Assuming args[0] contains the response payload
+                },
             });
         } else {
-            // Handle other socket events
-            yield put({ type: `SOCKET_${eventName.toUpperCase()}`, payload: args });
+            // Fallback to existing logic for other events
+            const [prefix, entityKey, eventType] = eventName.split('/');
+            if (prefix === 'entity' && entityKey && eventType) {
+                yield put({
+                    type: 'SOCKET_ENTITY_EVENT',
+                    payload: { entityKey, eventType, data: args[0] }, // Assuming args[0] contains the data
+                });
+            } else {
+                // Handle generic socket events
+                yield put({ type: `SOCKET_${eventName.toUpperCase()}`, payload: args });
+            }
         }
     }
 

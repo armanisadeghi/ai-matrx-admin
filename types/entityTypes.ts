@@ -835,7 +835,7 @@ type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
 
 import {Draft} from 'immer';
 import {EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
-import {ComponentProps, DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types";
+import {ComponentProps, DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
 import {SchemaField} from "@/lib/redux/schema/concepts/types";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{

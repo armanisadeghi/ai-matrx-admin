@@ -1,18 +1,67 @@
 'use client';
 
 import React, {useState, useCallback, useMemo} from 'react';
-import {useEntity} from '@/lib/redux/entity/useEntity';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
 import {
     AnimationPreset,
     ComponentDensity,
-    ComponentSize, FormColumnsOptions,
+    ComponentSize,
+    FormColumnsOptions,
     FormDirectionOptions,
-    FormLayoutOptions
+    FormLayoutOptions,
+    InlineEntityColumnsOptions,
+    InlineEntityComponentStyles,
+    PageLayoutOptions,
+    QuickReferenceComponentType,
+    TextSizeOptions
 } from '@/types/componentConfigTypes';
 import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
-import {MatrxRecordId} from "@/lib/redux/entity/types";
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+
+export interface FormComponentOptions {
+    entitySelectionComponent?: any;
+    quickReferenceType?: QuickReferenceComponentType;
+    formLayoutType?: PageLayoutOptions;
+}
+
+export interface FormStyleOptions {
+    splitRatio?: number;
+    formLayout?: FormLayoutOptions;
+    formColumns?: FormColumnsOptions;
+    formDirection?: FormDirectionOptions;
+    formEnableSearch?: boolean;
+    formIsSinglePage?: boolean;
+    formIsFullPage?: boolean;
+    floatingLabel?: boolean;
+    showLabel?: boolean;
+    textSize?: TextSizeOptions;
+}
+
+export interface InlineEntityOptions {
+    showInlineEntities: boolean;
+    inlineEntityStyle: InlineEntityComponentStyles;
+    inlineEntityColumns: InlineEntityColumnsOptions;
+    editableInlineEntities: boolean;
+}
+
+export interface DynamicStyleOptions {
+    size?: ComponentSize;
+    density?: ComponentDensity;
+    animationPreset?: AnimationPreset;
+    variant?: MatrxVariant;
+
+}
+
+export interface FormOptions {
+    componentOptions?: FormComponentOptions;
+    styleOptions?: FormStyleOptions;
+    inlineEntityOptions?: InlineEntityOptions;
+    dynamicStyleOptions?: DynamicStyleOptions;
+}
+
 
 export interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;

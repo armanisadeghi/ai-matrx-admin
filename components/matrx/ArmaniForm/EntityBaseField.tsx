@@ -4,7 +4,7 @@ import React from 'react';
 import {ENTITY_FIELD_COMPONENTS} from './field-components';
 import FormFieldMotionWrapper from "@/components/matrx/ArmaniForm/field-components/wrappers/FormFieldMotionWrapper";
 import {EntityKeys} from "@/types/entityTypes";
-import {EntityStateField} from "@/lib/redux/entity/types";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 
 export interface EntityBaseFieldProps {

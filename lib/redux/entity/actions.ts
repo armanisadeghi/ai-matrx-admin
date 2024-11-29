@@ -11,9 +11,9 @@ import {
     LoadingState,
     QuickReferenceRecord, EntityMetrics, EntityRecordArray, EntityRecordMap, EntityFlags,
     EntityError,
-} from "@/lib/redux/entity/types";
+} from "@/lib/redux/entity/types/stateTypes";
 import { UnifiedQueryOptions } from "@/lib/redux/schema/globalCacheSelectors";
-import { QueryOptions } from "./sagaHelpers";
+import { QueryOptions } from "./sagas/sagaHelpers";
 
 
 export type EntityRecordPayload<TEntity extends EntityKeys> = {

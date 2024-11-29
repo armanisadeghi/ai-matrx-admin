@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { createEntitySelectors } from '@/lib/redux/entity/selectors';
 import { createEntitySlice } from '@/lib/redux/entity/slice';
 import { EntityData, EntityKeys } from '@/types/entityTypes';
-import { MatrxRecordId, EntityError } from '@/lib/redux/entity/types';
+import { MatrxRecordId, EntityError } from '@/lib/redux/entity/types/stateTypes';
 
 interface UseValidatedUpdateOrCreateResult<TEntity extends EntityKeys> {
     validatedUpdateRecord: (

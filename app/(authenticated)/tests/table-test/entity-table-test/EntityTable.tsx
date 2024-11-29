@@ -8,7 +8,7 @@ import { MatrixColumn, TableData } from "@/types/tableTypes";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllFieldPrettyNames } from "@/lib/redux/schema/globalCacheSelectors";
 import { EntityData, EntityKeys } from "@/types/entityTypes";
-import { useEntity } from "@/lib/redux/entity/useEntity";
+import { useEntity } from "@/lib/redux/entity/hooks/useEntity";
 
 
 interface EntityTableProps<TEntity extends EntityKeys> {

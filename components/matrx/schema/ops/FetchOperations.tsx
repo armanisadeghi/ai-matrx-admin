@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense, useState } from "react";
-import { useEntity } from "@/lib/redux/entity/useEntity";
+import { useEntity } from "@/lib/redux/entity/hooks/useEntity";
 import { Button, Input } from "@/components/ui";
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";

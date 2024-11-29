@@ -8,16 +8,16 @@ import {
     MatrxRecordId,
     FilterPayload,
     SortPayload,
-} from '@/lib/redux/entity/types';
+} from '@/lib/redux/entity/types/stateTypes';
 import {RootState} from '@/lib/redux/store';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
-import {QueryOptions} from "@/lib/redux/entity/sagaHelpers";
+import {QueryOptions} from "@/lib/redux/entity/sagas/sagaHelpers";
 import {useEntitySelection} from "@/lib/redux/entity/hooks/useEntitySelection";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
-import {useEntityToasts} from './hooks/useEntityToasts';
+import {useEntityToasts} from './useEntityToasts';
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000

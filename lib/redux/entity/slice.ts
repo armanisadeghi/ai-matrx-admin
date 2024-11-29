@@ -12,7 +12,7 @@ import {
     SubscriptionConfig,
     EntityMetadata,
     EntityMetrics, SelectionMode,
-} from "@/lib/redux/entity/types";
+} from "@/lib/redux/entity/types/stateTypes";
 import {
     clearError,
     createRecordKey,
@@ -31,15 +31,15 @@ import {
     setSpecificSelectionMode,
     handleSelectionForDeletedRecord,
     setNewActiveRecord, setStateIsModified
-} from "@/lib/redux/entity/utils";
-import EntityLogger from "./entityLogger";
+} from "@/lib/redux/entity/utils/stateHelpUtils";
+import EntityLogger from "./utils/entityLogger";
 import {
     CreateRecordPayload, DeleteRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
     FetchOnePayload, FetchQuickReferencePayload, FetchRecordsPayload, UpdateRecordPayload
 } from "@/lib/redux/entity/actions";
-import { QueryOptions } from "./sagaHelpers";
+import { QueryOptions } from "./sagas/sagaHelpers";
 import { Callback } from "@/utils/callbackManager";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(

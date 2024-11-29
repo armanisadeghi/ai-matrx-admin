@@ -15,11 +15,11 @@ import {
     MatrxRecordId,
     EntityMetadata,
     EntityStateField, PrimaryKeyMetadata,
-} from '@/lib/redux/entity/types';
-import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
+} from '@/lib/redux/entity/types/stateTypes';
+import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Draft} from "@reduxjs/toolkit";
-import {createRecordKey} from "@/lib/redux/entity/utils";
-import EntityLogger from '../../entityLogger';
+import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
+import EntityLogger from '../../utils/entityLogger';
 
 
 export function useEntityQuickReference<TEntity extends EntityKeys>(

@@ -12,11 +12,12 @@ import userPreferencesReducer from './slices/userPreferencesSlice';
 import testRoutesReducer from './slices/testRoutesSlice';
 import flashcardChatReducer from './slices/flashcardChatSlice';
 import { themeReducer } from '@/styles/themes';
-import {AutomationEntities, EntityKeys} from "@/types/entityTypes";
 import {InitialReduxState} from "@/types/reduxTypes";
 import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
 import uiReducer from './ui/uiSlice';
 import {entitySliceRegistry, initializeEntitySlices} from './entity/entitySlice';
+import {fieldReducer} from "@/lib/redux/concepts/fields/fieldSlice";
+import socketReducer from './features/socket/socketSlice';
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -54,9 +55,36 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         aiChat: aiChatReducer,
         globalCache: globalCacheSlice.reducer,
         ui: uiReducer,
+        formFields: fieldReducer,
+        socket: socketReducer,
     });
 };
 
+
+// import chatReducer from './features/aiChats/chatSlice';
+// import messageReducer from './features/aiChats/messageSlice';
+// import uiReducer from './features/aiChats/uiSlice';
+// import functionsReducer from './features/functions/functionsSlice';
+// import userReducer from './features/user/userSlice';
+// import settingsReducer from './features/settings/settingsSlice';
+// import recipeReducer from './features/recipes/recipeSlice';
+// import brokerReducer from './features/broker/brokerSlice';
+// import socketReducer from './features/socket/socketSlice';
+// import dynamicEventsReducer from './features/dynamicEvents/dynamicEventsSlice';
+// import configReducer from './features/config/configSlice';
+//
+// const rootReducer = combineReducers({
+//     chats: chatReducer,
+//     messages: messageReducer,
+//     ui: uiReducer,
+//     functions: functionsReducer,
+//     user: userReducer,
+//     settings: settingsReducer,
+//     recipes: recipeReducer,
+//     brokers: brokerReducer,
+//     socket: socketReducer,
+//     dynamicEvents: dynamicEventsReducer,
+//     config: configReducer,
 
 
 

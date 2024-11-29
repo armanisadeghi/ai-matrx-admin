@@ -11,7 +11,7 @@ import {
     MatrxRecordId,
     EntityError,
     EntityOperations
-} from '@/lib/redux/entity/types';
+} from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from "@/utils/callbackManager";
 import { toast } from '@/components/ui';
 import { useEntityValidation } from "@/lib/redux/entity/hooks/useValidation";

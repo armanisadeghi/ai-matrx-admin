@@ -1,16 +1,16 @@
 import {AnyEntityDatabaseTable, EntityData, EntityKeys} from "@/types/entityTypes";
 import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {PayloadAction} from "@reduxjs/toolkit";
-import {BatchOperationPayload, FilterPayload, HistoryEntry, MatrxRecordId} from "@/lib/redux/entity/types";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
+import {BatchOperationPayload, FilterPayload, HistoryEntry, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import {all, call, delay, put, select} from "redux-saga/effects";
 import {
     selectEntityDatabaseName,
-    selectEntityMetadata,
+    selectEntityMetadata, selectEntityPrimaryKeyMetadata, selectEntityRelationships,
     selectFrontendConversion
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {createRecordKey} from "@/lib/redux/entity/utils";
+import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {Draft} from "immer";
 import {BaseSagaContext, QueryOptions, UnifiedDatabaseObject} from "./sagaHelpers";
 
@@ -32,6 +32,10 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOne', entityKey);
     entityLogger.log('info', 'Starting fetchOne', action.payload);
 
+    const relationships = yield select(selectEntityRelationships, entityKey);
+
+
+
     let query = api.select("*");
 
     Object.entries(unifiedDatabaseObject.primaryKeysAndValues).forEach(([key, value]) => {
@@ -49,6 +53,113 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     return data;
 }
 
+function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
+    {
+        entityKey,
+        actions,
+        api,
+        action,
+        tableName,
+        unifiedDatabaseObject
+    }: BaseSagaContext<TEntity>) {
+
+    const relationships = yield select(selectEntityRelationships, entityKey);
+
+    let query = api.select("*");
+
+    Object.entries(unifiedDatabaseObject.primaryKeysAndValues).forEach(([key, value]) => {
+        query = query.eq(key, value);
+    });
+
+    const {data: mainData, error} = yield query.single();
+
+    if (error) throw error;
+
+    // Process all relationships
+    const relatedData: Record<string, any> = {};
+
+    for (const relationship of relationships) {
+        const {
+            relationshipType,
+            column,
+            relatedTable,
+            relatedColumn,
+            junctionTable
+        } = relationship;
+
+        try {
+            switch (relationshipType) {
+                case 'foreignKey': {
+                    // Fetch complete record for foreign key relationships
+                    if (mainData[column]) {
+                        const { data, error } = yield api
+                            .from(relatedTable)
+                            .select('*')
+                            .eq(relatedColumn, mainData[column])
+                            .single();
+
+                        if (!error && data) {
+                            relatedData[`${relatedTable}_${column}`] = data;
+                        }
+                    }
+                    break;
+                }
+
+                case 'inverseForeignKey': {
+                    // Get primary key fields for the related table
+                    const relatedTablePrimaryKeys = yield select(selectEntityPrimaryKeyMetadata, relatedTable);
+                    const primaryKeyFields = relatedTablePrimaryKeys.database_fields.join(',');
+
+                    const { data, error } = yield api
+                        .from(relatedTable)
+                        .select(primaryKeyFields)
+                        .eq(relatedColumn, mainData[column]);
+
+                    if (!error && data) {
+                        relatedData[`${relatedTable}_inverse`] = data;
+                    }
+                    break;
+                }
+
+                case 'manyToMany': {
+                    if (junctionTable) {
+                        // First get the related ids from junction table
+                        const { data: junctionData, error: junctionError } = yield api
+                            .from(junctionTable)
+                            .select(relatedColumn)
+                            .eq(column, mainData.id);
+
+                        if (!junctionError && junctionData) {
+                            const relatedIds = junctionData.map(record => record[relatedColumn]);
+
+                            // Get primary key fields for the related table
+                            const relatedTablePrimaryKeys = yield select(selectEntityPrimaryKeyMetadata, relatedTable);
+                            const primaryKeyFields = relatedTablePrimaryKeys.database_fields.join(',');
+
+                            // Then fetch only the primary keys from the related table
+                            const { data: manyToManyData, error: relatedError } = yield api
+                                .from(relatedTable)
+                                .select(primaryKeyFields)
+                                .in(relatedColumn, relatedIds);
+
+                            if (!relatedError && manyToManyData) {
+                                relatedData[`${relatedTable}_manyToMany`] = manyToManyData;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch (relationError) {
+            console.error(`Error fetching related data for ${relatedTable}:`, relationError);
+        }
+    }
+
+    return {
+        ...mainData,
+        relationships: relatedData
+    };
+}
 
 function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
     {

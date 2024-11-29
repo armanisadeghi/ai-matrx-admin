@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import EntityBrowserContent from './EntityBrowserContent';
-import { getReducers, getActions } from '@/lib/redux/entity/byname';
+import { getReducers, getActions } from '@/lib/redux/entity/utils/byname';
 
 export default function EntityBrowserPage() {
 

@@ -14,8 +14,8 @@ import {
     EntityStateField,
     SelectionSummary,
     SelectionMode,
-} from '@/lib/redux/entity/types';
-import {entityDefaultSettings} from "@/lib/redux/entity/defaults";
+} from '@/lib/redux/entity/types/stateTypes';
+import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import { getEntitySlice } from '../entitySlice';
 

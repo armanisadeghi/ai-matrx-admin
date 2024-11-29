@@ -10,7 +10,7 @@ import {
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types';
+import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import {
     EntityQuickReferenceAccordion,
     EntityQuickReferenceAccordionEnhanced,

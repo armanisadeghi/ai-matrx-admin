@@ -1,6 +1,6 @@
 // hooks/useDataTable.ts
 import * as React from "react"
-import { useEntity } from "@/lib/redux/entity/useEntity"
+import { useEntity } from "@/lib/redux/entity/hooks/useEntity"
 import { EntityKeys, EntityData } from "@/types/entityTypes"
 import { Draft } from 'immer'
 import {useMemo, useState} from "react";
@@ -15,7 +15,7 @@ import {
     getSortedRowModel,
     getFilteredRowModel,
 } from "@tanstack/react-table"
-import {createRecordKey} from "@/lib/redux/entity/utils";
+import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 
 interface TanStackTableState {
     sorting: SortingState

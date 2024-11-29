@@ -5,6 +5,85 @@ import {cn} from "@/utils/cn";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {EntityBaseFieldProps} from "../EntityBaseField";
+import {SmartComponentProps} from "@/components/matrx/ArmaniForm/SimpleRelationshipWrapper";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
+import {useForm} from "@/lib/redux/concepts/fields/component-examples/fieldComponentExample";
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
+import {selectFieldValue} from "@/lib/redux/concepts/fields/selectors";
+import {initializeField, updateFieldValue} from "@/lib/redux/concepts/fields/fieldSlice";
+
+
+export const SmartInput: React.FC<SmartComponentProps> = (
+    {
+        entityKey,
+        matrxRecordId,
+        fieldInfo,
+        dynamicStyles,
+        ...props
+    }) => {
+    const dispatch = useAppDispatch();
+    const {mode} = useForm();
+
+    const identifier = {
+        entityKey,
+        fieldName: fieldInfo.name,
+        recordId: matrxRecordId || 'new'
+    };
+
+    const selectors = React.useMemo(
+        () => createEntitySelectors(entityKey),
+        [entityKey]
+    );
+
+    const valueFromGlobalState = useAppSelector((state) =>
+        selectors.selectFieldByKey(state, matrxRecordId, fieldInfo.name)
+    );
+
+    const localValue = useAppSelector(state =>
+        selectFieldValue(state, identifier)) ?? fieldInfo.defaultValue;
+
+    React.useEffect(() => {
+        dispatch(initializeField({
+            identifier,
+            initialValue: valueFromGlobalState ?? fieldInfo.defaultValue,
+            mode
+        }));
+    }, [
+        dispatch,
+        valueFromGlobalState,
+        fieldInfo.defaultValue,
+        matrxRecordId,
+        mode
+    ]);
+
+    const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        dispatch(updateFieldValue({
+            identifier,
+            value: e.target.value
+        }));
+    };
+
+    const isDisabled = mode === 'display' || mode === 'view';
+
+    return (
+        <EntityInput
+            entityKey={entityKey}
+            dynamicFieldInfo={fieldInfo}
+            value={localValue}
+            onChange={onChange}
+            density={dynamicStyles.density}
+            animationPreset={dynamicStyles.animationPreset}
+            size={dynamicStyles.size}
+            className=""
+            variant={dynamicStyles.variant}
+            disabled={isDisabled}
+            floatingLabel={true}
+            labelPosition="default"
+            {...props}
+        />
+    );
+};
+
 
 interface EntityInputProps extends EntityBaseFieldProps,
     Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'size' | 'value'> {
@@ -14,7 +93,7 @@ const EntityInput: React.FC<EntityInputProps> = (
     {
         entityKey,
         dynamicFieldInfo: field,
-        value = "",
+        value = field.defaultValue,
         onChange,
         density = 'normal',
         animationPreset = 'subtle',

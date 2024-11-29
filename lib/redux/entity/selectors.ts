@@ -3,9 +3,9 @@
 import {createSelector} from '@reduxjs/toolkit';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {RootState} from "@/lib/redux/store";
-import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types";
-import {createRecordKey, getRecordIdByRecord, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils";
-import EntityLogger from "@/lib/redux/entity/entityLogger";
+import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {createRecordKey, getRecordIdByRecord, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 
 const trace = "ENTITY SELECTORS";
 
@@ -30,9 +30,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectRecordByKey = createSelector(
-        [selectEntity, (_: RootState, recordKey: string) => recordKey],
+        [selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey],
         (entity, recordKey) => {
             return entity.records[recordKey] || null;
+        }
+    );
+
+    const selectFieldByKey = createSelector(
+        [selectEntity, (_: RootState, recordKey: MatrxRecordId, field: string) => ({ recordKey, field })],
+        (entity, { recordKey, field }) => {
+            const record = entity.records[recordKey];
+            return record ? record[field] || null : null;
         }
     );
 
@@ -777,6 +785,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectMatrxRecordIdByValues,
         selectMatrxRecordIdByKeyValuePairs,
 
+        selectFieldByKey,
 
     };
 };

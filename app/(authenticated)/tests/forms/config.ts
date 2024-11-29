@@ -11,8 +11,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Entity Management Smart Fields',
+        path: 'entity-management-smart-fields',
         relative: true,
         description: ''
     },

@@ -39,7 +39,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import {OperationCallback} from '@/lib/redux/entity/types';
+import {OperationCallback} from '@/lib/redux/entity/types/stateTypes';
 import {Callback} from "@/utils/callbackManager";
 
 interface EntityTestViewProps<TEntity extends EntityKeys> {

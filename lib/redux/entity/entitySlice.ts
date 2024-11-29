@@ -3,8 +3,8 @@
 
 import {createEntitySlice} from './slice';
 import {EntityKeys, AutomationEntities, AutomationEntity} from '@/types/entityTypes';
-import {EntityMetadata} from "@/lib/redux/entity/types";
-import {createInitialState, extractFieldsFromSchema} from "@/lib/redux/entity/initialize";
+import {EntityMetadata} from "@/lib/redux/entity/types/stateTypes";
+import {createInitialState, extractFieldsFromSchema} from "@/lib/redux/entity/utils/initialize";
 
 export const initializeEntitySlice = <TEntity extends EntityKeys>(
     entityKey: TEntity,

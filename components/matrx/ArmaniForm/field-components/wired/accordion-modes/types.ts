@@ -1,5 +1,5 @@
 import { EntityData, EntityKeys } from "@/types/entityTypes";
-import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types";
+import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 import {AnimationPreset, TextSizeOptions} from "@/types/componentConfigTypes";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
@@ -9,7 +9,7 @@ export type ViewModeOptions = 'view' | 'edit' | 'create';
 export interface ModeComponentProps {
     matrxRecordId: MatrxRecordId;
     record: EntityData<EntityKeys>;
-    dynamicFieldInfo: EntityStateField[];
+    individualFieldInfo: EntityStateField[];
     displayField: string;
     entityKey: EntityKeys;
     onModeChange: (mode: ViewModeOptions, recordId?: MatrxRecordId) => void;

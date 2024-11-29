@@ -3,7 +3,7 @@ import React from 'react';
 import {Badge} from '@/components/ui/badge';
 import {formatDistanceToNow, format} from 'date-fns';
 import {cn} from '@/lib/utils';
-import {ComponentProps} from '@/lib/redux/entity/types';
+import {ComponentProps} from '@/lib/redux/entity/types/stateTypes';
 import { FieldDataOptionsType } from '@/types/AutomationSchemaTypes';
 
 interface FormattedFieldValueProps {

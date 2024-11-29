@@ -96,6 +96,146 @@ export const ENTITY_FIELD_COMPONENTS = {
 } as const;
 
 
+export const ENTITY_SMART_COMPONENTS = {
+    INPUT: EntityInput,
+    TEXTAREA: EntityTextarea,
+    SWITCH: EntitySwitch,
+    SELECT: EntitySelect,
+    SLIDER: EntitySlider,
+    UUID_FIELD: EntityUUIDField,
+    UUID_ARRAY: EntityUUIDArray,
+    BUTTON: EntityButton,
+    CHECKBOX: EntityCheckbox,
+    CHIP: EntityChip,
+    COLOR_PICKER: EntityColorPicker,
+    DATE_PICKER: EntityDatePicker,
+    DRAWER: SideDrawer,
+    MENU: EntityDropdownMenu,
+    FILE_UPLOAD: EntityFileUpload,
+    IMAGE_DISPLAY: EntityImageDisplay,
+    JSON_EDITOR: EntityJsonEditor,
+    NUMBER_INPUT: EntityNumberInput,
+    PHONE_INPUT: EntityPhoneInput,
+    RADIO_GROUP: EntityRadioGroup,
+    SEARCH_INPUT: EntitySearchInput,
+    SHEET: EntitySheet,
+    STAR_RATING: EntityStarRating,
+    TIME_PICKER: EntityTimePicker,
+
+    RELATIONAL_INPUT: RelationalInput,
+    RELATIONAL_BUTTON: RelationalButton,
+
+    ACCORDION_VIEW: EntityFkAccordion,
+    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    ACCORDION_SELECTED: EntityShowSelectedAccordion,
+} as const;
+
+export const ENTITY_FK_COMPONENTS = {
+    INPUT: EntityInput,
+    TEXTAREA: EntityTextarea,
+    SWITCH: EntitySwitch,
+    SELECT: EntitySelect,
+    SLIDER: EntitySlider,
+    UUID_FIELD: EntityUUIDField,
+    UUID_ARRAY: EntityUUIDArray,
+    BUTTON: EntityButton,
+    CHECKBOX: EntityCheckbox,
+    CHIP: EntityChip,
+    COLOR_PICKER: EntityColorPicker,
+    DATE_PICKER: EntityDatePicker,
+    DRAWER: SideDrawer,
+    MENU: EntityDropdownMenu,
+    FILE_UPLOAD: EntityFileUpload,
+    IMAGE_DISPLAY: EntityImageDisplay,
+    JSON_EDITOR: EntityJsonEditor,
+    NUMBER_INPUT: EntityNumberInput,
+    PHONE_INPUT: EntityPhoneInput,
+    RADIO_GROUP: EntityRadioGroup,
+    SEARCH_INPUT: EntitySearchInput,
+    SHEET: EntitySheet,
+    STAR_RATING: EntityStarRating,
+    TIME_PICKER: EntityTimePicker,
+
+    RELATIONAL_INPUT: RelationalInput,
+    RELATIONAL_BUTTON: RelationalButton,
+
+    ACCORDION_VIEW: EntityFkAccordion,
+    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    ACCORDION_SELECTED: EntityShowSelectedAccordion,
+} as const;
+
+export const ENTITY_IFK_COMPONENTS = {
+    INPUT: EntityInput,
+    TEXTAREA: EntityTextarea,
+    SWITCH: EntitySwitch,
+    SELECT: EntitySelect,
+    SLIDER: EntitySlider,
+    UUID_FIELD: EntityUUIDField,
+    UUID_ARRAY: EntityUUIDArray,
+    BUTTON: EntityButton,
+    CHECKBOX: EntityCheckbox,
+    CHIP: EntityChip,
+    COLOR_PICKER: EntityColorPicker,
+    DATE_PICKER: EntityDatePicker,
+    DRAWER: SideDrawer,
+    MENU: EntityDropdownMenu,
+    FILE_UPLOAD: EntityFileUpload,
+    IMAGE_DISPLAY: EntityImageDisplay,
+    JSON_EDITOR: EntityJsonEditor,
+    NUMBER_INPUT: EntityNumberInput,
+    PHONE_INPUT: EntityPhoneInput,
+    RADIO_GROUP: EntityRadioGroup,
+    SEARCH_INPUT: EntitySearchInput,
+    SHEET: EntitySheet,
+    STAR_RATING: EntityStarRating,
+    TIME_PICKER: EntityTimePicker,
+
+    RELATIONAL_INPUT: RelationalInput,
+    RELATIONAL_BUTTON: RelationalButton,
+
+    ACCORDION_VIEW: EntityFkAccordion,
+    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    ACCORDION_SELECTED: EntityShowSelectedAccordion,
+} as const;
+
+export const ENTITY_M2M_COMPONENTS = {
+    INPUT: EntityInput,
+    TEXTAREA: EntityTextarea,
+    SWITCH: EntitySwitch,
+    SELECT: EntitySelect,
+    SLIDER: EntitySlider,
+    UUID_FIELD: EntityUUIDField,
+    UUID_ARRAY: EntityUUIDArray,
+    BUTTON: EntityButton,
+    CHECKBOX: EntityCheckbox,
+    CHIP: EntityChip,
+    COLOR_PICKER: EntityColorPicker,
+    DATE_PICKER: EntityDatePicker,
+    DRAWER: SideDrawer,
+    MENU: EntityDropdownMenu,
+    FILE_UPLOAD: EntityFileUpload,
+    IMAGE_DISPLAY: EntityImageDisplay,
+    JSON_EDITOR: EntityJsonEditor,
+    NUMBER_INPUT: EntityNumberInput,
+    PHONE_INPUT: EntityPhoneInput,
+    RADIO_GROUP: EntityRadioGroup,
+    SEARCH_INPUT: EntitySearchInput,
+    SHEET: EntitySheet,
+    STAR_RATING: EntityStarRating,
+    TIME_PICKER: EntityTimePicker,
+
+    RELATIONAL_INPUT: RelationalInput,
+    RELATIONAL_BUTTON: RelationalButton,
+
+    ACCORDION_VIEW: EntityFkAccordion,
+    ACCORDION_VIEW_ADD_EDIT: RelatedEntityAccordion, // TODO Check if this works,
+    ACCORDION_SELECTED: EntityShowSelectedAccordion,
+} as const;
+
+
+
+
+
 const defaultProps = {
     "subComponent": "default",
     "rows": "default",

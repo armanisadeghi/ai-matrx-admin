@@ -12,8 +12,8 @@ import {
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys} from '@/types/entityTypes';
-import {useEntity} from '@/lib/redux/entity/useEntity';
-import {QuickReferenceRecord} from '@/lib/redux/entity/types';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
+import {QuickReferenceRecord} from '@/lib/redux/entity/types/stateTypes';
 
 interface PreWiredEntityRecordHeaderProps {
     onEntityChange?: (value: EntityKeys | null) => void;
