@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
-import {useReactTable,} from "@tanstack/react-table"
-import {EntityKeys, EntityData} from "@/types/entityTypes"
+import {Row, useReactTable,} from "@tanstack/react-table"
+import {EntityKeys} from "@/types/entityTypes"
 import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
 import {DefaultTable} from "@/components/matrx/Entity/DataTable/variants/DefaultTable";
 import {DEFAULT_TABLE_OPTIONS, useEntityDataTable} from "@/components/matrx/Entity/hooks/useEntityDataTable";
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 export interface DataTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -21,7 +22,7 @@ export interface DataTableProps<TEntity extends EntityKeys> {
             showExpand?: boolean;
             custom?: Array<{
                 label: string;
-                onClick: (row: EntityData<TEntity>) => void;
+                onClick: (row: EntityDataWithId<TEntity>) => void;
                 variant?: "outline" | "destructive";
                 size?: "xs" | "sm";
             }>;
@@ -48,6 +49,8 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
     const {
         loadingState,
         paginationInfo,
+        handleSingleSelection,
+        primaryKeyMetadata,
         matrxTableData: {
             tanstackConfig,
             tableState,
@@ -66,15 +69,17 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
     }, [entityKey]);
 
 
-    const [selectedRow, setSelectedRow] = React.useState<EntityData<TEntity> | null>(null);
+    const [selectedRow, setSelectedRow] = React.useState<EntityDataWithId<TEntity> | null>(null);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<string>('view');
 
-    const handleAction = React.useCallback((actionName: string, rowData: EntityData<TEntity>) => {
-        setSelectedRow(rowData);
+    const handleAction = React.useCallback((actionName: string, row: Row<EntityDataWithId<TEntity>>) => {
+        console.log('Action:', actionName, 'Row:', row.original);
+        handleSingleSelection(row.original.matrxRecordId);
+        setSelectedRow(row.original);
         setActiveTab(actionName);
         setIsModalOpen(true);
-    }, [setSelectedRow, setActiveTab, setIsModalOpen]);
+    }, [setSelectedRow, setActiveTab, setIsModalOpen, handleSingleSelection]);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -97,7 +102,7 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
         );
     }, [tanstackConfig.columns, options.showActions, defaultActions.expanded]);
 
-    const table = useReactTable({
+    const table = useReactTable<EntityDataWithId<TEntity>>({
         ...tanstackConfig,
         columns: columnsWithActions,
         data: tanstackConfig.data || [],
@@ -109,6 +114,7 @@ export function EntityBaseTable<TEntity extends EntityKeys>(
         onColumnVisibilityChange: tanstackConfig.onColumnVisibilityChange,
         onGlobalFilterChange: tanstackConfig.onGlobalFilterChange,
     });
+
 
     return (
         <div className="space-y-4">

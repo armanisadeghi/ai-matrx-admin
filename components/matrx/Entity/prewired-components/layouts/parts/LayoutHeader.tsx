@@ -5,7 +5,7 @@ import {HelpCircle} from 'lucide-react';
 import {TooltipProvider, Tooltip, TooltipTrigger, TooltipContent} from "@/components/ui/tooltip";
 import {cn} from '@/lib/utils';
 import {densityConfig} from "@/config/ui/entity-layout-config";
-import {ComponentDensity} from '../EntityLayout';
+import { ComponentDensity } from '@/types/componentConfigTypes';
 
 interface LayoutHeaderProps {
     title: string;

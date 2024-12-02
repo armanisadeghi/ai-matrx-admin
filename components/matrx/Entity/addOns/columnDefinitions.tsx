@@ -17,6 +17,12 @@ import {CheckCircle, Filter, LinkIcon, XCircle} from "lucide-react";
 
 import {Row, ColumnDef, Column} from '@tanstack/react-table';
 import {TableFilter} from "@/components/matrx/Entity/addOns/TableFilter";
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+
+type TableRow<TEntity extends EntityKeys> = {
+    id: MatrxRecordId;
+    data: EntityData<TEntity>;
+}
 
 declare module '@tanstack/react-table' {
     interface ColumnMeta<TData, TValue> {
@@ -101,7 +107,7 @@ export type ActionColumnOptions<TEntity extends EntityKeys> = {
 };
 
 // Union type of all possible column configurations
-export type ColumnOptions <TEntity extends EntityKeys> =
+export type ColumnOptions<TEntity extends EntityKeys> =
     | { type: "select" }
     | DataColumnOptions
     | StatusColumnOptions
@@ -239,7 +245,7 @@ export const createTableColumnDefinitions = <TEntity extends EntityKeys>() => {
 
     const createActionsColumn = (options: {
         actions: Array<{
-        id?: string;
+            id?: string;
             label: string;
             icon?: React.ComponentType<{ className?: string }>;
             onClick: (row: EntityData<TEntity>) => void;

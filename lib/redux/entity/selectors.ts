@@ -3,8 +3,8 @@
 import {createSelector} from '@reduxjs/toolkit';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {RootState} from "@/lib/redux/store";
-import {EntityState, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {createRecordKey, getRecordIdByRecord, parseRecordKey, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
+import {EntityDataWithId, EntityState, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {createRecordKey, getRecordIdByRecord, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 
 const trace = "ENTITY SELECTORS";
@@ -279,6 +279,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             const {page, pageSize} = entity.pagination;
             const startIndex = (page - 1) * pageSize;
             return Object.values(records).slice(startIndex, startIndex + pageSize);
+        }
+    );
+
+    const selectCurrentPageWithRecordId = createSelector(
+        [selectEntity, selectAllRecords],
+        (entity, records): EntityDataWithId<TEntity>[] => {
+            const {page, pageSize} = entity.pagination;
+            const startIndex = (page - 1) * pageSize;
+
+            return Object.entries(records)
+                .slice(startIndex, startIndex + pageSize)
+                .map(([recordKey, record]) => ({
+                    ...record,
+                    matrxRecordId: recordKey
+                }));
         }
     );
 
@@ -786,6 +801,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectMatrxRecordIdByKeyValuePairs,
 
         selectFieldByKey,
+        selectCurrentPageWithRecordId,
 
     };
 };

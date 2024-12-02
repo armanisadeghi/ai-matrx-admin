@@ -25,8 +25,7 @@ import {
 import {
     AnimationPreset,
     ComponentDensity,
-    ComponentSize,
-    FormColumnOptions,
+    ComponentSize, FormColumnsOptions,
     FormDirectionOptions,
     FormLayoutOptions,
     LayoutVariant, QuickReferenceComponentType
@@ -94,7 +93,7 @@ export interface EntityLayoutProps {
     formOptions?: {
         size?: ComponentSize;
         formLayout?: FormLayoutOptions;
-        formColumns?: FormColumnOptions;
+        formColumns?: FormColumnsOptions;
         formDirection?: FormDirectionOptions;
         formEnableSearch?: boolean;
         formIsSinglePage?: boolean;

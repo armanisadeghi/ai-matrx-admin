@@ -73,8 +73,8 @@ export interface FormState {
     [key: string]: any;
 }
 
-export type FormDensity = 'normal' | 'compact' | 'spacious';
-export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful';
+export type FormDensity = 'normal' | 'compact' | 'comfortable';
+export type AnimationPreset = 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful' | 'feedback' | 'error';
 
 export interface FlexAnimatedFormProps {
     fields: FlexFormField[];

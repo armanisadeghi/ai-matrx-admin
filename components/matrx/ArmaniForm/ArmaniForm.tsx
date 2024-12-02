@@ -175,7 +175,7 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
             density,
             densityStyles,
             containerSpacing,
-            getGridColumns,
+            getGridColumns: () => getGridColumns(columns, dynamicFieldInfo),
             getFlexDirection,
             animationPreset,
             containerVariants,
@@ -197,7 +197,6 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
                                        setCarouselActiveIndex={setCarouselActiveIndex}/>;
             case 'timeline':
                 return <TimelineLayout {...commonProps} />;
-
             case 'TrialFloatingLayout':
                 return <TrialFloatingLayout {...commonProps} />;
             case 'TrialListGroupLayout':
@@ -212,8 +211,6 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
                 return <TrialStackedLayout {...commonProps} />;
             case 'TrialFieldTabsLayout':
                 return <TrialFieldTabsLayout {...commonProps} />;
-
-
             case 'grid':
             default:
                 return <GridLayout {...commonProps} />;

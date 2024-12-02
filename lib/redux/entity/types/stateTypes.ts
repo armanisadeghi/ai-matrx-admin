@@ -14,11 +14,6 @@ import {
 import {TypeBrand} from "@/utils/schema/initialSchemas";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 
-// --- Basic Types ---
-export type MatrxRecordId = string;
-export type EntityRecord<TEntity extends EntityKeys> = EntityData<TEntity>;
-export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, EntityData<TEntity>>;
-export type EntityRecordArray<TEntity extends EntityKeys> = EntityData<TEntity>[];
 
 export type SuccessResult = { status: "success"; data: void };
 export type ErrorResult = { status: "error"; error: any };
@@ -259,11 +254,21 @@ export interface SelectionState {
     lastSelected?: MatrxRecordId;
 }
 
+export type EntityDataWithId<TEntity extends EntityKeys> = EntityData<TEntity> & {
+    matrxRecordId: MatrxRecordId
+};
 
+// --- Basic Types ---
+export type MatrxRecordId = string;
+export type EntityRecord<TEntity extends EntityKeys> = EntityData<TEntity>;
+export type EntityRecordArray<TEntity extends EntityKeys> = EntityData<TEntity>[];
+
+export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, EntityData<TEntity>>;
+// Add this to your types
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
-    records: Record<MatrxRecordId, EntityData<TEntity>>;   // Data is here
+    records: EntityRecordMap<EntityKeys>;   // Data is here
     unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
     quickReference: QuickReferenceState;  // Quick reference data is here
     selection: SelectionState;
@@ -284,6 +289,7 @@ export type EntityOperations =
     | 'FETCH_ONE'
     | 'FETCH_QUICK_REFERENCE'
     | 'FETCH_RECORDS'
+    | 'FETCH_ONE_WITH_FK_IFK'
     | 'FETCH_ALL'
     | 'FETCH_PAGINATED'
     | 'CREATE'
@@ -302,6 +308,7 @@ export interface EntityOperationFlags {
     UPDATE_STATUS?: FlagStatusOptions;
     DELETE_STATUS?: FlagStatusOptions;
     CUSTOM_STATUS?: FlagStatusOptions;
+    FETCH_ONE_WITH_FK_IFK?: FlagStatusOptions;
 }
 
 export interface EntityFlags {

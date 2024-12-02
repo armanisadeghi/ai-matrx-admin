@@ -24,7 +24,7 @@ export class SocketManager {
                 try {
                     const { io } = await import('socket.io-client');
 
-                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://localhost:8000' // 'http://matrx.89.116.187.5.sslip.io/'//http://localhost:8000';
+                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://matrx.89.116.187.5.sslip.io' // 'http://matrx.89.116.187.5.sslip.io'//http://localhost:8000';
 
                     // Connect directly to the required namespace
                     this.socket = io(`${socketAddress}/UserSession`, {
@@ -92,20 +92,18 @@ export class SocketManager {
 
         // Emit the task to the backend
         socket.emit(eventName, data, (response: { event_name?: string }) => {
-            const sid = socket.id; // Get the current socket ID
-            const taskName = data[0]?.task || 'unknown_task'; // Extract the task name
-            const taskIndex = data[0]?.index || '0'; // Default task index to '0'
+            const sid = socket.id;
+            const taskName = data[0]?.task || 'unknown_task';
+            const taskIndex = data[0]?.index || 0;
             const basicEventName = `${sid}_${taskName}_${taskIndex}`;
 
             if (response?.event_name) {
                 console.log('Task confirmed. Listening for event:', response.event_name);
 
-                // Set up a dynamic listener for the provided event name
                 this.addDynamicEventListener(response.event_name, callback);
             } else {
                 console.log(`No dynamic event name provided. Falling back to: ${basicEventName}`);
 
-                // Set up a fallback listener using the task name
                 this.addDynamicEventListener(basicEventName, (fallbackResponse) => {
                     console.log(
                         // `Fallback response received for event: ${basicEventName}`,
@@ -131,8 +129,7 @@ export class SocketManager {
         }
 
         const wrappedListener = (data: any) => {
-            // console.log(`Dynamic event received: ${eventName}`, data);
-            listener(data); // Pass the data to the provided callback
+            listener(data);
         };
 
         socket.on(eventName, wrappedListener);

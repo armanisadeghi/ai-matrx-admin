@@ -3,6 +3,9 @@ import {Link} from "lucide-react"
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {ButtonSize, ButtonVariant} from "../types/tableBuilderTypes";
 import {ActionConfig, SmartFieldConfig, TableColumn} from "@/components/matrx/Entity/types/advancedDataTableTypes";
+import { useMemo } from 'react';
+import {Row} from "@tanstack/react-table";
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 
 const getSpecialValue = (value: any, formatting: any) => {
@@ -155,6 +158,8 @@ const handleObjectField = (value: object) => {
     );
 };
 
+
+
 export const createSmartCellRenderer = (
     fieldType: string,
     fieldKey: string,
@@ -164,53 +169,50 @@ export const createSmartCellRenderer = (
         databaseTable?: string;
     }
 ) => {
-    console.log('createSmartCellRenderer with Field Type:', fieldType);
+    return useMemo(() => {
+        return ({ getValue }: { getValue: () => any }) => {
+            const value = getValue();
 
-    return ({getValue}: { getValue: () => any }) => {
-        const value = getValue();
+            if (value === null || value === undefined) return '';
+            if (!metadata.isNative && metadata.databaseTable) {
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('Non-native field:', fieldKey, value);
+                }
+                return handleNonNativeField(value, metadata.databaseTable);
+            }
 
-        // Handle null/undefined
-        if (value === null || value === undefined) return '';
+            switch (fieldType) {
+                case 'string':
+                    return String(value);
 
-        // Handle non-native fields first
-        if (!metadata.isNative && metadata.databaseTable) {
-            console.log('Non-native field:', fieldKey, value);
-            return handleNonNativeField(value, metadata.databaseTable);
-        }
+                case 'number':
+                    return handleNumberField(value);
 
-        // Handle native fields based on type
-        switch (fieldType) {
-            case 'string':
-                return String(value);
+                case 'boolean':
+                    return handleBooleanField(value, smartConfig.boolean);
 
-            case 'number':
-                return handleNumberField(value);
+                case 'date':
+                    return handleDateField(value);
 
-            case 'boolean':
-                return handleBooleanField(value, smartConfig.boolean);
+                case 'uuid':
+                    return handleUUIDField(value, smartConfig.uuid);
 
-            case 'date':
-                return handleDateField(value);
+                case 'object':
+                    return handleObjectField(value);
 
-            case 'uuid':
-                return handleUUIDField(value, smartConfig.uuid);
+                case 'array':
+                    return handleArrayField(value);
 
-            case 'object':
-                return handleObjectField(value);
-
-            case 'array':
-                return handleArrayField(value);
-
-            default:
-                return String(value);
-        }
-    };
+                default:
+                    return String(value);
+            }
+        };
+    }, [fieldType, fieldKey, metadata.isNative, metadata.databaseTable, smartConfig.boolean, smartConfig.uuid]);
 };
 
-
-export const createActionColumn = (
+export const createActionColumn = <TEntity extends EntityKeys>(
     config: ActionConfig,
-    onAction: (action: string, row: any) => void
+    onAction: (action: string, row: EntityDataWithId<TEntity>) => void
 ): TableColumn => {
     const calculateWidth = () => {
         let totalWidth = 0;

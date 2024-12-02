@@ -65,7 +65,7 @@ export function EntityTestView<TEntity extends EntityKeys>(
         selectionMode,
         // Selection Utilities
         isSelected,
-        handleSelection,
+        handleAddToSelection,
         toggleSelectionMode,
         clearSelection,
         // Record Operations

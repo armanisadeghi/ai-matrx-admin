@@ -5,7 +5,6 @@ import {
     BatchOperationPayload,
     FilterPayload,
     MatrxRecordId,
-    SortPayload,
     SubscriptionConfig,
     EntityMetadata,
     LoadingState,
@@ -101,6 +100,11 @@ export type FetchAllPayload = {
 };
 
 export type FetchOnePayload = {
+    matrxRecordId: MatrxRecordId;
+    callbackId?: string;
+};
+
+export type FetchOneWithFkIfkPayload = {
     matrxRecordId: MatrxRecordId;
     callbackId?: string;
 };

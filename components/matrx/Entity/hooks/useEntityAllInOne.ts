@@ -1,6 +1,6 @@
 // lib/redux/entity/useEntity.ts
 
-import {useMemo, useCallback, useState, useEffect} from 'react';
+import React, {useMemo, useCallback, useState, useEffect} from 'react';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppSelector, useAppDispatch} from '@/lib/redux/hooks';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
@@ -144,7 +144,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const currentFilters = useAppSelector(selectors.selectCurrentFilters);
     const filteredRecords = useAppSelector(selectors.selectFilteredRecords);
     const loadingState = useAppSelector(selectors.selectLoadingState);
-    const error = useAppSelector(selectors.selectError);
+    const error = useAppSelector(selectors.selectErrorState);
     const isStale = useAppSelector(selectors.selectIsStale);
     const hasUnsavedChanges = useAppSelector(selectors.selectHasUnsavedChanges);
     const entityMetadata = useAppSelector(selectors.selectEntityMetadata);
@@ -199,7 +199,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         console.log(`Entity Hook Initialized for: ${entityKey}`);
     }, [entityKey]);
 
-    const fetchRecords = useCallback((page: number, pageSize: number, options?: QueryOptions<TEntity>) => {
+    const fetchRecords = useCallback((page: number, pageSize: number, options?) => {
         dispatch(actions.fetchRecords({page, pageSize, options}));
     }, [dispatch, actions]);
 

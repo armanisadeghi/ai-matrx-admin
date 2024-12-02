@@ -32,7 +32,7 @@ const NextNavCardFull = ({ items, basePath = '' }: NavCardProps) => {
                                     <div className="flex-1">
                                         <CardTitle className="text-xl mb-1">{item.title}</CardTitle>
                                         {item.description && (
-                                            <CardDescription className="text-base">
+                                            <CardDescription className="text-base whitespace-pre-line">
                                                 {item.description}
                                             </CardDescription>
                                         )}

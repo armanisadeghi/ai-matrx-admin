@@ -10,7 +10,7 @@ import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types
 export interface EntityBaseFieldProps {
     entityKey: EntityKeys;
     dynamicFieldInfo: EntityStateField;
-    value: any;
+    value?: any;
     onChange: (value: any) => void;
     density?: 'compact' | 'normal' | 'comfortable';
     animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful' |  'feedback' | 'error';

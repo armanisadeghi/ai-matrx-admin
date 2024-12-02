@@ -80,7 +80,7 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
         setFilters,
         setSorting,
         loadingState,
-        setSelection,
+        addToSelection,
     } = useEntity(entityKey)
 
     const [tableState, setTableState] = useState<TanStackTableState>({
@@ -169,7 +169,7 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
             setTableState(prev => ({...prev, rowSelection: newSelection}));
             const selectedRows = currentPage
                 .filter((_, index) => newSelection[index]) as Draft<EntityData<TEntity>>[];
-            setSelection(selectedRows, 'multiple');
+            addToSelection(createRecordKey(primaryKeyMetadata, selectedRows));
         },
         onGlobalFilterChange: (value: string) => {
             setTableState(prev => ({...prev, globalFilter: value}));
@@ -182,7 +182,7 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
         primaryKeyMetadata,
         fetchRecords,
         setSorting,
-        setSelection
+        addToSelection
     ]);
 
     const tanstackUtils = useMemo(() => ({

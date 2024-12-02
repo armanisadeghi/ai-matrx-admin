@@ -105,7 +105,7 @@ const EntityPageClient = () => {
             label: string;
             icon: React.ComponentType<any>;
             value: any;
-            options: SelectOption<string | number>[];
+            options: SelectOption[];
             onChange: (value: any) => void;
         }
     ) => (

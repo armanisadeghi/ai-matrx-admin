@@ -9,7 +9,7 @@ import {
     RowSelectionState,
     GroupingState,
     SortingState,
-    getSortedRowModel,
+    getSortedRowModel, Row,
 } from "@tanstack/react-table"
 
 import {
@@ -39,7 +39,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import {Input} from "@/components/ui/input"
-import {EntityKeys, EntityData} from "@/types/entityTypes"
+import {EntityKeys} from "@/types/entityTypes"
 import {Spinner} from "@nextui-org/spinner"
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
 import {EntityTabModal} from "@/components/matrx/Entity"
@@ -51,7 +51,7 @@ import {
     ActionConfig,
     SmartFieldConfig,
     TableDensity,
-    TableState, getColumnMeta,
+    getColumnMeta,
 } from "@/components/matrx/Entity/types/advancedDataTableTypes";
 import {
     Tooltip,
@@ -75,6 +75,7 @@ import {
 import {Checkbox} from "@/components/ui/checkbox"
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {Separator} from "@/components/ui/separator"
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 export interface AdvancedDataTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity
@@ -83,7 +84,7 @@ export interface AdvancedDataTableProps<TEntity extends EntityKeys> {
     formatting?: ValueFormattingOptions
     smartFields?: SmartFieldConfig
     actions?: ActionConfig
-    onAction?: (action: string, row: EntityData<TEntity>) => void
+    onAction?: (action: string, row: EntityDataWithId<EntityKeys>) => void
 }
 
 const densityConfig: Record<TableDensity, string> = {
@@ -100,10 +101,10 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
         formatting,
         smartFields,
         actions,
-        onAction
+        onAction,
     }: AdvancedDataTableProps<TEntity>) {
 
-    const [selectedRow, setSelectedRow] = React.useState<EntityData<TEntity> | null>(null)
+    const [selectedRow, setSelectedRow] = React.useState<EntityDataWithId<EntityKeys> | null>(null)
     const [isModalOpen, setIsModalOpen] = React.useState(false)
     const [activeTab, setActiveTab] = React.useState<string>('view')
     const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({})
@@ -120,7 +121,9 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
         tableState,
         tableConfig,
         tableUtils,
-        options: mergedOptions
+        options: mergedOptions,
+        addToSelection,
+        handleSingleSelection,
     } = useAdvancedDataTable({
         entityKey,
         options: {
@@ -129,8 +132,11 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
             smartFields,
             actions,
         },
-        onAction: (action, row) => {
+
+        onAction: (action: string, row: EntityDataWithId<TEntity>) => {
+            console.log('AdvancedDataTable onAction Action:', action, row)
             if (action === 'view' || action === 'edit' || action === 'delete') {
+                handleSingleSelection(row.matrxRecordId);
                 setSelectedRow(row)
                 setActiveTab(action)
                 setIsModalOpen(true)
@@ -139,7 +145,7 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
         }
     })
 
-    const table = useReactTable<EntityData<TEntity>>({
+    const table = useReactTable<EntityDataWithId<TEntity>>({
         ...tableConfig,
         state: {
             ...tableConfig.state,
@@ -157,8 +163,6 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
         onGroupingChange: setGrouping,
         debugTable: true,
     })
-
-
 
 
     const handleCloseModal = () => {
@@ -318,11 +322,11 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
     return (
         <div className="relative w-full">
             {/* Loading Overlay */}
-            {loadingState.loading && (
-                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">
-                    <Spinner size="lg" label="Loading..." color="primary" labelColor="primary"/>
-                </div>
-            )}
+            {/*{loadingState.loading && (*/}
+            {/*    <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">*/}
+            {/*        <Spinner size="lg" label="Loading..." color="primary" labelColor="primary"/>*/}
+            {/*    </div>*/}
+            {/*)}*/}
 
             {/* Error Display */}
             {loadingState.error && (
@@ -456,9 +460,13 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
                                         )}>
                                             <Checkbox
                                                 checked={row.getIsSelected()}
-                                                onCheckedChange={(value) => row.toggleSelected(!!value)}
+                                                onCheckedChange={(value) => {
+                                                    row.toggleSelected(!!value);
+                                                    if (value) {
+                                                        handleSingleSelection(row.original.matrxRecordId);
+                                                    }
+                                                }}
                                                 aria-label="Select row"
-                                                className="ml-4"
                                             />
                                         </TableCell>
                                     )}
@@ -470,8 +478,10 @@ export function AdvancedDataTable<TEntity extends EntityKeys>(
                                             className={cn(
                                                 "overflow-hidden text-ellipsis",
                                                 densityConfig[density || 'normal'], // Add this line
-                                                getColumnMeta(cell.column.columnDef)?.align === 'right' ? "text-right" : "",
-                                                getColumnMeta(cell.column.columnDef)?.align === 'center' ? "text-center" : ""
+                                                getColumnMeta(cell.column.columnDef)?.align === 'right' ? "text-right"
+                                                                                                        : "",
+                                                getColumnMeta(cell.column.columnDef)?.align === 'center' ? "text-center"
+                                                                                                         : ""
                                             )}
                                         >
                                             {mergedOptions.showTooltips ? (

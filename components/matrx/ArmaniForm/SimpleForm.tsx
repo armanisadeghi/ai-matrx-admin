@@ -3,20 +3,7 @@
 import React, {useRef} from "react";
 import EntityBaseField from "./EntityBaseField";
 import { MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {
-    AnimationPreset,
-     ComponentDensity, ComponentSize,
-    FormColumnsOptions,
-    FormDirectionOptions,
-    FormLayoutOptions,
-    InlineEntityColumnsOptions,
-    InlineEntityComponentStyles,
-    PageLayoutOptions,
-    QuickReferenceComponentType,
-    TextSizeOptions
-} from "@/types/componentConfigTypes";
 import {EntityKeys} from "@/types/entityTypes";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import EntityFkWrapper from "./SimpleRelationshipWrapper";
 import {DynamicLayoutOptions, DynamicStyleOptions} from "@/components/matrx/Entity/prewired-components/layouts/types";
 
@@ -40,7 +27,7 @@ interface SimpleFormProps {
 }
 
 
-const ArmaniForm: React.FC<SimpleFormProps> = (
+const SimpleArmaniForm: React.FC<SimpleFormProps> = (
     {
         primaryEntityKey,
         foreignEntityKeys = null,
@@ -69,9 +56,17 @@ const ArmaniForm: React.FC<SimpleFormProps> = (
         dynamicStyleOptions,
     };
 
+    // Add the missing required props for EntityBaseField
+    const entityBaseFieldProps = {
+        entityKey: primaryEntityKey,
+        dynamicFieldInfo: {}, // You need to provide the correct dynamicFieldInfo
+        onChange: (value: any) => {}, // You need to provide the correct onChange handler
+        ...commonProps
+    };
+
     return (
         <div ref={formRef}>
-            <EntityBaseField {...commonProps} />
+            <EntityBaseField {...entityBaseFieldProps} />
 
             {/* Render a wrapper for each foreignActiveRecordId corresponding to foreignEntityKeys */}
             {foreignEntityKeys &&
@@ -101,4 +96,4 @@ const ArmaniForm: React.FC<SimpleFormProps> = (
     );
 };
 
-export default ArmaniForm;
+export default SimpleArmaniForm;

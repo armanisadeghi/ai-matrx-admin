@@ -21,7 +21,7 @@ export default async function AuthenticatedLayout(
     }) {
     const supabase = await createClient(); // Await the async function to get the Supabase client
 
-    const layoutProps = {primaryLinks: appSidebarLinks, secondaryLinks: adminSidebarLinks, initialOpen: false};
+    const layoutProps = {primaryLinks: appSidebarLinks, secondaryLinks: adminSidebarLinks, initialOpen: true};
 
     const {
         data: {user},

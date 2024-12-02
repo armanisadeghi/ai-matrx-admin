@@ -18,6 +18,7 @@ import {
     selectPayloadOptionsDatabaseConversion, selectUnifiedDatabaseObjectConversion
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {callbackManager} from "@/utils/callbackManager";
+import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
 
 
 const trace = "SAGA CONVERSIONS";
@@ -284,6 +285,102 @@ export function* withFullConversion<TEntity extends EntityKeys>(
             code: error.code,
             details: error
         }));
+
+        if (payload.callbackId) {
+            callbackManager.trigger(action.payload.callbackId, { success: false, error: "Error message" });
+        }
+        throw error;
+    }
+}
+
+
+export function getSliceActions<TEntity extends EntityKeys>(entityKey: TEntity) {
+    const slice = getEntitySlice(entityKey);
+    return slice.actions;
+}
+
+export function* withFullRelationConversion<TEntity extends EntityKeys>(
+    entityKey: TEntity,
+    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    action: PayloadAction<any>,
+    successAction?: (payload: any) => PayloadAction<any>
+) {
+    const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL RELATION CONVERSION', entityKey);
+    const payload = action.payload;
+
+    try {
+        const flexibleQueryOptions: FlexibleQueryOptions = {
+            entityNameAnyFormat: entityKey,
+        };
+
+        entityLogger.log('debug', 'Flexible Query Options', flexibleQueryOptions);
+
+        optionalActionKeys.forEach((key) => {
+            if (key in payload && payload[key] !== undefined) {
+                // @ts-ignore
+                flexibleQueryOptions[key] = payload[key];
+            }
+        });
+
+        entityLogger.log('debug', 'Flexible Query Options with optional keys', flexibleQueryOptions);
+
+        if (payload.columns || payload.fields) {
+            flexibleQueryOptions.columns = payload.columns || payload.fields;
+        }
+
+        entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
+
+        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(
+            selectUnifiedDatabaseObjectConversion,
+            flexibleQueryOptions
+        );
+
+        entityLogger.log('info', 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
+
+        const api = yield call(initializeDatabaseApi, unifiedDatabaseObject.tableName);
+        entityLogger.log('debug', 'Database API initialized', entityKey);
+
+        const { data, error } = yield api.rpc('fetch_all_fk_ifk', {
+            p_table_name: unifiedDatabaseObject.tableName,
+            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        const frontendResponse = yield select(selectFrontendConversion, { entityName: entityKey, data });
+
+        if (!frontendResponse || typeof frontendResponse !== 'object') {
+            throw new Error("Unexpected frontendResponse format");
+        }
+
+        for (const [entityKey, records] of Object.entries(frontendResponse)) {
+            const actions = getSliceActions(entityKey as EntityKeys);
+            if (actions) {
+                yield put(actions.fetchOneWithFkIfkSuccess(records));
+            } else {
+                console.warn(`No actions found for entity key: ${entityKey}`);
+            }
+        }
+
+        if (successAction) {
+            yield put(successAction(frontendResponse));
+        }
+
+        if (action.payload.callbackId) {
+            callbackManager.trigger(action.payload.callbackId, { success: true });
+        } else {
+            console.warn("No callbackId provided in action payload");
+        }
+    } catch (error: any) {
+        yield put(
+            actions.setError({
+                message: error.message || "An error occurred during database operation",
+                code: error.code,
+                details: error,
+            })
+        );
 
         if (payload.callbackId) {
             callbackManager.trigger(action.payload.callbackId, { success: false, error: "Error message" });

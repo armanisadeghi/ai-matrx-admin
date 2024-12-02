@@ -15,7 +15,7 @@ export default function Layout(
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
     return (
-        <div className="flex flex-col h-full w-full">
+        <div className="flex flex-col h-full w-full overflow-hidden">
             {/* Make the header sticky */}
             <ModuleHeader
                 pages={filteredPages}
@@ -28,14 +28,13 @@ export default function Layout(
                 initialPosition="left"
                 defaultExpanded={false}
                 expandButtonProps={{
-                    label: 'Email State',
+                    label: 'Entity State',
                 }}
             >
                 <EnhancedEntityAnalyzer
-                    selectedEntityKey={'emails'}
                     defaultExpanded={false}/>
             </MatrxDynamicPanel>
-            <main className="flex-1">
+            <main className="flex-1 overflow-hidden">
                 {children}
             </main>
         </div>

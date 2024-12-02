@@ -17,7 +17,7 @@ interface SmartFormProps {
         recordId: MatrxRecordId | 'new';
     };
     relationshipType?: 'foreignKey' | 'inverseKey' | 'manyToMany';
-    children: React.ReactNode;
+    children?: React.ReactNode;
     foreignKeys?: Array<{
         entityKey: EntityKeys;
         recordId: MatrxRecordId | 'new';
@@ -49,8 +49,8 @@ export const SmartForm: React.FC<SmartFormProps> = (
             <div className="space-y-4">
                 {children}
 
-                {/* Foreign Key Forms */}
-                {foreignKeys?.map(({entityKey: fkEntityKey, recordId: fkRecordId}) => (
+                {/* Render Foreign Key Forms if `foreignKeys` exists */}
+                {foreignKeys && foreignKeys.length > 0 && foreignKeys.map(({entityKey: fkEntityKey, recordId: fkRecordId}) => (
                     <SmartForm
                         key={`fk-${fkEntityKey}-${fkRecordId}`}
                         entityKey={fkEntityKey}
@@ -63,8 +63,8 @@ export const SmartForm: React.FC<SmartFormProps> = (
                     </SmartForm>
                 ))}
 
-                {/* Inverse Foreign Key Forms */}
-                {inverseKeys?.map((ifkEntityKey) => (
+                {/* Render Inverse Foreign Key Forms if `inverseKeys` exists */}
+                {inverseKeys && inverseKeys.length > 0 && inverseKeys.map((ifkEntityKey) => (
                     <SmartForm
                         key={`ifk-${ifkEntityKey}`}
                         entityKey={ifkEntityKey}
@@ -77,8 +77,8 @@ export const SmartForm: React.FC<SmartFormProps> = (
                     </SmartForm>
                 ))}
 
-                {/* Many to Many Forms */}
-                {manyToManyKeys?.map((m2mEntityKey) => (
+                {/* Render Many to Many Forms if `manyToManyKeys` exists */}
+                {manyToManyKeys && manyToManyKeys.length > 0 && manyToManyKeys.map((m2mEntityKey) => (
                     <SmartForm
                         key={`m2m-${m2mEntityKey}`}
                         entityKey={m2mEntityKey}

@@ -10,12 +10,94 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+
+
     {
         title: 'Entity Management Smart Fields',
         path: 'entity-management-smart-fields',
         relative: true,
-        description: ''
+        description: 'Uses the new smart fields system\n\n' +
+            'STATUS: Working\n\n' +
+            'Like many others, it has problems with scrolling issues.'
     },
+    {
+        title: 'Dynamic Entity Management Page',
+        path: 'entity-management',
+        relative: true,
+        description: 'This is the first of the pages which allows for dynamic rendering of pages with different layouts.\n\n' +
+            'STATUS: ERRORS due to layouts - parts - SplitLayout.tsx errors with layout state props'
+    },
+
+
+    {
+        title: 'Entity New Form (Unkown)',
+        path: 'new-entity-form',
+        relative: true,
+        description: 'Errors due to apparently rendering without an entity being selected. Not sure how old this is or how new.'
+    },
+
+
+    {
+        title: 'Entity Form With Full Container',
+        path: 'entity-form-full-container',
+        relative: true,
+        description: 'Full Container which extracts away the complexities, but might not give the full power later for doing other things. We will see.\n\n' +
+            'STATUS: Errors due to ArmaniForm -FormLayouts.tsx'
+    },
+
+
+    {
+        title: 'Entity Form With Basic Container',
+        path: 'entity-form-basic-container',
+        relative: true,
+        description: 'Uses the Basic Container.\n\n' +
+            'FORM TYPE: Uses Basic form with all input fields, but renders form first, without data, which could be interesting to test further. \n\n' +
+            'STATUS: Working.'
+    },
+
+    {
+        title: 'Entity Form (Attempt)',
+        path: 'entity-form',
+        relative: true,
+        description: 'Latest Implementation - Simple single-form direct, with Redux\n\nSTATUS: Errors due to usage of stateHelpUtils Error'
+    },
+
+
     {
         title: 'Trying to Learn How handlers Work',
         path: 'components-with-buttons/learn-handlers',
@@ -58,12 +140,7 @@ export const pages: ModulePage[] = [
         relative: true,
         description: 'I got this one to work and be slightly more dynamic, but I did not incorporate everything because I want to make it even more dynamic.',
     },
-    {
-        title: 'Dynamic Entity Management Page',
-        path: 'entity-management',
-        relative: true,
-        description: 'This is the first of the pages which allows for dynamic rendering of pages with different layouts.'
-    },
+
     {
         title: 'Action Button Demo Version 3',
         path: 'components-with-buttons/action-button-three',
@@ -88,24 +165,7 @@ export const pages: ModulePage[] = [
         relative: true,
         description: 'A bunch of direct sample fields that have buttons built in to trigger things'
     },
-    {
-        title: 'Entity Form With Full Container',
-        path: 'entity-form-full-container',
-        relative: true,
-        description: 'Full Container which extracts away the complexities, but might not give the full power later for doing other things. We will see.'
-    },
-    {
-        title: 'Entity Form With Basic Container',
-        path: 'entity-form-basic-container',
-        relative: true,
-        description: 'Uses the Basic Container, which only handles step 1 of fetching the record, but not the parts for fully fetching the entity record'
-    },
-    {
-        title: 'Entity Form (Attempt)',
-        path: 'entity-form',
-        relative: true,
-        description: 'Latest Implementation - Simple single-form direct, with Redux'
-    },
+
     {
         title: 'Animated Form Modal',
         path: 'animated-form-modal',

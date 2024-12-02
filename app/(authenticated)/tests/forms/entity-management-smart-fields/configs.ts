@@ -4,7 +4,7 @@ import {
     DynamicStyleOptions,
     FormComponentOptions,
     FormStyleOptions, InlineEntityOptions
-} from "@/components/matrx/Entity/prewired-components/layouts/EntitySmartLayoutCombined";
+} from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys } from "@/types/entityTypes";
 
 

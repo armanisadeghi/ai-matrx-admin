@@ -30,7 +30,7 @@ const PreWiredCardHeader: React.FC<PreWiredCardHeaderProps> = ({ onEntityChange 
     // Better to switch to the updated version of this component.
 
     return (
-        <CardHeader className="border-2 border-red-500 flex flex-row items-center justify-between h-24">
+        <CardHeader className="border-2 border-slate-500 flex flex-row items-center justify-between h-24">
             <div className="flex flex-col">
                 <CardTitle>
                     {selectedEntity

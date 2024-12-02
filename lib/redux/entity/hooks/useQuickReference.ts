@@ -38,7 +38,7 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Selection Utilities
     isSelected: (recordKey: MatrxRecordId) => boolean;
     isActive: (recordKey: MatrxRecordId) => boolean;
-    handleSelection: (recordKey: MatrxRecordId) => void;
+    handleAddToSelection: (recordKey: MatrxRecordId) => void;
     toggleSelectionMode: () => void;
     clearSelection: () => void;
 
@@ -148,8 +148,8 @@ export function useQuickReference<TEntity extends EntityKeys>(
         );
     }, [actions, dispatch]);
 
-    const handleSelection = React.useCallback((recordKey: MatrxRecordId) => {
-        selection.handleSelection(recordKey);
+    const handleAddToSelection = React.useCallback((recordKey: MatrxRecordId) => {
+        selection.handleAddToSelection(recordKey);
     }, [selection]);
 
     const getDisplayValue = React.useCallback((record: EntityData<TEntity>) => {
@@ -180,6 +180,17 @@ export function useQuickReference<TEntity extends EntityKeys>(
             dispatch(actions.setActiveRecord(recordKey));
         }
     }, [selection.selectionMode, actions, dispatch]);
+
+    const handleRecordSelectWithRelation = React.useCallback((recordKey: MatrxRecordId) => {
+        if (selection.selectionMode === 'multiple') {
+            selection.handleToggleSelectionWithRelation(recordKey);
+            dispatch(actions.setActiveRecord(recordKey));
+        } else {
+            selection.handleSingleSelection(recordKey);
+            dispatch(actions.setActiveRecord(recordKey));
+        }
+    }, [selection.selectionMode, actions, dispatch]);
+
 
     const getCardClassName = React.useCallback((recordKey: MatrxRecordId) => {
         const baseClasses = "cursor-pointer transition-colors hover:bg-accent/50";
@@ -215,7 +226,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
         clearSelection: selection.clearSelection,
         handleSingleSelection: selection.handleSingleSelection,
 
-        handleSelection,
+        handleAddToSelection,
 
         // Record Operations
         createRecord,

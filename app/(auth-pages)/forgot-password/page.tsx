@@ -1,18 +1,19 @@
 // File: app/(auth-pages)/forgot-password/hold-hold-page.tsx
 
-import { forgotPasswordAction } from "@/actions/auth.actions";
-import { Message } from "@/components/form-message";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {forgotPasswordAction} from "@/actions/auth.actions";
+import {Message} from "@/components/form-message";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
 import Link from "next/link";
-import { SubmitButton } from "@/components/submit-button";
+import {SubmitButton} from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
-export default function ForgotPassword({
-                                           searchParams,
-                                       }: {
-    searchParams: Message;
-}) {
+export default function ForgotPassword(
+    {
+        searchParams,
+    }: {
+        searchParams: Message;
+    }) {
     return (
         <AuthPageContainer
             title="Reset Password"
@@ -44,7 +45,8 @@ export default function ForgotPassword({
                     </div>
                 </div>
                 <div>
-                    <SubmitButton className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    <SubmitButton
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         Reset Password
                     </SubmitButton>
                 </div>

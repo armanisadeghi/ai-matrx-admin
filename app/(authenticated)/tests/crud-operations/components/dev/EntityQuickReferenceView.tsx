@@ -203,7 +203,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
     };
 
     // Simplified selection handler
-    const handleSelection = (primaryKeyValues) => {
+    const handleAddToSelection = (primaryKeyValues) => {
         if (isMultiSelectMode) {
             handleMultipleSelections(primaryKeyValues);
         } else {
@@ -239,7 +239,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleSelection(ref.primaryKeyValues)}
+                                            onClick={() => handleAddToSelection(ref.primaryKeyValues)}
                                         >
                                             <X className="h-4 w-4"/>
                                         </Button>
@@ -596,14 +596,14 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                     <Card
                                         key={JSON.stringify(ref.primaryKeyValues)}
                                         className={getCardClassName(ref)}
-                                        onClick={() => handleSelection(ref.primaryKeyValues)}
+                                        onClick={() => handleAddToSelection(ref.primaryKeyValues)}
                                     >
                                         <CardContent className="p-3">
                                             <div className="flex items-center gap-2">
                                                 {isMultiSelectMode && (
                                                     <Checkbox
                                                         checked={isSelected(ref)}
-                                                        onCheckedChange={() => handleSelection(ref.primaryKeyValues)}
+                                                        onCheckedChange={() => handleAddToSelection(ref.primaryKeyValues)}
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
                                                 )}

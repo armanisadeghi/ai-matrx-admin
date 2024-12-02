@@ -1,4 +1,4 @@
-// EntityHeader.tsx
+// components/matrx/Entity/prewired-components/layouts/EntityHeader.tsx
 import React, {useRef, useEffect, useState} from 'react';
 import {CardHeader, CardTitle, CardDescription} from '@/components/ui/card';
 import {EntityKeys, EntityData} from '@/types/entityTypes';

@@ -14,9 +14,12 @@ import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 import {KeyIcon} from "lucide-react";
 
 
+
+
+
 export interface ArmaniFormLayoutProps {
     filteredFields: EntityStateField[];
-    renderField: (field: EntityStateField) => JSX.Element;
+    renderField: (field: EntityStateField) => React.ReactNode;
     density: ComponentDensity;
     densityStyles: any;
     containerSpacing?: string;
@@ -463,12 +466,13 @@ export const TrialFloatingLayout: React.FC<ArmaniFormLayoutProps> = (
     </div>
 );
 
-export const TrialFieldTabsLayout: React.FC<ArmaniFormLayoutProps> = ({
-                                                                          filteredFields,
-                                                                          renderField,
-                                                                          density,
-                                                                          densityStyles,
-                                                                      }) => {
+export const TrialFieldTabsLayout: React.FC<ArmaniFormLayoutProps> = (
+    {
+        filteredFields,
+        renderField,
+        density,
+        densityStyles,
+    }) => {
     const getTabLabel = (field: any) => {
         const label = field.isNative ? field.displayName : field.entityName;
         return (

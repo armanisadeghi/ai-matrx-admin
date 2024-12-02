@@ -15,6 +15,7 @@ import {
     TableState as TanstackTableState,
     ColumnSizingState,
 } from "@tanstack/react-table"
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 
 export interface TableFieldMetadata {
@@ -166,7 +167,7 @@ export interface UseAdvancedDataTableProps<TEntity extends EntityKeys> {
     options?: Partial<TableOptions>
     initialState?: Partial<TableState>
     onStateChange?: (state: TableState) => void
-    onAction?: (action: string, row: EntityData<TEntity>) => void
+    onAction?: (action: string, row: EntityDataWithId<TEntity>) => void
 }
 
 // Table Configuration Type
@@ -257,26 +258,26 @@ export interface ActionConfig {
         enabled: boolean;
         variant?: ButtonVariant;
         size?: ButtonSize;
-        custom?: (row: any) => void;
+        custom?: (row: EntityDataWithId<EntityKeys>) => void;
     };
     edit?: {
         enabled: boolean;
         variant?: ButtonVariant;
         size?: ButtonSize;
-        custom?: (row: any) => void;
+        custom?: (row: EntityDataWithId<EntityKeys>) => void;
     };
     delete?: {
         enabled: boolean;
         variant?: ButtonVariant;
         size?: ButtonSize;
-        custom?: (row: any) => void;
+        custom?: (row: EntityDataWithId<EntityKeys>) => void;
     };
     custom?: Array<{
         key: string;
         label: string;
         variant?: ButtonVariant;
         size?: ButtonSize;
-        handler: (row: any) => void;
+        handler: (row: EntityDataWithId<EntityKeys>) => void;
     }>;
 }
 

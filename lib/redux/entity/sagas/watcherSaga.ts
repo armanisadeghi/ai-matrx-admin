@@ -28,7 +28,7 @@ import {
     handleFetchSelectedRecords
 } from "@/lib/redux/entity/sagas/sagaHandlers";
 import {DeleteRecordPayload} from "../actions";
-import {withConversion, withFullConversion} from "@/lib/redux/entity/sagas/sagaHelpers";
+import {withConversion, withFullConversion, withFullRelationConversion} from "@/lib/redux/entity/sagas/sagaHelpers";
 import { getEntitySlice } from "../entitySlice";
 
 
@@ -71,17 +71,30 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
             requestCache.set(cacheKey, {timestamp: currentTime, count: 1});
         }
     }
-
+    // handleFetchAllFkIfk
     return function* saga() {
         try {
             yield all([
+
+                takeLatest(
+                    actions.fetchOneWithFkIfk.type,
+                    function* (action: SagaAction<{ matrxRecordId: MatrxRecordId }>) {
+                        if (shouldSkip(actions.fetchOne.type, action.payload)) return;
+                        yield call(withFullRelationConversion, entityKey, actions, action, actions.fetchOneWithFkIfkSuccess);
+                        setCache(actions.fetchOneWithFkIfk.type, action.payload);
+                        yield delay(250);
+                        yield put(actions.resetFetchOneWithFkIfkStatus());
+                    }
+                ),
+
+
                 takeLatest(
                     actions.fetchOne.type,
                     function* (action: SagaAction<{ matrxRecordId: MatrxRecordId }>) {
                         if (shouldSkip(actions.fetchOne.type, action.payload)) return;
                         yield call(withFullConversion, handleFetchOne, entityKey, actions, action, actions.fetchOneSuccess);
                         setCache(actions.fetchOne.type, action.payload);
-                        yield delay(1000);  // TODO: Consider reducing this to avoid issues when there are additional requests. But it might not be a problem, since the next request will will reset the status anyways.
+                        yield delay(250);  // TODO: Consider reducing this to avoid issues when there are additional requests. But it might not be a problem, since the next request will will reset the status anyways.
                         yield put(actions.resetFetchOneStatus());
                     }
                 ),

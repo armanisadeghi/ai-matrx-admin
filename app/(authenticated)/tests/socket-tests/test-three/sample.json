@@ -1,6 +1,6 @@
 [
   {
-    "task": "validate_recipe",
+    "task": "run_recipe",
     "index": "0",
     "stream": "true",
     "taskData": {

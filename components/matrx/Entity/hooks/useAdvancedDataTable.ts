@@ -8,7 +8,7 @@ import {
     createActionColumn,
     createSmartCellRenderer, formatCellValue,
 } from "@/components/matrx/Entity/addOns/smartCellRender"
-import {EntityKeys, EntityData} from "@/types/entityTypes"
+import {EntityKeys} from "@/types/entityTypes"
 import {
     VisibilityState,
     getCoreRowModel,
@@ -21,7 +21,7 @@ import {
     getFacetedUniqueValues,
     getFacetedMinMaxValues,
     ColumnSizingState,
-    GroupingState,
+    GroupingState, RowSelectionState,
 } from "@tanstack/react-table"
 import {
     UseAdvancedDataTableProps,
@@ -31,6 +31,7 @@ import {
     TableDensity,
     TableFieldMetadata, TableColumn
 } from "@/components/matrx/Entity/types/advancedDataTableTypes"
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 
 export function useAdvancedDataTable<TEntity extends EntityKeys>(
@@ -57,11 +58,12 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         primaryKeyMetadata,
         tableColumns,
         paginationInfo,
-        currentPage,
+        currentPageWithRecordId,
         fetchRecords,
         setFilters: setEntityFilters,
         setSorting: setEntitySorting,
-        setSelection: setEntitySelection,
+        addToSelection,
+        handleSingleSelection,
         loadingState,
     } = useEntity(entityKey)
 
@@ -93,6 +95,8 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         ...initialState
     }))
 
+
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
     const [displayState, setDisplayState] = React.useState<TableDisplayState>({
         density: options.density || 'normal',
@@ -180,11 +184,12 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         });
 
         if (options.actions) {
-            const actionColumn = createActionColumn(
+            const actionColumn: TableColumn = createActionColumn<TEntity>(
                 options.actions,
-                onAction || (() => {
-                })
-            );
+                (action: string, row: EntityDataWithId<TEntity>) => {
+                    onAction?.(action, row);
+                }
+            ) as TableColumn;
             baseColumns.push(actionColumn);
         }
 
@@ -202,7 +207,7 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
     ]);
 
     const tableConfig: any = React.useMemo(() => ({
-        data: currentPage,
+        data: currentPageWithRecordId,
         columns,
         pageCount: paginationInfo.totalPages,
         state: {
@@ -241,12 +246,15 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         enablePinning: options.enablePinning,
         enableColumnResizing: options.enableColumnResizing,
 
+
         // Manual controls
         manualPagination: true,
         manualSorting: true,
 
         // Row identification
-        getRowId: (row: EntityData<TEntity>) => createRecordKey(primaryKeyMetadata, row),
+        getRowId: (row: EntityDataWithId<TEntity>) => {
+            return row.matrxRecordId;
+        },
 
         // State management
         onStateChange: handleStateChange,
@@ -304,11 +312,19 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         onRowSelectionChange: (updater: any) => {
             const newSelection = typeof updater === 'function'
                                  ? updater(tableState.rowSelection)
-                                 : updater
-            handleStateChange(state => ({...state, rowSelection: newSelection}))
-            const selectedRows = currentPage
-                .filter((_, index) => newSelection[index]) as Draft<EntityData<TEntity>>[]
-            setEntitySelection(selectedRows, selectedRows.length === 1 ? 'single' : 'multiple')
+                                 : updater;
+
+            // First find what changed
+            const changedRowId = Object.entries(newSelection)
+                .find(([id, selected]) => selected !== tableState.rowSelection[id])?.[0];
+
+            if (changedRowId) {
+                // Update Redux first
+                addToSelection(changedRowId);
+
+                // Then update local state
+                setTableState(prev => ({...prev, rowSelection: newSelection}));
+            }
         },
 
         // Utility methods
@@ -349,7 +365,7 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         clearGrouping: () => handleDisplayStateChange({grouping: []}),
         setColumnSizing: (sizing: ColumnSizingState) => handleDisplayStateChange({columnSizing: sizing}),
     }), [
-        currentPage,
+        currentPageWithRecordId,
         columns,
         paginationInfo,
         tableState,
@@ -360,7 +376,8 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         handleDisplayStateChange,
         fetchRecords,
         setEntitySorting,
-        setEntitySelection,
+        addToSelection,
+        handleSingleSelection,
         initialState
     ])
 
@@ -405,7 +422,9 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         handleStateChange,
         handleDisplayStateChange,
         initialState,
-        options.density
+        options.density,
+        addToSelection,
+        handleSingleSelection,
     ])
 
 
@@ -420,5 +439,7 @@ export function useAdvancedDataTable<TEntity extends EntityKeys>(
         tableConfig,
         tableUtils,
         options,
+        addToSelection,
+        handleSingleSelection,
     }
 }

@@ -1,6 +1,6 @@
 // lib/redux/entity/useEntity.ts
 import * as React from 'react';
-import {useMemo, useCallback, useState, useEffect} from 'react';
+import {useMemo, useCallback, useState} from 'react';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppSelector, useAppDispatch, useAppStore} from '@/lib/redux/hooks';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
@@ -12,12 +12,12 @@ import {
 import {RootState} from '@/lib/redux/store';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
-import {QueryOptions} from "@/lib/redux/entity/sagas/sagaHelpers";
 import {useEntitySelection} from "@/lib/redux/entity/hooks/useEntitySelection";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
 import {useEntityToasts} from './useEntityToasts';
+import { FetchRecordsPayload } from '../actions';
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000
@@ -60,6 +60,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const currentPageFiltered = useAppSelector(selectors.selectCurrentPageFiltered);
     const paginationInfo = useAppSelector(selectors.selectPaginationInfo);
     const currentPage = useAppSelector(selectors.selectCurrentPage);
+    const currentPageWithRecordId = useAppSelector(selectors.selectCurrentPageWithRecordId);
     const currentFilters = useAppSelector(selectors.selectCurrentFilters);
     const filteredRecords = useAppSelector(selectors.selectFilteredRecords);
     const loadingState = useAppSelector(selectors.selectLoadingState);
@@ -121,15 +122,29 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     }, [dispatch, actions]);
 
 
-    const fetchRecords = useCallback((page: number, pageSize: number, options?: QueryOptions<TEntity>) => {
-        dispatch(actions.fetchRecords({page, pageSize, options}));
-    }, [dispatch, actions]);
+    const fetchRecords = useCallback(
+        (page: number, pageSize: number, options?: FetchRecordsPayload['options']) => {
+            dispatch(actions.fetchRecords({ page, pageSize, options }));
+        },
+        [dispatch, actions]
+    );
 
     const fetchOne = useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
         const callbackId = callback ? callbackManager.register(callback) : null;
 
         dispatch(
             actions.fetchOne({
+                matrxRecordId,
+                callbackId,
+            })
+        );
+    }, [dispatch, actions]);
+
+    const fetchOneWithFkIfk = useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+        const callbackId = callback ? callbackManager.register(callback) : null;
+
+        dispatch(
+            actions.fetchOneWithFkIfk({
                 matrxRecordId,
                 callbackId,
             })
@@ -276,7 +291,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         // Quick Reference
         quickReferenceByPrimaryKey,
 
-        // Selection
         // Selection Management (from useEntitySelection)
         selectedRecordIds: selection.selectedRecordIds,
         activeRecordId: selection.activeRecordId,
@@ -291,8 +305,8 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         toggleSelectionMode: selection.toggleSelectionMode,
         clearSelection: selection.clearSelection,
         handleSingleSelection: selection.handleSingleSelection,
-
-        addToSelection: selection.handleSelection,
+        handleToggleSelection: selection.handleToggleSelection,
+        addToSelection: selection.handleAddToSelection,
 
         // All Active Records, Quick Reference, Validation hooks extended
         quickReference,
@@ -363,5 +377,8 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         entityState,
 
         selectedRecordsWithKey,
+        currentPageWithRecordId,
+
+        fetchOneWithFkIfk,
     };
 };

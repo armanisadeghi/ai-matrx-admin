@@ -43,7 +43,7 @@ export const modalConfigs = {
     // Viewer modal configuration
     viewer: {
         defaultConfig: {
-            density: 'spacious',
+            density: 'comfortable',
             animationPreset: 'smooth',
             size: 'lg',
             position: 'center',

@@ -5,25 +5,27 @@ import { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { SocketManager } from './SocketManager';
-import { startSocketTask, emitSocketMessage } from '@/redux/features/socket/socketActions';
 import { AppDispatch, RootState } from '../redux/store';
 
 
 export const useReduxSocket = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { status: socketStatus, isAuthenticated, sid } = useSelector((state: RootState) => state.socket);
-    const currentUser = useSelector((state: RootState) => state.user.currentUser);
-    const { socketNamespace, sessionUrl } = useSelector((state: RootState) => state.config);
+    const currentUser = useSelector((state: RootState) => state.user);
+    const socketNamespace = 'UserSession';
+    const sessionUrl = process.env.PRODUCTION_SOCKET_URL || '';
 
-    const matrixId = currentUser?.matrixId || '';
+    const matrixId = currentUser?.id || '';
 
     const socketManager = useMemo(() => SocketManager.getInstance(matrixId, sessionUrl, socketNamespace), [matrixId, sessionUrl, socketNamespace]);
 
     const startTask = useCallback((eventName: string, data: SocketTask) => {
+        // @ts-ignore
         dispatch(startSocketTask({ eventName, data }));
     }, [dispatch]);
 
     const emitMessage = useCallback((eventName: string, data: any) => {
+        // @ts-ignore
         dispatch(emitSocketMessage({ eventName, data }));
     }, [dispatch]);
 

@@ -10,10 +10,11 @@ import {
 import {EntityStateField, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import EntityBaseField, {EntityBaseFieldProps} from "./EntityBaseField";
 import {EntityKeys} from "@/types/entityTypes";
-import {DynamicLayoutOptions, DynamicStyleOptions, FormState} from "@/components/matrx/ArmaniForm/SimpleForm";
+import {FormState} from "@/components/matrx/ArmaniForm/SimpleForm";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
+import {DynamicLayoutOptions, DynamicStyleOptions} from "@/components/matrx/Entity";
 
 export interface EntityRelationshipWrapperProps extends EntityBaseFieldProps {
     formData: Record<string, any>;

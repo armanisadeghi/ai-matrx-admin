@@ -3,26 +3,26 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
+import { EntityKeys } from '@/types/entityTypes';
 import PreWiredCardHeader from '@/components/matrx/Entity/EntityCardHeaderSelect';
 import AdvancedDataTable from '@/components/matrx/Entity/DataTable/AdvancedDataTable';
-import { ButtonVariant, ButtonSize } from '@/components/matrx/Entity/types/tableBuilderTypes';
 import {
     ActionConfig,
     SmartFieldConfig,
     ValueFormattingOptions,
     TableOptions
 } from "@/components/matrx/Entity/types/advancedDataTableTypes";
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 export default function DataBrowserPage() {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
 
-    const handleArchive = (row: EntityData<EntityKeys>) => {
+    const handleArchive = (row: EntityDataWithId<EntityKeys>) => {
         // TODO: Handle archive action
         console.log('Archiving:', row);
     };
 
-    const handleAction = (action: string, row: EntityData<EntityKeys>) => {
+    const handleAction = (action: string, row: EntityDataWithId<EntityKeys>) => {
         switch(action) {
             case 'view':
                 console.log('DataBrowserPage Viewing:', row);

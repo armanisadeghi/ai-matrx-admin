@@ -1,3 +1,5 @@
+// components/matrx/Entity/prewired-components/layouts/smart-layouts/QuickReferenceWrapper.tsx
+
 import React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityError} from '@/lib/redux/entity/types/stateTypes';
@@ -5,7 +7,8 @@ import {
     QuickReferenceComponentType
 } from "@/types/componentConfigTypes";
 import {ENTITY_QUICK_REFERENCE} from '../../quick-reference';
-import { DynamicStyleOptions } from '../EntitySmartLayoutCombined';
+import { DynamicStyleOptions } from '../types';
+
 
 interface QuickReferenceWrapperProps {
     selectedEntity: EntityKeys | null;

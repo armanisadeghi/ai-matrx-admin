@@ -1,8 +1,7 @@
 // hooks/useDataTable.ts
 import * as React from "react"
 import { useEntity } from "@/lib/redux/entity/hooks/useEntity"
-import { EntityKeys, EntityData } from "@/types/entityTypes"
-import { Draft } from 'immer'
+import { EntityKeys } from "@/types/entityTypes"
 import {useMemo, useState} from "react";
 import {
     ColumnDef,
@@ -15,12 +14,12 @@ import {
     getSortedRowModel,
     getFilteredRowModel,
 } from "@tanstack/react-table"
-import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 interface TanStackTableState {
     sorting: SortingState
     columnVisibility: VisibilityState
-    rowSelection: RowSelectionState
+    rowSelection: Record<string, boolean>  // Explicitly type this
     pagination: PaginationState
     globalFilter: string
 }
@@ -47,7 +46,7 @@ export interface DataTableProps<TEntity extends EntityKeys> {
             showExpand?: boolean;
             custom?: Array<{
                 label: string;
-                onClick: (row: EntityData<TEntity>) => void;
+                onClick: (row: EntityDataWithId<TEntity>) => void;
                 variant?: "outline" | "destructive";
                 size?: "xs" | "sm";
             }>;
@@ -59,7 +58,7 @@ export const DEFAULT_TABLE_OPTIONS = {
     showCheckboxes: true,
     showFilters: true,
     showActions: true,
-    defaultPageSize: 10,
+    defaultPageSize: 20,
     defaultPageSizeOptions: [5, 10, 25, 50, 100],
     actions: {
         showEdit: true,
@@ -75,12 +74,13 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
         primaryKeyMetadata,
         tableColumns,
         paginationInfo,
-        currentPage,
+        currentPageWithRecordId,
         fetchRecords,
         setFilters,
         setSorting,
         loadingState,
-        setSelection,
+        addToSelection,
+        handleSingleSelection,
     } = useEntity(entityKey)
 
     const [tableState, setTableState] = useState<TanStackTableState>({
@@ -115,11 +115,12 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
                 filterable: !col.isPrimaryKey,
                 align: fieldInfo[col.key]?.align || 'left',
             } as TanStackColumnMeta
-        } as ColumnDef<EntityData<TEntity>>));
+        } as ColumnDef<EntityDataWithId<TEntity>>));  // Changed this type
     }, [tableColumns, fieldInfo]);
 
+
     const tanstackConfig = useMemo(() => ({
-        data: currentPage,
+        data: currentPageWithRecordId,
         columns: tanstackColumns,
         pageCount: paginationInfo.totalPages,
         state: {
@@ -138,7 +139,7 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        getRowId: (row: EntityData<TEntity>) => createRecordKey(primaryKeyMetadata, row),
+        getRowId: (row: EntityDataWithId<TEntity>) => row.matrxRecordId,
         onPaginationChange: (updater: any) => {
             const newPagination = typeof updater === 'function'
                                   ? updater(tableState.pagination)
@@ -166,23 +167,28 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
             const newSelection = typeof updater === 'function'
                                  ? updater(tableState.rowSelection)
                                  : updater;
-            setTableState(prev => ({...prev, rowSelection: newSelection}));
-            const selectedRows = currentPage
-                .filter((_, index) => newSelection[index]) as Draft<EntityData<TEntity>>[];
-            setSelection(selectedRows, 'multiple');
+
+            const changedRowId = Object.entries(newSelection)
+                .find(([id, selected]) => selected !== tableState.rowSelection[id])?.[0];
+
+            if (changedRowId) {
+                addToSelection(changedRowId);
+                setTableState(prev => ({...prev, rowSelection: newSelection}));
+            }
         },
+
         onGlobalFilterChange: (value: string) => {
             setTableState(prev => ({...prev, globalFilter: value}));
         },
-    } as TableOptions<EntityData<TEntity>>), [
-        currentPage,
+    } as TableOptions<EntityDataWithId<TEntity>>), [
+        currentPageWithRecordId,
         tanstackColumns,
         paginationInfo,
         tableState,
         primaryKeyMetadata,
         fetchRecords,
         setSorting,
-        setSelection
+        addToSelection
     ]);
 
     const tanstackUtils = useMemo(() => ({
@@ -248,6 +254,8 @@ export function useEntityDataTable<TEntity extends EntityKeys>(entityKey: TEntit
     return {
         loadingState,
         paginationInfo,
+        handleSingleSelection,
+        primaryKeyMetadata,
         matrxTableData: {
             tanstackConfig,
             tableState,

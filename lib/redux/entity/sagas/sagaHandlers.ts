@@ -20,6 +20,28 @@ const trace = "SAGA HANDLERS";
 const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
 
+function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>(
+    {
+        entityKey,
+        actions,
+        api,
+        tableName,
+        unifiedDatabaseObject
+    }: BaseSagaContext<TEntity>) {
+    const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneWithFkIfk', entityKey);
+
+    const { data, error } = yield api
+        .rpc('fetch_all_fk_ifk', {
+            p_table_name: tableName,
+            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues
+        });
+
+    if (error) throw error;
+
+    entityLogger.log('info', 'Fetched data with relationships', data);
+    return data;
+}
+
 function* handleFetchOne<TEntity extends EntityKeys>(
     {
         entityKey,
@@ -385,7 +407,6 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
         const {data, error, count} = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 
-        entityLogger.log('debug', 'Database response', {data, count});
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);

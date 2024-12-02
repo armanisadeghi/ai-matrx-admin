@@ -40,14 +40,13 @@ function EntityFkAccordion(
     }: EntityInlineProps) {
     const {
         records,
-        fieldInfo,
+        individualFieldInfo,
         displayField,
         expandedFields,
         hoveredItem,
         toggleFieldExpansion,
         setHoveredItem,
         truncateText,
-
     } = useFetchRelated({
         entityKey,
         dynamicFieldInfo,
@@ -89,7 +88,7 @@ function EntityFkAccordion(
                         </AccordionTrigger>
                         <AccordionContent>
                             <div className="bg-background grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-                                {fieldInfo.map(field => {
+                                {individualFieldInfo.map(field => {
                                     const fieldId = `${recordId}-${field.name}`;
                                     const isExpanded = expandedFields[fieldId];
                                     const fieldValue = record[field.name]?.toString() || '';

@@ -24,7 +24,7 @@ export const EnhancedCard: React.FC<EnhancedCardProps> = (
     }) => (
     <motion.div
         variants={!noAnimation ? variants : undefined}
-        className="w-full"
+        className="w-full p-0 gap-0"
     >
         <Card
             ref={cardRef || ref}

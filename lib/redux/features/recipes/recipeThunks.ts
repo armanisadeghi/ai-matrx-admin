@@ -1,17 +1,19 @@
-// redux/features/recipes/recipeThunks.ts
+// lib/redux/features/recipes/recipeThunks.ts
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '../../rootReducer';
-import { initializeRecipeInstance, setActiveRecipe } from './recipeSlice';
-import { loadBrokerTemplates, initializeBrokerInstances } from '../broker/brokerSlice';
-import { recipeData } from './recipeData';
-import { brokerData } from '../broker/data';
-import { Broker } from '../broker/types';
-import { getBrokerValuesForSubmission } from '../broker/selectors';
+import {createAsyncThunk} from '@reduxjs/toolkit';
+
+import {initializeRecipeInstance} from './recipeSlice';
+import {setActiveRecipe} from '@/lib/redux/features/recipes/recipeSlice';
+import {loadBrokerTemplates, initializeBrokerInstances} from '../broker/brokerSlice';
+import {recipeData} from './recipeData';
+import {brokerData} from '../broker/data';
+import {Broker} from '../broker/types';
+import {getBrokerValuesForSubmission} from '../broker/selectors';
+import { RootState } from '../../store';
 
 export const initializeRecipe = createAsyncThunk(
     'recipes/initialize',
-    async (recipeId: string, { dispatch, getState }) => {
+    async (recipeId: string, {dispatch, getState}) => {
         const state = getState() as RootState;
 
         // Load broker templates if not already loaded
@@ -37,7 +39,7 @@ export const initializeRecipe = createAsyncThunk(
             }));
 
             // Initialize broker instances for the recipe
-            dispatch(initializeBrokerInstances({ recipeId, brokerIds: recipe.input_brokers }));
+            dispatch(initializeBrokerInstances({recipeId, brokerIds: recipe.input_brokers}));
         }
 
         // Set as active recipe
@@ -47,7 +49,7 @@ export const initializeRecipe = createAsyncThunk(
 
 export const submitRecipe = createAsyncThunk(
     'recipes/submit',
-    async (recipeId: string, { getState, dispatch }) => {
+    async (recipeId: string, {getState, dispatch}) => {
         const state = getState() as RootState;
         const recipe = state.recipes.recipeInstances[recipeId];
         const brokerValues = getBrokerValuesForSubmission(recipeId)(state);

@@ -48,12 +48,38 @@ export interface DynamicStyleOptions {
 
 export interface DynamicLayoutOptions {
     componentOptions?: FormComponentOptions;
-    styleOptions?: FormStyleOptions;
+    formStyleOptions?: FormStyleOptions;
     inlineEntityOptions?: InlineEntityOptions;
+}
+
+export interface UnifiedLayoutState {
+    selectedEntity: EntityKeys | null;
+    isExpanded: boolean;
+    rightColumnRef: React.RefObject<HTMLDivElement>;
+    selectHeight: number;
+}
+
+export interface UnifiedLayoutHandlers {
+    setIsExpanded: (value: boolean) => void;
+    handleEntityChange: (value: EntityKeys) => void;
+    onCreateEntityClick: () => void;
+    handleRecordLoad?: (record: EntityData<EntityKeys>) => void;
+    handleError?: (error: EntityError) => void;
+    handleRecordLabelChange?: (label: string) => void;
 }
 
 
 export interface UnifiedLayoutProps {
+    layoutState: UnifiedLayoutState;
+    handlers: UnifiedLayoutHandlers;
+    dynamicStyleOptions: DynamicStyleOptions;
+    dynamicLayoutOptions: DynamicLayoutOptions;
+    quickReferenceComponentName?: QuickReferenceComponentType;
+    QuickReferenceComponent?: React.ReactNode;
+}
+
+
+export interface LayoutPropsSaved {
     layoutState: {
         selectedEntity: EntityKeys | null;
         isExpanded: boolean;
@@ -73,3 +99,5 @@ export interface UnifiedLayoutProps {
     inlineEntityOptions: InlineEntityOptions;
     dynamicStyleOptions: DynamicStyleOptions;
 }
+
+

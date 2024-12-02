@@ -8,23 +8,6 @@ import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 
 
-export interface LayoutProps {
-    selectedEntity: EntityKeys | null;
-    isExpanded?: boolean;
-    setIsExpanded?: (expanded: boolean) => void;
-    handleEntityChange: (value: EntityKeys) => void;
-    QuickReferenceComponent: React.ReactNode;
-    rightColumnRef: MutableRefObject<HTMLDivElement | null>;
-    selectHeight: number;
-    density: ComponentDensity;
-    animationPreset: AnimationPreset;
-    formOptions?: any;
-    splitRatio?: number;
-    onCreateEntityClick?: () => void;
-    floatingLabel?: boolean;
-}
-
-
 interface FlexAnimatedFormProps {
     fields: FlexFormField[];
     formState: FormState;
@@ -41,6 +24,24 @@ interface FlexAnimatedFormProps {
     enableSearch?: boolean;
     direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
 }
+
+
+export interface LayoutProps {
+    selectedEntity: EntityKeys | null;
+    isExpanded?: boolean;
+    setIsExpanded?: (expanded: boolean) => void;
+    handleEntityChange: (value: EntityKeys) => void;
+    QuickReferenceComponent: React.ReactNode;
+    rightColumnRef: MutableRefObject<HTMLDivElement | null>;
+    selectHeight: number;
+    density: ComponentDensity;
+    animationPreset: AnimationPreset;
+    formOptions?: any;
+    splitRatio?: number;
+    onCreateEntityClick?: () => void;
+    floatingLabel?: boolean;
+}
+
 
 export interface ResponsiveColumns {
     xs: number;
@@ -124,7 +125,8 @@ export const QUICK_REFERENCE_COMPONENT_TYPES = [
     'accordion',
     'accordionEnhanced',
     'list',
-    'select'
+    'select',
+    'default',
 ] as const;
 export type QuickReferenceComponentType = typeof QUICK_REFERENCE_COMPONENT_TYPES[number];
 

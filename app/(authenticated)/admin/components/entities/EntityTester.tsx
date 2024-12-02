@@ -1,7 +1,6 @@
 'use client'
 
 import React, {useState, useCallback, useEffect, useMemo} from 'react';
-import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {useAppSelector} from '@/lib/redux/hooks';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
@@ -22,10 +21,12 @@ import {useToast} from '@/components/ui/use-toast';
 import {motion, AnimatePresence} from 'framer-motion';
 import {Loader2} from 'lucide-react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
+import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {JsonViewer, EditableJsonViewer} from '@/components/ui';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
-import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
+
 
 const EntityTester: React.FC = () => {
     const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);

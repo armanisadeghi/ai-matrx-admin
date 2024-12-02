@@ -199,8 +199,8 @@ const config: Config = {
 
             },
             animation: {
-                'accordion-down': 'accordion-down 0.2s ease-out',
-                'accordion-up': 'accordion-up 0.2s ease-out',
+                'accordion-down': 'accordion-down 0.4s ease-out',
+                'accordion-up': 'accordion-up 0.4s ease-out',
                 'caret-blink': 'caret-blink 1.25s ease-out infinite',
                 shimmer: 'shimmer 2s linear infinite',
                 'hover-bounce': 'hover-bounce 0.3s var(--animated-menu-bounce)',

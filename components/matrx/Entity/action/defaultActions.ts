@@ -1,9 +1,12 @@
 // components/matrx/Entity/action/defaultActions.ts
 import {ButtonSize, ButtonVariant} from "@/components/matrx/Entity/types/tableBuilderTypes";
+import {EntityKeys} from "@/types/entityTypes";
+import {Row} from "@tanstack/react-table";
+import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
 
 
-export const createDefaultTableActions = (
-    handleAction: (actionName: string, rowData: any) => void
+export const createDefaultTableActions = <TEntity extends EntityKeys>(
+    handleAction: (actionName: string, row: Row<EntityDataWithId<TEntity>>) => void
 ) => ({
     basic: {
         type: "actions" as const,
@@ -11,13 +14,13 @@ export const createDefaultTableActions = (
             actions: [
                 {
                     label: "Edit",
-                    onClick: (row) => handleAction('edit', row),
+                    onClick: (row: Row<EntityDataWithId<TEntity>>) => handleAction('edit', row),
                     variant: "outline" as ButtonVariant,
                     size: "xs" as ButtonSize
                 },
                 {
                     label: "Delete",
-                    onClick: (row) => handleAction('delete', row),
+                    onClick: (row: Row<EntityDataWithId<TEntity>>) => handleAction('delete', row),
                     variant: "destructive" as ButtonVariant,
                     size: "xs" as ButtonSize
                 }
@@ -31,19 +34,19 @@ export const createDefaultTableActions = (
             actions: [
                 {
                     label: "View",
-                    onClick: (row) => handleAction('view', row),
+                    onClick: (row: Row<EntityDataWithId<TEntity>>) => handleAction('view', row),
                     variant: "secondary" as ButtonVariant,
                     size: "xs" as ButtonSize
                 },
                 {
                     label: "Edit",
-                    onClick: (row) => handleAction('edit', row),
+                    onClick: (row: Row<EntityDataWithId<TEntity>>) => handleAction('edit', row),
                     variant: "outline" as ButtonVariant,
                     size: "xs" as ButtonSize
                 },
                 {
                     label: "Delete",
-                    onClick: (row) => handleAction('delete', row),
+                    onClick: (row: Row<EntityDataWithId<TEntity>>) => handleAction('delete', row),
                     variant: "destructive" as ButtonVariant,
                     size: "xs" as ButtonSize
                 }

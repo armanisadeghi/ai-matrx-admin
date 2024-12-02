@@ -1,7 +1,10 @@
-// app/(authenticated)/tests/table-test/layout.tsx
+'use client';
 
+import React from "react";
 import {ModuleHeader} from '@/components/matrx/navigation';
-import {filteredPages} from './config';
+import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
+import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
+import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 
 export default function Layout(
     {
@@ -10,17 +13,27 @@ export default function Layout(
         children: React.ReactNode;
     }) {
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    const MODULE_HOME = '/tests/table-test';
-    const MODULE_NAME = 'Table Test Module';
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full w-full">
+            {/* Make the header sticky */}
             <ModuleHeader
                 pages={filteredPages}
                 currentPath={currentPath}
                 moduleHome={MODULE_HOME}
                 moduleName={MODULE_NAME}
+                className="sticky top-0 z-10"
             />
+            <MatrxDynamicPanel
+                initialPosition="left"
+                defaultExpanded={false}
+                expandButtonProps={{
+                    label: 'Registered Function State',
+                }}
+            >
+                <EnhancedEntityAnalyzer
+                    defaultExpanded={false}/>
+            </MatrxDynamicPanel>
             <main className="flex-1">
                 {children}
             </main>

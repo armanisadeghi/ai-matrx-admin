@@ -34,14 +34,14 @@ export function DefaultTable(
         handleAction,
     }) {
     return (
-        <div className="relative w-full">
-            {loadingState.loading && (
-                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">
-                    <div className="flex items-center gap-2">
-                        <Spinner size="lg" label="Loading..." color="primary" labelColor="primary"/>
-                    </div>
-                </div>
-            )}
+        <div className="relative w-full"> {/*TODO: This shows that the state goes into loading and doesn't come out after action click.*/}
+            {/*{loadingState.loading && (*/}
+            {/*    <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">*/}
+            {/*        <div className="flex items-center gap-2">*/}
+            {/*            <Spinner size="lg" label="Loading..." color="primary" labelColor="primary"/>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*)}*/}
             {loadingState.error && (
                 <div className="p-4 text-destructive">
                     <Alert variant="destructive">

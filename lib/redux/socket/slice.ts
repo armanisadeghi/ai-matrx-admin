@@ -37,7 +37,7 @@ const socketSlice = createSlice({
         ) {
             const { sid, eventName, taskIndex, data } = action.payload;
 
-            // Create a unique key for the response
+            // Create a unique key for the response TODO: This doesn't make sense because we make it at the start (We should)
             const key = `${sid}_${eventName}_${taskIndex}`;
             state.responses[key] = data; // Add response data under the unique key
         },

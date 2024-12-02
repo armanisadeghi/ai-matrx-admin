@@ -46,8 +46,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Modular Socket IO Recipe Tester',
+        path: 'modular-recipe-socket',
         relative: true,
         description: ''
     },

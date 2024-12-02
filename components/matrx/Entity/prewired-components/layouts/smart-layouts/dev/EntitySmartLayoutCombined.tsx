@@ -1,3 +1,4 @@
+/*
 // components/matrx/Entity/prewired-components/layouts/EntitySmartLayout.tsx
 'use client';
 
@@ -9,83 +10,30 @@ import {EntityError} from '@/lib/redux/entity/types/stateTypes';
 import {Button} from '@/components/ui/button';
 import {ArrowLeft,} from 'lucide-react';
 import {cn} from '@/lib/utils';
-import {
-    EntityQuickReferenceAccordionEnhanced,
-    EntityQuickReferenceCardsEnhanced,
-    EntityQuickReferenceList,
-    EntityQuickReferenceSelect
-} from '../quick-reference';
 import SplitLayout from "@/components/matrx/Entity/prewired-components/layouts/parts/SplitLayout";
 import SideBySideLayout from "@/components/matrx/Entity/prewired-components/layouts/parts/SideBySideLayout";
 import StackedLayout from "@/components/matrx/Entity/prewired-components/layouts/parts/StackedLayout";
 import EnhancedCard from "@/components/matrx/Entity/prewired-components/layouts/parts/EnhancedCard";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import {
-    AnimationPreset,
-    ComponentDensity,
-    ComponentSize,
-    FormColumnsOptions, FormDirectionOptions,
-    FormLayoutOptions, InlineEntityColumnsOptions, InlineEntityComponentStyles,
-    PageLayoutOptions,
-    QuickReferenceComponentType, TextSizeOptions
-} from "@/types/componentConfigTypes";
 import {containerVariants, densityConfig} from "@/config/ui/entity-layout-config";
-import {LayoutProps} from "@/types/componentConfigTypes";
+import {
+    UnifiedLayoutProps,
+} from './types';
+import {ENTITY_QUICK_REFERENCE} from "@/components/matrx/Entity/prewired-components/quick-reference";
 
 
-export interface FormComponentOptions {
-    entitySelectionComponent?: any;
-    quickReferenceType?: QuickReferenceComponentType;
-    formLayoutType?: PageLayoutOptions;
-}
-
-export interface FormStyleOptions {
-    splitRatio?: number;
-    formLayout?: FormLayoutOptions;
-    formColumns?: FormColumnsOptions;
-    formDirection?: FormDirectionOptions;
-    formEnableSearch?: boolean;
-    formIsSinglePage?: boolean;
-    formIsFullPage?: boolean;
-    floatingLabel?: boolean;
-    showLabel?: boolean;
-    textSize?: TextSizeOptions;
-}
-
-export interface InlineEntityOptions {
-    showInlineEntities: boolean;
-    inlineEntityStyle: InlineEntityComponentStyles;
-    inlineEntityColumns: InlineEntityColumnsOptions;
-    editableInlineEntities: boolean;
-}
-
-export interface DynamicStyleOptions {
-    size?: ComponentSize;
-    density?: ComponentDensity;
-    animationPreset?: AnimationPreset;
-    variant?: MatrxVariant;
-
-}
-
-export interface DynamicLayoutOptions {
-    componentOptions?: FormComponentOptions;
-    formStyleOptions?: FormStyleOptions;
-    inlineEntityOptions?: InlineEntityOptions;
-}
-
-
-interface EntitySmartLayoutProps extends DynamicLayoutOptions {
-    dynamicStyleOptions?: DynamicStyleOptions;
+interface EntitySmartLayoutProps extends UnifiedLayoutProps {
     className?: string;
 }
 
-const EntitySmartLayoutCombined: React.FC<EntitySmartLayoutProps> = ({
-    componentOptions,
-    formStyleOptions,
-    inlineEntityOptions,
+const EntitySmartLayoutCombined: React.FC<EntitySmartLayoutProps> = (
+    layoutState,
+    handlers,
+    quickReferenceComponentName,
     dynamicStyleOptions,
-    className
-}) => {
+    dynamicLayoutOptions,
+    formStyleOptions,
+    className,
+) => {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
     const [error, setError] = useState<EntityError | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -94,35 +42,12 @@ const EntitySmartLayoutCombined: React.FC<EntitySmartLayoutProps> = ({
     const [selectHeight, setSelectHeight] = useState<number>(0);
     const rightColumnRef = useRef<HTMLDivElement>(null);
 
-    // Destructure options for easier access
-    const {
-        quickReferenceType = 'list',
-        formLayoutType = 'split',
-        entitySelectionComponent
-    } = componentOptions || {};
-
-    const {
-        splitRatio = 20,
-        formLayout = 'grid',
-        formColumns = '2',
-        formDirection = 'row',
-        formEnableSearch = false,
-        formIsSinglePage = true,
-        formIsFullPage = true,
-        floatingLabel = true,
-        showLabel = true,
-        textSize = 'md'
-    } = formStyleOptions || {};
-
-    const {
-        size = 'md',
-        density = 'normal',
-        animationPreset = 'subtle',
-        variant = 'default'
-    } = dynamicStyleOptions || {};
+    const formLayoutType = dynamicLayoutOptions?.formLayout || 'stacked';
+    const density = dynamicStyleOptions?.density || 'normal';
+    const animationPreset = dynamicStyleOptions?.animationPreset || 'subtle';
 
     useEffect(() => {
-        if (formLayoutType !== 'stacked' && rightColumnRef.current) {
+        if (formLayoutType && rightColumnRef.current) {
             const observer = new ResizeObserver((entries) => {
                 for (const entry of entries) {
                     setSelectHeight(entry.contentRect.height);
@@ -156,55 +81,52 @@ const EntitySmartLayoutCombined: React.FC<EntitySmartLayoutProps> = ({
         console.log('Create new entity clicked');
     };
 
-    // Get QuickReference component based on type
     const QuickReferenceComponent = React.useMemo(() => {
         if (!selectedEntity) return null;
 
         const commonProps = {
             entityKey: selectedEntity,
             className: 'w-full',
-            density,
-            animationPreset,
+            density: dynamicStyleOptions?.density || 'normal',
+            animationPreset: dynamicStyleOptions?.animationPreset || 'subtle',
         };
 
         const components = {
-            cards: <EntityQuickReferenceCardsEnhanced {...commonProps} showCreateNewButton
-                                                      onCreateEntityClick={onCreateEntityClick}/>,
-            cardsEnhanced: <EntityQuickReferenceCardsEnhanced {...commonProps} showCreateNewButton showMultiSelectButton
-                                                              onCreateEntityClick={onCreateEntityClick}/>,
-            accordion: <EntityQuickReferenceAccordionEnhanced {...commonProps} />,
-            accordionEnhanced: <EntityQuickReferenceAccordionEnhanced {...commonProps} />,
-            list: <EntityQuickReferenceList {...commonProps} />,
-            select: <EntityQuickReferenceSelect
-                {...commonProps}
-                onRecordLoad={handleRecordLoad}
-                onError={handleError}
-                onLabelChange={handleRecordLabelChange}
-            />,
+            cards: <ENTITY_QUICK_REFERENCE.CARDS {...commonProps} showCreateNewButton
+                                                 onCreateEntityClick={onCreateEntityClick}/>,
+            cardsEnhanced: <ENTITY_QUICK_REFERENCE.CARDS_ENHANCED {...commonProps} showCreateNewButton
+                                                                  showMultiSelectButton
+                                                                  onCreateEntityClick={onCreateEntityClick}/>,
+            accordion: <ENTITY_QUICK_REFERENCE.ACCORDION {...commonProps} />,
+            accordionEnhanced: <ENTITY_QUICK_REFERENCE.ACCORDION_ENHANCED {...commonProps} />,
+            list: <ENTITY_QUICK_REFERENCE.LIST {...commonProps} />,
+            select: <ENTITY_QUICK_REFERENCE.SELECT {...commonProps} onRecordLoad={handleRecordLoad}
+                                                   onError={handleError} onLabelChange={handleRecordLabelChange}/>,
         };
+        return components[quickReferenceComponentName || 'list'];
+    }, [selectedEntity, quickReferenceComponentName, dynamicStyleOptions?.density, dynamicStyleOptions?.animationPreset]);
 
-        return components[quickReferenceType];
-    }, [selectedEntity, quickReferenceType, density, animationPreset]);
-
-    const layoutProps: LayoutProps = {
-        selectedEntity,
-        isExpanded,
-        setIsExpanded,
-        handleEntityChange,
+    const layoutProps: UnifiedLayoutProps = {
+        layoutState: {
+            selectedEntity,
+            isExpanded,
+            rightColumnRef,
+            selectHeight
+        },
+        handlers: {
+            setIsExpanded,
+            handleEntityChange,
+            onCreateEntityClick,
+        },
         QuickReferenceComponent,
-        rightColumnRef,
-        selectHeight,
-        density,
-        animationPreset,
-        splitRatio,
-        onCreateEntityClick,
-        floatingLabel
+        dynamicStyleOptions: dynamicStyleOptions,
+        dynamicLayoutOptions: dynamicLayoutOptions,
     };
 
     const layouts = {
-        split: <SplitLayout {...layoutProps} />,
-        sideBySide: <SideBySideLayout {...layoutProps} />,
-        stacked: <StackedLayout {...layoutProps} />
+        split: <SplitLayout unifiedLayoutProps={layoutProps}/>,
+        sideBySide: <SideBySideLayout unifiedLayoutProps={layoutProps}/>,
+        stacked: <StackedLayout unifiedLayoutProps={layoutProps}/>
     };
 
     return (
@@ -254,3 +176,4 @@ const EntitySmartLayoutCombined: React.FC<EntitySmartLayoutProps> = ({
 };
 
 export default EntitySmartLayoutCombined;
+*/

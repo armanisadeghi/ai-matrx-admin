@@ -23,6 +23,7 @@ export type EntityOperations =
     | 'FETCH_RECORDS'
     | 'FETCH_ALL'
     | 'FETCH_PAGINATED'
+    | 'FETCH_ONE_WITH_FK_IFK'
     | 'CREATE'
     | 'UPDATE'
     | 'DELETE'

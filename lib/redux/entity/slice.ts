@@ -37,7 +37,7 @@ import {
     CreateRecordPayload, DeleteRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
-    FetchOnePayload, FetchQuickReferencePayload, FetchRecordsPayload, UpdateRecordPayload
+    FetchOnePayload, FetchOneWithFkIfkPayload, FetchQuickReferencePayload, FetchRecordsPayload, UpdateRecordPayload
 } from "@/lib/redux/entity/actions";
 import { QueryOptions } from "./sagas/sagaHelpers";
 import { Callback } from "@/utils/callbackManager";
@@ -128,6 +128,32 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state.loading.lastOperation = 'FETCH_RECORDS';
 
                             entityLogger.log('error', 'fetchRecordsRejected', action.payload);
+                        },
+
+                        fetchOneWithFkIfk: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<FetchOneWithFkIfkPayload>
+                        ) => {
+                            entityLogger.log('debug', 'fetchOneWithFkIfk', action.payload);
+                            setLoading(state, 'FETCH_ONE_WITH_FK_IFK');
+                        },
+
+                        fetchOneWithFkIfkSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>>
+                        ) => {
+                            entityLogger.log('debug', 'fetchOneWithFkIfkSuccess', action.payload);
+
+                            const record = action.payload;
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
+                            state.records[recordKey] = record;
+                            setSuccess(state, 'FETCH_ONE_WITH_FK_IFK');
+                            state.cache.stale = false;
+                        },
+
+                        resetFetchOneWithFkIfkStatus: (state) => {
+                            entityLogger.log('debug', 'resetFetchOneWithFkIfkStatus');
+                            resetFlag(state, 'FETCH_ONE_WITH_FK_IFK');
                         },
 
 

@@ -73,7 +73,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
         // Selection Utilities
         isSelected,
         isActive,
-        handleSelection,
+        handleAddToSelection,
         handleMultiSelection,
         toggleSelectionMode,
         clearSelection,
@@ -254,7 +254,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => handleSelection(ref.recordKey)}
+                                            onClick={() => handleAddToSelection(ref.recordKey)}
                                         >
                                             <X className="h-4 w-4"/>
                                         </Button>
@@ -611,14 +611,14 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                     <Card
                                         key={JSON.stringify(ref.primaryKeyValues)}
                                         className={getCardClassName(ref)}
-                                        onClick={() => handleSelection(ref.recordKey)}
+                                        onClick={() => handleAddToSelection(ref.recordKey)}
                                     >
                                         <CardContent className="p-3">
                                             <div className="flex items-center gap-2">
                                                 {isMultiSelectMode && (
                                                     <Checkbox
                                                         checked={selectedRecordIds.includes(ref.recordKey)}
-                                                        onCheckedChange={() => handleSelection(ref.recordKey)}
+                                                        onCheckedChange={() => handleAddToSelection(ref.recordKey)}
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
                                                 )}

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {flexRender, useReactTable,} from "@tanstack/react-table"
+import {flexRender, Row, useReactTable,} from "@tanstack/react-table"
 import {ChevronDown} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {
@@ -28,6 +28,7 @@ import {EntityTabModal} from "@/components/matrx/Entity";
 import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers";
 import {createDefaultTableActions} from '@/components/matrx/Entity/action/defaultActions';
 import {useEntityDataTable} from "@/components/matrx/Entity/hooks/useEntityDataTable";
+import {EntityDataWithId, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
 export interface DataTableProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -61,6 +62,11 @@ export const DEFAULT_OPTIONS = {
     }
 };
 
+type TableRow<TEntity extends EntityKeys> = {
+    id: MatrxRecordId;
+    data: EntityData<TEntity>;
+}
+
 export function DataTable<TEntity extends EntityKeys>(
     {
         entityKey,
@@ -76,7 +82,8 @@ export function DataTable<TEntity extends EntityKeys>(
             tanstackUtils,
             columnUtils,
             defaults,
-        }
+        },
+        handleSingleSelection,
     } = useEntityDataTable(entityKey);
 
     React.useEffect(() => {
@@ -91,20 +98,24 @@ export function DataTable<TEntity extends EntityKeys>(
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<string>('view');
 
-    const handleAction = React.useCallback((actionName: string, rowData: EntityData<TEntity>) => {
-        setSelectedRow(rowData);
+    const handleAction = React.useCallback((actionName: string, row: Row<EntityDataWithId<TEntity>>) => {
+        console.log('Action:', actionName, 'Row:', row.original);
+        handleSingleSelection(row.original.matrxRecordId);
+        setSelectedRow(row.original);
         setActiveTab(actionName);
         setIsModalOpen(true);
-    }, [setSelectedRow, setActiveTab, setIsModalOpen]);
+    }, [setSelectedRow, setActiveTab, setIsModalOpen, handleSingleSelection]);
+
+
+    const defaultActions = React.useMemo(() =>
+            createDefaultTableActions<TEntity>(handleAction)
+        , [handleAction]);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedRow(null);
     };
 
-    const defaultActions = React.useMemo(() =>
-            createDefaultTableActions(handleAction)
-        , [handleAction]);
 
     const columnsWithActions = React.useMemo(() => {
         const baseColumns = (tanstackConfig.columns || []).map(col => ({
@@ -118,7 +129,7 @@ export function DataTable<TEntity extends EntityKeys>(
         );
     }, [tanstackConfig.columns, options.showActions, defaultActions.expanded]);
 
-    const table = useReactTable({
+    const table = useReactTable<EntityDataWithId<TEntity>>({
         ...tanstackConfig,
         columns: columnsWithActions,
         data: tanstackConfig.data || [],
@@ -213,9 +224,27 @@ export function DataTable<TEntity extends EntityKeys>(
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
+                                    onClick={(e) => {
+                                        const targetElement = e.target as HTMLElement;
+                                        const isCheckboxCell = targetElement.closest('.checkbox-cell');
+                                        const isActionCell = targetElement.closest('.actions-cell');
+
+                                        if (!isCheckboxCell && !isActionCell) {
+                                            handleSingleSelection(row.id);
+                                        }
+                                    }}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell
+                                            key={cell.id}
+                                            className={
+                                                cell.column.id === 'select'
+                                                ? 'checkbox-cell'
+                                                : cell.column.id === 'actions'
+                                                  ? 'actions-cell'
+                                                  : ''
+                                            }
+                                        >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()

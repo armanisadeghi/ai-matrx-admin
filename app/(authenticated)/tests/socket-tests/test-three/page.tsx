@@ -1,17 +1,31 @@
+// File Location: app/(authenticated)/tests/socket-tests/test-three/page.tsx
+
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useInitializeSocket } from '@/lib/redux/socket/useInitializeSocket';
-import { SocketManager } from '@/lib/redux/socket/manager';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Minus, Send, Trash2, Database } from 'lucide-react';
+import React, {useState, useRef, useEffect} from 'react';
+import {useInitializeSocket} from '@/lib/redux/socket/useInitializeSocket';
+import {SocketManager} from '@/lib/redux/socket/manager';
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent,
+    Input,
+    Button,
+    Switch,
+    Label,
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+    ScrollArea,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui';
+import {Plus, Minus, Send, Trash2, Database} from 'lucide-react';
 import {RECIPE_DATABASE} from "./recipe-data";
 
 
@@ -104,7 +118,7 @@ export function SocketTester() {
     const updateTask = (taskIndex, field, value) => {
         setTasks(prev => prev.map((task, i) => {
             if (i === taskIndex) {
-                return { ...task, [field]: value };
+                return {...task, [field]: value};
             }
             return task;
         }));
@@ -130,7 +144,7 @@ export function SocketTester() {
             if (i === taskIndex) {
                 const newBrokers = task.taskData.broker_values.map(broker => {
                     if (broker.id === brokerId) {
-                        return { ...broker, [field]: value };
+                        return {...broker, [field]: value};
                     }
                     return broker;
                 });
@@ -183,7 +197,7 @@ export function SocketTester() {
     };
 
     return (
-        <div className="p-4 max-w-6xl mx-auto space-y-6">
+        <div className="p-4 w-full">
             <Card>
                 <CardHeader>
                     <CardTitle>Socket.IO Tester</CardTitle>
@@ -226,7 +240,7 @@ export function SocketTester() {
                                         size="sm"
                                         onClick={() => removeTask(taskIndex)}
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <Trash2 className="h-4 w-4"/>
                                     </Button>
                                 </div>
 
@@ -246,7 +260,7 @@ export function SocketTester() {
                                             onValueChange={(value) => loadRecipeData(taskIndex, value)}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a recipe..." />
+                                                <SelectValue placeholder="Select a recipe..."/>
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {Object.entries(RECIPE_DATABASE)
@@ -299,7 +313,9 @@ export function SocketTester() {
                                                             <Switch
                                                                 checked={broker.ready === "True"}
                                                                 onCheckedChange={(checked) =>
-                                                                    updateBroker(taskIndex, broker.id, 'ready', checked ? "True" : "False")
+                                                                    updateBroker(taskIndex, broker.id, 'ready', checked
+                                                                                                                ? "True"
+                                                                                                                : "False")
                                                                 }
                                                             />
                                                         </div>
@@ -359,7 +375,7 @@ export function SocketTester() {
                                 variant="outline"
                                 onClick={addTask}
                             >
-                                <Plus className="h-4 w-4 mr-2" /> Add Task
+                                <Plus className="h-4 w-4 mr-2"/> Add Task
                             </Button>
                         </div>
                     </div>
@@ -370,14 +386,14 @@ export function SocketTester() {
                             onClick={handleSend}
                             className="w-32"
                         >
-                            <Send className="h-4 w-4 mr-2" /> Send
+                            <Send className="h-4 w-4 mr-2"/> Send
                         </Button>
                         <Button
                             variant="secondary"
                             onClick={handleClear}
                             className="w-32"
                         >
-                            <Trash2 className="h-4 w-4 mr-2" /> Clear
+                            <Trash2 className="h-4 w-4 mr-2"/> Clear
                         </Button>
                     </div>
                 </CardContent>
