@@ -648,6 +648,7 @@ export const selectFrontendConversion = createSelector(
             return data;
         }
         const keyMapping: KeyMapping = fieldToCanonical[entityName] || {};
+        // console.log('Key Mapping:', keyMapping);
 
         return selectReplaceKeysInObject({} as RootState, data, keyMapping);
     }

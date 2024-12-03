@@ -28,6 +28,10 @@ const RecordSelector: React.FC<{
     const entity = useEntity(entityKey);
     const [selectedRecordKey, setSelectedRecordKey] = useState<string | null>(null);
 
+    React.useEffect(() => {
+        entity.setFetchMode('fkIfk');
+    }, [entityKey]);
+
     // Fetch quick reference data when entity changes
     React.useEffect(() => {
         if (entity.entityMetadata) {

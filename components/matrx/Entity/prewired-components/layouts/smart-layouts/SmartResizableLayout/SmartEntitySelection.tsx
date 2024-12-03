@@ -9,37 +9,20 @@ import {
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectEntityPrettyName, selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys} from '@/types/entityTypes';
-import {cn} from '@nextui-org/react';
-import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity";
 
-type LayoutType = 'stacked' | 'sideBySide';
 
-interface EntitySelectionProps {
-    selectedEntity?: EntityKeys | null;
-    onEntityChange?: (value: EntityKeys) => void;
-    layout?: LayoutType;
-    selectHeight?: number;
-    density?: ComponentDensity;
-    animationPreset?: AnimationPreset;
-    className?: string;
-}
-
-const EntitySelection: React.FC<EntitySelectionProps> = (
-    {
-        selectedEntity,
-        onEntityChange,
-        layout,
-        selectHeight,
-        className
-    }) => {
+const SmartEntitySelection: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);
+    const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity || null;
+    const selectContentPosition = unifiedLayoutProps.selectComponentOptions.selectContentPosition || 'sideBySide';
 
     return (
         <div className="flex justify-center w-full">
             <div className="w-full max-w-md">
                 <Select
-                    value={selectedEntity || undefined}
-                    onValueChange={(value) => onEntityChange(value as EntityKeys)}
+                    value={selectedEntity}
+                    onValueChange={(value) => unifiedLayoutProps.handlers.handleEntityChange(value as EntityKeys)}
                 >
                     <SelectTrigger className="w-full bg-card text-card-foreground border-matrxBorder">
                         <SelectValue
@@ -53,7 +36,7 @@ const EntitySelection: React.FC<EntitySelectionProps> = (
                         />
                     </SelectTrigger>
                     <SelectContent
-                        position={layout === 'sideBySide' ? 'popper' : 'item-aligned'}
+                        position={selectContentPosition === 'sideBySide' ? 'popper' : 'item-aligned'}
                         className="bg-card w-[var(--radix-select-trigger-width)]"
                         align="center"
                         side="bottom"
@@ -74,4 +57,4 @@ const EntitySelection: React.FC<EntitySelectionProps> = (
     );
 };
 
-export default EntitySelection;
+export default SmartEntitySelection;

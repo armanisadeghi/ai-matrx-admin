@@ -5,7 +5,6 @@ export { default as EntityCardHeader } from './entity-management/parts/EntityCar
 export { default as ArmaniLayout } from './layouts/ArmaniLayout';
 export { default as EntityHeader } from './layouts/EntityHeader';
 export { default as EntityLayout } from './layouts/EntityLayout';
-export { default as EntitySmartLayoutCombined } from './layouts/EntitySmartLayoutCombined';
 export { default as SideBySideLayout } from './layouts/parts/SideBySideLayout';
 export { default as SplitLayout } from './layouts/parts/SplitLayout';
 export { default as StackedLayout } from './layouts/parts/StackedLayout';

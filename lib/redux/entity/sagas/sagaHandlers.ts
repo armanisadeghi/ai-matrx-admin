@@ -13,6 +13,7 @@ import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {Draft} from "immer";
 import {BaseSagaContext, QueryOptions, UnifiedDatabaseObject} from "./sagaHelpers";
+import {FetchOneWithFkIfkPayload, getOrFetchSelectedRecordsPayload} from "../actions";
 
 const DEBOUNCE_MS = 300;
 const CACHE_DURATION = 5 * 60 * 1000;
@@ -30,7 +31,7 @@ function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>(
     }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneWithFkIfk', entityKey);
 
-    const { data, error } = yield api
+    const {data, error} = yield api
         .rpc('fetch_all_fk_ifk', {
             p_table_name: tableName,
             p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues
@@ -55,7 +56,6 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     entityLogger.log('info', 'Starting fetchOne', action.payload);
 
     const relationships = yield select(selectEntityRelationships, entityKey);
-
 
 
     let query = api.select("*");
@@ -114,7 +114,7 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
                 case 'foreignKey': {
                     // Fetch complete record for foreign key relationships
                     if (mainData[column]) {
-                        const { data, error } = yield api
+                        const {data, error} = yield api
                             .from(relatedTable)
                             .select('*')
                             .eq(relatedColumn, mainData[column])
@@ -132,7 +132,7 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
                     const relatedTablePrimaryKeys = yield select(selectEntityPrimaryKeyMetadata, relatedTable);
                     const primaryKeyFields = relatedTablePrimaryKeys.database_fields.join(',');
 
-                    const { data, error } = yield api
+                    const {data, error} = yield api
                         .from(relatedTable)
                         .select(primaryKeyFields)
                         .eq(relatedColumn, mainData[column]);
@@ -146,7 +146,7 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
                 case 'manyToMany': {
                     if (junctionTable) {
                         // First get the related ids from junction table
-                        const { data: junctionData, error: junctionError } = yield api
+                        const {data: junctionData, error: junctionError} = yield api
                             .from(junctionTable)
                             .select(relatedColumn)
                             .eq(column, mainData.id);
@@ -159,7 +159,7 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
                             const primaryKeyFields = relatedTablePrimaryKeys.database_fields.join(',');
 
                             // Then fetch only the primary keys from the related table
-                            const { data: manyToManyData, error: relatedError } = yield api
+                            const {data: manyToManyData, error: relatedError} = yield api
                                 .from(relatedTable)
                                 .select(primaryKeyFields)
                                 .in(relatedColumn, relatedIds);
@@ -226,7 +226,7 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
 function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
-    action: PayloadAction<MatrxRecordId[]>,
+    action: PayloadAction<getOrFetchSelectedRecordsPayload>,
     unifiedDatabaseObject?: UnifiedDatabaseObject,
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleGetOrFetchSelectedRecords', entityKey);
@@ -235,11 +235,12 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
         entityLogger.log('debug', 'Starting', action.payload);
 
         const entitySelectors = createEntitySelectors(entityKey);
-        const {existingRecords, primaryKeysToFetch} = yield select(
-            entitySelectors.selectRecordsForFetching(action.payload)
+        const {existingRecords, recordIdsNotInState, primaryKeysToFetch} = yield select(
+            entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
         );
 
         entityLogger.log('debug', '-Existing records', existingRecords);
+        entityLogger.log('debug', '-Record IDs not in state', recordIdsNotInState);
         entityLogger.log('debug', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
@@ -263,8 +264,20 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
 
             entityLogger.log('debug', 'Query options', queryOptions);
 
-            yield put(actions.fetchSelectedRecords(queryOptions));
+            if (action.payload.fetchMode === 'fkIfk') {
+                for (const recordId of recordIdsNotInState) {
+                    const payload: FetchOneWithFkIfkPayload = {
+                        matrxRecordId: recordId,
+                    };
+                    entityLogger.log('debug', 'fetchMode is fkIfk. Triggering fetchOneWithFkIfk with Payload:', payload);
+                    yield put(actions.fetchOneWithFkIfk(payload));
+                }
+            } else {
+                entityLogger.log('debug', 'fetchMode is not fkIfk. Using fetchSelectedRecords');
+                yield put(actions.fetchSelectedRecords(queryOptions));
+            }
         }
+
     } catch (error: any) {
         entityLogger.log('error', 'Error', error);
         yield put(actions.setError({
@@ -527,8 +540,8 @@ function* handleDelete<TEntity extends EntityKeys>(
         const primaryKeyValues = unifiedDatabaseObject.primaryKeysAndValues;
         if (primaryKeyValues) {
             Object.entries(primaryKeyValues).forEach(([key, value]) => {
-            query = query.eq(key, value);
-        });
+                query = query.eq(key, value);
+            });
         } else {
             throw new Error("Primary key values are missing in unifiedDatabaseObject.");
         }
@@ -542,7 +555,7 @@ function* handleDelete<TEntity extends EntityKeys>(
 
         yield put(actions.removeRecords(recordKeys));
 
-        entityLogger.log('debug', 'Final result', { removed: primaryKeyValues });
+        entityLogger.log('debug', 'Final result', {removed: primaryKeyValues});
 
     } catch (error: any) {
         entityLogger.log('error', 'Delete operation error', error);
@@ -1039,7 +1052,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
             entityLogger.log('debug', 'Optimistic update', optimisticData);
 
             yield put(actions.upsertRecords([
-                { recordKey, record: optimisticData }
+                {recordKey, record: optimisticData}
             ]));
         }
 
@@ -1094,7 +1107,7 @@ function* handleUpdate<TEntity extends EntityKeys>(
         if (previousData) {
             entityLogger.log('debug', 'Reverting optimistic update');
             yield put(actions.upsertRecords([
-                { recordKey, record: previousData }
+                {recordKey, record: previousData}
             ]));
         }
 
@@ -1114,7 +1127,7 @@ function* handleUpdateQuickReference<TEntity extends EntityKeys>(
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleQuickReferenceUpdate', entityKey);
 
-    entityLogger.log('debug', 'Starting Quick Reference Update', { record, unifiedDatabaseObject });
+    entityLogger.log('debug', 'Starting Quick Reference Update', {record, unifiedDatabaseObject});
 
     const quickReferenceRecord = {
         primaryKeyValues: unifiedDatabaseObject?.primaryKeysAndValues,
@@ -1127,7 +1140,6 @@ function* handleUpdateQuickReference<TEntity extends EntityKeys>(
     // Dispatch to addQuickReferenceRecords with the properly structured record
     yield put(actions.addQuickReferenceRecords([quickReferenceRecord]));
 }
-
 
 
 function* handleFetchMetrics<TEntity extends EntityKeys>(

@@ -13,7 +13,7 @@ import {EditMode} from "./EditMode";
 import {useCallback} from "react";
 import {useEntityForm} from "@/lib/redux/entity/hooks/useEntityForm";
 import {makeSelectEntityNameByFormat, selectEntityPrettyName} from '@/lib/redux/schema/globalCacheSelectors';
-import { useAppSelector } from '@/lib/redux/hooks';
+import {useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 
 
@@ -43,12 +43,7 @@ function RelatedEntityAccordion(
         matrxRecordId,
         individualFieldInfo,
         entityPrettyName,
-    } = useFetchRelated({
-        entityKey,
-        dynamicFieldInfo,
-        formData,
-        activeEntityKey,
-    });
+    } = useFetchRelated({entityKey, dynamicFieldInfo, formData, activeEntityKey,});
 
     const [viewModeOption, setViewModeOption] = React.useState<ViewModeOptions>('view');
 
@@ -76,7 +71,7 @@ function RelatedEntityAccordion(
                 form.handleCancel();
                 break;
         }
-    }, [form, records]);
+    }, [form, records, setViewModeOption, individualFieldInfo]);
 
 
     const renderContent = (matrxRecordId: MatrxRecordId, record: EntityData<EntityKeys>) => {

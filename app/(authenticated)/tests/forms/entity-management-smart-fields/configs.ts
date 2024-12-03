@@ -3,7 +3,8 @@ import {
     DynamicLayoutOptions,
     DynamicStyleOptions,
     FormComponentOptions,
-    FormStyleOptions, InlineEntityOptions
+    FormStyleOptions, InlineEntityOptions,
+    ResizableThreePaneLayoutProps, SelectComponentProps
 } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys } from "@/types/entityTypes";
 
@@ -32,7 +33,7 @@ interface EntityRecordHeaderProps {
 
 export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
     quickReferenceType: 'list',
-    formLayoutType: 'split',
+    formLayoutType: 'split', //formLayoutType?: "split" | "sideBySide" | "stacked" | "resizable"
     entitySelectionComponent: EntityRecordHeader
 };
 
@@ -67,59 +68,20 @@ export const DEFAULT_DYNAMIC_STYLE_OPTIONS: DynamicStyleOptions = {
     variant: 'default'
 };
 
-// Combined Dynamic Layout Default Options
-export const ENTITY_PAGE_DEFAULTS: DynamicLayoutOptions = {
-    componentOptions: DEFAULT_FORM_COMPONENT_OPTIONS,
-    formStyleOptions: DEFAULT_FORM_STYLE_OPTIONS,
-    inlineEntityOptions: DEFAULT_INLINE_ENTITY_OPTIONS
+export const DEFAULT_RESIZABLE_LAYOUT_OPTIONS: ResizableThreePaneLayoutProps = {
+    leftColumnWidth: 20,
+    topLeftHeight: 15,
+    minColumnWidth: 10,
+    minSectionHeight: 10,
+    leftColumnCollapsible: false,
+    quickRefCollapsible: true,
+    forceCustomSizes: false
 };
 
 
+// selectComponentOptions?: SelectComponentProps
 
-
-
-/*
-export const ENTITY_PAGE_DEFAULTS: DynamicLayoutOptions = {
-    layout: 'split' as PageLayoutOptions,
-    density: 'normal' as ComponentDensity,
-    animation: 'subtle' as AnimationPreset,
-    size: 'md' as ComponentSize,
-    quickReferenceType: 'list' as QuickReferenceComponentType,
-    isFullScreen: false,
-    splitRatio: 20,
-    formOptions: {
-        formLayout: 'grid' as FormLayoutOptions,
-        formColumns: '2' as FormColumnsOptions,
-        formDirection: 'row' as FormDirectionOptions,
-        formEnableSearch: false,
-        formVariation: 'fullWidthSinglePage' as FormVariationOptions,
-        floatingLabel: true,
-        showLabel: true,
-        textSize: 'md' as TextSizeOptions,
-    },
-    inlineEntityOptions: {
-        showInlineEntities: true,
-        inlineEntityStyle: 'accordion' as InlineEntityComponentStyles,
-        inlineEntityColumns: '2' as InlineEntityColumnsOptions,
-        editableInlineEntities: false,
-    },
-};
-
-
-interface SimpleFormProps {
-    primaryEntityKey: EntityKeys;
-    foreignEntityKeys: EntityKeys[] | null;
-    inverseEntityKeys: EntityKeys[] | null;
-    manyToManyEntityKeys: EntityKeys[] | null;
-    primaryActiveRecordId: MatrxRecordId | null;
-    foreignActiveRecordIds: Record<EntityKeys, MatrxRecordId> | null;
-    formMode: 'display' | 'create' | 'edit' | 'view';
-    onSubmitUpdate?: (data: FormState) => void;
-    onSubmitCreate?: (data: FormState) => void;
-    onSubmitDelete?: () => void;
-    dynamicLayoutOptions: DynamicLayoutOptions;
-    dynamicStyleOptions: DynamicStyleOptions;
+export const DEFAULT_SELECT_COMPONENT_OPTIONS: SelectComponentProps = {
+    selectContentPosition: 'sideBySide',
 }
 
-
-*/

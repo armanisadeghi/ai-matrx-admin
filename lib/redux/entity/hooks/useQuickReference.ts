@@ -18,6 +18,7 @@ import {
 import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import { getEntitySlice } from '../entitySlice';
+import { FetchMode } from '../actions';
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -72,6 +73,8 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     flexFormField: any;
     getCardClassName: (recordKey: MatrxRecordId) => string;
 
+    fetchMode: FetchMode;
+    setFetchMode: React.Dispatch<React.SetStateAction<FetchMode>>;
 }
 
 export function useQuickReference<TEntity extends EntityKeys>(
@@ -225,6 +228,8 @@ export function useQuickReference<TEntity extends EntityKeys>(
         toggleSelectionMode: selection.toggleSelectionMode,
         clearSelection: selection.clearSelection,
         handleSingleSelection: selection.handleSingleSelection,
+        fetchMode: selection.fetchMode,
+        setFetchMode: selection.setFetchMode,
 
         handleAddToSelection,
 

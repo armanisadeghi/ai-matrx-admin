@@ -11,7 +11,7 @@ import {
     LoadingState,
     SubscriptionConfig,
     EntityMetadata,
-    EntityMetrics, SelectionMode,
+    EntityMetrics, SelectionMode,EntityOperations, EntityOperationFlags,
 } from "@/lib/redux/entity/types/stateTypes";
 import {
     clearError,
@@ -37,10 +37,11 @@ import {
     CreateRecordPayload, DeleteRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
-    FetchOnePayload, FetchOneWithFkIfkPayload, FetchQuickReferencePayload, FetchRecordsPayload, UpdateRecordPayload
+    FetchOnePayload, FetchOneWithFkIfkPayload, FetchQuickReferencePayload, FetchRecordsPayload,
+    getOrFetchSelectedRecordsPayload, UpdateRecordPayload
 } from "@/lib/redux/entity/actions";
-import { QueryOptions } from "./sagas/sagaHelpers";
-import { Callback } from "@/utils/callbackManager";
+import {QueryOptions} from "./sagas/sagaHelpers";
+import {Callback} from "@/utils/callbackManager";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(
         entityKey: TEntity,
@@ -134,7 +135,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<FetchOneWithFkIfkPayload>
                         ) => {
-                            entityLogger.log('debug', 'fetchOneWithFkIfk', action.payload);
+                            entityLogger.log('info', 'fetchOneWithFkIfk set to loading', action.payload);
                             setLoading(state, 'FETCH_ONE_WITH_FK_IFK');
                         },
 
@@ -142,20 +143,39 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<EntityData<TEntity>>
                         ) => {
-                            entityLogger.log('debug', 'fetchOneWithFkIfkSuccess', action.payload);
-
                             const record = action.payload;
                             const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
                             state.records[recordKey] = record;
                             setSuccess(state, 'FETCH_ONE_WITH_FK_IFK');
+                            entityLogger.log('info', 'fetchOneWithFkIfkSuccess set to success', action.payload);
                             state.cache.stale = false;
                         },
 
                         resetFetchOneWithFkIfkStatus: (state) => {
-                            entityLogger.log('debug', 'resetFetchOneWithFkIfkStatus');
                             resetFlag(state, 'FETCH_ONE_WITH_FK_IFK');
+                            entityLogger.log('info', 'resetFetchOneWithFkIfkStatus flag reset.');
                         },
 
+                        fetchedAsRelatedSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>[]>
+                        ) => {
+                            const {primaryKeyMetadata} = state.entityMetadata;
+                            entityLogger.log('info', 'fetchedAsRelatedSuccess triggerd', action.payload);
+
+                            removeSelections(state);
+                            entityLogger.log('info', 'Removed all selections');
+
+                            action.payload.forEach(record => {
+                                const recordKey = createRecordKey(primaryKeyMetadata, record);
+                                entityLogger.log('info', 'Adding record to selection', recordKey);
+                                state.records[recordKey] = record;
+                                addRecordToSelection(state, recordKey);
+                            });
+                            setSuccess(state, 'FETCHED_AS_RELATED');
+                            entityLogger.log('info', 'fetchedAsRelatedSuccess set to success');
+                            state.cache.stale = false;
+                        },
 
                         // Fetch All Management ========================================
                         fetchAll: (
@@ -259,7 +279,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                         getOrFetchSelectedRecords: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<MatrxRecordId[]>
+                            action: PayloadAction<getOrFetchSelectedRecordsPayload>
                         ) => {
                             entityLogger.log('debug', 'getOrFetchSelectedRecords', action.payload);
                             setLoading(state, 'FETCH_RECORDS');
@@ -509,7 +529,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<{ recordKey: MatrxRecordId; record: EntityData<TEntity> }[]>
                         ) => {
-                            action.payload.forEach(({ recordKey, record }) => {
+                            action.payload.forEach(({recordKey, record}) => {
                                 state.records[recordKey] = {
                                     ...(state.records[recordKey] || {}),
                                     ...record,

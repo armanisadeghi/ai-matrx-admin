@@ -31,14 +31,21 @@ function EntityQuickReferenceCardsEnhanced<TEntity extends EntityKeys>(
         density = 'normal',
         animationPreset = 'smooth',
     }: EntityQuickReferenceCardsProps<TEntity>) {
+
     const {
         quickReferenceRecords,
         selectionMode,
         isSelected,
         handleRecordSelect,
         toggleSelectionMode,
+        fetchMode,
         entityDisplayName,
+        setFetchMode,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
     // Density-based styling configurations
     const densityConfig = React.useMemo(() => {

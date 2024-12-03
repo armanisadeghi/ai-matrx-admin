@@ -14,7 +14,7 @@ import {supabase} from "@/utils/supabase/client";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import {call, put, select} from "redux-saga/effects";
 import {
-    selectEntityDatabaseName, selectFrontendConversion,
+    selectEntityDatabaseName, selectEntityFrontendName, selectFrontendConversion,
     selectPayloadOptionsDatabaseConversion, selectUnifiedDatabaseObjectConversion
 } from "@/lib/redux/schema/globalCacheSelectors";
 import {callbackManager} from "@/utils/callbackManager";
@@ -77,7 +77,6 @@ export interface QueryOptionsReturn<TEntity extends EntityKeys> {
 }
 
 
-
 export interface FlexibleQueryOptions {
     entityNameAnyFormat: AllEntityNameVariations;
     callback?: string;
@@ -136,7 +135,7 @@ export function* withConversion<TEntity extends EntityKeys>(
         const result = yield call(sagaHandler, context);
 
         if (action.payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, { success: true });
+            callbackManager.trigger(action.payload.callbackId, {success: true});
         }
 
         return result;
@@ -150,7 +149,7 @@ export function* withConversion<TEntity extends EntityKeys>(
         }));
 
         if (action.payload.callback) {
-            callbackManager.trigger(action.payload.callbackId, { success: false, error: "Error message" });
+            callbackManager.trigger(action.payload.callbackId, {success: false, error: "Error message"});
         }
 
         throw error;
@@ -275,7 +274,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
         }
 
         if (action.payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, { success: true });
+            callbackManager.trigger(action.payload.callbackId, {success: true});
         }
 
     } catch (error: any) {
@@ -287,7 +286,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
         }));
 
         if (payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, { success: false, error: "Error message" });
+            callbackManager.trigger(action.payload.callbackId, {success: false, error: "Error message"});
         }
         throw error;
     }
@@ -298,6 +297,43 @@ export function getSliceActions<TEntity extends EntityKeys>(entityKey: TEntity) 
     const slice = getEntitySlice(entityKey);
     return slice.actions;
 }
+
+interface TransformResult {
+    mainEntity: {
+        data: any;
+    };
+    relatedEntities: {
+        tableName: AllEntityNameVariations;  // This is the database version of the name
+        data: any;
+    }[];
+}
+
+export const transformDatabaseResponse = (
+    response: Record<string, any>
+): TransformResult => {
+    const result: TransformResult = {
+        mainEntity: {
+            data: {} // Will contain main object data
+        },
+        relatedEntities: []
+    };
+
+    Object.entries(response).forEach(([key, value]) => {
+        if (key.endsWith('_reference') || key.endsWith('_inverse')) {
+            const tableName = key.replace(/_reference$/, '').replace(/_inverse$/, '') as AllEntityNameVariations;
+
+            result.relatedEntities.push({
+                tableName,
+                data: value
+            });
+        } else {
+            result.mainEntity.data[key] = value;
+        }
+    });
+
+    return result;
+};
+
 
 export function* withFullRelationConversion<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -328,48 +364,78 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             flexibleQueryOptions.columns = payload.columns || payload.fields;
         }
 
-        entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
+        entityLogger.log('info', 'Flexible Query Options with columns', flexibleQueryOptions);
 
         const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(
             selectUnifiedDatabaseObjectConversion,
             flexibleQueryOptions
         );
 
-        entityLogger.log('info', 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
+        entityLogger.log('info', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
 
-        const api = yield call(initializeDatabaseApi, unifiedDatabaseObject.tableName);
-        entityLogger.log('debug', 'Database API initialized', entityKey);
-
-        const { data, error } = yield api.rpc('fetch_all_fk_ifk', {
+        const rpcArgs = {
             p_table_name: unifiedDatabaseObject.tableName,
-            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues,
-        });
+            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues
+        };
+
+        const {data, error} = yield supabase
+            .rpc('fetch_all_fk_ifk', rpcArgs, {
+                count: 'exact'
+            });
 
         if (error) {
+            entityLogger.log('error', 'RPC call failed:', error);
             throw error;
         }
 
-        const frontendResponse = yield select(selectFrontendConversion, { entityName: entityKey, data });
+        entityLogger.log('info', 'Full response data:', data);
 
-        if (!frontendResponse || typeof frontendResponse !== 'object') {
-            throw new Error("Unexpected frontendResponse format");
-        }
 
-        for (const [entityKey, records] of Object.entries(frontendResponse)) {
-            const actions = getSliceActions(entityKey as EntityKeys);
-            if (actions) {
-                yield put(actions.fetchOneWithFkIfkSuccess(records));
-            } else {
-                console.warn(`No actions found for entity key: ${entityKey}`);
+        const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: data});
+        entityLogger.log('info', 'Frontend Conversion', frontendResponse);
+        yield put(actions.fetchOneWithFkIfkSuccess(frontendResponse));
+
+        const transformed = transformDatabaseResponse(data);
+
+        const groupedEntities: Record<EntityKeys, any[]> = {};
+
+        for (const relatedEntity of transformed.relatedEntities) {
+            const frontendEntityName: EntityKeys = yield select(selectEntityFrontendName, relatedEntity.tableName);
+            entityLogger.log('info', 'Related Entity Frontend Entity Name', frontendEntityName);
+
+            // Initialize array if this is the first record for this entity
+            if (!groupedEntities[frontendEntityName]) {
+                groupedEntities[frontendEntityName] = [];
+            }
+
+            // If it's an array, add all records, if single object, wrap in array
+            const recordsToAdd = Array.isArray(relatedEntity.data)
+                                 ? relatedEntity.data
+                                 : [relatedEntity.data];
+
+            // Convert each record to frontend format
+            for (const record of recordsToAdd) {
+                const frontendResponse = yield select(selectFrontendConversion, {
+                    entityName: frontendEntityName,
+                    data: record
+                });
+                groupedEntities[frontendEntityName].push(frontendResponse);
             }
         }
 
-        if (successAction) {
-            yield put(successAction(frontendResponse));
+        // Dispatch grouped records
+        for (const [frontendEntityName, records] of Object.entries(groupedEntities)) {
+            const relatedActions = getSliceActions(frontendEntityName as EntityKeys);
+            if (relatedActions) {
+                yield put(relatedActions.fetchedAsRelatedSuccess(records));
+                entityLogger.log('info', `Updated ${records.length} records for entity:`, frontendEntityName);
+            } else {
+                console.warn(`No actions found for entity key: ${frontendEntityName}`);
+            }
         }
 
         if (action.payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, { success: true });
+            callbackManager.trigger(action.payload.callbackId, {success: true});
         } else {
             console.warn("No callbackId provided in action payload");
         }
@@ -383,8 +449,15 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
         );
 
         if (payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, { success: false, error: "Error message" });
+            callbackManager.trigger(action.payload.callbackId, {success: false, error: "Error message"});
         }
         throw error;
     }
 }
+
+
+// const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: data});
+// if (successAction) {
+//     yield put(successAction(frontendResponse));
+// }
+

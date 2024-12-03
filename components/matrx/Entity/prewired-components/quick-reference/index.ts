@@ -25,5 +25,7 @@ export const ENTITY_QUICK_REFERENCE = {
     CARDS_ENHANCED: EntityQuickReferenceCardsEnhanced,
     LIST: EntityQuickReferenceList,
     SELECT: EntityQuickReferenceSelect,
-    LIST_WITH_RELATED: EntityQuickReferenceListWithRelated
+    RELATED_LIST: EntityQuickReferenceListWithRelated
 };
+
+export type QuickReferenceComponentType = keyof typeof ENTITY_QUICK_REFERENCE;

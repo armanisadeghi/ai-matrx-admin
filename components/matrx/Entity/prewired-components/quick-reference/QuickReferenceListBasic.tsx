@@ -19,13 +19,23 @@ export function QuickRefScrollBasic<TEntity extends EntityKeys>(
         entityKey,
         className = ''
     }: QuickRefBasicProps<TEntity>) {
+
     const {
         quickReferenceRecords,
         selectionMode,
+        errorState,
         isSelected,
         handleRecordSelect,
+        toggleSelectionMode,
+        fetchMode,
+        entityDisplayName,
+        setFetchMode,
         getCardClassName,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
     return (
         <div className={cn('h-full flex flex-col border-r', className)}>

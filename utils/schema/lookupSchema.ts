@@ -1028,7 +1028,10 @@ export const fieldNameToCanonical: FieldNameToCanonicalMap = {
         returnBroker: "returnBroker",
         p_return_broker: "returnBroker",
         "return-broker": "returnBroker",
-        ReturnBroker: "returnBroker"
+        ReturnBroker: "returnBroker",
+        "arg_inverse": "argInverse",
+        "broker_reference": "brokerReference",
+        "system_function_inverse": "systemFunctionInverse",
     },
     systemFunction: {
         Id: "id",

@@ -33,7 +33,14 @@ function EntityQuickReferenceCards<TEntity extends EntityKeys>(
         isSelected,
         handleRecordSelect,
         toggleSelectionMode,
+        fetchMode,
+        entityDisplayName,
+        setFetchMode,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
     // Density-based styling configurations
     const densityConfig = React.useMemo(() => {

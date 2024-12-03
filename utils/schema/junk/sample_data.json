@@ -1,103 +1,39 @@
 {
-  "id": "9dc98549-7f4d-421d-b7ee-6a42623af0c0",
-  "name": "processed_video_audio_and_text",
-  "tags": [],
-  "ready": false,
-  "value": null,
-  "tooltip": "Highly processed text from video input.",
-  "data_type": "dict",
-  "description": "Fully processed Video to generate the highest possible quality text outline, transcription, summary and more. This goes far beyond fetching captions.",
-  "display_name": "Processed Video Audio Text",
-  "default_source": "none",
-  "sample_entries": null,
-  "output_component": "ComplexMulti",
-  "validation_rules": null,
-  "additional_params": null,
-  "default_destination": "user_output",
-  "other_source_params": null,
-  "recipe_broker_inverse": [
+  "id": "a58d386d-0231-4166-b853-0c73e5201c77",
+  "name": "Armani Function newest",
+  "class_name": "NewClass",
+  "arg_inverse": [
     {
-      "id": "934099dc-c244-4654-9090-f3fbdf5daf4b",
-      "broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0",
-      "recipe": "b6c9969c-6a4a-415e-a752-054aab5ed811",
-      "required": null,
-      "broker_role": "input_broker"
+      "id": "2fb68330-b561-42d6-9bb1-598c34ad08e7",
+      "name": "new_arg_newest",
+      "ready": false,
+      "default": "some value",
+      "required": true,
+      "data_type": "str",
+      "registered_function": "a58d386d-0231-4166-b853-0c73e5201c77"
     }
   ],
-  "custom_source_component": null,
-  "registered_function_inverse": [
-    {
-      "id": "4646f50f-3150-442b-a87d-527c99a80652",
-      "name": "process_youtube_video",
-      "class_name": null,
-      "description": "Asynchronously processes a YouTube video for various outputs such as video, audio, and text.\n\n    Args:\n        video_url (str): The URL of the YouTube video to process.\n        return_params (dict): Optional parameters affecting processing outcomes like saving video/audio/text and obtaining high-quality transcript.\n            {\n                'variable_name': 'special_variable_name'\n                'save_video': True,\n                'save_audio': True,\n                'save_text': True,\n                'get_hq_transcript': True,\n            }\n\n    Returns:\n        dict: A dictionary with key information about the processing state and outcome. Contains 'signature', 'processing' status,\n              'variable_name', 'value', and 'processed_values' keys detailing processing results and links to processed outputs.\n                {\n                    'signature': 'YouTubeProcessorResponse',\n                    'processing': True,\n                    \"variable_name\": self.return_params.get('variable_name', ''),\n                    'value': self.cleaned_text,\n                    'processed_values': {\n                        'video': self.video_output_link,\n                        'audio': self.audio_output_link,\n                        'text': self.text_output_link,\n                    }\n                }",
-      "module_path": "video_editing.youtube.process",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "aa62406c-f0e3-4549-b91d-dabe840034d3",
-      "name": "New Function",
-      "class_name": "NewClass",
-      "description": "A new function",
-      "module_path": "/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "a58d386d-0231-4166-b853-0c73e5201c77",
-      "name": "Armani Function newest",
-      "class_name": "NewClass",
-      "description": "A new function",
-      "module_path": "/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "c612513e-8e78-4fda-80f5-e28653b48377",
-      "name": "Updated Function",
-      "class_name": "UpdatedClass",
-      "description": "Updated description",
-      "module_path": "new/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "972861a7-c265-43d1-bc0c-0c76677b4dd0",
-      "name": "Armani Function newest",
-      "class_name": "NewClass",
-      "description": "A new function",
-      "module_path": "/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "fff3c273-0803-4781-961e-64be7baf0c34",
-      "name": "Armani Function newest",
-      "class_name": "NewClass",
-      "description": "A new function",
-      "module_path": "/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "ea580b94-62ec-47e3-b899-fedee50ea307",
-      "name": "Armani Function not newest",
-      "class_name": "NewClass",
-      "description": "A new function",
-      "module_path": "/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    },
-    {
-      "id": "8a459fca-47c2-44c7-b72b-5e8565b9f209",
-      "name": "Armani Function newest one",
-      "class_name": "NewClass",
-      "description": "A new function",
-      "module_path": "/path/to/module",
-      "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0"
-    }
-  ],
-  "automation_boundary_broker_inverse": [
-    {
-      "id": "e42e9e39-9ae8-461c-9ec7-3137a0119803",
-      "broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0",
-      "matrix": null,
-      "spark_source": "user_input",
-      "beacon_destination": "database"
-    }
-  ]
+  "description": "A new function",
+  "module_path": "/path/to/module",
+  "return_broker": "9dc98549-7f4d-421d-b7ee-6a42623af0c0",
+  "broker_reference": {
+    "id": "9dc98549-7f4d-421d-b7ee-6a42623af0c0",
+    "name": "processed_video_audio_and_text",
+    "tags": [],
+    "ready": false,
+    "value": null,
+    "tooltip": "Highly processed text from video input.",
+    "data_type": "dict",
+    "description": "Fully processed Video to generate the highest possible quality text outline, transcription, summary and more. This goes far beyond fetching captions.",
+    "display_name": "Processed Video Audio Text",
+    "default_source": "none",
+    "sample_entries": null,
+    "output_component": "ComplexMulti",
+    "validation_rules": null,
+    "additional_params": null,
+    "default_destination": "user_output",
+    "other_source_params": null,
+    "custom_source_component": null
+  },
+  "system_function_inverse": []
 }

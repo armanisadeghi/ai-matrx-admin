@@ -81,7 +81,7 @@ export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disable
 export type ComponentState = typeof COMPONENT_STATES[number];
 
 // Layout Options
-export const PAGE_LAYOUTS = ['split', 'sideBySide', 'stacked'] as const;
+export const PAGE_LAYOUTS = ['split', 'sideBySide', 'stacked', 'resizable'] as const;
 export type PageLayoutOptions = typeof PAGE_LAYOUTS[number];
 
 export const FORM_LAYOUTS = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline', 'TrialFieldTabsLayout', 'TrialFloatingLayout', 'TrialListGroupLayout', 'TrialSplitLayout', 'TrialCardListLayout', 'ZigzagLayout','TrialStackedLayout'] as const;
@@ -127,6 +127,7 @@ export const QUICK_REFERENCE_COMPONENT_TYPES = [
     'list',
     'select',
     'default',
+    'LIST_WITH_RELATED',
 ] as const;
 export type QuickReferenceComponentType = typeof QUICK_REFERENCE_COMPONENT_TYPES[number];
 

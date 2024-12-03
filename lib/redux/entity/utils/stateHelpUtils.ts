@@ -3,6 +3,7 @@
 import {AllEntityFieldKeys, EntityData, EntityKeys} from "@/types/entityTypes";
 import {
     EntityOperationFlags,
+    EntityOperations,
     EntityState,
     FilterCondition,
     FilterState,
@@ -14,20 +15,6 @@ import EntityLogger from "./entityLogger";
 const trace = "UTILS";
 const utilsLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
-export type FlagStatusOptions = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
-
-export type EntityOperations =
-    | 'FETCH'
-    | 'FETCH_ONE'
-    | 'FETCH_QUICK_REFERENCE'
-    | 'FETCH_RECORDS'
-    | 'FETCH_ALL'
-    | 'FETCH_PAGINATED'
-    | 'FETCH_ONE_WITH_FK_IFK'
-    | 'CREATE'
-    | 'UPDATE'
-    | 'DELETE'
-    | 'CUSTOM';
 
 export const setLoading = <TEntity extends EntityKeys>(
     state: EntityState<TEntity>,

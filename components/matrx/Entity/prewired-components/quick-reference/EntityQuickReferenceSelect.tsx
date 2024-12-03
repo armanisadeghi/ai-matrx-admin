@@ -33,12 +33,22 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
         density = 'normal',
         animationPreset = 'smooth',
     }: EntityQuickReferenceSelectProps<TEntity>) {
+
     const {
         quickReferenceRecords,
+        selectionMode,
+        errorState,
         isSelected,
         handleRecordSelect,
-        errorState,
+        toggleSelectionMode,
+        fetchMode,
+        entityDisplayName,
+        setFetchMode,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
     // Density-based styling configurations
     const densityConfig = React.useMemo(() => {

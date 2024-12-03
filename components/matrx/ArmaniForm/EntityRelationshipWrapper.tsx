@@ -27,6 +27,7 @@ const EntityRelationshipWrapper = (
 
     const entityKeyToUse = (dynamicFieldInfo: EntityStateField) => {
         if (!dynamicFieldInfo.isNative) {
+            console.log('EntityRelationshipWrapper: returning entityName:', dynamicFieldInfo.entityName);
             return dynamicFieldInfo.entityName;
         } else {
             throw new Error('EntityRelationshipWrapper: field is not an entity relationship');

@@ -27,7 +27,7 @@ import {
     handleGetOrFetchSelectedRecords,
     handleFetchSelectedRecords
 } from "@/lib/redux/entity/sagas/sagaHandlers";
-import {DeleteRecordPayload} from "../actions";
+import {DeleteRecordPayload, FetchOneWithFkIfkPayload, getOrFetchSelectedRecordsPayload} from "../actions";
 import {withConversion, withFullConversion, withFullRelationConversion} from "@/lib/redux/entity/sagas/sagaHelpers";
 import { getEntitySlice } from "../entitySlice";
 
@@ -86,11 +86,9 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         yield put(actions.resetFetchOneWithFkIfkStatus());
                     }
                 ),
-
-
                 takeLatest(
                     actions.fetchOne.type,
-                    function* (action: SagaAction<{ matrxRecordId: MatrxRecordId }>) {
+                    function* (action: SagaAction<FetchOneWithFkIfkPayload>) {
                         if (shouldSkip(actions.fetchOne.type, action.payload)) return;
                         yield call(withFullConversion, handleFetchOne, entityKey, actions, action, actions.fetchOneSuccess);
                         setCache(actions.fetchOne.type, action.payload);
@@ -175,7 +173,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 ),
                 takeLatest(
                     actions.getOrFetchSelectedRecords.type,
-                    function* (action: SagaAction<MatrxRecordId[]>) {
+                    function* (action: SagaAction<getOrFetchSelectedRecordsPayload>) {
                         sagaLogger.log('debug', 'Handling getOrFetchSelectedRecords', action.payload);
                         if (shouldSkip(actions.getOrFetchSelectedRecords.type, action.payload)) return;
                         yield call(handleGetOrFetchSelectedRecords, entityKey, actions, action);

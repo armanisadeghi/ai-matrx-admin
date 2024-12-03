@@ -15,7 +15,7 @@ import EntitySelection from "@/components/matrx/Entity/prewired-components/entit
 import MeasurementMonitor from './MeasurementMonitor';
 import {
     useDynamicMeasurements
-} from "@/components/matrx/Entity/prewired-components/layouts/parts/useDynamicMeasurements";
+} from "@/hooks/ui/useDynamicMeasurements";
 
 
 export const SplitLayout: React.FC<LayoutProps> = (

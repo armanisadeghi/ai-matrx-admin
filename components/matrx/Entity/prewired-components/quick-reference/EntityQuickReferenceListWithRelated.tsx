@@ -20,7 +20,7 @@ interface EntityQuickReferenceListProps<TEntity extends EntityKeys> {
     className?: string;
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
-    [key: string]: any; // Allow additional props
+    [key: string]: any;
 
 }
 
@@ -34,13 +34,21 @@ function EntityQuickReferenceListWithRelated<TEntity extends EntityKeys>(
         animationPreset = 'smooth',
         ...rest
     }: EntityQuickReferenceListProps<TEntity>) {
+
     const {
         quickReferenceRecords,
         selectionMode,
         isSelected,
         handleRecordSelect,
         toggleSelectionMode,
+        fetchMode,
+        entityDisplayName,
+        setFetchMode,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
     const densityConfig = React.useMemo(() => {
         const configs = {

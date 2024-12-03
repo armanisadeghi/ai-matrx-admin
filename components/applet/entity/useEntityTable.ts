@@ -41,7 +41,7 @@ export const useEntityTable = <TEntity extends EntityKeys>(
     // Selectors
     const data = useAppSelector(selectors.selectAllRecords);
     const loading = useAppSelector(selectors.selectLoadingState).loading;
-    const error = useAppSelector(selectors.selectError);
+    const error = useAppSelector(selectors.selectErrorState);
     const totalCount = useAppSelector(selectors.selectPaginationInfo).totalCount;
 
     // Access the primary key fields instead of a single field
@@ -95,7 +95,7 @@ export const useEntityTable = <TEntity extends EntityKeys>(
             switch (actionName) {
                 case 'view':
                 case 'edit':
-                    dispatch(actions.setSelection({records: [context.data as Draft<EntityData<TEntity>>], mode: 'single'}));
+                    dispatch(actions.addToSelection({records: [context.data as Draft<EntityData<TEntity>>], mode: 'single'}));
                     if (!useParentModal && onModalOpen) onModalOpen(actionName, context.data);
                     break;
                 case 'delete':

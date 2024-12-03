@@ -290,6 +290,7 @@ export type EntityOperations =
     | 'FETCH_QUICK_REFERENCE'
     | 'FETCH_RECORDS'
     | 'FETCH_ONE_WITH_FK_IFK'
+    | 'FETCHED_AS_RELATED'
     | 'FETCH_ALL'
     | 'FETCH_PAGINATED'
     | 'CREATE'
@@ -309,6 +310,7 @@ export interface EntityOperationFlags {
     DELETE_STATUS?: FlagStatusOptions;
     CUSTOM_STATUS?: FlagStatusOptions;
     FETCH_ONE_WITH_FK_IFK?: FlagStatusOptions;
+    FETCHED_AS_RELATED?: FlagStatusOptions;
 }
 
 export interface EntityFlags {

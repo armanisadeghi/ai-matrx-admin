@@ -16,21 +16,26 @@ import {useAppSelector} from "@/lib/redux/hooks";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {RootState} from "@/lib/redux/store";
 import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
-import { useDynamicMeasurements } from '../parts/useDynamicMeasurements';
+import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from '../parts/MeasurementMonitor';
 
-export const SmartLayoutSideBySide: React.FC<{ unifiedLayoutProps: UnifiedLayoutProps }> = ({unifiedLayoutProps}) => {
-    const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity;
+export const SmartLayoutSideBySide: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
+    const selectedEntity = unifiedLayoutProps.layoutState?.selectedEntity || null;
     const isExpanded = unifiedLayoutProps.layoutState.isExpanded;
     const rightColumnRef = unifiedLayoutProps.layoutState.rightColumnRef;
     const selectHeight = unifiedLayoutProps.layoutState.selectHeight;
     const setIsExpanded = unifiedLayoutProps.handlers.setIsExpanded;
     const handleEntityChange = unifiedLayoutProps.handlers.handleEntityChange;
+    const onCreateEntityClick = unifiedLayoutProps.handlers.onCreateEntityClick;
     const QuickReferenceComponent = unifiedLayoutProps.QuickReferenceComponent;
     const formStyleOptions = unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions;
     const density = unifiedLayoutProps.dynamicStyleOptions.density || 'normal';
+    const splitRatio = unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions.splitRatio;
     const spacingConfig = densityConfig[density].spacing;
+    const fontSize = densityConfig[density].fontSize;
     const entityPrettyName = useAppSelector((state: RootState) => selectEntityPrettyName(state, selectedEntity));
+    const buttonSize = densityConfig[density].buttonSize;
+    const iconSize = densityConfig[density].iconSize;
 
     const {
         measurements,

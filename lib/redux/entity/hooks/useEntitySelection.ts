@@ -5,6 +5,7 @@ import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {SelectionMode, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
 import {getRecordIdByRecord} from "@/lib/redux/entity/utils/stateHelpUtils";
+import {FetchMode, getOrFetchSelectedRecordsPayload} from "@/lib/redux/entity/actions";
 
 export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Current Selection State
@@ -42,6 +43,8 @@ export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     handleSingleSelection: (recordKey: MatrxRecordId) => void;
 
     getRecordId: (record: EntityData<TEntity>) => MatrxRecordId;
+    fetchMode: FetchMode;
+    setFetchMode: React.Dispatch<React.SetStateAction<FetchMode>>;
 }
 
 export const useEntitySelection = <TEntity extends EntityKeys>(
@@ -57,6 +60,9 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     const activeRecord = useAppSelector(selectors.selectActiveRecord);
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
     const summary = useAppSelector(selectors.selectSelectionSummary);
+
+
+    const [fetchMode, setFetchMode] = React.useState(<FetchMode>"native");
 
     const isSelected = React.useCallback((recordKey: MatrxRecordId) =>
         selectedRecordIds.includes(recordKey), [selectedRecordIds]);
@@ -106,15 +112,25 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
 
     const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
 
-    React.useEffect(() => {
-        if (selectedRecordIds.length > 0 &&
-            !areArraysEqual(lastProcessedIds, selectedRecordIds)) {
-            console.log('Use Effect in useEntitySelection Triggered with: ', selectedRecordIds);
-            setLastProcessedIds(selectedRecordIds);
-            dispatch(actions.getOrFetchSelectedRecords(selectedRecordIds));
+    //getOrFetchSelectedRecordsPayload
 
+    React.useEffect(() => {
+        if (
+            selectedRecordIds.length > 0 &&
+            !areArraysEqual(lastProcessedIds, selectedRecordIds)
+        ) {
+            console.log('Use Effect in useEntitySelection Triggered with: ', selectedRecordIds);
+
+            setLastProcessedIds(selectedRecordIds);
+
+            const payload: getOrFetchSelectedRecordsPayload = {
+                matrxRecordIds: selectedRecordIds,
+                fetchMode,
+            };
+
+            dispatch(actions.getOrFetchSelectedRecords(payload));
         }
-    }, [selectedRecordIds, lastProcessedIds]);
+    }, [selectedRecordIds, lastProcessedIds, fetchMode, dispatch, actions]);
 
     const areArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) =>
         a.length === b.length && a.every((val, idx) => val === b[idx]);
@@ -146,5 +162,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         handleSingleSelection,
 
         getRecordId,
+        fetchMode,
+        setFetchMode,
     };
 };

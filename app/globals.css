@@ -449,3 +449,19 @@
     background-color: #4B5563;
     border-radius: 3px;
 }
+
+.shiki-wrapper {
+    @apply font-mono text-sm;
+}
+
+.shiki-wrapper pre {
+    @apply p-4 rounded-lg border bg-muted/10 overflow-x-auto;
+}
+
+.shiki {
+    @apply bg-transparent !important;
+}
+
+.shiki code {
+    @apply whitespace-pre-wrap break-words w-full;
+}

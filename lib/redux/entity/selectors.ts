@@ -51,11 +51,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             const recordIdsNotInState = matrxRecordIds.filter((recordId) => !existingRecords[recordId]);
             const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
 
-            entityLogger.log('debug', 'selectRecordsForFetching - Records to fetch', {primaryKeysToFetch});
-            entityLogger.log('debug', 'selectRecordsForFetching - Existing records', {existingRecordIds});
-
             return {
                 existingRecords: existingRecordIds,
+                recordIdsNotInState: recordIdsNotInState,
                 primaryKeysToFetch
             };
         }

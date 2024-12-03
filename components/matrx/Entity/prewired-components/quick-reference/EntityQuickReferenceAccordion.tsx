@@ -30,12 +30,21 @@ export function EntityQuickReferenceAccordion<TEntity extends EntityKeys>(
         density = 'normal',
         animationPreset = 'smooth',
     }: EntityQuickReferenceAccordionBaseProps<TEntity>) {
+
     const {
         quickReferenceRecords,
+        selectionMode,
         isSelected,
         handleRecordSelect,
+        toggleSelectionMode,
+        fetchMode,
         entityDisplayName,
+        setFetchMode,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
     const [isOpen, setIsOpen] = React.useState<string>('items');
     const selectedRecord = React.useMemo(() =>

@@ -307,6 +307,9 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         handleSingleSelection: selection.handleSingleSelection,
         handleToggleSelection: selection.handleToggleSelection,
         addToSelection: selection.handleAddToSelection,
+        fetchMode: selection.fetchMode,
+        setFetchMode: selection.setFetchMode,
+
 
         // All Active Records, Quick Reference, Validation hooks extended
         quickReference,

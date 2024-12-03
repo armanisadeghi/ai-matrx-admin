@@ -1,21 +1,18 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { FlexAnimatedForm } from '@/components/matrx/AnimatedForm';
-import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
+import React, {useState, useCallback, useMemo} from 'react';
+import {Card, CardContent} from '@/components/ui/card';
+import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
+import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {
-    FlexEntityFormProps,
-    EntityFlexFormField,
     FormFieldType
 } from '@/components/matrx/Entity/types/entityForm';
-import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
+import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeader';
-import { EntityError, EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
-import { mapFieldDataTypeToFormFieldType } from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
+import {EntityError, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
+import {mapFieldDataTypeToFormFieldType} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
-import {EntityFormState} from "@/types/componentConfigTypes";
+import {ArmaniFormProps, EntityFormState} from "@/types/componentConfigTypes";
 
 // Memoized Configurations
 const DEFAULT_FORM_CONFIG = {
@@ -27,7 +24,7 @@ const DEFAULT_FORM_CONFIG = {
     isFullPage: true
 };
 
-const createTransformedFields = (entityFields: EntityStateField[]): EntityFlexFormField[] => {
+const createTransformedFields = (entityFields: EntityStateField[]) => {
     if (!entityFields) return [];
 
     return entityFields.map(field => ({
@@ -51,7 +48,7 @@ interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
 }
 
-function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentProps<TEntity>) {
+function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
     const [formData, setFormData] = useState<EntityFormState>({});
 
@@ -79,7 +76,7 @@ function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentP
             [name]: value
         } as Partial<EntityData<TEntity>>;
 
-        entity.updateRecord(matrxRecordId, update, { showToast: true });
+        entity.updateRecord(matrxRecordId, update, {showToast: true});
     }, [entity, getMatrxRecordId]);
 
     // Memoize CRUD handlers
@@ -107,16 +104,28 @@ function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentP
     );
 
     // Memoize form props
-    const formProps: FlexEntityFormProps = useMemo(() => ({
-        fields: formFields,
-        formState: formData,
+    const formProps: ArmaniFormProps = useMemo(() => ({
+        entityKey: entityKey,
+        dynamicFieldInfo: formFields,
+        formData: formData,
         onUpdateField: handleFieldUpdate,
         onSubmit: handleSubmit,
-        ...DEFAULT_FORM_CONFIG
-    }), [formFields, formData, handleFieldUpdate, handleSubmit]);
+        layout: 'grid' as const,
+        direction: 'row' as const,
+        enableSearch: false,
+        columns: 2,
+        isSinglePage: true,
+        isFullPage: true,
+        density: 'normal' as const,
+        animationPreset: 'subtle' as const,
+        size: 'default' as const,
+        variant: 'default' as const,
+        floatingLabel: true,
+        className: ''
+    }), [formFields, formData, handleFieldUpdate, handleSubmit, entityKey]);
 
     if (!entity.entityMetadata) {
-        return <MatrxTableLoading />;
+        return <MatrxTableLoading/>;
     }
 
     if (entity.loadingState.error) {

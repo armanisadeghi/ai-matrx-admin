@@ -22,14 +22,20 @@ export function QuickReferenceSidebar<TEntity extends EntityKeys>(
         showCreateNewButton = false,
         className = ''
     }: QuickReferenceSidebarProps<TEntity>) {
+
     const {
         quickReferenceRecords,
         selectionMode,
         isSelected,
         handleRecordSelect,
         toggleSelectionMode,
+        setFetchMode,
         getCardClassName,
     } = useQuickReference(entityKey);
+
+    React.useEffect(() => {
+        setFetchMode('fkIfk');
+    }, [entityKey]);
 
 
     return (

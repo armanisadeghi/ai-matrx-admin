@@ -47,10 +47,11 @@ import EntityTester from "@/app/(authenticated)/admin/components/entities/Entity
 import EntityMetrics from "../components/entities/EntityMetrics";
 import EntityBrowser from "../components/entities/EntityBrowser";
 import EntityLab from "../components/entities/EntityLab";
-import { Database, DatabaseZap } from "lucide-react";
+import { Database, DatabaseBackup, DatabaseZap } from "lucide-react";
 import LocalStorageAdmin from "@/app/(authenticated)/admin/components/LocalStorageAdmin";
 import SchemaVisualizer from "../components/SchemaVisualizer";
 import { SchemaVisualizerLayout } from "../components/SchemaVisualizer/SchemaVisualizerLayout";
+import DatabaseAdminDashboard from "@/app/(authenticated)/admin/components/database-admin/DatabaseAdminDashboard";
 
 export const adminCategories = [
     {
@@ -160,6 +161,12 @@ export const adminCategories = [
                 description: "Visualize the full schema",
                 icon: <IconAdjustmentsBolt/>,
                 component: <SchemaVisualizerLayout/>
+            },
+            {
+                title: "Database Admin Dashboard",
+                description: "See functions, security policies, and more",
+                icon: <DatabaseBackup/>,
+                component: <DatabaseAdminDashboard/>
             }
         ]
     },

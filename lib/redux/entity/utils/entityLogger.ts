@@ -18,8 +18,8 @@ interface LogEntry {
 class EntityLogger {
     private static logs: LogEntry[] = [];
     private static subscribers: ((logs: LogEntry[]) => void)[] = [];
-    private static logLevel: LogLevel = 'debug';
-    private static consoleLogLevel: LogLevel = 'debug';
+    private static logLevel: LogLevel = 'info';
+    private static consoleLogLevel: LogLevel = 'info';
     private static detailLevel: DetailLevel = 'standard';
     private static featureFilter: Set<string> = new Set();
     private static duplicateSuppressionInterval = 500;
