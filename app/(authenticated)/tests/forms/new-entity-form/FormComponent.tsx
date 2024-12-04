@@ -16,7 +16,11 @@ import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 // Define a type for common props
 type CommonProps = Pick<FlexAnimatedFormProps, 'fields' | 'formState' | 'onUpdateField' | 'onSubmit' | 'layout' | 'direction' | 'enableSearch' | 'columns'>;
 
-const FormComponent: React.FC = (entityKey: EntityKeys) => {
+interface FormComponentProps {
+    entityKey: EntityKeys;
+}
+
+const FormComponent: React.FC<FormComponentProps> = ({ entityKey }) => {
     const dispatch = useDispatch<AppDispatch>();
     const formState = useSelector((state: RootState) => state.form);
     const [currentStep, setCurrentStep] = useState(0);
@@ -27,6 +31,8 @@ const FormComponent: React.FC = (entityKey: EntityKeys) => {
     const [selectedDirection, setSelectedDirection] = useState<FlexAnimatedFormProps['direction']>('row');
     const [enableSearch, setEnableSearch] = useState(false);
     const [columns, setColumns] = useState<FlexAnimatedFormProps['columns']>(1);
+
+    console.log('FormComponent Entity Key:', entityKey);
 
     const handleUpdateField = (name: string, value: any) => {
         dispatch(updateFormField({ name, value }));

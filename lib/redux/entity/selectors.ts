@@ -6,6 +6,7 @@ import {RootState} from "@/lib/redux/store";
 import {EntityDataWithId, EntityState, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {createRecordKey, getRecordIdByRecord, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
+import {mapFieldDataToFormField} from "@/lib/redux/entity/utils/tempFormHelper";
 
 const trace = "ENTITY SELECTORS";
 
@@ -451,14 +452,18 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }))
     );
 
+
+
     const selectFlexFormField = createSelector(
         [selectEntityMetadata],
         (metadata) => metadata.fields.map(field => ({
             name: field.name,
+            label: field.displayName,
             displayName: field.displayName,
             uniqueColumnId: field.uniqueColumnId,
             uniqueFieldId: field.uniqueFieldId,
             dataType: field.dataType,
+            type: mapFieldDataToFormField(field.dataType),
             isRequired: field.isRequired,
             maxLength: field.maxLength,
             isArray: field.isArray,

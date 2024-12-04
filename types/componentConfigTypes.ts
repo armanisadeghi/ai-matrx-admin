@@ -74,7 +74,7 @@ export type ComponentDensity = typeof DENSITIES[number];
 export const COMPONENT_SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 export type ComponentSize = typeof COMPONENT_SIZES[number];
 
-export const TEXT_SIZES = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+export const TEXT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
 export type TextSizeOptions = typeof TEXT_SIZES[number];
 
 export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disabled'] as const;

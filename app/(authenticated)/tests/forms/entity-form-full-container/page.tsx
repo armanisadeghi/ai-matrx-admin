@@ -13,6 +13,9 @@ import {EntityError, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/t
 import {mapFieldDataTypeToFormFieldType} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
 import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
 import {ArmaniFormProps, EntityFormState} from "@/types/componentConfigTypes";
+import {useDynamicMeasurements} from "@/hooks/ui/useDynamicMeasurements";
+import {cn} from "@/lib/utils";
+import {ScrollArea} from '@/components/ui';
 
 // Memoized Configurations
 const DEFAULT_FORM_CONFIG = {
@@ -24,60 +27,72 @@ const DEFAULT_FORM_CONFIG = {
     isFullPage: true
 };
 
-const createTransformedFields = (entityFields: EntityStateField[]) => {
-    if (!entityFields) return [];
-
-    return entityFields.map(field => ({
-        name: field.name,
-        label: field.displayName || field.name,
-        type: mapFieldDataTypeToFormFieldType(field.dataType) as FormFieldType,
-        required: field.isRequired,
-        disabled: false,
-        defaultValue: field.defaultValue,
-        validationFunctions: field.validationFunctions,
-        maxLength: field.maxLength,
-        subComponent: null,
-        actionKeys: field.defaultComponent === 'inline-form:1' ? ['entityQuickSidebar'] : [],
-        actionProps: {},
-        defaultComponent: field.defaultComponent,
-        componentProps: field.componentProps,
-    }));
-};
-
 interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
 }
 
 function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
-    const [formData, setFormData] = useState<EntityFormState>({});
+    const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
 
-    // Memoize MatrxRecordId generation
     const getMatrxRecordId = useCallback(() => {
         if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
 
-        return entity.primaryKeyMetadata.fields.reduce((acc, field) => ({
-            ...acc,
-            [field]: entity.activeRecord[field]
-        }), {} as Record<string, MatrxRecordId>);
-    }, [entity.activeRecord, entity.primaryKeyMetadata]);
+        return entity.matrxRecordIdByPrimaryKey(
+            entity.primaryKeyMetadata.fields.reduce(
+                (acc, field) => ({
+                    ...acc,
+                    [field]: entity.activeRecord[field],
+                }),
+                {} as Record<string, MatrxRecordId>
+            )
+        );
+    }, [entity.primaryKeyMetadata, entity]);
 
     // Memoize field update handler
-    const handleFieldUpdate = useCallback((name: string, value: any) => {
+    const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [fieldName]: value
         }));
+    }, []);
 
-        const matrxRecordId = getMatrxRecordId() as unknown as MatrxRecordId;
+    // Memoize CRUD handlers
+    const handleUpdate = useCallback((data: EntityData<EntityKeys>) => {
+        const matrxRecordId = getMatrxRecordId();
         if (!matrxRecordId) return;
 
-        const update = {
-            [name]: value
-        } as Partial<EntityData<TEntity>>;
-
-        entity.updateRecord(matrxRecordId, update, {showToast: true});
+        entity.updateRecord(
+            matrxRecordId,
+            data,
+            {showToast: true}
+        );
     }, [entity, getMatrxRecordId]);
+
+    const handleCreate = useCallback((data: EntityData<EntityKeys>) => {
+        entity.createRecord(
+            data,
+            {showToast: true}
+        );
+    }, [entity]);
+
+    const handleDelete = useCallback(() => {
+        const matrxRecordId = getMatrxRecordId();
+        if (!matrxRecordId) return;
+
+        entity.deleteRecord(
+            matrxRecordId,
+            {showToast: true}
+        );
+    }, [entity, getMatrxRecordId]);
+
+    // Sync form data with active record
+    React.useEffect(() => {
+        if (entity.activeRecord) {
+            setFormData(entity.activeRecord);
+        }
+    }, [entity.activeRecord]);
+
 
     // Memoize CRUD handlers
     const handleSubmit = useCallback(() => {
@@ -97,16 +112,10 @@ function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentPro
         }
     }, [entity.activeRecord]);
 
-    // Memoize form fields
-    const formFields = useMemo(() =>
-            createTransformedFields(entity.fieldInfo),
-        [entity.fieldInfo]
-    );
 
-    // Memoize form props
     const formProps: ArmaniFormProps = useMemo(() => ({
         entityKey: entityKey,
-        dynamicFieldInfo: formFields,
+        dynamicFieldInfo: entity.fieldInfo,
         formData: formData,
         onUpdateField: handleFieldUpdate,
         onSubmit: handleSubmit,
@@ -122,7 +131,7 @@ function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentPro
         variant: 'default' as const,
         floatingLabel: true,
         className: ''
-    }), [formFields, formData, handleFieldUpdate, handleSubmit, entityKey]);
+    }), [formData, handleFieldUpdate, handleSubmit, entityKey, entity.fieldInfo]);
 
     if (!entity.entityMetadata) {
         return <MatrxTableLoading/>;
@@ -136,11 +145,36 @@ function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentPro
         );
     }
 
+    const {
+        measurements,
+        getRef
+    } = useDynamicMeasurements({
+        buffer: 8,
+        debounceMs: 300,
+        threshold: 10,
+        initialPauseMs: 800,
+    });
+
+    const containerRef = getRef('container');
+
+    const getAdjustedHeight = () => {
+        const height = measurements.container?.availableHeight || 0;
+        return Math.max(0, height - 24);
+    };
+
     return (
-        <div className="p-4">
-            {entity.activeRecord && (
-                <ArmaniForm{...formProps} />
-            )}
+        <div
+            className={cn("h-full overflow-hidden")}
+            ref={containerRef}
+        >
+            <ScrollArea
+                className="h-full"
+                style={{height: `${getAdjustedHeight()}px`}}
+            >
+                {entity.activeRecord && (
+                    <ArmaniForm{...formProps} />
+                )}
+            </ScrollArea>
         </div>
     );
 }

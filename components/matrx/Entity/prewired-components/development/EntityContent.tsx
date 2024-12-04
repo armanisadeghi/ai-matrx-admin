@@ -66,7 +66,7 @@ function EntityContent<TEntity extends EntityKeys>(
                 {} as Record<string, MatrxRecordId>
             )
         );
-    }, [entity.activeRecord, entity.primaryKeyMetadata]);
+    }, [entity.primaryKeyMetadata, entity]);
 
     // Memoize field update handler
     const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
@@ -122,7 +122,6 @@ function EntityContent<TEntity extends EntityKeys>(
         entityKey,
         dynamicFieldInfo: entity.fieldInfo,
         formData,
-
         onUpdateField: handleFieldUpdate,
         onSubmitUpdate: handleUpdate,
         onSubmitCreate: handleCreate,

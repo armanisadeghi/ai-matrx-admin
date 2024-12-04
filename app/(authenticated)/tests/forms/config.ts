@@ -52,15 +52,14 @@ export const pages: ModulePage[] = [
         path: 'entity-management-smart-fields',
         relative: true,
         description: 'Uses the new smart fields system\n\n' +
-            'STATUS: Working\n\n' +
-            'Like many others, it has problems with scrolling issues.'
+            'STATUS: Working',
     },
     {
         title: 'Dynamic Entity Management Page',
         path: 'entity-management',
         relative: true,
         description: 'This is the first of the pages which allows for dynamic rendering of pages with different layouts.\n\n' +
-            'STATUS: ERRORS due to layouts - parts - SplitLayout.tsx errors with layout state props'
+            'STATUS: Working'
     },
 
 
@@ -77,7 +76,7 @@ export const pages: ModulePage[] = [
         path: 'entity-form-full-container',
         relative: true,
         description: 'Full Container which extracts away the complexities, but might not give the full power later for doing other things. We will see.\n\n' +
-            'STATUS: Errors due to ArmaniForm -FormLayouts.tsx'
+            'STATUS: Working.'
     },
 
 

@@ -15,10 +15,10 @@ export function ThreePanelLayout<TEntity extends EntityKeys>(
         entityKey,
     }: EntityPageProps<TEntity>) {
     const EntityFormPanelRef = React.useRef<EntityFormPanelRefs>(null);
-
     const handleShowContent = () => {
         EntityFormPanelRef.current?.handleCreateNew();
     };
+    console.log('ThreePanelLayout entityKey:', entityKey);
 
     const panels = [
         {

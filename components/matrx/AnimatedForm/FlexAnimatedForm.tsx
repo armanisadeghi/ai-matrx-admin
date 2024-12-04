@@ -46,6 +46,34 @@ export type FormFieldType =
     | 'image'
     | 'rating';
 
+export type FieldDataOptionsType =
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'array'
+    | 'object'
+    | 'json'
+    | 'uuid'
+    | 'email'
+    | 'url'
+    | 'datetime'
+    | 'null'
+    | 'undefined'
+    | 'any'
+    | 'function'
+    | 'symbol'
+    | 'union'
+    | 'bigint'
+    | 'date'
+    | 'map'
+    | 'set'
+    | 'tuple'
+    | 'enum'
+    | 'intersection'
+    | 'literal'
+    | 'void'
+    | 'never';
+
 export interface FlexFormField {
     name: string;
     label: string;
