@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button"
 import { generateAIResponse } from '@/actions/ai'
 import FullPromptInput from './FullPromptInput'
 
+
+// https://claude.ai/chat/af737380-96d6-47ac-931e-cd7e7ef81e5b
+
 export default function AIChat() {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);

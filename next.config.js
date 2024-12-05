@@ -4,6 +4,12 @@ const webpack = require('webpack');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    experimental: {
+        after: true,
+        serverActions: {
+            bodySizeLimit: '3mb',
+        },
+    },
     headers() {
         return [
             {
@@ -16,6 +22,36 @@ const nextConfig = {
                     {
                         key: "Cross-Origin-Embedder-Policy",
                         value: "require-corp",
+                    },
+                ],
+            },
+            {
+                // Add correct MIME types for WASM files
+                source: "/:path*.wasm",
+                headers: [
+                    {
+                        key: "Content-Type",
+                        value: "application/wasm",
+                    },
+                ],
+            },
+            {
+                // Add correct MIME types for MJS files
+                source: "/:path*.mjs",
+                headers: [
+                    {
+                        key: "Content-Type",
+                        value: "text/javascript",
+                    },
+                ],
+            },
+            {
+                // Add correct MIME types for ONNX files
+                source: "/:path*.onnx",
+                headers: [
+                    {
+                        key: "Content-Type",
+                        value: "application/octet-stream",
                     },
                 ],
             },
@@ -62,6 +98,41 @@ const nextConfig = {
         ],
     },
     webpack: (config, {isServer, webpack}) => {
+        // Add support for WebAssembly
+        config.experiments = {
+            ...config.experiments,
+            asyncWebAssembly: true,
+            layers: true,
+        };
+        config.ignoreWarnings = [
+            { module: /node_modules\/onnxruntime-web/ },
+        ];
+
+        // Configure module rules
+        config.module.rules.push(
+            {
+                test: /\.wasm$/,
+                type: "asset/resource",
+                generator: {
+                    filename: 'static/[hash][ext]',
+                }
+            },
+            {
+                test: /\.mjs$/,
+                type: "javascript/auto",
+                resolve: {
+                    fullySpecified: false,
+                },
+            },
+            {
+                test: /\.onnx$/,
+                type: "asset/resource",
+                generator: {
+                    filename: 'static/[hash][ext]',
+                }
+            }
+        );
+
         config.plugins.push(
             new webpack.IgnorePlugin({
                 checkResource: (resource) => {
@@ -132,11 +203,10 @@ const nextConfig = {
     env: {
         GROQ_API_KEY: process.env.GROQ_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    },
-    experimental: {
-        serverActions: {
-            bodySizeLimit: '3mb',
-        },
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+        CARTESIA_API_KEY: process.env.CARTESIA_API_KEY,
+        NEWS_API_KEY: process.env.NEWS_API_KEY,
+        PICOVOICE_ACCESS_KEY: process.env.PICOVOICE_ACCESS_KEY,
     },
 };
 
@@ -147,29 +217,52 @@ async function copyFiles() {
         await fs.mkdir("public/", {recursive: true});
     }
 
-    const wasmFiles = (
-        await fs.readdir("node_modules/onnxruntime-web/dist/")
-    ).filter((file) => path.extname(file) === ".wasm");
+    try {
+        // First, clean up any existing VAD-related files
+        const existingFiles = await fs.readdir("public/");
+        for (const file of existingFiles) {
+            if (file.includes('ort-') || file.includes('silero_') || file.includes('vad.')) {
+                await fs.unlink(path.join("public/", file));
+            }
+        }
 
-    await Promise.all([
-        fs.copyFile(
-            "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
-            "public/vad.worklet.bundle.min.js"
-        ),
-        fs.copyFile(
-            "node_modules/@ricky0123/vad-web/dist/silero_vad.onnx",
-            "public/silero_vad.onnx"
-        ),
-        ...wasmFiles.map((file) =>
+        // Copy required files
+        await Promise.all([
+            // Copy worklet
             fs.copyFile(
-                `node_modules/onnxruntime-web/dist/${file}`,
-                `public/${file}`
+                "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
+                "public/vad.worklet.bundle.min.js"
+            ),
+            // Copy models
+            fs.copyFile(
+                "node_modules/@ricky0123/vad-web/dist/silero_vad_legacy.onnx",
+                "public/silero_vad_legacy.onnx"
+            ),
+            fs.copyFile(
+                "node_modules/@ricky0123/vad-web/dist/silero_vad_v5.onnx",
+                "public/silero_vad_v5.onnx"
+            ),
+        ]);
+
+        // Copy all WASM and MJS files
+        const wasmFiles = (await fs.readdir("node_modules/onnxruntime-web/dist/"))
+            .filter(file => file.endsWith('.wasm') || file.endsWith('.mjs'));
+
+        await Promise.all(
+            wasmFiles.map(file =>
+                fs.copyFile(
+                    `node_modules/onnxruntime-web/dist/${file}`,
+                    `public/${file}`
+                )
             )
-        ),
-    ]);
+        );
+
+        console.log('All VAD files copied successfully');
+    } catch (error) {
+        console.error('Error copying VAD files:', error);
+    }
 }
 
-// Run the copyFiles function
 copyFiles();
 
 module.exports = nextConfig;

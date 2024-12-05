@@ -1,122 +1,123 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import clsx from "clsx";
-import { toast } from "sonner";
-import { EnterIcon, LoadingIcon } from "./components/icons";
-import { usePlayer } from "@/hooks/tts/usePlayer";
-import { useMicVAD, utils } from "@ricky0123/vad-react";
-import * as ort from 'onnxruntime-web';
+import React from "react";
+import { motion } from "framer-motion";
+import { Mic, MicOff, Send, Plus } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import StatusIndicator from "@/components/voice/voice-assistant-ui/StatusIndicator";
+import MessagesDisplay from "@/components/voice/voice-assistant-ui/MessagesDisplay";
+import ConversationTab from "@/components/voice/voice-assistant-ui/ConversationTab";
+import SpeechHaloEffect from "@/components/voice/voice-assistant-ui/SpeechHaloEffect";
+import ProcessIndicator from "@/components/voice/voice-assistant-ui/ProcessIndicator";
+import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
 
-// Define the Message type
-type Message = {
-    role: "user" | "assistant";
-    content: string;
-    latency?: number;
-};
+export default function Page() {
+    const {
+        input,
+        setInput,
+        conversations,
+        currentConversationId,
+        currentTranscript,
+        processState,
+        vad,
+        createNewConversation,
+        deleteConversation,
+        setCurrentConversationId,
+        handleSubmit,
+        getCurrentConversation,
+    } = useVoiceChat();
 
-export default function Home() {
-    // Form state for managing input
-    const [input, setInput] = useState<string>("");  // Using useState to manage form input
-    const [messages, setMessages] = useState<Message[]>([]);  // Track messages in state
-    const [isPending, setIsPending] = useState<boolean>(false);  // Manage loading state
-    const inputRef = useRef<HTMLInputElement>(null);  // Reference to input element for focus
-    const player = usePlayer();  // Custom hook to handle audio player
-
-
-    // Handle key press events
-    useEffect(() => {
-        function keyDown(e: KeyboardEvent) {
-            if (e.key === "Enter") return inputRef.current?.focus();
-            if (e.key === "Escape") return setInput("");
-        }
-
-        window.addEventListener("keydown", keyDown);
-        return () => window.removeEventListener("keydown", keyDown);
-    }, []);
-
-    // Function to handle form submission
-    async function submit(data: string | Blob) {
-        setIsPending(true);  // Start the loading indicator
-
-        const formData = new FormData();
-        messages.forEach((message) => {
-            formData.append("message", JSON.stringify(message));
-        });
-
-        try {
-            const response = await fetch("/api", {
-                method: "POST",
-                body: formData,
-            });
-
-            const transcript = decodeURIComponent(
-                response.headers.get("X-Transcript") || ""
-            );
-            const text = decodeURIComponent(
-                response.headers.get("X-Response") || ""
-            );
-
-            if (!response.ok || !transcript || !text || !response.body) {
-                throw new Error(
-                    response.status === 429
-                        ? "Too many requests. Please try again later."
-                        : "An error occurred."
-                );
-            }
-
-            const latency = Date.now() - new Date().getTime();
-            player.play(response.body, () => {
-                const isFirefox = navigator.userAgent.includes("Firefox");
-            });
-
-            setMessages((prev) => [
-                ...prev,
-                { role: "user", content: transcript },
-                { role: "assistant", content: text, latency },
-            ]);
-            setInput(transcript);
-        } catch (error: any) {
-            toast.error(error.message || "An error occurred.");
-        } finally {
-            setIsPending(false);  // Stop loading indicator
-        }
-    }
-
-    // Form submit handler
-    const handleFormSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        submit(input);
-    };
+    const currentConversation = getCurrentConversation();
+    const messages = currentConversation?.messages || [];
 
     return (
-        <>
-            <div className="pb-4 min-h-28" />
-
-            <form
-                className="rounded-full bg-neutral-200/80 dark:bg-neutral-800/80 flex items-center w-full max-w-3xl border border-transparent hover:border-neutral-300 focus-within:border-neutral-400 hover:focus-within:border-neutral-400 dark:hover:border-neutral-700 dark:focus-within:border-neutral-600 dark:hover:focus-within:border-neutral-600"
-                onSubmit={handleFormSubmit}
-            >
-                <input
-                    type="text"
-                    className="bg-transparent focus:outline-none p-4 w-full placeholder:text-neutral-600 dark:placeholder:text-neutral-400"
-                    required
-                    placeholder="Ask me anything"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    ref={inputRef}
-                />
-
-                <button
-                    type="submit"
-                    className="p-4 text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white"
-                    disabled={isPending}
-                    aria-label="Submit"
+        <div className="flex flex-col h-full relative">
+            {/* Conversation Selector */}
+            <div className="flex items-center gap-2 p-4">
+                <Button
+                    onClick={createNewConversation}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
                 >
-                    {isPending ? <LoadingIcon /> : <EnterIcon />}
-                </button>
-            </form>
+                    <Plus className="w-4 h-4"/>
+                    New Conversation
+                </Button>
+                <div className="flex-1 overflow-x-auto flex gap-2">
+                    {conversations.map(conv => (
+                        <ConversationTab
+                            key={conv.id}
+                            conversation={conv}
+                            isActive={conv.id === currentConversationId}
+                            onSelect={() => setCurrentConversationId(conv.id)}
+                            onDelete={() => deleteConversation(conv.id)}
+                        />
+                    ))}
+                </div>
+            </div>
 
+            {/* Status Card */}
+            <Card className="mb-4 mx-4">
+                <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                        Voice Assistant
+                        <StatusIndicator vad={vad} processState={processState}/>
+                    </CardTitle>
+                    <CardDescription>
+                        Speak or type your message below
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ProcessIndicator state={processState}/>
+                </CardContent>
+            </Card>
 
-        </>
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto px-4 pb-24">
+                <MessagesDisplay messages={messages}/>
+
+            </div>
+
+            {/* Speech Halo Effect */}
+            {(processState.recording && vad.listening) && <SpeechHaloEffect/>}
+
+            {/* Input Area */}
+            <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t">
+                <div className="max-w-4xl mx-auto p-4 flex gap-2">
+                    <div className="flex-1 relative">
+                        <input
+                            type="text"
+                            className="w-full p-4 rounded-lg bg-background border focus:ring-2 focus:ring-primary"
+                            placeholder={vad.listening ? "Listening... or type your message" : "Type your message"}
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit();
+                                }
+                            }}
+                        />
+                    </div>
+                    <motion.button
+                        type="button"
+                        className={`p-4 rounded-full ${vad.listening ? 'bg-red-500 text-white' : 'bg-muted'}`}
+                        onClick={() => vad.listening ? vad.pause() : vad.start()}
+                        whileTap={{scale: 0.9}}
+                    >
+                        {vad.listening ? <Mic className="w-5 h-5"/> : <MicOff className="w-5 h-5"/>}
+                    </motion.button>
+                    <motion.button
+                        onClick={handleSubmit}
+                        className="p-4 rounded-full bg-primary text-primary-foreground"
+                        disabled={!input.trim()}
+                        whileTap={{scale: 0.9}}
+                    >
+                        <Send className="w-5 h-5"/>
+                    </motion.button>
+                </div>
+            </div>
+        </div>
     );
 }

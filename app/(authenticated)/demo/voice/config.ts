@@ -34,26 +34,26 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Wake Word Debug',
+        path: 'wake-word-debug',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Wake Word Test',
+        path: 'wake-word-test',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Debate Assistant',
+        path: 'debate-assistant',
         relative: true,
         description: ''
     },
     {
-        title: 'Try Voices',
-        path: 'try-voices',
+        title: 'Voice Assistant With Sidebar',
+        path: 'voice-assistant-two',
         relative: true,
         description: ''
     },
@@ -73,5 +73,5 @@ export const pages: ModulePage[] = [
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');
 
-export const MODULE_HOME = '/tests/some-module';
-export const MODULE_NAME = 'Module Name';
+export const MODULE_HOME = '/demo/voice';
+export const MODULE_NAME = 'Voice Module';

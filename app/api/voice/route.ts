@@ -95,40 +95,42 @@ export async function POST(request: Request) {
 }
 
 function isValidMessage(msg: any): boolean {
-	if (
-		typeof msg !== "object" ||
+	return !(typeof msg !== "object" ||
 		typeof msg.content !== "string" ||
-		(msg.role !== "user" && msg.role !== "assistant")
-	) {
-		return false;
-	}
-	return true;
+		(msg.role !== "user" && msg.role !== "assistant"));
+
 }
 
-function location() {
-	const headersList = headers();
+async function location() {
+	const headersList = await headers();
+
 	const country = headersList.get("x-vercel-ip-country");
 	const region = headersList.get("x-vercel-ip-country-region");
 	const city = headersList.get("x-vercel-ip-city");
+
 	if (!country || !region || !city) return "unknown";
+
 	return `${city}, ${region}, ${country}`;
 }
 
-function time() {
+async function time() {
+	const headersList = await headers();
 	return new Date().toLocaleString("en-US", {
-		timeZone: headers().get("x-vercel-ip-timezone") || undefined,
+		timeZone: headersList.get("x-vercel-ip-timezone") || undefined,
 	});
 }
 
-async function getTranscript(input: string | File) {
+async function getTranscript(input: string | File): Promise<string | null> {
 	if (typeof input === "string") return input;
+
 	try {
 		const { text } = await groq.audio.transcriptions.create({
 			file: input,
 			model: "whisper-large-v3",
 		});
+
 		return text.trim() || null;
 	} catch {
-		return null;
+		return null; // Empty audio file
 	}
 }

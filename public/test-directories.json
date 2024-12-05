@@ -1,23 +1,7 @@
 [
   {
-    "path": "/tests/animated-menu",
-    "name": "animated-menu"
-  },
-  {
-    "path": "/tests/animation-show",
-    "name": "animation-show"
-  },
-  {
     "path": "/tests/animation-tests",
     "name": "animation-tests"
-  },
-  {
-    "path": "/tests/animations",
-    "name": "animations"
-  },
-  {
-    "path": "/tests/animation_flip",
-    "name": "animation_flip"
   },
   {
     "path": "/tests/app-shell-test",
@@ -28,20 +12,24 @@
     "name": "backup"
   },
   {
-    "path": "/tests/camera-test",
-    "name": "camera-test"
-  },
-  {
     "path": "/tests/component-test",
     "name": "component-test"
+  },
+  {
+    "path": "/tests/crud-operations",
+    "name": "crud-operations"
   },
   {
     "path": "/tests/dynamic-entity-test",
     "name": "dynamic-entity-test"
   },
   {
-    "path": "/tests/floating-slider-demo",
-    "name": "floating-slider-demo"
+    "path": "/tests/dynamic-gateway-concept",
+    "name": "dynamic-gateway-concept"
+  },
+  {
+    "path": "/tests/dynamic-layouts",
+    "name": "dynamic-layouts"
   },
   {
     "path": "/tests/forms",
@@ -52,16 +40,16 @@
     "name": "full-screen-demo"
   },
   {
-    "path": "/tests/image-gallery-starter",
-    "name": "image-gallery-starter"
-  },
-  {
     "path": "/tests/input-test",
     "name": "input-test"
   },
   {
     "path": "/tests/json-components-demo",
     "name": "json-components-demo"
+  },
+  {
+    "path": "/tests/links",
+    "name": "links"
   },
   {
     "path": "/tests/math",
@@ -72,28 +60,32 @@
     "name": "matrx-table"
   },
   {
-    "path": "/tests/modal-test",
-    "name": "modal-test"
-  },
-  {
-    "path": "/tests/modal-test-two",
-    "name": "modal-test-two"
+    "path": "/tests/modals",
+    "name": "modals"
   },
   {
     "path": "/tests/openai-chat",
     "name": "openai-chat"
   },
   {
-    "path": "/tests/reg-func-simple",
-    "name": "reg-func-simple"
+    "path": "/tests/photo-video",
+    "name": "photo-video"
   },
   {
-    "path": "/tests/sample-component-upgrade",
-    "name": "sample-component-upgrade"
+    "path": "/tests/reaact-patterns",
+    "name": "reaact-patterns"
   },
   {
-    "path": "/tests/table-modal-test",
-    "name": "table-modal-test"
+    "path": "/tests/recipe-creation",
+    "name": "recipe-creation"
+  },
+  {
+    "path": "/tests/selector-test",
+    "name": "selector-test"
+  },
+  {
+    "path": "/tests/socket-tests",
+    "name": "socket-tests"
   },
   {
     "path": "/tests/table-test",
@@ -102,10 +94,6 @@
   {
     "path": "/tests/tailwind-test",
     "name": "tailwind-test"
-  },
-  {
-    "path": "/tests/template",
-    "name": "template"
   },
   {
     "path": "/tests/windows",
