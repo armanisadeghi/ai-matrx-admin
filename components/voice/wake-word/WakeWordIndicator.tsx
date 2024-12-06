@@ -1,9 +1,9 @@
 // components/WakeWordIndicator.tsx
 'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Mic } from "lucide-react";
-import { useWakeWord, WakeWord } from "@/hooks/tts/useWakeWord";
+import {motion, AnimatePresence} from "framer-motion";
+import {Mic} from "lucide-react";
+import {useWakeWord, WakeWord} from "@/hooks/tts/useWakeWord";
 
 type WakeWordIndicatorProps = {
     wakeWords?: WakeWord[];
@@ -11,11 +11,12 @@ type WakeWordIndicatorProps = {
     minimal?: boolean;
 };
 
-export function WakeWordIndicator({
-                                      wakeWords,
-                                      onDetected,
-                                      minimal = false
-                                  }: WakeWordIndicatorProps) {
+export function WakeWordIndicator(
+    {
+        wakeWords,
+        onDetected,
+        minimal = false
+    }: WakeWordIndicatorProps) {
     const {
         isLoaded,
         isListening,
@@ -34,12 +35,12 @@ export function WakeWordIndicator({
                     !isLoaded ? 'bg-muted animate-pulse' :
                     isListening ? 'bg-primary animate-pulse' :
                     'bg-muted'
-                }`} />
+                }`}/>
                 {detectedWord && (
                     <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        initial={{opacity: 0}}
+                        animate={{opacity: 1}}
+                        exit={{opacity: 0}}
                         className="text-xs text-muted-foreground"
                     >
                         Detected: {detectedWord.displayName}
@@ -54,7 +55,7 @@ export function WakeWordIndicator({
             <div className="flex items-center gap-2">
                 <Mic className={`w-4 h-4 ${
                     isListening ? 'text-primary' : 'text-muted-foreground'
-                }`} />
+                }`}/>
                 <span className="text-sm">
                     {error ? 'Error initializing' :
                      !isLoaded ? 'Initializing...' :
@@ -65,9 +66,9 @@ export function WakeWordIndicator({
             <AnimatePresence>
                 {detectedWord && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{opacity: 0, height: 0}}
+                        animate={{opacity: 1, height: 'auto'}}
+                        exit={{opacity: 0, height: 0}}
                         className="mt-2 p-2 bg-primary/10 rounded text-sm text-primary"
                     >
                         Detected: {detectedWord.displayName}

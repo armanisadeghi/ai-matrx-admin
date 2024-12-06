@@ -1,15 +1,18 @@
+
+const DEFAULT_IMAGE = '/assistants/matrx-ai-avatar-male.jpeg';
+
 export const availableVoices = [
     {
         "id": "97e7d7a9-dfaa-4758-a936-f5f844ac34cc",
         "name": "Japanese Man Book",
         "description": "This voice is deep and even, perfect for narrational content in Japanese",
-        "image": "",
+        "image": DEFAULT_IMAGE,
     },
     {
         "id": "3f4ade23-6eb4-4279-ab05-6a144947c4d5",
         "name": "German Conversational Woman",
         "description": "This voice is rich and friendly, perfect for casual conversations in German",
-        "image": "",
+        "image": DEFAULT_IMAGE,
     },
     {
         "id": "2deb3edf-b9d8-4d06-8db9-5742fb8a3cb2",

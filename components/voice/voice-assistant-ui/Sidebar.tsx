@@ -25,7 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = (
         <div className="p-4 border-b">
             <Button
                 onClick={onNewConversation}
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="w-full gap-2"
             >

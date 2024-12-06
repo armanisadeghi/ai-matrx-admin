@@ -1,16 +1,41 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { usePlayer } from "@/hooks/tts/usePlayer";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { nanoid } from 'nanoid';
 import { processAiRequest } from "@/actions/ai-actions/assistant-modular";
-import { ProcessState, Message, Conversation } from "@/types/voice/voiceAssistantTypes";
-import { assistantOptions } from "@/constants/voice-assistants";
+import {
+    ProcessState,
+    Message,
+    Conversation,
+    ApiName,
+    InputType,
+    ServersideMessage, AiCallParams, ResponseType, AvailableAssistants, PartialBroker, Assistant
+} from "@/types/voice/voiceAssistantTypes";
+import {assistantOptions, getAssistant} from "@/constants/voice-assistants";
+
+
+const DEFAULT_AI_REQUEST = {
+    apiName: 'groq' as ApiName,
+    responseType: 'audio' as InputType,
+    voiceId: '79a125e8-cd45-4c13-8a67-188112f4dd22',
+    assistant: getAssistant("defaultVoiceAssistant"),
+    partialBrokers: [] as PartialBroker[],
+    aiCallParams: {} as AiCallParams,
+};
+
 
 
 function truncateTitle(content: string): string {
-    return content.split(' ').slice(0, 4).join(' ') +
-        (content.split(' ').length > 4 ? '...' : '');
+    return content.split(' ').slice(0, 6).join(' ') +
+        (content.split(' ').length > 6 ? '...' : '');
+}
+
+interface ActivityTiming {
+    lastUserActivity: number;      // Timestamp of last user speech or text input
+    lastAssistantActivity: number; // Timestamp of last assistant response completion
+    lastAnyActivity: number;       // Most recent of either activity
+    isActive: boolean;             // Whether any activity is currently ongoing
 }
 
 export const useVoiceChat = () => {
@@ -18,7 +43,12 @@ export const useVoiceChat = () => {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [currentConversationId, setCurrentConversationId] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedAssistant, setSelectedAssistant] = useState(assistantOptions[0]);
+    const [assistant, setAssistant] = useState<Assistant>(DEFAULT_AI_REQUEST.assistant);
+    const [voiceId, setVoiceId] = useState<string>(DEFAULT_AI_REQUEST.voiceId);
+    const [apiName, setApiName] = useState<ApiName>(DEFAULT_AI_REQUEST.apiName);
+    const [aiCallParams, setAiCallParams] = useState<AiCallParams>(DEFAULT_AI_REQUEST.aiCallParams);
+    const [partialBrokers, setPartialBrokers] = useState<PartialBroker[]>([]);
+    const [responseType, setResponseType] = useState<ResponseType>(DEFAULT_AI_REQUEST.responseType);
     const [processState, setProcessState] = useState<ProcessState>({
         recording: false,
         processing: false,
@@ -27,13 +57,35 @@ export const useVoiceChat = () => {
         speaking: false,
     });
     const [currentTranscript, setCurrentTranscript] = useState<string>("");
+    const [activityTiming, setActivityTiming] = useState<ActivityTiming>({
+        lastUserActivity: Date.now(),
+        lastAssistantActivity: Date.now(),
+        lastAnyActivity: Date.now(),
+        isActive: false
+    });
+
     const player = usePlayer();
+
+    // Update activity timing when process state changes
+    const updateActivityTiming = useCallback((isUserActivity: boolean) => {
+        const currentTime = Date.now();
+        setActivityTiming(prev => {
+            const newTiming = {
+                lastUserActivity: isUserActivity ? currentTime : prev.lastUserActivity,
+                lastAssistantActivity: isUserActivity ? prev.lastAssistantActivity : currentTime,
+                lastAnyActivity: currentTime,
+                isActive: true
+            };
+            return newTiming;
+        });
+    }, []);
 
     // Initialize VAD
     const vad = useMicVAD({
         startOnLoad: true,
         onSpeechStart: () => {
             setProcessState(prev => ({ ...prev, recording: true }));
+            updateActivityTiming(true);
         },
         onSpeechEnd: async (audio) => {
             try {
@@ -58,6 +110,7 @@ export const useVoiceChat = () => {
                     recording: false,
                     processing: false
                 }));
+                setActivityTiming(prev => ({ ...prev, isActive: false }));
             }
         },
         onVADMisfire: () => {
@@ -68,6 +121,7 @@ export const useVoiceChat = () => {
                 recording: false,
                 processing: false
             }));
+            setActivityTiming(prev => ({ ...prev, isActive: false }));
         },
         positiveSpeechThreshold: 0.6,
         minSpeechFrames: 4,
@@ -116,6 +170,7 @@ export const useVoiceChat = () => {
         if (vad.errored) {
             console.error('VAD Error:', vad.errored);
             toast.error("Failed to initialize voice detection");
+            setActivityTiming(prev => ({ ...prev, isActive: false }));
         }
     }, [vad.errored]);
 
@@ -156,6 +211,14 @@ export const useVoiceChat = () => {
         }));
     };
 
+    const handlePlaybackComplete = useCallback(() => {
+        const isFirefox = navigator.userAgent.includes("Firefox");
+        if (isFirefox) vad.start();
+        setProcessState(prev => ({ ...prev, speaking: false }));
+        updateActivityTiming(false);
+        setActivityTiming(prev => ({ ...prev, isActive: false }));
+    }, [vad, updateActivityTiming]);
+
     const submit = async (data: string | Blob) => {
         try {
             setProcessState(prev => ({
@@ -163,6 +226,7 @@ export const useVoiceChat = () => {
                 transcribing: data instanceof Blob,
                 processing: true
             }));
+            updateActivityTiming(true);
 
             const currentConversation = conversations.find(c => c.id === currentConversationId);
             const previousMessages = currentConversation?.messages.map(msg => ({
@@ -175,11 +239,15 @@ export const useVoiceChat = () => {
                           : data;
 
             const result = await processAiRequest({
+                apiName,
                 input,
                 inputType: data instanceof Blob ? 'audio' : 'text',
-                responseType: 'audio',
-                assistantType: selectedAssistant.value,
+                responseType,
+                voiceId,
+                assistant: assistant.id,
                 previousMessages,
+                aiCallParams,
+                partialBrokers,
             });
 
             setCurrentTranscript(result.transcript || '');
@@ -197,11 +265,7 @@ export const useVoiceChat = () => {
             }));
 
             if (result.responseType === 'audio' && result.voiceStream) {
-                player.play(result.voiceStream, () => {
-                    const isFirefox = navigator.userAgent.includes("Firefox");
-                    if (isFirefox) vad.start();
-                    setProcessState(prev => ({ ...prev, speaking: false }));
-                });
+                player.play(result.voiceStream, handlePlaybackComplete);
             }
 
             const userMessage: Message = {
@@ -222,8 +286,6 @@ export const useVoiceChat = () => {
             addMessage(userMessage, assistantMessage);
 
             if (data instanceof Blob) {
-                setInput(result.transcript || '');
-            } else {
                 setInput('');
             }
 
@@ -237,6 +299,7 @@ export const useVoiceChat = () => {
                 generating: false,
                 speaking: false,
             });
+            setActivityTiming(prev => ({ ...prev, isActive: false }));
         }
     };
 
@@ -246,6 +309,16 @@ export const useVoiceChat = () => {
         setInput("");
     };
 
+    const addPartialBroker = (id: string, value: string) => {
+        setPartialBrokers((prev) => {
+            if (prev.some((broker) => broker.id === id)) {
+                return prev;
+            }
+            return [...prev, { id, value }];
+        });
+    };
+
+
     return {
         input,
         setInput,
@@ -253,14 +326,26 @@ export const useVoiceChat = () => {
         currentConversationId,
         currentTranscript,
         processState,
+        activityTiming,
         vad,
         createNewConversation,
         deleteConversation,
         setCurrentConversationId,
         handleSubmit,
         getCurrentConversation: () => conversations.find(c => c.id === currentConversationId),
-        selectedAssistant,
-        setSelectedAssistant,
+        assistant,
+        setAssistant,
+        voiceId,
+        setVoiceId,
+        apiName,
+        setApiName,
+        aiCallParams,
+        setAiCallParams,
+        partialBrokers,
+        addPartialBroker,
+        setPartialBrokers,
+        responseType,
+        setResponseType,
         isLoading,
     };
 };

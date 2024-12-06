@@ -1,113 +1,127 @@
-import { Assistant, AssistantType } from "@/types/voice/voiceAssistantTypes";
+import { Assistant, AvailableAssistants } from "@/types/voice/voiceAssistantTypes";
 
-const DEFAULT_IMAGE = '/assistants/happy-robot-avatar.jpg';
+const DEFAULT_IMAGE = '/assistants/matrx-ai-avatar-male.jpeg';
 
 export const assistants: Assistant[] = [
     {
+        id: 'defaultVoiceAssistant',
+        name: 'Matrx AI',
+        title: 'Friendly AI Voice Assistant',
+        description: 'A friendly and conversational assistant designed to help with any task in a clear and supportive manner.',
+        imagePath: '/assistants/matrx-ai-avatar-female.jpeg',
+        capabilities: ['General assistance', 'Conversational support', 'Task management']
+    },
+    {
         id: 'voiceAssistant',
-        name: 'Voice Assistant',
-        title: 'AI Voice Assistant',
-        description: 'A general-purpose AI assistant ready to help with any task.',
+        name: 'Matrx AI',
+        title: 'Friendly AI Voice Assistant',
+        description: 'A brief, conversational AI assistant with advanced speech synthesis, ideal for voice interactions.',
         imagePath: DEFAULT_IMAGE,
-        capabilities: ['Voice interaction', 'General assistance', 'Task management']
+        capabilities: ['Voice interaction', 'Task management', 'General help']
     },
     {
         id: 'debateCoach',
         name: 'Debate Coach',
         title: 'Professional Debate Coach',
-        description: 'Expert in argumentation, rhetoric, and public speaking.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Debate strategies', 'Argument analysis', 'Public speaking tips']
+        description: 'Helps students practice for debates by simulating tough arguments and offering constructive feedback.',
+        imagePath: '/assistants/debate-coach-male-avatar.jpeg', // Change to female if applicable
+        capabilities: ['Debate preparation', 'Rhetoric', 'Public speaking']
     },
     {
         id: 'mathTutor',
         name: 'Math Tutor',
         title: 'Mathematics Tutor',
-        description: 'Provides step-by-step explanations of complex math problems, from algebra to calculus.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Algebra', 'Calculus', 'Problem-solving techniques', 'Math theory']
+        description: 'Provides clear and encouraging assistance with math problems and concepts tailored to student needs.',
+        imagePath: '/assistants/math-tutor-avatar.jpeg',
+        capabilities: ['Step-by-step math help', 'Algebra', 'Calculus', 'Geometry']
     },
     {
         id: 'historyTeacher',
         name: 'History Teacher',
         title: 'History Educator',
-        description: 'Helps students understand historical events, movements, and figures with a passion for the past.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['World history', 'Historical context', 'Research guidance', 'Essay writing tips']
+        description: 'Explains historical events and concepts in an engaging way, perfect for homework and test prep.',
+        imagePath: '/assistants/history-tutor-male-avatar.jpeg', // Change to female if applicable
+        capabilities: ['Historical analysis', 'Essay writing', 'World history']
     },
     {
         id: 'scienceTeacher',
         name: 'Science Teacher',
         title: 'Scientific Educator',
-        description: 'A science teacher that can explain physics, chemistry, and biology in simple terms.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Physics', 'Chemistry', 'Biology', 'Scientific method']
+        description: 'Simplifies complex scientific concepts in physics, chemistry, and biology for better understanding.',
+        imagePath: '/assistants/science-tutor-male-avatar.jpeg', // Change to female if applicable
+        capabilities: ['Physics', 'Chemistry', 'Biology', 'Homework help']
     },
     {
         id: 'englishTeacher',
         name: 'English Teacher',
-        title: 'Literature and Language Expert',
-        description: 'Guides students in mastering the English language, from grammar to literary analysis.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Grammar', 'Literary analysis', 'Essay writing', 'Creative writing']
+        title: 'English and Literature Expert',
+        description: 'Assists with grammar, literary analysis, and creative writing while promoting language mastery.',
+        imagePath: '/assistants/english-tutor-female-avatar.jpeg', // Change to male if applicable
+        capabilities: ['Grammar', 'Essay writing', 'Literary analysis']
     },
     {
         id: 'reactDevelopmentExpert',
         name: 'React Development Expert',
-        title: 'React Web Development Specialist',
-        description: 'Provides in-depth knowledge on React.js and modern web development practices.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['React.js', 'Frontend development', 'State management', 'Component design']
+        title: 'React Development Specialist',
+        description: 'Offers best practices and guidance for efficient React.js development using modern tools.',
+        imagePath: '/assistants/react-developer-male-avatar.jpeg',
+        capabilities: ['React.js', 'State management', 'Tailwind CSS']
     },
     {
         id: 'pythonDevelopmentExpert',
         name: 'Python Development Expert',
         title: 'Python Programming Specialist',
-        description: 'Offers expert advice on Python programming, from beginner concepts to advanced techniques.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Python programming', 'Data analysis', 'Web development', 'Machine learning']
+        description: 'Delivers high-quality Python programming insights and modular development advice.',
+        imagePath: '/assistants/python-developer-male-avatar.jpeg',
+        capabilities: ['Python coding', 'Data analysis', 'Web development']
     },
     {
         id: 'typeScriptDevelopmentExpert',
         name: 'TypeScript Development Expert',
         title: 'TypeScript Specialist',
-        description: 'Master of TypeScript, providing guidance on strong typing and modern JavaScript practices.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['TypeScript', 'Frontend development', 'Static typing', 'Web application architecture']
+        description: 'Focuses on clean, efficient TypeScript development with attention to type safety and simplicity.',
+        imagePath: '/assistants/typescript-developer-male-avatar.jpeg',
+        capabilities: ['TypeScript', 'Static typing', 'Web application design']
     },
     {
         id: 'businessCoach',
         name: 'Business Coach',
         title: 'Entrepreneurship and Leadership Coach',
-        description: 'Offers strategic guidance on business growth, leadership, and entrepreneurship.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Business strategy', 'Leadership skills', 'Entrepreneurship', 'Team building']
+        description: 'Provides actionable advice on business strategy, leadership, and team building.',
+        imagePath: '/assistants/business-coach-male-avatar.jpeg', // Change to female if applicable
+        capabilities: ['Business strategy', 'Leadership', 'Growth planning']
     },
     {
         id: 'hrExpert',
         name: 'HR Expert',
         title: 'Human Resources Consultant',
-        description: 'Helps with HR practices including recruitment, employee relations, and organizational development.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Recruitment', 'Employee relations', 'Performance management', 'HR compliance']
+        description: 'Advises on recruitment, workforce management, and building a strong organizational culture.',
+        imagePath: '/assistants/hr-expoert-female-avatar.jpeg',
+        capabilities: ['Recruitment', 'HR compliance', 'Workforce strategy']
     },
     {
         id: 'candy',
         name: 'Candice AI',
-        title: 'AI for Creative Writing and Storytelling',
-        description: 'A creative AI assistant that helps you with writing stories, scripts, and creative content.',
-        imagePath: DEFAULT_IMAGE,
-        capabilities: ['Creative writing', 'Storytelling', 'Scriptwriting', 'Idea generation']
+        title: 'Friendly and Fun AI Assistant',
+        description: 'A lighthearted, fun assistant great for casual conversations and creative support.',
+        imagePath: '/assistants/candice-ai-avatar.jpeg',
+        capabilities: ['Creative writing', 'Engaging interactions', 'Entertainment']
     }
 ];
 
-export const getAssistant = (id: AssistantType): Assistant => {
-    return assistants.find(a => a.id === id) || assistants[0];
+// Update the getAssistant function to correctly handle undefined values
+export const getAssistant = (id: AvailableAssistants): Assistant => {
+    const assistant = assistants.find(a => a.id === id);
+    return assistant || assistants[0]; // Return the first assistant as a fallback
 };
+
+// Update assistantOptions with correct field references
 export const assistantOptions = assistants.map(assistant => ({
-    value: assistant.id,
-    label: assistant.name,
-    description: assistant.title,
-    image: assistant.imagePath,
+    id: assistant.id,
+    name: assistant.name,
+    title: assistant.title,
+    description: assistant.description,
+    imagePath: assistant.imagePath,
     capabilities: assistant.capabilities
 }));
+

@@ -1,25 +1,61 @@
+import {PreDefinedMessages, PartialBroker, ServersideMessage} from "@/types/voice/voiceAssistantTypes";
+import {
+    businessCoach,
+    candiceAi,
+    debateCoach,
+    defaultVoiceAssistant,
+    englishTeacher,
+    historyTeacher,
+    hrExpert,
+    mathTutor,
+    mathTutorGPT,
+    matrxVoiceAssistant,
+    pythonDevelopmentExpert,
+    reactDevelopmentExpert,
+    scienceTeacher,
+    typeScriptDevelopmentExpert
+} from "@/actions/ai-actions/constants";
+import {headers} from "next/headers";
+
+export async function getInitialMessages(
+    assistant?: keyof typeof preDefinedInitialMessages,
+    partialBrokers?: { id: string; value: string }[],
+    transcript?: string
+): Promise<ServersideMessage[]> {
+    // Get the predefined messages for the specified assistant type, applying replacements if necessary
+    const initialMessages: ServersideMessage[] = assistant
+                                                 ? getMessageSet(assistant, partialBrokers)
+                                                 : preDefinedInitialMessages['defaultVoiceAssistant'];
+
+    if (transcript) {
+        initialMessages.push({ role: 'user', content: transcript });
+    }
+
+    return initialMessages;
+}
 
 
-const systemMessageOptions = {
-    debateCoach: `- You are a professional debate coach brought in to help 8th graders prepare for an upcoming national debate.`,
-    voiceAssistant: `- You are a voice assistant designed to help users with their daily tasks.`,
-    mathTutor: `- You are a math tutor brought in to help students with their math homework.`,
-    historyTeacher: `- You are a history teacher brought in to help students with their history project.`,
-    scienceTeacher: `- You are a science teacher brought in to help students with their science project.`,
-    englishTeacher: `- You are an English teacher brought in to help students with their English project.`,
-    reactDevelopmentExpert: `- You are a React development expert brought in to help students with their React project.`,
-    pythonDevelopmentExpert: `- You are a Python development expert brought in to help students with their Python project.`,
-    typeScriptDevelopmentExpert: `- You are a TypeScript development expert brought in to help students with their TypeScript project.`,
-    businessCoach: `- You are a business coach brought in to help students with their business project.`,
-    hrExpert: `- You are an HR expert brought in to help students with their HR project.`,
-};
+function getMessageSet(
+    assistant: keyof typeof preDefinedInitialMessages,
+    partialBrokers?: { id: string; value: string }[]
+): ServersideMessage[] {
+    const updatedMessages = replacePlaceholders(preDefinedInitialMessages, partialBrokers);
+    return updatedMessages[assistant] || [];
+}
 
 
-const preDefinedInitialMessages = {
+
+const preDefinedInitialMessages: PreDefinedMessages = {
+    defaultVoiceAssistant: [
+        {
+            role: 'system',
+            content: defaultVoiceAssistant,
+        },
+    ],
     debateCoach: [
         {
             role: 'system',
-            content: systemMessageOptions.debateCoach,
+            content: debateCoach,
         },
         {
             role: 'assistant',
@@ -28,88 +64,107 @@ const preDefinedInitialMessages = {
         {
             role: 'user',
             content: 'Hi. My name is {c33aea28-8b61-4256-9c84-9483e93662d2}! and I am in {5fc6bbee-3674-4706-aff2-233c9d71ec73}! grade. I have a big debate coming up and I really need help.',
-        }
+        },
     ],
     voiceAssistant: [
         {
             role: 'system',
-            content: systemMessageOptions.voiceAssistant,
+            content: matrxVoiceAssistant,
         },
     ],
     mathTutor: [
         {
             role: 'system',
-            content: systemMessageOptions.mathTutor,
+            content: mathTutor,
         },
     ],
     historyTeacher: [
         {
             role: 'system',
-            content: systemMessageOptions.historyTeacher,
+            content: historyTeacher,
         },
     ],
     scienceTeacher: [
         {
             role: 'system',
-            content: systemMessageOptions.scienceTeacher,
+            content: scienceTeacher,
         },
     ],
     englishTeacher: [
         {
             role: 'system',
-            content: systemMessageOptions.englishTeacher,
+            content: englishTeacher,
         },
     ],
     reactDevelopmentExpert: [
         {
             role: 'system',
-            content: systemMessageOptions.reactDevelopmentExpert,
+            content: reactDevelopmentExpert,
         },
     ],
     pythonDevelopmentExpert: [
         {
             role: 'system',
-            content: systemMessageOptions.pythonDevelopmentExpert,
+            content: pythonDevelopmentExpert,
         },
     ],
     typeScriptDevelopmentExpert: [
         {
             role: 'system',
-            content: systemMessageOptions.typeScriptDevelopmentExpert,
+            content: typeScriptDevelopmentExpert,
         },
     ],
     businessCoach: [
         {
             role: 'system',
-            content: systemMessageOptions.businessCoach,
+            content: businessCoach,
         },
     ],
     hrExpert: [
         {
             role: 'system',
-            content: systemMessageOptions.hrExpert,
+            content: hrExpert,
         },
     ],
-}
+    candy: [
+        {
+            role: 'system',
+            content: candiceAi,
+        },
+    ],
+    mathTutorGPT: [
+        {
+            role: 'system',
+            content: mathTutorGPT,
+        },
+    ],
+};
 
-const replacePlaceholders = (templateMessages, replacements) => {
-    const replacementsMap = (replacements || []).reduce((map, { id, value }) => {
+const replacePlaceholders = (
+    templateMessages: PreDefinedMessages,
+    partialBrokers: PartialBroker[] = []
+): PreDefinedMessages => {
+    const replacementsMap = partialBrokers.reduce<Record<string, string>>((map, {id, value}) => {
         map[id] = value;
         return map;
     }, {});
 
-    const clonedMessages = JSON.parse(JSON.stringify(templateMessages));
+    const clonedMessages: PreDefinedMessages = JSON.parse(JSON.stringify(templateMessages));
 
-    const replaceInContent = (content) => {
+    const replaceInContent = (content: string): string => {
         return content.replace(/{(.*?)}/g, (match, uuid) => {
-            return replacementsMap[uuid] || match;
+            // Replace with the value if found, or remove the placeholder
+            return replacementsMap[uuid] || '';
         });
     };
 
     Object.keys(clonedMessages).forEach((key) => {
-        clonedMessages[key] = clonedMessages[key].map((message) => {
+        clonedMessages[key] = clonedMessages[key].map((message): ServersideMessage => {
             if (message.content) {
-                message.content = replaceInContent(message.content);
+                return {
+                    ...message,
+                    content: replaceInContent(message.content),
+                };
             }
             return message;
         });
@@ -118,35 +173,21 @@ const replacePlaceholders = (templateMessages, replacements) => {
     return clonedMessages;
 };
 
-// The orchestrator function
-const getInitialMessages = (optionName, replacements = []) => {
-    if (!preDefinedInitialMessages[optionName]) {
-        throw new Error(`Message option "${optionName}" not found.`);
-    }
+async function location() {
+    const headersList = await headers();
 
-    const templateMessages = { [optionName]: preDefinedInitialMessages[optionName] };
-    const updatedMessages = replacePlaceholders(templateMessages, replacements);
-    return updatedMessages[optionName];
-};
+    const country = headersList.get("x-vercel-ip-country");
+    const region = headersList.get("x-vercel-ip-country-region");
+    const city = headersList.get("x-vercel-ip-city");
 
-/*
-// Example usage
-const replacements = [
-    { id: "c33aea28-8b61-4256-9c84-9483e93662d2", value: "John Doe" },
-    { id: "5fc6bbee-3674-4706-aff2-233c9d71ec73", value: "10th" },
-];
+    if (!country || !region || !city) return "unknown";
 
-try {
-    const messages = getInitialMessages("debateCoach", replacements);
-    console.log(messages);
-} catch (error) {
-    console.error(error.message);
+    return `${city}, ${region}, ${country}`;
 }
 
-try {
-    const messagesWithoutReplacements = getInitialMessages("mathTutor");
-    console.log(messagesWithoutReplacements);
-} catch (error) {
-    console.error(error.message);
+async function time() {
+    const headersList = await headers();
+    return new Date().toLocaleString("en-US", {
+        timeZone: headersList.get("x-vercel-ip-timezone") || undefined,
+    });
 }
-*/

@@ -30,7 +30,7 @@ export type ServersideMessage = {
 
 export type PreDefinedMessages = Record<string, ServersideMessage[]>;
 
-export type Replacement = {
+export type PartialBroker = {
     id: string;
     value: string;
 };
@@ -45,10 +45,12 @@ export type AiCallParams = {
     [key: string]: any;
 };
 
-export type AssistantType =
-    | 'debateCoach'
+export type AvailableAssistants =
+    | 'defaultVoiceAssistant'
     | 'voiceAssistant'
+    | 'debateCoach'
     | 'mathTutor'
+    | 'mathTutorGPT'
     | 'historyTeacher'
     | 'scienceTeacher'
     | 'englishTeacher'
@@ -64,11 +66,12 @@ export type ProcessAiRequestParams = {
     input: string | File;
     inputType: InputType;
     responseType: ResponseType
+    voiceId?: string;
     previousMessages?: ServersideMessage[];
-    assistantType?: AssistantType;
-    replacements?: Replacement[];
+    assistant?: AvailableAssistants;
+    partialBrokers?: PartialBroker[];
     apiName?: ApiName;
-    params?: AiCallParams;
+    aiCallParams?: AiCallParams;
 };
 
 export type AiResponse = {
@@ -79,7 +82,7 @@ export type AiResponse = {
 }
 
 export interface Assistant {
-    id: AssistantType;
+    id: AvailableAssistants;
     name: string;
     title: string;
     description: string;

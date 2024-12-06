@@ -2,7 +2,9 @@
 
 import {AnimatePresence, motion} from "framer-motion";
 import React, {useEffect, useRef} from "react";
-import { ProcessState, Message, Conversation } from "@/types/voice/voiceAssistantTypes";
+import {Message} from "@/types/voice/voiceAssistantTypes";
+import MessageContentDisplay from "@/components/message-display";
+
 
 function MessagesDisplay({messages}: { messages: Message[] }) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -33,7 +35,15 @@ function MessagesDisplay({messages}: { messages: Message[] }) {
                                 : 'bg-muted'
                             }`}
                         >
-                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            {message.role === 'assistant' ? (
+                                <MessageContentDisplay
+                                    content={message.content}
+                                    role={message.role}
+                                />
+                            ) : (
+                                 <p className="whitespace-pre-wrap">{message.content}</p>
+                             )}
+
                             <div className="flex items-center justify-between text-xs opacity-50 mt-1">
                                 <time dateTime={new Date(message.timestamp).toISOString()}>
                                     {new Date(message.timestamp).toLocaleTimeString()}

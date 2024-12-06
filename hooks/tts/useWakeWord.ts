@@ -1,6 +1,6 @@
 // hooks/useWakeWord.ts
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { usePorcupine } from "@picovoice/porcupine-react";
+import {useEffect, useState, useCallback, useRef} from 'react';
+import {usePorcupine} from "@picovoice/porcupine-react";
 
 export type WakeWord = {
     publicPath: string;
@@ -33,14 +33,14 @@ type UseWakeWordProps = {
     restartDelay?: number;
 };
 
-export function useWakeWord({
-    wakeWords = Object.values(WAKE_WORDS),
-    onDetected,
-    autoRestart = true,
-    restartDelay = 1000
-}: UseWakeWordProps = {}) {
+export function useWakeWord(
+    {
+        wakeWords = Object.values(WAKE_WORDS),
+        onDetected,
+        autoRestart = true,
+        restartDelay = 1000
+    }: UseWakeWordProps = {}) {
     const [detectedWord, setDetectedWord] = useState<WakeWord | null>(null);
-    const lastProcessedDetectionRef = useRef<{ label: string; index: number } | null>(null);
 
     const {
         keywordDetection,
@@ -53,47 +53,28 @@ export function useWakeWord({
         release,
     } = usePorcupine();
 
-    const handleDetection = useCallback(async () => {
-        if (!keywordDetection) return;
+    // Handle new detections
+    useEffect(() => {
+        if (keywordDetection !== null) {
+            const detectedWakeWord = wakeWords.find(w => w.label === keywordDetection.label);
+            if (detectedWakeWord) {
+                setDetectedWord(detectedWakeWord);
+                onDetected?.(detectedWakeWord);
 
-        // Check if this is the same detection we already processed
-        if (lastProcessedDetectionRef.current &&
-            lastProcessedDetectionRef.current.label === keywordDetection.label &&
-            lastProcessedDetectionRef.current.index === keywordDetection.index) {
-            return;
-        }
-
-        const detectedWakeWord = wakeWords.find(w => w.label === keywordDetection.label);
-        if (!detectedWakeWord) return;
-
-        // Update our last processed detection
-        lastProcessedDetectionRef.current = {
-            label: keywordDetection.label,
-            index: keywordDetection.index
-        };
-
-        setDetectedWord(detectedWakeWord);
-        onDetected?.(detectedWakeWord);
-
-        await stop();
-
-        setTimeout(async () => {
-            setDetectedWord(null);
-            // Clear the last processed detection when restarting
-            lastProcessedDetectionRef.current = null;
-            if (autoRestart) {
-                await start();
+                // Clear detection after delay
+                setTimeout(() => {
+                    setDetectedWord(null);
+                }, restartDelay);
             }
-        }, restartDelay);
-
-    }, [keywordDetection, wakeWords, onDetected, stop, start, autoRestart, restartDelay]);
+        }
+    }, [keywordDetection, wakeWords, onDetected, restartDelay]);
 
     // Initialize on mount
     useEffect(() => {
         init(
             process.env.NEXT_PUBLIC_PICOVOICE_ACCESS_KEY!,
             wakeWords,
-            { publicPath: "/porcupine_params.pv" }
+            {publicPath: "/porcupine_params.pv"}
         );
 
         return () => {
@@ -101,20 +82,11 @@ export function useWakeWord({
         };
     }, []);
 
-    // Handle new detections
-    useEffect(() => {
-        if (keywordDetection) {
-            handleDetection();
-        }
-    }, [keywordDetection, handleDetection]);
-
     const startListening = useCallback(async () => {
-        setDetectedWord(null);
         await start();
     }, [start]);
 
     const stopListening = useCallback(async () => {
-        setDetectedWord(null);
         await stop();
     }, [stop]);
 
@@ -123,7 +95,7 @@ export function useWakeWord({
         await init(
             process.env.NEXT_PUBLIC_PICOVOICE_ACCESS_KEY!,
             newWakeWords,
-            { publicPath: "/porcupine_params.pv" }
+            {publicPath: "/porcupine_params.pv"}
         );
     }, [init, release]);
 

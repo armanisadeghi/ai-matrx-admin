@@ -11,7 +11,8 @@ import StoreProvider from "@/providers/StoreProvider";
 import {TooltipProvider} from "@/components/ui/tooltip";
 import {InitialReduxState} from "@/types/reduxTypes";
 import {SocketProvider} from '@/providers/SocketProvider';
-import { RefProvider } from '@/lib/refs';
+import {RefProvider} from '@/lib/refs';
+import {ShikiProvider} from '@/providers/ShikiProvider';
 
 export function Providers(
     {
@@ -29,7 +30,9 @@ export function Providers(
                         <RefProvider>
                             <NextUIProvider>
                                 <TooltipProvider>
-                                    {children}
+                                    <ShikiProvider initialLanguages={['typescript', 'javascript']}>
+                                        {children}
+                                    </ShikiProvider>
                                     <Toaster/>
                                 </TooltipProvider>
                             </NextUIProvider>

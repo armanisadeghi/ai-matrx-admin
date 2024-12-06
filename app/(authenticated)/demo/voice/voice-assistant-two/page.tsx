@@ -1,32 +1,24 @@
 "use client";
 import React from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import MessagesDisplay from "@/components/voice/voice-assistant-ui/MessagesDisplay";
 import SpeechHaloEffect from "@/components/voice/voice-assistant-ui/SpeechHaloEffect";
 import { Header } from "@/components/voice/voice-assistant-ui/header";
 import { Sidebar } from "@/components/voice/voice-assistant-ui/Sidebar";
 import { Footer } from "@/components/voice/voice-assistant-ui/Footer";
-import {assistantOptions} from "@/constants/voice-assistants";
-import {useVoiceChat} from "@/hooks/tts/useVoiceChat";
-import {NestedResizableWithHeaderFooter} from "@/components/matrx/resizable/NestedDynamicWithRenderControls";
+import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
+import { NestedResizableWithHeaderFooter } from "@/components/matrx/resizable/NestedDynamicWithRenderControls";
+import CollapsibleSidebar from "@/components/voice/voice-assistant-ui/extras/CollapsibleSidebar";
 
 export default function Page() {
+    const voiceChatHook = useVoiceChat();
     const {
         input,
         setInput,
-        conversations,
-        currentConversationId,
-        currentTranscript,
         processState,
         vad,
-        selectedAssistant,
-        setSelectedAssistant,
-        createNewConversation,
-        deleteConversation,
-        setCurrentConversationId,
         handleSubmit,
         getCurrentConversation,
-    } = useVoiceChat();
+    } = voiceChatHook;
 
     const currentConversation = getCurrentConversation();
     const messages = currentConversation?.messages || [];
@@ -38,16 +30,12 @@ export default function Page() {
             {
                 type: 'content' as const,
                 content: (
-                    <Sidebar
-                        conversations={conversations}
-                        currentConversationId={currentConversationId}
-                        onNewConversation={createNewConversation}
-                        onSelectConversation={setCurrentConversationId}
-                        onDeleteConversation={deleteConversation}
+                    <CollapsibleSidebar
+                        voiceChatHook={voiceChatHook}
                     />
                 ),
                 defaultSize: 10,
-                minSize: 15,
+                minSize: 0,
                 maxSize: 20,
                 collapsible: true,
             },
@@ -58,15 +46,7 @@ export default function Page() {
                     {
                         type: 'content' as const,
                         content: (
-                            <Header
-                                selectedAssistant={selectedAssistant}
-                                onAssistantChange={(value) => {
-                                    const assistant = assistantOptions.find(a => a.value === value);
-                                    if (assistant) setSelectedAssistant(assistant);
-                                }}
-                                vad={vad}
-                                processState={processState}
-                            />
+                            <Header voiceChatHook={voiceChatHook} />
                         ),
                         defaultSize: 10,
                     },
@@ -93,7 +73,7 @@ export default function Page() {
                                 onToggleMic={() => vad.listening ? vad.pause() : vad.start()}
                             />
                         ),
-                        defaultSize: 5,
+                        defaultSize: 4,
                     },
                 ],
             },

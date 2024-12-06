@@ -451,7 +451,7 @@
 }
 
 .shiki-wrapper {
-    @apply font-mono text-sm;
+    @apply font-mono text-sm overflow-x-auto;
 }
 
 .shiki-wrapper pre {
@@ -459,9 +459,22 @@
 }
 
 .shiki {
-    @apply bg-transparent !important;
+    @apply !bg-transparent;
 }
 
 .shiki code {
     @apply whitespace-pre-wrap break-words w-full;
+}
+
+[data-theme='dark'] .shiki,
+[data-theme='dark'] .shiki span {
+    color-scheme: dark;
+}
+
+.mask-bottom {
+    mask-image: linear-gradient(to bottom, black calc(100% - 3rem), transparent 100%);
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }

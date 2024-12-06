@@ -19,12 +19,12 @@ function ConversationTab(
     return (
         <div
             className={`
-                flex items-center gap-2 p-2 rounded-lg cursor-pointer
+                flex items-center  p-0.5 pl-2 mb-1 rounded-md cursor-pointer
                 ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}
             `}
             onClick={onSelect}
         >
-            <span className="truncate max-w-[150px]">{conversation.title}</span>
+            <span className="truncate max-w-[200px]">{conversation.title}</span>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="p-0 h-auto">

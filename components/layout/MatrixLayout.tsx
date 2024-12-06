@@ -6,7 +6,7 @@ import Link, {LinkProps} from "next/link";
 import {usePathname} from 'next/navigation';
 import React, {useState, createContext, useContext} from "react";
 import {AnimatePresence, motion} from "framer-motion";
-import {IconMenu2, IconX, IconArrowNarrowLeft,} from "@tabler/icons-react";
+import {IconMenu2, IconX, IconArrowNarrowLeft, IconArrowNarrowRight} from "@tabler/icons-react";
 import {Logo} from "@/components/layout/MatrixLogo";
 import {appSidebarLinks} from "@/constants";
 import {Settings, User} from "lucide-react";
@@ -14,7 +14,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/lib/redux/store";
 import {ThemeSwitcher} from "@/styles/themes";
 import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip";
-
+import {CollapseToggleButton} from "./CollapseToggleButton";
 
 interface Links {
     label: string;
@@ -68,9 +68,9 @@ export function LayoutWithSidebar(
             open={open}
             setOpen={setOpen}
         >
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden ">
                 <div
-                    className="flex h-full w-full flex-1 flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900 md:p-3 overflow-y-auto">
+                    className="flex h-full w-full flex-1 flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-background/80 md:p-3 overflow-y-auto">
                     {children}
                 </div>
             </div>
@@ -230,25 +230,20 @@ export const DesktopSidebar = (
     return (
         <motion.div
             className={cn(
-                "group/sidebar-btn relative m-2 hidden h-full w-[300px] flex-shrink-0 rounded-xl bg-white px-4 py-4 dark:bg-neutral-900 md:flex md:flex-col hide-scrollbar",
+                "group/sidebar-btn relative m-2 hidden h-full w-[235px] flex-shrink-0 rounded-xl bg-white px-4 py-4 dark:bg-neutral-900 md:flex md:flex-col hide-scrollbar",
                 open ? "overflow-y-auto scrollbar-hide" : "overflow-hidden",
 
                 className,
             )}
             animate={{
-                width: open ? "300px" : "70px",
+                width: open ? "235px" : "70px",
             }}
             {...props}
         >
-            <button
-                onClick={() => setOpen(!open)}
-                className={cn(
-                    "absolute -right-2 top-4 z-40 hidden h-5 w-5 transform items-center justify-center rounded-sm border border-neutral-200 bg-white transition duration-200 group-hover/sidebar-btn:flex dark:border-neutral-700 dark:bg-neutral-900",
-                    open ? "rotate-0" : "rotate-180",
-                )}
-            >
-                <IconArrowNarrowLeft className="text-black dark:text-white"/>
-            </button>
+            <CollapseToggleButton
+                isOpen={open}
+                onToggle={() => setOpen(!open)}
+            />
             {children as React.ReactNode}
         </motion.div>
     );

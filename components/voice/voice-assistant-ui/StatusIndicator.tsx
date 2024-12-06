@@ -44,7 +44,7 @@ function StatusIndicator({vad, processState}: {
                 transition={{duration: 1.5, repeat: Infinity}}
             >
                 <Mic className="w-4 h-4"/>
-                Recording
+                Listening
             </motion.div>
         );
     }

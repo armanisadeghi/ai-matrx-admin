@@ -6,10 +6,10 @@ import { ProcessState, Message, Conversation } from "@/types/voice/voiceAssistan
 
 function ProcessIndicator({state}: { state: ProcessState }) {
     const steps = [
-        {key: 'recording', label: 'Recording'},
+        {key: 'recording', label: 'Listening'},
         {key: 'processing', label: 'Processing'},
-        {key: 'transcribing', label: 'Transcribing'},
-        {key: 'generating', label: 'Generating Response'},
+        {key: 'transcribing', label: 'Thinking'},
+        {key: 'generating', label: 'Responding'},
         {key: 'speaking', label: 'Speaking'},
     ];
 
