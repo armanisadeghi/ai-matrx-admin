@@ -37,10 +37,6 @@ export interface FetchRecordsSuccessPayload<TEntity extends EntityKeys> {
     totalCount: number;
 }
 
-export type CreateRecordPayload<TEntity extends EntityKeys> = {
-    data: Partial<EntityData<TEntity>>;
-    callbackId?: string;
-};
 
 interface FlexibleQueryOptions {
     entityNameAnyFormat: AllEntityNameVariations;
@@ -84,9 +80,13 @@ export interface FetchRecordsPayload {
     };
 }
 
-export type UpdateRecordPayload<TEntity extends EntityKeys> = {
+export type CreateRecordPayload = {
+    tempRecordId: MatrxRecordId;
+    callbackId?: string;
+};
+
+export type UpdateRecordPayload = {
     matrxRecordId: MatrxRecordId;
-    data: Partial<EntityData<TEntity>>;
     callbackId?: string;
 };
 
@@ -151,10 +151,10 @@ export interface EntityActions<TEntity extends EntityKeys> {
     fetchSelectedRecords: (payload: QueryOptions<TEntity> & { callbackId?: string }) => void;
     fetchSelectedRecordsSuccess: (payload: EntityData<TEntity>[]) => void;
 
-    createRecord: (payload: CreateRecordPayload<TEntity>) => void;
+    createRecord: (payload: CreateRecordPayload) => void;
     createRecordSuccess: (payload: EntityData<TEntity>) => void;
 
-    updateRecord: (payload: UpdateRecordPayload<TEntity>) => void;
+    updateRecord: (payload: UpdateRecordPayload) => void;
     updateRecordSuccess: (payload: EntityData<TEntity>) => void;
 
     deleteRecord: (payload: DeleteRecordPayload) => void;

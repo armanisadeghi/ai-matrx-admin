@@ -232,16 +232,16 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleGetOrFetchSelectedRecords', entityKey);
 
     try {
-        entityLogger.log('debug', 'Starting', action.payload);
+        entityLogger.log('info', 'Starting', action.payload);
 
         const entitySelectors = createEntitySelectors(entityKey);
         const {existingRecords, recordIdsNotInState, primaryKeysToFetch} = yield select(
             entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
         );
 
-        entityLogger.log('debug', '-Existing records', existingRecords);
-        entityLogger.log('debug', '-Record IDs not in state', recordIdsNotInState);
-        entityLogger.log('debug', '-Primary keys to fetch', primaryKeysToFetch);
+        entityLogger.log('info', '-Existing records', existingRecords);
+        entityLogger.log('info', '-Record IDs not in state', recordIdsNotInState);
+        entityLogger.log('info', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
             entityLogger.log('debug', '-Existing records', existingRecords);

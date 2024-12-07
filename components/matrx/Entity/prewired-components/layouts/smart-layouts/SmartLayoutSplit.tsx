@@ -17,9 +17,10 @@ import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {SmartExpandButton} from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartExpandButton";
-import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
+import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
 import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from '../parts/MeasurementMonitor';
+import { CreateEntityButton, UpdateEntityButton, DeleteEntityButton } from '@/components/matrx/Entity/action';
 
 export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const selectedEntity = unifiedLayoutProps.layoutState?.selectedEntity || null;
@@ -125,11 +126,6 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
                 {selectedEntity && (
                     <div className="h-full overflow-hidden p-0 gap-0">
                         <EnhancedCard className="h-full">
-                            <LayoutHeader
-                                title={`${entityPrettyName} Data`}
-                                tooltip="View and edit entity records"
-                                density={density}
-                            />
                             <CardContent className="p-0 gap-0">
                                 <div ref={mainContentRef}>
                                     <ScrollArea

@@ -7,7 +7,7 @@ import {
 import {EnhancedCard, LayoutHeader} from '../../parts';
 import {useAppSelector} from "@/lib/redux/hooks";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
-import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
+import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
 
 export const EntityDataSection: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {

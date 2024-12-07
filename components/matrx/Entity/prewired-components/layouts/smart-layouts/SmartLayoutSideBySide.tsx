@@ -15,7 +15,7 @@ import {SmartExpandButton} from './SmartExpandButton';
 import {useAppSelector} from "@/lib/redux/hooks";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {RootState} from "@/lib/redux/store";
-import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
+import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
 import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from '../parts/MeasurementMonitor';
 

@@ -1,197 +1,106 @@
 'use client';
 
-import React, {useState, useCallback, useMemo} from 'react';
-import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
-import {
-    AnimationPreset,
-    ComponentDensity,
-    ComponentSize,
-    FormColumnsOptions,
-    FormDirectionOptions,
-    FormLayoutOptions,
-    InlineEntityColumnsOptions,
-    InlineEntityComponentStyles,
-    PageLayoutOptions,
-    QuickReferenceComponentType,
-    TextSizeOptions
-} from '@/types/componentConfigTypes';
+import React, { useState, useMemo } from 'react';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
+import { EntityData, EntityKeys } from '@/types/entityTypes';
+import { FormLoadingTwoColumn } from "@/components/matrx/LoadingComponents";
 import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
-import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+import { MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
+import {UnifiedCrudHandlers, UnifiedLayoutProps } from "@/components/matrx/Entity";
+import {createEntitySelectors} from "@/lib/redux/entity/selectors";
+import {useAppSelector} from "@/lib/redux/hooks";
+import { useEntityCrud } from '@/lib/redux/entity/hooks/useEntityCrud';
+import {useEntityToasts} from '@/lib/redux/entity/hooks/useEntityToasts';
 
-export interface FormComponentOptions {
-    entitySelectionComponent?: any;
-    quickReferenceType?: QuickReferenceComponentType;
-    formLayoutType?: PageLayoutOptions;
-}
-
-export interface FormStyleOptions {
-    splitRatio?: number;
-    formLayout?: FormLayoutOptions;
-    formColumns?: FormColumnsOptions;
-    formDirection?: FormDirectionOptions;
-    formEnableSearch?: boolean;
-    formIsSinglePage?: boolean;
-    formIsFullPage?: boolean;
-    floatingLabel?: boolean;
-    showLabel?: boolean;
-    textSize?: TextSizeOptions;
-}
-
-export interface InlineEntityOptions {
-    showInlineEntities: boolean;
-    inlineEntityStyle: InlineEntityComponentStyles;
-    inlineEntityColumns: InlineEntityColumnsOptions;
-    editableInlineEntities: boolean;
-}
-
-export interface DynamicStyleOptions {
-    size?: ComponentSize;
-    density?: ComponentDensity;
-    animationPreset?: AnimationPreset;
-    variant?: MatrxVariant;
-
-}
-
-export interface FormOptions {
-    componentOptions?: FormComponentOptions;
-    styleOptions?: FormStyleOptions;
-    inlineEntityOptions?: InlineEntityOptions;
-    dynamicStyleOptions?: DynamicStyleOptions;
-}
+export const SmartEntityContent: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
+    const entityKey = unifiedLayoutProps.layoutState.selectedEntity;
+    const className = unifiedLayoutProps.className || "p-2";
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
+    const { crud, activeRecordCrud } = useEntityCrud(entityKey);
+    const toasts = useEntityToasts(entityKey);
 
 
-export interface EntityContentProps<TEntity extends EntityKeys> {
-    entityKey: TEntity;
-    className?: string;
-    density?: ComponentDensity;
-    animationPreset?: AnimationPreset;
-    formOptions?: {
-        size?: ComponentSize;
-        formLayout?: FormLayoutOptions;
-        formColumns?: FormColumnsOptions;
-        formDirection?: FormDirectionOptions;
-        formEnableSearch?: boolean;
-        formIsSinglePage?: boolean;
-        formIsFullPage?: boolean;
-        floatingLabel?: boolean;
-    };
-}
+    if (!entityKey) return null;
 
-// Memoized form configuration
-const createFormConfig = (formOptions?: EntityContentProps<any>['formOptions']) => ({
-    layout: formOptions?.formLayout ?? 'grid',
-    direction: formOptions?.formDirection ?? 'row',
-    enableSearch: formOptions?.formEnableSearch ?? false,
-    columns: formOptions?.formColumns ?? 2,
-    isSinglePage: formOptions?.formIsSinglePage ?? true,
-    isFullPage: formOptions?.formIsFullPage ?? true,
-    floatingLabel: formOptions?.floatingLabel ?? true,
-});
-
-function SmartEntityContent<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        className,
-        density,
-        animationPreset,
-        formOptions
-    }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
     const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
 
-    const getMatrxRecordId = useCallback(() => {
-        if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
 
-        return entity.matrxRecordIdByPrimaryKey(
-            entity.primaryKeyMetadata.fields.reduce(
-                (acc, field) => ({
-                    ...acc,
-                    [field]: entity.activeRecord[field],
-                }),
-                {} as Record<string, MatrxRecordId>
-            )
-        );
-    }, [entity.primaryKeyMetadata, entity]);
+    const crudHandlers: UnifiedCrudHandlers = useMemo(() => ({
+        handleFieldUpdate: (fieldName: string, value: any) => {
+            if (!activeRecordId) return;
 
-    // Memoize field update handler
-    const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            [fieldName]: value
-        }));
-    }, []);
+            activeRecordCrud.updateField(fieldName, value);
+        },
 
-    // Memoize CRUD handlers
-    const handleUpdate = useCallback((data: EntityData<EntityKeys>) => {
-        const matrxRecordId = getMatrxRecordId();
-        if (!matrxRecordId) return;
+        handleFetchOne: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => {
+            entity.fetchOne(
+                matrxRecordId,
+                (result) => {
+                    if (!result.success && options?.showToast) {
+                        toasts.handleError(result.error, 'fetch', {showToast: true});
+                    }
+                }
+            );
+        },
 
-        entity.updateRecord(
-            matrxRecordId,
-            data,
-            { showToast: true }
-        );
-    }, [entity, getMatrxRecordId]);
+        handleFetchOneWithFkIfk: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => {
+            entity.fetchOneWithFkIfk(
+                matrxRecordId,
+                (result) => {
+                    if (!result.success && options?.showToast) {
+                        toasts.handleError(result.error, 'fetch', {showToast: true});
+                    }
+                }
+            );
+        },
 
-    const handleCreate = useCallback((data: EntityData<EntityKeys>) => {
-        entity.createRecord(
-            data,
-            { showToast: true }
-        );
-    }, [entity]);
+        handleUpdate: (options?: { showToast?: boolean }) => {
+            if (!activeRecordId) return;
 
-    const handleDelete = useCallback(() => {
-        const matrxRecordId = getMatrxRecordId();
-        if (!matrxRecordId) return;
+            entity.updateRecord(
+                activeRecordId,
+                (result) => {
+                    if (result.success && options?.showToast) {
+                        toasts.handleUpdateSuccess({showToast: true});
+                    } else if (!result.success && options?.showToast) {
+                        toasts.handleError(result.error, 'update', {showToast: true});
+                    }
+                }
+            );
+        },
 
-        entity.deleteRecord(
-            matrxRecordId,
-            { showToast: true }
-        );
-    }, [entity, getMatrxRecordId]);
+        handleCreate: (tempRecordId: MatrxRecordId, options?: { showToast?: boolean }) => {
+            entity.createRecord(
+                tempRecordId,
+                (result) => {
+                    if (result.success && options?.showToast) {
+                        toasts.handleCreateSuccess({showToast: true});
+                    } else if (!result.success && options?.showToast) {
+                        toasts.handleError(result.error, 'create', {showToast: true});
+                    }
+                }
+            );
+        },
 
-    // Sync form data with active record
-    React.useEffect(() => {
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord);
+        handleDelete: (options?: { showToast?: boolean }) => {
+            if (!activeRecordId) return;
+
+            entity.deleteRecord(
+                activeRecordId,
+                (result) => {
+                    if (result.success && options?.showToast) {
+                        toasts.handleDeleteSuccess({showToast: true});
+                    } else if (!result.success && options?.showToast) {
+                        toasts.handleError(result.error, 'delete', {showToast: true});
+                    }
+                }
+            );
         }
-    }, [entity.activeRecord]);
+    }), [entity, activeRecordId, toasts, activeRecordCrud]);
 
-    // Memoize form configuration
-    const formConfig = useMemo(() =>
-            createFormConfig(formOptions),
-        [formOptions]
-    );
 
-    const formProps = useMemo(() => ({
-        entityKey,
-        dynamicFieldInfo: entity.fieldInfo,
-        formData,
-
-        onUpdateField: handleFieldUpdate,
-        onSubmitUpdate: handleUpdate,
-        onSubmitCreate: handleCreate,
-        onSubmitDelete: handleDelete,
-        ...formConfig,
-        ...(formOptions?.size && {size: formOptions.size}),
-        ...(animationPreset && {animationPreset}),
-        ...(density && { density }),
-    }), [
-        entityKey,
-        entity.fieldInfo,
-        formData,
-        handleFieldUpdate,
-        handleUpdate,
-        handleCreate,
-        handleDelete,
-        formConfig,
-        formOptions?.size,
-        animationPreset,
-        density,
-    ]);
 
     if (!entity.entityMetadata) {
         return <FormLoadingTwoColumn/>;
@@ -205,22 +114,19 @@ function SmartEntityContent<TEntity extends EntityKeys>(
         );
     }
 
-    const formClassName = className || "p-2";
+    const completeUnifiedProps = {
+        ...unifiedLayoutProps,
+        activeRecordId,
+        unifiedCrudHandlers: crudHandlers
+    };
 
     return (
-        <div className={formClassName}>
+        <div className={className}>
             {(entity.activeRecord || !entity.primaryKeyMetadata) && (
-                <ArmaniForm {...formProps} />
+                <ArmaniForm {...completeUnifiedProps} />
             )}
         </div>
     );
-}
+};
 
-// Memoize the entire component
-export default React.memo(SmartEntityContent, (prevProps, nextProps) => {
-    return prevProps.entityKey === nextProps.entityKey &&
-        prevProps.className === nextProps.className &&
-        prevProps.density === nextProps.density &&
-        prevProps.animationPreset === nextProps.animationPreset &&
-        JSON.stringify(prevProps.formOptions) === JSON.stringify(nextProps.formOptions);
-});
+export default SmartEntityContent;

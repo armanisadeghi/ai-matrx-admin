@@ -4,6 +4,26 @@ import {ModeComponentProps} from './types';
 import {Button} from "@/components/ui/button";
 import {FormField} from "@/components/ui/form";
 import FieldFactory from "@/app/(authenticated)/tests/crud-operations/components/FieldFactory";
+import {EntityKeys} from "@/types/entityTypes";
+import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
+import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+
+
+interface EntityBaseFieldProps {
+    entityKey: EntityKeys;
+    dynamicFieldInfo: EntityStateField;
+    value: any;
+    onChange: (value: any) => void;
+    density?: 'compact' | 'normal' | 'comfortable';
+    animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful' |  'feedback' | 'error';
+    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    variant?: MatrxVariant;
+    labelPosition?: 'default' | 'left' | 'right' | 'top' | 'bottom';
+    disabled?: boolean;
+    floatingLabel?: boolean;
+    className?: string;
+}
+
 
 export const CreateMode: React.FC<ModeComponentProps> = (
     {
@@ -22,7 +42,7 @@ export const CreateMode: React.FC<ModeComponentProps> = (
                     render={({field: formField}) => (
                         <FieldFactory
                             entityKey={entityKey}
-                            field={field}
+                            dynamicFieldInfo={field}
                             formField={formField}
                             value={form.getFieldValue(field.name)}
                         />

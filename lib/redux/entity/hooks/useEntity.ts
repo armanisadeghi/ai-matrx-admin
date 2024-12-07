@@ -17,7 +17,7 @@ import {Callback, callbackManager} from "@/utils/callbackManager";
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
 import {useEntityToasts} from './useEntityToasts';
-import { FetchRecordsPayload } from '../actions';
+import {FetchRecordsPayload} from '../actions';
 
 const entityDefaultSettings = {
     maxQuickReferenceRecords: 1000
@@ -26,18 +26,13 @@ const entityDefaultSettings = {
 export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const store = useAppStore();
-
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
-
     const [lastError, setLastError] = useState<any>(null);
-
     const selection = useEntitySelection(entityKey);
     const quickReference = useQuickReference(entityKey);
     const validation = useEntityValidation(entityKey);
     const toasts = useEntityToasts(entityKey);
-
-    // const activeRecordsAnyEntity = useActiveRecords();  // NOTE: Not Entity specific.
 
     const safeDispatch = useCallback((action: any) => {
         try {
@@ -72,7 +67,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const displayField = useAppSelector(selectors.selectDisplayField);
     const history = useAppSelector(selectors.selectHistory);
     const selectedRecordsWithKey = useAppSelector(selectors.selectSelectedRecordsWithKey);
-
+    const operationMode = useAppSelector(selectors.selectOperationMode);
 
     const entityState = (state: RootState) => {
         return state.entities[entityKey];
@@ -81,6 +76,21 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const recordByPrimaryKey = useMemo(() => {
         return (primaryKeyValues: Record<string, MatrxRecordId>) =>
             selectors.selectRecordByPrimaryKey(store.getState(), primaryKeyValues);
+    }, [selectors, store]);
+
+    const unsavedRecordById = useMemo(() => {
+        return (matrxRecordId: MatrxRecordId) =>
+            selectors.selectUnsavedRecordById(store.getState(), matrxRecordId);
+    }, [selectors, store]);
+
+    const effectiveRecordById = useMemo(() => {
+        return (matrxRecordId: MatrxRecordId) =>
+            selectors.selectEffectiveRecordById(store.getState(), matrxRecordId);
+    }, [selectors, store]);
+
+    const isTemporaryRecordId = useMemo(() => {
+        return (matrxRecordId: MatrxRecordId) =>
+            selectors.selectIsTemporaryRecordId(store.getState(), matrxRecordId);
     }, [selectors, store]);
 
     const recordsByPrimaryKeys = useMemo(() => {
@@ -121,116 +131,51 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         dispatch(actions.setPageSize(pageSize));
     }, [dispatch, actions]);
 
-
     const fetchRecords = useCallback(
         (page: number, pageSize: number, options?: FetchRecordsPayload['options']) => {
-            dispatch(actions.fetchRecords({ page, pageSize, options }));
+            dispatch(actions.fetchRecords({page, pageSize, options}));
         },
         [dispatch, actions]
     );
 
     const fetchOne = useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
         const callbackId = callback ? callbackManager.register(callback) : null;
-
-        dispatch(
-            actions.fetchOne({
-                matrxRecordId,
-                callbackId,
-            })
-        );
+        dispatch(actions.fetchOne({matrxRecordId, callbackId,}));
     }, [dispatch, actions]);
 
     const fetchOneWithFkIfk = useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
         const callbackId = callback ? callbackManager.register(callback) : null;
-
-        dispatch(
-            actions.fetchOneWithFkIfk({
-                matrxRecordId,
-                callbackId,
-            })
-        );
+        dispatch(actions.fetchOneWithFkIfk({matrxRecordId, callbackId,}));
     }, [dispatch, actions]);
 
     const fetchAll = React.useCallback((callback?: Callback) => {
         const callbackId = callback ? callbackManager.register(callback) : null;
-
-        dispatch(
-            actions.fetchAll({
-                callbackId,
-            })
-        );
+        dispatch(actions.fetchAll({callbackId,}));
     }, [actions, dispatch]);
 
-    const createRecord = React.useCallback((
-        data: Partial<EntityData<TEntity>>,
-        options?: { callback?: Callback; showToast?: boolean }
-    ) => {
+    const createRecord = React.useCallback((tempRecordId: MatrxRecordId, callback?: Callback) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
-            if (result.success) {
-                toasts.handleCreateSuccess({showToast: options?.showToast});
-            } else {
-                toasts.handleError(result.error, 'create', {showToast: options?.showToast});
-            }
-            options?.callback?.(result);
+            callback?.(result);
         };
-
         const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.createRecord({tempRecordId, callbackId}));
+    }, [actions, dispatch]);
 
-        dispatch(
-            actions.createRecord({
-                data,
-                callbackId,
-            })
-        );
-    }, [actions, dispatch, toasts]);
-
-    const updateRecord = React.useCallback((
-        matrxRecordId: MatrxRecordId,
-        data: Partial<EntityData<TEntity>>,
-        options?: { callback?: Callback; showToast?: boolean }
-    ) => {
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
-            if (result.success) {
-                toasts.handleUpdateSuccess({showToast: options?.showToast});
-            } else {
-                toasts.handleError(result.error, 'update', {showToast: options?.showToast});
-            }
-            options?.callback?.(result);
+            callback?.(result);
         };
-
         const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
+    }, [actions, dispatch]);
 
-        dispatch(
-            actions.updateRecord({
-                matrxRecordId,
-                data,
-                callbackId,
-            })
-        );
-    }, [actions, dispatch, toasts]);
-
-    const deleteRecord = React.useCallback((
-        matrxRecordId: MatrxRecordId,
-        options?: { callback?: Callback; showToast?: boolean }
-    ) => {
+    const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
-            if (result.success) {
-                toasts.handleDeleteSuccess({showToast: options?.showToast});
-            } else {
-                toasts.handleError(result.error, 'delete', {showToast: options?.showToast});
-            }
-            options?.callback?.(result);
+            callback?.(result);
         };
-
         const callbackId = callbackManager.register(wrappedCallback);
-
-        dispatch(
-            actions.deleteRecord({
-                matrxRecordId,
-                callbackId,
-            })
-        );
-    }, [actions, dispatch, toasts]);
+        dispatch(actions.deleteRecord({matrxRecordId, callbackId,}));
+    }, [actions, dispatch]);
 
 
     const setFilters = useCallback((payload: FilterPayload) => {
@@ -253,8 +198,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         dispatch(actions.invalidateCache());
     }, [dispatch, actions]);
 
-
-    // Optimistic Update Support
     const optimisticUpdate = useCallback((
         record: Draft<EntityData<TEntity>>,
         rollback?: Draft<EntityData<TEntity>>
@@ -262,7 +205,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         safeDispatch(actions.optimisticUpdate({record, rollback}));
     }, [safeDispatch, actions]);
 
-    // Enhanced Error Handling
     const handleError = useCallback((error: any) => {
         setLastError(error);
         safeDispatch(actions.setError({
@@ -383,5 +325,10 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         currentPageWithRecordId,
 
         fetchOneWithFkIfk,
+
+        operationMode,
+        unsavedRecordById,
+        effectiveRecordById,
+        isTemporaryRecordId,
     };
 };

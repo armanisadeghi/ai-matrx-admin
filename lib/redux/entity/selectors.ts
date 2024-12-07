@@ -48,8 +48,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectRecordsForFetching = (matrxRecordIds: MatrxRecordId[]) => createSelector(
         [selectAllRecords],
         (existingRecords) => {
-            const existingRecordIds = matrxRecordIds.filter((recordId) => !!existingRecords[recordId]);
-            const recordIdsNotInState = matrxRecordIds.filter((recordId) => !existingRecords[recordId]);
+            const filteredRecordIds = matrxRecordIds.filter((recordId) => !recordId.startsWith('new-record-'));
+            const existingRecordIds = filteredRecordIds.filter((recordId) => !!existingRecords[recordId]);
+            const recordIdsNotInState = filteredRecordIds.filter((recordId) => !existingRecords[recordId]);
             const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
 
             return {
@@ -259,6 +260,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+
+
     // === End Selection Selectors ==================================================
 
     const selectRecordIdByRecord = createSelector(
@@ -389,6 +392,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.flags.hasUnsavedChanges
     );
 
+    const selectOperationMode = createSelector(
+        [selectEntity],
+        (entity) => entity.flags.operationMode
+    );
+
     const selectIsValidated = createSelector(
         [selectEntity],
         (entity) => entity.flags.isValidated
@@ -509,6 +517,57 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             )
     );
 
+    const selectChangeComparison = createSelector(
+        [
+            selectActiveRecordWithId,
+            selectFieldInfo,
+            (state) => state,
+        ],
+        (activeRecordData, fieldInfo, state) => {
+            const { matrxRecordId, record: originalRecord } = activeRecordData;
+            const unsavedRecord = matrxRecordId ?
+                                  selectUnsavedRecordById(state, matrxRecordId) : null;
+
+            // Get changed fields
+            const changedFields = new Set(
+                fieldInfo
+                    .filter(field =>
+                        originalRecord &&
+                        unsavedRecord &&
+                        originalRecord[field.name] !== unsavedRecord[field.name]
+                    )
+                    .map(field => field.name)
+            );
+
+            // Create field comparison data
+            const fieldComparisons = fieldInfo.map(field => ({
+                ...field,
+                hasChanged: changedFields.has(field.name),
+                originalValue: originalRecord?.[field.name],
+                newValue: unsavedRecord?.[field.name],
+                displayValue: unsavedRecord?.[field.name] ?? originalRecord?.[field.name]
+            }));
+
+            return {
+                matrxRecordId,
+                originalRecord,
+                unsavedRecord,
+                fieldInfo: fieldComparisons,
+                changedFields,
+                hasChanges: changedFields.size > 0,
+                isNewRecord: !originalRecord && !!unsavedRecord,
+                displayName: unsavedRecord?.[selectDisplayField(state)] ??
+                    originalRecord?.[selectDisplayField(state)]
+            };
+        }
+    );
+
+    const selectPendingOperations = createSelector(
+        [selectEntity],
+        (entity) => entity.pendingOperations
+    );
+
+
 // For table headers
     const selectTableColumns = createSelector(
         [selectFieldInfo],
@@ -612,14 +671,15 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
 // Cache and loading state combined
     const selectDataState = createSelector(
-        [selectLoadingState, selectIsStale, selectHasUnsavedChanges],
-        (loading, isStale, hasUnsavedChanges) => ({
+        [selectLoadingState, selectIsStale, selectHasUnsavedChanges, selectOperationMode],
+        (loading, isStale, hasUnsavedChanges, operationMode) => ({
             isLoading: loading.loading,
             isError: !!loading.error,
             errorMessage: loading.error?.message,
             lastOperation: loading.lastOperation,
             isStale,
             hasUnsavedChanges,
+            operationMode,
             needsAttention: isStale || hasUnsavedChanges || !!loading.error
         })
     );
@@ -642,7 +702,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         })
     );
 
-// History state with additional information
+    // History state with additional information
     const selectHistoryState = createSelector(
         [selectHistory],
         (history) => ({
@@ -721,6 +781,29 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectRecentErrors = createSelector(
         [selectErrorRates],
         (rates) => rates.recent
+    );
+
+
+    const selectUnsavedRecords = createSelector(
+        [selectEntity],
+        (entity) => entity.unsavedRecords
+    );
+
+    const selectUnsavedRecordById = createSelector(
+        [selectUnsavedRecords, (_, recordId: MatrxRecordId) => recordId],
+        (unsavedRecords, recordId) => unsavedRecords[recordId]
+    );
+
+    // Get either unsaved or regular record data based on what exists
+    const selectEffectiveRecordById = createSelector(
+        [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
+        (unsavedRecords, records, recordId) => unsavedRecords[recordId] || records[recordId]
+    );
+
+    // For checking if a record is new (temporary)
+    const selectIsTemporaryRecordId = createSelector(
+        [(_, recordId: MatrxRecordId) => recordId],
+        (recordId) => recordId.startsWith('new-record-')
     );
 
 
@@ -805,6 +888,15 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
         selectFieldByKey,
         selectCurrentPageWithRecordId,
+
+        selectOperationMode,
+        selectUnsavedRecordById,
+        selectEffectiveRecordById,
+        selectIsTemporaryRecordId,
+
+        selectChangeComparison,
+        selectPendingOperations,
+
 
     };
 };

@@ -20,7 +20,6 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
         }
     } = props;
 
-    // Get className if it exists in props
     const className = 'className' in props ? (props as any).className : undefined;
 
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys>(props.layoutState.selectedEntity);

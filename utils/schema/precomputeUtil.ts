@@ -28,7 +28,7 @@ import {
     fieldNameToCanonical
 } from "@/utils/schema/lookupSchema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
-import {createFieldId, EntityNameOfficial, relationships, SchemaEntity, SchemaField} from "@/types/schema";
+import {createFieldId, EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
 
 
 /**
@@ -944,10 +944,21 @@ export function resolveEntityKeyStrict(
     return resolved;
 }
 
+
+export function getEntitySchema<TEntity extends EntityKeys>(
+    entityName: EntityKeys
+): AutomationEntity<TEntity> | null {
+    const globalCache = getGlobalCache();
+    if (!globalCache) return null;
+    const entityKey = resolveEntityKey(entityName) as TEntity;
+    return globalCache.schema[entityKey] || null;
+}
+
+
 /**
  * Get entity schema with optional format conversion
  */
-export function getEntitySchema<
+export function getEntitySchemaFromFormat<
     TEntity extends EntityKeys,
     TFormat extends DataFormat = 'frontend'
 >(
@@ -955,7 +966,7 @@ export function getEntitySchema<
     format: TFormat = 'frontend' as TFormat,
     trace: string[] = ['unknownCaller']
 ): AutomationEntity<TEntity> | null {
-    trace = [...trace, 'getEntitySchema'];
+    trace = [...trace, 'getEntitySchemaFromFormat'];
 
     try {
         // Get cache and validate
@@ -1166,7 +1177,7 @@ export function convertType<
     trace = [...trace, 'convertType'];
 
     try {
-        const entitySchema = getEntitySchema(entityKey, 'frontend', trace);
+        const entitySchema = getEntitySchemaFromFormat(entityKey, 'frontend', trace);
         if (!entitySchema) return value;
 
         const field = entitySchema.entityFields[fieldKey];
@@ -1557,7 +1568,7 @@ export function processDataForInsert<TEntity extends EntityKeys>(
     try {
         // Resolve entity key and get schema
         const entityKey = resolveEntityKey(entityNameVariant) as TEntity;
-        const entitySchema = getEntitySchema(entityKey, 'database', trace);
+        const entitySchema = getEntitySchemaFromFormat(entityKey, 'database', trace);
 
         if (!entitySchema) {
             schemaLogger.logResolution({
@@ -1691,7 +1702,7 @@ export async function getRelationships(
     trace = [...trace, 'getRelationships'];
 
     const entityKey = resolveEntityKey(entityName);
-    const schema = getEntitySchema(entityKey, format, trace);
+    const schema = getEntitySchemaFromFormat(entityKey, format, trace);
     if (!schema) {
         console.error(`Schema not found for table: ${entityName}`);
         return null;
@@ -1967,6 +1978,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
 }
 
 import fs from 'fs';
+import { SchemaField } from "@/lib/redux/schema/concepts/types";
 
 export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
     // Enable all output sections

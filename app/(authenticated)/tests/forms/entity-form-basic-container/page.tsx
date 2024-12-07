@@ -13,6 +13,7 @@ import {
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeaderBasic';
 import { EntityFormState } from '@/types/componentConfigTypes';
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
 // Memoized field transformation function
 const createTransformedFields = (entityFields: any[]): EntityFlexFormField[] => {
@@ -60,18 +61,18 @@ const EntityFormContainer = React.memo((
     }, []);
 
     // Memoized CRUD handlers
-    const handleUpdate = useCallback((data: EntityData<EntityKeys>) => {
+    const handleUpdate = useCallback((matrxRecordId: MatrxRecordId) => {
         if (!matrxRecordId) return;
-        entity.updateRecord(matrxRecordId, data, {showToast: true});
-    }, [entity, matrxRecordId]);
+        entity.updateRecord(matrxRecordId);
+    }, [entity]);
 
-    const handleCreate = useCallback((data: EntityData<EntityKeys>) => {
-        entity.createRecord(data, {showToast: true});
+    const handleCreate = useCallback((tempRecordId: MatrxRecordId) => {
+        entity.createRecord(tempRecordId);
     }, [entity]);
 
     const handleDelete = useCallback(() => {
         if (!matrxRecordId) return;
-        entity.deleteRecord(matrxRecordId, {showToast: true});
+        entity.deleteRecord(matrxRecordId);
     }, [entity, matrxRecordId]);
 
     // Effects

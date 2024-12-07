@@ -270,7 +270,8 @@ export interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
     records: EntityRecordMap<EntityKeys>;   // Data is here
     unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
-    quickReference: QuickReferenceState;  // Quick reference data is here
+    pendingOperations: MatrxRecordId[];  // Array instead of Set
+    quickReference: QuickReferenceState;
     selection: SelectionState;
     pagination: PaginationState;
     loading: LoadingState;
@@ -309,17 +310,20 @@ export interface EntityOperationFlags {
     UPDATE_STATUS?: FlagStatusOptions;
     DELETE_STATUS?: FlagStatusOptions;
     CUSTOM_STATUS?: FlagStatusOptions;
-    FETCH_ONE_WITH_FK_IFK?: FlagStatusOptions;
-    FETCHED_AS_RELATED?: FlagStatusOptions;
+    FETCH_ONE_WITH_FK_IFK_STATUS?: FlagStatusOptions;
+    FETCHED_AS_RELATED_STATUS?: FlagStatusOptions;
 }
+
+export type EntityOperationMode = 'create' | 'update' | 'delete' | 'view' ;
 
 export interface EntityFlags {
     needsRefresh?: boolean;
     isModified?: boolean;
-    hasUnsavedChanges?: boolean;
     isBatchOperationInProgress?: boolean;
     isValidated?: boolean;
     operationFlags: EntityOperationFlags;
+    hasUnsavedChanges?: boolean;
+    operationMode?: EntityOperationMode;
 }
 
 export interface LoadingState {

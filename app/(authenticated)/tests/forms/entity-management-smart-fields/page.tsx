@@ -12,6 +12,7 @@ import {
 } from './configs';
 import {UnifiedLayoutProps} from '@/components/matrx/Entity';
 import { QuickReferenceComponentType } from '@/types/componentConfigTypes';
+import { getEntitySchema } from '@/utils/schema/precomputeUtil';
 
 export const metadata: Metadata = {
     title: 'Entity Smart Layout',
@@ -20,6 +21,8 @@ export const metadata: Metadata = {
 
 export default async function EntityManagementPage() {
     const defaultEntityKey = 'registeredFunction';
+    const entitySchema = getEntitySchema(defaultEntityKey);
+    console.log("EntityManagementPage -> entitySchema", entitySchema);
 
     const customComponentOptions = {
         ...DEFAULT_FORM_COMPONENT_OPTIONS,

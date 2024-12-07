@@ -12,6 +12,7 @@ import {
     SubscriptionConfig,
     EntityMetadata,
     EntityMetrics, SelectionMode,EntityOperations, EntityOperationFlags,
+    EntityOperationMode,
 } from "@/lib/redux/entity/types/stateTypes";
 import {
     clearError,
@@ -30,7 +31,10 @@ import {
     removeSelections,
     setSpecificSelectionMode,
     handleSelectionForDeletedRecord,
-    setNewActiveRecord, setStateIsModified
+    setNewActiveRecord, setStateIsModified,
+    clearUnsavedRecords,
+    generateTemporaryRecordId,
+    removeActiveRecord
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "./utils/entityLogger";
 import {
@@ -308,32 +312,54 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             setSuccess(state, 'FETCH_RECORDS');
                         },
 
-                        createRecord: (
+                        setOperationMode: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<CreateRecordPayload<TEntity>>
+                            action: PayloadAction<EntityOperationMode>
                         ) => {
-                            entityLogger.log('debug', 'createRecord', action.payload);
-                            setLoading(state, 'CREATE');
+                            entityLogger.log('debug', 'setOperationMode', action.payload);
+                            state.flags.operationMode = action.payload;
                         },
 
+                        createRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<CreateRecordPayload>
+                        ) => {
+                            entityLogger.log('info', 'createRecord', action.payload);
+                            const tempRecordId = action.payload.tempRecordId;
+                            const recordData = state.unsavedRecords[tempRecordId];
+
+                            if (!recordData) {
+                                entityLogger.log('error', 'No unsaved data found for temp record', tempRecordId);
+                                return;
+                            }
+                            setLoading(state, 'CREATE');
+                        },
                         createRecordSuccess: (
                             state: EntityState<TEntity>,
                             action: PayloadAction<EntityData<TEntity>>
                         ) => {
-                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                             entityLogger.log('debug', 'createRecordSuccess', action.payload);
-
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                             state.records[recordKey] = action.payload;
+                            clearUnsavedRecords(state);
+                            state.flags.operationMode = 'view';
+                            state.flags.hasUnsavedChanges = false;
                             setNewActiveRecord(state, recordKey);
                             setSuccess(state, 'CREATE');
-                            setStateIsModified(state);
                         },
 
                         updateRecord: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<UpdateRecordPayload<TEntity>>
+                            action: PayloadAction<UpdateRecordPayload>
                         ) => {
                             entityLogger.log('debug', 'updateRecord', action.payload);
+                            const matrxRecordId = action.payload.matrxRecordId;
+                            const unsavedData = state.unsavedRecords[matrxRecordId];
+                            if (!unsavedData) {
+                                entityLogger.log('error', 'No unsaved changes found for record', matrxRecordId);
+                                return;
+                            }
+
                             setLoading(state, 'UPDATE');
                         },
 
@@ -341,13 +367,15 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<EntityData<TEntity>>
                         ) => {
-                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                             entityLogger.log('debug', 'updateRecordSuccess', action.payload);
-
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                             state.records[recordKey] = action.payload;
+                            delete state.unsavedRecords[recordKey];
+                            state.flags.operationMode = 'view';
+                            state.flags.hasUnsavedChanges = false;
+
                             setNewActiveRecord(state, recordKey);
                             setSuccess(state, 'UPDATE');
-                            setStateIsModified(state);
                         },
 
                         optimisticUpdate: (
@@ -376,6 +404,95 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state.flags.hasUnsavedChanges = true;
                         },
 
+                        startRecordCreation: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{ count?: number }>
+                        ) => {
+                            entityLogger.log('debug', 'startRecordCreation', action.payload);
+                            const count = action.payload?.count || 1;
+                            removeActiveRecord(state);
+
+                            for (let i = 0; i < count; i++) {
+                                const tempId = generateTemporaryRecordId(state);
+                                state.unsavedRecords[tempId] = {};
+                                state.selection.selectedRecords.push(tempId);
+                            }
+
+                            state.flags.operationMode = 'create';
+                            state.flags.hasUnsavedChanges = true;
+                            setLoading(state, 'CREATE');
+                        },
+
+                        startRecordUpdate: (
+                            state: EntityState<TEntity>
+                        ) => {
+                            entityLogger.log('debug', 'startRecordUpdate');
+
+                            if (state.selection.selectedRecords.length > 0) {
+                                state.flags.operationMode = 'update';
+                                state.flags.hasUnsavedChanges = false;
+                            }
+                        },
+
+                        updateUnsavedField: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                recordId: MatrxRecordId,
+                                field: string,
+                                value: any
+                            }>
+                        ) => {
+                            const { recordId, field, value } = action.payload;
+                            if (state.unsavedRecords[recordId]?.[field] !== value) {
+                                state.unsavedRecords[recordId] = {
+                                    ...state.unsavedRecords[recordId],
+                                    [field]: value
+                                };
+
+                                if (!state.flags.hasUnsavedChanges) {
+                                    state.flags.hasUnsavedChanges = true;
+                                    state.flags.operationMode = 'update';
+                                }
+                            }
+                        },
+
+                        addPendingOperation: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            if (!state.pendingOperations.includes(action.payload)) {
+                                state.pendingOperations.push(action.payload);
+                            }
+                        },
+                        removePendingOperation: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            state.pendingOperations = state.pendingOperations.filter(
+                                matrxRecordId => matrxRecordId !== action.payload
+                            );
+                        },
+                        clearPendingOperations: (
+                            state: EntityState<TEntity>
+                        ) => {
+                            state.pendingOperations = [];
+                        },
+
+                        cancelOperation: (
+                            state: EntityState<TEntity>
+                        ) => {
+                            entityLogger.log('debug', 'cancelOperation');
+
+                            clearUnsavedRecords(state);
+
+                            state.flags.operationMode = null;
+                            state.flags.hasUnsavedChanges = false;
+                            resetFlag(state, state.flags.operationMode === 'create' ? 'CREATE' : 'UPDATE');
+
+                            if (state.flags.operationMode === 'create') {
+                                removeSelections(state);
+                            }
+                        },
 
                         deleteRecord: (
                             state: EntityState<TEntity>,
@@ -388,10 +505,17 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
                         ) => {
-                            const recordKey: MatrxRecordId = action.payload.matrxRecordId;
+                            const recordKey = action.payload.matrxRecordId;
                             entityLogger.log('debug', 'deleteRecordSuccess', {recordKey});
                             delete state.records[recordKey];
                             handleSelectionForDeletedRecord(state, recordKey);
+
+                            if (state.selection.lastActiveRecord &&
+                                state.records[state.selection.lastActiveRecord]) {
+                                state.selection.activeRecord = state.selection.lastActiveRecord;
+                                state.selection.lastActiveRecord = null;
+                            }
+
                             setSuccess(state, 'DELETE');
                             state.flags.isModified = true;
                         },
@@ -421,16 +545,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             entityLogger.log('debug', 'setSwitchSlectedRecord', action.payload);
 
                             if (state.selection.selectedRecords.includes(action.payload)) {
-                                entityLogger.log('debug', 'Record does not need to be added. already in selection');
-                                entityLogger.log('debug', 'Current Selectted Records', state.selection.selectedRecords);
-                                entityLogger.log('debug', 'Current active record', state.selection.activeRecord);
                                 if (state.selection.activeRecord !== action.payload) {
-                                    entityLogger.log('debug', 'Active Record is not the same as the selected record. Setting active record');
                                     state.selection.activeRecord = action.payload;
                                 }
                                 return;
                             } else {
-                                console.log('Record not in selection. Adding to selection by clearing everything first.');
                                 removeSelections(state);
                                 state.selection.selectedRecords.push(action.payload);
                                 state.selection.selectionMode = 'single';
@@ -442,15 +561,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-                            entityLogger.log('debug', 'addToSelection start', action.payload);
 
                             if (isMatrxRecordId(action.payload)) {
-                                console.log('It is a MatrxRecordId. Adding to selection');
                                 addRecordToSelection(state, action.payload);
                             } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
-                                console.log('It is an EntityData. Getting recordId from the record.');
                                 const matrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                                console.log('MatrxRecordId: ', matrxRecordId);
                                 addRecordToSelection(state, matrxRecordId);
                             } else {
                                 entityLogger.log('error', 'Invalid Record in addToSelection', action.payload);
@@ -461,7 +576,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-                            entityLogger.log('debug', 'removeFromSelection', action.payload);
                             removeRecordFromSelection(state, action.payload);
                         },
 
@@ -469,18 +583,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-                            entityLogger.log('debug', 'setActiveRecord', action.payload);
-                            entityLogger.log('debug', 'Active Record Before', state.selection.activeRecord);
-                            entityLogger.log('debug', 'Last Active Record Before', state.selection.lastActiveRecord);
                             state.selection.lastActiveRecord = state.selection.activeRecord;
-                            entityLogger.log('debug', 'Last Active Record After', state.selection.lastActiveRecord);
                             state.selection.activeRecord = action.payload;
-                            entityLogger.log('debug', 'Active Record After', state.selection.activeRecord);
 
                             if (!state.selection.selectedRecords.includes(action.payload)) {
-                                entityLogger.log('debug', 'Active Record not in selected records. Adding to selection');
                                 addRecordToSelection(state, action.payload);
-                                entityLogger.log('debug', 'Active Record added to selection');
                             }
                         },
 

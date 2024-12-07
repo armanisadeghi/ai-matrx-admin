@@ -16,6 +16,8 @@ import {ArmaniFormProps, EntityFormState} from "@/types/componentConfigTypes";
 import {useDynamicMeasurements} from "@/hooks/ui/useDynamicMeasurements";
 import {cn} from "@/lib/utils";
 import {ScrollArea} from '@/components/ui';
+import SmartCrudButtons
+    from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
 
 // Memoized Configurations
 const DEFAULT_FORM_CONFIG = {
@@ -56,35 +58,6 @@ function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentPro
             [fieldName]: value
         }));
     }, []);
-
-    // Memoize CRUD handlers
-    const handleUpdate = useCallback((data: EntityData<EntityKeys>) => {
-        const matrxRecordId = getMatrxRecordId();
-        if (!matrxRecordId) return;
-
-        entity.updateRecord(
-            matrxRecordId,
-            data,
-            {showToast: true}
-        );
-    }, [entity, getMatrxRecordId]);
-
-    const handleCreate = useCallback((data: EntityData<EntityKeys>) => {
-        entity.createRecord(
-            data,
-            {showToast: true}
-        );
-    }, [entity]);
-
-    const handleDelete = useCallback(() => {
-        const matrxRecordId = getMatrxRecordId();
-        if (!matrxRecordId) return;
-
-        entity.deleteRecord(
-            matrxRecordId,
-            {showToast: true}
-        );
-    }, [entity, getMatrxRecordId]);
 
     // Sync form data with active record
     React.useEffect(() => {

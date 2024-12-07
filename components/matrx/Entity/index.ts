@@ -1,7 +1,7 @@
 // components/matrx/Entity/index.ts
 
 // Import directly used components and configurations
-import SmartEntityContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
+import SmartEntityContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
 import { densityConfig } from "@/config/ui/entity-layout-config";
 import { EnhancedCard } from "@/components/matrx/Entity/prewired-components/layouts/parts/EnhancedCard";

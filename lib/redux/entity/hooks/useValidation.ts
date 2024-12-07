@@ -3,6 +3,7 @@ import * as React from 'react';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { createEntitySelectors } from '@/lib/redux/entity/selectors';
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
 interface ValidationResult {
     isValid: boolean;
@@ -169,6 +170,7 @@ export function useEntityValidation<TEntity extends EntityKeys>(
         console.log('validateForm: Validation result:', { isValid, combinedErrors });
         return isValid;
     }, [validateNativeFields, validateNonNativeFields, entityValidationRules]);
+
 
     const clearValidationErrors = React.useCallback(() => {
         console.log('clearValidationErrors: Clearing all validation errors.');

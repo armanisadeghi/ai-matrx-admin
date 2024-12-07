@@ -10,7 +10,7 @@ import {
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import React from "react";
-import {EntityError} from "@/lib/redux/entity/types/stateTypes";
+import {EntityError, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
 export interface FormComponentOptions {
     entitySelectionComponent?: any;
@@ -18,17 +18,23 @@ export interface FormComponentOptions {
     formLayoutType?: PageLayoutOptions;
 }
 
+export interface FormFieldFiltering {
+    excludeFields?: string[];    // Fields to hide
+    includeFields?: string[];    // Only show these fields (takes precedence over exclude)
+}
+
 export interface FormStyleOptions {
     splitRatio?: number;
     formLayout?: FormLayoutOptions;
     formColumns?: FormColumnsOptions;
     formDirection?: FormDirectionOptions;
-    formEnableSearch?: boolean;
     formIsSinglePage?: boolean;
     formIsFullPage?: boolean;
     floatingLabel?: boolean;
     showLabel?: boolean;
     textSize?: TextSizeOptions;
+    formEnableSearch?: boolean;
+    fieldFiltering?: FormFieldFiltering;
 }
 
 export interface InlineEntityOptions {
@@ -94,6 +100,22 @@ export interface SelectComponentProps {
     selectContentPosition?: 'default' | 'sideBySide' | 'popper' | 'item-aligned';
 }
 
+export interface UnifiedCrudHandlers {
+    handleCreate?: (tempRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
+    handleUpdate?: (options?: { showToast?: boolean }) => void;
+    handleDelete?: (options?: { showToast?: boolean }) => void;
+    handleFieldUpdate?: (fieldName: string, value: any) => void;
+    handleFetchOne?: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
+    handleFetchOneWithFkIfk?: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
+}
+export interface UnifiedStepHandlers {
+    currentStep?: number;
+    setCurrentStep?: (step: number) => void;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
+}
+
+
 export interface UnifiedLayoutProps {
     layoutState: UnifiedLayoutState;
     handlers: UnifiedLayoutHandlers;
@@ -103,6 +125,7 @@ export interface UnifiedLayoutProps {
     QuickReferenceComponent?: React.ReactNode;
     resizableLayoutOptions?: ResizableThreePaneLayoutProps;
     selectComponentOptions?: SelectComponentProps;
+    unifiedCrudHandlers?: UnifiedCrudHandlers;
     className?: string;
 }
 

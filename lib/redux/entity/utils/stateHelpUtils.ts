@@ -144,16 +144,67 @@ export function getRecordIdByRecord<TEntity extends EntityKeys>(
     return entry ? (entry[0] as MatrxRecordId) : null;
 }
 
+// Unsaved data management ========================================================
+
+
+export const addToUnsavedRecords = (state, recordKey: MatrxRecordId) => {
+    if (!state.records[recordKey]) {
+        utilsLogger.log('warn', 'Attempted to add non-existent record to unsaved', { recordKey });
+        return;
+    }
+
+    // Only copy if it doesn't exist in unsaved records
+    if (!state.unsavedRecords[recordKey]) {
+        state.unsavedRecords[recordKey] = { ...state.records[recordKey] };
+        utilsLogger.log('debug', 'Added record to unsaved', { recordKey });
+    }
+};
+
+export const removeFromUnsavedRecords = (state, recordKey: MatrxRecordId) => {
+    if (state.unsavedRecords[recordKey]) {
+        delete state.unsavedRecords[recordKey];
+        utilsLogger.log('debug', 'Removed record from unsaved', { recordKey });
+    }
+};
+
+export const clearUnsavedRecords = (state) => {
+    state.unsavedRecords = {};
+    utilsLogger.log('debug', 'Cleared all unsaved records');
+};
+
+export const generateTemporaryRecordId = (state) => {
+    const prefix = 'new-record-';
+    const existingTempIds = Object.keys(state.unsavedRecords)
+        .filter(id => id.startsWith(prefix))
+        .map(id => parseInt(id.replace(prefix, '')))
+        .sort((a, b) => b - a);
+
+    const nextNumber = (existingTempIds[0] || 0) + 1;
+    return `${prefix}${nextNumber}`;
+};
+
+export const updateUnsavedRecord = (state, recordKey: MatrxRecordId, changes: Partial<EntityData<EntityKeys>>) => {
+    if (state.unsavedRecords[recordKey]) {
+        state.unsavedRecords[recordKey] = {
+            ...state.unsavedRecords[recordKey],
+            ...changes
+        };
+        state.flags.hasUnsavedChanges = true;
+        if (!state.flags.operationMode) {
+            state.flags.operationMode = 'update';
+        }
+        utilsLogger.log('debug', 'Updated unsaved record', { recordKey, changes });
+    }
+};
+
+// Selection management ========================================================
 
 export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
     console.log('addRecordToSelection called', {recordKey});
 
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
-        utilsLogger.log('debug', 'Added new record to selection. Current selection:', {
-            newRecord: recordKey,
-            allSelected: state.selection.selectedRecords
-        });
+        addToUnsavedRecords(state, recordKey);  // Add this line
         updateSelectionMode(state, recordKey);
     } else {
         utilsLogger.log('debug', 'Record already in selection, no change:', {
@@ -164,15 +215,10 @@ export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
 };
 
 export const removeRecordFromSelection = (state, recordKey: MatrxRecordId) => {
-    const wasInSelection = state.selection.selectedRecords.includes(recordKey);
     state.selection.selectedRecords = state.selection.selectedRecords.filter(
         key => key !== recordKey
     );
-    utilsLogger.log('debug', 'Removed record from selection. New selection:', {
-        removedRecord: recordKey,
-        wasActuallyRemoved: wasInSelection,
-        newSelection: state.selection.selectedRecords
-    });
+    removeFromUnsavedRecords(state, recordKey);
 
     if (state.selection.lastSelected === recordKey) {
         const newLastSelected = state.selection.selectedRecords[state.selection.selectedRecords.length - 1];
@@ -298,16 +344,10 @@ export const toggleSelectionMode = (state) => {
 };
 
 export const removeSelections = (state) => {
-    console.log('removeSelections called');
-    console.log('- Current selection:', state.selection.selectedRecords);
-    console.log('- Current active record:', state.selection.activeRecord);
-    console.log('- Current last selected:', state.selection.lastSelected);
-    console.log('- Current last active record:', state.selection.lastActiveRecord);
-
-
     if (state.selection.selectedRecords.length > 0) {
         state.selection.lastSelected = state.selection.selectedRecords[0]
     }
+    clearUnsavedRecords(state);
     state.selection.selectedRecords = [];
     state.selection.selectionMode = 'none';
     removeActiveRecord(state);
@@ -321,6 +361,7 @@ export const handleSelectionForDeletedRecord = (state, recordKey) => {
         removeActiveRecord(state);
         console.log('handleSelectionForDeletedRecord called to delete', {recordKey});
     }
+    removeFromUnsavedRecords(state, recordKey);
 }
 
 export const setStateIsModified = (state) => {

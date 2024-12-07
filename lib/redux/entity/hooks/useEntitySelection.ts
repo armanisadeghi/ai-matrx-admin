@@ -115,12 +115,14 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     //getOrFetchSelectedRecordsPayload
 
     React.useEffect(() => {
+        const onlyNewRecords = selectedRecordIds.every(recordId => recordId.startsWith('new-record-'));
+        if (onlyNewRecords) {
+            return;
+        }
         if (
             selectedRecordIds.length > 0 &&
             !areArraysEqual(lastProcessedIds, selectedRecordIds)
         ) {
-            console.log('Use Effect in useEntitySelection Triggered with: ', selectedRecordIds);
-
             setLastProcessedIds(selectedRecordIds);
 
             const payload: getOrFetchSelectedRecordsPayload = {
@@ -131,6 +133,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
             dispatch(actions.getOrFetchSelectedRecords(payload));
         }
     }, [selectedRecordIds, lastProcessedIds, fetchMode, dispatch, actions]);
+
 
     const areArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) =>
         a.length === b.length && a.every((val, idx) => val === b[idx]);

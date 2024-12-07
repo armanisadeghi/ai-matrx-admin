@@ -10,13 +10,11 @@ import {
     LoadingState,
     MatrxRecordId,
     EntityError,
-    EntityOperations
+    EntityOperations, EntityFlags, EntityOperationMode
 } from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from "@/utils/callbackManager";
 import { toast } from '@/components/ui';
 import { useEntityValidation } from "@/lib/redux/entity/hooks/useValidation";
-
-type FormMode = 'view' | 'edit' | 'create';
 
 interface UseEntityFormOptions {
     allowCreate?: boolean;
@@ -39,7 +37,7 @@ interface UseEntityFormOptions {
 
 export interface UseEntityFormState<TEntity extends EntityKeys> {
     // State
-    viewMode: FormMode;
+    operationMode: EntityOperationMode;
     form: UseFormReturn<Record<string, any>>;
     validationErrors: Record<string, string>;
     loadingState: LoadingState;
@@ -69,13 +67,13 @@ export interface UseEntityFormState<TEntity extends EntityKeys> {
     handleNew: () => void;
     handleEdit: () => void;
     handleCancel: () => void;
-    handleSave: () => Promise<void>;
+    handleSave: (tempRecordId: MatrxRecordId) => Promise<void>;
     handleDelete: () => void;
     handleFieldChange: (fieldName: string, newValue: any) => Promise<void>;
 
     // Record Operations
-    createRecord: (data: Partial<EntityData<TEntity>>, callbacks?: Callback) => void;
-    updateRecord: (matrxRecordId: MatrxRecordId, data: Partial<EntityData<TEntity>>, callbacks?: Callback) => void;
+    createRecord: (tempRecordId: MatrxRecordId, callbacks?: Callback) => void;
+    updateRecord: (matrxRecordId: MatrxRecordId, callbacks?: Callback) => void;
     deleteRecord: (matrxRecordId: MatrxRecordId, callbacks?: Callback) => void;
 
     // Utilities
@@ -100,7 +98,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
 
     // Local state
-    const [viewMode, setViewMode] = React.useState<FormMode>('view');
+    const operationMode = useAppSelector(selectors.selectOperationMode);
 
     // Selectors
     const entityDisplayName = useAppSelector(selectors.selectEntityDisplayName);
@@ -132,10 +130,10 @@ export function useEntityForm<TEntity extends EntityKeys>(
 
     // Sync form with record changes
     React.useEffect(() => {
-        if (activeRecord && viewMode === 'view') {
+        if (activeRecord && operationMode === 'view') {
             form.reset(activeRecord as Record<MatrxRecordId, any>);
         }
-    }, [activeRecord, form, viewMode]);
+    }, [activeRecord, form, operationMode]);
 
     // Validation integration
     const validation = useEntityValidation(entityKey);
@@ -143,33 +141,33 @@ export function useEntityForm<TEntity extends EntityKeys>(
 
     // Action handlers
     const handleNew = React.useCallback(() => {
-        setViewMode('create');
+        dispatch(actions.setOperationMode('create'));
         form.reset(defaultValues);
         clearValidationErrors();
     }, [defaultValues, form, clearValidationErrors]);
 
     const handleEdit = React.useCallback(() => {
         if (activeRecord) {
-            setViewMode('edit');
+            dispatch(actions.setOperationMode('update'));
             form.reset(activeRecord);
             clearValidationErrors();
         }
     }, [activeRecord, form, clearValidationErrors]);
 
     const handleCancel = React.useCallback(() => {
-        setViewMode('view');
+        dispatch(actions.setOperationMode('view'));
         form.reset(activeRecord ?? {});
         clearValidationErrors();
     }, [form, activeRecord, clearValidationErrors]);
 
     const handleFieldChange = React.useCallback(async (fieldName: string, newValue: any) => {
-        if (viewMode === 'view') return;
+        if (operationMode === 'view') return;
 
         await validateField(fieldName, newValue);
         form.setValue(fieldName as Path<Record<string, any>>, newValue);
-    }, [viewMode, validateField, form]);
+    }, [operationMode, validateField, form]);
 
-    const handleSave = React.useCallback(async () => {
+    const handleSave = React.useCallback(async (tempRecordId: MatrxRecordId) => {  //TODO: This should already know what record we're working with. (I think it used to)
         setIsSubmitting(true);
         setHasErrorsInternal(false);
 
@@ -189,9 +187,9 @@ export function useEntityForm<TEntity extends EntityKeys>(
             const callback: Callback = (result) => {
                 if (result.success) {
                     options.onSuccess?.(
-                        `Record ${viewMode === 'create' ? 'created' : 'updated'} successfully`
+                        `Record ${operationMode === 'create' ? 'created' : 'updated'} successfully`
                     );
-                    setViewMode('view');
+                    dispatch(actions.setOperationMode('view'));
                     clearValidationErrors();
                 } else {
                     setHasErrorsInternal(true);
@@ -202,15 +200,14 @@ export function useEntityForm<TEntity extends EntityKeys>(
                 }
             };
 
-            if (viewMode === 'create') {
+            if (operationMode === 'create') {
                 dispatch(actions.createRecord({
-                    data: values,
+                    tempRecordId,
                     callbackId: callbackManager.register(callback)
                 }));
-            } else if (viewMode === 'edit' && matrxRecordId) {
+            } else if (operationMode === 'update' && matrxRecordId) {
                 dispatch(actions.updateRecord({
                     matrxRecordId,
-                    data: values,
                     callbackId: callbackManager.register(callback)
                 }));
             }
@@ -223,7 +220,7 @@ export function useEntityForm<TEntity extends EntityKeys>(
         } finally {
             setIsSubmitting(false);
         }
-    }, [viewMode, form, validateForm, dispatch, actions, matrxRecordId, options]);
+    }, [operationMode, form, validateForm, dispatch, actions, matrxRecordId, options]);
 
     const handleDelete = React.useCallback(() => {
         if (!matrxRecordId) return;
@@ -252,31 +249,40 @@ export function useEntityForm<TEntity extends EntityKeys>(
     // Utility functions
     const isFieldReadOnly = React.useCallback((fieldName: string) => {
         const field = fieldInfo.find(f => f.name === fieldName);
-        return viewMode === 'view' || (field?.isPrimaryKey ?? false);
-    }, [viewMode, fieldInfo]);
+        return operationMode === 'view' || (field?.isPrimaryKey ?? false);
+    }, [operationMode, fieldInfo]);
 
     const getFieldValue = React.useCallback((fieldName: string) => {
         return form.getValues(fieldName as Path<Record<string, any>>) ?? '';
     }, [form]);
 
-    const createRecord = React.useCallback((data: Partial<EntityData<TEntity>>, callback?: Callback) => {
-        const callbackId = callback ? callbackManager.register(callback) : null;
-        dispatch(actions.createRecord({ data, callbackId }));
+    const createRecord = React.useCallback((tempRecordId: MatrxRecordId, callback?: Callback) => {
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            callback?.(result);
+        };
+        const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.createRecord({tempRecordId, callbackId,}));
     }, [actions, dispatch]);
 
-    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, data: Partial<EntityData<TEntity>>, callback?: Callback) => {
-        const callbackId = callback ? callbackManager.register(callback) : null;
-        dispatch(actions.updateRecord({ matrxRecordId, data, callbackId }));
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            callback?.(result);
+        };
+        const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
     }, [actions, dispatch]);
 
     const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
-        const callbackId = callback ? callbackManager.register(callback) : null;
-        dispatch(actions.deleteRecord({ matrxRecordId, callbackId }));
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            callback?.(result);
+        };
+        const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.deleteRecord({matrxRecordId, callbackId,}));
     }, [actions, dispatch]);
 
     return {
         // State
-        viewMode,
+        operationMode,
         form,
         validationErrors,
         loadingState,

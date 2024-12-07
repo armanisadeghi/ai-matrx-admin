@@ -19,6 +19,7 @@ import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import { getEntitySlice } from '../entitySlice';
 import { FetchMode } from '../actions';
+import { useEntityCrud } from './useEntityCrud';
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -45,13 +46,12 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
 
     // Record Operations
     createRecord: (
-        data: Partial<EntityData<TEntity>>,
+        tempId: MatrxRecordId,
         callbacks?: Callback,
     ) => void;
 
     updateRecord: (
         matrxRecordId: MatrxRecordId,
-        data: Partial<EntityData<TEntity>>,
         callbacks?: Callback,
     ) => void;
 
@@ -75,6 +75,7 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
 
     fetchMode: FetchMode;
     setFetchMode: React.Dispatch<React.SetStateAction<FetchMode>>;
+    handleRecordSelectWithRelation: (recordKey: MatrxRecordId) => void;
 }
 
 export function useQuickReference<TEntity extends EntityKeys>(
@@ -117,38 +118,28 @@ export function useQuickReference<TEntity extends EntityKeys>(
         }
     }, [entityKey]);
 
-    const createRecord = React.useCallback((data: Partial<EntityData<TEntity>>, callback?: Callback) => {
-        const callbackId = callback ? callbackManager.register(callback) : null;
-
-        dispatch(
-            actions.createRecord({
-                data,
-                callbackId,
-            })
-        );
+    const createRecord = React.useCallback((tempRecordId: MatrxRecordId, callback?: Callback) => {
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            callback?.(result);
+        };
+        const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.createRecord({tempRecordId, callbackId}));
     }, [actions, dispatch]);
 
-    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, data: Partial<EntityData<TEntity>>, callback?: Callback) => {
-        const callbackId = callback ? callbackManager.register(callback) : null;
-
-        dispatch(
-            actions.updateRecord({
-                matrxRecordId,
-                data,
-                callbackId,
-            })
-        );
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            callback?.(result);
+        };
+        const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
     }, [actions, dispatch]);
 
     const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
-        const callbackId = callback ? callbackManager.register(callback) : null;
-
-        dispatch(
-            actions.deleteRecord({
-                matrxRecordId,
-                callbackId,
-            })
-        );
+        const wrappedCallback = (result: { success: boolean; error?: any }) => {
+            callback?.(result);
+        };
+        const callbackId = callbackManager.register(wrappedCallback);
+        dispatch(actions.deleteRecord({matrxRecordId, callbackId,}));
     }, [actions, dispatch]);
 
     const handleAddToSelection = React.useCallback((recordKey: MatrxRecordId) => {
@@ -248,6 +239,8 @@ export function useQuickReference<TEntity extends EntityKeys>(
 
         flexFormField,
         getCardClassName,
+
+        handleRecordSelectWithRelation,
 
     };
 }

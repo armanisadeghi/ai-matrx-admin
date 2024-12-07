@@ -26,7 +26,6 @@ const nextConfig = {
                 ],
             },
             {
-                // Add correct MIME types for WASM files
                 source: "/:path*.wasm",
                 headers: [
                     {
@@ -36,7 +35,6 @@ const nextConfig = {
                 ],
             },
             {
-                // Add correct MIME types for MJS files
                 source: "/:path*.mjs",
                 headers: [
                     {
@@ -46,7 +44,6 @@ const nextConfig = {
                 ],
             },
             {
-                // Add correct MIME types for ONNX files
                 source: "/:path*.onnx",
                 headers: [
                     {
@@ -55,10 +52,23 @@ const nextConfig = {
                     },
                 ],
             },
+            {
+                source: '/:all*(svg|jpg|png)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    }
+                ],
+            },
         ];
     },
     images: {
         remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: '**',
+            },
             {
                 protocol: 'https',
                 hostname: 'unsplash.com',
@@ -94,6 +104,75 @@ const nextConfig = {
                 hostname: 'avatars.githubusercontent.com',
                 port: '',
                 pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: '**.bbc.co.uk',
+            },
+            {
+                protocol: 'https',
+                hostname: 'ichef.bbci.co.uk',
+            },
+            {
+                protocol: 'https',
+                hostname: 'static.foxnews.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'imageio.forbes.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'image.cnbcfm.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'www.washingtonpost.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'img.global.news.samsung.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'media.cnn.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'dims.apnews.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdn.vox-cdn.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'images.axios.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'regmedia.co.uk',
+            },
+            {
+                protocol: 'https',
+                hostname: 'pyxis.nymag.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'media.formula1.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdn.mos.cms.futurecdn.net',
+            },
+            {
+                protocol: 'https',
+                hostname: 'static.toiimg.com',
+            },
+            // Catch-all pattern for s3 and similar domains
+            {
+                protocol: 'https',
+                hostname: '**.s3.amazonaws.com',
             },
         ],
     },

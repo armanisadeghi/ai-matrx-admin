@@ -39,7 +39,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import {OperationCallback} from '@/lib/redux/entity/types/stateTypes';
+import {MatrxRecordId, OperationCallback} from '@/lib/redux/entity/types/stateTypes';
 import {Callback} from "@/utils/callbackManager";
 
 interface EntityTestViewProps<TEntity extends EntityKeys> {
@@ -102,7 +102,7 @@ export function EntityTestView<TEntity extends EntityKeys>(
         setMode('create');
     };
 
-    const handleSave = () => {
+    const handleSave = (tempRecordId: MatrxRecordId = null) => {
         const callback: Callback<{ success: boolean; error?: any }> = (result) => {
             if (result.success) {
                 if (mode === 'create') {
@@ -128,12 +128,12 @@ export function EntityTestView<TEntity extends EntityKeys>(
             }
         };
 
-        if (mode === 'create') {
-            createRecord(formData, callback);
+        if (mode === 'create' && tempRecordId) {
+            createRecord(tempRecordId, callback);
         } else if (mode === 'edit' && activeRecord) {
             const recordId = getRecordIdByRecord(activeRecord);
             if (!recordId) return;
-            updateRecord(recordId, formData, callback);
+            updateRecord(recordId, callback);
         }
     };
 

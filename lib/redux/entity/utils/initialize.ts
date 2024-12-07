@@ -15,7 +15,23 @@ export const ENTITY_DEFAULTS = {
     },
     SUBSCRIPTION: {
         DEBOUNCE_MS: 1000
-    }
+    },
+    OPERATION_FLAGS: {
+        FETCH_STATUS: 'IDLE',
+        FETCH_ONE_STATUS: 'IDLE',
+        FETCH_QUICK_REFERENCE_STATUS: 'IDLE',
+        FETCH_RECORDS_STATUS: 'IDLE',
+        FETCH_ALL_STATUS: 'IDLE',
+        FETCH_PAGINATED_STATUS: 'IDLE',
+        CREATE_STATUS: 'IDLE',
+        UPDATE_STATUS: 'IDLE',
+        DELETE_STATUS: 'IDLE',
+        CUSTOM_STATUS: 'IDLE',
+        FETCH_ONE_WITH_FK_IFK_STATUS: 'IDLE',
+        FETCHED_AS_RELATED_STATUS: 'IDLE',
+
+    },
+    OPERATION_MODE : 'view'
 } as const;
 
 
@@ -149,6 +165,8 @@ export function createInitialState<TEntity extends EntityKeys>(
     return {
         records: {},
         entityMetadata: metadata,
+        unsavedRecords: {},
+        pendingOperations: [],
         quickReference: {
             records: [],
             lastUpdated: getCurrentISODate(),
@@ -204,18 +222,8 @@ export function createInitialState<TEntity extends EntityKeys>(
             isModified: false,
             hasUnsavedChanges: false,
             isBatchOperationInProgress: false,
-            operationFlags: {
-                FETCH_STATUS: 'IDLE',
-                FETCH_ONE_STATUS: 'IDLE',
-                FETCH_QUICK_REFERENCE_STATUS: 'IDLE',
-                FETCH_RECORDS_STATUS: 'IDLE',
-                FETCH_ALL_STATUS: 'IDLE',
-                FETCH_PAGINATED_STATUS: 'IDLE',
-                CREATE_STATUS: 'IDLE',
-                UPDATE_STATUS: 'IDLE',
-                DELETE_STATUS: 'IDLE',
-                CUSTOM_STATUS: 'IDLE',
-            }
+            operationMode: ENTITY_DEFAULTS.OPERATION_MODE,
+            operationFlags: ENTITY_DEFAULTS.OPERATION_FLAGS,
         },
         metrics: initialMetricsState
     };

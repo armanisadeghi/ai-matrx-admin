@@ -4,8 +4,9 @@ import { HTMLMotionProps } from "framer-motion";
 import React, { MutableRefObject } from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {EntityKeys} from "@/types/entityTypes";
-import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
+import {EntityStateField, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
+import { UnifiedCrudHandlers } from "@/components/matrx/Entity";
 
 
 interface FlexAnimatedFormProps {
@@ -192,10 +193,11 @@ export interface EntityFormState {
 
 export interface ArmaniFormProps {
     entityKey: EntityKeys;
+    matrxRecordId: MatrxRecordId;
     dynamicFieldInfo: EntityStateField[];
     formData: EntityFormState;
     onUpdateField: (name: string, value: any) => void;
-    onSubmit?: () => void;
+    unifiedCrudHandlers?: UnifiedCrudHandlers;
     onSubmitUpdate?: (data: FormState) => void;
     onSubmitCreate?: (data: FormState) => void;
     onSubmitDelete?: () => void;

@@ -1,3 +1,4 @@
+/*
 // lib/redux/entity/useEntity.ts
 
 import React, {useMemo, useCallback, useState, useEffect} from 'react';
@@ -576,3 +577,4 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         handleError,
     };
 };
+*/
