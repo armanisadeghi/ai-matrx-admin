@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import {DateRange} from "react-day-picker";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import {Button} from '../matrx/ArmaniForm/field-components/EntityButton';
+import EntityButton from '../matrx/ArmaniForm/field-components/EntityButton';
 
 // Types
 interface PresetOption {

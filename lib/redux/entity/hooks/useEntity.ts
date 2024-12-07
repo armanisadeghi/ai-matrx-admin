@@ -214,6 +214,10 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         }));
     }, [safeDispatch, actions]);
 
+    const setSelection = React.useCallback((records: any[], mode: 'single') => {
+        console.log('setSelection not yet implemented');
+    }, []);
+
 
     return {
         entityDisplayName,
@@ -330,5 +334,7 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         unsavedRecordById,
         effectiveRecordById,
         isTemporaryRecordId,
+
+        setSelection, // TODO: This is fake and temporary just to avoid errors.
     };
 };

@@ -50,7 +50,7 @@ const EntityTester: React.FC = () => {
         }
     }, [selectedEntity, entity.entityMetadata, entity.fetchRecords]);
 
-    const handleRecordSelect = useCallback((record: EntityData<typeof selectedEntity>) => {
+    const handleRecordSelect = useCallback((record: EntityData<EntityKeys>) => {
         if (operationMode === 'update') {
             setFormData(record);
         }
@@ -61,7 +61,7 @@ const EntityTester: React.FC = () => {
 
     const handleCreateRecord = useCallback(async () => {
         try {
-            await entity.createRecord(formData as EntityData<typeof selectedEntity>);
+            entity.createRecord(formData as EntityData<EntityKeys>);
             toast({
                 title: "Success",
                 description: "Record created successfully",
@@ -127,7 +127,7 @@ const EntityTester: React.FC = () => {
                 return acc;
             }, {} as Record<string, MatrxRecordId>);
 
-            await entity.deleteRecord(primaryKeyValues);
+            entity.deleteRecord(entity.activeRecordId);
             toast({
                 title: "Success",
                 description: "Record deleted successfully",
@@ -141,12 +141,12 @@ const EntityTester: React.FC = () => {
                 variant: "destructive",
             });
         }
-    }, [entity, toast]);
+    }, [entity, toast, entity.primaryKeyMetadata.fields]);
 
     const isRecordSelected = useCallback((record: EntityData<typeof selectedEntity>) => {
         const recordKey = createRecordKey(entity.primaryKeyMetadata, record);
         return entity.selectedRecords.includes(recordKey);
-    }, [entity.primaryKeyMetadata, entity.selectedRecords]);
+    }, [entity.primaryKeyMetadata, entity.selectedRecords, selectedEntity]);
 
     return (
         <div className="h-full flex flex-col">

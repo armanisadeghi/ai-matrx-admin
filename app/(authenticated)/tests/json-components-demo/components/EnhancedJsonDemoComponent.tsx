@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Json from 'components/ui/JsonComponents';
+import {MatrxJson} from 'components/ui/JsonComponents';
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from '../sampleData';
 import TextDivider from "@/components/matrx/TextDivider";
 

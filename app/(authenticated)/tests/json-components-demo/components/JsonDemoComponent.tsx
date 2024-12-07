@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from '../sampleData';
 import TextDivider from "@/components/matrx/TextDivider";
 import {JsonViewer} from "@/components/ui";
-import Json, {FullJsonViewer} from "components/ui/JsonComponents";
+import {MatrxJson} , {FullJsonViewer} from "components/ui/JsonComponents";
 import MiniJsonViewer from "@/app/(authenticated)/tests/json-components-demo/components/MiniJsonViewer";
 import MiniFullEditableJsonViewer, {
     MiniEditableJsonViewer
