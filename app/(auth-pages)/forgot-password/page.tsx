@@ -8,6 +8,12 @@ import Link from "next/link";
 import {SubmitButton} from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
+type PageProps = {
+    searchParams: {
+        success: string;
+    }
+}
+
 export default function ForgotPassword(
     {
         searchParams,

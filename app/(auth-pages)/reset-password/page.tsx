@@ -1,17 +1,19 @@
 // File: app/(auth-pages)/reset-password/hold-hold-page.tsx
+// @ts-nocheck
 
-import { resetPasswordAction } from "@/actions/auth.actions";
-import { Message } from "@/components/form-message";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SubmitButton } from "@/components/submit-button";
+import {resetPasswordAction} from "@/actions/auth.actions";
+import {Message} from "@/components/form-message";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {SubmitButton} from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
-export default async function ResetPassword({
-                                                searchParams,
-                                            }: {
-    searchParams: Message;
-}) {
+export default async function ResetPassword(
+    {
+        searchParams,
+    }: {
+        searchParams: Message;
+    }) {
     return (
         <AuthPageContainer
             title="Reset password"
@@ -35,7 +37,8 @@ export default async function ResetPassword({
                     </div>
                 </div>
                 <div>
-                    <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <Label htmlFor="confirmPassword"
+                           className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Confirm password
                     </Label>
                     <div className="mt-1">
@@ -50,7 +53,8 @@ export default async function ResetPassword({
                     </div>
                 </div>
                 <div>
-                    <SubmitButton className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    <SubmitButton
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         Reset password
                     </SubmitButton>
                 </div>

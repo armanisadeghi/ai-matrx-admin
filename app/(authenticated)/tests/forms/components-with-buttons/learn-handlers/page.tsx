@@ -1,4 +1,4 @@
-import MainPage from './components/MainPage';
+import MainPage from '@/app/(authenticated)/tests/forms/components-with-buttons/learn-handlers/components/Mainpage';
 import React from "react";
 
 const Page = () => {

@@ -1,8 +1,10 @@
 // File: lib/ai/adapters/multiApiBaseAdapter.ts
 
 import Anthropic from "@anthropic-ai/sdk";
+import { MessageParam } from "@anthropic-ai/sdk/resources/messages.mjs";
 import OpenAI from 'openai';
-import MessageParam = Anthropic.MessageParam;
+
+
 
 type SupportedAPI = 'anthropic' | 'openai';
 

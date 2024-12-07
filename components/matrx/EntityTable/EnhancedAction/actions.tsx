@@ -1,5 +1,6 @@
 // components/matrx/EntityTable/enhanced/actions.tsx
 
+import React from "react";
 import {ReactNode} from 'react';
 import {EntityKeys, EntityData, AutomationEntity} from '@/types/entityTypes';
 import {Edit, Eye} from "lucide-react";

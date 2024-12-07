@@ -10,6 +10,10 @@ const nextConfig = {
             bodySizeLimit: '3mb',
         },
     },
+    typescript: {
+        ignoreBuildErrors: false,
+    },
+    mdxRs: false,
     headers() {
         return [
             {

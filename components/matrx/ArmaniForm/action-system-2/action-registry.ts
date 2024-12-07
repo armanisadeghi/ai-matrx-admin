@@ -88,75 +88,77 @@ export const ACTION_REGISTRY = {
                 }
             },
 
-    entityQuickSidebar: {
-        type: 'hello',
-        icon: ListCheck,
-        label: 'Select Record',
-        presentation: PRESENTATION_WRAPPERS.SHEET,
-        triggerType: TRIGGER_TYPES.ICON,
-        component: QuickReferenceSidebar,
-        directComponentProps: {
-            onCreateEntityClick: () => console.log('Create New Entity Button Clicked...',),
-            showCreateNewButton: true,
-            className: '',
-            density: 'normal',
-            animationPreset: 'smooth',
-        },
-        containerProps: {
-            title: 'Choose an item from the list',
-            side: 'right',
-            className: 'min-w-[400px]'
-        },
-        actionType: COMMAND_CATEGORIES.DIRECT,
-        actionConfig: {
-            actionType: 'SEARCH_RECORDS',
-            payload: {}
-        },
-        props: {
-            onChange: (inputValue) => console.log('Search records', inputValue)
-        }
-    },
+            entityQuickSidebar: {
+                type: 'hello',
+                icon: ListCheck,
+                label: 'Select Record',
+                presentation: PRESENTATION_WRAPPERS.SHEET,
+                triggerType: TRIGGER_TYPES.ICON,
+                component: QuickReferenceSidebar,
+                directComponentProps: {
+                    onCreateEntityClick: () => console.log('Create New Entity Button Clicked...',),
+                    showCreateNewButton: true,
+                    className: '',
+                    density: 'normal',
+                    animationPreset: 'smooth',
+                },
+                containerProps: {
+                    title: 'Choose an item from the list',
+                    side: 'right',
+                    className: 'min-w-[400px]'
+                },
+                actionType: COMMAND_CATEGORIES.DIRECT,
+                actionConfig: {
+                    actionType: 'SEARCH_RECORDS',
+                    payload: {}
+                },
+                props: {
+                    onChange: (inputValue) => console.log('Search records', inputValue)
+                }
+            },
 
-    recordSelectorAction: {
-        type: 'hi',
-        icon: Link,
-        label: 'Select Record',
-        presentation: PRESENTATION_WRAPPERS.SHEET,
-        triggerType: TRIGGER_TYPES.BUTTON,
-        component: RecordSelector,
-        containerProps: {
-            title: 'Select Related Record',
-            side: 'right',
-            className: 'min-w-[400px]'
-        },
-        actionType: COMMAND_CATEGORIES.DIRECT,
-        actionConfig: {
-            actionType: 'SEARCH_RECORDS',
-            payload: {}
-        },
-        props: {
-            onChange: (inputValue) => console.log('Search records', inputValue)
-        }
-    },
+            recordSelectorAction: {
+                type: 'hi',
+                icon: Link,
+                label: 'Select Record',
+                presentation: PRESENTATION_WRAPPERS.SHEET,
+                triggerType: TRIGGER_TYPES.BUTTON,
+                component: RecordSelector,
+                containerProps: {
+                    title: 'Select Related Record',
+                    side: 'right',
+                    className: 'min-w-[400px]'
+                },
+                actionType: COMMAND_CATEGORIES.DIRECT,
+                actionConfig: {
+                    actionType: 'SEARCH_RECORDS',
+                    payload: {}
+                },
+                props: {
+                    onChange: (inputValue) => console.log('Search records', inputValue)
+                }
+            },
 
-    jsonEditor: {
-        type: 'name',
-        icon: Code,
-        label: 'Edit JSON',
-        presentation: PRESENTATION_WRAPPERS.MODAL,
-        triggerType: TRIGGER_TYPES.ICON,
-        component: JsonEditor,
-        containerProps: {
-            title: 'Edit JSON',
-            className: 'max-w-4xl'
-        },
-        actionType: COMMAND_CATEGORIES.DIRECT,
-        actionConfig: {
-            handler: (field, value) => console.log('Edit JSON', field, value)
-        },
-        props: {
-            onSearch: (searchTerm) => console.log('Search records', searchTerm)
-        }
+            jsonEditor: {
+                type: 'name',
+                icon: Code,
+                label: 'Edit JSON',
+                presentation: PRESENTATION_WRAPPERS.MODAL,
+                triggerType: TRIGGER_TYPES.ICON,
+                component: JsonEditor,
+                containerProps: {
+                    title: 'Edit JSON',
+                    className: 'max-w-4xl'
+                },
+                actionType: COMMAND_CATEGORIES.DIRECT,
+                actionConfig: {
+                    handler: (field, value) => console.log('Edit JSON', field, value)
+                },
+                props: {
+                    onSearch: (searchTerm) => console.log('Search records', searchTerm)
+                }
 
+            }
+        }
     }
 };

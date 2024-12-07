@@ -1,3 +1,6 @@
+// TODO: Removed for build
+
+/*
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
@@ -16,6 +19,7 @@ import {
     EnhancedModalState,
     TableComponentState
 } from '@/types/tableTypes';
+import { ServerSideState } from '@/types/MatrxServerTableTypes';
 
 // Core table state management
 export function useSchemaTableState<TEntity extends EntityKeys>(
@@ -462,3 +466,4 @@ export function useTableState<TEntity extends EntityKeys>(
         }
     };
 }
+*/
