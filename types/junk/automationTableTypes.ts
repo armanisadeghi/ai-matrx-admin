@@ -1,4 +1,3 @@
-/*
 import {
     AutomationTableName,
     DataStructure,
@@ -969,4 +968,3 @@ type SampleTable = {
     }>;
 };
 
-*/

@@ -3,18 +3,18 @@
 
 import {useContext, useCallback, useMemo} from 'react';
 import {useSchemaResolution, useSchema as useBaseSchema} from '@/providers/SchemaProvider';
-import type {
-    AutomationTableStructure,
-    AutomationTable,
-    TableNames,
-    AllTableNameVariations,
-    AllFieldNameVariations,
-    TableFields,
-    TableNameBackend,
-    TableNameFrontend,
-    TableNameDatabase,
-    FieldNameFrontend, FieldNameBackend, FieldNameDatabase
-} from '@/types/automationTableTypes';
+// import type {
+//     AutomationTableStructure,
+//     AutomationTable,
+//     TableNames,
+//     AllTableNameVariations,
+//     AllFieldNameVariations,
+//     TableFields,
+//     TableNameBackend,
+//     TableNameFrontend,
+//     TableNameDatabase,
+//     FieldNameFrontend, FieldNameBackend, FieldNameDatabase
+// } from '@/types/automationTableTypes';
 import {v4 as uuidv4} from 'uuid';
 
 
