@@ -1,3 +1,4 @@
+/*
 
 'use client';
 
@@ -59,3 +60,4 @@ export const useSocketManager = (onNewResponse: (response: string) => void) => {
 
     return connectSocket;
 };
+*/

@@ -1,3 +1,4 @@
+/*
 
 export interface AuthResponse {
     status: 'success' | 'error';
@@ -21,3 +22,4 @@ export interface StartTask {
 }
 
 export type SocketStatus = 'not-connected' | 'idle' | 'connected' | 'authenticated' | 'error' | 'disconnected';
+*/

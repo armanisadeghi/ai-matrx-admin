@@ -1,3 +1,4 @@
+/*
 import { io, Socket } from 'socket.io-client';
 
 const URL = 'http://localhost:8000/';
@@ -65,3 +66,4 @@ export const closeSocket = () => {
 };
 
 export const getSocket = () => basicSocket;
+*/

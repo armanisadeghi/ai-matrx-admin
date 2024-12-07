@@ -1,4 +1,5 @@
-import { SocketContext } from '@/app/samples/socket-test/components/SocketWithAuth';
+/*
+
 import { SocketTask } from '@/lib/socketio/types';
 import { useContext, useCallback } from 'react';
 import { SocketManager } from '@/lib/socketio/SocketManager';
@@ -75,3 +76,4 @@ export const useSocket = () => {
         removeRawPacketListener,
     };
 };
+*/

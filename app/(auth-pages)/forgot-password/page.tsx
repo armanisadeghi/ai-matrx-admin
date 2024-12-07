@@ -1,4 +1,4 @@
-// File: app/(auth-pages)/forgot-password/hold-hold-page.tsx
+// File: app/(auth-pages)/forgot-password/page.tsx
 
 import {forgotPasswordAction} from "@/actions/auth.actions";
 import {Message} from "@/components/form-message";
@@ -8,18 +8,17 @@ import Link from "next/link";
 import {SubmitButton} from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
-type PageProps = {
-    searchParams: {
-        success: string;
-    }
+// Update the props type to match Next.js expectations
+type Props = {
+    searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function ForgotPassword(
-    {
-        searchParams,
-    }: {
-        searchParams: Message;
-    }) {
+export default function ForgotPassword({ searchParams }: Props) {
+    // Convert searchParams to Message type for internal use
+    const message: Message = {
+        success: searchParams.success as string
+    };
+
     return (
         <AuthPageContainer
             title="Reset Password"
@@ -31,7 +30,7 @@ export default function ForgotPassword(
                     </Link>
                 </>
             }
-            message={searchParams}
+            message={message}
         >
             <form action={forgotPasswordAction} className="space-y-6">
                 <div>

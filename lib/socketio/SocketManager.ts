@@ -1,3 +1,4 @@
+/*
 // utils/socketio/SocketManager.ts
 
 import { io, Socket } from 'socket.io-client';
@@ -201,9 +202,9 @@ export class SocketManager {
 
         this.socket.io.engine.on('packet', (packet: any) => {
             if (packet.type === 'message') {
-/*
+/!*
                 console.log(`Debug: Raw packet received:`, packet.data);
-*/
+*!/
             }
         });
     }
@@ -307,7 +308,7 @@ export class SocketManager {
 
 
 
-/*
+/!*
 
 
 removeDynamicEventListener(eventName: string) {
@@ -319,5 +320,6 @@ removeDynamicEventListener(eventName: string) {
         this.dynamicEventListeners.delete(eventName);
     }
 }
-*/
+*!/
 
+*/

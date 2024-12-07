@@ -1,3 +1,4 @@
+/*
 // utils/socketio/EventHandler.ts
 
 type EventCallback = (data: any) => void;
@@ -30,3 +31,4 @@ export class EventHandler {
         }
     }
 }
+*/
