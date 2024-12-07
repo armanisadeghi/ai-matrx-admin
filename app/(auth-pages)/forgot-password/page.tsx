@@ -8,13 +8,12 @@ import Link from "next/link";
 import {SubmitButton} from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
-// Update the props type to match Next.js expectations
 type Props = {
     searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function ForgotPassword({ searchParams }: Props) {
-    // Convert searchParams to Message type for internal use
+// Make the component async
+export default async function ForgotPassword({ searchParams }: Props) {
     const message: Message = {
         success: searchParams.success as string
     };

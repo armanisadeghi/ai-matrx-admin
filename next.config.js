@@ -13,7 +13,6 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: false,
     },
-    mdxRs: false,
     headers() {
         return [
             {

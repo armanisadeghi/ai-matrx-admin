@@ -103,7 +103,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                     <Card>
                         <CardContent>
                             <TextDivider text="Json.Editor (Base)" />
-                            <Json.Editor
+                            <MatrxJson.Editor
                                 data={currentData}
                                 onChange={handleDataChange}
                                 validateDelay={validateDelay}
@@ -116,7 +116,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                     <Card>
                         <CardContent>
                             <TextDivider text="Json.Editor (with Formatting)" />
-                            <Json.Editor
+                            <MatrxJson.Editor
                                 data={currentData}
                                 onChange={handleDataChange}
                                 validateDelay={validateDelay}
@@ -128,7 +128,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                 </TabsContent>
                 <TabsContent value="full">
                     <TextDivider text="Json.FullEditor" />
-                    <Json.FullEditor
+                    <MatrxJson.FullEditor
                         data={currentData}
                         onChange={handleDataChange}
                         validateDelay={validateDelay}
