@@ -36,17 +36,19 @@ export const useEntityAnalyzer = (
         if (!entityState) return [];
 
         const stateMap: Record<string, EntityStateSection> = {
-            entityMetadata: { title: "Entity Metadata", data: entityState.entityMetadata },
-            records: { title: "Records", data: entityState.records },
-            quickReference: { title: "Quick Reference", data: entityState.quickReference },
             selection: { title: "Selection State", data: entityState.selection },
+            flags: { title: "Entity Flags", data: entityState.flags },
+            records: { title: "Records", data: entityState.records },
+            unsavedRecords: { title: "Unsaved Records", data: entityState.unsavedRecords },
+            pendingOperations: { title: "Pending Operations", data: entityState.pendingOperations },
+            quickReference: { title: "Quick Reference", data: entityState.quickReference },
+            entityMetadata: { title: "Entity Metadata", data: entityState.entityMetadata },
             pagination: { title: "Pagination State", data: entityState.pagination },
             loading: { title: "Loading State", data: entityState.loading },
             cache: { title: "Cache State", data: entityState.cache },
             history: { title: "History State", data: entityState.history },
             filters: { title: "Filter State", data: entityState.filters },
             subscription: { title: "Subscription Config", data: entityState.subscription },
-            flags: { title: "Entity Flags", data: entityState.flags },
             metrics: { title: "Entity Metrics", data: entityState.metrics }
         };
 

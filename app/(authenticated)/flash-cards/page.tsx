@@ -14,7 +14,7 @@ const FlashcardsPage: React.FC = () => {
             </h1>
 
             <div className="flex-grow p-4">
-                <FlashcardComponent/>
+                <FlashcardComponent initialFlashcards={vocabFlashcards}/>
             </div>
         </div>
     );

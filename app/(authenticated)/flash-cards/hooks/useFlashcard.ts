@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { vocabFlashcards } from '../lesson-data';
-import { Flashcard, ChatMessage } from "@/types/flashcards.types";
+import { Flashcard, ChatMessage, FlashcardData } from "@/types/flashcards.types";
 import { RootState, AppDispatch } from '@/lib/redux/store';
 import {
     initializeFlashcards,
@@ -21,7 +20,7 @@ import {
     selectCurrentIndex,
 } from '@/lib/redux/selectors/flashcardSelectors';
 
-export const useFlashcard = () => {
+export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
     const dispatch = useDispatch<AppDispatch>();
     const allFlashcards = useSelector(selectAllFlashcards);
     const currentIndex = useSelector(selectCurrentIndex);
@@ -37,15 +36,15 @@ export const useFlashcard = () => {
     const [isExpandedChatOpen, setIsExpandedChatOpen] = useState(false);
 
     useEffect(() => {
-        const flashcardsToInitialize = vocabFlashcards.map((card, index) => ({
+        const flashcardsToInitialize = initialFlashcards.map((card, index) => ({
             ...card,
             id: `flashcard-${index}`,
             reviewCount: 0,
             correctCount: 0,
-            incorrectCount: 0
+            incorrectCount: 0,
         }));
         dispatch(initializeFlashcards(flashcardsToInitialize));
-    }, [dispatch]);
+    }, [initialFlashcards, dispatch]);
 
     const handleFlip = useCallback(() => setIsFlipped(prev => !prev), []);
 

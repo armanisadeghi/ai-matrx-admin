@@ -182,3 +182,12 @@ export const getEntityIcon = (entityName: string): LucideIcon => {
 
     return match?.icon || Table;
 };
+
+export const getDynamicIconSelection = async (name: string): Promise<LucideIcon> => {
+    const nameLower = name.toLowerCase();
+    const sortedMatches = [...iconMatches].sort((a, b) => b.priority - a.priority);
+    const match = await Promise.resolve(
+        sortedMatches.find(({ pattern }) => nameLower.includes(pattern))
+    );
+    return match?.icon || Table;
+};

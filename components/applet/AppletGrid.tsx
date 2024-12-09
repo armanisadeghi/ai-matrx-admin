@@ -1,8 +1,10 @@
 // components/applets/AppletGrid.tsx
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {AppletCategory, AppletDefinition} from "@/types/applets";
+
 import Link from "next/link";
+import {AppletDefinition} from "@/config/applets/applet-definitions";
+import {AppletCategory} from "@/types/applets/types";
 
 interface AppletGridProps {
     applets: AppletDefinition[];

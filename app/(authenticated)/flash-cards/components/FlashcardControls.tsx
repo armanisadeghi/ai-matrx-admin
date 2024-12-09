@@ -1,14 +1,14 @@
 'use client';
 
-import React, {useState, useCallback} from 'react';
-import {Button} from "@/components/ui/button";
-import {ArrowLeft, ArrowRight, Minus, Plus, Shuffle} from 'lucide-react';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import React, { useState, useCallback } from 'react';
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight, Minus, Plus, Shuffle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AudioModal from '../audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
-import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
-const FlashcardControls: React.FC = () => {
+const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
     const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const {
@@ -22,12 +22,11 @@ const FlashcardControls: React.FC = () => {
         shuffleCards,
         showModal,
         setFontSize,
-    } = useFlashcard();
+    } = flashcardHook;
 
     const handleConfusedClick = useCallback(() => {
         setIsAudioModalOpen(true);
     }, []);
-
 
     return (
         <div className="w-full flex flex-col space-y-4">
@@ -81,7 +80,7 @@ const FlashcardControls: React.FC = () => {
                 </Button>
                 <div className="flex items-center justify-between w-full px-3 py-1 rounded-md border bg-card hover:scale-105 transition-transform">
                     <Button
-                        onClick={() => setFontSize(prev => Math.max(18, prev - 2))}
+                        onClick={() => setFontSize((prev) => Math.max(18, prev - 2))}
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 p-0"
@@ -90,7 +89,7 @@ const FlashcardControls: React.FC = () => {
                     </Button>
                     <span className="text-sm whitespace-nowrap">Font Size</span>
                     <Button
-                        onClick={() => setFontSize(prev => Math.min(36, prev + 2))}
+                        onClick={() => setFontSize((prev) => Math.min(36, prev + 2))}
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 p-0"

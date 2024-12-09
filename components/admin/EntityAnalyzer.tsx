@@ -93,6 +93,11 @@ const EntityAnalyzer: React.FC<EntityAnalyzerProps> = (
                          {localSelectedEntity && entityState && (
                              <>
                                  <FullJsonViewer
+                                     data={entityState.selection}
+                                     title="Selection State"
+                                     initialExpanded={true}
+                                 />
+                                 <FullJsonViewer
                                      data={entityState.entityMetadata}
                                      title="Entity Metadata"
                                      initialExpanded={true}
@@ -105,11 +110,6 @@ const EntityAnalyzer: React.FC<EntityAnalyzerProps> = (
                                  <FullJsonViewer
                                      data={entityState.quickReference}
                                      title="Quick Reference"
-                                     initialExpanded={true}
-                                 />
-                                 <FullJsonViewer
-                                     data={entityState.selection}
-                                     title="Selection State"
                                      initialExpanded={true}
                                  />
                                  <FullJsonViewer

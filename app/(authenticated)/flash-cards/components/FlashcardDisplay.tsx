@@ -6,7 +6,7 @@ import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRende
 import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 import {cn} from "@/utils/cn";
 
-const FlashcardDisplay: React.FC = (    {    }) => {
+const FlashcardDisplay: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
     const {
         activeFlashcard,
         isFlipped,
@@ -14,7 +14,7 @@ const FlashcardDisplay: React.FC = (    {    }) => {
         handleFlip,
         handleAnswer,
         handleAskQuestion,
-    } = useFlashcard();
+    } = flashcardHook;
 
     const frontFontSize = fontSize + 10;
 

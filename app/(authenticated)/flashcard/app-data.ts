@@ -1,6 +1,5 @@
 import {FlashcardData} from "@/types/flashcards.types";
 
-
 export const vocabFlashcards: FlashcardData[] = [
     {
         "front": "What are the three states of matter?",
@@ -1083,7 +1082,6 @@ export const vocabFlashcards: FlashcardData[] = [
         detailedExplanation: `Transitions are essential for maintaining coherence in writing. For example, if you’re moving from one idea to another, a transition sentence helps guide the reader smoothly. It’s important to use transitions to avoid abrupt changes that can confuse readers. Just like how Taylor Swift skillfully weaves different themes throughout her albums, we should aim to create seamless transitions in our writing to enhance clarity and flow!`
     }
 ];
-
 
 export const vocabFlashcardsTwo: FlashcardData[] = [
     {

@@ -3,6 +3,7 @@
 import {AllEntityFieldKeys, EntityData, EntityKeys} from "@/types/entityTypes";
 import {
     EntityOperationFlags,
+    EntityOperationMode,
     EntityOperations,
     EntityState,
     FilterCondition,
@@ -627,3 +628,231 @@ export const isSerializableValue = (value: unknown): boolean => {
 
 // Export type for external use
 export type SerializableRecord = Record<string, string | number | boolean | null | undefined>;
+
+
+
+
+export interface SingleRecordContext {
+    type: 'single';
+    activeRecordId: MatrxRecordId;
+    unsavedChanges: Record<string, any>;
+    operationMode: EntityOperationMode;
+}
+
+export interface MultiSelectSingleChangeContext {
+    type: 'multiSelectSingle';
+    selectedRecordIds: MatrxRecordId[];
+    activeRecordId: MatrxRecordId;
+    unsavedChanges: Record<string, any>;
+    operationMode: EntityOperationMode;
+}
+
+export interface MultiSelectMultiChangeContext {
+    type: 'multiSelectMulti';
+    selectedRecordIds: MatrxRecordId[];
+    changedRecords: Map<MatrxRecordId, Record<string, any>>;
+    operationMode: EntityOperationMode;
+    batchId?: string;  // For tracking related changes
+}
+
+export type OperationContextType =
+    | SingleRecordContext
+    | MultiSelectSingleChangeContext
+    | MultiSelectMultiChangeContext;
+
+export interface OperationContextState {
+    contextType: OperationContextType['type'];
+    context: OperationContextType;
+    relationshipMap?: Map<string, Set<MatrxRecordId>>;  // For tracking related records
+}
+
+export function determineOperationContext(
+    state: EntityState<EntityKeys>,
+    operation: EntityOperationMode
+): OperationContextType {
+    const hasMultipleSelected = state.selection.selectedRecords.length > 1;
+    const hasMultipleChanges = Object.keys(state.unsavedRecords).length > 1;
+
+    if (!hasMultipleSelected) {
+        return {
+            type: 'single',
+            activeRecordId: state.selection.activeRecord,
+            unsavedChanges: state.unsavedRecords[state.selection.activeRecord] || {},
+            operationMode: operation
+        };
+    }
+
+    if (hasMultipleSelected && !hasMultipleChanges) {
+        return {
+            type: 'multiSelectSingle',
+            selectedRecordIds: state.selection.selectedRecords,
+            activeRecordId: state.selection.activeRecord,
+            unsavedChanges: state.unsavedRecords[state.selection.activeRecord] || {},
+            operationMode: operation
+        };
+    }
+
+    return {
+        type: 'multiSelectMulti',
+        selectedRecordIds: state.selection.selectedRecords,
+        changedRecords: new Map(
+            Object.entries(state.unsavedRecords)
+        ),
+        operationMode: operation
+    };
+}
+
+
+export function handleOperationModeChange(
+    state: EntityState<EntityKeys>,
+    newMode: EntityOperationMode
+) {
+    const context = determineOperationContext(state, newMode);
+
+    switch (context.type) {
+        case 'single':
+            return handleSingleRecordOperation(state, context);
+
+        case 'multiSelectSingle':
+            return handleMultiSelectSingleChange(state, context);
+
+        case 'multiSelectMulti':
+            return handleComplexMultiRecordOperation(state, context);
+    }
+}
+
+
+export function validateOperationTransition(
+    currentContext: OperationContextType,
+    newMode: EntityOperationMode
+): boolean {
+    if (currentContext.type === 'multiSelectMulti') {
+        // Complex validation for multi-record changes
+        return validateComplexStateTransition(currentContext, newMode);
+    }
+
+    // Simple validation for other cases
+    return validateBasicStateTransition(currentContext, newMode);
+}
+
+export function handleSingleRecordOperation(
+    state: EntityState<EntityKeys>,
+    context: SingleRecordContext
+): EntityState<EntityKeys> {
+    const { activeRecordId, unsavedChanges, operationMode } = context;
+
+    switch (operationMode) {
+        case 'create':
+            utilsLogger.log('info', 'handleCreateOperation called (Not Implemented)', 'handleSingleRecordOperation');
+            return state; // Temporary return until implemented
+
+        case 'update':
+            utilsLogger.log('info', 'handleUpdateOperation called (Not Implemented)', 'handleSingleRecordOperation');
+            return state;
+
+        case 'delete':
+            utilsLogger.log('info', 'handleDeleteOperation called (Not Implemented)', 'handleSingleRecordOperation');
+            return state;
+
+        case 'view':
+            return state;
+
+        default:
+            utilsLogger.log('error', 'Invalid operation mode for single record operation', 'handleSingleRecordOperation');
+            return state;
+    }
+}
+
+
+
+export function handleMultiSelectSingleChange(
+    state: EntityState<EntityKeys>,
+    context: MultiSelectSingleChangeContext
+) {
+    const { selectedRecordIds, activeRecordId, unsavedChanges, operationMode } = context;
+
+    switch (operationMode) {
+        case 'create':
+            // return handleCreateOperation(state, activeRecordId, unsavedChanges);
+            utilsLogger.log('info', 'handleCreateOperation called (Not Implemented)', 'handleMultiSelectSingleChange');
+
+        case 'update':
+            // return handleUpdateOperation(state, activeRecordId, unsavedChanges);
+            utilsLogger.log('info', 'handleUpdateOperation called (Not Implemented)', 'handleMultiSelectSingleChange');
+
+        case 'delete':
+            // return handleDeleteOperation(state, activeRecordId);
+            utilsLogger.log('info', 'handleDeleteOperation called (Not Implemented)', 'handleMultiSelectSingleChange');
+
+        default:
+            utilsLogger.log('error', 'Invalid operation mode for multi-select single record operation', 'handleMultiSelectSingleChange');
+            return;
+    }
+}
+
+export function handleComplexMultiRecordOperation(
+    state: EntityState<EntityKeys>,
+    context: MultiSelectMultiChangeContext
+) {
+    const { selectedRecordIds, changedRecords, operationMode } = context;
+
+    switch (operationMode) {
+        case 'create':
+            // return handleCreateOperation(state, activeRecordId, unsavedChanges);
+            utilsLogger.log('info', 'handleCreateOperation called (Not Implemented)', 'handleComplexMultiRecordOperation');
+
+        case 'update':
+            // return handleUpdateOperation(state, activeRecordId, unsavedChanges);
+            utilsLogger.log('info', 'handleUpdateOperation called (Not Implemented)', 'handleComplexMultiRecordOperation');
+
+        case 'delete':
+            // return handleDeleteOperation(state, activeRecordId);
+            utilsLogger.log('info', 'handleDeleteOperation called (Not Implemented)', 'handleComplexMultiRecordOperation');
+
+        default:
+            utilsLogger.log('error', 'Invalid operation mode for complex multi-record operation', 'handleComplexMultiRecordOperation');
+            return;
+    }
+}
+
+export function validateBasicStateTransition(
+    context: OperationContextType,
+    newMode: EntityOperationMode
+): boolean {
+    const { operationMode } = context;
+
+    switch (newMode) {
+        case 'create':
+            return operationMode !== 'create';
+
+        case 'update':
+            return operationMode !== 'delete';
+
+        case 'delete':
+            return operationMode !== 'create';
+
+        default:
+            return false;
+    }
+}
+
+export function validateComplexStateTransition(
+    context: MultiSelectMultiChangeContext,
+    newMode: EntityOperationMode
+): boolean {
+    const { operationMode } = context;
+
+    switch (newMode) {
+        case 'create':
+            return operationMode !== 'create';
+
+        case 'update':
+            return operationMode !== 'delete';
+
+        case 'delete':
+            return operationMode !== 'create';
+
+        default:
+            return false;
+    }
+}

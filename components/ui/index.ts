@@ -125,7 +125,7 @@ export {Carousel} from './carousel'
 export {Cover} from './cover'
 export {FloatingDock} from './floating-dock'
 export {FocusCards} from './focus-cards'
-export {JsonViewer} from '@/components/ui/JsonComponents/JsonViewer'
+export {JsonViewer} from '@/components/ui/JsonComponents/JsonViewerComponent'
 export {MultiStepLoader} from './multi-step-loader'
 export {PlaceholdersAndVanishInput} from './placeholders-and-vanish-input'
 export {SidebarSaved} from './sidebar-saved'
@@ -148,3 +148,11 @@ export {
     HoverCardContent,
     HoverCardTrigger,
 } from './hover-card'
+
+export {
+    MatrxLabeledSwitch,
+    MatrxIconSwitch,
+    MatrxSideIconSwitch,
+    MatrxIconToggle,
+    MatrxSwitch,
+} from './matrx/matrix-switch'

@@ -35,8 +35,3 @@ export async function POST(req: Request) {
     console.error("test", error);
   }
 }
-
-function OpenAIStream(response: import("openai/streaming.mjs").Stream<OpenAI.Chat.Completions.ChatCompletionChunk> & { _request_id?: string | null; }) {
-    throw new Error("Function not implemented.");
-}
-

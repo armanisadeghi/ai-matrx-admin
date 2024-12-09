@@ -59,7 +59,8 @@ export type AvailableAssistants =
     | 'typeScriptDevelopmentExpert'
     | 'businessCoach'
     | 'hrExpert'
-    | 'candy';
+    | 'candy'
+    | 'developmentExpert';
 
 
 export type ProcessAiRequestParams = {

@@ -148,6 +148,14 @@ const config: Config = {
                         opacity: '0'
                     }
                 },
+                'slide-down': {
+                    from: { height: '0' },
+                    to: { height: 'var(--radix-collapsible-content-height)' }
+                },
+                'slide-up': {
+                    from: { height: 'var(--radix-collapsible-content-height)' },
+                    to: { height: '0' }
+                },
                 shimmer: {
                     from: {
                         backgroundPosition: '0 0'
@@ -214,6 +222,8 @@ const config: Config = {
                 slowPulse: 'slowPulse 5s ease-in-out infinite',
 
                 'glow': 'glow 2s ease-in-out infinite alternate',
+                'slide-down': 'slide-down 0.5s ease-out',
+                'slide-up': 'slide-up 0.3s ease-out'
 
             },
             boxShadow: {

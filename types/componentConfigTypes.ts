@@ -43,6 +43,10 @@ export interface LayoutProps {
     floatingLabel?: boolean;
 }
 
+export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disabled'] as const;
+export type ComponentState = typeof COMPONENT_STATES[number];
+
+
 
 export interface ResponsiveColumns {
     xs: number;
@@ -72,14 +76,11 @@ export type AnimationPreset = typeof ANIMATION_PRESETS[number];
 export const DENSITIES = ['compact', 'normal', 'comfortable'] as const;
 export type ComponentDensity = typeof DENSITIES[number];
 
-export const COMPONENT_SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
+export const COMPONENT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
 export type ComponentSize = typeof COMPONENT_SIZES[number];
 
 export const TEXT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
 export type TextSizeOptions = typeof TEXT_SIZES[number];
-
-export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disabled'] as const;
-export type ComponentState = typeof COMPONENT_STATES[number];
 
 // Layout Options
 export const PAGE_LAYOUTS = ['split', 'sideBySide', 'stacked', 'resizable'] as const;
@@ -96,7 +97,7 @@ export const FORM_COLUMNS = [1, 2, 3, 4, 5, 6, 'auto'] as const;
 export type FormColumnsOptions = typeof FORM_COLUMNS[number];
 export type GridColumnOptions = FormColumnsOptions | ResponsiveColumns;
 
-export const ENTITY_SELECT_STYLES = ['minimal', 'compact', 'card', 'prominent', 'inline', 'floating'] as const;
+export const ENTITY_SELECT_STYLES = ['default', 'minimal', 'compact', 'card', 'prominent', 'inline', 'floating'] as const;
 export type EntitySelectStyle = typeof ENTITY_SELECT_STYLES[number];
 
 export const ENTITY_SELECT_VARIANTS = ['default', 'grid', 'chips', 'command', 'carousel', 'tree'] as const;

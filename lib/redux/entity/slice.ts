@@ -11,7 +11,7 @@ import {
     LoadingState,
     SubscriptionConfig,
     EntityMetadata,
-    EntityMetrics, SelectionMode,EntityOperations, EntityOperationFlags,
+    EntityMetrics, SelectionMode, EntityOperations, EntityOperationFlags,
     EntityOperationMode,
 } from "@/lib/redux/entity/types/stateTypes";
 import {
@@ -46,12 +46,15 @@ import {
 } from "@/lib/redux/entity/actions";
 import {QueryOptions} from "./sagas/sagaHelpers";
 import {Callback} from "@/utils/callbackManager";
+import { EntityModeManager } from "./utils/crudOpsManagement";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(
         entityKey: TEntity,
         initialState: EntityState<TEntity>
     ) => {
         const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice - ${entityKey}`, entityKey);
+        const modeManager = new EntityModeManager(entityKey);
+
         const slice = createSlice({
                     name: `ENTITIES/${entityKey.toUpperCase()}`,
                     initialState,
@@ -312,213 +315,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             setSuccess(state, 'FETCH_RECORDS');
                         },
 
-                        setOperationMode: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<EntityOperationMode>
-                        ) => {
-                            entityLogger.log('debug', 'setOperationMode', action.payload);
-                            state.flags.operationMode = action.payload;
-                        },
-
-                        createRecord: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<CreateRecordPayload>
-                        ) => {
-                            entityLogger.log('info', 'createRecord', action.payload);
-                            const tempRecordId = action.payload.tempRecordId;
-                            const recordData = state.unsavedRecords[tempRecordId];
-
-                            if (!recordData) {
-                                entityLogger.log('error', 'No unsaved data found for temp record', tempRecordId);
-                                return;
-                            }
-                            setLoading(state, 'CREATE');
-                        },
-                        createRecordSuccess: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<EntityData<TEntity>>
-                        ) => {
-                            entityLogger.log('debug', 'createRecordSuccess', action.payload);
-                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                            state.records[recordKey] = action.payload;
-                            clearUnsavedRecords(state);
-                            state.flags.operationMode = 'view';
-                            state.flags.hasUnsavedChanges = false;
-                            setNewActiveRecord(state, recordKey);
-                            setSuccess(state, 'CREATE');
-                        },
-
-                        updateRecord: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<UpdateRecordPayload>
-                        ) => {
-                            entityLogger.log('debug', 'updateRecord', action.payload);
-                            const matrxRecordId = action.payload.matrxRecordId;
-                            const unsavedData = state.unsavedRecords[matrxRecordId];
-                            if (!unsavedData) {
-                                entityLogger.log('error', 'No unsaved changes found for record', matrxRecordId);
-                                return;
-                            }
-
-                            setLoading(state, 'UPDATE');
-                        },
-
-                        updateRecordSuccess: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<EntityData<TEntity>>
-                        ) => {
-                            entityLogger.log('debug', 'updateRecordSuccess', action.payload);
-                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                            state.records[recordKey] = action.payload;
-                            delete state.unsavedRecords[recordKey];
-                            state.flags.operationMode = 'view';
-                            state.flags.hasUnsavedChanges = false;
-
-                            setNewActiveRecord(state, recordKey);
-                            setSuccess(state, 'UPDATE');
-                        },
-
-                        optimisticUpdate: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<{
-                                record: EntityData<TEntity>;
-                                rollback?: EntityData<TEntity>;
-                            }>
-                        ) => {
-                            const {record, rollback} = action.payload;
-                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
-                            entityLogger.log('debug', 'optimisticUpdate', {record, rollback});
-
-                            if (rollback) {
-                                state.history.past.push({
-                                    timestamp: new Date().toISOString(),
-                                    operation: 'update',
-                                    data: record,
-                                    previousData: rollback,
-                                    metadata: {reason: 'optimistic_update'}
-                                });
-                            }
-
-                            state.records[recordKey] = record;
-                            state.flags.isModified = true;
-                            state.flags.hasUnsavedChanges = true;
-                        },
-
-                        startRecordCreation: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<{ count?: number }>
-                        ) => {
-                            entityLogger.log('debug', 'startRecordCreation', action.payload);
-                            const count = action.payload?.count || 1;
-                            removeActiveRecord(state);
-
-                            for (let i = 0; i < count; i++) {
-                                const tempId = generateTemporaryRecordId(state);
-                                state.unsavedRecords[tempId] = {};
-                                state.selection.selectedRecords.push(tempId);
-                            }
-
-                            state.flags.operationMode = 'create';
-                            state.flags.hasUnsavedChanges = true;
-                            setLoading(state, 'CREATE');
-                        },
-
-                        startRecordUpdate: (
-                            state: EntityState<TEntity>
-                        ) => {
-                            entityLogger.log('debug', 'startRecordUpdate');
-
-                            if (state.selection.selectedRecords.length > 0) {
-                                state.flags.operationMode = 'update';
-                                state.flags.hasUnsavedChanges = false;
-                            }
-                        },
-
-                        updateUnsavedField: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<{
-                                recordId: MatrxRecordId,
-                                field: string,
-                                value: any
-                            }>
-                        ) => {
-                            const { recordId, field, value } = action.payload;
-                            if (state.unsavedRecords[recordId]?.[field] !== value) {
-                                state.unsavedRecords[recordId] = {
-                                    ...state.unsavedRecords[recordId],
-                                    [field]: value
-                                };
-
-                                if (!state.flags.hasUnsavedChanges) {
-                                    state.flags.hasUnsavedChanges = true;
-                                    state.flags.operationMode = 'update';
-                                }
-                            }
-                        },
-
-                        addPendingOperation: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<MatrxRecordId>
-                        ) => {
-                            if (!state.pendingOperations.includes(action.payload)) {
-                                state.pendingOperations.push(action.payload);
-                            }
-                        },
-                        removePendingOperation: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<MatrxRecordId>
-                        ) => {
-                            state.pendingOperations = state.pendingOperations.filter(
-                                matrxRecordId => matrxRecordId !== action.payload
-                            );
-                        },
-                        clearPendingOperations: (
-                            state: EntityState<TEntity>
-                        ) => {
-                            state.pendingOperations = [];
-                        },
-
-                        cancelOperation: (
-                            state: EntityState<TEntity>
-                        ) => {
-                            entityLogger.log('debug', 'cancelOperation');
-
-                            clearUnsavedRecords(state);
-
-                            state.flags.operationMode = null;
-                            state.flags.hasUnsavedChanges = false;
-                            resetFlag(state, state.flags.operationMode === 'create' ? 'CREATE' : 'UPDATE');
-
-                            if (state.flags.operationMode === 'create') {
-                                removeSelections(state);
-                            }
-                        },
-
-                        deleteRecord: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<DeleteRecordPayload>
-                        ) => {
-                            entityLogger.log('debug', 'deleteRecord', action.payload);
-                            setLoading(state, 'DELETE');
-                        },
-                        deleteRecordSuccess: (
-                            state: EntityState<TEntity>,
-                            action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
-                        ) => {
-                            const recordKey = action.payload.matrxRecordId;
-                            entityLogger.log('debug', 'deleteRecordSuccess', {recordKey});
-                            delete state.records[recordKey];
-                            handleSelectionForDeletedRecord(state, recordKey);
-
-                            if (state.selection.lastActiveRecord &&
-                                state.records[state.selection.lastActiveRecord]) {
-                                state.selection.activeRecord = state.selection.lastActiveRecord;
-                                state.selection.lastActiveRecord = null;
-                            }
-
-                            setSuccess(state, 'DELETE');
-                            state.flags.isModified = true;
-                        },
 
                         setSelectionMode: (
                             state: EntityState<TEntity>,
@@ -595,6 +391,230 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             entityLogger.log('debug', 'clearActiveRecord');
                             state.selection.activeRecord = null;
                         },
+
+
+
+                        setOperationMode: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityOperationMode>
+                        ) => {
+                            entityLogger.log('debug', 'setOperationMode', action.payload);
+                            const result = modeManager.changeMode(state, action.payload);
+                            if (!result.canProceed) {
+                                state.loading.error = {
+                                    message: result.error || 'Cannot change modes',
+                                    code: 400
+                                };
+                                return;
+                            }
+                        },
+
+                        startRecordCreation: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{ count?: number }>
+                        ) => {
+                            entityLogger.log('debug', 'startRecordCreation', action.payload);
+                            const result = modeManager.changeMode(state, 'create');
+                            if (!result.canProceed) {
+                                state.loading.error = {
+                                    message: result.error || 'Cannot start creation',
+                                    code: 400
+                                };
+                                return;
+                            }
+                            setLoading(state, 'CREATE');
+                        },
+
+
+
+                        createRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<CreateRecordPayload>
+                        ) => {
+                            entityLogger.log('info', 'createRecord', action.payload);
+                            const tempRecordId = action.payload.tempRecordId;
+                            const recordData = state.unsavedRecords[tempRecordId];
+
+                            if (!recordData) {
+                                entityLogger.log('error', 'No unsaved data found for temp record', tempRecordId);
+                                return;
+                            }
+                            setLoading(state, 'CREATE');
+                        },
+                        createRecordSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>>
+                        ) => {
+                            entityLogger.log('debug', 'createRecordSuccess', action.payload);
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                            state.records[recordKey] = action.payload;
+
+                            // Let mode manager handle the transition back to view
+                            const result = modeManager.changeMode(state, 'view');
+                            if (result.canProceed) {
+                                setNewActiveRecord(state, recordKey);
+                                setSuccess(state, 'CREATE');
+                            }
+                        },
+
+
+                        startRecordUpdate: (
+                            state: EntityState<TEntity>
+                        ) => {
+                            entityLogger.log('debug', 'startRecordUpdate');
+                            if (state.selection.selectedRecords.length > 0) {
+                                const result = modeManager.changeMode(state, 'update');
+                                if (!result.canProceed) {
+                                    state.loading.error = {
+                                        message: result.error || 'Cannot start update',
+                                        code: 400
+                                    };
+                                    return;
+                                }
+                            }
+                        },
+
+                        updateRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<UpdateRecordPayload>
+                        ) => {
+                            entityLogger.log('debug', 'updateRecord', action.payload);
+                            const matrxRecordId = action.payload.matrxRecordId;
+                            const unsavedData = state.unsavedRecords[matrxRecordId];
+                            if (!unsavedData) {
+                                entityLogger.log('error', 'No unsaved changes found for record', matrxRecordId);
+                                return;
+                            }
+
+                            setLoading(state, 'UPDATE');
+                        },
+
+                        updateRecordSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<EntityData<TEntity>>
+                        ) => {
+                            entityLogger.log('debug', 'updateRecordSuccess', action.payload);
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                            state.records[recordKey] = action.payload;
+
+                            // Let mode manager handle the transition back to view
+                            const result = modeManager.changeMode(state, 'view');
+                            if (result.canProceed) {
+                                setNewActiveRecord(state, recordKey);
+                                setSuccess(state, 'UPDATE');
+                            }
+                        },
+
+
+                        optimisticUpdate: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                record: EntityData<TEntity>;
+                                rollback?: EntityData<TEntity>;
+                            }>
+                        ) => {
+                            const {record, rollback} = action.payload;
+                            const recordKey: MatrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
+                            entityLogger.log('debug', 'optimisticUpdate', {record, rollback});
+
+                            if (rollback) {
+                                state.history.past.push({
+                                    timestamp: new Date().toISOString(),
+                                    operation: 'update',
+                                    data: record,
+                                    previousData: rollback,
+                                    metadata: {reason: 'optimistic_update'}
+                                });
+                            }
+
+                            state.records[recordKey] = record;
+                            state.flags.isModified = true;
+                            state.flags.hasUnsavedChanges = true;
+                        },
+
+
+
+                        updateUnsavedField: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                recordId: MatrxRecordId,
+                                field: string,
+                                value: any
+                            }>
+                        ) => {
+                            const {recordId, field, value} = action.payload;
+                            if (state.unsavedRecords[recordId]?.[field] !== value) {
+                                state.unsavedRecords[recordId] = {
+                                    ...state.unsavedRecords[recordId],
+                                    [field]: value
+                                };
+
+                                if (!state.flags.hasUnsavedChanges) {
+                                    state.flags.hasUnsavedChanges = true;
+                                    state.flags.operationMode = 'update';
+                                }
+                            }
+                        },
+
+                        addPendingOperation: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            if (!state.pendingOperations.includes(action.payload)) {
+                                state.pendingOperations.push(action.payload);
+                            }
+                        },
+                        removePendingOperation: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            state.pendingOperations = state.pendingOperations.filter(
+                                matrxRecordId => matrxRecordId !== action.payload
+                            );
+                        },
+                        clearPendingOperations: (
+                            state: EntityState<TEntity>
+                        ) => {
+                            state.pendingOperations = [];
+                        },
+
+                        cancelOperation: (
+                            state: EntityState<TEntity>
+                        ) => {
+                            entityLogger.log('debug', 'cancelOperation');
+                            const result = modeManager.changeMode(state, 'view');
+                            if (result.canProceed) {
+                                resetFlag(state, state.flags.operationMode === 'create' ? 'CREATE' : 'UPDATE');
+                            }
+                        },
+
+                        deleteRecord: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<DeleteRecordPayload>
+                        ) => {
+                            entityLogger.log('debug', 'deleteRecord', action.payload);
+                            setLoading(state, 'DELETE');
+                        },
+                        deleteRecordSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
+                        ) => {
+                            const recordKey = action.payload.matrxRecordId;
+                            entityLogger.log('debug', 'deleteRecordSuccess', {recordKey});
+                            delete state.records[recordKey];
+                            handleSelectionForDeletedRecord(state, recordKey);
+
+                            // Let mode manager handle any necessary cleanup
+                            const result = modeManager.changeMode(state, 'view');
+                            if (result.canProceed && state.selection.lastActiveRecord &&
+                                state.records[state.selection.lastActiveRecord]) {
+                                setNewActiveRecord(state, state.selection.lastActiveRecord);
+                            }
+
+                            setSuccess(state, 'DELETE');
+                            state.flags.isModified = true;
+                        },
+
 
                         setValidated: (state) => {
                             entityLogger.log('debug', 'setValidated');

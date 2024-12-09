@@ -3,7 +3,7 @@ import {
     businessCoach,
     candiceAi,
     debateCoach,
-    defaultVoiceAssistant,
+    defaultVoiceAssistant, developmentExpert,
     englishTeacher,
     historyTeacher,
     hrExpert,
@@ -136,6 +136,12 @@ const preDefinedInitialMessages: PreDefinedMessages = {
         {
             role: 'system',
             content: mathTutorGPT,
+        },
+    ],
+    developmentExpert: [
+        {
+            role: 'system',
+            content: developmentExpert,
         },
     ],
 };

@@ -7,7 +7,19 @@ import {
     Camera, Video, Globe, Mail, Calendar, CheckSquare,
     FileText, Layers, Calculator, BookOpen, Play, School
 } from 'lucide-react';
-import {AppletDefinition} from "@/types/applets/types";
+
+
+export interface AppletDefinition {
+    key: string;
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    category: string;
+    link: string;
+    features: string[];
+    beta?: boolean;
+    comingSoon?: boolean;
+}
 
 
 export const appletDefinitions: AppletDefinition[] = [

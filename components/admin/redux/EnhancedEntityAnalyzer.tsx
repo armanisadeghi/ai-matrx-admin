@@ -4,7 +4,9 @@ import {Button} from '@/components/ui/button';
 import {ChevronLeft} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {EnhancedJsonViewerGroup} from '@/components/ui/JsonComponents';
-import { useEntityAnalyzer } from '@/lib/redux/entity/hooks/useEntityAnalyzer';
+import {useEntityAnalyzer} from '@/lib/redux/entity/hooks/useEntityAnalyzer';
+import EntityAnalyzerView from "@/components/admin/redux/EntityAnalysisSummary";
+import {MatrxJsonToCollapsible} from "@/components/matrx/matrx-collapsible";
 
 interface EnhancedEntityAnalyzerProps {
     className?: string;
@@ -75,13 +77,30 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
                         ))}
                     </div>
                 ) : (
-                     <EnhancedJsonViewerGroup
-                         viewers={sections}
-                         layout="autoGrid"
-                         minimizedPosition="top"
-                         className="min-h-0"
-                         gridMinWidth="350px"
-                     />
+                     <>
+                         <EntityAnalyzerView entityKey={currentEntityKey}/>
+
+                         <p className="text-md text-primary pl-2 mt-4">
+                                Automated Data Conversion
+                            </p>
+
+                         {sections.map((section) => (
+                             <MatrxJsonToCollapsible
+                                 key={section.id}
+                                 title={section.title}
+                                 data={section.data}
+                                 level={0}
+                             />
+                         ))}
+
+                         <EnhancedJsonViewerGroup
+                             viewers={sections}
+                             layout="autoGrid"
+                             minimizedPosition="top"
+                             className="min-h-0"
+                             gridMinWidth="350px"
+                         />
+                     </>
                  )}
             </CardContent>
         </div>

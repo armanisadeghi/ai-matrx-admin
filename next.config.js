@@ -7,7 +7,7 @@ const nextConfig = {
     experimental: {
         after: true,
         serverActions: {
-            bodySizeLimit: '3mb',
+            bodySizeLimit: '10mb',
         },
     },
     typescript: {

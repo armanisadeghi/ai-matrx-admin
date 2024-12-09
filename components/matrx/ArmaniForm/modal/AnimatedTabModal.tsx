@@ -6,12 +6,13 @@ import React from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {cn} from '@/styles/themes/utils';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/tabs';
-import AnimatedForm from './FormComponent';
+
 import {AnimatedTabModalProps, TabButton} from "@/types/AnimatedFormTypes";
 
 
-import AnimatedButton from './AnimatedButton';
 import {useAnimatedTabModal} from './useAnimatedTabModal'; // Import the custom hook
+import {AnimatedForm} from '../../AnimatedForm';
+import AnimatedButton from '../../AnimatedForm/AnimatedButton';
 
 const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }> = (
     {
@@ -177,8 +178,8 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                                     ))}
                                 </Tabs>
                             ) : (
-                                renderForm(fields)
-                            )}
+                                 renderForm(fields)
+                             )}
 
                             {footer && (
                                 <div className="mt-2">

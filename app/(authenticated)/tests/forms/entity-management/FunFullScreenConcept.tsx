@@ -1,4 +1,3 @@
-// app/(dashboard)/entity-management/EntityPageClient.tsx
 'use client';
 
 import React, {useState} from 'react';
@@ -34,27 +33,21 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import {Separator} from "@/components/ui/separator";
-import EntityLayout, {
-    LayoutVariant,
-    ComponentDensity,
-    AnimationPreset,
-    ComponentSize,
-    QuickReferenceComponentType
-} from '@/components/matrx/Entity/prewired-components/layouts/EntityLayout';
 import {cn} from '@nextui-org/react';
-
-const layoutOptions: LayoutVariant[] = ['split', 'sideBySide', 'stacked'];
-const densityOptions: ComponentDensity[] = ['compact', 'normal', 'comfortable'];
-const animationOptions: AnimationPreset[] = ['none', 'subtle', 'smooth', 'energetic', 'playful'];
-const sizeOptions: ComponentSize[] = ['xs', 'sm', 'md', 'lg', 'xl'];
-const quickReferenceOptions: QuickReferenceComponentType[] = [
-    'cards',
-    'cardsEnhanced',
-    'accordion',
-    'accordionEnhanced',
-    'list',
-    'select'
-];
+import {
+    AnimationPreset,
+    ComponentDensity,
+    ComponentSize,
+    LayoutVariant,
+    QuickReferenceComponentType,
+    SelectOption,
+    animationPresetOptions,
+    densityOptions,
+    componentSizeOptions,
+    formLayoutOptions,
+    quickReferenceComponentOptions
+} from '@/types/componentConfigTypes';
+import {EntityLayout} from "@/components/matrx/Entity/prewired-components";
 
 const EntityPageClient = () => {
     const [settings, setSettings] = useState({
@@ -69,20 +62,19 @@ const EntityPageClient = () => {
     const [showControls, setShowControls] = useState(true);
     const [isCompactControls, setIsCompactControls] = useState(false);
 
-    const SelectControl = (
-        {
-            label,
-            icon: Icon,
-            value,
-            options,
-            onChange,
-        }: {
-            label: string;
-            icon: React.ElementType;
-            value: string;
-            options: string[];
-            onChange: (value: any) => void;
-        }) => (
+    const SelectControl = <T extends string | number>({
+                                                          label,
+                                                          icon: Icon,
+                                                          value,
+                                                          options,
+                                                          onChange,
+                                                      }: {
+        label: string;
+        icon: React.ElementType;
+        value: T;
+        options: SelectOption<T>[];
+        onChange: (value: T) => void;
+    }) => (
         <div className={cn(
             "flex gap-2",
             isCompactControls ? "flex-row items-center" : "flex-col",
@@ -91,7 +83,7 @@ const EntityPageClient = () => {
                 <Icon className="h-4 w-4 text-muted-foreground"/>
                 <span className="text-sm font-medium text-foreground">{label}</span>
             </div>
-            <Select value={value} onValueChange={onChange}>
+            <Select value={value.toString()} onValueChange={(val) => onChange(val as T)}>
                 <SelectTrigger className={cn(
                     "bg-card border-input",
                     isCompactControls ? "w-[140px]" : "w-full"
@@ -101,17 +93,18 @@ const EntityPageClient = () => {
                 <SelectContent className="bg-popover border-border">
                     {options.map(option => (
                         <SelectItem
-                            key={option}
-                            value={option}
+                            key={option.key}
+                            value={option.value.toString()}
                             className="hover:bg-accent hover:text-accent-foreground"
                         >
-                            {option.charAt(0).toUpperCase() + option.slice(1)}
+                            {option.label}
                         </SelectItem>
                     ))}
                 </SelectContent>
             </Select>
         </div>
     );
+
 
     const ControlPanel = () => (
         <div className={cn(
@@ -126,7 +119,7 @@ const EntityPageClient = () => {
                     label="Layout"
                     icon={Layout}
                     value={settings.layout}
-                    options={layoutOptions}
+                    options={formLayoutOptions}
                     onChange={(value: LayoutVariant) =>
                         setSettings(prev => ({...prev, layout: value}))}
                 />
@@ -144,7 +137,7 @@ const EntityPageClient = () => {
                     label="Animation"
                     icon={SquareActivity}
                     value={settings.animation}
-                    options={animationOptions}
+                    options={animationPresetOptions}
                     onChange={(value: AnimationPreset) =>
                         setSettings(prev => ({...prev, animation: value}))}
                 />
@@ -153,9 +146,18 @@ const EntityPageClient = () => {
                     label="Size"
                     icon={Monitor}
                     value={settings.size}
-                    options={sizeOptions}
+                    options={componentSizeOptions}
                     onChange={(value: ComponentSize) =>
                         setSettings(prev => ({...prev, size: value}))}
+                />
+
+                <SelectControl
+                    label="Quick Reference"
+                    icon={Monitor}
+                    value={settings.quickReference}
+                    options={quickReferenceComponentOptions}
+                    onChange={(value: QuickReferenceComponentType) =>
+                        setSettings(prev => ({...prev, quickReference: value}))}
                 />
 
                 <div className={cn(

@@ -11,3 +11,4 @@ export default function EntityCrudPage() {
         </div>
     );
 }
+

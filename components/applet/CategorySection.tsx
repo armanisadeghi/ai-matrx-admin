@@ -1,7 +1,9 @@
 // components/applets/CategorySection.tsx
 import {AppletGrid} from "@/components/applet/AppletGrid";
-import { AppletCategory, AppletDefinition } from "@/types/applets/applet-config";
+
 import Link from 'next/link';
+import {AppletCategory} from "@/types/applets/types";
+import {AppletDefinition} from "@/config/applets/applet-definitions";
 
 interface CategorySectionProps {
     category: AppletCategory;

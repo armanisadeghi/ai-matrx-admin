@@ -29,14 +29,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Entity Analyzer With Mock Data',
+        path: 'entity-analyzer/mock-data',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Entity Analyzer',
+        path: 'entity-analyzer',
         relative: true,
         description: ''
     },

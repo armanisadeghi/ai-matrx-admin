@@ -20,6 +20,14 @@ export const assistants: Assistant[] = [
         capabilities: ['Voice interaction', 'Task management', 'General help']
     },
     {
+        id: 'developmentExpert',
+        name: 'Development Expert',
+        title: 'Professional Developer Assistant',
+        description: 'Provides expert advice on software development, coding, and best practices for developers.',
+        imagePath: '/assistants/development-expert-male-avatar.jpeg',
+        capabilities: ['React.js', 'State management', 'Tailwind CSS', 'Python', 'TypeScript']
+    },
+    {
         id: 'debateCoach',
         name: 'Debate Coach',
         title: 'Professional Debate Coach',
