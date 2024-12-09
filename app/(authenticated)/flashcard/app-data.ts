@@ -2521,3 +2521,18 @@ export const historyFlashcards: FlashcardData[] = [
         audioExplanation: `If you are feeling confused about what an immigrant is, do not worry. An immigrant is someone who moves from their home country to another country with the intention of living there permanently. They may move for various reasons, such as seeking better opportunities or reuniting with family. Think of it like a student who transfers to a new school and plans to stay there for a long time, adapting to a new environment.`
     }
 ];
+
+
+export const flashcardSets = {
+    historyFlashcards,
+    vocabFlashcards,
+    vocabFlashcardsTwo,
+    InitialFlashcardsWithExample,
+    flashcardDataSet,
+};
+
+
+
+export const getFlashcardSet = (name: string) => {
+    return flashcardSets[name as keyof typeof flashcardSets];
+};

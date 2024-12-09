@@ -176,9 +176,9 @@ export const AVAILABLE_DATA: AvailableData = {
     ],
     history_set_1: [
         {
-            displayName: 'Custom Set 1',
+            displayName: 'Foundations of American Government',
             category: CATEGORIES.history,
-            subCategory: 'Foundations of American Government',
+            subCategory: 'American Government',
             data: historyFlashcards,
             description: 'This lesson delves into the early development of the United States government, examining the Articles of Confederation and the subsequent creation of the Constitution. It highlights the key principles that underpin American democracy, such as federalism, separation of powers, and the protection of individual rights. Students will explore influential historical documents and figures, gaining insights into the challenges and compromises that shaped the nation. Through interactive discussions and activities, learners will deepen their understanding of the responsibilities of citizenship and the structure of the U.S. government.',
             tags: ['Articles of Confederation', 'Constitution', 'U.S. Government', 'Federalism', 'Separation of Powers', 'Bill of Rights', 'Founding Fathers', 'American History'],

@@ -17,10 +17,10 @@ import {
     CardLoading
 } from '@/components/matrx/LoadingComponents';
 import { ensureId } from "@/utils/schema/schemaUtils";
-import {getDataByDataSetNameClient} from "@/app/(authenticated)/flashcard/constants";
+import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
 
 const FlashcardComponent: React.FC<{ dataSetId }> = ({ dataSetId }) => {
-    const initialFlashcards = getDataByDataSetNameClient(dataSetId);
+    const initialFlashcards = getFlashcardSet('historyFlashcards');
 
     const flashcardHook = useFlashcard(initialFlashcards);
 
