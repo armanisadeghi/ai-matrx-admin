@@ -5,13 +5,20 @@ import {
     Calculator,
     FileCode,
     GraduationCap,
+    Landmark,
     LucideIcon,
     MessageCircle,
     Microscope
 } from "lucide-react";
 
 import {FlashcardData} from "@/types/flashcards.types";
-import {flashcardDataSet, InitialFlashcardsWithExample, vocabFlashcardsTwo, vocabFlashcards,} from "./app-data";
+import {
+    flashcardDataSet,
+    InitialFlashcardsWithExample,
+    vocabFlashcardsTwo,
+    vocabFlashcards,
+    historyFlashcards,
+} from "./app-data";
 
 export const base_app_path = 'flashcard';
 
@@ -26,6 +33,8 @@ export type CategoryDetails = {
     icon: LucideIcon;
     description: string;
     customStyles?: CustomStyles;
+    subCategory?: string;
+    tags?: string[];
 };
 
 export type CategoryOptions = keyof typeof CATEGORIES;
@@ -36,6 +45,9 @@ export type DataSet = {
     data: FlashcardData[];
     description?: string;
     customStyles?: CustomStyles;
+    subCategory?: string;
+    tags?: string[];
+    icon?: LucideIcon;
 };
 
 export type AvailableDataKeys = keyof typeof AVAILABLE_DATA;
@@ -162,7 +174,21 @@ export const AVAILABLE_DATA: AvailableData = {
             },
         },
     ],
-    history_set_1: [],
+    history_set_1: [
+        {
+            displayName: 'Custom Set 1',
+            category: CATEGORIES.history,
+            subCategory: 'Foundations of American Government',
+            data: historyFlashcards,
+            description: 'This lesson delves into the early development of the United States government, examining the Articles of Confederation and the subsequent creation of the Constitution. It highlights the key principles that underpin American democracy, such as federalism, separation of powers, and the protection of individual rights. Students will explore influential historical documents and figures, gaining insights into the challenges and compromises that shaped the nation. Through interactive discussions and activities, learners will deepen their understanding of the responsibilities of citizenship and the structure of the U.S. government.',
+            tags: ['Articles of Confederation', 'Constitution', 'U.S. Government', 'Federalism', 'Separation of Powers', 'Bill of Rights', 'Founding Fathers', 'American History'],
+            icon: Landmark,
+            customStyles: {
+                backgroundColor: 'bg-blue-200 dark:bg-blue-800',
+                textColor: 'default',
+            },
+        },
+    ],
     math_set_1: [],
     english_set_1: [],
     science_set_1: [],

@@ -88,6 +88,10 @@
     "name": "socket-tests"
   },
   {
+    "path": "/tests/ssr-test",
+    "name": "ssr-test"
+  },
+  {
     "path": "/tests/table-test",
     "name": "table-test"
   },
