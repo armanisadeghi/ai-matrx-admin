@@ -15,32 +15,32 @@ interface TableTopOptionsProps {
     columnSettingsOpen: boolean;
 }
 
-const TableTopOptions: React.FC<TableTopOptionsProps> = (
-    {
-        columnNames,
-        handleSearchChange,
-        pageSize,
-        setPageSize,
-        handleAdd,
-        setColumnSettingsOpen,
-        columnSettingsOpen,
-    }) => {
+const TableTopOptions: React.FC<TableTopOptionsProps> = ({
+                                                             columnNames,
+                                                             handleSearchChange,
+                                                             pageSize,
+                                                             setPageSize,
+                                                             handleAdd,
+                                                             setColumnSettingsOpen,
+                                                             columnSettingsOpen,
+                                                         }) => {
     return (
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
             <PlaceholdersVanishingSearchInput
                 columnNames={columnNames}
                 onSearchChange={handleSearchChange}
-                className="w-1/3"
+                className="w-full sm:w-1/3"
             />
-            <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                    <span className="text-muted-foreground">Rows:</span>
+
+            <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center">
+                <div className="flex items-center space-x-2 sm:mr-4">
+                    <span className="text-muted-foreground text-sm">Rows:</span>
                     <Select
                         value={pageSize.toString()}
                         onValueChange={(value) => setPageSize(Number(value))}
                     >
-                        <SelectTrigger className="w-[100px] bg-card text-card-foreground border-input">
-                            <SelectValue placeholder="Rows per page"/>
+                        <SelectTrigger className="w-24 bg-card text-card-foreground border-input text-sm">
+                            <SelectValue placeholder="Rows"/>
                         </SelectTrigger>
                         <SelectContent>
                             {[5, 10, 25, 50, 100].map((size) => (
@@ -52,22 +52,25 @@ const TableTopOptions: React.FC<TableTopOptionsProps> = (
                     </Select>
                 </div>
 
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:space-x-2">
                     <MatrxTooltip content="Add a new item" placement="bottom" offset={10}>
                         <Button
                             onClick={handleAdd}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105"
+                            size="sm"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105 text-sm"
                         >
-                            <Plus className="mr-2 h-4 w-4"/> Add New
+                            <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4"/>
+                            <span>Add New</span>
                         </Button>
                     </MatrxTooltip>
                     <MatrxTooltip content="Column settings" placement="bottom" offset={10}>
                         <Button
                             onClick={() => setColumnSettingsOpen(!columnSettingsOpen)}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105"
+                            size="sm"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-105 text-sm"
                         >
-                            <Settings className="mr-2 h-4 w-4"/>
-                            Columns
+                            <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4"/>
+                            <span>Columns</span>
                         </Button>
                     </MatrxTooltip>
                 </div>

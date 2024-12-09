@@ -129,7 +129,7 @@ const MatrxTable: React.FC<MatrxTableProps> = (
     };
 
     return (
-        <div className={cn("p-3 space-y-4", className)}>
+        <div className={cn("p-1 space-y-4", className)}>
             <TableTopOptions
                 columnNames={allColumnNames}
                 handleSearchChange={handleSearchChange}

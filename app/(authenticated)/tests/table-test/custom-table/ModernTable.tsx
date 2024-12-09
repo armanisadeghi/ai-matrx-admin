@@ -15,8 +15,8 @@ import {
     ExtendedTableState,
     TableInstance,
     ModernTableProps,
-    TableData
 } from "@/types/tableTypes";
+import { TableData } from '@/types/entityTableTypes';
 
 const ModernTable: React.FC<ModernTableProps> = (
     {
