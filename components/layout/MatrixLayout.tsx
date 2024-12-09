@@ -4,7 +4,7 @@ import Image from "next/image";
 import {cn} from "@/lib/utils";
 import Link, {LinkProps} from "next/link";
 import {usePathname} from 'next/navigation';
-import React, {useState, createContext, useContext} from "react";
+import React, {useState, createContext, useContext, useEffect} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {IconMenu2, IconX, IconArrowNarrowLeft, IconArrowNarrowRight} from "@tabler/icons-react";
 import {Logo} from "@/components/layout/MatrixLogo";
@@ -160,9 +160,7 @@ interface SidebarContextProps {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-    undefined,
-);
+const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const useSidebar = () => {
     const context = useContext(SidebarContext);
@@ -182,10 +180,18 @@ export const SidebarProvider = (
         open?: boolean;
         setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
     }) => {
-    const [openState, setOpenState] = useState(false);
+    const [openState, setOpenState] = useState(openProp || false);
+    const pathname = usePathname();
 
     const open = openProp !== undefined ? openProp : openState;
     const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
+
+    // Close sidebar on route changes only on mobile
+    useEffect(() => {
+        if (window.innerWidth < 768) {
+        setOpen(false);
+        }
+    }, [pathname, setOpen]);
 
     return (
         <SidebarContext.Provider value={{open, setOpen}}>

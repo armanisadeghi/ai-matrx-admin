@@ -23,7 +23,7 @@ const DesktopMenu = () => {
             <div className="ml-auto flex items-center space-x-3">
                 <StandaloneThemeSwitcher initialTheme={'dark'}/>
                 <Link href="/dashboard">
-                    <Button variant="outline">Dashboard</Button>
+                    <Button variant="primary">Dashboard</Button>
                 </Link>
                 <Button>Start your project</Button>
             </div>
@@ -39,7 +39,9 @@ const MobileMenu = () => {
             </div>
 
             <div className="ml-auto flex items-center space-x-3">
-                <Button size="sm">Start Project</Button>
+                <Link href="/dashboard">
+                    <Button variant="outline">Dashboard</Button>
+                </Link>
                 <StandaloneThemeSwitcher initialTheme={'dark'}/>
 
                 <details className="relative">

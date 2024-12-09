@@ -3,12 +3,14 @@ import {createClient} from "@/utils/supabase/server";
 import {Providers} from "@/app/Providers";
 import {mapUserData} from '@/utils/userDataMapper';
 import {LayoutWithSidebar} from "@/components/layout/MatrixLayout";
+// import {LayoutWithSidebar} from "@/components/layout/extras/layoutNew";
 import {appSidebarLinks, adminSidebarLinks} from "@/constants";
 import {generateClientGlobalCache, initializeSchemaSystem} from '@/utils/schema/precomputeUtil';
 import {getTestDirectories} from '@/utils/directoryStructure';
 import {InitialReduxState} from "@/types/reduxTypes";
 import {ClientDebugWrapper} from '@/components/admin/ClientDebugWrapper';
 import NavigationLoader from "@/components/loaders/NavigationLoader";
+import {headers} from 'next/headers';
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -20,8 +22,15 @@ export default async function AuthenticatedLayout(
         children: React.ReactNode;
     }) {
     const supabase = await createClient(); // Await the async function to get the Supabase client
+    const headersList = await headers();
+    const viewport = headersList.get('viewport-width') || '1024';
+    const isMobile = Number(viewport) < 768;
 
-    const layoutProps = {primaryLinks: appSidebarLinks, secondaryLinks: adminSidebarLinks, initialOpen: true};
+    const layoutProps = {
+        primaryLinks: appSidebarLinks,
+        secondaryLinks: adminSidebarLinks,
+        initialOpen: !isMobile
+    };
 
     const {
         data: {user},
