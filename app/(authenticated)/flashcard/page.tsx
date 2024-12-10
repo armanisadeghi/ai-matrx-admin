@@ -12,7 +12,7 @@ export default async function SSRTestPage() {
         description: category.description,
         icon: category.icon,
         additionalFields: {
-            'Style': category.backgroundColor
+            'Style': category.customStyles.backgroundColor
         }
     }));
 

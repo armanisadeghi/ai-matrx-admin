@@ -11,9 +11,7 @@ export default async function SSRTestPage() {
         displayName: category.label,
         description: category.description,
         icon: category.icon,
-        additionalFields: {
-            'Style': category.backgroundColor
-        }
+        customStyles: category.customStyles,
     }));
 
     return <OptionCardGrid items={items} basePath={base_app_path} />;

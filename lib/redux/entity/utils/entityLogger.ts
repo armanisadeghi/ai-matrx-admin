@@ -1,6 +1,6 @@
 // lib/redux/entity/entityLogger.ts
 
-import {safeStringifyWithTimeout} from "@/utils/safeStringify";
+import { safeStringifyWithTimeout } from "@/utils/safeStringify";
 
 type LogLevel = 'none' | 'debug' | 'info' | 'warn' | 'error';
 type DetailLevel = 'minimal' | 'standard' | 'verbose';
@@ -18,24 +18,25 @@ interface LogEntry {
 class EntityLogger {
     private static logs: LogEntry[] = [];
     private static subscribers: ((logs: LogEntry[]) => void)[] = [];
-    private static logLevel: LogLevel = 'info';
-    private static consoleLogLevel: LogLevel = 'info';
+    private static logLevel: LogLevel = 'debug';
+    private static consoleLogLevel: LogLevel = 'debug';
     private static detailLevel: DetailLevel = 'standard';
     private static featureFilter: Set<string> = new Set();
     private static duplicateSuppressionInterval = 500;
 
     private trace: string;
     private entityKey: string;
+    private defaultFeature?: string;
 
     private static lastLogEntry: LogEntry | null = null;
     private static lastLogTime: number | null = null;
 
     private static logLevelOrder: Record<LogLevel, number> = {
-        'none': 0,
         'debug': 1,
         'info': 2,
         'warn': 3,
-        'error': 4
+        'error': 4,
+        'none': 5,
     };
 
     private static logLevelColors: Record<LogLevel, string> = {
@@ -48,9 +49,10 @@ class EntityLogger {
 
     private static resetColor = '\x1b[0m'; // Resets color
 
-    constructor(trace: string = 'NoTrace', entityKey: string = 'NoEntity') {
+    constructor(trace: string = 'NoTrace', entityKey: string = 'NoEntity', defaultFeature?: string) {
         this.trace = trace;
         this.entityKey = entityKey;
+        this.defaultFeature = defaultFeature;
     }
 
     static setLogLevel(level: LogLevel) {
@@ -69,12 +71,20 @@ class EntityLogger {
         this.featureFilter = new Set(features);
     }
 
+    static addFeatureToFilter(feature: string) {
+        this.featureFilter.add(feature);
+    }
+
+    static removeFeatureFromFilter(feature: string) {
+        this.featureFilter.delete(feature);
+    }
+
     static setDuplicateSuppressionInterval(interval: number) {
         this.duplicateSuppressionInterval = interval;
     }
 
-    static createLoggerWithDefaults(trace: string, entityKey: string) {
-        return new EntityLogger(trace, entityKey);
+    static createLoggerWithDefaults(trace: string, entityKey: string, defaultFeature?: string) {
+        return new EntityLogger(trace, entityKey, defaultFeature);
     }
 
     log(
@@ -86,8 +96,9 @@ class EntityLogger {
     ) {
         const trace = traceOverride || this.trace;
         const entityKey = this.entityKey;
+        const effectiveFeature = feature || this.defaultFeature;
 
-        if (!EntityLogger.shouldLog(level, feature)) {
+        if (!EntityLogger.shouldLog(level, effectiveFeature)) {
             return;
         }
 
@@ -96,7 +107,7 @@ class EntityLogger {
             level,
             trace,
             entityKey,
-            feature,
+            feature: effectiveFeature,
             message,
             details
         };
@@ -109,7 +120,7 @@ class EntityLogger {
         EntityLogger.logs.unshift(entry);
         if (EntityLogger.logs.length > 100) EntityLogger.logs.pop();
 
-        if (EntityLogger.shouldPrintToConsole(level, feature)) {
+        if (EntityLogger.shouldPrintToConsole(level, effectiveFeature)) {
             EntityLogger.printToConsole(entry);
         }
 
@@ -143,24 +154,22 @@ class EntityLogger {
         const { trace, entityKey, feature, level } = entry;
         const color = this.logLevelColors[level] || '';
         const reset = this.resetColor;
-    const message =
-        typeof entry.message === 'object'
+        const message =
+            typeof entry.message === 'object'
             ? safeStringifyWithTimeout(entry.message, 2, 5, 1000) // Explicitly passing arguments
             : entry.message;
 
-    const details =
-        typeof entry.details === 'object' && entry.details !== null
+        const details =
+            typeof entry.details === 'object' && entry.details !== null
             ? safeStringifyWithTimeout(entry.details, 2, 5, 1000) // Explicitly passing arguments
             : entry.details;
 
         switch (this.detailLevel) {
             case 'minimal':
-                // Color the message only
                 console.log(`[${trace}] ${color}${message}${reset}`);
                 break;
 
             case 'standard':
-                // Color only the message and include details separately
                 console.log(`[${trace}: ${entityKey}] ${color}${message}${reset}`);
                 if (details !== undefined) {
                     console.log(`${color}${details}${reset}`);
@@ -168,7 +177,6 @@ class EntityLogger {
                 break;
 
             case 'verbose':
-                // Color the message and details individually
                 console.log(`[${trace}: ${entityKey}] ${feature ? `[${feature}]` : ''}`);
                 console.log(color + message + reset);
                 if (details !== undefined) {
@@ -178,7 +186,6 @@ class EntityLogger {
                 break;
 
             default:
-                // Default to color only the message
                 console.log(`[${trace}] ${color}${message}${reset}`);
                 break;
         }
@@ -186,15 +193,15 @@ class EntityLogger {
 
     private static shouldLog(level: LogLevel, feature?: string): boolean {
         return (
-            this.logLevelOrder[level] >= this.logLevelOrder[this.logLevel] ||
-            (feature && this.featureFilter.has(feature))
+            (feature && this.featureFilter.has(feature)) ||
+            this.logLevelOrder[level] >= this.logLevelOrder[this.logLevel]
         );
     }
 
     private static shouldPrintToConsole(level: LogLevel, feature?: string): boolean {
         return (
-            this.logLevelOrder[level] >= this.logLevelOrder[this.consoleLogLevel] ||
-            (feature && this.featureFilter.has(feature))
+            (feature && this.featureFilter.has(feature)) ||
+            this.logLevelOrder[level] >= this.logLevelOrder[this.consoleLogLevel]
         );
     }
 

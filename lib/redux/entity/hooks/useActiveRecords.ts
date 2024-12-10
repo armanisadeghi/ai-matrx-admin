@@ -5,7 +5,7 @@ import { createEntitySelectors } from '@/lib/redux/entity/selectors';
 import { EntityState, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import { selectFormattedEntityOptions } from '@/lib/redux/schema/globalCacheSelectors';
 
-export const useActiveRecords = () => {
+export const useActiveRecords = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const entityOptions = useAppSelector(selectFormattedEntityOptions);
 
     const entitySelectors = React.useMemo(() => {

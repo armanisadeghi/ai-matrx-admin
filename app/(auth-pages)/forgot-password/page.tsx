@@ -24,7 +24,7 @@ export default async function ForgotPassword({ searchParams }: Props) {
             subtitle={
                 <>
                     Enter your email to reset your password.{" "}
-                    <Link className="text-blue-600 dark:text-blue-400 hover:text-blue-500 underline" href="/sign-in">
+                    <Link className="text-blue-600 dark:text-blue-400 hover:text-blue-500 underline" href="/login">
                         Back to Sign in
                     </Link>
                 </>

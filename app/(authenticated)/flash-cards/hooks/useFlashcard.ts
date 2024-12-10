@@ -28,7 +28,7 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
     const firstName = useSelector((state: RootState) => state.user.userMetadata.fullName?.split(' ')[0] || null);
 
     const [isFlipped, setIsFlipped] = useState(false);
-    const [fontSize, setFontSize] = useState(20);
+    const [fontSize, setFontSize] = useState(18);
     const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState('');

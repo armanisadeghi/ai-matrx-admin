@@ -13,8 +13,10 @@ import {
 } from "@/lib/redux/entity/types/stateTypes";
 import EntityLogger from "./entityLogger";
 
-const trace = "UTILS";
-const utilsLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
+// EntityLogger.addFeatureToFilter("utils");
+
+const utilsLogger = EntityLogger.createLoggerWithDefaults("UTILS", "NoEntity", "utils");
+
 
 
 export const setLoading = <TEntity extends EntityKeys>(
@@ -23,18 +25,34 @@ export const setLoading = <TEntity extends EntityKeys>(
 ) => {
     const flagKey = `${operation}_STATUS` as keyof EntityOperationFlags;
 
+    utilsLogger.log('debug', `stateHelpUtils.ts setLoading Setting loading state for operation:`, operation);
+
+    // Ensure initialization
     if (!state.loading.initialized) {
-        utilsLogger.log('error', 'Loading state is not initialized. Expected `initialized` to be true.', 'setLoading');
+        state.loading.initialized = true;
+        state.loading.loading = false;
+        state.loading.error = null;
+        state.loading.lastOperation = null;
     }
 
-    if (flagKey in state.flags.operationFlags) {
-        state.loading.loading = true;
-        state.loading.error = null;
-        state.loading.lastOperation = operation;
-        state.flags.operationFlags[flagKey] = 'LOADING';
-    } else {
+    // Check if operation is valid
+    if (!(flagKey in state.flags.operationFlags)) {
         utilsLogger.log('error', `Invalid operation: ${operation}`, 'setLoading');
+        return false;
     }
+
+    // Check if we're already loading
+    if (state.loading.loading) {
+        utilsLogger.log('warn', `stateHelpUtils.ts setLoading Setting loading state while already loading. Current operation:`, state.loading.lastOperation);
+        return false;
+    }
+
+    state.loading.operationId = crypto.randomUUID();
+    state.loading.loading = true;
+    state.loading.error = null;
+    state.loading.lastOperation = operation;
+    state.flags.operationFlags[flagKey] = 'LOADING';
+    return true;
 };
 
 
@@ -44,43 +62,30 @@ export const setSuccess = <TEntity extends EntityKeys>(
 ) => {
     const flagKey = `${operation}_STATUS` as keyof EntityOperationFlags;
 
-    if (!state.loading.loading) {
-        utilsLogger.log(
-            'warn',
-            `Expected loading state to be true before setting success for operation: ${operation}`,
-            'setSuccess'
-        );
-    }
-
-    // Expectations Check: Ensure no existing errors
-    if (state.loading.error !== null) {
-        utilsLogger.log(
-            'warn',
-            `Unexpected error state found before setting success for operation: ${operation}. Error: ${state.loading.error}`,
-            'setSuccess'
-        );
-    }
-
-    // Expectations Check: Ensure last operation matches the current one
-    if (state.loading.lastOperation !== operation) {
-        utilsLogger.log(
-            'warn',
-            `Last operation mismatch. Expected ${operation} but found ${state.loading.lastOperation}`,
-            'setSuccess'
-        );
-    }
-
-    // Ensure flagKey is valid before proceeding
-    if (flagKey in state.flags.operationFlags) {
-        state.loading.loading = false;
-        state.loading.error = null;
-        state.loading.lastOperation = operation;
-
-        state.flags.operationFlags[flagKey] = 'SUCCESS';
-    } else {
+    // Validate operation
+    if (!(flagKey in state.flags.operationFlags)) {
         utilsLogger.log('error', `Invalid operation flag: ${operation}`, 'setSuccess');
+        return false;
     }
+
+    // Validate state transition
+    if (!state.loading.loading) {
+        utilsLogger.log('error', `Cannot set success when not in loading state: ${operation}`, 'setSuccess');
+        return false;
+    }
+
+    if (state.loading.lastOperation !== operation) {
+        utilsLogger.log('error', `Operation mismatch. Expected ${operation} but found ${state.loading.lastOperation}`, 'setSuccess');
+        return false;
+    }
+
+    // Set success state
+    state.loading.loading = false;
+    state.loading.error = null;
+    state.flags.operationFlags[flagKey] = 'SUCCESS';
+    return true;
 };
+
 
 
 export const resetFlag = <TEntity extends EntityKeys>(
@@ -89,15 +94,24 @@ export const resetFlag = <TEntity extends EntityKeys>(
 ) => {
     const flagKey = `${operation}_STATUS` as keyof EntityOperationFlags;
 
-    if (flagKey in state.flags.operationFlags) {
-        if (state.flags.operationFlags[flagKey] === 'SUCCESS') {
-            state.flags.operationFlags[flagKey] = 'IDLE';
-        } else {
-            utilsLogger.log('error', `Attempted to reset flag that was not set to SUCCESS: ${operation}`, 'resetFlag');
-        }
-    } else {
+    if (!(flagKey in state.flags.operationFlags)) {
         utilsLogger.log('error', `Invalid operation for resetFlag: ${operation}`, 'resetFlag');
+        return false;
     }
+
+    // Allow reset from any non-IDLE state
+    if (state.flags.operationFlags[flagKey] !== 'IDLE') {
+        state.flags.operationFlags[flagKey] = 'IDLE';
+
+        // If this was the last operation and we're not loading something else,
+        // clear the loading state
+        if (state.loading.lastOperation === operation && !state.loading.loading) {
+            state.loading.lastOperation = null;
+        }
+        return true;
+    }
+
+    return false;
 };
 
 export interface SelectionSummary {
@@ -459,20 +473,28 @@ export const parseMultipleMatrxRecordIds = (
 
 
 export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): MatrxRecordId => {
-    utilsLogger.log('debug', 'createRecordKey called', {record});
-    utilsLogger.log('debug', 'Metadata:', {metadata});
+    utilsLogger.log('debug', 'createRecordKey called', { record }, undefined, 'recordKey');
+    utilsLogger.log('debug', 'Metadata:', { metadata }, undefined, 'recordKey');
+
     const key = metadata.database_fields
         .map((field, index) => {
             const frontendField = metadata.fields[index];
             const value = record[frontendField];
 
             if (value === undefined) {
-                utilsLogger.log('error', `Missing value for primary key field: ${frontendField}`, 'createRecordKey');
+                utilsLogger.log(
+                    'error',
+                    `Missing value for primary key field: ${frontendField}`,
+                    { field: frontendField },
+                    undefined,
+                    'recordKey'
+                );
             }
             return `${field}:${value}`;
         })
         .join('::');
-    utilsLogger.log('debug', 'Generated record key:', {key});
+
+    utilsLogger.log('debug', 'Generated record key:', { key }, undefined, 'recordKey');
     return key;
 };
 

@@ -7,6 +7,8 @@ import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 import {motion, AnimatePresence} from 'framer-motion';
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
+import SmartCrudWrapper
+    from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
 
 interface EntityQuickReferenceCardsProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -47,9 +49,9 @@ function EntityQuickReferenceCards<TEntity extends EntityKeys>(
         const baseSize = 180; // Base card width
         const configs = {
             compact: {
-                padding: 'px-2 py-2',
-                contentPadding: 'p-2',
-                gap: 'gap-2',
+                padding: 'px-0 py-0',
+                contentPadding: 'p-1',
+                gap: 'gap-0',
                 fontSize: 'text-xs',
                 iconSize: 'h-3 w-3',
                 buttonSize: 'h-7',
@@ -58,9 +60,9 @@ function EntityQuickReferenceCards<TEntity extends EntityKeys>(
                 headerPadding: 'px-2 py-2',
             },
             normal: {
-                padding: 'px-4 py-3',
-                contentPadding: 'p-4',
-                gap: 'gap-4',
+                padding: 'px-1 py-1',
+                contentPadding: 'p-2',
+                gap: 'gap-1',
                 fontSize: 'text-sm',
                 iconSize: 'h-4 w-4',
                 buttonSize: 'h-8',
@@ -69,9 +71,9 @@ function EntityQuickReferenceCards<TEntity extends EntityKeys>(
                 headerPadding: 'px-4 py-3',
             },
             comfortable: {
-                padding: 'px-6 py-4',
-                contentPadding: 'p-5',
-                gap: 'gap-5',
+                padding: 'px-3 py-3',
+                contentPadding: 'p-4',
+                gap: 'gap-2',
                 fontSize: 'text-base',
                 iconSize: 'h-5 w-5',
                 buttonSize: 'h-9',
@@ -153,6 +155,21 @@ function EntityQuickReferenceCards<TEntity extends EntityKeys>(
 
     return (
         <div className={cn('flex flex-col w-full bg-background min-w-0', className)}>
+            <SmartCrudWrapper
+                entityKey={entityKey}
+                options={{
+                    allowCreate: true,
+                    allowEdit: true,
+                    allowDelete: true,
+                    showConfirmation: true,
+                }}
+                layout={{
+                    buttonLayout: 'column',
+                    buttonSize: 'sm',
+                    buttonSpacing: 'compact',
+                }}
+
+            />
             <div
                 className={cn(
                     "border-b flex justify-between items-center backdrop-blur-sm bg-background/80 sticky top-0 z-10",

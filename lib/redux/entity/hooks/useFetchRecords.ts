@@ -22,7 +22,7 @@ interface FetchStateEntry {
     timestamp: number;
 }
 
-export const useFetchRecords = () => {
+export const useFetchRecords= <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const entityOptions = useAppSelector(selectFormattedEntityOptions);
     const entitySelectors = React.useMemo(() => {

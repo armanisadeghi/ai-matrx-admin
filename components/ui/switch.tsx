@@ -5,6 +5,8 @@ import * as SwitchPrimitives from "@radix-ui/react-switch"
 
 import { cn } from "@/styles/themes/utils"
 
+// TODO: The translate properties of this are all messed up and need to revert to th original, but we also need to make sure that CN can't be used to SKEW it and mess up the translation
+
 const Switch = React.forwardRef<
     React.ElementRef<typeof SwitchPrimitives.Root>,
     React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>

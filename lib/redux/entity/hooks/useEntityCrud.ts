@@ -6,7 +6,7 @@ import {EntityKeys} from '@/types/entityTypes';
 import {EntityOperationMode, MatrxRecordId,} from '@/lib/redux/entity/types/stateTypes';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Callback, callbackManager} from "@/utils/callbackManager";
-import {useEntityValidation} from "@/lib/redux/entity/hooks/useValidation";
+import {useEntityValidation} from "@/lib/redux/entity/hooks/useEntityValidation";
 import {useEntity} from "@/lib/redux/entity/hooks/useEntity";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 
@@ -19,6 +19,8 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
     const entity = useEntity(entityKey);
 
     const pendingOperations = useAppSelector(selectors.selectPendingOperations);
+    const flags = useAppSelector(selectors.selectEntityFlags);
+    const dataState = useAppSelector(selectors.selectDataState);
 
     const isOperationPending = useCallback((matrxRecordId: MatrxRecordId) =>
             pendingOperations.includes(matrxRecordId)
@@ -309,6 +311,8 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
         getEffectiveRecord: entity.effectiveRecordById,
         isTemporaryRecordId,
         hasSelectedRecordsPending,
+        flags,
+        dataState,
 
         crud: crudHandlers,
         activeRecordCrud,

@@ -96,3 +96,4 @@ export const MatrxPreviousButton: React.FC<MatrxButtonProps> = (props) => (
         Previous
     </MatrixIconButton>
 );
+

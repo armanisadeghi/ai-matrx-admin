@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useRef} from "react";
+import React, {useState} from "react";
 import {motion, AnimatePresence} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import {EntityButton, EntitySearchInput,} from "./field-components";
@@ -30,8 +30,12 @@ import {
     ZigzagLayout
 } from "./FormLayouts";
 import EntityRelationshipWrapper from "./EntityRelationshipWrapper";
-import {ArmaniFormProps, FormColumnsOptions, GridColumnOptions, TextSizeOptions} from "@/types/componentConfigTypes";
 import SmartCrudButtons from "../Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
+import {useFieldVisibility} from "@/lib/redux/entity/hooks/useFieldVisibility";
+import {useAppDispatch, useAppStore} from "@/lib/redux/hooks";
+import {FormColumnsOptions, FormDirectionOptions, GridColumnOptions, FormLayoutOptions} from "@/types/componentConfigTypes";
+import { UnifiedLayoutProps } from "../Entity";
+import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
 
 export interface FormState {
     [key: string]: any;
@@ -39,52 +43,57 @@ export interface FormState {
 
 export type FormDensity = 'normal' | 'compact' | 'comfortable';
 
-const ArmaniForm: React.FC<ArmaniFormProps> = (
-    {
-        entityKey,
-        dynamicFieldInfo,
-        formData,
-        onUpdateField,
-        unifiedCrudHandlers,
-        onSubmitUpdate,
-        onSubmitCreate,
-        onSubmitDelete,
-        currentStep: externalCurrentStep,
-        onNextStep: externalOnNextStep,
-        onPrevStep: externalOnPrevStep,
-        isSinglePage = false,
-        className,
-        isFullPage = false,
-        columns = 1 as FormColumnsOptions,
-        layout = 'grid',
-        enableSearch = false,
-        direction = 'row',
-        density = 'normal',
-        animationPreset = 'smooth',
-        size = 'default' as TextSizeOptions,
-        variant = 'default',
-        floatingLabel = true,
-        ...props
-    }) => {
-    const [internalCurrentStep, setInternalCurrentStep] = useState(0);
-    const currentStep = externalCurrentStep !== undefined ? externalCurrentStep : internalCurrentStep;
-    const formRef = useRef<HTMLDivElement>(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [carouselActiveIndex, setCarouselActiveIndex] = useState(0);
-    const animationVariants = getAnimationVariants(animationPreset);
+const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
+    const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
+    const { activeRecordCrud, getEffectiveRecord } = useEntityCrud(entityKey);
+    const recordData = activeRecordCrud.recordData;
+
+    const {
+        visibleFieldsInfo: dynamicFieldInfo,
+        allowedFieldsInfo,
+        selectedFields,
+        searchTerm,
+        setSearchTerm,
+        toggleField,
+        selectAllFields,
+        clearAllFields,
+        isSearchEnabled
+    } = useFieldVisibility(entityKey, unifiedLayoutProps);
+
+    const currentRecordData = activeRecordCrud.recordId ?
+                              getEffectiveRecord(activeRecordCrud.recordId) :
+        {};
+
+    const dynamicLayoutOptions = unifiedLayoutProps.dynamicLayoutOptions;
+    const formStyleOptions = dynamicLayoutOptions.formStyleOptions || {};
+    const isSinglePage = formStyleOptions.formIsSinglePage || false;
+    const isFullPage = formStyleOptions.formIsFullPage || false;
+    const columns = formStyleOptions.formColumns || 1 as FormColumnsOptions;
+    const layout = formStyleOptions.formLayout || 'grid' as FormLayoutOptions;
+    const direction = formStyleOptions.formDirection || 'row' as FormDirectionOptions;
+    const enableSearch = formStyleOptions.formEnableSearch || false;
+    const floatingLabel = formStyleOptions.floatingLabel ?? true;
+
+    const dynamicStyleOptions = unifiedLayoutProps.dynamicStyleOptions;
+    const density = dynamicStyleOptions.density || 'normal';
+    const animationPreset = dynamicStyleOptions.animationPreset || 'smooth';
+    const variant = dynamicStyleOptions.variant || 'default';
+    const size = dynamicStyleOptions.size || 'default';
+    const unifiedCrudHandlers = unifiedLayoutProps.unifiedCrudHandlers;
+    const onUpdateField = unifiedCrudHandlers?.handleFieldUpdate;
+    const onSubmitUpdate = unifiedCrudHandlers?.handleUpdate;
+    const onSubmitCreate = unifiedCrudHandlers?.handleCreate;
+    const onSubmitDelete = unifiedCrudHandlers?.handleDelete;
+
+    const className = unifiedLayoutProps.className;
     const containerSpacing = densityConfig[density].spacing;
     const densityStyles = spacingConfig[density];
-
-    const internalOnNextStep = () => {
-        setInternalCurrentStep((prevStep) => Math.min(prevStep + 1, dynamicFieldInfo.length - 1));
-    };
-
-    const internalOnPrevStep = () => {
-        setInternalCurrentStep((prevStep) => Math.max(prevStep - 1, 0));
-    };
-
-    const onNextStep = externalOnNextStep || internalOnNextStep;
-    const onPrevStep = externalOnPrevStep || internalOnPrevStep;
+    const currentStep = unifiedLayoutProps.unifiedStepHandlers?.currentStep;
+    const onNextStep = unifiedLayoutProps.unifiedStepHandlers?.onNextStep;
+    const onPrevStep = unifiedLayoutProps.unifiedStepHandlers?.onPrevStep;
+    const [carouselActiveIndex, setCarouselActiveIndex] = useState(0);
+    const animationVariants = getAnimationVariants(animationPreset);
+    const formRef = React.useRef<HTMLDivElement>(null);
 
     const filteredFields = enableSearch
                            ? dynamicFieldInfo.filter(field =>
@@ -92,15 +101,11 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
             field.name.toLowerCase().includes(searchTerm.toLowerCase())
         ) : dynamicFieldInfo;
 
-    const handleSave = () => {
-        unifiedCrudHandlers.handleUpdate?.({ showToast: true });
-    };
-
     const renderField = (dynamicFieldInfo: EntityStateField) => {
         const commonProps: EntityBaseFieldProps = {
             entityKey,
             dynamicFieldInfo,
-            value: formData[dynamicFieldInfo.name] || '',
+            value: recordData[dynamicFieldInfo.name] || '',
             onChange: (value: any) => onUpdateField(dynamicFieldInfo.name, value),
             density,
             animationPreset,
@@ -115,7 +120,7 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
             return (
                 <EntityRelationshipWrapper
                     {...commonProps}
-                    formData={formData}
+                    currentRecordData={recordData}
                 />
             );
         }
@@ -239,7 +244,7 @@ const ArmaniForm: React.FC<ArmaniFormProps> = (
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSave();
+                    unifiedCrudHandlers.handleUpdate();
                 }}
                 className={cn("h-full", densityStyles.container)}
             >

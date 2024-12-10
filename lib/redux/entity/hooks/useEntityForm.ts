@@ -14,7 +14,7 @@ import {
 } from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from "@/utils/callbackManager";
 import { toast } from '@/components/ui';
-import { useEntityValidation } from "@/lib/redux/entity/hooks/useValidation";
+import { useEntityValidation } from "@/lib/redux/entity/hooks/useEntityValidation";
 
 interface UseEntityFormOptions {
     allowCreate?: boolean;

@@ -6,7 +6,7 @@ import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {EntityBaseFieldProps} from "./EntityBaseField";
 
 export interface EntityRelationshipWrapperProps extends EntityBaseFieldProps {
-    formData: Record<string, any>;
+    currentRecordData: Record<string, any>;
 }
 
 const EntityRelationshipWrapper = (
@@ -20,7 +20,7 @@ const EntityRelationshipWrapper = (
         size = 'default',
         variant = 'default',
         floatingLabel = true,
-        formData,
+        currentRecordData,
     }: EntityRelationshipWrapperProps) => {
     const Component = ENTITY_FIELD_COMPONENTS[dynamicFieldInfo.defaultComponent];
     const valueOrDefault = value ?? dynamicFieldInfo.defaultValue;
@@ -45,7 +45,7 @@ const EntityRelationshipWrapper = (
             size={size}
             variant={variant}
             floatingLabel={floatingLabel}
-            formData={formData}
+            formData={currentRecordData}
             activeEntityKey={entityKey}
         />
     );

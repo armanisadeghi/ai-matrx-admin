@@ -6,6 +6,11 @@ import { cn } from "@/lib/utils";
 import { Sun, Moon } from "lucide-react";
 import { ComponentSize } from "@/types/componentConfigTypes";
 
+// TODO: The switches are completely messed up because in my testing, some idiot had skewed their size and messed them up and I didn't notice
+// TODO: So they are all  built based on strange, messed up translate properties.
+// TODO: Need to fix that here and in the normal switch component
+
+
 // Common types
 interface BaseMatrxSwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {
     size?: ComponentSize;

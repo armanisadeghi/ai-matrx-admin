@@ -13,6 +13,7 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
+    reactStrictMode: false,
     headers() {
         return [
             {

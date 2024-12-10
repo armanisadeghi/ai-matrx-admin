@@ -1,12 +1,11 @@
 import React from 'react';
-import {Card, CardContent, CardFooter} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {CheckCircle, XCircle, MessageSquare} from 'lucide-react';
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
-import {useFlashcard} from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
-import {cn} from "@/utils/cn";
+import { ArmaniCollapsible } from '@/components/matrx/matrx-collapsible/armani-collapsible';
 
-const FlashcardDisplay: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
+const FlashcardDisplay = ({ flashcardHook }) => {
     const {
         activeFlashcard,
         isFlipped,
@@ -16,7 +15,19 @@ const FlashcardDisplay: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard
         handleAskQuestion,
     } = flashcardHook;
 
-    const frontFontSize = fontSize + 10;
+    // Scale factors for different elements
+    const frontFontSize = fontSize + 20;
+    const backAnswerFontSize = fontSize + 4;
+    const backFontSize = fontSize;
+    const titleFontSize = fontSize + 2;
+
+    // Convert fontSize to Tailwind class for ArmaniCollapsible titles
+    const getTitleFontSizeClass = (size) => {
+        if (size <= 16) return 'text-base';
+        if (size <= 18) return 'text-lg';
+        if (size <= 20) return 'text-xl';
+        return 'text-2xl';
+    };
 
     if (!activeFlashcard) {
         return <div>No card data available</div>;
@@ -31,48 +42,101 @@ const FlashcardDisplay: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard
                 onClick={handleFlip}
             >
                 {/* Front of card */}
-                <Card
-                    className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
+                <Card className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
                     <CardContent className="flex-grow flex items-center justify-center p-6 overflow-auto h-full">
-                        <p className="text-center text-white" style={{fontSize: `${frontFontSize}px`}}>
+                        <p className="text-center text-white" style={{ fontSize: `${frontFontSize}px` }}>
                             {activeFlashcard.front}
                         </p>
                     </CardContent>
                 </Card>
                 {/* Back of card */}
-                <Card
-                    className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
-                    <CardContent className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)]">
-                        <MarkdownRenderer content={activeFlashcard.back} type="flashcard" fontSize={fontSize} />
-                        <div className="w-full border-t border-zinc-700 my-2"></div>
-                        <div className={cn('text-left', 'text-blue-400')} style={{ fontSize: `${fontSize}px` }}>
-                            <span className="font-bold">Example:</span>
-                            <MarkdownRenderer
-                                content={activeFlashcard.example}
-                                type="flashcard"
-                                fontSize={fontSize}
-                                className="inline text-blue-400"
-                            />
+                <Card className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
+                    <CardContent className="flex-grow flex flex-col items-start justify-start p-6 overflow-auto h-[calc(100%-60px)] space-y-4">
+                        <MarkdownRenderer
+                            content={activeFlashcard.back}
+                            type="flashcard"
+                            fontSize={backAnswerFontSize}
+                        />
+                        <div className="w-full border-t border-zinc-700" />
+
+                        <div onClick={e => e.stopPropagation()}>
+                            <ArmaniCollapsible
+                                title={<span className="text-purple-400 font-bold" style={{ fontSize: `${titleFontSize}px` }}>
+                                    Detailed Explanation
+                                </span>}
+                                id="detailed-explanation"
+                                collapsibleToChip={false}
+                                className="w-full"
+                                titleFontSize={getTitleFontSizeClass(titleFontSize)}
+                            >
+                                <div className="pl-6 text-zinc-100">
+                                    <MarkdownRenderer
+                                        content={activeFlashcard.detailedExplanation}
+                                        type="flashcard"
+                                        fontSize={backFontSize}
+                                    />
+                                </div>
+                            </ArmaniCollapsible>
+                        </div>
+
+                        <div className="w-full border-t border-zinc-700" />
+
+                        <div onClick={e => e.stopPropagation()}>
+                            <ArmaniCollapsible
+                                title={<span className="text-purple-400 font-bold" style={{ fontSize: `${titleFontSize}px` }}>
+                                    Example
+                                </span>}
+                                id="example"
+                                collapsibleToChip={false}
+                                className="w-full"
+                                titleFontSize={getTitleFontSizeClass(titleFontSize)}
+                            >
+                                <div className="pl-6 text-zinc-100">
+                                    <MarkdownRenderer
+                                        content={activeFlashcard.example}
+                                        type="flashcard"
+                                        fontSize={backFontSize}
+                                    />
+                                </div>
+                            </ArmaniCollapsible>
                         </div>
                     </CardContent>
                     <CardFooter className="flex justify-between p-2 absolute bottom-0 left-0 right-0">
-                        <Button onClick={(e) => {
-                            e.stopPropagation();
-                            handleAnswer(false);
-                        }} variant="destructive">
-                            <XCircle className="mr-2 h-4 w-4"/> Incorrect
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAnswer(false);
+                            }}
+                            variant="destructive"
+                            className="sm:px-4 px-2 text-sm sm:text-base"
+                        >
+                            <XCircle className="sm:mr-2 mr-0 h-4 w-4 sm:flex hidden"/>
+                            <XCircle className="h-4 w-4 sm:hidden flex"/>
+                            <span className="sm:inline hidden">Incorrect</span>
                         </Button>
-                        <Button onClick={(e) => {
-                            e.stopPropagation();
-                            handleAskQuestion();
-                        }} variant="secondary">
-                            <MessageSquare className="mr-2 h-4 w-4"/> Ask a Question
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAskQuestion();
+                            }}
+                            variant="secondary"
+                            className="sm:px-4 px-2 text-sm sm:text-base"
+                        >
+                            <MessageSquare className="sm:mr-2 mr-0 h-4 w-4 sm:flex hidden"/>
+                            <MessageSquare className="h-4 w-4 sm:hidden flex"/>
+                            <span className="sm:inline hidden">Ask a Question</span>
                         </Button>
-                        <Button onClick={(e) => {
-                            e.stopPropagation();
-                            handleAnswer(true);
-                        }} variant="default" className="bg-primary hover:bg-green-700">
-                            <CheckCircle className="mr-2 h-4 w-4"/> Correct
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleAnswer(true);
+                            }}
+                            variant="default"
+                            className="bg-primary hover:bg-green-700 sm:px-4 px-2 text-sm sm:text-base"
+                        >
+                            <CheckCircle className="sm:mr-2 mr-0 h-4 w-4 sm:flex hidden"/>
+                            <CheckCircle className="h-4 w-4 sm:hidden flex"/>
+                            <span className="sm:inline hidden">Correct</span>
                         </Button>
                     </CardFooter>
                 </Card>

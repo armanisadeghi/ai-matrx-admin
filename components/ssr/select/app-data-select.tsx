@@ -7,31 +7,29 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    getCategoriesForSelect,
-    getDataForSelect,
-    getDataByCategoryForSelect,
-    CategoryOptions
-} from './constants';
+import {AvailableData, CategoryDetails} from "@/app/(authenticated)/tests/ssr-test/constants";
+
 
 // Server Components
-export async function CategorySelect({
-                                         defaultValue,
-                                         className
-                                     }: {
-    defaultValue?: string;
-    className?: string;
-}) {
-    const categories = await getCategoriesForSelect();
+export async function CategorySelect(
+    {
+        categories,
+        defaultValue,
+        className
+    }: {
+        defaultValue?: string;
+        className?: string;
+        categories: CategoryDetails[];
+    }) {
 
     return (
         <Select defaultValue={defaultValue}>
             <SelectTrigger className={className}>
-                <SelectValue placeholder="Select a category" />
+                <SelectValue placeholder="Select a category"/>
             </SelectTrigger>
             <SelectContent>
                 {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
+                    <SelectItem key={category.id} value={category.id}>
                         {category.label}
                     </SelectItem>
                 ))}
@@ -40,19 +38,21 @@ export async function CategorySelect({
     );
 }
 
-export async function DataSetSelect({
-                                        defaultValue,
-                                        className
-                                    }: {
-    defaultValue?: string;
-    className?: string;
-}) {
-    const dataSets = await getDataForSelect();
+export async function DataSetSelect(
+    {
+        defaultValue,
+        className,
+        availableData,
+    }: {
+        defaultValue?: string;
+        className?: string;
+        availableData: AvailableData;
+    }) {
 
     return (
         <Select defaultValue={defaultValue}>
             <SelectTrigger className={className}>
-                <SelectValue placeholder="Select a data set" />
+                <SelectValue placeholder="Select a data set"/>
             </SelectTrigger>
             <SelectContent>
                 {dataSets.map((set) => (
@@ -65,21 +65,21 @@ export async function DataSetSelect({
     );
 }
 
-export async function CategoryDataSelect({
-                                             category,
-                                             defaultValue,
-                                             className
-                                         }: {
-    category: CategoryOptions;
-    defaultValue?: string;
-    className?: string;
-}) {
-    const dataSets = await getDataByCategoryForSelect(category);
+export async function CategoryDataSelect(
+    {
+        category,
+        defaultValue,
+        className
+    }: {
+        category: CategoryOptions;
+        defaultValue?: string;
+        className?: string;
+    }) {
 
     return (
         <Select defaultValue={defaultValue}>
             <SelectTrigger className={className}>
-                <SelectValue placeholder="Select data from category" />
+                <SelectValue placeholder="Select data from category"/>
             </SelectTrigger>
             <SelectContent>
                 {dataSets.map((set) => (

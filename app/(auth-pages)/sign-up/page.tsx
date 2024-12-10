@@ -18,7 +18,7 @@ export default function SignUp({ searchParams }: { searchParams: { [key: string]
             subtitle={
                 <>
                     Already have an account?{" "}
-                    <Link className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" href={`/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`}>
+                    <Link className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" href={`/login?redirectTo=${encodeURIComponent(redirectTo)}`}>
                         Sign in
                     </Link>
                 </>

@@ -52,7 +52,7 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
+    return encodedRedirect("error", "/login", error.message);
   }
 
   return redirect(redirectTo);
@@ -78,7 +78,7 @@ export const signInWithGoogleAction = async (formData: FormData) => {
 
   if (error) {
     console.error("Error in signInWithGoogleAction:", error); // Debug log
-    return encodedRedirect("error", "/sign-in", error.message);
+    return encodedRedirect("error", "/login", error.message);
   }
 
   if (data?.url) {
@@ -87,7 +87,7 @@ export const signInWithGoogleAction = async (formData: FormData) => {
   }
 
   console.error("Failed to initiate Google sign-in"); // Debug log
-  return encodedRedirect("error", "/sign-in", "Failed to initiate Google sign-in");
+  return encodedRedirect("error", "/login", "Failed to initiate Google sign-in");
 };
 
 
@@ -109,7 +109,7 @@ export const signInWithGithubAction = async (formData: FormData) => {
   });
 
   if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
+    return encodedRedirect("error", "/login", error.message);
   }
 
   if (data?.url) {
@@ -117,7 +117,7 @@ export const signInWithGithubAction = async (formData: FormData) => {
     return redirect(data.url);
   }
 
-  return encodedRedirect("error", "/sign-in", "Failed to initiate GitHub sign-in");
+  return encodedRedirect("error", "/login", "Failed to initiate GitHub sign-in");
 };
 
 
@@ -196,7 +196,7 @@ export const resetPasswordAction = async (formData: FormData) => {
 export const signOutAction = async () => {
   const supabase = createClient();
   await supabase.auth.signOut();
-  return redirect("/sign-in");
+  return redirect("/login");
 };
 
 

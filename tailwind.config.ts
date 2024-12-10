@@ -124,6 +124,22 @@ const config: Config = {
                 heading: ["var(--typography-fontFamily-heading)", ...fontFamily.sans]
             },
             keyframes: {
+                'spin': {
+                    from: {
+                        transform: 'rotate(0deg)'
+                    },
+                    to: {
+                        transform: 'rotate(360deg)'
+                    }
+                },
+                'spinner': {
+                    from: {
+                        transform: 'rotate(0deg)'
+                    },
+                    to: {
+                      transform: 'rotate(360deg)'
+                    }
+                },
                 'accordion-down': {
                     from: {
                         height: '0'
@@ -215,7 +231,7 @@ const config: Config = {
                 'fade-in': 'fade-in 0.4s ease-in-out',
                 'fade-out': 'fade-out 0.4s ease-in-out',
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-
+                'spin': 'spin 1s linear infinite',
                 pizza: 'pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 
                 'pulse': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

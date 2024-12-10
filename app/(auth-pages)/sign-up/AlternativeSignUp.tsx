@@ -85,7 +85,7 @@ export default function SignUp({ searchParams }: { searchParams: { [key: string]
 
                     <p className="text-sm text-neutral-600 text-center mt-4 dark:text-neutral-400">
                         Already have an account?{" "}
-                        <Link href="/sign-in" className="text-black dark:text-white">
+                        <Link href="/login" className="text-black dark:text-white">
                             Sign in
                         </Link>
                     </p>

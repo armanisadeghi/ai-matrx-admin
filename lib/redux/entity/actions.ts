@@ -134,7 +134,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
     fetchOneSuccess: (payload: EntityData<TEntity>) => void;
 
     fetchQuickReference: (payload?: FetchQuickReferencePayload) => void;
-    setQuickReference: (payload: QuickReferenceRecord[]) => void;
+    fetchQuickReferenceSuccess: (payload: QuickReferenceRecord[]) => void;
 
     fetchRecords: (payload: FetchRecordsPayload) => void;
     fetchRecordsSuccess: (payload: FetchRecordsSuccessPayload<TEntity>) => void;

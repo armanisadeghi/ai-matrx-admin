@@ -794,10 +794,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (unsavedRecords, recordId) => unsavedRecords[recordId]
     );
 
-    // Get either unsaved or regular record data based on what exists
     const selectEffectiveRecordById = createSelector(
         [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
-        (unsavedRecords, records, recordId) => unsavedRecords[recordId] || records[recordId]
+        (unsavedRecords, records, recordId) => {
+            if (!unsavedRecords || !records) return null;
+            return unsavedRecords[recordId] || records[recordId] || null;
+        }
     );
 
     // For checking if a record is new (temporary)

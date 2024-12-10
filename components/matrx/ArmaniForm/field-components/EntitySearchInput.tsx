@@ -1,8 +1,9 @@
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import React from "react";
 import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
-import {AnimationPreset, FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
+import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+import { AnimationPreset } from "@/types/componentConfigTypes";
 
 interface EntitySearchInputProps {
     dynamicFieldInfo: EntityStateField[];
@@ -33,7 +34,8 @@ export const EntitySearchInput: React.FC<EntitySearchInputProps> = (
         console.log("submitted");
     };
 
-    const placeholders = dynamicFieldInfo.map((displayName) => `Search ${displayName}...`);
+    const formatSearchPlaceholder = (displayName: string) => `Search ${displayName}...`;
+    const placeholders = dynamicFieldInfo.map((field) => formatSearchPlaceholder(field.displayName));
 
     return (
         <PlaceholdersAndVanishInput

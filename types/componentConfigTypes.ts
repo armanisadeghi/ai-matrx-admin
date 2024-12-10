@@ -1,6 +1,5 @@
 // types.ts
 import { Card } from "@/components/ui";
-import { HTMLMotionProps } from "framer-motion";
 import React, { MutableRefObject } from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {EntityKeys} from "@/types/entityTypes";

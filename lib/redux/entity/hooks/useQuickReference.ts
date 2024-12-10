@@ -111,7 +111,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
     );
 
     React.useEffect(() => {
-        if (!isQuickReferenceFetchComplete) {
+        if (!loadingState.loading && !isQuickReferenceFetchComplete) {
             dispatch(actions.fetchQuickReference({
                 maxRecords: entityDefaultSettings.maxQuickReferenceRecords
             }));

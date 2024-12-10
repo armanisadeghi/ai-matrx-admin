@@ -12,8 +12,8 @@ import {makeSelectEntityNameByFormat} from "@/lib/redux/schema/globalCacheSelect
 
 interface UseFetchRelatedParams {
     entityKey: EntityKeys;
-    dynamicFieldInfo: EntityStateField;
-    formData: EntityData<EntityKeys>;
+    dynamicFieldInfo?: EntityStateField;
+    formData?: EntityData<EntityKeys>;
     activeEntityKey?: EntityKeys;
 }
 

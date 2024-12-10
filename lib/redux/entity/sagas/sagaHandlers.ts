@@ -278,6 +278,8 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
             }
         }
 
+        yield put(actions.getOrFetchSelectedRecordsSuccess());
+
     } catch (error: any) {
         entityLogger.log('error', 'Error', error);
         yield put(actions.setError({
@@ -447,7 +449,7 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
             };
         });
 
-        yield put(actions.setQuickReference(quickReferenceRecords));
+        yield put(actions.fetchQuickReferenceSuccess(quickReferenceRecords));
     } catch (error: any) {
         entityLogger.log('error', 'Error in fetchQuickReference', error);
         yield put(actions.setError({

@@ -22,7 +22,6 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
 
     const className = 'className' in props ? (props as any).className : undefined;
 
-    const [selectedEntity, setSelectedEntity] = useState<EntityKeys>(props.layoutState.selectedEntity);
     const [error, setError] = useState<EntityError | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
@@ -45,12 +44,12 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
     const handlers = {
         setIsExpanded,
         handleEntityChange: (value: EntityKeys) => {
-            setSelectedEntity(value);
+            props.layoutState.selectedEntity = value;
             setHasSelection(false);
             setRecordLabel('Select Record');
         },
         onCreateEntityClick: () => {
-            setSelectedEntity(null);
+            props.layoutState.selectedEntity = null;
             setHasSelection(false);
             setRecordLabel('Create New Record');
             setIsExpanded(false);
@@ -69,13 +68,12 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
 
     const LayoutComponent = SMART_LAYOUT_COMPONENTS[componentOptions.formLayoutType] || SMART_LAYOUT_COMPONENTS.split;
 
-    // Create modified version of props
     const modifiedProps: UnifiedLayoutProps = {
         ...props,
         handlers,
         QuickReferenceComponent: (
             <QuickReferenceWrapper
-                selectedEntity={selectedEntity}
+                selectedEntity={props.layoutState.selectedEntity}
                 quickReferenceType={componentOptions.quickReferenceType}
                 dynamicStyleOptions={dynamicStyleOptions}
                 onRecordLoad={handlers.handleRecordLoad}
@@ -85,7 +83,7 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
             />
         ),
         layoutState: {
-            selectedEntity,
+            ...props.layoutState,
             isExpanded,
             rightColumnRef,
             selectHeight,

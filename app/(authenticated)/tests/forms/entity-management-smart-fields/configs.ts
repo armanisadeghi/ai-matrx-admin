@@ -9,30 +9,8 @@ import {
 import { EntityKeys } from "@/types/entityTypes";
 
 
-export const entitySelectionProps: EntityRecordHeaderProps = {
-    entityName: 'registeredFunction',
-    entityPrettyName: 'Registered Function',
-    backUrl: '/tests',
-    backLabel: 'Back to Tests',
-    primaryKeyField: 'id',
-    primaryKeyValue: '1',
-    fieldPrettyName: 'Test Field'
-}
-
-
-interface EntityRecordHeaderProps {
-    entityName: EntityKeys;
-    entityPrettyName?: string;
-    backUrl?: string;
-    backLabel?: string;
-    primaryKeyField: string;
-    primaryKeyValue: string;
-    fieldPrettyName?: string;
-}
-
-
 export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
-    quickReferenceType: 'list',
+    quickReferenceType: 'cards', // cards, cardsEnhanced, accordion, accordionEnhanced, list, select, default, LIST_WITH_RELATED
     formLayoutType: 'split', //formLayoutType?: "split" | "sideBySide" | "stacked" | "resizable"
     entitySelectionComponent: EntityRecordHeader
 };
@@ -40,7 +18,7 @@ export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
 
 // Form Style Default Options
 export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
-    splitRatio: 20,
+    splitRatio: 15,
     formLayout: 'grid',
     formColumns: 2,
     formDirection: 'row',
@@ -84,4 +62,28 @@ export const DEFAULT_RESIZABLE_LAYOUT_OPTIONS: ResizableThreePaneLayoutProps = {
 export const DEFAULT_SELECT_COMPONENT_OPTIONS: SelectComponentProps = {
     selectContentPosition: 'sideBySide',
 }
+
+
+
+export const entitySelectionProps: EntityRecordHeaderProps = {
+    entityName: 'registeredFunction',
+    entityPrettyName: 'Registered Function',
+    backUrl: '/tests',
+    backLabel: 'Back to Tests',
+    primaryKeyField: 'id',
+    primaryKeyValue: '1',
+    fieldPrettyName: 'Test Field'
+}
+
+
+interface EntityRecordHeaderProps {
+    entityName: EntityKeys;
+    entityPrettyName?: string;
+    backUrl?: string;
+    backLabel?: string;
+    primaryKeyField: string;
+    primaryKeyValue: string;
+    fieldPrettyName?: string;
+}
+
 

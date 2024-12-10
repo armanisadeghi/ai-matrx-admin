@@ -60,7 +60,9 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     const activeRecord = useAppSelector(selectors.selectActiveRecord);
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
     const summary = useAppSelector(selectors.selectSelectionSummary);
+    const loadingState = useAppSelector(selectors.selectLoadingState);
 
+    const loading = loadingState.loading;
 
     const [fetchMode, setFetchMode] = React.useState(<FetchMode>"native");
 
@@ -115,24 +117,36 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     //getOrFetchSelectedRecordsPayload
 
     React.useEffect(() => {
-        const onlyNewRecords = selectedRecordIds.every(recordId => recordId.startsWith('new-record-'));
-        if (onlyNewRecords) {
+        // Early returns should be combined to reduce complexity
+        if (
+            loading ||
+            selectedRecordIds.length === 0 ||
+            selectedRecordIds.every(recordId => recordId.startsWith('new-record-')) ||
+            areArraysEqual(lastProcessedIds, selectedRecordIds)
+        ) {
             return;
         }
-        if (
-            selectedRecordIds.length > 0 &&
-            !areArraysEqual(lastProcessedIds, selectedRecordIds)
-        ) {
-            setLastProcessedIds(selectedRecordIds);
 
-            const payload: getOrFetchSelectedRecordsPayload = {
-                matrxRecordIds: selectedRecordIds,
-                fetchMode,
-            };
+        // Memoize the payload to prevent unnecessary recreations
+        const payload: getOrFetchSelectedRecordsPayload = {
+            matrxRecordIds: selectedRecordIds,
+            fetchMode,
+        };
 
+        // Set the processed IDs before dispatching
+        setLastProcessedIds(selectedRecordIds);
+
+        // Dispatch with a slight delay to allow state to settle
+        const timeoutId = setTimeout(() => {
             dispatch(actions.getOrFetchSelectedRecords(payload));
-        }
-    }, [selectedRecordIds, lastProcessedIds, fetchMode, dispatch, actions]);
+        }, 0);
+
+        console.log('useEffect in useEntitySelection... Fetching Selected Records with Payload: ', payload);
+        console.log('- loading: ', loading);
+
+        // Cleanup function
+        return () => clearTimeout(timeoutId);
+    }, [selectedRecordIds, fetchMode]); // Remove loading and lastProcessedIds from dependencies
 
 
     const areArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) =>

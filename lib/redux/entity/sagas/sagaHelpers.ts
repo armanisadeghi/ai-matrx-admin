@@ -397,7 +397,8 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 
         const transformed = transformDatabaseResponse(data);
 
-        const groupedEntities: Record<EntityKeys, any[]> = {};
+        const groupedEntities: Partial<Record<EntityKeys, any[]>> = {};
+
 
         for (const relatedEntity of transformed.relatedEntities) {
             const frontendEntityName: EntityKeys = yield select(selectEntityFrontendName, relatedEntity.tableName);

@@ -11,6 +11,7 @@ import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {useAppSelector} from "@/lib/redux/hooks";
 import { useEntityCrud } from '@/lib/redux/entity/hooks/useEntityCrud';
 import {useEntityToasts} from '@/lib/redux/entity/hooks/useEntityToasts';
+import ArmaniFormSmart from '@/components/matrx/ArmaniForm/smart-form/ArmaniFormSmart';
 
 export const SmartEntityContent: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity;
@@ -122,11 +123,15 @@ export const SmartEntityContent: React.FC<UnifiedLayoutProps> = (unifiedLayoutPr
 
     return (
         <div className={className}>
-            {(entity.activeRecord || !entity.primaryKeyMetadata) && (
-                <ArmaniForm {...completeUnifiedProps} />
-            )}
+            {unifiedLayoutProps.defaultFormComponent === 'ArmaniFormSmart' ? (
+                <ArmaniFormSmart {...completeUnifiedProps} />
+            ) : (
+                 (entity.activeRecord || !entity.primaryKeyMetadata) && (
+                     <ArmaniForm {...completeUnifiedProps} />
+                 )
+             )}
         </div>
     );
-};
+}
 
 export default SmartEntityContent;

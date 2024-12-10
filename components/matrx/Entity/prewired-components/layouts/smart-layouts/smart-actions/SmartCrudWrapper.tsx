@@ -21,7 +21,7 @@ export interface SmartCrudWrapperProps {
         buttonsPosition?: 'top' | 'bottom' | 'left' | 'right';
         buttonLayout?: 'row' | 'column';
         buttonSize?: 'default' | 'sm' | 'lg' | 'icon';
-        buttonSpacing?: 'tight' | 'normal' | 'loose';
+        buttonSpacing?: 'compact' | 'normal' | 'comfortable';
     };
     className?: string;
 }
@@ -48,8 +48,8 @@ export const SmartCrudWrapper = (
         <div className={cn(
             "flex gap-2",
             layout.buttonLayout === 'column' && "flex-col",
-            layout.buttonSpacing === 'tight' && "gap-1",
-            layout.buttonSpacing === 'loose' && "gap-4",
+            layout.buttonSpacing === 'compact' && "gap-1",
+            layout.buttonSpacing === 'comfortable' && "gap-4",
         )}>
             {children}
         </div>

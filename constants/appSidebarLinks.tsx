@@ -20,9 +20,12 @@ import {
     SquareMousePointer,
     Grid2x2Plus,
     TableCellsSplit,
-    LayoutGrid
+    LayoutGrid,
+    ClipboardType
 } from "lucide-react";
-import React from "react";``
+import React from "react";
+
+``
 
 export const primaryLinks = [
     {
@@ -230,11 +233,19 @@ export const secondaryLinks = [
             <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
+
+    {
+        label: 'Form Tests',
+        href: '/tests/forms', // https://lucide.dev/icons/
+        icon: (
+            <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     {
         label: 'Registered Functions',
         href: '/admin/registered-functions',
         icon: (
-            <SquareFunction  className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+            <SquareFunction className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
     {
@@ -260,14 +271,7 @@ export const secondaryLinks = [
             <SquareMousePointer className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    //
-    // {
-    //     label: 'Module Name',
-    //     href: '/tests/module', // https://lucide.dev/icons/
-    //     icon: (
-    //         <Component className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
+
     //
     // {
     //     label: 'Module Name',
@@ -294,7 +298,6 @@ export const secondaryLinks = [
     // },
 
 ];
-
 
 
 export const appSidebarLinks = primaryLinks;

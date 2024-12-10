@@ -20,7 +20,8 @@ export interface FormComponentOptions {
 
 export interface FormFieldFiltering {
     excludeFields?: string[];    // Fields to hide
-    includeFields?: string[];    // Only show these fields (takes precedence over exclude)
+    defaultShownFields?: string[];    // Only show these fields (takes precedence over exclude)
+    allowedFieldsOverride?: string[]; // Allow user to show all fields
 }
 
 export interface FormStyleOptions {
@@ -117,6 +118,7 @@ export interface UnifiedStepHandlers {
 
 
 export interface UnifiedLayoutProps {
+    activeRecordId?: MatrxRecordId;
     layoutState: UnifiedLayoutState;
     handlers: UnifiedLayoutHandlers;
     dynamicStyleOptions: DynamicStyleOptions;
@@ -125,7 +127,9 @@ export interface UnifiedLayoutProps {
     QuickReferenceComponent?: React.ReactNode;
     resizableLayoutOptions?: ResizableThreePaneLayoutProps;
     selectComponentOptions?: SelectComponentProps;
+    defaultFormComponent?: 'default' | 'ArmaniFormSmart';
     unifiedCrudHandlers?: UnifiedCrudHandlers;
+    unifiedStepHandlers?: UnifiedStepHandlers;
     className?: string;
 }
 

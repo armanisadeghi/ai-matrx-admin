@@ -26,6 +26,9 @@ import {
     mockDataFourteen
 } from "./app-data";
 
+export const base_app_path = 'tests/ssr-test';
+
+
 type AppSpecificData = any;
 
 export type CustomStyles = {

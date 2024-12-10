@@ -17,7 +17,8 @@ import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {SmartExpandButton} from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartExpandButton";
-import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
+// import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
+import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
 import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from '../parts/MeasurementMonitor';
 import { CreateEntityButton, UpdateEntityButton, DeleteEntityButton } from '@/components/matrx/Entity/action';
@@ -133,11 +134,7 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
                                             height: `${getAdjustedHeight('mainContent')}px`
                                         }}
                                     >
-                                        <EntitySmartContent
-                                            entityKey={selectedEntity}
-                                            density={density}
-                                            formOptions={formStyleOptions}
-                                        />
+                                        <EntitySmartContent {...unifiedLayoutProps} />
                                     </ScrollArea>
                                 </div>
                             </CardContent>

@@ -304,3 +304,131 @@ function validateOperationTransition(
 3. **Type Safety**: Each context type has its own well-defined interface
 4. **Consistency**: All operations follow the same pattern regardless of complexity
 5. **Extensibility**: Easy to add new context types for special cases
+
+
+# CRUD Operation State Matrix
+
+## Operation Mode States
+
+### CREATE Mode
+```
+State Requirements:
+- Operation Mode: 'create'
+- Active Record: new-record-{n}
+- Has Unsaved Changes: false (until changes made)
+- Loading: false (only true during save)
+- Last Operation: null (until save attempt)
+- Selection Mode: 'single'
+- Selected Records: [new-record-{n}]
+
+Button States:
+- New: disabled (can't create while creating)
+- Edit: disabled (can't edit new record)
+- Save: disabled (until changes made)
+- Cancel: enabled
+- Delete: disabled (can't delete new record)
+```
+
+### UPDATE Mode
+```
+State Requirements:
+- Operation Mode: 'update'
+- Active Record: existing record id
+- Has Unsaved Changes: false (until changes made)
+- Loading: false (only true during save)
+- Last Operation: null (until save attempt)
+- Selection Mode: 'single'
+- Selected Records: [active record id]
+
+Button States:
+- New: disabled (can't create while editing)
+- Edit: disabled (already editing)
+- Save: disabled (until changes made)
+- Cancel: enabled
+- Delete: disabled (can't delete while editing)
+```
+
+### VIEW Mode
+```
+State Requirements:
+- Operation Mode: 'view'
+- Active Record: existing record id or null
+- Has Unsaved Changes: false
+- Loading: false
+- Last Operation: matches last completed operation
+- Selection Mode: any ('single', 'multiple', 'none')
+- Selected Records: based on selection mode
+
+Button States:
+- New: enabled
+- Edit: enabled (if single record selected)
+- Save: disabled
+- Cancel: disabled
+- Delete: enabled (if record(s) selected)
+```
+
+### DELETE Mode (during confirmation)
+```
+State Requirements:
+- Operation Mode: 'delete'
+- Active Record: maintained
+- Has Unsaved Changes: false
+- Loading: false (until confirmed)
+- Last Operation: null (until delete complete)
+- Selection Mode: maintained
+- Selected Records: maintained
+
+Button States:
+- New: disabled
+- Edit: disabled
+- Save: disabled
+- Cancel: enabled
+- Delete: disabled (handled by confirmation dialog)
+```
+
+## State Transition Matrix
+
+| Current State | Action | New State | Side Effects |
+|--------------|---------|------------|--------------|
+| VIEW → CREATE | New Button | CREATE | Clear selections, generate temp ID |
+| VIEW → UPDATE | Edit Button | UPDATE | Copy record to unsaved |
+| VIEW → DELETE | Delete Button | DELETE | Show confirmation |
+| CREATE → VIEW | Cancel | VIEW | Clear temp record, restore last active |
+| CREATE → VIEW | Save Success | VIEW | Set new record as active |
+| UPDATE → VIEW | Cancel | VIEW | Clear unsaved changes |
+| UPDATE → VIEW | Save Success | VIEW | Update record, maintain active |
+| DELETE → VIEW | Cancel | VIEW | Maintain current selection |
+| DELETE → VIEW | Delete Success | VIEW | Clear deleted, select next |
+
+## Loading States
+
+| Operation | Loading Trigger | Success State | Error State |
+|-----------|----------------|---------------|-------------|
+| Create | Save Click | VIEW mode, new active | Maintain CREATE mode |
+| Update | Save Click | VIEW mode, same active | Maintain UPDATE mode |
+| Delete | Confirm Click | VIEW mode, next record | Maintain previous state |
+
+## Initial State Corrections Needed
+
+1. Fix CREATE mode initial state:
+```typescript
+- hasUnsavedChanges should be false
+- loading should be false
+- lastOperation should be null
+- save button should be disabled
+- delete button should be disabled
+```
+
+2. Update Mode Manager:
+```typescript
+- Reset loading state on mode changes
+- Clear lastOperation on mode entry
+- Properly track unsaved changes
+```
+
+3. Update Button Handlers:
+```typescript
+- Add proper state checks for button enabling/disabling
+- Ensure proper loading state management
+- Clear operation flags on mode changes
+```

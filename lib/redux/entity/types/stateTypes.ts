@@ -291,6 +291,7 @@ export type EntityOperations =
     | 'FETCH_QUICK_REFERENCE'
     | 'FETCH_RECORDS'
     | 'FETCH_ONE_WITH_FK_IFK'
+    | 'GET_OR_FETCH_RECORDS'
     | 'FETCHED_AS_RELATED'
     | 'FETCH_ALL'
     | 'FETCH_PAGINATED'
@@ -312,6 +313,7 @@ export interface EntityOperationFlags {
     CUSTOM_STATUS?: FlagStatusOptions;
     FETCH_ONE_WITH_FK_IFK_STATUS?: FlagStatusOptions;
     FETCHED_AS_RELATED_STATUS?: FlagStatusOptions;
+    GET_OR_FETCH_RECORDS_STATUS?: FlagStatusOptions;
 }
 
 export type EntityOperationMode = 'create' | 'update' | 'delete' | 'view' ;
@@ -335,6 +337,7 @@ export interface LoadingState {
         details?: unknown;
     } | null;
     lastOperation?: EntityOperations;
+    operationId?: string;
 }
 
 export interface EntityError {

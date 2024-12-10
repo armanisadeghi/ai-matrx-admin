@@ -48,11 +48,14 @@ import {QueryOptions} from "./sagas/sagaHelpers";
 import {Callback} from "@/utils/callbackManager";
 import { EntityModeManager } from "./utils/crudOpsManagement";
 
+EntityLogger.addFeatureToFilter("ENTITY_SLICE");
+
+
 export const createEntitySlice = <TEntity extends EntityKeys>(
         entityKey: TEntity,
         initialState: EntityState<TEntity>
     ) => {
-        const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice - ${entityKey}`, entityKey);
+        const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice`, entityKey, 'ENTITY_SLICE');
         const modeManager = new EntityModeManager(entityKey);
 
         const slice = createSlice({
@@ -257,7 +260,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state,
                             action: PayloadAction<QuickReferenceRecord[]>
                         ) => {
-                            entityLogger.log('debug', 'setQuickReference', action.payload);
+                            entityLogger.log('info', 'setQuickReference', action.payload);
 
                             state.quickReference.records = action.payload;
                             state.quickReference.lastUpdated = new Date().toISOString();
@@ -289,7 +292,15 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<getOrFetchSelectedRecordsPayload>
                         ) => {
                             entityLogger.log('debug', 'getOrFetchSelectedRecords', action.payload);
-                            setLoading(state, 'FETCH_RECORDS');
+                            setLoading(state, 'GET_OR_FETCH_RECORDS');
+                        },
+
+                        getOrFetchSelectedRecordsSuccess: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction
+                        ) => {
+                            entityLogger.log('debug', 'getOrFetchSelectedRecordsSuccess', action.payload);
+                            setSuccess(state, 'GET_OR_FETCH_RECORDS');
                         },
 
                         fetchSelectedRecords: (

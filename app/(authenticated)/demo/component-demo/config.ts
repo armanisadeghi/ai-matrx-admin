@@ -29,6 +29,54 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Not Implemented',
+        path: 'link-here',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Select Demo 4',
+        path: 'selects/selects-4',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Select Demo 3',
+        path: 'selects/selects-3',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Select Demo 2',
+        path: 'selects/selects-2',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Loading Button Demo 2',
+        path: 'button/loading-button-demo-2',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Loading Button Demo',
+        path: 'button/loading-button-demo',
+        relative: true,
+        description: ''
+    },
+    {
         title: 'Entity Analyzer With Mock Data',
         path: 'entity-analyzer/mock-data',
         relative: true,

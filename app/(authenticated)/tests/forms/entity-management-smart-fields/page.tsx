@@ -26,7 +26,7 @@ export default async function EntityManagementPage() {
 
     const customComponentOptions = {
         ...DEFAULT_FORM_COMPONENT_OPTIONS,
-        quickReferenceType: 'RELATED_LIST' as QuickReferenceComponentType,
+        quickReferenceType: 'CARDS' as QuickReferenceComponentType,
     };
 
     const layoutProps: UnifiedLayoutProps = {

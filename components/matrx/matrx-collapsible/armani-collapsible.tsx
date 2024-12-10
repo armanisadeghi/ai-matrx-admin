@@ -20,6 +20,7 @@ interface ArmaniCollapsibleProps {
     className?: string;
     triggerClassName?: string;
     contentClassName?: string;
+    titleFontSize?: string;
 }
 
 export function ArmaniCollapsible(
@@ -33,7 +34,8 @@ export function ArmaniCollapsible(
         defaultExpanded = false,
         className,
         triggerClassName,
-        contentClassName
+        contentClassName,
+        titleFontSize = 'text-sm'
     }: ArmaniCollapsibleProps) {
     const [isChip, setIsChip] = useState(false);
 
@@ -47,7 +49,7 @@ export function ArmaniCollapsible(
                 key={`chip-${id}`}
             >
                 <Maximize2 className="h-4 w-4 text-primary"/>
-                <span className="text-sm">{title}</span>
+                <span className={titleFontSize}>{title}</span>
             </Button>
         );
     }
@@ -60,7 +62,8 @@ export function ArmaniCollapsible(
         >
             <CollapsibleTrigger
                 className={cn(
-                    "relative flex w-full items-center rounded-t-lg py-1 px-2 text-sm font-medium",
+                    "relative flex w-full items-center rounded-t-lg py-1 px-2 font-medium",
+                    titleFontSize,
                     level === 0
                     ? "hover:bg-accent/50 hover:shadow-sm"
                     : "before:absolute before:inset-0 before:-left-4 before:rounded-t-lg hover:before:bg-accent/50 hover:shadow-sm before:-z-10",

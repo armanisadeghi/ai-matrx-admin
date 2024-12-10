@@ -1,7 +1,7 @@
-import {FeaturedTestimonials} from "@/components/animated/sign-in/FeaturedTestimonials";
+import {FeaturedTestimonials} from "@/components/animated/login/FeaturedTestimonials";
 import {cn} from "@/lib/utils";
-import {GridLineHorizontal, GridLineVertical} from "@/components/animated/sign-in/GridLines";
-import AuthSignInForm from "@/components/animated/sign-in/AuthSignIn";
+import {GridLineHorizontal, GridLineVertical} from "@/components/animated/login/GridLines";
+import AuthSignInForm from "@/components/animated/login/AuthSignIn";
 
 function RegistrationFormWithImages() {
     return (
