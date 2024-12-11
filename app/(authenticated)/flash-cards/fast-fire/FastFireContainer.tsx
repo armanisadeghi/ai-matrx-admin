@@ -1,21 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
+import React from 'react';
+import {motion, AnimatePresence} from "framer-motion";
+import {Card} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Play} from "lucide-react";
 import {
+    Assistant,
     ApiName,
     AiCallParams,
     ResponseType,
     AvailableAssistants
 } from "@/types/voice/voiceAssistantTypes";
-import { getAssistant } from "@/constants/voice-assistants";
-import { useDynamicVoiceAiProcessing } from "@/hooks/ai/useDynamicVoiceAiProcessing";
+import {getAssistant} from "@/constants/voice-assistants";
 import FastFireFlashcard from './FastFireFlashcard';
 import FastFireAnalysis from './FastFireAnalysis';
-import { FlashcardData } from '@/types/flashcards.types';
+import {FlashcardData} from '@/types/flashcards.types';
+import {useFastFireSession} from "@/hooks/flashcard-app/useFastFireFlashcards";
 
 export interface VoiceConfig {
     apiName: ApiName;
@@ -23,13 +24,6 @@ export interface VoiceConfig {
     responseType?: ResponseType;
     temperature?: number;
     maxTokens?: number;
-}
-
-interface FlashcardResult {
-    correct: boolean;
-    score: number;
-    audioFeedback: string;
-    timestamp: number;
 }
 
 interface FastFireContainerProps {
@@ -40,131 +34,54 @@ interface FastFireContainerProps {
     aiCallParams?: Partial<AiCallParams>;
 }
 
-const FastFireContainer = ({
-                               initialFlashcards,
-                               setId,
-                               voiceConfig,
-                               assistantId = "flashcardGrader",
-                               aiCallParams = {}
-                           }: FastFireContainerProps) => {
+const FastFireContainer = (
+    {
+        initialFlashcards,
+        setId,
+        voiceConfig,
+        assistantId = "flashcardGrader",
+        aiCallParams = {}
+    }: FastFireContainerProps
+) => {
     const selectedAssistant = getAssistant(assistantId);
-    const [currentCardIndex, setCurrentCardIndex] = useState<number>(-1);
-    const [isActive, setIsActive] = useState(false);
-    const [isPaused, setIsPaused] = useState(false);
-
-    const configRef = useRef({
-        aiCallParams: {
-            temperature: voiceConfig.temperature ?? 0.5,
-            maxTokens: voiceConfig.maxTokens ?? 2000,
-            responseFormat: selectedAssistant.responseFormat,
-            ...aiCallParams
-        },
-        apiName: voiceConfig.apiName,
-        responseType: voiceConfig.responseType ?? 'text'
-    });
+    if (!selectedAssistant) {
+        return (
+            <div className="container mx-auto py-8">
+                <h1 className="text-2xl font-bold">Invalid Assistant</h1>
+                <p>Please check your assistant configuration.</p>
+            </div>
+        );
+    }
 
     const {
-        submit,
+        isActive,
+        isPaused,
+        isProcessing,
+        isRecording,
+        currentCardIndex,
+        currentCard,
+        results,
         audioPlayer,
+        timeLeft,
+        bufferTimeLeft,
+        isInBufferPhase,
+        audioLevel,
+        startSession,
+        pauseSession,
+        resumeSession,
+        stopSession,
+        startRecording,
+        stopRecording,
         playAllAudioFeedback,
         playCorrectAnswersOnly,
         playHighScoresOnly,
-        processState,
-        getCurrentConversation,
-        createNewConversation,
-        setApiName,
-        setAiCallParams,
-        setResponseType
-    } = useDynamicVoiceAiProcessing(selectedAssistant);
-
-    // Initial configuration setup
-    useEffect(() => {
-        setApiName(configRef.current.apiName);
-        setAiCallParams(configRef.current.aiCallParams);
-        setResponseType(configRef.current.responseType);
-    }, []); // Empty dependency array since we only want this to run once
-
-    // Update config ref if props change
-    useEffect(() => {
-        configRef.current = {
-            aiCallParams: {
-                temperature: voiceConfig.temperature ?? 0.5,
-                maxTokens: voiceConfig.maxTokens ?? 2000,
-                responseFormat: selectedAssistant.responseFormat,
-                ...aiCallParams
-            },
-            apiName: voiceConfig.apiName,
-            responseType: voiceConfig.responseType ?? 'text'
-        };
-    }, [voiceConfig, aiCallParams, selectedAssistant]);
-
-    // Session control handlers
-    const handleStart = useCallback(() => {
-        setIsActive(true);
-        setIsPaused(false);
-    }, []);
-
-    const handlePause = useCallback(() => {
-        setIsPaused(true);
-    }, []);
-
-    const handleResume = useCallback(() => {
-        setIsPaused(false);
-    }, []);
-
-    const handleStop = useCallback(() => {
-        setIsActive(false);
-        setIsPaused(false);
-        setCurrentCardIndex(-1);
-    }, []);
-
-    // Manage current card index based on session state
-    useEffect(() => {
-        if (isActive && !isPaused) {
-            setCurrentCardIndex(prev => prev === -1 ? 0 : prev);
-        }
-    }, [isActive, isPaused]);
-
-    const currentConversation = getCurrentConversation();
-    const results = currentConversation?.structuredData as FlashcardResult[] || [];
-
-    // Initialize conversation if needed
-    useEffect(() => {
-        if (!currentConversation) {
-            createNewConversation();
-        }
-    }, [currentConversation, createNewConversation]);
-
-    // Handle audio submission and card progression
-    const handleAudioComplete = useCallback(async (audioBlob: Blob, flashcardId: string) => {
-        if (!isActive || isPaused) return;
-
-        try {
-            await submit(audioBlob);
-
-            if (currentCardIndex >= initialFlashcards.length - 1) {
-                handleStop();
-            } else {
-                setCurrentCardIndex(prev => prev + 1);
-            }
-        } catch (error) {
-            console.error('Error processing audio:', error);
-            handleStop();
-        }
-    }, [submit, currentCardIndex, initialFlashcards.length, handleStop, isActive, isPaused]);
-
-    // Review handlers
-    const handleReviewSession = useCallback(() => {
-        playAllAudioFeedback();
-    }, [playAllAudioFeedback]);
-
-    const handleReviewCorrectOnly = useCallback(() => {
-        playCorrectAnswersOnly();
-    }, [playCorrectAnswersOnly]);
-
-    const handleReviewHighScores = useCallback(() => {
-        playHighScoresOnly(4);
-    }, [playHighScoresOnly]);
+        processState
+    } = useFastFireSession({
+        flashcards: initialFlashcards,
+        voiceConfig,
+        assistant: selectedAssistant,
+        defaultTimer: 10
+    });
 
     return (
         <div className="container mx-auto py-8 pb-[160px] space-y-8">
@@ -173,23 +90,23 @@ const FastFireContainer = ({
                 <div className="space-x-4">
                     <Button
                         variant="outline"
-                        onClick={handleReviewSession}
-                        disabled={results.length === 0 || processState.processing}
+                        onClick={playAllAudioFeedback}
+                        disabled={results.length === 0 || isProcessing}
                     >
                         <Play className="mr-2 h-4 w-4"/>
                         Review All
                     </Button>
                     <Button
                         variant="outline"
-                        onClick={handleReviewCorrectOnly}
-                        disabled={results.length === 0 || processState.processing}
+                        onClick={playCorrectAnswersOnly}
+                        disabled={results.length === 0 || isProcessing}
                     >
                         Review Correct
                     </Button>
                     <Button
                         variant="outline"
-                        onClick={handleReviewHighScores}
-                        disabled={results.length === 0 || processState.processing}
+                        onClick={() => playHighScoresOnly(4)}
+                        disabled={results.length === 0 || isProcessing}
                     >
                         Review Best
                     </Button>
@@ -198,24 +115,28 @@ const FastFireContainer = ({
 
             <FastFireFlashcard
                 initialData={initialFlashcards}
-                onComplete={handleAudioComplete}
-                defaultTimer={5}
-                disabled={processState.processing || !isActive || isPaused}
+                defaultTimer={10}
+                disabled={isProcessing}
                 isActive={isActive}
                 isPaused={isPaused}
-                currentCard={currentCardIndex >= 0 ? initialFlashcards[currentCardIndex] : undefined}
+                currentCard={currentCard}
+                currentCardIndex={currentCardIndex}
+                timeLeft={timeLeft}
+                isRecording={isRecording}
+                startRecording={startRecording}
+                stopRecording={stopRecording}
             />
 
             <AnimatePresence mode="wait">
                 {audioPlayer && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{opacity: 0, y: 20}}
+                        animate={{opacity: 1, y: 0}}
+                        exit={{opacity: 0, y: -20}}
                         className="fixed bottom-4 right-4"
                     >
                         <Card className="p-4">
-                            {audioPlayer}
+                            <audio controls src={audioPlayer.src} />
                         </Card>
                     </motion.div>
                 )}
@@ -223,15 +144,17 @@ const FastFireContainer = ({
 
             <FastFireAnalysis
                 results={results}
-                currentIndex={currentCardIndex}
                 totalCards={initialFlashcards.length}
-                isProcessing={processState.processing}
-                onStart={handleStart}
-                onPause={handlePause}
-                onResume={handleResume}
-                onStop={handleStop}
+                isProcessing={isProcessing}
+                startSession={startSession}
+                pauseSession={pauseSession}
+                resumeSession={resumeSession}
+                stopSession={stopSession}
                 isActive={isActive}
                 isPaused={isPaused}
+                playAllAudioFeedback={playAllAudioFeedback}
+                playCorrectAnswersOnly={playCorrectAnswersOnly}
+                playHighScoresOnly={playHighScoresOnly}
             />
         </div>
     );
