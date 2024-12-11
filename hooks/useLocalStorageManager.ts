@@ -16,7 +16,7 @@ export type StorageVerification = {
     data?: any;
 };
 
-export type LocalStorageManager = {
+export type UseLocalStorageManager = {
     setItem: <T>(module: string, feature: string, key: string, value: T) => Promise<StorageVerification>;
     getItem: <T>(module: string, feature: string, key: string) => Promise<T | null>;
     removeItem: (module: string, feature: string, key: string) => Promise<StorageVerification>;
@@ -37,7 +37,7 @@ export type LocalStorageManager = {
     removeCookie: (name: string) => Promise<StorageVerification>;
 };
 
-function useLocalStorageManager(): LocalStorageManager {
+function useLocalStorageManager(): UseLocalStorageManager {
     const constructKey = useCallback((module: string, feature: string, key: string): string => {
         return `${module}/${feature}/${key}`;
     }, []);

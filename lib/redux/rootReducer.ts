@@ -18,6 +18,9 @@ import uiReducer from './ui/uiSlice';
 import {entitySliceRegistry, initializeEntitySlices} from './entity/entitySlice';
 import {fieldReducer} from "@/lib/redux/concepts/fields/fieldSlice";
 import socketReducer from './features/socket/socketSlice';
+import notesReducer from './notes/notesSlice';
+import tagsReducer from './notes/tagsSlice';
+
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
     const featureSchema = featureSchemas[featureName as keyof typeof featureSchemas];
@@ -57,6 +60,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         ui: uiReducer,
         formFields: fieldReducer,
         socket: socketReducer,
+        notes: notesReducer,
+        tags: tagsReducer,
     });
 };
 

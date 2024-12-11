@@ -38,7 +38,7 @@ import {
     Check, AlertTriangle, MoreVertical
 } from 'lucide-react';
 import {EnhancedJsonViewer} from '@/components/ui/JsonComponents';
-import useLocalStorageManager, {StorageVerification, LocalStorageManager, CookieOptions} from '@/hooks/useLocalStorage';
+import useLocalStorageManager, {StorageVerification, UseLocalStorageManager, CookieOptions} from '@/hooks/useLocalStorageManager';
 import {EnhancedEditableJsonViewer} from "@/components/ui/JsonComponents/JsonEditor";
 
 // Types
@@ -142,7 +142,7 @@ const CookieDetailsView = ({details}: { details: CookieDetailView }) => {
 };
 
 const StorageManager = ({storage, onRefresh}: {
-    storage: LocalStorageManager;
+    storage: UseLocalStorageManager;
     onRefresh: () => void;
 }) => {
     const [modules, setModules] = useState<string[]>([]);
@@ -493,7 +493,7 @@ const StorageManager = ({storage, onRefresh}: {
 };
 
 
-const RawStorageView = ({storage}: { storage: LocalStorageManager }) => {
+const RawStorageView = ({storage}: { storage: UseLocalStorageManager }) => {
     const [rawData, setRawData] = useState<object>({});
     const [feedback, setFeedback] = useState<StorageVerification | null>(null);
     const [storageSize, setStorageSize] = useState<{ used: number; remaining: number }>();
@@ -600,7 +600,7 @@ const RawStorageView = ({storage}: { storage: LocalStorageManager }) => {
 };
 
 
-const CookieManager = ({storage}: { storage: LocalStorageManager }) => {
+const CookieManager = ({storage}: { storage: UseLocalStorageManager }) => {
     const [cookies, setCookies] = useState<Record<string, string>>({});
     const [cookieDetails, setCookieDetails] = useState<Record<string, { value: string; options: CookieOptions }>>({});
     const [feedback, setFeedback] = useState<StorageVerification | null>(null);
@@ -874,7 +874,7 @@ const CookieManager = ({storage}: { storage: LocalStorageManager }) => {
     );
 };
 
-const ImportExport = ({storage}: { storage: LocalStorageManager }) => {
+const ImportExport = ({storage}: { storage: UseLocalStorageManager }) => {
     const [feedback, setFeedback] = useState<StorageVerification | null>(null);
     const [importData, setImportData] = useState<object>({});
     const [confirmDialog, setConfirmDialog] = useState<{

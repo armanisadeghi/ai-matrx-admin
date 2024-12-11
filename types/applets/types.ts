@@ -1,7 +1,8 @@
 // types/applets/types.ts
 import { EntityKeys, EntityData } from "@/types/entityTypes";
-import { SchemaField, SchemaEntity } from "@/types/schema";
+import { SchemaEntity } from "@/types/schema";
 import { ReactNode } from 'react';
+import {SchemaField} from "@/lib/redux/schema/concepts/types";
 
 export interface RecordView {
     id: string;

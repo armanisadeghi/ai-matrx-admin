@@ -75,7 +75,7 @@ interface GlobalCacheState {
     isInitialized: boolean;
 }
 
-export type ForeignKeyReference = {
+type ForeignKeyReference = {
     table: AnyEntityDatabaseTable;
     column: AnyDatabaseColumnForEntity<EntityKeys>;
 }
