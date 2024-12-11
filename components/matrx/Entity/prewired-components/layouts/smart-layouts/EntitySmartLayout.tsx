@@ -1,33 +1,31 @@
 'use client';
 
-import React, {useState, useRef, useEffect} from 'react';
-import {cn} from '@/lib/utils';
-import {QuickReferenceWrapper} from './QuickReferenceWrapper';
-import {densityConfig} from "@/config/ui/entity-layout-config";
-import {ErrorDisplay} from '../../../field-actions/components/StateComponents';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types/stateTypes';
-import {SMART_LAYOUT_COMPONENTS} from "./";
+import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { QuickReferenceWrapper } from './QuickReferenceWrapper';
+import { densityConfig } from "@/config/ui/entity-layout-config";
+import { ErrorDisplay } from '../../../field-actions/components/StateComponents';
+import { EntityKeys, EntityData } from '@/types/entityTypes';
+import { EntityError } from '@/lib/redux/entity/types/stateTypes';
+import { SMART_LAYOUT_COMPONENTS } from "./";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity";
 
 const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
-    const {
-        dynamicStyleOptions,
-        dynamicLayoutOptions: {
-            componentOptions,
-            formStyleOptions,
-            inlineEntityOptions
-        }
-    } = props;
-
     const className = 'className' in props ? (props as any).className : undefined;
+    const componentOptions = props.dynamicLayoutOptions.componentOptions;
+    const dynamicStyleOptions = props.dynamicStyleOptions;
 
     const [error, setError] = useState<EntityError | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
     const [recordLabel, setRecordLabel] = useState<string>('Select Record');
     const [selectHeight, setSelectHeight] = useState<number>(0);
+    const [updateKey, setUpdateKey] = useState(0);
     const rightColumnRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setUpdateKey(prev => prev + 1);
+    }, [props.layoutState.selectedEntity]);
 
     useEffect(() => {
         if (rightColumnRef.current) {
@@ -45,11 +43,13 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
         setIsExpanded,
         handleEntityChange: (value: EntityKeys) => {
             props.layoutState.selectedEntity = value;
+            setUpdateKey(prev => prev + 1);
             setHasSelection(false);
             setRecordLabel('Select Record');
         },
         onCreateEntityClick: () => {
             props.layoutState.selectedEntity = null;
+            setUpdateKey(prev => prev + 1);
             setHasSelection(false);
             setRecordLabel('Create New Record');
             setIsExpanded(false);
@@ -73,6 +73,7 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
         handlers,
         QuickReferenceComponent: (
             <QuickReferenceWrapper
+                key={`${props.layoutState.selectedEntity}-${updateKey}`}
                 selectedEntity={props.layoutState.selectedEntity}
                 quickReferenceType={componentOptions.quickReferenceType}
                 dynamicStyleOptions={dynamicStyleOptions}
@@ -99,7 +100,7 @@ const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
             className
         )}>
             <div className="w-full h-full relative p-0 gap-0">
-                <LayoutComponent {...modifiedProps} />
+                <LayoutComponent key={updateKey} {...modifiedProps} />
             </div>
 
             {error && <ErrorDisplay error={error}/>}

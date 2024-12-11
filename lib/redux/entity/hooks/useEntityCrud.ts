@@ -1,6 +1,9 @@
 // lib/redux/entity/useEntity.ts
+'use client';
+
+
 import * as React from 'react';
-import {useCallback, useMemo, useState} from 'react';
+import {useCallback, useMemo} from 'react';
 import {useAppDispatch, useAppSelector, useAppStore} from '@/lib/redux/hooks';
 import {EntityKeys} from '@/types/entityTypes';
 import {EntityOperationMode, MatrxRecordId,} from '@/lib/redux/entity/types/stateTypes';
@@ -309,6 +312,7 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
         selection: entity,
         getUnsavedRecord: entity.unsavedRecordById,
         getEffectiveRecord: entity.effectiveRecordById,
+        getEffectiveRecordOrDefaults: entity.effectiveRecordOrDefaults,
         isTemporaryRecordId,
         hasSelectedRecordsPending,
         flags,

@@ -2,12 +2,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { UserData } from "@/utils/userDataMapper";
-import EnhancedDebugInterface from './EnhancedDebugInterface';
 
 interface ClientDebugWrapperProps {
     user: UserData;
 }
+
+const EnhancedDebugInterface = dynamic(() => import('./EnhancedDebugInterface'), {
+    ssr: false,
+});
 
 export function ClientDebugWrapper({ user }: ClientDebugWrapperProps) {
     const initialShouldShowDebug =

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {Select} from '@/components/ui/loaders/select';
+import Select from '@/components/ui/loaders/select';
 import TextDivider from '@/components/matrx/TextDivider';
 import {
     Select as ControlSelect,

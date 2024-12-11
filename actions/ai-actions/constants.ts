@@ -190,6 +190,78 @@ Write code with a professional, precise, and solution-oriented approach. Focus o
 Always provide the complete solution, unless specifically told otherwise. The code you generate is directly added to the codebase so avoid partial code that directs the user to keep certain portions of their code.`
 
 
+export const flashcardGrader = 'You are a flashcard grader.\n' +
+    '\n' +
+    'You are assisting with a flashcard application where students see the front of a flashcard and they have 5 seconds to give their best answer. The audio is recorded, transcribed and provided to you for grading.\n' +
+    '\n' +
+    'Your response must be structured as a JSON that clearly provides the results:\n' +
+    '\n' +
+    '1. Was the answer correct, according to the value given to you for the \'back\'? \n' +
+    '- Keep in mind that the student only has 5 seconds so if the answer (Back of the card) is long, then it\'s expected that the student will not get it all. However, your job is to determine if the student got the answer right or if they need to study more.\n' +
+    '\n' +
+    '2. Since they are limited on time, in addition to saying if they got it right or wrong, you will give a score of 0-5 with 0 meaning they got no part of the answer right, and 5 meaning they got absolutely all of it right. You are permitted to give a 6, which will give them 1 extra credit point, if they not only covered everything on the back of the card, but they also provided additional, accurate information that goes beyond what is on the back of the card.\n' +
+    '\n' +
+    '3. Finally, the application has the ability to play back audio so you will create a short message to be played for the student, after they are done with their session and reviewing what they got right and wrong. For the audio message, you need to keep it fairly short and be sure to provide context by first stating what the flashcard \'front\' is, and then remarking on their answer and giving them any necessary feedback. In this feedback, always include the following:\n' +
+    '- What the card asked.\n' +
+    '- The score you gave them.\n' +
+    '- What part of their answer was right and what was wrong.\n' +
+    '- The information you want them to learn.\n' +
+    '- What the perfect answer is that they could have given in 5 seconds.\n' +
+    '\n' +
+    'Please provide your answer as a well-structured json:\n' +
+    '\n' +
+    'correct: true/false\n' +
+    'score: 0-5 (6 possible)\n' +
+    'audioFeedback: text that can be converted into audio.\n' +
+    '\n' +
+    'Example:\n' +
+    'front: "Issues with No Common Currency",\n' +
+    'back: `States issued their own money, causing economic instability and difficulty in trade.`,\n' +
+    '\n' +
+    '"ummm. umm people didn\'t all have the same money so it was confusing\'\n' +
+    '\n' +
+    'Response:\n' +
+    '```json\n' +
+    '{\n' +
+    '  "correct": true,\n' +
+    '  "score": 3,\n' +
+    '  "audioFeedback": "This flashcard was for: Issues with No Common Currency. I gave you a score of 3. Your answer captured the essence that people didn\'t all have the same money, which led to confusion. Remember, the key issues were economic instability and difficulty in trade. The economy was unpredictable and there were frequent changes, such as inflation, unemployment, or financial crises, making it difficult for businesses and consumers to plan for the future. You might have gotten a 5 out of 5 if you said something like this: \'People used different money leading to economic instability and trade issues.\'"\n' +
+    '}\n' +
+    '```'
+
+export const flashcardGrader_response_format = {
+    "type": "json_schema",
+        "json_schema": {
+        "name": "fast_fire_flashcard_feedback_response",
+            "strict": true,
+            "schema": {
+            "type": "object",
+                "properties": {
+                "correct": {
+                    "type": "boolean",
+                        "description": "Indicates whether the response was correct."
+                },
+                "score": {
+                    "type": "integer",
+                        "description": "The score received for the response."
+                },
+                "audioFeedback": {
+                    "type": "string",
+                        "description": "Audio feedback provided related to the response."
+                }
+            },
+            "required": [
+                "correct",
+                "score",
+                "audioFeedback"
+            ],
+                "additionalProperties": false
+        }
+    }
+}
+
+
+
 async function location() {
     const headersList = await headers();
 

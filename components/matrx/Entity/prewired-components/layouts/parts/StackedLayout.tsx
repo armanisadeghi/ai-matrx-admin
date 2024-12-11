@@ -83,7 +83,7 @@ export const StackedLayout: React.FC<LayoutProps> = ({
                         </EnhancedCard>
                     </motion.div>
 
-                    <MeasurementMonitor measurements={measurements}/>
+                    {/*<MeasurementMonitor measurements={measurements}/>*/}
 
                     <AnimatePresence mode="sync">
                         {selectedEntity && (

@@ -1,20 +1,17 @@
 // components/common/crud/SmartDeleteButton.tsx
-import {EntityKeys} from "@/types/entityTypes";
+
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {memo, useCallback, useState} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {Trash2} from "lucide-react";
 import SmartDeleteConfirmation from "./SmartDeleteConfirmation";
+import {SmartButtonProps} from "./types";
 
-interface SmartDeleteButtonProps {
-    entityKey: EntityKeys;
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-}
 
 export const SmartDeleteButton = memo(({
                                            entityKey,
                                            size = 'default'
-                                       }: SmartDeleteButtonProps) => {
+                                       }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const {selection, isOperationPending} = entityCrud;
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -39,6 +36,7 @@ export const SmartDeleteButton = memo(({
     return (
         <>
             <SmartButtonBase
+                entityKey={entityKey}
                 onClick={handleClick}
                 disabled={isDisabled}
                 size={size}

@@ -141,8 +141,8 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
             dispatch(actions.getOrFetchSelectedRecords(payload));
         }, 0);
 
-        console.log('useEffect in useEntitySelection... Fetching Selected Records with Payload: ', payload);
-        console.log('- loading: ', loading);
+        // console.log('useEffect in useEntitySelection... Fetching Selected Records with Payload: ', payload);
+        // console.log('- loading: ', loading);
 
         // Cleanup function
         return () => clearTimeout(timeoutId);

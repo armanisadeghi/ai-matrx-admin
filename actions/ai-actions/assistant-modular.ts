@@ -393,4 +393,44 @@ async function getTranscript(input: string | File): Promise<string | null> {
 
 
 
-
+/*
+const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [],
+    response_format: {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "fast_fire_flashcard_feedback_response",
+            "strict": true,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "correct": {
+                        "type": "boolean",
+                        "description": "Indicates whether the response was correct."
+                    },
+                    "score": {
+                        "type": "integer",
+                        "description": "The score received for the response."
+                    },
+                    "audioFeedback": {
+                        "type": "string",
+                        "description": "Audio feedback provided related to the response."
+                    }
+                },
+                "required": [
+                    "correct",
+                    "score",
+                    "audioFeedback"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    temperature: 1,
+    max_tokens: 5384,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0
+});
+*/

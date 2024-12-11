@@ -115,7 +115,7 @@ export const MatrxDatePicker: React.FC<MatrxDatePickerProps> = ({
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button
+                <EntityButton
                     variant={variant}
                     className={cn(
                         "w-[240px] justify-start text-left font-normal",
@@ -128,7 +128,7 @@ export const MatrxDatePicker: React.FC<MatrxDatePickerProps> = ({
                     {value
                         ? formatDateForUS(value, includeTime) // Include time if needed
                         : <span>{placeholder}</span>}
-                </Button>
+                </EntityButton>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align={align}>
                 <Calendar
@@ -166,7 +166,7 @@ export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
         <div className={cn("grid gap-2", className)}>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button
+                    <EntityButton
                         variant={variant}
                         className={cn(
                             "w-[300px] justify-start text-left font-normal",
@@ -188,7 +188,7 @@ export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
                         ) : (
                             <span>{placeholder}</span>
                         )}
-                    </Button>
+                    </EntityButton>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align={align}>
                     <Calendar
@@ -196,7 +196,7 @@ export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
                         mode="range"
                         defaultMonth={value?.from}
                         selected={value}
-                        onSelect={(range) => onChange(range)} // Ensure range selection works
+                        onSelect={(range) => onChange(range)}
                         numberOfMonths={numberOfMonths}
                         disabled={disabled}
                         fromDate={minDate}
@@ -208,7 +208,7 @@ export const MatrxDateRangePicker: React.FC<MatrxDateRangePickerProps> = ({
     );
 };
 
-// Enhanced Date Picker with Presets
+
 export const MatrxDatePickerWithPresets: React.FC<MatrxDatePickerWithPresetsProps> = ({
     value,
     onChange,
@@ -229,7 +229,7 @@ export const MatrxDatePickerWithPresets: React.FC<MatrxDatePickerWithPresetsProp
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button
+                <EntityButton
                     variant={variant}
                     className={cn(
                         "w-[240px] justify-start text-left font-normal",
@@ -242,7 +242,7 @@ export const MatrxDatePickerWithPresets: React.FC<MatrxDatePickerWithPresetsProp
                     {value
                         ? formatDateForUS(value, includeTime) // Include time if needed
                         : <span>{placeholder}</span>}
-                </Button>
+                </EntityButton>
             </PopoverTrigger>
             <PopoverContent
                 align={align}

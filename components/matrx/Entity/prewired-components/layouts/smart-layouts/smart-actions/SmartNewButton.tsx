@@ -1,20 +1,15 @@
 import React from "react";
-import {EntityKeys} from "@/types/entityTypes";
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {useCallback} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {Plus} from "lucide-react";
-
-interface SmartNewButtonProps {
-    entityKey: EntityKeys;
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-}
+import {SmartButtonProps} from "./types";
 
 export const SmartNewButton = (
     {
         entityKey,
         size = 'default'
-    }: SmartNewButtonProps) => {
+    }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const {
         flags,
@@ -51,6 +46,7 @@ export const SmartNewButton = (
 
     return (
         <SmartButtonBase
+            entityKey={entityKey}
             onClick={handleNew}
             disabled={isDisabled}
             size={size}

@@ -15,13 +15,11 @@ const FlashcardDisplay = ({ flashcardHook }) => {
         handleAskQuestion,
     } = flashcardHook;
 
-    // Scale factors for different elements
     const frontFontSize = fontSize + 20;
     const backAnswerFontSize = fontSize + 4;
     const backFontSize = fontSize;
     const titleFontSize = fontSize + 2;
 
-    // Convert fontSize to Tailwind class for ArmaniCollapsible titles
     const getTitleFontSizeClass = (size) => {
         if (size <= 16) return 'text-base';
         if (size <= 18) return 'text-lg';

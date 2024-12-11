@@ -7,10 +7,11 @@ import SmartSaveButton from "./SmartSaveButton";
 import SmartCancelButton from "./SmartCancelButton";
 import SmartDeleteButton from "./SmartDeleteButton";
 import {cn} from "@/lib/utils";
+import {ComponentDensity, ComponentSize} from "@/types/componentConfigTypes";
 
 export interface SmartCrudWrapperProps {
     entityKey: EntityKeys;
-    children?: ReactNode;  // Make children optional
+    children?: ReactNode;
     options?: {
         allowCreate?: boolean;
         allowEdit?: boolean;
@@ -20,8 +21,8 @@ export interface SmartCrudWrapperProps {
     layout?: {
         buttonsPosition?: 'top' | 'bottom' | 'left' | 'right';
         buttonLayout?: 'row' | 'column';
-        buttonSize?: 'default' | 'sm' | 'lg' | 'icon';
-        buttonSpacing?: 'compact' | 'normal' | 'comfortable';
+        buttonSize?: ComponentSize;
+        buttonSpacing?: ComponentDensity;
     };
     className?: string;
 }
@@ -44,99 +45,88 @@ export const SmartCrudWrapper = (
         },
         className
     }: SmartCrudWrapperProps) => {
-    const ButtonContainer = ({children}: { children: ReactNode }) => (
-        <div className={cn(
-            "flex gap-2",
-            layout.buttonLayout === 'column' && "flex-col",
-            layout.buttonSpacing === 'compact' && "gap-1",
-            layout.buttonSpacing === 'comfortable' && "gap-4",
-        )}>
-            {children}
-        </div>
-    );
-
-    const buttons = (
-        <ButtonContainer>
+    const getButtonsWithProps = (hideText: boolean = false) => (
+        <>
             {options.allowCreate && (
                 <SmartNewButton
                     entityKey={entityKey}
-                    size={layout.buttonSize}
+                    size={hideText ? 'icon' : layout.buttonSize}
+                    hideText={hideText}
                 />
             )}
             {options.allowEdit && (
                 <SmartEditButton
                     entityKey={entityKey}
-                    size={layout.buttonSize}
+                    size={hideText ? 'icon' : layout.buttonSize}
+                    hideText={hideText}
                 />
             )}
             <SmartSaveButton
                 entityKey={entityKey}
-                size={layout.buttonSize}
+                size={hideText ? 'icon' : layout.buttonSize}
+                hideText={hideText}
                 showConfirmation={options.showConfirmation}
             />
             <SmartCancelButton
                 entityKey={entityKey}
-                size={layout.buttonSize}
+                size={hideText ? 'icon' : layout.buttonSize}
+                hideText={hideText}
             />
             {options.allowDelete && (
                 <SmartDeleteButton
                     entityKey={entityKey}
-                    size={layout.buttonSize}
+                    size={hideText ? 'icon' : layout.buttonSize}
+                    hideText={hideText}
                 />
             )}
-        </ButtonContainer>
+        </>
     );
 
-    // If no children, just return the buttons
+    const ButtonContainer = () => (
+        <div className="@container">
+            <div className={cn(
+                "flex flex-wrap",
+                layout.buttonLayout === 'column' ? "flex-col" : "flex-row",
+                layout.buttonSpacing === 'compact' ? "gap-1" :
+                layout.buttonSpacing === 'comfortable' ? "gap-4" : "gap-2",
+                "@[400px]:hidden"
+            )}>
+                {getButtonsWithProps(false)}
+            </div>
+            <div className={cn(
+                "hidden flex-wrap",
+                layout.buttonLayout === 'column' ? "flex-col" : "flex-row",
+                layout.buttonSpacing === 'compact' ? "gap-1" :
+                layout.buttonSpacing === 'comfortable' ? "gap-4" : "gap-2",
+                "@container (max-width: 400px):flex"
+            )}>
+                {getButtonsWithProps(true)}
+            </div>
+        </div>
+    );
+
     if (!children) {
-        return buttons;
+        return <ButtonContainer/>;
     }
 
-    // Otherwise return the full layout
     return (
         <div className={cn(
-            "flex",
-            layout.buttonsPosition === 'left' && "flex-row",
-            layout.buttonsPosition === 'right' && "flex-row-reverse",
-            layout.buttonsPosition === 'bottom' && "flex-col-reverse",
-            layout.buttonsPosition === 'top' && "flex-col",
+            "flex min-w-0",
+            {
+                "flex-row gap-4": layout.buttonsPosition === 'left',
+                "flex-row-reverse gap-4": layout.buttonsPosition === 'right',
+                "flex-col-reverse gap-2": layout.buttonsPosition === 'bottom',
+                "flex-col gap-2": layout.buttonsPosition === 'top',
+            },
             className
         )}>
-            {['top', 'left'].includes(layout.buttonsPosition) && buttons}
-            <div className={cn(
-                "flex-1",
-                ['left', 'right'].includes(layout.buttonsPosition) && "ml-4"
-            )}>
+            {['top', 'left'].includes(layout.buttonsPosition) && <ButtonContainer/>}
+            <div className="min-w-0 flex-1">
                 {children}
             </div>
-            {['bottom', 'right'].includes(layout.buttonsPosition) && buttons}
+            {['bottom', 'right'].includes(layout.buttonsPosition) && <ButtonContainer/>}
         </div>
     );
 };
 
 export default SmartCrudWrapper;
-
-/*
-// Usage examples:
-// 1. As a wrapper:
-const MyFormWithCrud = () => (
-    <SmartCrudWrapper
-        entityKey="users"
-        options={{
-            allowCreate: true,
-            allowEdit: true,
-            allowDelete: false,
-            showConfirmation: true
-        }}
-        layout={{
-            buttonsPosition: 'top',
-            buttonLayout: 'row',
-            buttonSize: 'default',
-            buttonSpacing: 'normal'
-        }}
-    >
-        <MyFormComponent/>
-    </SmartCrudWrapper>
-);
-*/
-

@@ -6,11 +6,21 @@ export type Message = {
     timestamp: number;
 };
 
+export type StructuredResponse = Record<string, any>;
+export type AudioFeedbackItem = {
+    id: string;
+    feedback: string;
+    metadata: Record<string, any>;
+    timestamp: number;
+};
+
 export type Conversation = {
     id: string;
     title: string;
     messages: Message[];
     timestamp: number;
+    structuredData: StructuredResponse[];
+    audioFeedback: AudioFeedbackItem[];
 };
 
 export type ProcessState = {
@@ -42,6 +52,7 @@ export type AiCallParams = {
     model?: string;
     temperature?: number;
     maxTokens?: number;
+    responseFormat?: any;
     [key: string]: any;
 };
 
@@ -60,7 +71,8 @@ export type AvailableAssistants =
     | 'businessCoach'
     | 'hrExpert'
     | 'candy'
-    | 'developmentExpert';
+    | 'developmentExpert'
+    | 'flashcardGrader';
 
 
 export type ProcessAiRequestParams = {
@@ -89,4 +101,5 @@ export interface Assistant {
     description: string;
     imagePath: string;
     capabilities: string[];
+    responseFormat?: any;
 }

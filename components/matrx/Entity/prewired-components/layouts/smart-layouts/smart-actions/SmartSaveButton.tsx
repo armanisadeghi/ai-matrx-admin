@@ -1,23 +1,18 @@
 import React from 'react';
-import {EntityKeys} from "@/types/entityTypes";
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {useCallback, useState} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {Save} from "lucide-react";
 import SmartChangeConfirmation from "./SmartChangeConfirmation";
+import {SmartButtonProps} from "./types";
 
-interface SmartSaveButtonProps {
-    entityKey: EntityKeys;
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-    showConfirmation?: boolean;
-}
 
 export const SmartSaveButton = (
     {
         entityKey,
         size = 'default',
         showConfirmation = true
-    }: SmartSaveButtonProps) => {
+    }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const {
         flags,
@@ -71,6 +66,7 @@ export const SmartSaveButton = (
     return (
         <>
             <SmartButtonBase
+                entityKey={entityKey}
                 onClick={handleClick}
                 disabled={isDisabled}
                 size={size}

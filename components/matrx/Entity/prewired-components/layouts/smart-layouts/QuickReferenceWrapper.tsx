@@ -1,5 +1,3 @@
-// components/matrx/Entity/prewired-components/layouts/smart-layouts/QuickReferenceWrapper.tsx
-
 import React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {EntityError} from '@/lib/redux/entity/types/stateTypes';
@@ -7,8 +5,7 @@ import {
     QuickReferenceComponentType
 } from "@/types/componentConfigTypes";
 import {ENTITY_QUICK_REFERENCE} from '../../quick-reference';
-import { DynamicStyleOptions } from '../types';
-
+import {DynamicStyleOptions} from '../types';
 
 interface QuickReferenceWrapperProps {
     selectedEntity: EntityKeys | null;
@@ -39,13 +36,17 @@ export const QuickReferenceWrapper: React.FC<QuickReferenceWrapperProps> = (
         animationPreset,
     };
 
-    const Component =
-        ENTITY_QUICK_REFERENCE[
-            quickReferenceType.toUpperCase() as keyof typeof ENTITY_QUICK_REFERENCE
-            ] || ENTITY_QUICK_REFERENCE.LIST;
+    React.useEffect(() => {
+        console.log(selectedEntity);
+    }, [selectedEntity]);
+
+    const Component = ENTITY_QUICK_REFERENCE[
+        quickReferenceType.toUpperCase() as keyof typeof ENTITY_QUICK_REFERENCE
+        ] || ENTITY_QUICK_REFERENCE.LIST;
 
     return (
         <Component
+            key={selectedEntity}
             {...commonProps}
             {...(quickReferenceType === 'select' && {
                 onRecordLoad,

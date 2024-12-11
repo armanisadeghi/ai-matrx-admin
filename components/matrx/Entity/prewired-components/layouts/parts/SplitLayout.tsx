@@ -103,7 +103,7 @@ export const SplitLayout: React.FC<LayoutProps> = (
                             {/* Measurement Monitor */}
                             <EnhancedCard>
                                 <CardContent>
-                                    <MeasurementMonitor measurements={measurements}/>
+                                    {/*<MeasurementMonitor measurements={measurements}/>*/}
                                 </CardContent>
                             </EnhancedCard>
 

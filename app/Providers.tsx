@@ -13,6 +13,7 @@ import {InitialReduxState} from "@/types/reduxTypes";
 import {SocketProvider} from '@/providers/SocketProvider';
 import {RefProvider} from '@/lib/refs';
 import {ShikiProvider} from '@/providers/ShikiProvider';
+import {RecoilRoot} from 'recoil';
 
 export function Providers(
     {
@@ -24,22 +25,24 @@ export function Providers(
     }) {
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
-            <StoreProvider initialState={initialReduxState}>
-                <SocketProvider>
-                    <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                        <RefProvider>
-                            <NextUIProvider>
-                                <TooltipProvider>
-                                    <ShikiProvider initialLanguages={['typescript', 'javascript']}>
-                                        {children}
-                                    </ShikiProvider>
-                                    <Toaster/>
-                                </TooltipProvider>
-                            </NextUIProvider>
-                        </RefProvider>
-                    </ThemeProvider>
-                </SocketProvider>
-            </StoreProvider>
+            <RecoilRoot>
+                <StoreProvider initialState={initialReduxState}>
+                    <SocketProvider>
+                        <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                            <RefProvider>
+                                <NextUIProvider>
+                                    <TooltipProvider>
+                                        <ShikiProvider initialLanguages={['typescript', 'javascript']}>
+                                            {children}
+                                        </ShikiProvider>
+                                        <Toaster/>
+                                    </TooltipProvider>
+                                </NextUIProvider>
+                            </RefProvider>
+                        </ThemeProvider>
+                    </SocketProvider>
+                </StoreProvider>
+            </RecoilRoot>
         </SchemaProvider>
     );
 }

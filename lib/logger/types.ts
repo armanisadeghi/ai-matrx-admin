@@ -1,6 +1,7 @@
-// Enhanced Log Types for Comprehensive Error Tracking
+// lib/logger/types.ts
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = 'none' | 'debug' | 'info' | 'warn' | 'error';
+export type DetailLevel = 'minimal' | 'standard' | 'verbose';
 
 export type LogContext = {
     timestamp: string;
@@ -14,8 +15,10 @@ export type LogContext = {
     userAgent?: string;
     route?: string;
     version?: string;
-    query?: string;  // For tracking SQL/API queries
-    trace?: string[];  // Detailed trace of function calls, etc.
+    query?: string;
+    trace?: string[];
+    feature?: string;
+    entityKey?: string;
 };
 
 export interface BaseLogEntry {

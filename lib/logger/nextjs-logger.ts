@@ -1,7 +1,10 @@
+// lib/logger/nextjs-logger.ts
 'use client';
 
-import { clientLogger } from './client-logger';
-import { ApplicationLog, ErrorLog } from './types';
+import { BaseLogger } from './base-logger';
+import { v4 as uuidv4 } from 'uuid';
+import { ApplicationLog, ErrorLog, LogEntry } from './types';
+import { logConfig } from './config';
 
 interface NextJsLogEvent {
     type: 'build' | 'runtime' | 'error' | 'warning' | 'info';
@@ -10,11 +13,12 @@ interface NextJsLogEvent {
     stack?: string;
 }
 
-class NextJsLogger {
+class NextJsLogger extends BaseLogger {
     private static instance: NextJsLogger;
     private originalConsole: typeof console;
 
     private constructor() {
+        super('nextjs-logger');
         this.originalConsole = { ...console };
         this.interceptConsoleLogs();
         this.interceptNextJsLogs();
@@ -30,67 +34,96 @@ class NextJsLogger {
     private interceptConsoleLogs() {
         console.log = (...args) => {
             this.originalConsole.log(...args);
-            const logEntry: Omit<ApplicationLog, 'id' | 'context'> = {
+            const logEntry: ApplicationLog = {
+                id: uuidv4(),
                 level: 'info',
                 message: args.map(arg => this.stringify(arg)).join(' '),
                 category: 'application',
                 subCategory: 'console',
+                context: {
+                    timestamp: new Date().toISOString(),
+                    environment: logConfig.environment,
+                },
                 metadata: { type: 'log', args }
             };
-            clientLogger.log(logEntry);
+            this.addLog(logEntry);
+            this.processLog(logEntry);
         };
 
         console.error = (...args) => {
             this.originalConsole.error(...args);
-            const errorEntry: Omit<ErrorLog, 'id' | 'context'> = {
+            const errorEntry: ErrorLog = {
+                id: uuidv4(),
                 level: 'error',
                 message: args.map(arg => this.stringify(arg)).join(' '),
                 category: 'error',
+                context: {
+                    timestamp: new Date().toISOString(),
+                    environment: logConfig.environment,
+                },
                 error: {
                     name: 'ConsoleError',
                     message: args.map(arg => this.stringify(arg)).join(' '),
                 }
             };
-            clientLogger.log(errorEntry);
+            this.addLog(errorEntry);
+            this.processLog(errorEntry);
         };
 
         console.warn = (...args) => {
             this.originalConsole.warn(...args);
-            const logEntry: Omit<ApplicationLog, 'id' | 'context'> = {
+            const logEntry: ApplicationLog = {
+                id: uuidv4(),
                 level: 'warn',
                 message: args.map(arg => this.stringify(arg)).join(' '),
                 category: 'application',
                 subCategory: 'console',
+                context: {
+                    timestamp: new Date().toISOString(),
+                    environment: logConfig.environment,
+                },
                 metadata: { type: 'warn', args }
             };
-            clientLogger.log(logEntry);
+            this.addLog(logEntry);
+            this.processLog(logEntry);
         };
     }
 
     private interceptNextJsLogs() {
         if (typeof window !== 'undefined') {
             window.addEventListener('unhandledrejection', (event) => {
-                const errorEntry: Omit<ErrorLog, 'id' | 'context'> = {
+                const errorEntry: ErrorLog = {
+                    id: uuidv4(),
                     level: 'error',
                     message: `Unhandled Promise Rejection: ${event.reason}`,
                     category: 'error',
+                    context: {
+                        timestamp: new Date().toISOString(),
+                        environment: logConfig.environment,
+                    },
                     error: {
                         name: 'UnhandledRejection',
                         message: String(event.reason),
                         stack: event.reason?.stack
                     }
                 };
-                clientLogger.log(errorEntry);
+                this.addLog(errorEntry);
+                this.processLog(errorEntry);
             });
 
             const observer = new PerformanceObserver((list) => {
                 list.getEntries().forEach((entry) => {
                     if (entry.name.startsWith('Next.js')) {
-                        const logEntry: Omit<ApplicationLog, 'id' | 'context'> = {
+                        const logEntry: ApplicationLog = {
+                            id: uuidv4(),
                             level: 'info',
                             message: `Next.js Performance: ${entry.name}`,
                             category: 'application',
                             subCategory: 'nextjs',
+                            context: {
+                                timestamp: new Date().toISOString(),
+                                environment: logConfig.environment,
+                            },
                             metadata: {
                                 type: 'performance',
                                 duration: entry.duration,
@@ -98,7 +131,8 @@ class NextJsLogger {
                                 entryType: entry.entryType
                             }
                         };
-                        clientLogger.log(logEntry);
+                        this.addLog(logEntry);
+                        this.processLog(logEntry);
                     }
                 });
             });
@@ -118,6 +152,10 @@ class NextJsLogger {
 
     public restoreConsole() {
         Object.assign(console, this.originalConsole);
+    }
+
+    protected async processLog(log: LogEntry): Promise<void> {
+        await super.processLog(log);
     }
 }
 

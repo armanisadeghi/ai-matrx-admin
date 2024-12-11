@@ -75,10 +75,10 @@ export type AnimationPreset = typeof ANIMATION_PRESETS[number];
 export const DENSITIES = ['compact', 'normal', 'comfortable'] as const;
 export type ComponentDensity = typeof DENSITIES[number];
 
-export const COMPONENT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
+export const COMPONENT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl','3xl','icon'] as const;
 export type ComponentSize = typeof COMPONENT_SIZES[number];
 
-export const TEXT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
+export const TEXT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', 'hideText'] as const;
 export type TextSizeOptions = typeof TEXT_SIZES[number];
 
 // Layout Options

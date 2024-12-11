@@ -1,9 +1,9 @@
 // components/matrx/AnimatedForm/FormComponent.tsx
 'use client';
 
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/styles/themes/utils";
+import React, {useState, useRef, useEffect} from "react";
+import {motion, AnimatePresence} from "framer-motion";
+import {cn} from "@/styles/themes/utils";
 import AnimatedInput from "components/matrx/AnimatedForm/AnimatedInput";
 import AnimatedTextarea from "components/matrx/AnimatedForm/AnimatedTextarea";
 import AnimatedSelect from "components/matrx/AnimatedForm/AnimatedSelect";
@@ -29,8 +29,8 @@ const EntityForm: React.FC<EntityFormProps & { className?: string }> = (
     // If external currentStep isn't provided, manage it internally
     const [internalCurrentStep, setInternalCurrentStep] = useState(0);
     const currentStep = externalCurrentStep !== undefined ? externalCurrentStep : internalCurrentStep;
-  const formRef = useRef<HTMLDivElement>(null);
-  const [isScrollable, setIsScrollable] = useState(false);
+    const formRef = useRef<HTMLDivElement>(null);
+    const [isScrollable, setIsScrollable] = useState(false);
 
     // Internal step management functions
     const internalOnNextStep = () => {
@@ -45,20 +45,20 @@ const EntityForm: React.FC<EntityFormProps & { className?: string }> = (
     const onNextStep = externalOnNextStep ? externalOnNextStep : internalOnNextStep;
     const onPrevStep = externalOnPrevStep ? externalOnPrevStep : internalOnPrevStep;
 
-  useEffect(() => {
-    const checkScrollable = () => {
-      if (formRef.current) {
-        setIsScrollable(formRef.current.scrollHeight > formRef.current.clientHeight);
-      }
-    };
+    useEffect(() => {
+        const checkScrollable = () => {
+            if (formRef.current) {
+                setIsScrollable(formRef.current.scrollHeight > formRef.current.clientHeight);
+            }
+        };
 
-    checkScrollable();
-    window.addEventListener('resize', checkScrollable);
+        checkScrollable();
+        window.addEventListener('resize', checkScrollable);
 
-    return () => {
-      window.removeEventListener('resize', checkScrollable);
-    };
-  }, [currentStep, fields]);
+        return () => {
+            window.removeEventListener('resize', checkScrollable);
+        };
+    }, [currentStep, fields]);
 
     const renderField = (field: EntityFormField) => {
         const commonProps = {
@@ -102,99 +102,99 @@ const EntityForm: React.FC<EntityFormProps & { className?: string }> = (
 
     return (
         <motion.div
-      ref={formRef}
-      className={cn(
-        "max-w-md mx-auto mt-4 p-4 bg-card rounded-lg shadow-xl",
-        isScrollable && "max-h-[65vh] overflow-y-auto",
-        className
-      )}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            ref={formRef}
+            className={cn(
+                "max-w-md mx-auto mt-4 p-4 bg-card rounded-lg shadow-xl",
+                isScrollable && "max-h-[65vh] overflow-y-auto",
+                className
+            )}
+            initial={{opacity: 0, scale: 0.9}}
+            animate={{opacity: 1, scale: 1}}
+            transition={{duration: 0.5}}
             {...props}
         >
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                onSubmit();
-            }} className="space-y-6">
-                {isSinglePage ? (
-                    <AnimatePresence>
-                        {fields.map((field, index) => (
-                            <motion.div
-                                key={field.name}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1, duration: 0.3 }}
-                            >
-                                {renderField(field)}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                ) : (
-                    <>
-                        <motion.h2
-                            className="text-2xl font-bold mb-4 text-foreground"
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.5 }}
-                        >
-                            {fields[currentStep].label}
-                        </motion.h2>
-
-                        <AnimatePresence mode="sync">
-                            <motion.div
-                                key={currentStep}
-                                initial={{ opacity: 0, x: 50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -50 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {renderField(fields[currentStep])}
-                            </motion.div>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    onSubmit();
+                }} className="space-y-6">
+                    {isSinglePage ? (
+                        <AnimatePresence>
+                            {fields.map((field, index) => (
+                                <motion.div
+                                    key={field.name}
+                                    initial={{opacity: 0, y: 20}}
+                                    animate={{opacity: 1, y: 0}}
+                                    transition={{delay: index * 0.1, duration: 0.3}}
+                                >
+                                    {renderField(field)}
+                                </motion.div>
+                            ))}
                         </AnimatePresence>
-                    </>
-                )}
-
-                <motion.div
-                    className="flex justify-between mt-6"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                    {!isSinglePage && (
-                        <AnimatedButton
-                            onClick={() => {
-                                if (currentStep > 0) onPrevStep(); // Use internal or external onPrevStep
-                            }}
-                            disabled={currentStep === 0}
-                            className="space-y-6 bg-secondary text-secondary-foreground"
-                        >
-                            Previous
-                        </AnimatedButton>
-                    )}
-                    {isSinglePage || currentStep === fields.length - 1 ? (
-                        <AnimatedButton type="submit" className="bg-primary text-primary-foreground">
-                            Submit
-                        </AnimatedButton>
                     ) : (
-                        <AnimatedButton
-                            onClick={() => {
-                                if (currentStep < fields.length - 1) onNextStep(); // Use internal or external onNextStep
-                            }}
-                            className="bg-primary text-primary-foreground"
-                        >
-                            Next
-                        </AnimatedButton>
-                    )}
-                </motion.div>
-            </form>
+                         <>
+                             <motion.h2
+                                 className="text-2xl font-bold mb-4 text-foreground"
+                                 initial={{opacity: 0, y: -20}}
+                                 animate={{opacity: 1, y: 0}}
+                                 transition={{delay: 0.2, duration: 0.5}}
+                             >
+                                 {fields[currentStep].label}
+                             </motion.h2>
+
+                             <AnimatePresence mode="sync">
+                                 <motion.div
+                                     key={currentStep}
+                                     initial={{opacity: 0, x: 50}}
+                                     animate={{opacity: 1, x: 0}}
+                                     exit={{opacity: 0, x: -50}}
+                                     transition={{duration: 0.3}}
+                                 >
+                                     {renderField(fields[currentStep])}
+                                 </motion.div>
+                             </AnimatePresence>
+                         </>
+                     )}
+
+                    <motion.div
+                        className="flex justify-between mt-6"
+                        initial={{opacity: 0, y: 20}}
+                        animate={{opacity: 1, y: 0}}
+                        transition={{delay: 0.3, duration: 0.5}}
+                    >
+                        {!isSinglePage && (
+                            <AnimatedButton
+                                onClick={() => {
+                                    if (currentStep > 0) onPrevStep(); // Use internal or external onPrevStep
+                                }}
+                                disabled={currentStep === 0}
+                                className="space-y-6 bg-secondary text-secondary-foreground"
+                            >
+                                Previous
+                            </AnimatedButton>
+                        )}
+                        {isSinglePage || currentStep === fields.length - 1 ? (
+                            <AnimatedButton type="submit" className="bg-primary text-primary-foreground">
+                                Submit
+                            </AnimatedButton>
+                        ) : (
+                             <AnimatedButton
+                                 onClick={() => {
+                                     if (currentStep < fields.length - 1) onNextStep(); // Use internal or external onNextStep
+                                 }}
+                                 className="bg-primary text-primary-foreground"
+                             >
+                                 Next
+                             </AnimatedButton>
+                         )}
+                    </motion.div>
+                </form>
 
             {!isSinglePage && (
                 <motion.div
                     className="mt-4 text-sm text-muted-foreground"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
+                    initial={{opacity: 0}}
+                    animate={{opacity: 1}}
+                    transition={{delay: 0.5, duration: 0.5}}
                 >
                     Step {currentStep + 1} of {fields.length}
                 </motion.div>

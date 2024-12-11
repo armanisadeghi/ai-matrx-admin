@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, MultiSelect } from '@/components/ui/loaders/select';
+import Select from '@/components/ui/loaders/select';
 import { Bell, Calendar, ChevronDown, Filter, Mail, Search, Settings, User } from 'lucide-react';
 
 const DemoSection = ({ title, children }: { title: string; children: React.ReactNode }) => (

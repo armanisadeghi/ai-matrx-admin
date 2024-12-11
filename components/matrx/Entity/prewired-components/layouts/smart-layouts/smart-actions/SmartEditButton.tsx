@@ -1,15 +1,11 @@
-import { EntityKeys } from "@/types/entityTypes";
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
 import { useCallback } from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import { Edit2 } from "lucide-react";
+import {SmartButtonProps} from "./types";
 
-interface SmartEditButtonProps {
-    entityKey: EntityKeys;
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-}
 
-export const SmartEditButton = ({ entityKey, size = 'default' }: SmartEditButtonProps) => {
+export const SmartEditButton = ({ entityKey, size = 'default' }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const { operationMode, startUpdateMode, selection } = entityCrud;
 
@@ -24,6 +20,7 @@ export const SmartEditButton = ({ entityKey, size = 'default' }: SmartEditButton
 
     return (
         <SmartButtonBase
+            entityKey={entityKey}
             onClick={handleEdit}
             disabled={isDisabled}
             size={size}

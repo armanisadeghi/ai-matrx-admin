@@ -1,6 +1,7 @@
 // lib/logger/constants.ts
 
 export const LOG_LEVELS = {
+    NONE: 'none',
     DEBUG: 'debug',
     INFO: 'info',
     WARN: 'warn',

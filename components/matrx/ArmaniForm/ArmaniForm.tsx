@@ -33,9 +33,14 @@ import EntityRelationshipWrapper from "./EntityRelationshipWrapper";
 import SmartCrudButtons from "../Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
 import {useFieldVisibility} from "@/lib/redux/entity/hooks/useFieldVisibility";
 import {useAppDispatch, useAppStore} from "@/lib/redux/hooks";
-import {FormColumnsOptions, FormDirectionOptions, GridColumnOptions, FormLayoutOptions} from "@/types/componentConfigTypes";
-import { UnifiedLayoutProps } from "../Entity";
-import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
+import {
+    FormColumnsOptions,
+    FormDirectionOptions,
+    GridColumnOptions,
+    FormLayoutOptions
+} from "@/types/componentConfigTypes";
+import {UnifiedLayoutProps} from "../Entity";
+import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 
 export interface FormState {
     [key: string]: any;
@@ -45,7 +50,7 @@ export type FormDensity = 'normal' | 'compact' | 'comfortable';
 
 const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
-    const { activeRecordCrud, getEffectiveRecord } = useEntityCrud(entityKey);
+    const {activeRecordCrud, getEffectiveRecord} = useEntityCrud(entityKey);
     const recordData = activeRecordCrud.recordData;
 
     const {
@@ -241,107 +246,109 @@ const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
             animate="animate"
             exit="exit"
         >
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    unifiedCrudHandlers.handleUpdate();
-                }}
-                className={cn("h-full", densityStyles.container)}
-            >
 
-                {enableSearch && (
-                    <EntitySearchInput
-                        dynamicFieldInfo={dynamicFieldInfo}
-                        onSearchChange={setSearchTerm}
-                        density={density}
-                        animationPreset={animationPreset}
-                        size={size}
-                        variant={variant}
-                        className={densityStyles.inputSize}
-                    />
-                )}
-
-                <div className={cn(
-                    isFullPage ? "h-[calc(100%-4rem)] overflow-y-auto" : "",
-                    densityStyles.section
-                )}>
-                    <SmartCrudButtons
-                        entityKey={entityKey}
-                        options={{
-                            allowCreate: true,
-                            allowEdit: true,
-                            allowDelete: true
-                        }}
-                        layout={{
-                            buttonLayout: 'row',
-                            buttonSize: 'sm'
-                        }}
-                        className="mb-4"
-                    />
-
-                    {isSinglePage ? renderLayout() : (
-                        <>
-                            <motion.h2
-                                className={cn(
-                                    "font-bold mb-4 text-foreground",
-                                    isFullPage ? "text-3xl" : "text-2xl",
-                                    densityConfig[density].fontSize
-                                )}
-                                variants={cardVariants[animationPreset]}
-                            >
-                                {dynamicFieldInfo[currentStep].componentProps.dislayName}
-                            </motion.h2>
-
-                            <AnimatePresence mode="sync">
-                                <motion.div
-                                    key={currentStep}
-                                    variants={getAnimationVariants(animationPreset)}
-                                    initial="initial"
-                                    animate="animate"
-                                    exit="exit"
-                                >
-                                    {renderField(dynamicFieldInfo[currentStep])}
-                                </motion.div>
-                            </AnimatePresence>
-                        </>
-                    )}
-                </div>
-
-                <motion.div
-                    className={cn("flex justify-between", densityStyles.gap)}
-                    variants={cardVariants[animationPreset]}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        unifiedCrudHandlers.handleUpdate();
+                    }}
+                    className={cn("h-full", densityStyles.container)}
                 >
-                    {/* Button components with density-aware styling */}
-                    {!isSinglePage && (
-                        <EntityButton
-                            onClick={() => {
-                                if (currentStep > 0) onPrevStep();
-                            }}
-                            disabled={currentStep === 0}
-                            className={cn(
-                                "space-y-6 bg-secondary text-secondary-foreground",
-                                densityStyles.buttonSize
-                            )}
-                        >
-                            Previous
-                        </EntityButton>
+
+                    {enableSearch && (
+                        <EntitySearchInput
+                            dynamicFieldInfo={dynamicFieldInfo}
+                            onSearchChange={setSearchTerm}
+                            density={density}
+                            animationPreset={animationPreset}
+                            size={size}
+                            variant={variant}
+                            className={densityStyles.inputSize}
+                        />
                     )}
-                    {isSinglePage || currentStep === dynamicFieldInfo.length - 1 ? (
-                        <EntityButton type="submit" className="bg-primary text-primary-foreground">
-                            Submit
-                        </EntityButton>
-                    ) : (
-                         <EntityButton
-                             onClick={() => {
-                                 if (currentStep < dynamicFieldInfo.length - 1) onNextStep();
-                             }}
-                             className="bg-primary text-primary-foreground"
-                         >
-                             Next
-                         </EntityButton>
-                     )}
-                </motion.div>
-            </form>
+
+                    <div className={cn(
+                        isFullPage ? "h-[calc(100%-4rem)] overflow-y-auto" : "",
+                        densityStyles.section
+                    )}>
+                        <SmartCrudButtons
+                            entityKey={entityKey}
+                            options={{
+                                allowCreate: true,
+                                allowEdit: true,
+                                allowDelete: true
+                            }}
+                            layout={{
+                                buttonLayout: 'row',
+                                buttonSize: 'sm'
+                            }}
+                            className="mb-4"
+                        />
+
+                        {isSinglePage ? renderLayout() : (
+                            <>
+                                <motion.h2
+                                    className={cn(
+                                        "font-bold mb-4 text-foreground",
+                                        isFullPage ? "text-3xl" : "text-2xl",
+                                        densityConfig[density].fontSize
+                                    )}
+                                    variants={cardVariants[animationPreset]}
+                                >
+                                    {dynamicFieldInfo[currentStep].componentProps.dislayName}
+                                </motion.h2>
+
+                                <AnimatePresence mode="sync">
+                                    <motion.div
+                                        key={currentStep}
+                                        variants={getAnimationVariants(animationPreset)}
+                                        initial="initial"
+                                        animate="animate"
+                                        exit="exit"
+                                    >
+                                        {renderField(dynamicFieldInfo[currentStep])}
+                                    </motion.div>
+                                </AnimatePresence>
+                            </>
+                        )}
+                    </div>
+
+                    <motion.div
+                        className={cn("flex justify-between", densityStyles.gap)}
+                        variants={cardVariants[animationPreset]}
+                    >
+                        {/* Button components with density-aware styling */}
+                        {!isSinglePage && (
+                            <EntityButton
+                                onClick={() => {
+                                    if (currentStep > 0) onPrevStep();
+                                }}
+                                disabled={currentStep === 0}
+                                className={cn(
+                                    "space-y-6 bg-secondary text-secondary-foreground",
+                                    densityStyles.buttonSize
+                                )}
+                            >
+                                Previous
+                            </EntityButton>
+                        )}
+                        {isSinglePage || currentStep === dynamicFieldInfo.length - 1 ? (
+                            <EntityButton type="submit" className="bg-primary text-primary-foreground">
+                                Submit
+                            </EntityButton>
+                        ) : (
+                             <EntityButton
+                                 onClick={() => {
+                                     if (currentStep < dynamicFieldInfo.length - 1) onNextStep();
+                                 }}
+                                 className="bg-primary text-primary-foreground"
+                             >
+                                 Next
+                             </EntityButton>
+                         )}
+                    </motion.div>
+                </form>
+
 
             {!isSinglePage && (
                 <motion.div

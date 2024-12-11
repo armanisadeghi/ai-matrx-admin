@@ -11,7 +11,7 @@ import {
     LoadingState,
     SubscriptionConfig,
     EntityMetadata,
-    EntityMetrics, SelectionMode, EntityOperations, EntityOperationFlags,
+    EntityMetrics, SelectionMode,
     EntityOperationMode,
 } from "@/lib/redux/entity/types/stateTypes";
 import {
@@ -23,18 +23,13 @@ import {
     setSuccess,
     addRecordToSelection,
     removeRecordFromSelection,
-    updateSelectionMode,
     isMatrxRecordId,
-    createMatrxRecordId,
     isEntityData,
     toggleSelectionMode,
     removeSelections,
     setSpecificSelectionMode,
     handleSelectionForDeletedRecord,
-    setNewActiveRecord, setStateIsModified,
-    clearUnsavedRecords,
-    generateTemporaryRecordId,
-    removeActiveRecord
+    setNewActiveRecord,
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "./utils/entityLogger";
 import {
@@ -47,8 +42,6 @@ import {
 import {QueryOptions} from "./sagas/sagaHelpers";
 import {Callback} from "@/utils/callbackManager";
 import { EntityModeManager } from "./utils/crudOpsManagement";
-
-EntityLogger.addFeatureToFilter("ENTITY_SLICE");
 
 
 export const createEntitySlice = <TEntity extends EntityKeys>(

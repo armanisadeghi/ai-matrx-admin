@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, MultiSelect } from '@/components/ui/loaders/select';
+import Select from '@/components/ui/loaders/select';
+
 import { Bell, Calendar, ChevronDown, Filter, Mail, Search, Settings, User, Tags, List, Check } from 'lucide-react';
+import MultiSelect from '@/components/ui/loaders/multi-select';
 
 const DemoSection = ({ title, children, description }: { title: string; description?: string; children: React.ReactNode }) => (
     <Card className="w-full">
@@ -154,26 +156,55 @@ export default function SelectDemo() {
             {/* Icon Variants */}
             <DemoSection title="Icon Select Variants">
                 <div className="flex flex-wrap items-center gap-4">
-                    {[
-                        { icon: Filter, variant: 'primary' as const },
-                        { icon: Search, variant: 'secondary' as const },
-                        { icon: Mail, variant: 'destructive' as const },
-                        { icon: Bell, variant: 'success' as const },
-                        { icon: Calendar, variant: 'outline' as const },
-                        { icon: Settings, variant: 'ghost' as const }
-                    ].map(({ icon, variant }) => (
-                        <Select
-                            key={`icon-${variant}`}
-                            options={SAMPLE_OPTIONS}
-                            value={selectedValues[`icon-${variant}`]}
-                            onChange={handleSingleChange(`icon-${variant}`)}
-                            size="icon"
-                            variant={variant}
-                            icon={icon}
-                            isLoading={loadingStates[`icon-${variant}`]}
-                            onClick={() => toggleLoading(`icon-${variant}`)}
-                        />
-                    ))}
+                    {/* Single Select Icons */}
+                    <div className="flex items-center gap-4 p-2 rounded-lg bg-muted/10">
+                        <h3 className="text-sm font-medium">Single:</h3>
+                        {[
+                            { icon: Filter, variant: 'primary' as const },
+                            { icon: Search, variant: 'secondary' as const },
+                            { icon: Mail, variant: 'destructive' as const },
+                            { icon: Bell, variant: 'success' as const },
+                            { icon: Calendar, variant: 'outline' as const },
+                            { icon: Settings, variant: 'ghost' as const }
+                        ].map(({ icon, variant }) => (
+                            <Select
+                                key={`icon-${variant}`}
+                                options={SAMPLE_OPTIONS}
+                                value={selectedValues[`icon-${variant}`]}
+                                onChange={handleSingleChange(`icon-${variant}`)}
+                                size="icon"
+                                variant={variant}
+                                icon={icon}
+                                isLoading={loadingStates[`icon-${variant}`]}
+                                onClick={() => toggleLoading(`icon-${variant}`)}
+                            />
+                        ))}
+                    </div>
+
+                    {/* MultiSelect Icons */}
+                    <div className="flex items-center gap-4 p-2 rounded-lg bg-muted/10">
+                        <h3 className="text-sm font-medium">Multi:</h3>
+                        {[
+                            { icon: Tags, variant: 'primary' as const },
+                            { icon: List, variant: 'secondary' as const },
+                            { icon: Filter, variant: 'destructive' as const },
+                            { icon: Settings, variant: 'success' as const },
+                            { icon: Bell, variant: 'outline' as const },
+                            { icon: Search, variant: 'ghost' as const }
+                        ].map(({ icon, variant }) => (
+                            <MultiSelect
+                                key={`multi-icon-${variant}`}
+                                options={CATEGORY_OPTIONS}
+                                value={multiSelectedValues[`icon-${variant}`] || []}
+                                onChange={handleMultiChange(`icon-${variant}`)}
+                                displayMode="icon"
+                                variant={variant}
+                                icon={icon}
+                                isLoading={loadingStates[`multi-icon-${variant}`]}
+                                onClick={() => toggleLoading(`multi-icon-${variant}`)}
+                            />
+                        ))}
+                    </div>
                 </div>
             </DemoSection>
 

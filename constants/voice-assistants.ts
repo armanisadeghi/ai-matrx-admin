@@ -2,6 +2,39 @@ import { Assistant, AvailableAssistants } from "@/types/voice/voiceAssistantType
 
 const DEFAULT_IMAGE = '/assistants/matrx-ai-avatar-male.jpeg';
 
+export const flashcardGrader_response_format = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "fast_fire_flashcard_feedback_response",
+        "strict": true,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "correct": {
+                    "type": "boolean",
+                    "description": "Indicates whether the response was correct."
+                },
+                "score": {
+                    "type": "integer",
+                    "description": "The score received for the response."
+                },
+                "audioFeedback": {
+                    "type": "string",
+                    "description": "Audio feedback provided related to the response."
+                }
+            },
+            "required": [
+                "correct",
+                "score",
+                "audioFeedback"
+            ],
+            "additionalProperties": false
+        }
+    }
+}
+
+
+
 export const assistants: Assistant[] = [
     {
         id: 'defaultVoiceAssistant',
@@ -114,7 +147,16 @@ export const assistants: Assistant[] = [
         description: 'A lighthearted, fun assistant great for casual conversations and creative support.',
         imagePath: '/assistants/candice-ai-avatar.jpeg',
         capabilities: ['Creative writing', 'Engaging interactions', 'Entertainment']
-    }
+    },
+    {
+        id: 'flashcardGrader',
+        name: 'Flashcard Grader',
+        title: 'Flashcard Grader Assistant',
+        description: 'Give him your flashcard and your "answer" and he tells you if you got it right or not!',
+        imagePath: '/assistants/flashcard-grader-male-avatar.jpeg',
+        capabilities: ['Flashcard grading', 'Answer verification', 'Study support'],
+        responseFormat: flashcardGrader_response_format
+    },
 ];
 
 // Update the getAssistant function to correctly handle undefined values

@@ -1,20 +1,20 @@
 // lib/logger/client-logger.ts
-
 'use client';
 
+import { BaseLogger } from './base-logger';
 import { v4 as uuidv4 } from 'uuid';
 import { LogStorage } from './storage';
 import { LogEntry, LogContext, ApplicationLog } from './types';
+import { logConfig } from './config';
 
-class ClientLogger {
+class ClientLogger extends BaseLogger {
     private logQueue: LogEntry[] = [];
     private flushTimeout: NodeJS.Timeout | null = null;
-    private flushInterval: number = 5000;
 
     constructor() {
+        super('client-logger');
         if (typeof window !== 'undefined') {
-            const interval = setInterval(() => this.flush(), this.flushInterval);
-            this.flushTimeout = interval;
+            this.flushTimeout = setInterval(() => this.flush(), logConfig.flushInterval);
             window.addEventListener('beforeunload', () => this.flush());
         }
     }
@@ -25,10 +25,11 @@ class ClientLogger {
         const logsToSend = [...this.logQueue];
         this.logQueue = [];
 
+        // Store logs locally
         LogStorage.saveToStorage(logsToSend);
 
         try {
-            await fetch('/api/logs', {
+            await fetch(logConfig.serverLogEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ logs: logsToSend }),
@@ -42,7 +43,7 @@ class ClientLogger {
     log(entry: Omit<ApplicationLog, 'id' | 'context' | 'category'>): void {
         const context: LogContext = {
             timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || 'development',
+            environment: logConfig.environment,
             url: typeof window !== 'undefined' ? window.location.href : undefined,
             userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
         };
@@ -54,10 +55,13 @@ class ClientLogger {
             category: 'application'
         };
 
-        console.log(enhancedEntry);
-        this.logQueue.push(enhancedEntry);
+        // Add to base logger storage and handle console output
+        this.addLog(enhancedEntry);
+        this.consoleOutput(enhancedEntry);
 
-        if (this.logQueue.length >= 10) {
+        // Queue for server sending
+        this.logQueue.push(enhancedEntry);
+        if (this.logQueue.length >= logConfig.batchSize) {
             this.flush();
         }
     }
@@ -65,7 +69,7 @@ class ClientLogger {
     error(error: Error, metadata?: Record<string, unknown>): void {
         const context: LogContext = {
             timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || 'development',
+            environment: logConfig.environment,
             url: typeof window !== 'undefined' ? window.location.href : undefined,
             userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
         };
@@ -84,8 +88,19 @@ class ClientLogger {
             metadata
         };
 
+        // Add to base logger storage and handle console output
+        this.addLog(errorLog);
+        this.consoleOutput(errorLog);
+
+        // Queue for immediate sending
         this.logQueue.push(errorLog);
         this.flush();
+    }
+
+    protected async processLog(log: LogEntry): Promise<void> {
+        // Client logger handles its own sending via flush()
+        // but we'll still use base DataDog integration if enabled
+        await super.processLog(log);
     }
 }
 

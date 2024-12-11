@@ -2,15 +2,7 @@ import React from 'react';
 import {Button} from 'components/ui/';
 import {Loader2} from 'lucide-react';
 import {memo} from 'react';
-
-interface SmartButtonBaseProps {
-    children: React.ReactNode;
-    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-    disabled?: boolean;
-    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost';
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-    loading?: boolean;
-}
+import {SmartButtonProps} from "./types";
 
 export const SmartButtonBase = memo((
     {
@@ -20,7 +12,7 @@ export const SmartButtonBase = memo((
         variant = 'default',
         size = 'default',
         loading = false,
-    }: SmartButtonBaseProps) => {
+    }: SmartButtonProps) => {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();

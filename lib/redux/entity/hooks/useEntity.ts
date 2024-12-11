@@ -68,10 +68,22 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const history = useAppSelector(selectors.selectHistory);
     const selectedRecordsWithKey = useAppSelector(selectors.selectSelectedRecordsWithKey);
     const operationMode = useAppSelector(selectors.selectOperationMode);
+    const recordWithDefaultValues = useAppSelector(selectors.selectDefaultValues);
 
     const entityState = (state: RootState) => {
         return state.entities[entityKey];
     }
+
+    const effectiveRecordById = useMemo(() => {
+        return (matrxRecordId: MatrxRecordId) =>
+            selectors.selectEffectiveRecordById(store.getState(), matrxRecordId);
+    }, [selectors, store]);
+
+    const effectiveRecordOrDefaults = useMemo(() => {
+        return (matrxRecordId: MatrxRecordId) =>
+            selectors.selectEffectiveRecordOrDefaults(store.getState(), matrxRecordId);
+    }, [selectors, store]);
+
 
     const recordByPrimaryKey = useMemo(() => {
         return (primaryKeyValues: Record<string, MatrxRecordId>) =>
@@ -83,10 +95,6 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
             selectors.selectUnsavedRecordById(store.getState(), matrxRecordId);
     }, [selectors, store]);
 
-    const effectiveRecordById = useMemo(() => {
-        return (matrxRecordId: MatrxRecordId) =>
-            selectors.selectEffectiveRecordById(store.getState(), matrxRecordId);
-    }, [selectors, store]);
 
     const isTemporaryRecordId = useMemo(() => {
         return (matrxRecordId: MatrxRecordId) =>
@@ -336,5 +344,9 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         isTemporaryRecordId,
 
         setSelection, // TODO: This is fake and temporary just to avoid errors.
+
+        effectiveRecordOrDefaults,
+        recordWithDefaultValues,
+        toasts,
     };
 };

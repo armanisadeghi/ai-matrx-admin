@@ -454,7 +454,8 @@ const FlexEntityForm: React.FC<FlexEntityFormProps> = (
                 </motion.div>
             </form>
 
-            {!isSinglePage && (
+
+                {!isSinglePage && (
                 <motion.div
                     className="mt-4 text-sm text-muted-foreground"
                     initial={{opacity: 0}}

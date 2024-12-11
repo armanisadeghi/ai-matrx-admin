@@ -20,6 +20,23 @@ import {
     selectCurrentIndex,
 } from '@/lib/redux/selectors/flashcardSelectors';
 
+export type AiModalState = {
+    isAudioModalOpen: boolean;
+    isAiModalOpen: boolean;
+    isAiAssistModalOpen: boolean;
+    aiAssistModalMessage: string;
+    aiAssistModalDefaultTab: string;
+};
+
+export type AiModalActions = {
+    openAudioModal: () => void;
+    closeAudioModal: () => void;
+    openAiModal: () => void;
+    closeAiModal: () => void;
+    openAiAssistModal: (message: string) => void;
+    closeAiAssistModal: () => void;
+};
+
 export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
     const dispatch = useDispatch<AppDispatch>();
     const allFlashcards = useSelector(selectAllFlashcards);
@@ -30,11 +47,18 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [fontSize, setFontSize] = useState(18);
     const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMessage, setModalMessage] = useState('');
-    const [modalDefaultTab, setModalDefaultTab] = useState('confused');
     const [isExpandedChatOpen, setIsExpandedChatOpen] = useState(false);
 
+    // AI-related state
+    const [aiModalState, setAiModalState] = useState<AiModalState>({
+        isAudioModalOpen: false,
+        isAiModalOpen: false,
+        isAiAssistModalOpen: false,
+        aiAssistModalMessage: '',
+        aiAssistModalDefaultTab: 'confused',
+    });
+
+    // Initialize flashcards
     useEffect(() => {
         const flashcardsToInitialize = initialFlashcards.map((card, index) => ({
             ...card,
@@ -46,8 +70,35 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
         dispatch(initializeFlashcards(flashcardsToInitialize));
     }, [initialFlashcards, dispatch]);
 
-    const handleFlip = useCallback(() => setIsFlipped(prev => !prev), []);
+    // AI Modal Actions
+    const aiModalActions: AiModalActions = {
+        openAudioModal: useCallback(() => {
+            setAiModalState(prev => ({ ...prev, isAudioModalOpen: true }));
+        }, []),
+        closeAudioModal: useCallback(() => {
+            setAiModalState(prev => ({ ...prev, isAudioModalOpen: false }));
+        }, []),
+        openAiModal: useCallback(() => {
+            setAiModalState(prev => ({ ...prev, isAiModalOpen: true }));
+        }, []),
+        closeAiModal: useCallback(() => {
+            setAiModalState(prev => ({ ...prev, isAiModalOpen: false }));
+        }, []),
+        openAiAssistModal: useCallback((message: string) => {
+            setAiModalState(prev => ({
+                ...prev,
+                isAiAssistModalOpen: true,
+                aiAssistModalMessage: message,
+                aiAssistModalDefaultTab: message.toLowerCase().replace(/\s+/g, '-'),
+            }));
+        }, []),
+        closeAiAssistModal: useCallback(() => {
+            setAiModalState(prev => ({ ...prev, isAiAssistModalOpen: false }));
+        }, []),
+    };
 
+    // Existing functionality
+    const handleFlip = useCallback(() => setIsFlipped(prev => !prev), []);
     const handleNext = useCallback(() => {
         if (currentIndex < allFlashcards.length - 1) {
             dispatch(setCurrentIndex(currentIndex + 1));
@@ -80,57 +131,16 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
         }
     }, [activeFlashcard, dispatch, handleNext]);
 
-    const handleEditCard = useCallback((card: Flashcard) => {
-        setEditingCard(card);
-    }, []);
-
-    const handleSaveEdit = useCallback(() => {
-        if (editingCard) {
-            dispatch(updateFlashcard(editingCard));
-            setEditingCard(null);
-        }
-    }, [editingCard, dispatch]);
-
-    const showModal = useCallback((message: string) => {
-        setModalMessage(message);
-        setModalDefaultTab(message.toLowerCase().replace(/\s+/g, '-'));
-        setIsModalOpen(true);
-    }, []);
-
-    const handleAskQuestion = useCallback(() => {
-        setIsExpandedChatOpen(true);
-    }, []);
-
-    const handleAddMessage = useCallback((flashcardId: string, message: ChatMessage) => {
-        dispatch(addMessage({ flashcardId, message }));
-    }, [dispatch]);
-
-    const handleClearChat = useCallback((flashcardId: string) => {
-        dispatch(clearChat(flashcardId));
-    }, [dispatch]);
-
-    const handleResetAllChats = useCallback(() => {
-        dispatch(resetAllChats());
-    }, [dispatch]);
-
-    const handleDeleteFlashcard = useCallback((flashcardId: string) => {
-        dispatch(deleteFlashcard(flashcardId));
-    }, [dispatch]);
-
-    const handleAddFlashcard = useCallback((flashcard: Flashcard) => {
-        dispatch(addFlashcard(flashcard));
-    }, [dispatch]);
-
     const handleAction = useCallback((actionName: string, data: any) => {
         switch (actionName) {
             case 'add':
-                handleAddFlashcard(data);
+                dispatch(addFlashcard(data));
                 break;
             case 'edit':
-                handleEditCard(data);
+                setEditingCard(data);
                 break;
             case 'delete':
-                handleDeleteFlashcard(data.id);
+                dispatch(deleteFlashcard(data.id));
                 break;
             case 'expand':
                 setIsExpandedChatOpen(true);
@@ -138,9 +148,10 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
             default:
                 console.log(`Unknown action: ${actionName}`);
         }
-    }, [handleAddFlashcard, handleEditCard, handleDeleteFlashcard]);
+    }, [dispatch]);
 
     return {
+        // State
         allFlashcards,
         currentIndex,
         activeFlashcard,
@@ -148,29 +159,31 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
         isFlipped,
         fontSize,
         editingCard,
-        isModalOpen,
-        modalMessage,
-        modalDefaultTab,
         isExpandedChatOpen,
+        aiModalState,
+
+        // Actions
         handleFlip,
         handleNext,
         handlePrevious,
         handleSelectChange,
         shuffleCards,
         handleAnswer,
-        handleEditCard,
-        handleSaveEdit,
-        showModal,
-        handleAskQuestion,
         setFontSize,
-        setIsModalOpen,
         setIsExpandedChatOpen,
         setEditingCard,
         handleAction,
-        handleAddMessage,
-        handleClearChat,
-        handleResetAllChats,
-        handleDeleteFlashcard,
-        handleAddFlashcard,
+        aiModalActions,
+
+        // Redux actions
+        addMessage: useCallback((flashcardId: string, message: ChatMessage) => {
+            dispatch(addMessage({ flashcardId, message }));
+        }, [dispatch]),
+        clearChat: useCallback((flashcardId: string) => {
+            dispatch(clearChat(flashcardId));
+        }, [dispatch]),
+        resetAllChats: useCallback(() => {
+            dispatch(resetAllChats());
+        }, [dispatch]),
     };
 };

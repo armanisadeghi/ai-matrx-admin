@@ -85,7 +85,7 @@ export const SmartLayoutStacked: React.FC<UnifiedLayoutProps> = (unifiedLayoutPr
                         </EnhancedCard>
                     </div>
 
-                    <MeasurementMonitor measurements={measurements}/>
+                    {/*<MeasurementMonitor measurements={measurements}/>*/}
 
                     {selectedEntity && (
                         <>

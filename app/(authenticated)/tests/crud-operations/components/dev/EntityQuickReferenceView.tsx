@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
 import {GripVertical, X, Plus, Trash, Save, CheckSquare, Copy, Download} from 'lucide-react';
-import {useEntityQuickReference} from '@/lib/redux/entity/hooks/dev/useEntityQuickReference';
+
 import {
     ResizableHandle,
     ResizablePanel,
@@ -45,8 +45,9 @@ import {toast} from "@/components/ui/use-toast";
 import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import ComponentBasedFieldView from '../../basic-crud/renderComponentBasedField';
-import { EnhancedJsonViewer } from '@/components/ui';
+import {EnhancedJsonViewer} from '@/components/ui';
 import TextDivider from "@/components/matrx/TextDivider";
+import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
 
 export const EntityQuickReferenceView = ({entityKey}) => {
     const [sidebarSize, setSidebarSize] = useState(20);
@@ -54,26 +55,48 @@ export const EntityQuickReferenceView = ({entityKey}) => {
     const [isCreating, setIsCreating] = useState(false);
 
     const {
-        quickReferenceRecords,
-        selectedQuickReference,
-        activeRecord,
-        handleMultipleSelections,
-        handleSingleSelection,
-        selectedQuickReferences,
-        primaryKeyMetadata,
-        clearSelection,
         entityDisplayName,
         fieldInfo,
-        loading,
-        error,
+
+        // Quick Reference Data
+        quickReferenceRecords,
+        quickReferenceState,
+
+        // Selection Management (from useEntitySelection)
+        selectedRecordIds,
+        selectedRecords,
+        activeRecord,
+        selectionMode,
+        summary,
+
+        // Selection Utilities
+        isActive,
+        toggleSelectionMode,
+        clearSelection,
+        handleSingleSelection,
+        fetchMode,
+        setFetchMode,
+        handleAddToSelection,
+        isSelected,
+        getCardClassName,
+
+        // Record Operations
         createRecord,
         updateRecord,
         deleteRecord,
+
+        // UI States
+        loadingState,
+        errorState,
         isValidated,
-        handleSetValidated,
-        isMultiSelectMode,
-        toggleMultiSelectMode,
-    } = useEntityQuickReference(entityKey);
+        getRecordIdByRecord,
+        getDisplayValue,
+        handleRecordSelect,
+
+        flexFormField,
+
+        handleRecordSelectWithRelation,
+    } = useQuickReference(entityKey);
 
     // Form setup
     const form = useForm({
@@ -135,7 +158,6 @@ export const EntityQuickReferenceView = ({entityKey}) => {
     // };
 
     const handleSubmit = (data) => {
-        handleSetValidated(true);
 
         if (!isValidated) {
             toast({
@@ -182,106 +204,77 @@ export const EntityQuickReferenceView = ({entityKey}) => {
         }
     };
 
-    const isSelected = (ref) => {
-        const refKey = createRecordKey(primaryKeyMetadata, ref.primaryKeyValues);
-        return selectedQuickReferences.some(selected =>
-            createRecordKey(primaryKeyMetadata, selected.primaryKeyValues) === refKey
-        );
-    }
-
-    const getCardClassName = (ref) => {
-        const isItemSelected = isSelected(ref);
-        const baseClasses = "cursor-pointer transition-colors hover:bg-accent/50";
-        if (isMultiSelectMode) {
-            return `${baseClasses} ${isItemSelected ? 'border-primary bg-accent' : 'border-transparent'}`;
-        }
-        return `${baseClasses} ${
-            isItemSelected
-            ? 'border-primary border-2 bg-accent'
-            : 'border-transparent'
-        }`;
-    };
-
-    // Simplified selection handler
-    const handleAddToSelection = (primaryKeyValues) => {
-        if (isMultiSelectMode) {
-            handleMultipleSelections(primaryKeyValues);
-        } else {
-            handleSingleSelection(primaryKeyValues);
-            setIsCreating(false);
-        }
-    };
-
     // Update multi-select toggle to handle create mode
     const handleToggleMultiSelect = () => {
         if (isCreating) {
             setIsCreating(false);
         }
-        toggleMultiSelectMode();
+        toggleSelectionMode();
     };
 
-        const renderFormContent = () => {
-            if (isMultiSelectMode) {
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Selected Items</CardTitle>
-                            <CardDescription>
-                                {selectedQuickReferences.length} items selected
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {selectedQuickReferences.map(ref => (
-                                    <div key={JSON.stringify(ref.primaryKeyValues)}
-                                         className="flex items-center justify-between p-2 border rounded">
-                                        <span>{ref.displayValue}</span>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleAddToSelection(ref.primaryKeyValues)}
-                                        >
-                                            <X className="h-4 w-4"/>
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-end space-x-2">
-                            <Button
-                                variant="destructive"
-                                onClick={() => clearSelection()}
-                                disabled={selectedQuickReferences.length === 0}
-                            >
-                                Clear Selection
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                // onClick={handleFetchSelected}
-                                disabled={selectedQuickReferences.length === 0}
-                            >
-                                <Download className="h-4 w-4 mr-1"/>
-                                Fetch Selected (Not connected anymore)
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                );
-            }
-
+    const renderFormContent = () => {
+        if (isMultiSelectMode) {
             return (
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            {isCreating ? 'Create New Record' : 'Record Details'}
-                        </CardTitle>
+                        <CardTitle>Selected Items</CardTitle>
                         <CardDescription>
-                            {isCreating
-                             ? 'Enter the details for the new record'
-                             : 'View and edit record information'
-                            }
+                            {selectedQuickReferences.length} items selected
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <div className="space-y-2">
+                            {selectedQuickReferences.map(ref => (
+                                <div key={JSON.stringify(ref.primaryKeyValues)}
+                                     className="flex items-center justify-between p-2 border rounded">
+                                    <span>{ref.displayValue}</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleAddToSelection(ref.primaryKeyValues)}
+                                    >
+                                        <X className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-end space-x-2">
+                        <Button
+                            variant="destructive"
+                            onClick={() => clearSelection()}
+                            disabled={selectedQuickReferences.length === 0}
+                        >
+                            Clear Selection
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            // onClick={handleFetchSelected}
+                            disabled={selectedQuickReferences.length === 0}
+                        >
+                            <Download className="h-4 w-4 mr-1"/>
+                            Fetch Selected (Not connected anymore)
+                        </Button>
+                    </CardFooter>
+                </Card>
+            );
+        }
+
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>
+                        {isCreating ? 'Create New Record' : 'Record Details'}
+                    </CardTitle>
+                    <CardDescription>
+                        {isCreating
+                         ? 'Enter the details for the new record'
+                         : 'View and edit record information'
+                        }
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                                 {fieldInfo.map(field => (
@@ -291,49 +284,50 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                 ))}
                             </form>
                         </Form>
-                    </CardContent>
 
-                    {/* Render fetched selections */}
-                    {fetchedSelections.map((selection, index) => (
-                        <div key={JSON.stringify(selection.primaryKeyValues)}>
-                            <TextDivider
-                                text={`Component Based Field View - ${selection.displayValue}`}
-                                lineColor="text-blue-400"
-                                textColor="text-blue-600"
-                                textSize="text-lg"
+                </CardContent>
+
+                {/* Render fetched selections */}
+                {fetchedSelections.map((selection, index) => (
+                    <div key={JSON.stringify(selection.primaryKeyValues)}>
+                        <TextDivider
+                            text={`Component Based Field View - ${selection.displayValue}`}
+                            lineColor="text-blue-400"
+                            textColor="text-blue-600"
+                            textSize="text-lg"
+                        />
+                        <CardContent>
+                            <ComponentBasedFieldView
+                                fieldInfo={fieldInfo}
+                                initialValues={selection}
                             />
-                            <CardContent>
-                                <ComponentBasedFieldView
-                                    fieldInfo={fieldInfo}
-                                    initialValues={selection}
-                                />
-                            </CardContent>
-                        </div>
-                    ))}
+                        </CardContent>
+                    </div>
+                ))}
 
-                    <CardFooter className="flex justify-end space-x-2">
-                        {isCreating && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleCancel}
-                                disabled={loading}
-                            >
-                                Cancel
-                            </Button>
-                        )}
+                <CardFooter className="flex justify-end space-x-2">
+                    {isCreating && (
                         <Button
-                            type="submit"
-                            onClick={form.handleSubmit(handleSubmit)}
+                            type="button"
+                            variant="outline"
+                            onClick={handleCancel}
                             disabled={loading}
                         >
-                            <Save className="h-4 w-4 mr-1"/>
-                            {loading ? 'Saving...' : 'Save'}
+                            Cancel
                         </Button>
-                    </CardFooter>
-                </Card>
-            );
-        };
+                    )}
+                    <Button
+                        type="submit"
+                        onClick={form.handleSubmit(handleSubmit)}
+                        disabled={loading}
+                    >
+                        <Save className="h-4 w-4 mr-1"/>
+                        {loading ? 'Saving...' : 'Save'}
+                    </Button>
+                </CardFooter>
+            </Card>
+        );
+    };
 
 
     const renderField = (field: EntityStateField) => {
@@ -426,10 +420,10 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                         size="icon"
                                         onClick={() => handleUUIDCopy(field)}
                                     >
-                                        <Copy className="h-4 w-4" />
+                                        <Copy className="h-4 w-4"/>
                                     </Button>
                                 </div>
-                                <FormMessage />
+                                <FormMessage/>
                             </FormItem>
                         )}
                     />
@@ -493,29 +487,29 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                     />
                 );
 
-        case 'object':
-            return (
-                <FormField
-                    {...commonProps}
-                    render={({field}) => (
-                        <FormItem>
-                            <FormLabel>{commonProps.label}</FormLabel>
-                            <FormControl>
-                                <div className="w-full">
-                                    <EnhancedJsonViewer
-                                        data={getValueOrDefault(field.value, defaultValue || {})}
-                                        title={field.name}
-                                        allowMinimize={true}
-                                        maxHeight="200px"
-                                        className="w-full"
-                                    />
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            );
+            case 'object':
+                return (
+                    <FormField
+                        {...commonProps}
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>{commonProps.label}</FormLabel>
+                                <FormControl>
+                                    <div className="w-full">
+                                        <EnhancedJsonViewer
+                                            data={getValueOrDefault(field.value, defaultValue || {})}
+                                            title={field.name}
+                                            allowMinimize={true}
+                                            maxHeight="200px"
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                );
 
             default:
                 return (
@@ -536,7 +530,7 @@ export const EntityQuickReferenceView = ({entityKey}) => {
                                 <FormDescription className="text-destructive">
                                     Unsupported data type: {field.dataType}
                                 </FormDescription>
-                                <FormMessage />
+                                <FormMessage/>
                             </FormItem>
                         )}
                     />

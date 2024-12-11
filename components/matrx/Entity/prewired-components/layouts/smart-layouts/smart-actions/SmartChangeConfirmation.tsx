@@ -1,4 +1,3 @@
-// components/common/crud/SmartChangeConfirmation.tsx
 import {EntityKeys} from "@/types/entityTypes";
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {useMemo, useCallback} from "react";
@@ -6,6 +5,8 @@ import ConfirmationDialog from "./ConfirmationDialog";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {cn} from "@/lib/utils";
+import {useEntityToasts} from "@/lib/redux/entity/hooks/useEntityToasts";
+
 
 interface SmartChangeConfirmationProps {
     entityKey: EntityKeys;
@@ -22,6 +23,7 @@ export const SmartChangeConfirmation = (
         onComplete
     }: SmartChangeConfirmationProps) => {
     const entityCrud = useEntityCrud(entityKey);
+    const entityToasts = useEntityToasts(entityKey);
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const comparison = useAppSelector(selectors.selectChangeComparison);
     const {operationMode, handleCreate, handleUpdate, cancelOperation} = entityCrud;
@@ -50,23 +52,41 @@ export const SmartChangeConfirmation = (
     }, [operationMode, comparison.displayName]);
 
     const handleConfirm = useCallback(() => {
+        console.log("SmartChangeConfirmation.tsx handleConfirm");
         const callback = (result: { success: boolean; error?: any }) => {
             if (result.success) {
+                if (operationMode === 'create') {
+                    entityToasts.handleCreateSuccess();
+                } else if (operationMode === 'update') {
+                    entityToasts.handleUpdateSuccess();
+                }
                 onOpenChange(false);
                 onComplete?.(true);
             } else {
-                console.error('Operation failed:', result.error);
+                const operation = operationMode === 'create' ? 'create' : 'update';
+                entityToasts.handleError(result.error, operation);
                 onComplete?.(false);
             }
         };
 
         if (operationMode === 'create') {
+            console.log("SmartChangeConfirmation.tsx handleConfirm handleCreate");
             handleCreate(callback);
         } else if (operationMode === 'update' && comparison.matrxRecordId) {
+
+            console.log("SmartChangeConfirmation.tsx handleConfirm handleUpdate with:", comparison.matrxRecordId);
+
             handleUpdate(comparison.matrxRecordId, callback);
         }
-    }, [operationMode, handleCreate, handleUpdate, comparison.matrxRecordId, onOpenChange, onComplete]);
-
+    }, [
+        operationMode,
+        handleCreate,
+        handleUpdate,
+        comparison.matrxRecordId,
+        onOpenChange,
+        onComplete,
+        entityToasts
+    ]);
 
     const handleCancel = useCallback(() => {
         onOpenChange(false);

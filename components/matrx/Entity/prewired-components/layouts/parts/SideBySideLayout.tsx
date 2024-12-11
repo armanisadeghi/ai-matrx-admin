@@ -102,7 +102,7 @@ export const SideBySideLayout: React.FC<LayoutProps> = (
                             </CardContent>
                         </EnhancedCard>
 
-                        <MeasurementMonitor measurements={measurements}/>
+                        {/*<MeasurementMonitor measurements={measurements}/>*/}
 
                         <AnimatePresence mode="sync">
                             {selectedEntity && (

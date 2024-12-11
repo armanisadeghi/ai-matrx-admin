@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -7,10 +8,8 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {cn} from '@/utils/cn';
-
 
 interface ConfirmationDialogProps {
     open: boolean;
@@ -41,11 +40,15 @@ const ConfirmationDialog = (
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
+                    <AlertDialogDescription className="sr-only">
+                        Please review the changes before confirming
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
-                {/* Move description out of AlertDialogDescription */}
+
                 <div className="text-sm text-muted-foreground">
                     {children}
                 </div>
+
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={onCancel}>{cancelText}</AlertDialogCancel>
                     <AlertDialogAction
@@ -61,6 +64,5 @@ const ConfirmationDialog = (
         </AlertDialog>
     );
 };
-
 
 export default ConfirmationDialog;

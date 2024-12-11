@@ -3,7 +3,6 @@ import {createClient} from "@/utils/supabase/server";
 import {Providers} from "@/app/Providers";
 import {mapUserData} from '@/utils/userDataMapper';
 import {LayoutWithSidebar} from "@/components/layout/MatrixLayout";
-// import {LayoutWithSidebar} from "@/components/layout/extras/layoutNew";
 import {appSidebarLinks, adminSidebarLinks} from "@/constants";
 import {generateClientGlobalCache, initializeSchemaSystem} from '@/utils/schema/precomputeUtil';
 import {getTestDirectories} from '@/utils/directoryStructure';
@@ -21,7 +20,7 @@ export default async function AuthenticatedLayout(
     }: {
         children: React.ReactNode;
     }) {
-    const supabase = await createClient(); // Await the async function to get the Supabase client
+    const supabase = await createClient();
     const headersList = await headers();
     const viewport = headersList.get('viewport-width') || '1024';
     const isMobile = Number(viewport) < 768;
@@ -29,7 +28,8 @@ export default async function AuthenticatedLayout(
     const layoutProps = {
         primaryLinks: appSidebarLinks,
         secondaryLinks: adminSidebarLinks,
-        initialOpen: !isMobile
+        initialOpen: !isMobile,
+        uniqueId: 'matrix-layout-container'
     };
 
     const {

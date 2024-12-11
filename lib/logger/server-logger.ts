@@ -1,58 +1,49 @@
 // lib/logger/server-logger.ts
-
-import { LogEntry, LogContext, ApplicationLog } from './types';
+import { BaseLogger } from './base-logger';
+import { LogEntry, ApplicationLog } from './types';
 import { v4 as uuidv4 } from 'uuid';
+import { logConfig } from './config';
 
-class ServerLogger {
+class ServerLogger extends BaseLogger {
+    private static instance: ServerLogger;
+
+    private constructor() {
+        super('server-logger');
+    }
+
+    static getInstance(): ServerLogger {
+        if (!ServerLogger.instance) {
+            ServerLogger.instance = new ServerLogger();
+        }
+        return ServerLogger.instance;
+    }
+
     log(entry: Omit<ApplicationLog, 'id' | 'context' | 'category'>): void {
-        const context: LogContext = {
-            timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || 'development',
-        };
-
         const enhancedEntry: ApplicationLog = {
             ...entry,
             id: uuidv4(),
-            context,
+            context: {
+                timestamp: new Date().toISOString(),
+                environment: logConfig.environment,
+            },
             category: 'application'
         };
 
-        // Log to console in development
-        if (process.env.NODE_ENV === 'development') {
-            const logMethod = entry.level === 'error' ? console.error :
-                entry.level === 'warn' ? console.warn :
-                    entry.level === 'debug' ? console.debug :
-                        console.log;
-            logMethod(enhancedEntry);
-        }
-
-        // In production, send to logging service
-        if (process.env.NODE_ENV === 'production' && process.env.LOGGING_SERVICE_URL) {
-            fetch(process.env.LOGGING_SERVICE_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.LOGGING_SERVICE_API_KEY}`
-                },
-                body: JSON.stringify([enhancedEntry])
-            }).catch(error => {
-                console.error('Failed to send log to logging service:', error);
-            });
-        }
+        this.addLog(enhancedEntry);
+        this.consoleOutput(enhancedEntry);
+        this.processLog(enhancedEntry);
     }
 
     error(error: Error, metadata?: Record<string, unknown>): void {
-        const context: LogContext = {
-            timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || 'development'
-        };
-
         const errorLog: LogEntry = {
             id: uuidv4(),
             category: 'error',
             level: 'error',
             message: error.message,
-            context,
+            context: {
+                timestamp: new Date().toISOString(),
+                environment: logConfig.environment
+            },
             error: {
                 name: error.name,
                 message: error.message,
@@ -61,24 +52,10 @@ class ServerLogger {
             metadata
         };
 
-        if (process.env.NODE_ENV === 'development') {
-            console.error(errorLog);
-        }
-
-        // Send to logging service
-        if (process.env.NODE_ENV === 'production' && process.env.LOGGING_SERVICE_URL) {
-            fetch(process.env.LOGGING_SERVICE_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.LOGGING_SERVICE_API_KEY}`
-                },
-                body: JSON.stringify([errorLog])
-            }).catch(error => {
-                console.error('Failed to send error log to logging service:', error);
-            });
-        }
+        this.addLog(errorLog);
+        this.consoleOutput(errorLog);
+        this.processLog(errorLog);
     }
 }
 
-export const serverLogger = new ServerLogger();
+export const serverLogger = ServerLogger.getInstance();

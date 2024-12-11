@@ -16,7 +16,7 @@ export const SmartCrudButtons = (
         containerClassName
     }: SmartCrudButtonsProps) => {
     return (
-        <div className={cn("flex", containerClassName)}>
+        <div className={cn("min-w-0 w-full", containerClassName)}>
             <SmartCrudWrapper
                 entityKey={entityKey}
                 options={options}
@@ -27,27 +27,4 @@ export const SmartCrudButtons = (
     );
 };
 
-
 export default SmartCrudButtons;
-
-/*
-// 2. As insertable buttons:
-const MyCustomLayout = () => (
-    <div className="space-y-4">
-        <h1>My Form</h1>
-        <SmartCrudButtons
-            entityKey="users"
-            options={{
-                allowCreate: true,
-                allowEdit: true,
-                allowDelete: true
-            }}
-            layout={{
-                buttonLayout: 'row',
-                buttonSize: 'sm'
-            }}
-            className="mb-4"
-        />
-        <MyFormComponent/>
-    </div>
-);*/

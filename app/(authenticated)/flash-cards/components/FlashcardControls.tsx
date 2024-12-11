@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Minus, Plus, Shuffle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,8 +9,6 @@ import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
 import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 
 const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
-    const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
-    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const {
         allFlashcards,
         currentIndex,
@@ -20,13 +18,19 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
         handleSelectChange,
         activeFlashcard,
         shuffleCards,
-        showModal,
+        aiModalActions: {
+            openAudioModal,
+            closeAudioModal,
+            openAiModal,
+            closeAiModal,
+            openAiAssistModal,
+        },
+        aiModalState: {
+            isAudioModalOpen,
+            isAiModalOpen,
+        },
         setFontSize,
     } = flashcardHook;
-
-    const handleConfusedClick = useCallback(() => {
-        setIsAudioModalOpen(true);
-    }, []);
 
     return (
         <div className="w-full flex flex-col space-y-4">
@@ -58,21 +62,21 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
                 <Button
-                    onClick={handleConfusedClick}
+                    onClick={openAudioModal}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     I'm confused
                 </Button>
                 <Button
-                    onClick={() => setIsAiModalOpen(true)}
+                    onClick={openAiModal}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     I have a question
                 </Button>
                 <Button
-                    onClick={() => showModal('example')}
+                    onClick={() => openAiAssistModal('example')}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
@@ -98,21 +102,21 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
                     </Button>
                 </div>
                 <Button
-                    onClick={() => showModal('split')}
+                    onClick={() => openAiAssistModal('split')}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     Split cards
                 </Button>
                 <Button
-                    onClick={() => showModal('combine')}
+                    onClick={() => openAiAssistModal('combine')}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
                     Combine cards
                 </Button>
                 <Button
-                    onClick={() => showModal('compare')}
+                    onClick={() => openAiAssistModal('compare')}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
@@ -124,12 +128,12 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
                 <>
                     <AudioModal
                         isOpen={isAudioModalOpen}
-                        onClose={() => setIsAudioModalOpen(false)}
+                        onClose={closeAudioModal}
                         text={activeFlashcard.audioExplanation || ''}
                     />
                     <AiChatModal
                         isOpen={isAiModalOpen}
-                        onClose={() => setIsAiModalOpen(false)}
+                        onClose={closeAiModal}
                         firstName={firstName}
                     />
                 </>

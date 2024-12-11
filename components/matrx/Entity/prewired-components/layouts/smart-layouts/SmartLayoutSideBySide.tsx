@@ -91,7 +91,7 @@ export const SmartLayoutSideBySide: React.FC<UnifiedLayoutProps> = (unifiedLayou
                         </EnhancedCard>
                     </div>
 
-                    <MeasurementMonitor measurements={measurements}/>
+                    {/*<MeasurementMonitor measurements={measurements}/>*/}
 
                     {selectedEntity && (
                         <div className="flex-1 min-h-0 mt-4">

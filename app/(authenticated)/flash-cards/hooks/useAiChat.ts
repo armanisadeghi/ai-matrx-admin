@@ -3,12 +3,13 @@
 import { useState, useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { Flashcard, ChatMessage } from "@/types/flashcards.types";
-import { flashcardQuestionOne, systemContentOne } from "../utils/messageTemplates";
-import { ChatCompletionMessageParam } from "ai/prompts";
+import { flashcardQuestionOne, systemContentOne } from "../../../../constants/flashcard-constants";
+
 import { defaultAiModel } from "../utils/chatSettings";
 import { openai } from "@/lib/ai/openAiBrowserClient";
 import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
 import { selectActiveFlashcardChat } from '@/lib/redux/selectors/flashcardSelectors';
+import { ChatCompletionMessageParam } from 'openai/resources/chat/index.mjs';
 
 export const useAiChat = () => {
     const dispatch = useAppDispatch();

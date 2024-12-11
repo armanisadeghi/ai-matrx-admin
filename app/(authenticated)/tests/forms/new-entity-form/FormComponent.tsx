@@ -12,6 +12,8 @@ import {useAppSelector} from "@/lib/redux/hooks";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {EntityKeys} from "@/types/entityTypes";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
+import MobileFormComponent from "./MobileFormComponent";
+import { useFormStateManager } from "./useFormStateManager";
 
 // Define a type for common props
 type CommonProps = Pick<FlexAnimatedFormProps, 'fields' | 'formState' | 'onUpdateField' | 'onSubmit' | 'layout' | 'direction' | 'enableSearch' | 'columns'>;
@@ -20,9 +22,14 @@ interface FormComponentProps {
     entityKey: EntityKeys;
 }
 
-const FormComponent: React.FC<FormComponentProps> = ({ entityKey }) => {
+const DesktopFormContent: React.FC<FormComponentProps> = ({ entityKey }) => {
     const dispatch = useDispatch<AppDispatch>();
     const formState = useSelector((state: RootState) => state.form);
+    const {
+        formFields,
+        handleUpdateField,
+    } = useFormStateManager(entityKey);
+
     const [currentStep, setCurrentStep] = useState(0);
     const [isSinglePageModalOpen, setSinglePageModalOpen] = useState(false);
     const [isMultiStepModalOpen, setMultiStepModalOpen] = useState(false);
@@ -32,30 +39,11 @@ const FormComponent: React.FC<FormComponentProps> = ({ entityKey }) => {
     const [enableSearch, setEnableSearch] = useState(false);
     const [columns, setColumns] = useState<FlexAnimatedFormProps['columns']>(1);
 
-    console.log('FormComponent Entity Key:', entityKey);
-
-    const handleUpdateField = (name: string, value: any) => {
-        dispatch(updateFormField({ name, value }));
-    };
-
     const handleSubmit = () => {
         dispatch(submitForm(formState));
-        console.log('Form submitted:', formState);
         setSinglePageModalOpen(false);
         setMultiStepModalOpen(false);
     };
-    const selectors = React.useMemo(
-        () => createEntitySelectors(entityKey),
-        [entityKey]
-    );
-    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
-
-    // Type-safe selectors
-    const formFields = useAppSelector(selectors.selectFlexFormField);
-    const defaultValues = useAppSelector(selectors.selectDefaultValues);
-    const { matrxRecordId, record: activeRecord } = useAppSelector(
-        selectors.selectActiveRecordWithId
-    );
 
     const handleNextStep = () => {
         setCurrentStep((prev) => Math.min(prev + 1, formFields.length - 1));
@@ -256,5 +244,20 @@ const FormComponent: React.FC<FormComponentProps> = ({ entityKey }) => {
         </div>
     );
 };
+
+const FormComponent: React.FC<FormComponentProps> = ({ entityKey }) => {
+    return (
+        <div className="w-full h-full">
+            <div className="hidden md:block h-full">
+                <DesktopFormContent entityKey={entityKey} />
+            </div>
+            <div className="block md:hidden h-full">
+                <MobileFormComponent entityKey={entityKey} />
+            </div>
+        </div>
+    );
+};
+
+
 
 export default FormComponent;

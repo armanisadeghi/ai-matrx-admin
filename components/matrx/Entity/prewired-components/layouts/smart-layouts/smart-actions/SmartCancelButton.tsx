@@ -1,17 +1,13 @@
 // SmartCancelButton.tsx
-import { EntityKeys } from "@/types/entityTypes";
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
 import { useCallback, useState } from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import { X } from "lucide-react";
 import SmartChangeConfirmation from "./SmartChangeConfirmation";
+import {SmartButtonProps} from "./types";
 
-interface SmartCancelButtonProps {
-    entityKey: EntityKeys;
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-}
 
-export const SmartCancelButton = ({ entityKey, size = 'default' }: SmartCancelButtonProps) => {
+export const SmartCancelButton = ({ entityKey, size = 'default' }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const { operationMode, cancelOperation, hasUnsavedChanges } = entityCrud;
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -38,6 +34,7 @@ export const SmartCancelButton = ({ entityKey, size = 'default' }: SmartCancelBu
     return (
         <>
             <SmartButtonBase
+                entityKey={entityKey}
                 onClick={handleClick}
                 disabled={isDisabled}
                 size={size}

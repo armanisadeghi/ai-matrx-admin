@@ -1,14 +1,14 @@
 // File: components/crud/CrudForm.tsx
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MatrxSaveButton, MatrxCancelButton, MatrxEditButton, MatrxDeleteButton } from '@/components/matrx/buttons';
+import {Form, FormField, FormItem, FormLabel, FormControl, FormMessage} from '@/components/ui/form';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {MatrxSaveButton, MatrxCancelButton, MatrxEditButton, MatrxDeleteButton} from '@/components/matrx/buttons';
 
 interface FieldConfig {
     type: 'text' | 'textarea' | 'select';
@@ -45,13 +45,13 @@ export function CrudForm<T extends z.ZodType<any, any>>(
 
     const renderField = (name: string, config: FieldConfig) => {
         return (
-            <FormField key={name} control={form.control} name={name as any} render={({ field }) => (
+            <FormField key={name} control={form.control} name={name as any} render={({field}) => (
                 <FormItem className="mb-4">
                     <FormLabel className="text-foreground">{config.label}</FormLabel>
                     <FormControl>
                         {config.type === 'textarea' ? (
                             <Textarea {...field} disabled={!isEditing}
-                                className="bg-background text-foreground border-input resize-none"/>
+                                      className="bg-background text-foreground border-input resize-none"/>
                         ) : config.type === 'select' ? (
                             <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!isEditing}>
                                 <SelectTrigger className="bg-background text-foreground border-input">
@@ -66,38 +66,39 @@ export function CrudForm<T extends z.ZodType<any, any>>(
                                 </SelectContent>
                             </Select>
                         ) : (
-                            <Input {...field} disabled={!isEditing}
-                                className="bg-background text-foreground border-input"/>
-                        )}
+                                <Input {...field} disabled={!isEditing}
+                                       className="bg-background text-foreground border-input"/>
+                            )}
                     </FormControl>
                     <FormMessage className="text-destructive"/>
                 </FormItem>
-            )} />
+            )}/>
         );
     };
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(fields).map(([name, config]) => renderField(name, config))}
-                </div>
-                <div className="flex flex-wrap gap-2 mt-4">
-                    {isEditing ? (
-                        <>
-                            <MatrxSaveButton type="submit">Save</MatrxSaveButton>
-                            <MatrxCancelButton onClick={onCancel}>Cancel</MatrxCancelButton>
-                        </>
-                    ) : (
-                        <>
-                            <MatrxEditButton onClick={() => onEdit(true)}>  {/* Pass true to enable editing */}
-                                Edit
-                            </MatrxEditButton>
-                            <MatrxDeleteButton onClick={onDelete}>Delete</MatrxDeleteButton>
-                        </>
-                    )}
-                </div>
-            </form>
-        </Form>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(fields).map(([name, config]) => renderField(name, config))}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        {isEditing ? (
+                            <>
+                                <MatrxSaveButton type="submit">Save</MatrxSaveButton>
+                                <MatrxCancelButton onClick={onCancel}>Cancel</MatrxCancelButton>
+                            </>
+                        ) : (
+                             <>
+                                 <MatrxEditButton onClick={() => onEdit(true)}>  {/* Pass true to enable editing */}
+                                     Edit
+                                 </MatrxEditButton>
+                                 <MatrxDeleteButton onClick={onDelete}>Delete</MatrxDeleteButton>
+                             </>
+                         )}
+                    </div>
+                </form>
+            </Form>
+
     );
 }

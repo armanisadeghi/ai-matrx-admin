@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {cn} from '@/lib/utils';
 import {
@@ -11,17 +13,13 @@ import {
     densityConfig,
     EntitySelection,
     UnifiedLayoutProps,
-    LayoutHeader
 } from "@/components/matrx/Entity";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {SmartExpandButton} from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartExpandButton";
-// import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
 import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
 import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
-import MeasurementMonitor from '../parts/MeasurementMonitor';
-import { CreateEntityButton, UpdateEntityButton, DeleteEntityButton } from '@/components/matrx/Entity/action';
 
 export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const selectedEntity = unifiedLayoutProps.layoutState?.selectedEntity || null;
@@ -30,22 +28,17 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
     const selectHeight = unifiedLayoutProps.layoutState.selectHeight;
     const setIsExpanded = unifiedLayoutProps.handlers.setIsExpanded;
     const handleEntityChange = unifiedLayoutProps.handlers.handleEntityChange;
-    const onCreateEntityClick = unifiedLayoutProps.handlers.onCreateEntityClick;
     const QuickReferenceComponent = unifiedLayoutProps.QuickReferenceComponent;
-    const formStyleOptions = unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions;
     const density = unifiedLayoutProps.dynamicStyleOptions.density || 'normal';
     const splitRatio = unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions.splitRatio;
     const spacingConfig = densityConfig[density].spacing;
     const fontSize = densityConfig[density].fontSize;
     const entityPrettyName = useAppSelector((state: RootState) => selectEntityPrettyName(state, selectedEntity));
-    const buttonSize = densityConfig[density].buttonSize;
-    const iconSize = densityConfig[density].iconSize;
 
     const {
         measurements,
         getRef,
         pauseMeasurements,
-        resumeMeasurements
     } = useDynamicMeasurements({
         buffer: 8,
         debounceMs: 300,
@@ -97,7 +90,7 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
                             </EnhancedCard>
                         </div>
 
-                        <MeasurementMonitor measurements={measurements}/>
+                        {/*<MeasurementMonitor measurements={measurements}/>*/}
 
                         {selectedEntity && (
                             <div className="flex-1 min-h-0">
