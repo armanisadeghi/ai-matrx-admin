@@ -21,6 +21,8 @@ export default async function DataSetPage({ params, searchParams }: PageProps) {
         searchParams
     ]);
 
+    console.log('resolvedParams:', resolvedParams);
+
     try {
         return (
             <FlashcardComponent dataSetId={resolvedParams.id}/>

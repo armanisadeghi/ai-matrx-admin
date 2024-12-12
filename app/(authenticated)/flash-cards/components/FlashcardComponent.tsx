@@ -20,7 +20,7 @@ import { ensureId } from "@/utils/schema/schemaUtils";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
 
 const FlashcardComponent: React.FC<{ dataSetId }> = ({ dataSetId }) => {
-    const initialFlashcards = getFlashcardSet('historyFlashcards');  // TODO: Hardcoded for one ID!!!!
+    const initialFlashcards = getFlashcardSet('americasBlueprint');  // TODO: Hardcoded for one ID!!!!
 
     const flashcardHook = useFlashcard(initialFlashcards);
 
