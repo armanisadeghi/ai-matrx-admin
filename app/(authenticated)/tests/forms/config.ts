@@ -40,8 +40,8 @@ export const pages: ModulePage[] = [
     },
 
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Last Ever Entity Form Test!',
+        path: 'entity-final-test',
         relative: true,
         description: ''
     },

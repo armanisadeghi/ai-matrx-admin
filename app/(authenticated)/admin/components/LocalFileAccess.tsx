@@ -146,7 +146,7 @@ const LocalFileAccess = () => {
                     typeof content === 'object' && 'viewerType' in content ? (
                         <FileViewer
                             fileContent={content}
-                            onContentChange={(newContent) =>
+                            onContentChange={(newContent: FileContentResult) =>
                                 setFileState(prev => ({
                                     ...prev,
                                     content: newContent
@@ -162,7 +162,7 @@ const LocalFileAccess = () => {
                                     data={content}
                                     initialExpanded={true}
                                     defaultEnhancedMode={true}
-                                    onChange={(newContent) =>
+                                    onChange={(newContent: string) =>
                                         setFileState(prev => ({
                                             ...prev,
                                             content: newContent
@@ -181,7 +181,7 @@ const LocalFileAccess = () => {
                             data={secondaryContent}
                             initialExpanded={true}
                             defaultEnhancedMode={true}
-                            onChange={(newContent) =>
+                            onChange={(newContent: string) =>
                                 setFileState(prev => ({
                                     ...prev,
                                     secondaryContent: newContent
@@ -193,7 +193,6 @@ const LocalFileAccess = () => {
             </div>
         );
     };
-
 
     return (
         <div className="min-h-screen bg-background p-6">

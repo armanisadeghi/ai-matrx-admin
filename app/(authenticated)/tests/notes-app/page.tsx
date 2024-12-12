@@ -1,14 +1,13 @@
+// app/(authenticated)/tests/notes-app/page.tsx
 'use client';
 
 import React from 'react';
-import { NotesList } from '@/components/notes-app/NotesList';
-import { NoteEditor } from '@/components/notes-app/NoteEditor';
+import {EditorLayout} from "@/components/notes-app/layout/EditorLayout";
 
 export default function NotesPage() {
     return (
-        <div className="flex h-full">
-            <NotesList />
-            <NoteEditor />
+        <div className="h-screen w-full overflow-hidden">
+            <EditorLayout/>
         </div>
     );
 }

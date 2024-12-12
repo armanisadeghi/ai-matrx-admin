@@ -41,8 +41,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Very basic toast demo',
+        path: 'toast-demo',
         relative: true,
         description: ''
     },

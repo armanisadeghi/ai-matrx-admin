@@ -313,6 +313,7 @@ export const FullEditableJsonViewer: React.FC<EditableJsonViewerProps & { title?
         onFormat,
         title = "JSON Editor",
         className,
+        readOnly,
         ...props
     }) => {
     return (
@@ -325,6 +326,7 @@ export const FullEditableJsonViewer: React.FC<EditableJsonViewerProps & { title?
                     data={data}
                     onChange={onChange}
                     onFormat={onFormat}
+                    readOnly={readOnly}
                     {...props}
                 />
             </div>

@@ -35,7 +35,7 @@ export const FileViewer: React.FC<FileViewerProps> = ({
                         initialExpanded={true}
                         defaultEnhancedMode={true}
                         onChange={onContentChange}
-                        readonly={readonly}
+                        readOnly={readonly}
                     />
                 );
 

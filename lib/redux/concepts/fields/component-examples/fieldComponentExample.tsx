@@ -8,7 +8,7 @@ import { selectFormState, selectRecordValues } from '../selectors';
 import { setFormMode, clearFields } from '../fieldSlice';
 import { SmartField } from './SmartField';
 import {useEntity} from "@/lib/redux/entity/hooks/useEntity";
-import {DynamicLayoutOptions, DynamicStyleOptions, FormState} from "@/components/matrx/ArmaniForm/SimpleForm";
+import {FormState} from "@/components/matrx/ArmaniForm/SimpleForm";
 
 
 interface FormContextType {
@@ -69,12 +69,12 @@ export const FormProvider: React.FC<FormProviderProps> = ({
         };
 
         if (recordId === 'new') {
-            createRecord(values as Partial<EntityData<any>>, {
+            createRecord(values as Partial<EntityData<EntityKeys>>, {
                 callback,
                 showToast: true
             });
         } else {
-            updateRecord(recordId, values as Partial<EntityData<any>>, {
+            updateRecord(recordId, values as Partial<EntityData<EntityKeys>>, {
                 callback,
                 showToast: true
             });

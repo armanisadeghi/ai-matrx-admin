@@ -1,5 +1,4 @@
 // lib/redux/sagas/storage/storageManager.ts
-'use client';
 
 import { StorageVerification } from '@/hooks/useLocalStorageManager';
 

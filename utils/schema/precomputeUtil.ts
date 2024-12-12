@@ -1854,7 +1854,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     const showEntities = false;
     const showFields = false;
     const showExample = false;
-    const showSummary = true;
+    const showSummary = false;
 
     // Flags for sample prints of specific parts of the schema
     const showEntityNamesSample = false;
@@ -1876,7 +1876,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
         return;
     }
 
-    console.log('\n=== Schema Cache Report ===\n');
+    // console.log('\n=== Schema Cache Report ===\n');
 
     // Example schema entry for 'registeredFunction'
     if (showExample) {

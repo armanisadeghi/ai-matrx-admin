@@ -6,15 +6,16 @@ import FormFieldMotionWrapper from "@/components/matrx/ArmaniForm/field-componen
 import {EntityKeys} from "@/types/entityTypes";
 import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+import {AnimationPreset, ComponentDensity, ComponentSize} from "@/types";
 
 export interface EntityBaseFieldProps {
     entityKey: EntityKeys;
     dynamicFieldInfo: EntityStateField;
     value?: any;
     onChange: (value: any) => void;
-    density?: 'compact' | 'normal' | 'comfortable';
-    animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful' |  'feedback' | 'error';
-    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    density?: ComponentDensity
+    animationPreset?: AnimationPreset
+    size?: ComponentSize
     variant?: MatrxVariant;
     labelPosition?: 'default' | 'left' | 'right' | 'top' | 'bottom';
     disabled?: boolean;

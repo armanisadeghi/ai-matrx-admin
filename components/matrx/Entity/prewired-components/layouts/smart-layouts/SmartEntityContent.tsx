@@ -21,11 +21,9 @@ export const SmartEntityContent: React.FC<UnifiedLayoutProps> = (unifiedLayoutPr
     const { crud, activeRecordCrud } = useEntityCrud(entityKey);
     const toasts = useEntityToasts(entityKey);
 
-
     if (!entityKey) return null;
 
     const entity = useEntity(entityKey);
-    const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
 
 
     const crudHandlers: UnifiedCrudHandlers = useMemo(() => ({

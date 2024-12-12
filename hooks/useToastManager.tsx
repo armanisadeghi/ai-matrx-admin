@@ -1,116 +1,36 @@
 // hooks/useToastManager.ts
-import { useToast } from "@/components/ui/use-toast"
-import { ToastAction } from "@/components/ui/toast"
-import { MatrxVariant } from "@/components/ui/types"
-import type { ToastActionElement } from "@/components/ui/toast"
+'use client';
 
-type ShowToastOptions = {
-    duration?: number
-    action?: {
-        label: string
-        onClick: () => void
-        className?: string
-    }
-}
+// https://claude.ai/chat/758e7f75-87cd-423c-9cb4-fecc7627095c
 
-type PromiseToastOptions = {
-    loading?: string
-    success?: string
-    error?: string
-    duration?: number
-}
+import { useContext } from "react";
+import { toast } from "@/lib/toast-service";
+import { ToastContext } from "@/providers";
+import type { ToastOptions, ToastDefaults } from "@/types";
 
-export const useToastManager = () => {
-    const { toast, dismiss } = useToast()
-
-    const showToast = (
-        title: string,
-        description: string,
-        variant: MatrxVariant = "default",
-        options?: ShowToastOptions
-    ) => {
-        const toastAction = options?.action ? (
-            <ToastAction
-                altText={options.action.label}
-                onClick={options.action.onClick}
-                className={options.action.className}
-            >
-                {options.action.label}
-            </ToastAction>
-        ) as ToastActionElement : undefined
-
-        return toast({
-            title,
-            description,
-            variant,
-            duration: options?.duration,
-            action: toastAction,
-        }).id
-    }
-
-    const success = (message: string, options?: ShowToastOptions) => (
-        showToast("Success", message, "success", options)
-    )
-
-    const error = (error: unknown, options?: ShowToastOptions) => {
-        const message = error instanceof Error ? error.message :
-                        typeof error === "string" ? error : "An unexpected error occurred"
-        return showToast("Error", message, "destructive", options)
-    }
-
-    const info = (message: string, options?: ShowToastOptions) => (
-        showToast("Info", message, "secondary", options)
-    )
-
-    const warning = (message: string, options?: ShowToastOptions) => (
-        showToast("Warning", message, "ghost", options)
-    )
-
-    const loadingToast = async <T,>(
-        promiseFn: () => Promise<T>,
-        options: PromiseToastOptions = {}
-    ): Promise<T> => {
-        const toastId = showToast(
-            "Loading",
-            options.loading ?? "Loading...",
-            "default",
-            { duration: Infinity }
-        )
-
-        try {
-            const result = await promiseFn()
-            dismiss(toastId)
-            showToast(
-                "Success",
-                options.success ?? "Operation completed successfully",
-                "success",
-                { duration: options.duration }
-            )
-            return result
-        } catch (e) {
-            dismiss(toastId)
-            showToast(
-                "Error",
-                options.error ?? "Operation failed",
-                "destructive",
-                { duration: options.duration }
-            )
-            throw e
-        }
-    }
-
-    const notify = (message: string, options?: ShowToastOptions) => (
-        showToast("Notification", message, "primary", options)
-    )
+export const useToastManager = (moduleKey?: string) => {
+    const toastContext = useContext(ToastContext);
 
     return {
-        show: showToast,
-        success,
-        error,
-        info,
-        warning,
-        loading: loadingToast,
-        notify,
-        dismiss: (toastId?: string) => dismiss(toastId)
-    } as const
-}
+        show: (title: string, description: string, variant: any, options?: ToastOptions) =>
+            toast.show(title, description, variant, options),
+        success: (message?: string, options?: ToastOptions) =>
+            toast.success(message, moduleKey, options),
+        error: (error?: unknown, options?: ToastOptions) =>
+            toast.error(error, moduleKey, options),
+        info: (message?: string, options?: ToastOptions) =>
+            toast.info(message, moduleKey, options),
+        warning: (message?: string, options?: ToastOptions) =>
+            toast.warning(message, moduleKey, options),
+        notify: (message?: string, options?: ToastOptions) =>
+            toast.notify(message, moduleKey, options),
+        loading: <T,>(promiseFn: () => Promise<T>, options = {}) =>
+            toast.loading(promiseFn, options, moduleKey),
+        register: (key: string, defaults: ToastDefaults) =>
+            toastContext?.registerDefaults(key, defaults),
+        removeDefaults: (key: string) =>
+            toastContext?.removeDefaults(key),
+        dismiss: (toastId: string) =>
+            toast.dismiss(toastId)
+    };
+};

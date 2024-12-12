@@ -309,12 +309,6 @@
 
 }
 
-@media (max-width: 640px) {
-    .container {
-        @apply px-2;
-    }
-}
-
 
 /* Contrast Red */
 .contrast-red {
@@ -477,4 +471,29 @@
 
 .prose :where(code):not(:where([class~="not-prose"] *)) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer utilities {
+    @media (max-width: 640px) {
+        .container {
+            @apply px-1;
+        }
+
+        .notes-mobile-layout {
+            .notes-list {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 10;
+                background: var(--background);
+                transform: translateX(-100%);
+                transition: transform 0.2s;
+
+                &.show {
+                    transform: translateX(0);
+                }
+            }
+        }
+    }
 }

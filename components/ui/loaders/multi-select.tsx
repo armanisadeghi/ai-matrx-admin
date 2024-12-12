@@ -1,12 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Check, ChevronDown, Loader2, X, LucideIcon } from 'lucide-react';
+import { Check, ChevronDown, Loader2, X, Plus, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ComponentSize } from '@/types/componentConfigTypes';
 import { ButtonVariant } from '@/components/matrx/ArmaniForm/field-components/types';
-
+import { Input } from '@/components/ui/input';
 
 type MultiSelectProps = {
     options: { value: string; label: string }[];
@@ -26,6 +26,10 @@ type MultiSelectProps = {
     showSelectedInDropdown?: boolean;
     displayMode?: 'default' | 'icon';
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    // New props for creation functionality
+    creatable?: boolean;
+    onCreateOption?: (inputValue: string) => string | null;
+    createOptionPlaceholder?: string;
 };
 
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -47,17 +51,23 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
          showSelectedInDropdown = false,
          displayMode = 'default',
          onClick,
+         creatable = false,
+         onCreateOption,
+         createOptionPlaceholder = 'Type to create...',
          ...props
      }, ref) => {
         const [isOpen, setIsOpen] = React.useState(false);
         const [localSelectedValues, setLocalSelectedValues] = React.useState<string[]>(value);
+        const [inputValue, setInputValue] = React.useState('');
+        const [filteredOptions, setFilteredOptions] = React.useState(options);
         const containerRef = React.useRef<HTMLDivElement>(null);
+        const inputRef = React.useRef<HTMLInputElement>(null);
         const [dropdownPosition, setDropdownPosition] = React.useState<'bottom' | 'top'>('bottom');
 
+        // Existing effects remain the same...
         React.useEffect(() => {
             const handleClickOutside = (event: MouseEvent | TouchEvent) => {
                 if (!containerRef.current) return;
-
                 const target = event.target as Node;
                 if (!containerRef.current.contains(target)) {
                     setIsOpen(false);
@@ -70,20 +80,24 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 }
             };
 
-            // Only add listeners if the dropdown is open
             if (isOpen) {
                 document.addEventListener('mousedown', handleClickOutside);
                 document.addEventListener('touchstart', handleClickOutside);
                 document.addEventListener('keydown', handleEscape);
             }
 
-            // Cleanup
             return () => {
                 document.removeEventListener('mousedown', handleClickOutside);
                 document.removeEventListener('touchstart', handleClickOutside);
                 document.removeEventListener('keydown', handleEscape);
             };
         }, [isOpen]);
+
+        React.useEffect(() => {
+            if (JSON.stringify(localSelectedValues) !== JSON.stringify(value)) {
+                setLocalSelectedValues(value);
+            }
+        }, [value]);
 
         React.useEffect(() => {
             const calculatePosition = () => {
@@ -107,11 +121,13 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
             };
         }, [isOpen]);
 
+        // Filter options based on input
         React.useEffect(() => {
-            if (JSON.stringify(localSelectedValues) !== JSON.stringify(value)) {
-                setLocalSelectedValues(value);
-            }
-        }, [value]);
+            const filtered = options.filter(option =>
+                option.label.toLowerCase().includes(inputValue.toLowerCase())
+            );
+            setFilteredOptions(filtered);
+        }, [options, inputValue]);
 
         const toggleOption = (optionValue: string) => {
             const newValues = localSelectedValues.includes(optionValue)
@@ -119,6 +135,16 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                               : [...localSelectedValues, optionValue];
             setLocalSelectedValues(newValues);
             onChange?.(newValues);
+        };
+
+        const createOption = () => {
+            if (creatable && onCreateOption && inputValue.trim()) {
+                const newId = onCreateOption(inputValue.trim());
+                if (newId) {
+                    toggleOption(newId);
+                    setInputValue('');
+                }
+            }
         };
 
         const removeValue = (valueToRemove: string) => {
@@ -134,6 +160,14 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
             }
         };
 
+        const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter' && creatable && inputValue.trim()) {
+                e.preventDefault();
+                createOption();
+            }
+        };
+
+        // Rest of the component remains the same until the dropdown...
         return (
             <div ref={containerRef} className={cn('grid gap-1.5 relative', className)}>
                 {label && (
@@ -191,8 +225,20 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                                 displayMode === 'icon' && 'right-0'
                             )}
                         >
+                            {creatable && (
+                                <div className="p-1 border-b">
+                                    <Input
+                                        ref={inputRef}
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        placeholder={createOptionPlaceholder}
+                                        className="h-8"
+                                        onKeyDown={handleKeyDown}
+                                    />
+                                </div>
+                            )}
                             <div className="p-1">
-                                {options.map((option) => {
+                                {filteredOptions.map((option) => {
                                     const isSelected = localSelectedValues.includes(option.value);
                                     return (
                                         <div
@@ -214,6 +260,15 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                                         </div>
                                     );
                                 })}
+                                {creatable && inputValue.trim() && !filteredOptions.length && (
+                                    <div
+                                        className="relative flex items-center space-x-2 px-2 py-1.5 cursor-pointer rounded-sm hover:bg-accent hover:text-accent-foreground"
+                                        onClick={createOption}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <span>Create "{inputValue}"</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

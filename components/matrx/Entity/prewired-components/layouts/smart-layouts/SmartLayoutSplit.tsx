@@ -65,13 +65,12 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
             <div
                 className={cn(
                     "grid h-full p-0",
-                    isExpanded ? 'grid-cols-1' : 'grid-cols-[minmax(300px,1fr)_1fr]',
                     spacingConfig
                 )}
                 style={{
                     gridTemplateColumns: isExpanded
                                          ? '1fr'
-                                         : `${splitRatio}% ${100 - splitRatio}%`
+                                         : `minmax(300px, ${splitRatio}%) minmax(300px, ${100 - splitRatio}%)`
                 }}
             >
                 {!isExpanded && (
@@ -89,8 +88,6 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
                                 </CardContent>
                             </EnhancedCard>
                         </div>
-
-                        {/*<MeasurementMonitor measurements={measurements}/>*/}
 
                         {selectedEntity && (
                             <div className="flex-1 min-h-0">

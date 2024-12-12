@@ -160,13 +160,13 @@ export default function SelectDemo() {
                     <div className="flex items-center gap-4 p-2 rounded-lg bg-muted/10">
                         <h3 className="text-sm font-medium">Single:</h3>
                         {[
-                            { icon: Filter, variant: 'primary' as const },
-                            { icon: Search, variant: 'secondary' as const },
-                            { icon: Mail, variant: 'destructive' as const },
-                            { icon: Bell, variant: 'success' as const },
-                            { icon: Calendar, variant: 'outline' as const },
-                            { icon: Settings, variant: 'ghost' as const }
-                        ].map(({ icon, variant }) => (
+                            {icon: Filter, variant: 'primary' as const},
+                            {icon: Search, variant: 'secondary' as const},
+                            {icon: Mail, variant: 'destructive' as const},
+                            {icon: Bell, variant: 'success' as const},
+                            {icon: Calendar, variant: 'outline' as const},
+                            {icon: Settings, variant: 'ghost' as const}
+                        ].map(({icon, variant}) => (
                             <Select
                                 key={`icon-${variant}`}
                                 options={SAMPLE_OPTIONS}
@@ -185,13 +185,13 @@ export default function SelectDemo() {
                     <div className="flex items-center gap-4 p-2 rounded-lg bg-muted/10">
                         <h3 className="text-sm font-medium">Multi:</h3>
                         {[
-                            { icon: Tags, variant: 'primary' as const },
-                            { icon: List, variant: 'secondary' as const },
-                            { icon: Filter, variant: 'destructive' as const },
-                            { icon: Settings, variant: 'success' as const },
-                            { icon: Bell, variant: 'outline' as const },
-                            { icon: Search, variant: 'ghost' as const }
-                        ].map(({ icon, variant }) => (
+                            {icon: Tags, variant: 'primary' as const},
+                            {icon: List, variant: 'secondary' as const},
+                            {icon: Filter, variant: 'destructive' as const},
+                            {icon: Settings, variant: 'success' as const},
+                            {icon: Bell, variant: 'outline' as const},
+                            {icon: Search, variant: 'ghost' as const}
+                        ].map(({icon, variant}) => (
                             <MultiSelect
                                 key={`multi-icon-${variant}`}
                                 options={CATEGORY_OPTIONS}
@@ -205,6 +205,20 @@ export default function SelectDemo() {
                             />
                         ))}
                     </div>
+                    <div className="flex items-center gap-4 p-2 rounded-lg bg-muted/10">
+                        <MultiSelect
+                            key={`multi-icon-${"primary"}`}
+                            options={CATEGORY_OPTIONS}
+                            value={multiSelectedValues[`icon-${"primary"}`] || []}
+                            onChange={handleMultiChange(`icon-${"primary"}`)}
+                            displayMode="icon"
+                            variant={"primary"}
+                            icon={Tags}
+                            isLoading={loadingStates[`multi-icon-${"primary"}`]}
+                            onClick={() => toggleLoading(`multi-icon-${"primary"}`)}
+                        />
+                    </div>
+
                 </div>
             </DemoSection>
 

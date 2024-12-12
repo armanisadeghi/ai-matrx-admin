@@ -1,10 +1,13 @@
 // lib/redux/sagas/storage/storageSyncSaga.ts
 'use client';
 
-import { select, call, fork, put, takeLatest, delay } from 'redux-saga/effects';
-import { StorageSyncConfig } from './types';
+import { select, call, fork, put, takeLatest, takeEvery, delay } from 'redux-saga/effects';
+import { StorageSyncConfig, MANUAL_SAVE, ManualSaveAction, SAVE_COMPLETE } from '@/types';
 import { storageManager } from './storageManager';
 import { RootState } from '@/lib/redux/store';
+import { toast } from '@/lib/toast-service';
+
+console.log('Creating storage sync saga');
 
 export function createStorageSyncSaga(config: StorageSyncConfig) {
     const {
@@ -14,8 +17,19 @@ export function createStorageSyncSaga(config: StorageSyncConfig) {
         storagePrefix = 'redux'
     } = config;
 
-    function* saveSliceState(sliceName: string, state: unknown) {
+    // Register toast defaults for storage operations
+    toast.registerDefaults('storage', {
+        success: "Changes saved successfully",
+        error: "Failed to save changes",
+        info: "Saving changes..."
+    });
+
+    function* saveSliceState(sliceName: string, state: unknown, isManual = false) {
         try {
+            if (isManual) {
+                toast.info("Saving changes...", 'storage');
+            }
+
             const filteredState = excludeStateProps(
                 state,
                 excludePaths[sliceName] ?? []
@@ -29,27 +43,63 @@ export function createStorageSyncSaga(config: StorageSyncConfig) {
                 filteredState
             );
 
-            if (!result.success) {
+            if (result.success) {
+                if (isManual) {
+                    toast.success(`${sliceName} saved successfully`);
+                    yield put({
+                        type: SAVE_COMPLETE,
+                        payload: { slice: sliceName, success: true }
+                    });
+                }
+            } else {
+                if (isManual) {
+                    toast.error(`Failed to save ${sliceName}`);
+                    yield put({
+                        type: SAVE_COMPLETE,
+                        payload: { slice: sliceName, success: false }
+                    });
+                }
                 console.warn(`Storage sync failed for ${sliceName}:`, result.message);
             }
         } catch (error) {
+            if (isManual) {
+                toast.error(`Error saving ${sliceName}`);
+                yield put({
+                    type: SAVE_COMPLETE,
+                    payload: { slice: sliceName, success: false }
+                });
+            }
             console.warn(`Storage sync error for ${sliceName}:`, error);
+        }
+    }
+
+    function* handleManualSave(action: ManualSaveAction) {
+        console.log('Handling manual save', action);
+        const { slice } = action.payload;
+        if (slices.includes(slice)) {
+            console.log('Slice found, proceeding with save');
+            const state = yield select((state: RootState) => state[slice]);
+            yield call(saveSliceState, slice, state, true);
         }
     }
 
     function* watchSliceActions() {
         for (const slice of slices) {
             yield takeLatest(
-                (action): action is any =>
+                (action: any): action is any =>
                     action.type.startsWith(`${slice}/`) &&
-                    !action.type.endsWith('/initialize'),
+                    !action.type.endsWith('/initialize') &&
+                    action.type !== MANUAL_SAVE &&
+                    action.type !== SAVE_COMPLETE,
                 function* (action) {
                     yield delay(debounceMs);
                     const state = yield select((state: RootState) => state[slice]);
-                    yield call(saveSliceState, slice, state);
+                    yield call(saveSliceState, slice, state, false);
                 }
             );
         }
+
+        yield takeEvery(MANUAL_SAVE, handleManualSave);
     }
 
     function* initializeStorage() {

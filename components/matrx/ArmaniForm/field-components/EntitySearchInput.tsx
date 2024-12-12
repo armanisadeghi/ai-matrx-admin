@@ -3,14 +3,14 @@ import React from "react";
 import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import { AnimationPreset } from "@/types/componentConfigTypes";
+import {AnimationPreset, ComponentSize} from "@/types/componentConfigTypes";
 
 interface EntitySearchInputProps {
     dynamicFieldInfo: EntityStateField[];
     onSearchChange: (value: string) => void;
     density?: FormDensity;
     animationPreset?: AnimationPreset;
-    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    size?: ComponentSize
     variant?: MatrxVariant;
     className?: string;
 }

@@ -27,7 +27,6 @@ export interface JsonComponentConfig {
 }
 
 
-
 // Types and interfaces
 export interface JsonMetrics {
     keys: number;
@@ -49,15 +48,15 @@ export interface LayoutControlsProps {
 
 
 export interface EditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
-    data: object | string | null;
-    onChange: (newData: object | string) => void;
-    onFormat?: () => void;
-    initialExpanded?: boolean;
-    maxHeight?: string;
-    validateDelay?: number;
-    lockKeys?: boolean;
-    defaultEnhancedMode?: boolean;
-    readOnly?: boolean;
+    data: object | string | null,
+    onChange: (newData: object | string) => void,
+    onFormat?: () => void,
+    initialExpanded?: boolean,
+    maxHeight?: string,
+    validateDelay?: number,
+    lockKeys?: boolean,
+    defaultEnhancedMode?: boolean,
+    readOnly?: boolean
 }
 
 export interface ValidationError {

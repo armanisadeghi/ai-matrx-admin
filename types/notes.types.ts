@@ -7,6 +7,8 @@ export interface Note {
     tags: string[];
     createdAt: string;
     updatedAt: string;
+    folderId: string | null;
+
 }
 
 export interface Tag {
@@ -21,4 +23,21 @@ export interface NotesState {
 
 export interface TagsState {
     tags: Tag[];
+}
+
+
+export interface Folder {
+    id: string;
+    name: string;
+    type: string;
+    parentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface NotesState {
+    notes: Note[];
+    folders: Folder[];
+    selectedNoteId: string | null;
+    selectedFolderId: string | null;
 }
