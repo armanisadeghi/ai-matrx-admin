@@ -43,6 +43,7 @@ export type CategoryDetails = {
 export type CategoryOptions = keyof typeof CATEGORIES;
 
 export type DataSet = {
+    key: string;
     category: typeof CATEGORIES[keyof typeof CATEGORIES];
     displayName: string;
     data: FlashcardData[];
@@ -135,6 +136,7 @@ const CATEGORIES: Record<string, CategoryDetails> = {
 export const AVAILABLE_DATA: AvailableData = {
     vocab_set_1: [
         {
+            key: 'vocabFlashcards',
             displayName: 'Vocabulary Set 1',
             category: CATEGORIES.vocab,
             data: vocabFlashcards,
@@ -145,6 +147,7 @@ export const AVAILABLE_DATA: AvailableData = {
             },
         },
         {
+            key: 'vocabFlashcardsTwo',
             displayName: 'Vocabulary Set 2',
             category: CATEGORIES.vocab,
             data: vocabFlashcardsTwo,
@@ -157,6 +160,7 @@ export const AVAILABLE_DATA: AvailableData = {
     ],
     custom_set_1: [
         {
+            key: 'InitialFlashcardsWithExample',
             displayName: 'Custom Set 1',
             category: CATEGORIES.custom,
             data: InitialFlashcardsWithExample,
@@ -167,6 +171,7 @@ export const AVAILABLE_DATA: AvailableData = {
             },
         },
         {
+            key: 'flashcardDataSet',
             displayName: 'Custom Set 2',
             category: CATEGORIES.custom,
             data: flashcardDataSet,
@@ -179,10 +184,11 @@ export const AVAILABLE_DATA: AvailableData = {
     ],
     history_set_1: [
         {
+            key: 'historyFlashcards',
+            data: historyFlashcards,
             displayName: 'Foundations of American Government',
             category: CATEGORIES.history,
             subCategory: 'American Government',
-            data: historyFlashcards,
             description: 'This lesson delves into the early development of the United States government, examining the Articles of Confederation and the subsequent creation of the Constitution. It highlights the key principles that underpin American democracy, such as federalism, separation of powers, and the protection of individual rights. Students will explore influential historical documents and figures, gaining insights into the challenges and compromises that shaped the nation. Through interactive discussions and activities, learners will deepen their understanding of the responsibilities of citizenship and the structure of the U.S. government.',
             tags: ['Articles of Confederation', 'Constitution', 'U.S. Government', 'Federalism', 'Separation of Powers', 'Bill of Rights', 'Founding Fathers', 'American History'],
             icon: Landmark,
@@ -192,10 +198,11 @@ export const AVAILABLE_DATA: AvailableData = {
             },
         },
         {
+            key: 'americasBlueprint',
+            data: americasBlueprint,
             displayName: "America's Blueprint: The Constitution",
             category: CATEGORIES.history,
             subCategory: 'Constitutional History',
-            data: americasBlueprint,
             description: 'Journey through the architectural masterpiece of American democracy - from the foundational influences of the Magna Carta to the careful crafting of the Constitution. Students will explore the dynamic debates between Federalists and Anti-federalists, understand the ingenious system of checks and balances, and discover how compromises shaped our nation. This engaging lesson illuminates the seven core principles that continue to guide our government, while examining citizenship rights and responsibilities. Through interactive learning, students will grasp how this living document remains the cornerstone of American liberty and justice.',
             tags: [
                 'Constitution',
@@ -278,12 +285,16 @@ export async function getDataByKeyForSelect(key: string) {
 
 export async function getAllDataByCategoryKey(categoryKey: string) {
     return Object.entries(AVAILABLE_DATA)
-        .flatMap(([key, sets]) =>
+        .flatMap(([_, sets]) =>
             sets
                 .filter((set) => set.category && set.category.id === categoryKey)
-                .map((set) => ({...set, key}))
+                .map((set) => ({
+                    ...set,
+                    key: set.key // Just use the key that's already in the data
+                }))
         );
 }
+
 
 export async function getDataByDataSetName(dataSetName: string): Promise<FlashcardData[]> {
     const dataSet = AVAILABLE_DATA[dataSetName];

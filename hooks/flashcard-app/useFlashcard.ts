@@ -99,7 +99,14 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
     };
 
     // Existing functionality
-    const handleFlip = useCallback(() => setIsFlipped(prev => !prev), []);
+    const handleFlip = useCallback(() => {
+        setIsFlipped((prev) => {
+            const newValue = !prev;
+            console.log(`handleFlip Triggered. Old value: ${prev}, New value: ${newValue}`);
+            return newValue;
+        });
+    }, []);
+
     const handleNext = useCallback(() => {
         if (currentIndex < allFlashcards.length - 1) {
             dispatch(setCurrentIndex(currentIndex + 1));

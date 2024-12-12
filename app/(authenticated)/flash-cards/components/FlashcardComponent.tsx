@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, {Suspense, useCallback} from 'react';
 
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from './FlashcardDisplay';
@@ -8,7 +8,7 @@ import PerformanceChart from './PerformanceChart';
 import EditFlashcardDialog from './EditFlashcardDialog';
 import { Progress } from "@/components/ui/progress";
 import AiAssistModal from '../ai/AiAssistModal';
-import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import { useFlashcard } from "@/hooks/flashcard-app/useFlashcard";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import {
     SmallComponentLoading,
@@ -18,9 +18,10 @@ import {
 } from '@/components/matrx/LoadingComponents';
 import { ensureId } from "@/utils/schema/schemaUtils";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
+import {addMessage, clearChat, resetAllChats} from "@/lib/redux/slices/flashcardChatSlice";
 
 const FlashcardComponent: React.FC<{ dataSetId }> = ({ dataSetId }) => {
-    const initialFlashcards = getFlashcardSet('americasBlueprint');  // TODO: Hardcoded for one ID!!!!
+    const initialFlashcards = getFlashcardSet(dataSetId);
 
     const flashcardHook = useFlashcard(initialFlashcards);
 
@@ -28,16 +29,20 @@ const FlashcardComponent: React.FC<{ dataSetId }> = ({ dataSetId }) => {
         allFlashcards,
         currentIndex,
         editingCard,
-        isModalOpen,
-        modalMessage,
-        modalDefaultTab,
-        handleSaveEdit,
-        setIsModalOpen,
-        setEditingCard,
+        aiModalState: {
+            isAiAssistModalOpen,
+            aiAssistModalMessage,
+            aiAssistModalDefaultTab,
+        },
+        aiModalActions: {
+            closeAiAssistModal
+        },
         handleAction,
+        setEditingCard,
     } = flashcardHook;
 
     const flashcardsWithUUIDs = ensureId(allFlashcards);
+
 
     return (
         <div className="w-full">
@@ -72,15 +77,20 @@ const FlashcardComponent: React.FC<{ dataSetId }> = ({ dataSetId }) => {
 
             <EditFlashcardDialog
                 editingCard={editingCard}
-                onSave={handleSaveEdit}
+                onSave={() => {
+                    if (editingCard) {
+                        flashcardHook.handleAction('edit', editingCard);
+                        setEditingCard(null);
+                    }
+                }}
                 onClose={() => setEditingCard(null)}
             />
 
             <AiAssistModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                defaultTab={modalDefaultTab}
-                message={modalMessage}
+                isOpen={isAiAssistModalOpen}
+                onClose={closeAiAssistModal}
+                defaultTab={aiAssistModalDefaultTab}
+                message={aiAssistModalMessage}
             />
         </div>
     );

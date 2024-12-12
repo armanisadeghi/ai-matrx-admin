@@ -3,11 +3,11 @@
 import React, { Suspense } from 'react';
 
 import FlashcardControls from './FlashcardControls';
-import FlashcardDisplay from './FlashcardDisplay';
+import FlashcardDisplay from '@/components/flashcard-app/-dev/display-all-in-one';
 import PerformanceChart from './PerformanceChart';
 import EditFlashcardDialog from './EditFlashcardDialog';
 import { Progress } from "@/components/ui/progress";
-import AiAssistModal from '../ai/AiAssistModal';
+
 import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import {
@@ -18,9 +18,10 @@ import {
 } from '@/components/matrx/LoadingComponents';
 import { ensureId } from "@/utils/schema/schemaUtils";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
+import AiAssistModal from '@/app/(authenticated)/flash-cards/ai/AiAssistModal';
 
 const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
-    const initialFlashcards = getFlashcardSet('historyFlashcards');
+    const initialFlashcards = getFlashcardSet(dataSetId);
 
     const flashcardHook = useFlashcard(initialFlashcards);
 
@@ -28,13 +29,16 @@ const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
         allFlashcards,
         currentIndex,
         editingCard,
-        isModalOpen,
-        modalMessage,
-        modalDefaultTab,
-        handleSaveEdit,
-        setIsModalOpen,
-        setEditingCard,
+        aiModalState: {
+            isAiAssistModalOpen,
+            aiAssistModalMessage,
+            aiAssistModalDefaultTab,
+        },
+        aiModalActions: {
+            closeAiAssistModal
+        },
         handleAction,
+        setEditingCard,
     } = flashcardHook;
 
     const flashcardsWithUUIDs = ensureId(allFlashcards);
@@ -71,15 +75,20 @@ const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
 
             <EditFlashcardDialog
                 editingCard={editingCard}
-                onSave={handleSaveEdit}
+                onSave={() => {
+                    if (editingCard) {
+                        flashcardHook.handleAction('edit', editingCard);
+                        setEditingCard(null);
+                    }
+                }}
                 onClose={() => setEditingCard(null)}
             />
 
             <AiAssistModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                defaultTab={modalDefaultTab}
-                message={modalMessage}
+                isOpen={isAiAssistModalOpen}
+                onClose={closeAiAssistModal}
+                defaultTab={aiAssistModalDefaultTab}
+                message={aiAssistModalMessage}
             />
         </div>
     );

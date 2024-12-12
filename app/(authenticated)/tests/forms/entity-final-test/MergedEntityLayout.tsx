@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import React, {useState, useEffect} from 'react';
+import {cn} from '@/lib/utils';
 import {
     ScrollArea,
     CardContent,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui';
 import {
     EnhancedCard,
@@ -14,13 +12,15 @@ import {
     EntitySelection,
     UnifiedLayoutProps,
 } from "@/components/matrx/Entity";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { RootState } from "@/lib/redux/store";
-import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
-import EntityQuickReferenceCards from '@/components/matrx/Entity/prewired-components/quick-reference/EntityQuickReferenceCards';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
-import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";
-import { useMeasure } from "@uidotdev/usehooks";
+import {useAppSelector} from "@/lib/redux/hooks";
+import {RootState} from "@/lib/redux/store";
+import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
+import EntityQuickReferenceCards
+    from '@/components/matrx/Entity/prewired-components/quick-reference/EntityQuickReferenceCards';
+import {EntityKeys} from '@/types/entityTypes';
+import {useMeasure} from "@uidotdev/usehooks";
+import ArmaniFormFinal from './ArmaniFormFinal';
+
 
 const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
     const {
@@ -29,8 +29,7 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
         layoutState,
         className,
     } = props;
-    const [layoutRef, { height: layoutHeight }] = useMeasure();
-
+    const [layoutRef, {height: layoutHeight}] = useMeasure();
     const density = dynamicStyleOptions.density || 'normal';
     const splitRatio = dynamicLayoutOptions.formStyleOptions.splitRatio;
     const spacingConfig = densityConfig[density].spacing;
@@ -110,12 +109,8 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
                         <div className="h-full overflow-hidden p-0 gap-0">
                             <EnhancedCard className="h-full">
                                 <CardContent className="p-0 gap-0">
-                                    <ScrollArea
-                                        style={{
-                                            height: `${layoutHeight * 0.6}px`
-                                        }}
-                                    >
-                                        <EntitySmartContent {...modifiedProps} />
+                                    <ScrollArea style={{height: `${layoutHeight}px`}}>
+                                        <ArmaniFormFinal {...modifiedProps} />
                                     </ScrollArea>
                                 </CardContent>
                             </EnhancedCard>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { notFound } from 'next/navigation';
-import FlashcardComponent from "@/app/(authenticated)/flash-cards/components/FlashcardComponent";
+import FlashcardComponent from "@/components/flashcard-app/components/FlashcardComponent";
 
 interface PageProps {
     params: Promise<{
@@ -20,8 +20,6 @@ export default async function DataSetPage({ params, searchParams }: PageProps) {
         params,
         searchParams
     ]);
-
-    console.log('resolvedParams:', resolvedParams);
 
     try {
         return (

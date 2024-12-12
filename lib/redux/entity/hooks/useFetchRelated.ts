@@ -9,6 +9,7 @@ import {Callback, callbackManager} from '@/utils/callbackManager';
 import * as React from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {makeSelectEntityNameByFormat} from "@/lib/redux/schema/globalCacheSelectors";
+import {useEntityCrud} from "./useEntityCrud";
 
 interface UseFetchRelatedParams {
     entityKey: EntityKeys;
@@ -55,6 +56,7 @@ export function useFetchRelated(
         activeEntityKey,
     }: UseFetchRelatedParams): UseFetchRelatedReturn {
     const quickReference = useQuickReference(entityKey);
+    const { activeRecordCrud, getEffectiveRecordOrDefaults } = useEntityCrud(entityKey);
 
     const dispatch = useAppDispatch();
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
@@ -72,9 +74,7 @@ export function useFetchRelated(
         return formData[dynamicFieldInfo.entityName];
     }, [formData, dynamicFieldInfo]);
 
-    const matrxRecordId: MatrxRecordId = useAppSelector(state =>
-        fieldValue ? selectors.selectMatrxRecordIdFromValue(state, fieldValue) : null
-    );
+    const matrxRecordId: activeRecordCrud.recordId | null = fieldValue;
 
     const fetchOne = useCallback((recordId: MatrxRecordId, callback?: Callback) => {
         if (callback) {

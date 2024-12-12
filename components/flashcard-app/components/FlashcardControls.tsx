@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import AudioModal from '@/app/(authenticated)/flash-cards/audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
 import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import { useWindowSize } from "@uidotdev/usehooks";
 
 const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
     const {
@@ -32,19 +33,34 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
         setFontSize,
     } = flashcardHook;
 
+    const { width } = useWindowSize();
+    const isMobile = width ? width < 640 : false;
+
     return (
-        <div className="w-full flex flex-col space-y-4">
-            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                <Button onClick={handlePrevious} variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
-                    <ArrowLeft className="mr-2 h-4 w-4"/> Previous
-                </Button>
-                <Button onClick={handleNext} variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
-                    Next <ArrowRight className="ml-2 h-4 w-4"/>
-                </Button>
-                <Button onClick={shuffleCards} variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
+        <div className="w-full flex flex-col space-y-2">
+            <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-1">
+                <div className={`w-full flex flex-col sm:flex-row gap-1 sm:gap-0 sm:space-x-1 ${isMobile ? 'flex-col-reverse' : ''}`}>
+                    <Button
+                        onClick={handlePrevious}
+                        variant="outline"
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card"
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4"/> Previous
+                    </Button>
+                    <Button
+                        onClick={handleNext}
+                        variant="outline"
+                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card"
+                    >
+                        Next <ArrowRight className="ml-2 h-4 w-4"/>
+                    </Button>
+                </div>
+
+                <Button
+                    onClick={shuffleCards}
+                    variant="outline"
+                    className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card"
+                >
                     <Shuffle className="mr-2 h-4 w-4"/> Shuffle
                 </Button>
                 <Select onValueChange={handleSelectChange} value={currentIndex.toString()}>

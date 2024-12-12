@@ -12,9 +12,11 @@ import { useAiChat } from '../hooks/useAiChat';
 import { addMessage } from '@/lib/redux/slices/flashcardChatSlice';
 import {
     selectActiveFlashcard,
-    selectActiveFlashcardChat
+    selectActiveFlashcardChat, selectAllFlashcardData
 } from '@/lib/redux/selectors/flashcardSelectors';
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WalletCards } from 'lucide-react';
 
 interface AiChatModalProps {
     isOpen: boolean;
@@ -23,19 +25,13 @@ interface AiChatModalProps {
 }
 
 const QUICK_ACTIONS = {
-    'Expand': 'Can you expand on this please?',
-    'Simplify': 'Can you simplify the explanation?',
-    'Example': 'Can you give me an example?',
-    'Big Picture': 'How does this fit into the bigger picture?',
-    'Outline': 'Can you create an outline to explain this?',
-    'Key Points': 'What are the most important points?',
-
     'Expand on this': 'Can you expand on this please?',
+    'Create Table': 'Can you create a table to explain this?',
     'Simplify Explanation': 'Can you simplify the explanation? I am not sure I understand.',
     'Give me an example': 'Can you give me an example of this?',
+    'Key Points': 'What are the most important points?',
     "Bigger Picture": "Can you explain how this fits into the bigger picture?",
     'Structure Information': 'Can you give me the critical information in a structured format?',
-    'Create Table': 'Can you create a table to explain this?',
     'Create Outline': 'Can you create an outline to explain this?',
     'Create Bullet Points': 'Can you put the most important information into bullet points?',
 } as const;
@@ -50,6 +46,9 @@ const AiChatModal: React.FC<AiChatModalProps> = ({ isOpen, onClose, firstName })
 
     const currentFlashcard = useAppSelector(selectActiveFlashcard);
     const currentChat = useAppSelector(selectActiveFlashcardChat);
+
+    const allFlashcardData = useAppSelector(selectAllFlashcardData);
+
     const allChats = useAppSelector((state) => state.flashcardChat.flashcards);
 
     const { isLoading, streamingMessage, sendInitialMessage, sendMessage } = useAiChat();
@@ -125,6 +124,39 @@ const AiChatModal: React.FC<AiChatModalProps> = ({ isOpen, onClose, firstName })
             </div>
         );
     };
+
+
+    const formatFlashcardReference = (flashcard: any) => {
+        return `\nReference to another flashcard:
+            \`\`\`
+            Front Content: ${flashcard.front}
+            Back Content: ${flashcard.back}${flashcard.detailedExplanation ? `\nDetailed Explanation: ${flashcard.detailedExplanation}` : ''}
+            \`\`\`\n`;
+                };
+
+    const handleFlashcardReference = (flashcardId: string) => {
+        const selectedFlashcard = allFlashcardData.find(card => card.id === flashcardId);
+        if (selectedFlashcard && textAreaRef.current) {
+            const reference = formatFlashcardReference(selectedFlashcard);
+            const cursorPosition = textAreaRef.current.selectionStart;
+
+            setMessage(prevMessage => {
+                const beforeCursor = prevMessage.substring(0, cursorPosition);
+                const afterCursor = prevMessage.substring(cursorPosition);
+                return beforeCursor + reference + afterCursor;
+            });
+
+            // Reset select value after insertion
+            setTimeout(() => {
+                if (textAreaRef.current) {
+                    textAreaRef.current.focus();
+                    const newPosition = cursorPosition + reference.length;
+                    textAreaRef.current.setSelectionRange(newPosition, newPosition);
+                }
+            }, 0);
+        }
+    };
+
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -206,17 +238,38 @@ const AiChatModal: React.FC<AiChatModalProps> = ({ isOpen, onClose, firstName })
                                 }
                             }}
                             placeholder="Type your question..."
-                            className="w-full pr-12 resize-none"
+                            className="w-full pr-24 resize-none"
                             rows={3}
                         />
-                        <Button
-                            onClick={() => handleSubmit()}
-                            disabled={isLoading || !message.trim()}
-                            className="absolute right-2 bottom-2 rounded-full p-2"
-                            size="icon"
-                        >
-                            <ArrowUp className="h-4 w-4" />
-                        </Button>
+                        <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                            <Select onValueChange={handleFlashcardReference}>
+                                <SelectTrigger className="w-12 h-12 p-0 border-none hover:bg-primary/10 transition-colors">
+                                    <WalletCards className="h-10 w-10 text-primary" />
+                                    <SelectValue placeholder="" className="hidden" />
+                                </SelectTrigger>
+                                <SelectContent className="w-72">
+                                    {allFlashcardData
+                                        .filter(card => card.id !== currentFlashcard?.id)
+                                        .map(card => (
+                                            <SelectItem
+                                                key={card.id}
+                                                value={card.id}
+                                            >
+                                                {card.front.substring(0, 50)}
+                                                {card.front.length > 50 ? '...' : ''}
+                                            </SelectItem>
+                                        ))}
+                                </SelectContent>
+                            </Select>
+                            <Button
+                                onClick={() => handleSubmit()}
+                                disabled={isLoading || !message.trim()}
+                                className="rounded-full p-2"
+                                size="icon"
+                            >
+                                <ArrowUp className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </DialogContent>

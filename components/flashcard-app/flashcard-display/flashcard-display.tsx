@@ -1,9 +1,10 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { FlashcardHook } from "./types";
+'use client';
+
 import { FlashcardFront } from "./flashcard-front";
 import { FlashcardBack } from "./flashcard-back";
+import { useFlashcard } from '@/hooks/flashcard-app/useFlashcard';
 
-const FlashcardDisplay = ({ flashcardHook }: { flashcardHook: FlashcardHook }) => {
+export default function FlashcardDisplay({ flashcardHook }: { flashcardHook: ReturnType<typeof useFlashcard> }) {
     const {
         activeFlashcard,
         isFlipped,
@@ -14,28 +15,24 @@ const FlashcardDisplay = ({ flashcardHook }: { flashcardHook: FlashcardHook }) =
         aiModalActions: { openAiModal }
     } = flashcardHook;
 
-    if (!activeFlashcard) {
-        return <div>No card data available</div>;
-    }
+    if (!activeFlashcard) return null;
 
     return (
         <div className="w-full min-h-[400px] lg:h-full [perspective:1000px]" {...mobileHandlers}>
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={activeFlashcard.id}
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -100, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className={`relative w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${
-                        isFlipped ? "[transform:rotateY(180deg)]" : ""
-                    }`}
-                    onClick={handleFlip}
-                >
+            <div
+                className={`relative w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${
+                    isFlipped ? "[transform:rotateY(180deg)]" : ""
+                }`}
+                onClick={handleFlip}
+            >
+                <div className="absolute w-full h-full [backface-visibility:hidden]">
                     <FlashcardFront
                         content={activeFlashcard.front}
                         fontSize={fontSize}
                     />
+                </div>
+
+                <div className="absolute w-full h-full [transform:rotateY(180deg)] [backface-visibility:hidden]">
                     <FlashcardBack
                         answer={activeFlashcard.back}
                         detailedExplanation={activeFlashcard.detailedExplanation}
@@ -45,10 +42,8 @@ const FlashcardDisplay = ({ flashcardHook }: { flashcardHook: FlashcardHook }) =
                         onAnswer={handleAnswer}
                         onAskQuestion={openAiModal}
                     />
-                </motion.div>
-            </AnimatePresence>
+                </div>
+            </div>
         </div>
     );
-};
-
-export default FlashcardDisplay;
+}

@@ -13,10 +13,6 @@ interface LayoutProps {
 
 export default async function CategoryLayout({ children, params }: LayoutProps) {
     const resolvedParams = await params;
-
-    console.log('Layout Params:', resolvedParams);
-
-
     const categories = await getCategories();
     const category = categories[resolvedParams.category];
 
@@ -35,7 +31,7 @@ export default async function CategoryLayout({ children, params }: LayoutProps) 
     };
 
     return (
-        <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-2">
             <OptionCardHeader data={headerData} />
             {children}
         </div>

@@ -3,12 +3,12 @@
 import React, { Suspense } from 'react';
 
 import FlashcardControls from './FlashcardControls';
-import FlashcardDisplay from '@/components/flashcard-app/-dev/display-all-in-one';
-import PerformanceChart from '../-dev/PerformanceChart';
+import FlashcardDisplay from '@/components/flashcard-app/flashcard-display/flashcard-display';
+import PerformanceChart from '@/components/flashcard-app/performance/performance-chart';
 import EditFlashcardDialog from './EditFlashcardDialog';
 import { Progress } from "@/components/ui/progress";
-
-import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import AiAssistModal from '@/components/ai/AiAssistModal';
+import { useFlashcard } from "@/hooks/flashcard-app/useFlashcard";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import {
     SmallComponentLoading,
@@ -18,9 +18,8 @@ import {
 } from '@/components/matrx/LoadingComponents';
 import { ensureId } from "@/utils/schema/schemaUtils";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
-import AiAssistModal from '@/app/(authenticated)/flash-cards/ai/AiAssistModal';
 
-const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
+const FlashcardComponent: React.FC<{ dataSetId: string }> = ({ dataSetId }) => {
     const initialFlashcards = getFlashcardSet(dataSetId);
 
     const flashcardHook = useFlashcard(initialFlashcards);
@@ -45,23 +44,24 @@ const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
 
     return (
         <div className="w-full">
-            <div className="flex flex-col justify-between items-stretch mb-1 gap-1">
-                <div className="w-full flex">
+            <div className="flex flex-col lg:flex-row justify-between items-stretch mb-2 gap-2">
+                <div className="w-full lg:w-2/3 flex">
                     <Suspense fallback={<CardLoading />}>
                         <FlashcardDisplay flashcardHook={flashcardHook} />
                     </Suspense>
                 </div>
-                <div className="w-full flex flex-col gap-1">
-                    <Suspense fallback={<SmallComponentLoading />}>
-                        <FlashcardControls flashcardHook={flashcardHook} />
-                    </Suspense>
+                <div className="w-full lg:w-1/3 flex">
                     <Suspense fallback={<MediumComponentLoading />}>
                         <PerformanceChart />
                     </Suspense>
                 </div>
             </div>
 
-            <div className="mt-2">
+            <Suspense fallback={<SmallComponentLoading />}>
+                <FlashcardControls flashcardHook={flashcardHook} />
+            </Suspense>
+
+            <div className="mt-4">
                 <Progress value={((currentIndex + 1) / allFlashcards.length) * 100} className="w-full" />
             </div>
 
@@ -94,4 +94,4 @@ const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
     );
 };
 
-export default FlashcardComponentMobile;
+export default FlashcardComponent;

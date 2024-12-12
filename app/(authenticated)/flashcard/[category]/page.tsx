@@ -23,6 +23,7 @@ export default async function CategoryPage(props: PageProps) {
         props.params,
         props.searchParams,
     ]);
+
     const categoryKey = params.category as string;
     const categoryData = await getAllDataByCategoryKey(params.category);
 

@@ -14,6 +14,8 @@ export type FlashcardData = {
     relatedImages?: string[];
     personalNotes?: string;
     isDeleted?: boolean;
+    dynamicContent?: Array<{ title: string; content: string; }> | undefined;
+    tags?: string[];
 }
 
 export type Flashcard = FlashcardData & {
