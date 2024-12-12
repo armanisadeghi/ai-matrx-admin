@@ -2522,6 +2522,228 @@ export const historyFlashcards: FlashcardData[] = [
     }
 ];
 
+export const americasBlueprint: FlashcardData[] = [
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 1,
+        front: "What is a constitution?",
+        back: `A written plan that explains how a government works, organizes power, sets rules for leaders, and protects people's rights`,
+        detailedExplanation: `Think of it like a rulebook for a game, but for running a country. Just like how game rules keep players fair, a constitution keeps government fair. Important because without it, leaders might make unfair decisions or abuse power. Real-world example: School rules are like a mini-constitution.`,
+        example: ``,
+        audioExplanation: "Hey there! Let me break this down in a way that might click better. You know how your favorite video game has rules that everyone has to follow, even the most powerful players? A constitution is exactly like that, but for running a country. Without it, it'd be like playing Minecraft with no rules - total chaos! Even the president has to follow these rules, just like how even the best player in a game has to follow the game rules."
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 2,
+        front: "List 3 strengths of the Articles of Confederation",
+        back: `1. Unified the 13 states for the Revolutionary War
+        2. Allowed Congress to make war, peace, and treaties
+        3. Passed important laws like the Northwest Ordinance`,
+        detailedExplanation: `The states were like 13 separate countries before this. Think of it as the first "team agreement" between the states. Important because it helped win independence from Britain. Historical context: This was America's first attempt at unity.`,
+        example: ``,
+        audioExplanation: "Think about this - imagine you're starting a brand new club at school. The Articles of Confederation were kind of like that first club meeting where everyone agrees to work together. Sure, it wasn't perfect, but it did three really important things: it got everyone to work together to fight Britain (like teammates in a sport), it let the group make big decisions together, and it helped organize new territories. Pretty impressive for America's first try at teamwork, right?"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 3,
+        front: "List 5 weaknesses of the Articles of Confederation",
+        back: `1. Weak central government with no power to enforce laws
+        2. Couldn't tax, leading to financial issues
+        3. No president or national court system
+        4. Hard to pass laws (needed 9/13 states)
+        5. Couldn't regulate trade`,
+        detailedExplanation: `Imagine trying to run a school where teachers can't enforce rules. The government was like a referee without a whistle. Money problems: Like trying to buy lunch with no wallet. Example: If your class needed 9/13 students to agree to have recess, it would be hard to get anything done.`,
+        example: ``,
+        audioExplanation: "Okay, here's the thing - the Articles of Confederation had some serious problems. Imagine trying to be team captain but you can't make any real decisions, can't collect dues for team equipment, and need almost everyone to agree before doing anything. Frustrating, right? That's exactly what the government faced. They couldn't even stop states from making their own money - it was like having 13 different types of lunch tickets that didn't work at other school cafeterias!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 4,
+        front: "What was the ⅗ Compromise?",
+        back: `An agreement to count enslaved people as ⅗ of a person for both representation in Congress and taxation`,
+        detailedExplanation: `This was a morally wrong but historically significant agreement. Math example: If a state had 100 enslaved people, they would count as 60 people. Shows how the founders compromised on difficult issues. Important to understand: This reflected the deep problem of slavery in early America.`,
+        example: ``,
+        audioExplanation: "This is a tough one to understand because it shows one of the darkest parts of American history. The Three-Fifths Compromise wasn't just about numbers - it was about human beings being counted as less than whole people for political power. Imagine someone saying only part of your class counts as real students. It's shocking and wrong, but understanding this helps us learn from past mistakes and ensure we never repeat them."
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 5,
+        front: "What is a bicameral legislature?",
+        back: `A two-house lawmaking body consisting of the House of Representatives (based on population) and the Senate (equal representation)`,
+        detailedExplanation: `Like having two different teams make decisions together. House of Representatives: Big states get more votes (like California). Senate: All states get same votes (Rhode Island = Texas). Helps balance power between big and small states.`,
+        example: ``,
+        audioExplanation: "Picture your school's student council, but with a twist! Instead of just one group making decisions, you have two groups working together. One group (like the House) has more representatives from bigger grades, while the other group (like the Senate) has exactly two people from each grade. Pretty clever, right? This way, both the big grades and small grades get a fair say in things. That's exactly how our Congress works!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 6,
+        front: "What is separation of powers?",
+        back: `Division of government into three branches: legislative (makes laws), executive (enforces laws), and judicial (interprets laws)`,
+        detailedExplanation: `Think of it like three different jobs in a school: Teachers (Legislative) make classroom rules. Principal (Executive) enforces rules. School Board (Judicial) decides if rules are fair. Each branch keeps others in check.`,
+        example: ``,
+        audioExplanation: "Ever played rock, paper, scissors? Each one can beat another, but can also be beaten - that's kind of like separation of powers! Congress is like rock (making laws), the President is like paper (carrying out laws), and the Supreme Court is like scissors (checking if laws are fair). None of them can become too powerful because the others can always check their power. Cool system, right?"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 7,
+        front: "How did the Magna Carta influence the Constitution?",
+        back: `It showed that government power should be limited and people's rights must be protected, inspiring similar ideas in the Constitution`,
+        detailedExplanation: `Written in 1215 in England. First document to say even kings must follow rules. Like a "great-great-grandparent" to our Constitution. Started the idea that leaders shouldn't have unlimited power.`,
+        example: ``,
+        audioExplanation: "Here's something wild - imagine being the first person to tell a king 'You're not the boss of everything!' That's exactly what happened with the Magna Carta over 800 years ago! It was like the first time in history someone created a 'You can't do that' list for rulers. Our Constitution's authors were basically like, 'Hey, that was a great idea - let's build on it!' Pretty brave of those medieval folks, don't you think?"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 8,
+        front: "Who were the Federalists?",
+        back: `- Supported the Constitution and strong federal government
+        - Often wealthier people
+        - Key leaders: George Washington, Alexander Hamilton, John Adams`,
+        detailedExplanation: `Think of them as "team national government." Usually lived in cities or were merchants. Wanted America to be strong internationally. Believed unity was more important than state independence.`,
+        example: ``,
+        audioExplanation: "Let me put the Federalists in modern terms. They were like the kids at school who say, 'We should all follow the same rules and work together as one big team!' They believed that if America wanted to be taken seriously by other countries, we needed to be united and strong. Think of Alexander Hamilton as their team captain, always pushing for everyone to work together instead of splitting up into smaller groups."
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 9,
+        front: "Who were the Anti-federalists?",
+        back: `- Opposed Constitution as too powerful
+        - Wanted strong state governments and Bill of Rights
+        - Represented farmers and ordinary citizens
+        - Key leaders: Thomas Jefferson, Patrick Henry, George Mason`,
+        detailedExplanation: `Think of them as "team state rights." Worried about too much central power. Like people who prefer local school control over state control. Their concerns led to the Bill of Rights.`,
+        example: ``,
+        audioExplanation: "The Anti-federalists were like the cautious friend in your group who says, 'Wait a minute, let's think this through!' They weren't trying to be difficult - they just wanted to make sure nobody got too much power. And guess what? We can thank them for the Bill of Rights! It's like they said, 'Okay, we'll join the team, but first we need some guarantees that everyone's rights will be protected.' Pretty smart thinking, right?"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 10,
+        front: "What were the Federalist Papers?",
+        back: `A series of articles written by Hamilton, Madison, and Jay to explain and defend the Constitution`,
+        detailedExplanation: `Like a series of blog posts explaining why the Constitution was good. Written under pen name "Publius." Used examples and logic to convince people. Still used by Supreme Court today to understand Constitution's meaning.`,
+        example: ``,
+        audioExplanation: "You know how when a new video game comes out, and people write detailed reviews explaining why it's worth buying? The Federalist Papers were kind of like that, but for the Constitution! Hamilton, Madison, and Jay were like the top game reviewers of their time, writing 85 different articles explaining why this new 'game' called the Constitution would work great for America. And get this - judges still read these 'reviews' today to understand what the original players had in mind!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 11,
+        front: "List the powers of the Legislative Branch",
+        back: `- Makes laws
+        - Approves budgets and taxes
+        - Declares war
+        - Confirms presidential appointments`,
+        detailedExplanation: `Think of Congress as the "rule makers" of the country. Two parts working together: House of Representatives (based on state population). Senate (2 per state). Making laws is like writing a school policy: Idea proposed. Discussed and debated. Voted on. Both houses must agree. Real example: When Congress passes a budget, it's like planning how to spend allowance money.`,
+        example: ``,
+        audioExplanation: "Let's think of Congress like the ultimate student council, but with SUPER powers! They don't just suggest ideas - they can actually make laws, control all the money, and even declare war. Imagine having the power to both write the school rules AND decide how to spend the school's budget. Pretty major, right? And here's something cool - before any law becomes real, both parts of Congress have to agree, kind of like getting both your parents to say yes before you can do something big!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 12,
+        front: "List the powers of the Executive Branch",
+        back: `- Enforces laws
+        - Commands military
+        - Makes treaties
+        - Appoints judges and officials`,
+        detailedExplanation: `President is like the "manager" of the country. Key responsibilities broken down: Commander in Chief = Boss of military. Enforcing laws = Making sure rules are followed. Appointing officials = Choosing helpers. Real-world example: When the President declares an emergency for a natural disaster.`,
+        example: ``,
+        audioExplanation: "The President's job is like being the world's biggest multitasker! One minute they're the boss of all military forces (like the world's biggest team captain), the next they're making sure laws are being followed (like a super-principal), and then they're picking important helpers (like choosing team members). It's kind of like being the captain, coach, and manager of Team USA all at once. No pressure, right?"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 13,
+        front: "List the powers of the Judicial Branch",
+        back: `- Interprets laws
+        - Decides if laws are constitutional
+        - Resolves disputes between states`,
+        detailedExplanation: `Think of the Supreme Court as "rule interpreters." Like a referee in sports: Doesn't make the rules. Decides if something breaks the rules. Settles disagreements about rules. Example: Deciding if a school rule violates student rights.`,
+        example: ``,
+        audioExplanation: "Think of the Supreme Court as the ultimate game referees, but for the whole country! They don't make up new rules - instead, they look at the rulebook (the Constitution) and say 'Yep, that's allowed' or 'Nope, that's against the rules.' And just like how a good referee can't pick sides in a game, the Supreme Court has to be fair and focus only on what the Constitution says. Pretty big responsibility when you're making calls that affect millions of people!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 14,
+        front: "List the 6 goals from the Preamble",
+        back: `1. Form a more perfect union
+        2. Establish justice
+        3. Ensure domestic tranquility
+        4. Provide for common defense
+        5. Promote general welfare
+        6. Secure liberty's blessings`,
+        detailedExplanation: `Like a mission statement for America. Each goal has modern meaning: "Perfect union" = Working together better. "Justice" = Fairness for all. "Domestic tranquility" = Peace at home. "Common defense" = National security. "General welfare" = Everyone's well-being. "Liberty" = Freedom for all.`,
+        example: ``,
+        audioExplanation: "The Preamble is like America's New Year's resolutions list, but from 1787! And instead of giving up after a few weeks, these goals are still what we're working toward today. When they said 'form a more perfect union,' they meant making the country better - not perfect, but always improving. It's like when you set goals for yourself - you might not achieve them all right away, but having them written down helps you keep trying. Each goal is still super relevant today - from keeping the peace to making sure everyone has a fair shot at success!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 15,
+        front: "What are the 7 principles of the Constitution?",
+        back: `1. Popular Sovereignty
+        2. Republicanism
+        3. Federalism
+        4. Separation of Powers
+        5. Checks and Balances
+        6. Limited Government
+        7. Individual Rights`,
+        detailedExplanation: `Popular Sovereignty: Like class voting on party theme. Republicanism: Choosing class representatives. Federalism: School rules vs. classroom rules. Separation of Powers: Different people have different jobs. Checks and Balances: Nobody gets too much power. Limited Government: Rules about what leaders can't do. Individual Rights: Protected personal freedoms.`,
+        example: ``,
+        audioExplanation: "Think of these 7 principles as the secret ingredients in America's recipe for democracy! Popular Sovereignty means YOU have the power (like when the whole class votes on pizza or tacos for lunch). Federalism is like having both school rules AND classroom rules working together. And my favorite is Checks and Balances - it's like having three friends hold different parts of a treasure map so no one person can find the treasure alone! Pretty clever way to make sure everyone plays fair, don't you think?"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 16,
+        front: "List the 7 Articles of the Constitution",
+        back: `1. Legislative Branch
+        2. Executive Branch
+        3. Judicial Branch
+        4. State Relations
+        5. Amendment Process
+        6. Federal Supremacy
+        7. Ratification Process`,
+        detailedExplanation: `Think of it like chapters in a book: Articles 1-3: Who does what (branches). Article 4: How states work together. Article 5: How to change the rules. Article 6: Federal rules are boss. Article 7: How to make it official. Each article solves specific problems.`,
+        example: ``,
+        audioExplanation: "Let me make these Articles super simple! Imagine you're writing an instruction manual for running a country. Articles 1-3 are like 'Who does what' - Congress makes rules, President enforces them, and Supreme Court makes sure they're fair. Article 4 is like 'How to play nice with others' (for states), 5 is 'How to update the manual,' 6 is 'These rules are the boss,' and 7 was basically saying 'Sign here to make it official.' See? Not so complicated after all!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 17,
+        front: "What are the three ways to become a U.S. citizen?",
+        back: `1. Birth in U.S. or territories
+        2. Naturalization
+        3. Parentage (at least one U.S. citizen parent)`,
+        detailedExplanation: `Birth: Like automatic membership. Born in U.S. = Automatic citizen. Includes territories like Puerto Rico. Naturalization: Like joining a club. Must learn U.S. history. Pass test. Take oath. Parentage: Citizenship through family. At least one parent must be a citizen. Different rules for different situations.`,
+        example: ``,
+        audioExplanation: "There are three tickets to becoming an American citizen - you either get born with it (like being born into a family), earn it through naturalization (like earning your black belt in karate), or inherit it from your parents (like inheriting your mom's curly hair). The naturalization way is pretty impressive - imagine having to learn ALL about America's history and government, pass a test, and then make a special promise to be loyal. That's some serious dedication!"
+    },
+    {
+        topic: "History",
+        lesson: "America's Blueprint: From Big Ideas to Bill of Rights",
+        order: 18,
+        front: "What is a citizen?",
+        back: `A legally recognized member of a country who has rights (like voting) and responsibilities (like following the law)`,
+        detailedExplanation: `Rights include: Voting in elections. Running for office. Getting a passport. Protection under law. Responsibilities include: Following laws. Paying taxes. Serving on juries. Defending the country if needed. Think of it like being part of a community: You get benefits (rights). You have duties (responsibilities). Both are equally important. Each of these explanations provides: Real-world comparisons. Examples students can relate to. Breaking down complex ideas. Practical applications. Clear connection to daily life.`,
+        example: ``,
+        audioExplanation: "Being a citizen is like being a full member of an awesome club - but this club is America! You get some pretty cool perks like voting and having a passport, but it also comes with responsibilities. It's like being on a sports team - you get to play in the games (rights) but you also have to show up for practice and follow team rules (responsibilities). And just like how everyone on a team helps make it stronger, every citizen helps make America better by doing their part. Cool how that works, right?"
+    }
+
+
+];
 
 export const flashcardSets = {
     historyFlashcards,
@@ -2529,8 +2751,8 @@ export const flashcardSets = {
     vocabFlashcardsTwo,
     InitialFlashcardsWithExample,
     flashcardDataSet,
+    americasBlueprint,
 };
-
 
 
 export const getFlashcardSet = (name: string) => {

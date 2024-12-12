@@ -8,7 +8,8 @@ import {
     Landmark,
     LucideIcon,
     MessageCircle,
-    Microscope
+    Microscope,
+    Scale
 } from "lucide-react";
 
 import {FlashcardData} from "@/types/flashcards.types";
@@ -18,6 +19,7 @@ import {
     vocabFlashcardsTwo,
     vocabFlashcards,
     historyFlashcards,
+    americasBlueprint,
 } from "./app-data";
 
 export const base_app_path = 'flashcard';
@@ -25,6 +27,7 @@ export const base_app_path = 'flashcard';
 export type CustomStyles = {
     backgroundColor?: string;
     textColor?: string;
+    accentColor?: string;
 }
 
 export type CategoryDetails = {
@@ -186,6 +189,31 @@ export const AVAILABLE_DATA: AvailableData = {
             customStyles: {
                 backgroundColor: 'bg-blue-200 dark:bg-blue-800',
                 textColor: 'default',
+            },
+        },
+        {
+            displayName: "America's Blueprint: The Constitution",
+            category: CATEGORIES.history,
+            subCategory: 'Constitutional History',
+            data: americasBlueprint,
+            description: 'Journey through the architectural masterpiece of American democracy - from the foundational influences of the Magna Carta to the careful crafting of the Constitution. Students will explore the dynamic debates between Federalists and Anti-federalists, understand the ingenious system of checks and balances, and discover how compromises shaped our nation. This engaging lesson illuminates the seven core principles that continue to guide our government, while examining citizenship rights and responsibilities. Through interactive learning, students will grasp how this living document remains the cornerstone of American liberty and justice.',
+            tags: [
+                'Constitution',
+                'Founding Documents',
+                'American Democracy',
+                'Checks and Balances',
+                'Citizenship',
+                'Federal Government',
+                'Constitutional Principles',
+                'American Revolution',
+                'Civil Rights',
+                'Political History'
+            ],
+            icon: Scale, // Representing justice and balance in government
+            customStyles: {
+                backgroundColor: 'bg-indigo-100 dark:bg-indigo-900',
+                textColor: 'text-indigo-900 dark:text-indigo-100',
+                accentColor: 'border-indigo-500'
             },
         },
     ],
