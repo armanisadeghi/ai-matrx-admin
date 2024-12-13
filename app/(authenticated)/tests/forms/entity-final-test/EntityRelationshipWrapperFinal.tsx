@@ -1,51 +1,52 @@
 'use client';
 
-import React from 'react';
-import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
-import { EntityBaseFieldProps } from './EntityBaseFieldFinal';
-import { ENTITY_FIELD_COMPONENTS } from '@/components/matrx/ArmaniForm/field-components';
+import React, {useMemo} from 'react';
+import {EntityStateField, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import RelatedEntityAccordionFinal
+    from "@/app/(authenticated)/tests/forms/entity-final-test/RelatedEntityAccordionFinal";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {EntityKeys} from "@/types";
+import {createEntitySelectors, useAppSelector} from "@/lib/redux";
 
-export interface EntityRelationshipWrapperProps extends EntityBaseFieldProps {
-    currentRecordData: Record<string, any>;
+export interface EntityRelationshipWrapperProps {
+    entityKey: EntityKeys;
+    fieldName: string;
+    recordId?: MatrxRecordId;
+    unifiedLayoutProps?: UnifiedLayoutProps;
+    className?: string;
 }
 
 const EntityRelationshipWrapperFinal = (
     {
         entityKey,
-        dynamicFieldInfo,
-        value,
-        onChange,
-        density = 'normal',
-        animationPreset = 'subtle',
-        size = 'default',
-        variant = 'default',
-        floatingLabel = true,
-        currentRecordData,
+        fieldName,
+        recordId = null,
+        unifiedLayoutProps,
+        className = '',
     }: EntityRelationshipWrapperProps) => {
-    const Component = ENTITY_FIELD_COMPONENTS[dynamicFieldInfo.defaultComponent];
-    const valueOrDefault = value ?? dynamicFieldInfo.defaultValue;
+    const Component = RelatedEntityAccordionFinal;
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const entityStatus = useAppSelector(selectors.selectEntityStatus);
+    const fieldMetadata = useAppSelector(state => selectors.selectFieldMetadata(state, fieldName));
+    const databaseValue = useAppSelector(
+        state => recordId ? selectors.selectFieldValue(state, recordId, fieldName) : undefined
+    );
 
-    const entityKeyToUse = (dynamicFieldInfo: EntityStateField) => {
-        if (!dynamicFieldInfo.isNative) {
-            console.log('EntityRelationshipWrapperFinal: returning entityName:', dynamicFieldInfo.entityName);
-            return dynamicFieldInfo.entityName;
+    const entityKeyToUse = (fieldMetadata: EntityStateField) => {
+        if (!fieldMetadata.isNative) {
+            console.log('EntityRelationshipWrapperFinal: returning entityName:', fieldMetadata.entityName);
+            return fieldMetadata.entityName;
         } else {
             throw new Error('EntityRelationshipWrapperFinal: field is not an entity relationship');
         }
     }
 
-        return (
+    return (
         <Component
-            entityKey={entityKeyToUse(dynamicFieldInfo)}
-            dynamicFieldInfo={dynamicFieldInfo}
-            value={valueOrDefault}
-            onChange={onChange}
-            density={density}
-            animationPreset={animationPreset}
-            size={size}
-            variant={variant}
-            floatingLabel={floatingLabel}
-            formData={currentRecordData}
+            entityKey={entityKeyToUse(fieldMetadata)}
+            unifiedLayoutProps={unifiedLayoutProps}
+            fieldValue={databaseValue}
+            activeEntityRecordId={recordId}
             activeEntityKey={entityKey}
         />
     );
@@ -54,3 +55,5 @@ const EntityRelationshipWrapperFinal = (
 EntityRelationshipWrapperFinal.displayName = 'EntityRelationshipWrapperFinal';
 
 export default EntityRelationshipWrapperFinal;
+
+

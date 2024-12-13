@@ -1,8 +1,6 @@
 // redux/features/aiChats/messageSlice.ts
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { MessageType } from '@/types';
-import { fetchChatMessages, addMultipleCustomMessages, updateMessageText } from '@/utils/supabase/chatDb';
 
 export interface MessageState {
     messagesByChatId: Record<string, MessageType[]>;

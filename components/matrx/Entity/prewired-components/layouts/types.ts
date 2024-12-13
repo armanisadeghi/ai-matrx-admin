@@ -11,10 +11,14 @@ import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import React from "react";
 import {EntityError, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {
+    SmartCrudWrapperProps
+} from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
 
 export interface FormComponentOptions {
     entitySelectionComponent?: any;
     quickReferenceType?: QuickReferenceComponentType;
+    quickReferenceCrudWrapperProps?: SmartCrudWrapperProps | Partial<SmartCrudWrapperProps>;
     formLayoutType?: PageLayoutOptions;
 }
 
@@ -115,7 +119,6 @@ export interface UnifiedStepHandlers {
     onNextStep?: () => void;
     onPrevStep?: () => void;
 }
-
 
 export interface UnifiedLayoutProps {
     activeRecordId?: MatrxRecordId;

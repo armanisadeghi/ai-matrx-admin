@@ -1,71 +1,153 @@
 'use client';
 
-import React from 'react';
-import { ENTITY_FIELD_COMPONENTS } from '@/components/matrx/ArmaniForm/field-components';
-import FormFieldMotionWrapper from "@/components/matrx/ArmaniForm/field-components/wrappers/FormFieldMotionWrapper";
+import React, {useCallback, useMemo, useState} from 'react';
+import {ENTITY_FIELD_COMPONENTS} from '@/components/matrx/ArmaniForm/field-components';
 import {EntityKeys} from "@/types/entityTypes";
-import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import {AnimationPreset, ComponentDensity, ComponentSize} from "@/types";
+import {EntityStateField, EntityStatus, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {noErrors} from '@/utils';
+import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {
+    createEntitySelectors,
+    getEntitySlice,
+    RootState,
+    useAppDispatch,
+    useAppSelector,
+} from "@/lib/redux";
+import FormFieldMotionWrapperFinal
+    from "@/app/(authenticated)/tests/forms/entity-final-test/FormFieldMotionWrapperFinal";
 
-export interface EntityBaseFieldProps {
+export interface EntityBaseFieldFinalProps {
     entityKey: EntityKeys;
-    dynamicFieldInfo: EntityStateField;
-    value?: any;
-    onChange: (value: any) => void;
-    density?: ComponentDensity
-    animationPreset?: AnimationPreset
-    size?: ComponentSize
-    variant?: MatrxVariant;
-    labelPosition?: 'default' | 'left' | 'right' | 'top' | 'bottom';
-    disabled?: boolean;
-    floatingLabel?: boolean;
+    fieldName: string;
+    recordId?: MatrxRecordId;
+    unifiedLayoutProps?: UnifiedLayoutProps;
     className?: string;
 }
 
-const EntityBaseField = (
-    {
-        entityKey,
-        dynamicFieldInfo,
-        value,
-        onChange,
-        density = 'normal',
-        animationPreset = 'subtle',
-        size = 'default',
-        variant = 'default',
-        floatingLabel = true,
-        disabled = false,
-        className,
-    }: EntityBaseFieldProps) => {
-    const Component = ENTITY_FIELD_COMPONENTS[dynamicFieldInfo.defaultComponent];
-    const valueOrDefault = value ?? dynamicFieldInfo.defaultValue;
-    const customProps = dynamicFieldInfo.componentProps as Record<string, unknown>;
-    const isDisabled = disabled === true || customProps?.disabled === true;
+const FieldStatusWrapper = React.memo(({
+    children,
+    entityStatus
+}: {
+    children: (isDisabled: boolean) => React.ReactNode;
+    entityStatus: EntityStatus;
+}) => {
+    const isDisabled = useMemo(() => {
+        switch (entityStatus) {
+            case 'loading':
+            case 'error':
+                return true;
+            default:
+                return false;
+        }
+    }, [entityStatus]);
+
+    return <>{children(isDisabled)}</>;
+});
+
+const StaticFieldConfig = React.memo(({
+    entityKey,
+    fieldName,
+    unifiedLayoutProps,
+    children
+}: {
+    entityKey: EntityKeys;
+    fieldName: string;
+    unifiedLayoutProps?: UnifiedLayoutProps;
+    children: (config: {
+        Component: React.ComponentType<any>;
+        fieldMetadata: EntityStateField;
+        styleConfig: {
+            density: string;
+            animationPreset: string;
+            size: string;
+            variant: string;
+            floatingLabel: boolean;
+        };
+    }) => React.ReactNode;
+}) => {
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+
+    const selectField = useMemo(() =>
+        (state: RootState) => selectors.selectFieldMetadata(state, fieldName)
+    , [selectors, fieldName]);
+
+    const fieldMetadata = useAppSelector(selectField) as EntityStateField;
+
+    const safeComponent = useMemo(() =>
+        noErrors(fieldMetadata?.defaultComponent, 'INPUT', ['INPUT', 'TEXTAREA'])
+    , [fieldMetadata]);
+
+    const Component = ENTITY_FIELD_COMPONENTS[safeComponent];
+
+    const styleConfig = useMemo(() => ({
+        density: unifiedLayoutProps?.dynamicStyleOptions?.density || 'normal',
+        animationPreset: unifiedLayoutProps?.dynamicStyleOptions?.animationPreset || 'smooth',
+        size: unifiedLayoutProps?.dynamicStyleOptions?.size || 'default',
+        variant: unifiedLayoutProps?.dynamicStyleOptions?.variant || 'default',
+        floatingLabel: unifiedLayoutProps?.dynamicLayoutOptions?.formStyleOptions?.floatingLabel ?? true
+    }), [unifiedLayoutProps]);
+
+    if (!fieldMetadata) return null;
+
+    return <>{children({ Component, fieldMetadata, styleConfig })}</>;
+});
+
+const EntityBaseFieldFinal = ({
+    entityKey,
+    fieldName,
+    recordId = null,
+    unifiedLayoutProps,
+    className,
+}: EntityBaseFieldFinalProps) => {
+    const dispatch = useAppDispatch();
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
+    const entityStatus = useAppSelector(selectors.selectEntityStatus);
+
+    const databaseValue = useAppSelector(
+        state => recordId ? selectors.selectFieldValue(state, recordId, fieldName) : undefined
+    );
+
+    const [currentValue, setCurrentValue] = useState(databaseValue ?? undefined);
+
+    const onChange = useCallback((newValue: unknown) => {
+        setCurrentValue(newValue);
+        if (recordId) {
+            dispatch(actions.updateUnsavedField({
+                recordId,
+                field: fieldName,
+                value: newValue
+            }));
+        }
+    }, [dispatch, actions, recordId, fieldName]);
 
     return (
-        <FormFieldMotionWrapper
-            animationPreset={animationPreset}
-            density={density}
-            floatingLabel={floatingLabel}
-            className={className}
+        <StaticFieldConfig
+            entityKey={entityKey}
+            fieldName={fieldName}
+            unifiedLayoutProps={unifiedLayoutProps}
         >
-            <Component
-                entityKey={entityKey}
-                dynamicFieldInfo={dynamicFieldInfo}
-                value={valueOrDefault}
-                onChange={onChange}
-                density={density}
-                animationPreset={animationPreset}
-                size={size}
-                variant={variant}
-                floatingLabel={floatingLabel}
-                disabled={isDisabled}
-            />
-        </FormFieldMotionWrapper>
-
+            {({ Component, fieldMetadata, styleConfig }) => (
+                <FieldStatusWrapper entityStatus={entityStatus}>
+                    {(isDisabled) => (
+                        <FormFieldMotionWrapperFinal
+                            unifiedLayoutProps={unifiedLayoutProps}
+                            className={className}
+                        >
+                            <Component
+                                entityKey={entityKey}
+                                dynamicFieldInfo={fieldMetadata}
+                                value={currentValue}
+                                onChange={onChange}
+                                disabled={isDisabled}
+                                {...styleConfig}
+                            />
+                        </FormFieldMotionWrapperFinal>
+                    )}
+                </FieldStatusWrapper>
+            )}
+        </StaticFieldConfig>
     );
 };
 
-EntityBaseField.displayName = 'EntityBaseField';
-
-export default EntityBaseField;
+export default React.memo(EntityBaseFieldFinal);

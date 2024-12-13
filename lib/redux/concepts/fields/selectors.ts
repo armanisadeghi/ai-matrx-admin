@@ -7,7 +7,7 @@ import {fieldAdapter} from "./fieldSlice";
 import {EntityKeys} from "@/types/entityTypes";
 import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
-const selectFieldsState = (state: RootState) => state.formFields;
+const selectFieldsState = (state: RootState) => state.entityFields;
 
 export const {
     selectAll: selectAllFields,

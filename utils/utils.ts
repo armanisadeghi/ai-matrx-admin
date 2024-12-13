@@ -20,3 +20,36 @@ export const truncateText = (text: string, maxLength: number = 100) => {
   if (!text || text.length <= maxLength) return text;
   return text.slice(0, maxLength) + '...';
 };
+
+
+export function noErrors(value, defaultValue, options, transform = null) {
+  if (transform) {
+    const transformed = transform(value);
+    if (transformed !== null && options.includes(transformed)) {
+      return transformed;
+    }
+  }
+
+  if (options.includes(value)) {
+    return value;
+  }
+
+  if (typeof defaultValue === 'string' && typeof value === 'string') {
+    const normalizedValue = value.toLowerCase();
+    const match = options.find(v =>
+        typeof v === 'string' && v.toLowerCase() === normalizedValue
+    );
+    if (match) return match;
+  }
+
+  return defaultValue;
+}
+
+/*
+// Simple usage stays simple:
+const validVariant = noErrors("anything", 'rounded', ['rounded', 'geometric']);
+
+// Complex usage when needed:
+const validSize = noErrors("anything", 'md', ['sm', 'md', 'lg'],
+    v => typeof v === 'number' ? ['sm', 'md', 'lg'][v] : null
+);*/

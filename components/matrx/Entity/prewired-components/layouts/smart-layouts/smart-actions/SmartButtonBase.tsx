@@ -1,8 +1,7 @@
-import React from 'react';
-import {Button} from 'components/ui/';
-import {Loader2} from 'lucide-react';
-import {memo} from 'react';
+import React, {memo} from 'react';
+
 import {SmartButtonProps} from "./types";
+import LoadingButton from '@/components/ui/loaders/loading-button';
 
 export const SmartButtonBase = memo((
     {
@@ -20,17 +19,17 @@ export const SmartButtonBase = memo((
     };
 
     return (
-        <Button
+        <LoadingButton
             onClick={handleClick}
-            disabled={disabled || loading}
+            disabled={disabled}
             variant={variant}
             size={size}
+            isLoading={loading}
             className="flex items-center gap-2"
             type="button"
         >
-            {loading && <Loader2 className="h-4 w-4 animate-spin"/>}
             {children}
-        </Button>
+        </LoadingButton>
     );
 });
 

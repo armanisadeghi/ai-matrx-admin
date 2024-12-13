@@ -1,22 +1,52 @@
 // fieldSlice.ts
 import { createEntityAdapter, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FieldState, FieldIdentifier, FormMode } from './types';
 import { createFieldId } from './fieldUtils';
-import {EntityKeys} from "@/types/entityTypes";
-import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {AllEntityFieldKeys, EntityKeys} from "@/types/entityTypes";
+import {EntityOperationMode, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+
+
+// todo: remove this duplicate
+export interface FieldState {
+    id: string;
+    entityKey: EntityKeys;
+    fieldName: AllEntityFieldKeys;
+    recordId: MatrxRecordId | 'new';
+    value: any;
+    isDirty: boolean;
+    originalValue: any;
+    mode: EntityOperationMode;
+    isValid: boolean;
+    validationErrors?: string[];
+}
+
+export interface FormState {
+    entityKey: EntityKeys;
+    recordId: MatrxRecordId | 'new';
+    mode: EntityOperationMode;
+    isDirty: boolean;
+    isValid: boolean;
+    isSubmitting: boolean;
+}
+
+
+export interface FieldIdentifier {
+    entityKey: EntityKeys;
+    fieldName: AllEntityFieldKeys;
+    recordId: MatrxRecordId | 'new';
+}
 
 export const fieldAdapter = createEntityAdapter<FieldState>();
 
 const initialState = fieldAdapter.getInitialState();
 
 const fieldSlice = createSlice({
-    name: 'formFields',
+    name: 'entityFields',
     initialState,
     reducers: {
         initializeField: (state, action: PayloadAction<{
             identifier: FieldIdentifier,
             initialValue: any,
-            mode: FormMode
+            mode: EntityOperationMode
         }>) => {
             const { identifier, initialValue, mode } = action.payload;
             const id = createFieldId(identifier);
@@ -52,7 +82,7 @@ const fieldSlice = createSlice({
         setFormMode: (state, action: PayloadAction<{
             entityKey: EntityKeys,
             recordId: MatrxRecordId | 'new',
-            mode: FormMode
+            mode: EntityOperationMode
         }>) => {
             const { entityKey, recordId, mode } = action.payload;
             const formFields = Object.values(state.entities)

@@ -35,7 +35,7 @@ const EntitySelection: React.FC<EntitySelectionProps> = (
     const entitySelectOptions = useAppSelector(selectFormattedEntityOptions);
 
     return (
-        <div className="flex justify-center w-full">
+        <div className="flex justify-center w-full p-2 pt-3">
             <div className="w-full max-w-md">
                 <Select
                     value={selectedEntity || undefined}

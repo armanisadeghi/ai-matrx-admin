@@ -316,6 +316,8 @@ export interface EntityOperationFlags {
     GET_OR_FETCH_RECORDS_STATUS?: FlagStatusOptions;
 }
 
+export type EntityStatus = 'initialized' | 'error' | 'loading' | 'other';
+
 export type EntityOperationMode = 'create' | 'update' | 'delete' | 'view' ;
 
 export interface EntityFlags {

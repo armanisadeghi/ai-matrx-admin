@@ -9,7 +9,7 @@ interface TextDividerProps {
     textSize?: string;
 }
 
-const TextDivider: React.FC<TextDividerProps> = (
+export const TextDivider: React.FC<TextDividerProps> = (
     {
         text,
         className,

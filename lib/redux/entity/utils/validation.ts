@@ -153,6 +153,7 @@ export const runEntityValidation = (data: { [key: string]: any }): ValidationRes
     return errors.length === 0 ? true : errors;
 };
 
+/*
 // Example usage
 const exampleData = {
     name: "John Doe",
@@ -178,3 +179,4 @@ if (validationResult === true) {
 } else {
     console.error("Validation errors:", validationResult);
 }
+*/

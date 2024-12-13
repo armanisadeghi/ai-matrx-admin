@@ -1,13 +1,11 @@
 // redux/features/user/userActions.ts
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AuthProfile, MatrixUser } from '@/types/user.types';
-import { upsertFromAuth0 } from '@/hooks/users/upsertAuth0';
 import { setUser, setLoading, setError } from './userSlice';
 
 export const authenticateUser = createAsyncThunk(
     'user/authenticate',
-    async (authProfile: AuthProfile, { dispatch }) => {
+    async (authProfile, { dispatch }) => {
         dispatch(setLoading(true));
         try {
             const matrixUser = await upsertFromAuth0(authProfile);

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Loader2, LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import React, {useState} from 'react';
+import {Loader2, LucideIcon} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {cn} from '@/lib/utils';
 
 type ButtonVariant = 'default' | 'destructive' | 'success' | 'outline' | 'secondary' | 'ghost' | 'link' | 'primary';
 type ComponentSize = 'default' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'icon' | 'roundIcon';
@@ -45,21 +45,22 @@ interface LoadingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     iconClassName?: string;
 }
 
-const LoadingButton = ({
-                           children,
-                           variant = 'default',
-                           size = 'default',
-                           icon: Icon,
-                           loadingText = 'Loading',
-                           isLoading: externalLoading,
-                           onLoadingChange,
-                           className,
-                           spinnerClassName,
-                           iconClassName,
-                           onClick,
-                           disabled,
-                           ...props
-                       }: LoadingButtonProps) => {
+const LoadingButton = (
+    {
+        children,
+        variant = 'default',
+        size = 'default',
+        icon: Icon,
+        loadingText = 'Loading',
+        isLoading: externalLoading,
+        onLoadingChange,
+        className,
+        spinnerClassName,
+        iconClassName,
+        onClick,
+        disabled,
+        ...props
+    }: LoadingButtonProps) => {
     const [internalLoading, setInternalLoading] = useState(false);
     const isLoading = externalLoading ?? internalLoading;
 
@@ -81,6 +82,24 @@ const LoadingButton = ({
         }
     };
 
+    const renderChildren = () => {
+        if (isIconOnly) {
+            // For icon-only modes, find the first icon element in children
+            const iconElement = React.Children.toArray(children).find(child =>
+                React.isValidElement(child) &&
+                typeof child.type !== 'string' // Excludes HTML elements like span, div, etc.
+            );
+            return iconElement || (Icon && <Icon className={cn(iconClassName)} size={iconSize} />);
+        }
+
+        return (
+            <>
+                {Icon && <Icon className={cn(iconClassName)} size={iconSize} />}
+                {children}
+            </>
+        );
+    };
+
     return (
         <Button
             variant={variant}
@@ -100,25 +119,12 @@ const LoadingButton = ({
         >
             {isLoading ? (
                 <Loader2
-                    className={cn(
-                        'animate-spin',
-                        spinnerClassName
-                    )}
+                    className={cn('animate-spin', spinnerClassName)}
                     size={iconSize}
                 />
-            ) : (
-                 <>
-                     {Icon && (
-                         <Icon
-                             className={cn(iconClassName)}
-                             size={iconSize}
-                         />
-                     )}
-                     {!isIconOnly && <span>{children}</span>}
-                 </>
-             )}
+            ) : renderChildren()}
         </Button>
     );
-}
+};
 
 export default LoadingButton;

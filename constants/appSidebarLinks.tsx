@@ -21,7 +21,7 @@ import {
     Grid2x2Plus,
     TableCellsSplit,
     LayoutGrid,
-    ClipboardType
+    ClipboardType, LandPlot
 } from "lucide-react";
 import React from "react";
 
@@ -233,7 +233,13 @@ export const secondaryLinks = [
             <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-
+    {
+        label: 'Final Form Test',
+        href: '/tests/forms/entity-final-test', // https://lucide.dev/icons/
+        icon: (
+            <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     {
         label: 'Form Tests',
         href: '/tests/forms', // https://lucide.dev/icons/

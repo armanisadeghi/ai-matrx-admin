@@ -2,16 +2,6 @@
 'use client';
 
 import * as React from 'react'
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {
-    MatrxButton,
-    MatrxSelect,
-    MatrxSelectContent, MatrxSelectItem,
-    MatrxSelectTrigger,
-    MatrxSelectValue,
-    ButtonGroup
-} from '@/components/ui/samples';
 import {
     Select,
     SelectTrigger,
@@ -20,9 +10,26 @@ import {
     SelectItem,
     Checkbox,
     Input,
-    Label
+    Label,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+    TextDivider,
 } from '@/components/ui';
-import TextDivider from '@/components/matrx/TextDivider';
+import {
+    MatrxButton,
+    MatrxSelect,
+    MatrxSelectContent, MatrxSelectItem,
+    MatrxSelectTrigger,
+    MatrxSelectValue,
+    ButtonGroup
+} from '@/components/ui/samples';
+
 import {Infinity, Bot, Handshake, Smile, Loader2, ThumbsUp, ThumbsDown, Star} from 'lucide-react';
 
 export default function DemoPage() {

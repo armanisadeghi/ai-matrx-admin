@@ -1,40 +1,74 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {cn} from '@/lib/utils';
-import {
-    ScrollArea,
-    CardContent,
-} from '@/components/ui';
-import {
-    EnhancedCard,
-    densityConfig,
-    EntitySelection,
-    UnifiedLayoutProps,
-} from "@/components/matrx/Entity";
+import {ScrollArea} from '@/components/ui';
+import {EntitySelection, UnifiedLayoutProps} from "@/components/matrx/Entity";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
-import EntityQuickReferenceCards
-    from '@/components/matrx/Entity/prewired-components/quick-reference/EntityQuickReferenceCards';
 import {EntityKeys} from '@/types/entityTypes';
-import {useMeasure} from "@uidotdev/usehooks";
+import {useWindowSize} from "@uidotdev/usehooks";
 import ArmaniFormFinal from './ArmaniFormFinal';
+import QuickReferenceFinal from './QuickReferenceFinal';
 
+const LeftColumn: React.FC<{
+    selectedEntity: EntityKeys | null;
+    onEntityChange: (value: EntityKeys) => void;
+    updateKey: number;
+    availableHeight: number;
+    unifiedLayoutProps: UnifiedLayoutProps;
+}> = ({selectedEntity, onEntityChange, updateKey, availableHeight, unifiedLayoutProps}) => (
+    <div className="w-[250px] border-r border-border" style={{height: availableHeight}}>
+        <ScrollArea className="h-full">
+            <div className="flex flex-col">
+                <EntitySelection
+                    selectedEntity={selectedEntity}
+                    onEntityChange={onEntityChange}
+                    layout="sideBySide"
+                />
+                {selectedEntity && (
+                    <div className="flex-1">
+                        <QuickReferenceFinal
+                            key={`${selectedEntity}-${updateKey}`}
+                            entityKey={selectedEntity}
+                            smartCrudProps={unifiedLayoutProps.dynamicLayoutOptions.componentOptions.quickReferenceCrudWrapperProps}
+                        />
+                    </div>
+                )}
+            </div>
+        </ScrollArea>
+    </div>
+);
+
+const RightColumn: React.FC<{
+    selectedEntity: EntityKeys | null;
+    unifiedLayoutProps: UnifiedLayoutProps;
+    availableHeight: number;
+}> = ({selectedEntity, unifiedLayoutProps, availableHeight}) => (
+    selectedEntity ? (
+        <div
+            className="flex-1"
+            style={{height: availableHeight,}}
+        >
+            <ScrollArea
+                className="h-full"
+            >
+                <div>
+                    <ArmaniFormFinal {...unifiedLayoutProps} />
+                </div>
+            </ScrollArea>
+        </div>
+    ) : null
+);
 
 const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
-    const {
-        dynamicLayoutOptions,
-        dynamicStyleOptions,
-        layoutState,
-        className,
-    } = props;
-    const [layoutRef, {height: layoutHeight}] = useMeasure();
-    const density = dynamicStyleOptions.density || 'normal';
-    const splitRatio = dynamicLayoutOptions.formStyleOptions.splitRatio;
-    const spacingConfig = densityConfig[density].spacing;
-    const [isExpanded, setIsExpanded] = useState(false);
+    const { layoutState } = props;
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [availableHeight, setAvailableHeight] = useState(0);
     const [updateKey, setUpdateKey] = useState(0);
+    const windowSize = useWindowSize();
 
     const selectedEntity = layoutState?.selectedEntity || null;
     const entityPrettyName = useAppSelector((state: RootState) =>
@@ -42,81 +76,61 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
     );
 
     useEffect(() => {
-        setUpdateKey(prev => prev + 1);
+        const calculateHeight = () => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const topPosition = rect.top;
+                const newHeight = viewportHeight - topPosition - 16;
+                setAvailableHeight(newHeight);
+            }
+        };
+
+        calculateHeight();
+        window.addEventListener('resize', calculateHeight);
+
+        return () => window.removeEventListener('resize', calculateHeight);
+    }, [windowSize.height]);
+
+    useEffect(() => {
+        setUpdateKey((prev) => prev + 1);
     }, [layoutState.selectedEntity]);
 
     const handleEntityChange = (value: EntityKeys) => {
         layoutState.selectedEntity = value;
-        setUpdateKey(prev => prev + 1);
-    };
-
-    const handleCreateEntityClick = () => {
-        layoutState.selectedEntity = null;
-        setUpdateKey(prev => prev + 1);
-        setIsExpanded(false);
+        setUpdateKey((prev) => prev + 1);
     };
 
     const modifiedProps: UnifiedLayoutProps = {
         ...props,
         handlers: {
-            setIsExpanded,
+            ...props.handlers, // Preserve existing handlers
             handleEntityChange,
-            onCreateEntityClick: handleCreateEntityClick,
+            onCreateEntityClick: () => {
+                layoutState.selectedEntity = null;
+                setUpdateKey((prev) => prev + 1);
+            },
         },
         layoutState: {
-            ...layoutState,
-            isExpanded,
-        }
+            ...layoutState, // Ensure the full layoutState is propagated
+        },
     };
 
     return (
-        <div className={cn(
-            'w-full h-full relative overflow-hidden',
-            spacingConfig,
-            className
-        )}>
-            <div ref={layoutRef} className="h-full p-0 gap-0 overflow-hidden">
-                <div
-                    className={cn("grid h-full p-0", spacingConfig)}
-                    style={{
-                        gridTemplateColumns: isExpanded
-                                             ? '1fr'
-                                             : `minmax(300px, ${splitRatio}%) minmax(300px, ${100 - splitRatio}%)`
-                    }}
-                >
-                    {!isExpanded && (
-                        <div className="flex flex-col p-0 gap-0 overflow-hidden">
-                            <EntitySelection
-                                selectedEntity={selectedEntity}
-                                onEntityChange={handleEntityChange}
-                                layout="sideBySide"
-                                density={density}
-                            />
-
-                            {selectedEntity && (
-                                <div className="flex-1 min-h-0">
-                                    <EntityQuickReferenceCards
-                                        key={`${selectedEntity}-${updateKey}`}
-                                        entityKey={selectedEntity}
-                                        onCreateEntityClick={handleCreateEntityClick}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {selectedEntity && (
-                        <div className="h-full overflow-hidden p-0 gap-0">
-                            <EnhancedCard className="h-full">
-                                <CardContent className="p-0 gap-0">
-                                    <ScrollArea style={{height: `${layoutHeight}px`}}>
-                                        <ArmaniFormFinal {...modifiedProps} />
-                                    </ScrollArea>
-                                </CardContent>
-                            </EnhancedCard>
-                        </div>
-                    )}
-                </div>
+        <div ref={containerRef} className={cn('w-full')}>
+            <div className="flex" style={{ height: availableHeight }}>
+                <LeftColumn
+                    selectedEntity={selectedEntity}
+                    onEntityChange={handleEntityChange}
+                    updateKey={updateKey}
+                    availableHeight={availableHeight}
+                    unifiedLayoutProps={modifiedProps}
+                />
+                <RightColumn
+                    selectedEntity={selectedEntity}
+                    unifiedLayoutProps={modifiedProps}
+                    availableHeight={availableHeight}
+                />
             </div>
         </div>
     );

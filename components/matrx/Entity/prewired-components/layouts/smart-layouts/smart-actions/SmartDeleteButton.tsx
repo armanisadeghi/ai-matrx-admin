@@ -8,10 +8,11 @@ import SmartDeleteConfirmation from "./SmartDeleteConfirmation";
 import {SmartButtonProps} from "./types";
 
 
-export const SmartDeleteButton = memo(({
-                                           entityKey,
-                                           size = 'default'
-                                       }: SmartButtonProps) => {
+export const SmartDeleteButton = memo((
+    {
+        entityKey,
+        size = 'default'
+    }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const {selection, isOperationPending} = entityCrud;
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);

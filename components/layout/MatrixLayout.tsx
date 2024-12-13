@@ -70,7 +70,7 @@ export function LayoutWithSidebar(
         >
             <div className="flex flex-1 overflow-hidden ">
                 <div
-                    className="flex h-full w-full flex-1 flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-background/80 md:p-3 overflow-y-auto">
+                    className="flex h-full w-full flex-1 flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-background/80 md:p-1 overflow-y-auto">
                     {children}
                 </div>
             </div>

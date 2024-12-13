@@ -156,3 +156,5 @@ export {
     MatrxIconToggle,
     MatrxSwitch,
 } from './matrx/matrix-switch'
+
+export {TextDivider} from '@/components/matrx/TextDivider';

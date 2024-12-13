@@ -29,14 +29,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Light Switch Button 2',
+        path: 'light-switch-button/light-switch-button-2',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Light Switch Button',
+        path: 'light-switch-button',
         relative: true,
         description: ''
     },

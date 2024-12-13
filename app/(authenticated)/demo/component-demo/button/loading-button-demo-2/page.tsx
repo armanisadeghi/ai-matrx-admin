@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import LoadingButton from '@/components/ui/loaders/loading-button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, Mail, Save, Send, Settings, Star, Upload, User, Plus, Heart, Trash, ArrowRight } from 'lucide-react';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Bell, Mail, Save, Send, Settings, Star, Upload, User, Plus, Heart, Trash, ArrowRight} from 'lucide-react';
+import LoadingButtonGroup from "@/components/ui/loaders/loading-button-group";
 
 const VARIANTS = [
     'default',
@@ -29,7 +30,7 @@ const DEMO_ICONS = {
     User,
 };
 
-const DemoSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const DemoSection = ({title, children}: { title: string; children: React.ReactNode }) => (
     <Card className="w-full">
         <CardHeader>
             <CardTitle className="text-xl font-semibold">{title}</CardTitle>
@@ -45,10 +46,10 @@ export default function LoadingButtonDemo() {
 
     const toggleLoading = (id: string) => {
         setLoadingStates(prev => {
-            const newState = { ...prev, [id]: !prev[id] };
+            const newState = {...prev, [id]: !prev[id]};
             if (newState[id]) {
                 setTimeout(() => {
-                    setLoadingStates(current => ({ ...current, [id]: false }));
+                    setLoadingStates(current => ({...current, [id]: false}));
                 }, 2000);
             }
             return newState;
@@ -73,8 +74,8 @@ export default function LoadingButtonDemo() {
                 ))}
             </DemoSection>
 
-            {/* Icon Buttons Section */}
-            <DemoSection title="Icon-Only Buttons">
+            {/* Non-Responsive Round Icon Buttons Section */}
+            <DemoSection title="Non-Responsive Container Icon-Only Buttons">
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-4">
                         {VARIANTS.map((variant) => (
@@ -91,7 +92,96 @@ export default function LoadingButtonDemo() {
                 </div>
             </DemoSection>
 
-            {/* Round Icon Buttons Section */}
+            {/* Responsive */}
+            <DemoSection title="Responsive Icon-Only Buttons">
+                <div className="flex flex-wrap items-center gap-4">
+                    {VARIANTS.map((variant) => (
+                        <LoadingButton
+                            key={`icon-${variant}`}
+                            variant={variant}
+                            size="icon"
+                            icon={Plus}
+                            isLoading={loadingStates[`icon-${variant}`]}
+                            onClick={() => toggleLoading(`icon-${variant}`)}
+                        />
+                    ))}
+                </div>
+            </DemoSection>
+
+            {/* Responsive Pairs */}
+            <DemoSection title="Responsive Paired Icon-Only Buttons">
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Group buttons in pairs using array chunking */}
+                    {Array.from({length: Math.ceil(VARIANTS.length / 2)}, (_, i) => (
+                        <div key={`pair-${i}`} className="flex items-center gap-4">
+                            {VARIANTS.slice(i * 2, i * 2 + 2).map((variant) => (
+                                <LoadingButton
+                                    key={`icon-${variant}`}
+                                    variant={variant}
+                                    size="icon"
+                                    icon={Plus}
+                                    isLoading={loadingStates[`icon-${variant}`]}
+                                    onClick={() => toggleLoading(`icon-${variant}`)}
+                                />
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            </DemoSection>
+
+            {/* Responsive Adaptive */}
+            <DemoSection title="Responsive Button Group">
+                <LoadingButtonGroup>
+                    {VARIANTS.map((variant) => (
+                        <LoadingButton
+                            key={`icon-${variant}`}
+                            variant={variant}
+                            size="icon"
+                            icon={Plus}
+                            isLoading={loadingStates[`icon-${variant}`]}
+                            onClick={() => toggleLoading(`icon-${variant}`)}
+                        />
+                    ))}
+                </LoadingButtonGroup>
+            </DemoSection>
+
+
+            <DemoSection title="Responsive Even Groups Icon-Only Buttons NOT WORKING WELL">
+                <div className="flex flex-wrap items-center gap-4">
+                    {(() => {
+                        // Calculate optimal group size
+                        const totalButtons = VARIANTS.length;
+                        const optimalGroups = totalButtons <= 3 ? 1 :
+                                              totalButtons <= 6 ? 2 :
+                                              totalButtons <= 9 ? 3 :
+                                              Math.ceil(totalButtons / 4);
+
+                        const buttonGroups = Array.from({ length: optimalGroups }, (_, groupIndex) => {
+                            const start = Math.floor(groupIndex * totalButtons / optimalGroups);
+                            const end = Math.floor((groupIndex + 1) * totalButtons / optimalGroups);
+                            const groupVariants = VARIANTS.slice(start, end);
+
+                            return (
+                                <div key={`group-${groupIndex}`} className="flex items-center gap-4">
+                                    {groupVariants.map((variant) => (
+                                        <LoadingButton
+                                            key={`icon-${variant}`}
+                                            variant={variant}
+                                            size="icon"
+                                            icon={Plus}
+                                            isLoading={loadingStates[`icon-${variant}`]}
+                                            onClick={() => toggleLoading(`icon-${variant}`)}
+                                        />
+                                    ))}
+                                </div>
+                            );
+                        });
+
+                        return buttonGroups;
+                    })()}
+                </div>
+            </DemoSection>
+             Round Icon Buttons Section
             <DemoSection title="Round Icon Buttons">
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-4">
@@ -103,6 +193,22 @@ export default function LoadingButtonDemo() {
                                 icon={Heart}
                                 isLoading={loadingStates[`round-${variant}`]}
                                 onClick={() => toggleLoading(`round-${variant}`)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </DemoSection>
+            <DemoSection title="Smart CRUD Buttons">
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        {VARIANTS.map((variant) => (
+                            <LoadingButton
+                                key={`icon-${variant}`}
+                                variant={variant}
+                                size="icon"
+                                icon={Plus}
+                                isLoading={loadingStates[`icon-${variant}`]}
+                                onClick={() => toggleLoading(`icon-${variant}`)}
                             />
                         ))}
                     </div>

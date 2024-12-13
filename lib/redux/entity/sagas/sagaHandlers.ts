@@ -39,7 +39,7 @@ function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>(
 
     if (error) throw error;
 
-    entityLogger.log('info', 'Fetched data with relationships', data);
+    entityLogger.log('debug', 'Fetched data with relationships', data);
     return data;
 }
 
@@ -53,7 +53,7 @@ function* handleFetchOne<TEntity extends EntityKeys>(
         unifiedDatabaseObject
     }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOne', entityKey);
-    entityLogger.log('info', 'Starting fetchOne', action.payload);
+    entityLogger.log('debug', 'Starting fetchOne', action.payload);
 
     const relationships = yield select(selectEntityRelationships, entityKey);
 
@@ -71,7 +71,7 @@ function* handleFetchOne<TEntity extends EntityKeys>(
 
     if (error) throw error;
 
-    entityLogger.log('info', 'Fetched data', data);
+    entityLogger.log('debug', 'Fetched data', data);
     return data;
 }
 
@@ -195,7 +195,7 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneAdvanced', entityKey);
 
     try {
-        entityLogger.log('info', 'Starting fetchOne', action.payload);
+        entityLogger.log('debug', 'Starting fetchOne', action.payload);
 
         let query = api.select("*");
 
@@ -209,7 +209,7 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        entityLogger.log('info', 'Fetch one response', frontendResponse);
+        entityLogger.log('debug', 'Fetch one response', frontendResponse);
 
         yield put(actions.fetchOneSuccess(frontendResponse));
     } catch (error: any) {
@@ -232,16 +232,16 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleGetOrFetchSelectedRecords', entityKey);
 
     try {
-        entityLogger.log('info', 'Starting', action.payload);
+        entityLogger.log('debug', 'Starting', action.payload);
 
         const entitySelectors = createEntitySelectors(entityKey);
         const {existingRecords, recordIdsNotInState, primaryKeysToFetch} = yield select(
             entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
         );
 
-        entityLogger.log('info', '-Existing records', existingRecords);
-        entityLogger.log('info', '-Record IDs not in state', recordIdsNotInState);
-        entityLogger.log('info', '-Primary keys to fetch', primaryKeysToFetch);
+        entityLogger.log('debug', '-Existing records', existingRecords);
+        entityLogger.log('debug', '-Record IDs not in state', recordIdsNotInState);
+        entityLogger.log('debug', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
             entityLogger.log('debug', '-Existing records', existingRecords);

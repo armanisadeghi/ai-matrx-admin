@@ -9,12 +9,11 @@ import {Callback, callbackManager} from '@/utils/callbackManager';
 import * as React from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {makeSelectEntityNameByFormat} from "@/lib/redux/schema/globalCacheSelectors";
-import {useEntityCrud} from "./useEntityCrud";
 
 interface UseFetchRelatedParams {
     entityKey: EntityKeys;
-    dynamicFieldInfo?: EntityStateField;
-    formData?: EntityData<EntityKeys>;
+    dynamicFieldInfo: EntityStateField;
+    formData: EntityData<EntityKeys>;
     activeEntityKey?: EntityKeys;
 }
 
@@ -56,7 +55,6 @@ export function useFetchRelated(
         activeEntityKey,
     }: UseFetchRelatedParams): UseFetchRelatedReturn {
     const quickReference = useQuickReference(entityKey);
-    const { activeRecordCrud, getEffectiveRecordOrDefaults } = useEntityCrud(entityKey);
 
     const dispatch = useAppDispatch();
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
@@ -66,6 +64,7 @@ export function useFetchRelated(
 
     const [viewMode, setViewMode] = useState<ViewModeOption>('view');
 
+    console.log("useFetchRelated: ", entityKey, dynamicFieldInfo, formData, activeEntityKey);
 
     const fieldValue = React.useMemo(() => {
         if (!formData || !dynamicFieldInfo?.entityName) {
@@ -74,7 +73,13 @@ export function useFetchRelated(
         return formData[dynamicFieldInfo.entityName];
     }, [formData, dynamicFieldInfo]);
 
-    const matrxRecordId: activeRecordCrud.recordId | null = fieldValue;
+    console.log("useFetchRelated: fieldValue: ", fieldValue);
+
+    const matrxRecordId: MatrxRecordId = useAppSelector(state =>
+        fieldValue ? selectors.selectMatrxRecordIdFromValue(state, fieldValue) : null
+    );
+
+    console.log("useFetchRelated: matrxRecordId: ", matrxRecordId);
 
     const fetchOne = useCallback((recordId: MatrxRecordId, callback?: Callback) => {
         if (callback) {
@@ -95,6 +100,11 @@ export function useFetchRelated(
     }, [dispatch, actions]);
 
     const {records, fieldInfo: individualFieldInfo, displayField} = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
+
+    console.log("useFetchRelated: records: ", records);
+    console.log("useFetchRelated: individualFieldInfo: ", individualFieldInfo);
+    console.log("useFetchRelated: displayField: ", displayField);
+    console.log("useFetchRelated: entityPrettyName: ", entityPrettyName);
 
     React.useEffect(() => {
         if (matrxRecordId) {

@@ -3,7 +3,13 @@
 import {createSelector} from '@reduxjs/toolkit';
 import {EntityKeys, EntityData} from "@/types/entityTypes";
 import {RootState} from "@/lib/redux/store";
-import {EntityDataWithId, EntityState, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import {
+    EntityDataWithId,
+    EntityOperationMode,
+    EntityState,
+    EntityStatus,
+    MatrxRecordId
+} from "@/lib/redux/entity/types/stateTypes";
 import {createRecordKey, getRecordIdByRecord, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import {mapFieldDataToFormField} from "@/lib/redux/entity/utils/tempFormHelper";
@@ -44,6 +50,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return record ? record[field] || null : null;
         }
     );
+
+    const selectFieldValueByRecordKey = createSelector(
+        [selectEntity, (_: RootState, recordKey: MatrxRecordId, field: string) => ({recordKey, field})],
+        (entity, {recordKey, field}) => {
+            const record = entity.records[recordKey];
+            return record ? record[field] || null : null;
+        }
+    );
+
+
+
 
     const selectRecordsForFetching = (matrxRecordIds: MatrxRecordId[]) => createSelector(
         [selectAllRecords],
@@ -430,67 +447,25 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectFieldInfo = createSelector(
         [selectEntityMetadata],
-        (metadata) => metadata.fields.map(field => ({
-            name: field.name,
-            displayName: field.displayName,
-            uniqueColumnId: field.uniqueColumnId,
-            uniqueFieldId: field.uniqueFieldId,
-            dataType: field.dataType,
-            isRequired: field.isRequired,
-            maxLength: field.maxLength,
-            isArray: field.isArray,
-            defaultValue: field.defaultValue,
-            isPrimaryKey: field.isPrimaryKey,
-            isDisplayField: field.isDisplayField,
-            defaultGeneratorFunction: field.defaultGeneratorFunction,
-            validationFunctions: field.validationFunctions,
-            exclusionRules: field.exclusionRules,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
-            structure: field.structure,
-            isNative: field.isNative,
-            typeReference: field.typeReference,
-            enumValues: field.enumValues,
-            entityName: field.entityName,
-            databaseTable: field.databaseTable,
-            foreignKeyReference: field.foreignKeyReference,
-            description: field.description,
-
-        }))
+        (metadata) => metadata?.fields || []
     );
 
+    const selectFieldNames = createSelector(
+        [selectFieldInfo],
+        (fields) => fields.map(field => field.name)
+    );
 
     const selectFlexFormField = createSelector(
-        [selectEntityMetadata],
-        (metadata) => metadata.fields.map(field => ({
-            name: field.name,
-            label: field.displayName,
-            displayName: field.displayName,
-            uniqueColumnId: field.uniqueColumnId,
-            uniqueFieldId: field.uniqueFieldId,
-            dataType: field.dataType,
-            type: mapFieldDataToFormField(field.dataType),
-            isRequired: field.isRequired,
-            maxLength: field.maxLength,
-            isArray: field.isArray,
-            defaultValue: field.defaultValue,
-            isPrimaryKey: field.isPrimaryKey,
-            isDisplayField: field.isDisplayField,
-            defaultGeneratorFunction: field.defaultGeneratorFunction,
-            validationFunctions: field.validationFunctions,
-            exclusionRules: field.exclusionRules,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
-            structure: field.structure,
-            isNative: field.isNative,
-            typeReference: field.typeReference,
-            enumValues: field.enumValues,
-            entityName: field.entityName,
-            databaseTable: field.databaseTable,
-            foreignKeyReference: field.foreignKeyReference,
-            description: field.description,
+        [selectFieldInfo],
+        (fields) => {
+            if (!fields?.length) return [];
 
-        }))
+            return fields.map(field => ({
+                ...field,
+                label: field.displayName,
+                type: mapFieldDataToFormField(field.dataType)
+            }));
+        }
     );
 
 
@@ -565,38 +540,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (entity) => entity.pendingOperations
     );
 
-
-// For table headers
     const selectTableColumns = createSelector(
         [selectFieldInfo],
-        (fields) => fields.map(field => ({
-            key: field.name,
-            title: field.displayName,
-            name: field.name,
-            displayName: field.displayName,
-            uniqueColumnId: field.uniqueColumnId,
-            uniqueFieldId: field.uniqueFieldId,
-            dataType: field.dataType,
-            isRequired: field.isRequired,
-            maxLength: field.maxLength,
-            isArray: field.isArray,
-            defaultValue: field.defaultValue,
-            isPrimaryKey: field.isPrimaryKey,
-            isDisplayField: field.isDisplayField,
-            defaultGeneratorFunction: field.defaultGeneratorFunction,
-            validationFunctions: field.validationFunctions,
-            exclusionRules: field.exclusionRules,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
-            structure: field.structure,
-            isNative: field.isNative,
-            typeReference: field.typeReference,
-            enumValues: field.enumValues,
-            entityName: field.entityName,
-            databaseTable: field.databaseTable,
-            foreignKeyReference: field.foreignKeyReference,
-            description: field.description,
-        }))
+        (fields) => {
+            if (!fields?.length) return [];
+
+            return fields.map(field => ({
+                ...field,
+                key: field.name,
+                title: field.displayName
+            }));
+        }
     );
 
 
@@ -623,7 +577,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-// Filtered and paginated data combined
+    // Filtered and paginated data combined
     const selectCurrentPageFiltered = createSelector(
         [selectFilteredRecords, selectPaginationInfo],
         (filteredRecords, pagination) => {
@@ -633,7 +587,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-// Record with display values resolved
+    // Record with display values resolved
     const selectRecordWithDisplay = createSelector(
         [
             selectEntity,
@@ -655,7 +609,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-// Quick access to important metadata combinations
+    // Quick access to important metadata combinations
     const selectMetadataSummary = createSelector(
         [selectEntityMetadata],
         (metadata) => ({
@@ -667,7 +621,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         })
     );
 
-// Cache and loading state combined
+    // Cache and loading state combined
     const selectDataState = createSelector(
         [selectLoadingState, selectIsStale, selectHasUnsavedChanges, selectOperationMode],
         (loading, isStale, hasUnsavedChanges, operationMode) => ({
@@ -682,7 +636,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         })
     );
 
-// Pagination with additional computed properties
+    // Pagination with additional computed properties
     const selectPaginationExtended = createSelector(
         [selectPaginationInfo, selectFilteredRecords],
         (pagination, filteredRecords) => ({
@@ -831,6 +785,101 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
+
+    const selectFieldMetadata = createSelector(
+        [selectFieldInfo, (_: RootState, fieldName: string) => fieldName],
+        (fields, fieldName) => fields.find(f => f.name === fieldName)
+    );
+
+    const selectRecord = createSelector(
+        [selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey],
+        (records, recordKey) => records[recordKey]
+    );
+
+    const selectEntityFieldDetails = createSelector(
+        [
+            selectFieldMetadata,
+            selectRecord,
+            (_: RootState, recordKey: MatrxRecordId, fieldName: string) => ({recordKey, fieldName})
+        ],
+        (fieldMetadata, record, {fieldName}) => {
+            if (!fieldMetadata) {
+                return null;
+            }
+
+            return {
+                ...fieldMetadata,
+                valueFromDb: record ? record[fieldName] : undefined
+            };
+        }
+    );
+
+    const selectFieldValue = createSelector(
+        [
+            (state: RootState, recordKey: MatrxRecordId, _fieldName: string) => selectRecord(state, recordKey),
+            (_: RootState, _recordKey: MatrxRecordId, fieldName: string) => fieldName
+        ],
+        (record, fieldName) => record ? record[fieldName] : undefined
+    );
+
+
+    const selectFieldIdentifiers = createSelector(
+        [selectFieldInfo],
+        (fields) => fields.map(field => {
+            console.log("field: ", field);
+            console.log("uniqueFieldId: ", field.uniqueFieldId);
+            const parts = field.uniqueFieldId.split(':');
+
+            return {
+                uniqueFieldId: field.uniqueFieldId,
+                entityName: parts[1] || '',
+                fieldName: parts[2] || ''
+            };
+        })
+    );
+
+    const selectFieldIdentifiersByName = createSelector(
+        [selectFieldIdentifiers, (_: RootState, fieldName: string) => fieldName],
+        (identifiers, fieldName) => identifiers.find(id => id.fieldName === fieldName)
+    );
+
+
+    const selectEntityOperationMode = createSelector(
+        [selectEntityFlags],
+        (flags): EntityOperationMode | undefined => flags?.operationMode
+    );
+
+
+    const selectEntityStatus = createSelector(
+        [selectLoadingState],
+        (loadingState): EntityStatus => {
+            if (!loadingState?.initialized) return 'initialized';
+            if (loadingState.error) return 'error';
+            if (loadingState.loading) return 'loading';
+            return 'other';
+        }
+    );
+
+
+    const selectFieldGroups = createSelector(
+        [selectFieldInfo],
+        (fields) => ({
+            nativeFields: fields.filter(field => field.isNative),
+            relationshipFields: fields.filter(field => !field.isNative)
+        })
+    );
+
+    const selectNativeFields = createSelector(
+        [selectFieldGroups],
+        (groups) => groups.nativeFields
+    );
+
+    const selectRelationshipFields = createSelector(
+        [selectFieldGroups],
+        (groups) => groups.relationshipFields
+    );
+
+
     return {
         selectEntity,
         selectAllRecords,
@@ -921,6 +970,27 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectChangeComparison,
         selectPendingOperations,
         selectEffectiveRecordOrDefaults,
+
+
+        selectFieldValueByRecordKey,
+
+        selectFieldMetadata,
+        selectRecord,
+        selectEntityFieldDetails,
+
+        selectFieldNames,
+
+        selectFieldIdentifiers,
+        selectFieldIdentifiersByName,
+        selectEntityOperationMode,
+        selectEntityStatus,
+
+        selectFieldValue,
+
+        selectFieldGroups,
+        selectNativeFields,
+        selectRelationshipFields,
+
 
     };
 };

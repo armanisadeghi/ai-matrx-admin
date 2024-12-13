@@ -1,7 +1,4 @@
-import { MessageState } from '@/redux/features/aiChats/messageSlice';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { ChatType, ChatDetailsType, MessageType } from '@/types';
-import { fetchUserChats, createChatStartEntry } from '@/utils/supabase/chatDb';
 import { v4 as uuidv4 } from 'uuid';
 
 

@@ -1,4 +1,3 @@
-// components/common/crud/SmartCrudWrapper.tsx
 import {EntityKeys} from "@/types/entityTypes";
 import {ReactNode} from "react";
 import SmartNewButton from "./SmartNewButton";
@@ -6,6 +5,7 @@ import SmartEditButton from "./SmartEditButton";
 import SmartSaveButton from "./SmartSaveButton";
 import SmartCancelButton from "./SmartCancelButton";
 import SmartDeleteButton from "./SmartDeleteButton";
+import LoadingButtonGroup from "@/components/ui/loaders/loading-button-group";
 import {cn} from "@/lib/utils";
 import {ComponentDensity, ComponentSize} from "@/types/componentConfigTypes";
 
@@ -82,28 +82,51 @@ export const SmartCrudWrapper = (
         </>
     );
 
-    const ButtonContainer = () => (
-        <div className="@container">
+    const space = () => {
+        const baseSpace = layout.buttonSpacing === 'compact' ? 1
+         : layout.buttonSpacing === 'comfortable' ? 4
+                                                  : 2;
+
+        return {
+            padding: baseSpace,
+            gap: Math.max(baseSpace, 3)
+        };
+    };
+
+    const ButtonContainer = () => {
+        const spacing = space();
+
+        return (
             <div className={cn(
-                "flex flex-wrap",
-                layout.buttonLayout === 'column' ? "flex-col" : "flex-row",
-                layout.buttonSpacing === 'compact' ? "gap-1" :
-                layout.buttonSpacing === 'comfortable' ? "gap-4" : "gap-2",
-                "@[400px]:hidden"
+                '@container',
+                `p-${spacing.padding}`,
+                'touch-none' // Prevents unwanted touch events between buttons
             )}>
-                {getButtonsWithProps(false)}
+                <LoadingButtonGroup
+                    className={cn(
+                        layout.buttonLayout === 'column' && "flex-col",
+                        "@[400px]:hidden",
+                        // Apply different gaps based on screen size
+                        "sm:gap-2", // Default gap for larger screens
+                        "@container (min-width: 400px):gap-2" // Default gap for container queries
+                    )}
+                    gap={spacing.gap} // Base gap (minimum 3 for touch)
+                >
+                    {getButtonsWithProps(false)}
+                </LoadingButtonGroup>
+                <LoadingButtonGroup
+                    className={cn(
+                        "hidden",
+                        layout.buttonLayout === 'column' && "flex-col",
+                        "@container (max-width: 400px):flex"
+                    )}
+                    gap={spacing.gap} // Base gap (minimum 3 for touch)
+                >
+                    {getButtonsWithProps(true)}
+                </LoadingButtonGroup>
             </div>
-            <div className={cn(
-                "hidden flex-wrap",
-                layout.buttonLayout === 'column' ? "flex-col" : "flex-row",
-                layout.buttonSpacing === 'compact' ? "gap-1" :
-                layout.buttonSpacing === 'comfortable' ? "gap-4" : "gap-2",
-                "@container (max-width: 400px):flex"
-            )}>
-                {getButtonsWithProps(true)}
-            </div>
-        </div>
-    );
+        );
+    };
 
     if (!children) {
         return <ButtonContainer/>;

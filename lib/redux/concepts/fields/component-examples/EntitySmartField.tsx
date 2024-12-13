@@ -34,7 +34,7 @@ export const EntitySmartField: React.FC<SmartComponentProps> = (
     );
 
     const valueFromGlobalState = useAppSelector((state) =>
-        selectors.selectFieldByKey(state, matrxRecordId, fieldInfo.name)
+        selectors.selectFieldValueByKey(state, matrxRecordId, fieldInfo.name)
     );
 
     const localValue = useAppSelector(state =>
