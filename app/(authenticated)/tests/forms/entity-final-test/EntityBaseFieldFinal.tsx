@@ -1,7 +1,6 @@
 'use client';
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {ENTITY_FIELD_COMPONENTS} from '@/components/matrx/ArmaniForm/field-components';
+import React, {useCallback, useMemo, useState, useEffect} from 'react';
 import {EntityKeys} from "@/types/entityTypes";
 import {EntityStateField, EntityStatus, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {noErrors} from '@/utils';
@@ -13,8 +12,8 @@ import {
     useAppDispatch,
     useAppSelector,
 } from "@/lib/redux";
-import FormFieldMotionWrapperFinal
-    from "@/app/(authenticated)/tests/forms/entity-final-test/FormFieldMotionWrapperFinal";
+import FormFieldMotionWrapperFinal from "./FormFieldMotionWrapperFinal";
+import {ENTITY_FIELD_COMPONENTS_FINAL} from "./component-lookup";
 
 export interface EntityBaseFieldFinalProps {
     entityKey: EntityKeys;
@@ -77,7 +76,7 @@ const StaticFieldConfig = React.memo(({
         noErrors(fieldMetadata?.defaultComponent, 'INPUT', ['INPUT', 'TEXTAREA'])
     , [fieldMetadata]);
 
-    const Component = ENTITY_FIELD_COMPONENTS[safeComponent];
+    const Component = ENTITY_FIELD_COMPONENTS_FINAL[safeComponent];
 
     const styleConfig = useMemo(() => ({
         density: unifiedLayoutProps?.dynamicStyleOptions?.density || 'normal',
@@ -89,8 +88,33 @@ const StaticFieldConfig = React.memo(({
 
     if (!fieldMetadata) return null;
 
-    return <>{children({ Component, fieldMetadata, styleConfig })}</>;
+    return <>{children({Component, fieldMetadata, styleConfig})}</>;
 });
+
+const useFieldValue = (
+    selectors: ReturnType<typeof createEntitySelectors>,
+    recordId: MatrxRecordId | null,
+    fieldName: string,
+    fieldMetadata: EntityStateField
+) => {
+    const databaseValue = useAppSelector(
+        state => recordId ? selectors.selectFieldValue(state, recordId, fieldName) : undefined
+    );
+
+    const [currentValue, setCurrentValue] = useState<unknown>(
+        databaseValue ?? fieldMetadata?.defaultValue ?? ''
+    );
+
+    useEffect(() => {
+        if (databaseValue !== undefined) {
+            setCurrentValue(databaseValue);
+        } else if (currentValue === undefined) {
+            setCurrentValue(fieldMetadata?.defaultValue ?? '');
+        }
+    }, [databaseValue, fieldMetadata?.defaultValue]);
+
+    return [currentValue, setCurrentValue] as const;
+};
 
 const EntityBaseFieldFinal = ({
     entityKey,
@@ -104,48 +128,51 @@ const EntityBaseFieldFinal = ({
     const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
 
-    const databaseValue = useAppSelector(
-        state => recordId ? selectors.selectFieldValue(state, recordId, fieldName) : undefined
-    );
-
-    const [currentValue, setCurrentValue] = useState(databaseValue ?? undefined);
-
-    const onChange = useCallback((newValue: unknown) => {
-        setCurrentValue(newValue);
-        if (recordId) {
-            dispatch(actions.updateUnsavedField({
-                recordId,
-                field: fieldName,
-                value: newValue
-            }));
-        }
-    }, [dispatch, actions, recordId, fieldName]);
-
     return (
         <StaticFieldConfig
             entityKey={entityKey}
             fieldName={fieldName}
             unifiedLayoutProps={unifiedLayoutProps}
         >
-            {({ Component, fieldMetadata, styleConfig }) => (
-                <FieldStatusWrapper entityStatus={entityStatus}>
-                    {(isDisabled) => (
-                        <FormFieldMotionWrapperFinal
-                            unifiedLayoutProps={unifiedLayoutProps}
-                            className={className}
-                        >
-                            <Component
-                                entityKey={entityKey}
-                                dynamicFieldInfo={fieldMetadata}
-                                value={currentValue}
-                                onChange={onChange}
-                                disabled={isDisabled}
-                                {...styleConfig}
-                            />
-                        </FormFieldMotionWrapperFinal>
-                    )}
-                </FieldStatusWrapper>
-            )}
+            {({Component, fieldMetadata, styleConfig}) => {
+                const [currentValue, setCurrentValue] = useFieldValue(
+                    selectors,
+                    recordId,
+                    fieldName,
+                    fieldMetadata
+                );
+
+                const onChange = useCallback((newValue: unknown) => {
+                    setCurrentValue(newValue);
+                    if (recordId) {
+                        dispatch(actions.updateUnsavedField({
+                            recordId,
+                            field: fieldName,
+                            value: newValue
+                        }));
+                    }
+                }, [dispatch, actions, recordId, fieldName]);
+
+                return (
+                    <FieldStatusWrapper entityStatus={entityStatus}>
+                        {(isDisabled) => (
+                            <FormFieldMotionWrapperFinal
+                                unifiedLayoutProps={unifiedLayoutProps}
+                                className={className}
+                            >
+                                <Component
+                                    entityKey={entityKey}
+                                    dynamicFieldInfo={fieldMetadata}
+                                    value={currentValue}
+                                    onChange={onChange}
+                                    disabled={isDisabled}
+                                    {...styleConfig}
+                                />
+                            </FormFieldMotionWrapperFinal>
+                        )}
+                    </FieldStatusWrapper>
+                );
+            }}
         </StaticFieldConfig>
     );
 };

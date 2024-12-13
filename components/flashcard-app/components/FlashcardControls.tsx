@@ -8,6 +8,8 @@ import AudioModal from '@/app/(authenticated)/flash-cards/audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
 import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
 import { useWindowSize } from "@uidotdev/usehooks";
+import {introOutroText} from '@/app/(authenticated)/flashcard/app-data';
+
 
 const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
     const {
@@ -35,6 +37,16 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
 
     const { width } = useWindowSize();
     const isMobile = width ? width < 640 : false;
+
+    const introText = introOutroText.introText;
+    const outroText = introOutroText.outroText;
+
+    const [modalText, setModalText] = React.useState("");
+
+    const handleOpenAudioModalWithText = (text: string) => {
+        setModalText(text);
+        openAudioModal();
+    };
 
     return (
         <div className="w-full flex flex-col space-y-2">
@@ -77,6 +89,20 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
                 </Select>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
+                <Button
+                    onClick={() => handleOpenAudioModalWithText(introText)}
+                    variant="outline"
+                    className="w-full hover:scale-105 transition-transform bg-card"
+                >
+                    Intro
+                </Button>
+                <Button
+                    onClick={() => handleOpenAudioModalWithText(outroText)}
+                    variant="outline"
+                    className="w-full hover:scale-105 transition-transform bg-card"
+                >
+                    Outro
+                </Button>
                 <Button
                     onClick={openAudioModal}
                     variant="outline"
@@ -145,7 +171,7 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
                     <AudioModal
                         isOpen={isAudioModalOpen}
                         onClose={closeAudioModal}
-                        text={activeFlashcard.audioExplanation || ''}
+                        text={modalText || activeFlashcard.audioExplanation || ''}
                     />
                     <AiChatModal
                         isOpen={isAiModalOpen}

@@ -35,8 +35,8 @@ export const SmartInput: React.FC<SmartComponentProps> = (
         [entityKey]
     );
 
-    const valueFromGlobalState = useAppSelector((state) =>
-        selectors.selectFieldValueByKey(state, matrxRecordId, fieldInfo.name)
+    const valueFromGlobalState = useAppSelector(
+        state => matrxRecordId ? selectors.selectFieldValue(state, matrxRecordId, fieldInfo.name) : undefined
     );
 
     const localValue = useAppSelector(state =>

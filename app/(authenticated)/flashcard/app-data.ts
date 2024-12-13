@@ -2754,6 +2754,49 @@ export const flashcardSets = {
     americasBlueprint,
 };
 
+export const introOutroText = {
+    introText: `Hey there! Before we dive into our flashcards about the Constitution and American government, let's have a friendly chat about how all these pieces fit together. I promise this will make everything easier to understand!
+
+Imagine you're starting a brand new country - exciting, right? But also pretty scary. That's exactly what America faced after winning independence from Britain. They first tried something called the Articles of Confederation - think of it as their first draft at running a country. It did some good things, like helping win the Revolutionary War and organizing new territories, but it had some big problems. The government was super weak - it couldn't collect taxes, enforce laws, or even stop states from fighting with each other. It was like having a referee with no whistle!
+
+So, our founders decided to start fresh with the Constitution. But here's where it gets interesting - they got some of their ideas from a really old document called the Magna Carta, which first said that even kings have to follow rules. Cool, right?
+
+When they wrote the Constitution, they came up with some clever ideas. They split power three ways - Congress makes laws, the President enforces them, and the Supreme Court makes sure they're fair. It's like rock, paper, scissors - each one can check the others' power! They also made Congress bicameral - that means two parts, with big states and small states both getting a fair say.
+
+Now, not everyone agreed with this new plan. The Federalists (led by people like Hamilton) said "Yes! We need a strong central government!" while the Anti-federalists (like Jefferson) worried about too much power in one place. They had a big debate about it, and the Federalists even wrote 85 essays (the Federalist Papers) explaining why the Constitution was a good idea.
+
+The Constitution starts with the Preamble - think of it as America's mission statement - talking about justice, liberty, and working together. Then it has seven main parts (Articles) that explain how everything works. It's built on seven big ideas, including really important ones like popular sovereignty (which means the power comes from the people - that's you!) and individual rights.
+
+Speaking of rights, being a citizen is super important. You can become one by being born here, having citizen parents, or going through a process called naturalization. Citizens get awesome rights like voting but also have responsibilities like following laws and paying taxes.
+
+Here's the really cool part - everything in the Constitution connects! The three branches work together, the states and federal government share power, and everyone - from the President to regular citizens - has to follow the same rules. Even when they disagreed about things (like the controversial Three-Fifths Compromise about counting enslaved people), they found ways to make decisions, even if they weren't always the right ones.
+
+Remember, the Constitution isn't just some old document - it's like an instruction manual for freedom that's still working today! As you go through these flashcards, try to think about how each piece helps make our government work.
+
+Ready to dive in? Let's start learning the details! And remember, every time you see that 'I'm confused' button, I'm here to help explain things in a different way. You've got this!`,
+    outroText: `Alright, let's wrap up everything we've learned about the Constitution and American government with one final, powerful review!
+
+The Constitution replaced the weak Articles of Confederation, transforming thirteen struggling states into one united nation. While the Articles helped win independence and create the Northwest Ordinance, its weaknesses - no taxation power, no enforcement authority, and no unified trade system - made it clear America needed something stronger.
+
+The Constitution established three distinct branches: Legislative (Congress) making laws, Executive (President) enforcing them, and Judicial (Supreme Court) interpreting them. This separation of powers, combined with checks and balances, prevents any branch from becoming too powerful.
+
+Congress is bicameral, meaning two houses: the population-based House of Representatives and the state-equal Senate. The Great Compromise made this possible, just as the Three-Fifths Compromise (though morally wrong) resolved representation issues regarding enslaved people.
+
+The Constitution's seven core principles - popular sovereignty, republicanism, federalism, separation of powers, checks and balances, limited government, and individual rights - were influenced by the Magna Carta's revolutionary idea of limiting governmental power.
+
+The Federalists, led by Hamilton, fought for ratification through the Federalist Papers, while Anti-federalists demanded a Bill of Rights to protect individual liberties. Their debate shaped our nation.
+
+The Preamble's six goals remain our nation's mission: forming a more perfect union, establishing justice, ensuring domestic tranquility, providing common defense, promoting general welfare, and securing liberty's blessings.
+
+The seven Articles outline our governmental structure, state relationships, amendment process, federal supremacy, and ratification requirements. This framework defines American citizenship, which can be acquired through birth, parentage, or naturalization, carrying both rights and responsibilities.
+
+Remember: The Constitution isn't just history - it's a living document that continues to guide our democracy. Every citizen, whether natural-born or naturalized, plays a crucial role in upholding its principles and protecting its promises for future generations.
+
+This is your heritage. This is your government. This is your Constitution.
+
+Test time? You're ready!`
+};
+
 
 export const getFlashcardSet = (name: string) => {
     return flashcardSets[name as keyof typeof flashcardSets];

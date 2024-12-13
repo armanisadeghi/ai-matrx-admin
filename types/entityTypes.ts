@@ -3,7 +3,7 @@
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 import {DataStructure, FetchStrategy, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 
-type TypeBrand<T> = { _typeBrand: T };
+export type TypeBrand<T> = { _typeBrand: T };
 export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 
 
