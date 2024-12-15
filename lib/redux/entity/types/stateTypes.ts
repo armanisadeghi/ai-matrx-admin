@@ -9,7 +9,7 @@ import {
     AllEntityFieldKeys,
     AnyEntityDatabaseTable,
     Relationship,
-    AutomationEntity, ForeignKeyReference
+    AutomationEntity, ForeignKeyReference, AllEntityNameVariations, AnyDatabaseColumnForEntity
 } from "@/types/entityTypes";
 import {TypeBrand} from "@/utils/schema/initialSchemas";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
@@ -314,6 +314,90 @@ export interface EntityOperationFlags {
     FETCH_ONE_WITH_FK_IFK_STATUS?: FlagStatusOptions;
     FETCHED_AS_RELATED_STATUS?: FlagStatusOptions;
     GET_OR_FETCH_RECORDS_STATUS?: FlagStatusOptions;
+}
+
+export interface FlexibleQueryOptions {
+    entityNameAnyFormat: AllEntityNameVariations;
+    callback?: string;
+    recordKeys?: MatrxRecordId[];
+    matrxRecordId?: MatrxRecordId;
+    tempRecordId?: MatrxRecordId;
+    filters?: Partial<Record<AllEntityFieldKeys, unknown>>;
+    sorts?: Array<{
+        column: AllEntityFieldKeys;
+        ascending?: boolean;
+        append?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    maxCount?: number;
+    columns?: AllEntityFieldKeys[];
+    data?: unknown | unknown[];
+    page?: number;
+    pageSize?: number;
+    callbackId?: string;
+}
+
+export interface UnifiedDatabaseObject {
+    entityName: EntityKeys;
+    tableName: AnyEntityDatabaseTable;
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    frontendPks: AllEntityFieldKeys[];
+    databasePks: string[];
+    frontendDisplayField: AllEntityFieldKeys;
+    databaseDisplayField: string;
+    recordKeys?: MatrxRecordId[];
+    parsedFrontendRecords?: Record<AllEntityFieldKeys, string>[];
+    parsedDatabaseRecords?: Record<string, string>[];
+    filters?: Partial<Record<string, unknown>>;
+    sorts?: Array<{
+        column: AllEntityFieldKeys;
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: string[];
+    data?: unknown | unknown[];
+    primaryKeysAndValues?: Record<string, any>;
+    entityNameAnyFormat: AllEntityNameVariations;
+    callback?: string;
+    maxCount?: number;
+    page?: number;
+    pageSize?: number;
+    callbackId?: string;
+    matrxRecordId?: MatrxRecordId;
+    tempRecordId?: MatrxRecordId;
+}
+
+export interface QueryOptionsReturn<TEntity extends EntityKeys> {
+    tableName: AnyEntityDatabaseTable;
+    recordKey?: MatrxRecordId;
+    filters?: Partial<Record<AnyDatabaseColumnForEntity<TEntity>, unknown>>;
+    sorts?: Array<{
+        column: AnyDatabaseColumnForEntity<TEntity>;
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: AnyDatabaseColumnForEntity<TEntity>[];
+    primaryKeyMetadata?: PrimaryKeyMetadata;
+    primaryKeyFields?: string[];
+}
+
+
+export interface QueryOptions<TEntity extends EntityKeys> {
+    tableName: AnyEntityDatabaseTable;
+    recordKey?: MatrxRecordId;
+    filters?: Partial<Record<AllEntityFieldKeys, unknown>>;
+    sorts?: Array<{
+        column: AllEntityFieldKeys;
+        ascending?: boolean;
+    }>;
+    limit?: number;
+    offset?: number;
+    columns?: AllEntityFieldKeys[];
+    primaryKeyMetadata?: PrimaryKeyMetadata;
+    primaryKeyFields?: string[];
 }
 
 export type EntityStatus = 'initialized' | 'error' | 'loading' | 'other';

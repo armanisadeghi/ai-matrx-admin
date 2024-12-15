@@ -55,6 +55,32 @@ function isValidSchemaField(field: unknown): field is EntityField<any, any> {
     );
 }
 
+const DEFAULT_FIELD_VALUES = {
+    displayName: (key: string) => key,
+    uniqueColumnId: (key: string) => key,
+    uniqueFieldId: (key: string) => key,
+    dataType: 'string',
+    isRequired: false,
+    maxLength: null,
+    isArray: false,
+    defaultValue: "",
+    isPrimaryKey: false,
+    isDisplayField: false,
+    defaultGeneratorFunction: null,
+    validationFunctions: null,
+    exclusionRules: null,
+    defaultComponent: 'INPUT',
+    componentProps: {
+        "subComponent": "default",
+    },
+    structure: 'single',
+    isNative: true,
+    typeReference: {} as TypeBrand<string>,
+    enumValues: null,
+    databaseTable: null,
+    foreignKeyReference: {},
+    description: "",
+} as const;
 
 /**
  * Simplified field extraction that maintains type safety
@@ -73,59 +99,21 @@ export function extractFieldsFromSchema<TEntity extends EntityKeys>(
             console.warn(`Field ${key} does not have expected structure`);
             return {
                 name: key as AllEntityFieldKeys,
-                displayName: key as AllEntityFieldKeys,
-                uniqueColumnId: key,
-                uniqueFieldId: key,
-                dataType: 'string',
-                isRequired: false,
-                maxLength: null,
-                isArray: false,
-                defaultValue: "",
-                isPrimaryKey: false,
-                isDisplayField: false,
-                defaultGeneratorFunction: null,
-                validationFunctions: null,
-                exclusionRules: null,
-                defaultComponent: 'INPUT',
-                componentProps: {
-                    "subComponent": "default",
-                },
-                structure: 'single',
-                isNative: true,
-                typeReference: {} as TypeBrand<string>,
-                enumValues: null,
-                entityName: entityKey as EntityKeys,
-                databaseTable: null,
-                foreignKeyReference: {},
-                description: "",
+                entityName: entityKey,
+                ...Object.fromEntries(
+                    Object.entries(DEFAULT_FIELD_VALUES).map(([key, value]) => [
+                        key,
+                        typeof value === 'function' ? value(key) : value
+                    ])
+                ),
             };
         }
 
         return {
             name: key as AllEntityFieldKeys,
             displayName: field.fieldNameFormats.pretty,
-            uniqueColumnId: field.uniqueColumnId,
-            uniqueFieldId: field.uniqueFieldId,
-            dataType: field.dataType,
-            isRequired: field.isRequired,
-            maxLength: field.maxLength,
-            isArray: field.isArray,
-            defaultValue: field.defaultValue,
-            isPrimaryKey: field.isPrimaryKey,
-            isDisplayField: field.isDisplayField,
-            defaultGeneratorFunction: field.defaultGeneratorFunction,
-            validationFunctions: field.validationFunctions,
-            exclusionRules: field.exclusionRules,
-            defaultComponent: field.defaultComponent,
-            componentProps: field.componentProps,
-            structure: field.structure,
-            isNative: field.isNative,
-            typeReference: field.typeReference,
-            enumValues: field.enumValues,
-            entityName: field.entityName,
-            databaseTable: field.databaseTable,
-            foreignKeyReference: field.foreignKeyReference,
-            description: field.description,
+            entityName: entityKey,
+            ...field,
         };
     });
 }

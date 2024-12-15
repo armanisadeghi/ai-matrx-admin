@@ -2302,7 +2302,7 @@ export const initialAutomationTableSchema = {
                 "id": null
             }
         },
-        displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
+        displayFieldMetadata: {fieldName: 'broker', databaseFieldName: 'broker'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "subComponent": "default",
@@ -2349,7 +2349,7 @@ export const initialAutomationTableSchema = {
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: true,
-                isDisplayField: true,
+                isDisplayField: false,
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
@@ -2473,7 +2473,7 @@ export const initialAutomationTableSchema = {
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: false,
-                isDisplayField: false,
+                isDisplayField: true,
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
@@ -5933,7 +5933,7 @@ export const initialAutomationTableSchema = {
                         },
                         {
                             "label": "Accordion View",
-                            "value": "ACCORDION_VIEW_ADD_EDIT"
+                            "value": "Accordion_View"
                         },
                         {
                             "label": "Accordion View Add Edit",
@@ -6048,8 +6048,8 @@ export const initialAutomationTableSchema = {
                 },
                 structure: 'single' as const,
                 isNative: true,
-                typeReference: {} as TypeBrand<"Accordion_Selected" | "ACCORDION_VIEW_ADD_EDIT" | "Accordion_View_Add_Edit" | "Button" | "Checkbox" | "Chip" | "Color_Picker" | "Date_Picker" | "Drawer" | "File_Upload" | "Image_Display" | "Input" | "Json_Editor" | "Menu" | "Number_Input" | "Phone_Input" | "Radio_Group" | "Relational_Button" | "Relational_Input" | "Search_Input" | "Select" | "Sheet" | "Slider" | "Star_Rating" | "Switch" | "Textarea" | "Time_Picker" | "UUID_Array" | "UUID_Field" | undefined>,
-                enumValues: ['Accordion_Selected', 'ACCORDION_VIEW_ADD_EDIT', 'Accordion_View_Add_Edit', 'Button', 'Checkbox', 'Chip', 'Color_Picker', 'Date_Picker', 'Drawer', 'File_Upload', 'Image_Display', 'Input', 'Json_Editor', 'Menu', 'Number_Input', 'Phone_Input', 'Radio_Group', 'Relational_Button', 'Relational_Input', 'Search_Input', 'Select', 'Sheet', 'Slider', 'Star_Rating', 'Switch', 'Textarea', 'Time_Picker', 'UUID_Array', 'UUID_Field'] as const,
+                typeReference: {} as TypeBrand<"Accordion_Selected" | "Accordion_View" | "Accordion_View_Add_Edit" | "Button" | "Checkbox" | "Chip" | "Color_Picker" | "Date_Picker" | "Drawer" | "File_Upload" | "Image_Display" | "Input" | "Json_Editor" | "Menu" | "Number_Input" | "Phone_Input" | "Radio_Group" | "Relational_Button" | "Relational_Input" | "Search_Input" | "Select" | "Sheet" | "Slider" | "Star_Rating" | "Switch" | "Textarea" | "Time_Picker" | "UUID_Array" | "UUID_Field" | undefined>,
+                enumValues: ['Accordion_Selected', 'Accordion_View', 'Accordion_View_Add_Edit', 'Button', 'Checkbox', 'Chip', 'Color_Picker', 'Date_Picker', 'Drawer', 'File_Upload', 'Image_Display', 'Input', 'Json_Editor', 'Menu', 'Number_Input', 'Phone_Input', 'Radio_Group', 'Relational_Button', 'Relational_Input', 'Search_Input', 'Select', 'Sheet', 'Slider', 'Star_Rating', 'Switch', 'Textarea', 'Time_Picker', 'UUID_Array', 'UUID_Field'] as const,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
                 foreignKeyReference: null,
@@ -7169,7 +7169,7 @@ export const initialAutomationTableSchema = {
                 "id": null
             }
         },
-        displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
+        displayFieldMetadata: {fieldName: 'subject', databaseFieldName: 'subject'},
         defaultFetchStrategy: 'simple',
         componentProps: {
             "subComponent": "default",
@@ -7216,7 +7216,7 @@ export const initialAutomationTableSchema = {
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: true,
-                isDisplayField: true,
+                isDisplayField: false,
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
@@ -7402,7 +7402,7 @@ export const initialAutomationTableSchema = {
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: false,
-                isDisplayField: false,
+                isDisplayField: true,
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],
@@ -12569,21 +12569,21 @@ export const initialAutomationTableSchema = {
                 foreignKeyReference: null,
                 description: '"Post Result Options" field for recipe. This is an optional field. Your entry must be an object data type.',
             },
-            recipeBrokerInverse: {
+            recipeDisplayInverse: {
                 fieldNameFormats: {
-                    "frontend": "recipeBrokerInverse",
-                    "backend": "recipe_broker_Inverse",
-                    "database": "ifk_recipe_broker",
-                    "pretty": "Recipe Broker Inverse",
-                    "component": "RecipeBrokerInverse",
-                    "kebab": "recipe-brokerInverse",
-                    "sqlFunctionRef": "p_ifk_recipe_broker",
-                    "RestAPI": "recipeBrokerInverse",
-                    "GraphQL": "recipeBrokerInverse",
-                    "custom": "recipeBrokerInverse"
+                    "frontend": "recipeDisplayInverse",
+                    "backend": "recipe_display_Inverse",
+                    "database": "ifk_recipe_display",
+                    "pretty": "Recipe Display Inverse",
+                    "component": "RecipeDisplayInverse",
+                    "kebab": "recipe-displayInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_display",
+                    "RestAPI": "recipeDisplayInverse",
+                    "GraphQL": "recipeDisplayInverse",
+                    "custom": "recipeDisplayInverse"
                 } as const,
-                uniqueTableId: 'supabase_automation_matrix:recipe_broker',
-                uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
+                uniqueTableId: 'supabase_automation_matrix:recipe_display',
+                uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12596,9 +12596,9 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
                 structure: 'inverseForeignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
-                entityName: 'recipeBroker',
-                databaseTable: 'recipe_broker',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
+                entityName: 'recipeDisplay',
+                databaseTable: 'recipe_display',
             },
             recipeProcessorInverse: {
                 fieldNameFormats: {
@@ -12662,21 +12662,21 @@ export const initialAutomationTableSchema = {
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
             },
-            recipeDisplayInverse: {
+            recipeBrokerInverse: {
                 fieldNameFormats: {
-                    "frontend": "recipeDisplayInverse",
-                    "backend": "recipe_display_Inverse",
-                    "database": "ifk_recipe_display",
-                    "pretty": "Recipe Display Inverse",
-                    "component": "RecipeDisplayInverse",
-                    "kebab": "recipe-displayInverse",
-                    "sqlFunctionRef": "p_ifk_recipe_display",
-                    "RestAPI": "recipeDisplayInverse",
-                    "GraphQL": "recipeDisplayInverse",
-                    "custom": "recipeDisplayInverse"
+                    "frontend": "recipeBrokerInverse",
+                    "backend": "recipe_broker_Inverse",
+                    "database": "ifk_recipe_broker",
+                    "pretty": "Recipe Broker Inverse",
+                    "component": "RecipeBrokerInverse",
+                    "kebab": "recipe-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_broker",
+                    "RestAPI": "recipeBrokerInverse",
+                    "GraphQL": "recipeBrokerInverse",
+                    "custom": "recipeBrokerInverse"
                 } as const,
-                uniqueTableId: 'supabase_automation_matrix:recipe_display',
-                uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
+                uniqueTableId: 'supabase_automation_matrix:recipe_broker',
+                uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -12689,40 +12689,9 @@ export const initialAutomationTableSchema = {
                 defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
                 structure: 'inverseForeignKey' as const,
                 isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeDisplay'][]>,
-                entityName: 'recipeDisplay',
-                databaseTable: 'recipe_display',
-            },
-            recipeFunctionInverse: {
-                fieldNameFormats: {
-                    "frontend": "recipeFunctionInverse",
-                    "backend": "recipe_function_Inverse",
-                    "database": "ifk_recipe_function",
-                    "pretty": "Recipe Function Inverse",
-                    "component": "RecipeFunctionInverse",
-                    "kebab": "recipe-functionInverse",
-                    "sqlFunctionRef": "p_ifk_recipe_function",
-                    "RestAPI": "recipeFunctionInverse",
-                    "GraphQL": "recipeFunctionInverse",
-                    "custom": "recipeFunctionInverse"
-                } as const,
-                uniqueTableId: 'supabase_automation_matrix:recipe_function',
-                uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
-                dataType: 'object' as const,
-                isRequired: false,
-                maxLength: null,
-                isArray: true,
-                defaultValue: [],
-                isPrimaryKey: false,
-                defaultGeneratorFunction: null,
-                validationFunctions: ['isValidDatabaseEntry'],
-                exclusionRules: ['notCoreField'],
-                defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
-                structure: 'inverseForeignKey' as const,
-                isNative: false,
-                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
-                entityName: 'recipeFunction',
-                databaseTable: 'recipe_function',
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeBroker'][]>,
+                entityName: 'recipeBroker',
+                databaseTable: 'recipe_broker',
             },
             recipeToolInverse: {
                 fieldNameFormats: {
@@ -12755,6 +12724,37 @@ export const initialAutomationTableSchema = {
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
             },
+            recipeFunctionInverse: {
+                fieldNameFormats: {
+                    "frontend": "recipeFunctionInverse",
+                    "backend": "recipe_function_Inverse",
+                    "database": "ifk_recipe_function",
+                    "pretty": "Recipe Function Inverse",
+                    "component": "RecipeFunctionInverse",
+                    "kebab": "recipe-functionInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_function",
+                    "RestAPI": "recipeFunctionInverse",
+                    "GraphQL": "recipeFunctionInverse",
+                    "custom": "recipeFunctionInverse"
+                } as const,
+                uniqueTableId: 'supabase_automation_matrix:recipe_function',
+                uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
+                dataType: 'object' as const,
+                isRequired: false,
+                maxLength: null,
+                isArray: true,
+                defaultValue: [],
+                isPrimaryKey: false,
+                defaultGeneratorFunction: null,
+                validationFunctions: ['isValidDatabaseEntry'],
+                exclusionRules: ['notCoreField'],
+                defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+                structure: 'inverseForeignKey' as const,
+                isNative: false,
+                typeReference: {} as TypeBrand<TableSchemaStructure['recipeFunction'][]>,
+                entityName: 'recipeFunction',
+                databaseTable: 'recipe_function',
+            },
         },
         entityNameFormats: {
             "frontend": "recipe",
@@ -12772,7 +12772,7 @@ export const initialAutomationTableSchema = {
             {
                 relationshipType: 'inverseForeignKey',
                 column: 'id',
-                relatedTable: 'recipe_broker',
+                relatedTable: 'recipe_display',
                 relatedColumn: 'recipe',
                 junctionTable: null
             },
@@ -12793,14 +12793,7 @@ export const initialAutomationTableSchema = {
             {
                 relationshipType: 'inverseForeignKey',
                 column: 'id',
-                relatedTable: 'recipe_display',
-                relatedColumn: 'recipe',
-                junctionTable: null
-            },
-            {
-                relationshipType: 'inverseForeignKey',
-                column: 'id',
-                relatedTable: 'recipe_function',
+                relatedTable: 'recipe_broker',
                 relatedColumn: 'recipe',
                 junctionTable: null
             },
@@ -12808,6 +12801,13 @@ export const initialAutomationTableSchema = {
                 relationshipType: 'inverseForeignKey',
                 column: 'id',
                 relatedTable: 'recipe_tool',
+                relatedColumn: 'recipe',
+                junctionTable: null
+            },
+            {
+                relationshipType: 'inverseForeignKey',
+                column: 'id',
+                relatedTable: 'recipe_function',
                 relatedColumn: 'recipe',
                 junctionTable: null
             },
@@ -12872,7 +12872,7 @@ export const initialAutomationTableSchema = {
                 "id": null
             }
         },
-        displayFieldMetadata: {fieldName: 'id', databaseFieldName: 'id'},
+        displayFieldMetadata: {fieldName: 'broker', databaseFieldName: 'broker'},
         defaultFetchStrategy: 'm2mAndFk',
         componentProps: {
             "subComponent": "default",
@@ -12919,7 +12919,7 @@ export const initialAutomationTableSchema = {
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: true,
-                isDisplayField: true,
+                isDisplayField: false,
                 defaultGeneratorFunction: "getUUID()",
                 validationFunctions: [],
                 exclusionRules: [],
@@ -13043,7 +13043,7 @@ export const initialAutomationTableSchema = {
                 isArray: false,
                 defaultValue: "" as const,
                 isPrimaryKey: false,
-                isDisplayField: false,
+                isDisplayField: true,
                 defaultGeneratorFunction: "",
                 validationFunctions: [],
                 exclusionRules: [],

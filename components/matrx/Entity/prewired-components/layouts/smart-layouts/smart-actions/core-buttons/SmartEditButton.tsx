@@ -1,16 +1,16 @@
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
 import { useCallback } from "react";
-import SmartButtonBase from "./SmartButtonBase";
 import { Edit2 } from "lucide-react";
-import {SmartButtonProps} from "./types";
+import SmartButtonBase from "./SmartButtonBase";
+import {SmartButtonProps} from "../types";
 
 
 export const SmartEditButton = ({ entityKey, size = 'default' }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
-    const { operationMode, startUpdateMode, selection } = entityCrud;
+    const { operationMode, startUpdateMode, activeRecordId, selectedRecordIds } = entityCrud;
 
     const isDisabled = operationMode !== 'view' ||
-        (!selection.activeRecordId && selection.selectedRecordIds.length === 0);
+        (!activeRecordId && selectedRecordIds.length === 0);
 
     const handleEdit = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

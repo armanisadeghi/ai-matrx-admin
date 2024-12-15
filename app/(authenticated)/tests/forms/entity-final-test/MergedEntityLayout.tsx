@@ -19,10 +19,11 @@ const LeftColumn: React.FC<{
     availableHeight: number;
     unifiedLayoutProps: UnifiedLayoutProps;
 }> = ({selectedEntity, onEntityChange, updateKey, availableHeight, unifiedLayoutProps}) => (
-    <div className="w-[250px] border-r border-border" style={{height: availableHeight}}>
+    <div className="w-[320px] border-r border-border" style={{height: availableHeight}}>
         <ScrollArea className="h-full">
             <div className="flex flex-col">
                 <EntitySelection
+                    key={`selection-${updateKey}`}
                     selectedEntity={selectedEntity}
                     onEntityChange={onEntityChange}
                     layout="sideBySide"
@@ -30,7 +31,7 @@ const LeftColumn: React.FC<{
                 {selectedEntity && (
                     <div className="flex-1">
                         <QuickReferenceFinal
-                            key={`${selectedEntity}-${updateKey}`}
+                            key={`quickref-${selectedEntity}-${updateKey}`}
                             entityKey={selectedEntity}
                             smartCrudProps={unifiedLayoutProps.dynamicLayoutOptions.componentOptions.quickReferenceCrudWrapperProps}
                         />
@@ -45,17 +46,21 @@ const RightColumn: React.FC<{
     selectedEntity: EntityKeys | null;
     unifiedLayoutProps: UnifiedLayoutProps;
     availableHeight: number;
-}> = ({selectedEntity, unifiedLayoutProps, availableHeight}) => (
+    updateKey: number;
+}> = ({selectedEntity, unifiedLayoutProps, availableHeight, updateKey}) => (
     selectedEntity ? (
         <div
             className="flex-1"
-            style={{height: availableHeight,}}
+            style={{height: availableHeight}}
         >
             <ScrollArea
                 className="h-full"
             >
                 <div>
-                    <ArmaniFormFinal {...unifiedLayoutProps} />
+                    <ArmaniFormFinal
+                        key={`form-${selectedEntity}-${updateKey}`}
+                        {...unifiedLayoutProps}
+                    />
                 </div>
             </ScrollArea>
         </div>
@@ -92,27 +97,22 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
         return () => window.removeEventListener('resize', calculateHeight);
     }, [windowSize.height]);
 
-    useEffect(() => {
-        setUpdateKey((prev) => prev + 1);
-    }, [layoutState.selectedEntity]);
-
     const handleEntityChange = (value: EntityKeys) => {
         layoutState.selectedEntity = value;
         setUpdateKey((prev) => prev + 1);
+        if (props.handlers?.handleEntityChange) {
+            props.handlers.handleEntityChange(value);
+        }
     };
 
     const modifiedProps: UnifiedLayoutProps = {
         ...props,
         handlers: {
-            ...props.handlers, // Preserve existing handlers
+            ...props.handlers,
             handleEntityChange,
-            onCreateEntityClick: () => {
-                layoutState.selectedEntity = null;
-                setUpdateKey((prev) => prev + 1);
-            },
         },
         layoutState: {
-            ...layoutState, // Ensure the full layoutState is propagated
+            ...layoutState,
         },
     };
 
@@ -130,6 +130,7 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
                     selectedEntity={selectedEntity}
                     unifiedLayoutProps={modifiedProps}
                     availableHeight={availableHeight}
+                    updateKey={updateKey}
                 />
             </div>
         </div>

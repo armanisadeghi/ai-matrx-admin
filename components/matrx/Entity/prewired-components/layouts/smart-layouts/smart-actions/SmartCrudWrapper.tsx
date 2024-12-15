@@ -1,10 +1,11 @@
 import {EntityKeys} from "@/types/entityTypes";
 import {ReactNode} from "react";
-import SmartNewButton from "./SmartNewButton";
-import SmartEditButton from "./SmartEditButton";
-import SmartSaveButton from "./SmartSaveButton";
-import SmartCancelButton from "./SmartCancelButton";
-import SmartDeleteButton from "./SmartDeleteButton";
+import SmartNewButton from "./core-buttons/SmartNewButton";
+import SmartEditButton from "./core-buttons/SmartEditButton";
+import SmartSaveButton from "./core-buttons/SmartSaveButton";
+import SmartCancelButton from "./core-buttons/SmartCancelButton";
+import SmartDeleteButton from "./core-buttons/SmartDeleteButton";
+import SmartRefreshButton from "./core-buttons/SmartRefreshButton";
 import LoadingButtonGroup from "@/components/ui/loaders/loading-button-group";
 import {cn} from "@/lib/utils";
 import {ComponentDensity, ComponentSize} from "@/types/componentConfigTypes";
@@ -16,6 +17,7 @@ export interface SmartCrudWrapperProps {
         allowCreate?: boolean;
         allowEdit?: boolean;
         allowDelete?: boolean;
+        allowRefresh?: boolean;
         showConfirmation?: boolean;
     };
     layout?: {
@@ -35,6 +37,7 @@ export const SmartCrudWrapper = (
             allowCreate: true,
             allowEdit: true,
             allowDelete: true,
+            allowRefresh: true,
             showConfirmation: true
         },
         layout = {
@@ -79,13 +82,21 @@ export const SmartCrudWrapper = (
                     hideText={hideText}
                 />
             )}
+            {options.allowRefresh && (
+                <SmartRefreshButton
+                    entityKey={entityKey}
+                    size={hideText ? 'icon' : layout.buttonSize}
+                    hideText={hideText}
+                />
+            )}
         </>
     );
 
+    // Rest of the component remains the same...
     const space = () => {
         const baseSpace = layout.buttonSpacing === 'compact' ? 1
-         : layout.buttonSpacing === 'comfortable' ? 4
-                                                  : 2;
+                                                             : layout.buttonSpacing === 'comfortable' ? 4
+                                                                                                      : 2;
 
         return {
             padding: baseSpace,
@@ -100,17 +111,16 @@ export const SmartCrudWrapper = (
             <div className={cn(
                 '@container',
                 `p-${spacing.padding}`,
-                'touch-none' // Prevents unwanted touch events between buttons
+                'touch-none'
             )}>
                 <LoadingButtonGroup
                     className={cn(
                         layout.buttonLayout === 'column' && "flex-col",
                         "@[400px]:hidden",
-                        // Apply different gaps based on screen size
-                        "sm:gap-2", // Default gap for larger screens
-                        "@container (min-width: 400px):gap-2" // Default gap for container queries
+                        "sm:gap-2",
+                        "@container (min-width: 400px):gap-2"
                     )}
-                    gap={spacing.gap} // Base gap (minimum 3 for touch)
+                    gap={spacing.gap}
                 >
                     {getButtonsWithProps(false)}
                 </LoadingButtonGroup>
@@ -120,7 +130,7 @@ export const SmartCrudWrapper = (
                         layout.buttonLayout === 'column' && "flex-col",
                         "@container (max-width: 400px):flex"
                     )}
-                    gap={spacing.gap} // Base gap (minimum 3 for touch)
+                    gap={spacing.gap}
                 >
                     {getButtonsWithProps(true)}
                 </LoadingButtonGroup>

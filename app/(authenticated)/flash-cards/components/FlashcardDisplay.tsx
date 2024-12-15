@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, MessageSquare } from 'lucide-react';
-import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
+import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import { ArmaniCollapsible } from '@/components/matrx/matrx-collapsible/armani-collapsible';
 
 const FlashcardDisplay = ({ flashcardHook }) => {

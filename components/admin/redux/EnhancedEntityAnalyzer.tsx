@@ -1,12 +1,26 @@
-import React, {useEffect} from 'react';
+'use client';
+
+import React, {Suspense, useEffect} from 'react';
 import {CardContent} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {ChevronLeft} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
-import {EnhancedJsonViewerGroup} from '@/components/ui/JsonComponents';
 import {useEntityAnalyzer} from '@/lib/redux/entity/hooks/useEntityAnalyzer';
 import EntityAnalyzerView from "@/components/admin/redux/EntityAnalysisSummary";
 import {MatrxJsonToCollapsible} from "@/components/matrx/matrx-collapsible";
+import dynamic from 'next/dynamic';
+
+const EnhancedJsonViewerGroup = dynamic(() => import('@/components/ui/JsonComponents/JsonViewerComponent').then(mod => mod.EnhancedJsonViewerGroup), {
+    ssr: false
+});
+
+const LoadingState = () => (
+    <div className="animate-pulse space-y-4">
+        <div className="h-8 bg-muted rounded w-1/4"></div>
+        <div className="h-32 bg-muted rounded"></div>
+    </div>
+);
+
 
 interface EnhancedEntityAnalyzerProps {
     className?: string;
@@ -44,7 +58,7 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 scrollbar-none">
             {isViewingEntity && (
                 <div className="flex items-center border-b border-border pb-3">
                     <Button
@@ -93,13 +107,15 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
                              />
                          ))}
 
-                         <EnhancedJsonViewerGroup
-                             viewers={sections}
-                             layout="autoGrid"
-                             minimizedPosition="top"
-                             className="min-h-0"
-                             gridMinWidth="350px"
-                         />
+                         <Suspense fallback={<LoadingState />}>
+                             <EnhancedJsonViewerGroup
+                                 viewers={sections}
+                                 layout="autoGrid"
+                                 minimizedPosition="top"
+                                 className="min-h-0"
+                                 gridMinWidth="250px"
+                             />
+                         </Suspense>
                      </>
                  )}
             </CardContent>

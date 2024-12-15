@@ -41,7 +41,7 @@ const buttonVariants = cva(
                 xl: "h-12 px-8 py-3 text-base",
                 "2xl": "h-14 px-10 py-3 text-base",
                 "3xl": "h-16 px-12 py-3 text-base",
-                icon: "h-9 w-9",
+                icon: "h-10 w-10",
                 roundIcon: "h-8 w-8 rounded-full p-0",  // Added roundIcon style
                 // Legacy sizes
                 m: "h-9 px-4 py-2",

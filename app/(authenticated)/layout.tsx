@@ -28,7 +28,7 @@ export default async function AuthenticatedLayout(
     const layoutProps = {
         primaryLinks: appSidebarLinks,
         secondaryLinks: adminSidebarLinks,
-        initialOpen: !isMobile,
+        initialOpen: !isMobile ? false : false,
         uniqueId: 'matrix-layout-container'
     };
 

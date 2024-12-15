@@ -1,35 +1,19 @@
-// SmartCancelButton.tsx
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
-import { useCallback, useState } from "react";
-import SmartButtonBase from "./SmartButtonBase";
+import React, { useCallback } from "react";
 import { X } from "lucide-react";
-import SmartChangeConfirmation from "./SmartChangeConfirmation";
-import {SmartButtonProps} from "./types";
-
+import SmartButtonBase from "./SmartButtonBase";
+import { SmartButtonProps } from "../types";
 
 export const SmartCancelButton = ({ entityKey, size = 'default' }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
     const { operationMode, cancelOperation, hasUnsavedChanges } = entityCrud;
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
     const isDisabled = operationMode === 'view';
 
     const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        if (hasUnsavedChanges) {
-            setIsConfirmOpen(true);
-        } else {
-            cancelOperation();
-        }
+        cancelOperation();
     }, [hasUnsavedChanges, cancelOperation]);
-
-    const handleComplete = useCallback((success: boolean) => {
-        setIsConfirmOpen(false);
-        if (!success) {
-            cancelOperation();
-        }
-    }, [cancelOperation]);
 
     return (
         <>
@@ -44,12 +28,6 @@ export const SmartCancelButton = ({ entityKey, size = 'default' }: SmartButtonPr
                 Cancel
             </SmartButtonBase>
 
-            <SmartChangeConfirmation
-                entityKey={entityKey}
-                open={isConfirmOpen}
-                onOpenChange={setIsConfirmOpen}
-                onComplete={handleComplete}
-            />
         </>
     );
 };

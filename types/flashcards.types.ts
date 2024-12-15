@@ -1,4 +1,5 @@
 // File location: types/flashcards.types.ts
+import { useFlashcard } from '@/hooks/flashcard-app/useFlashcard';
 
 export type FlashcardData = {
     id?: string;
@@ -29,5 +30,34 @@ export type AiAssistModalTab = 'confused' | 'example' | 'question' | 'split' | '
 export type ChatMessage = {
     role: 'user' | 'assistant' | 'system';
     content: string;
+};
+
+export type FlashcardHook = ReturnType<typeof useFlashcard>;
+
+
+export interface SmartButtonProps {
+    flashcardHook: FlashcardHook;
+    className?: string;
+}
+
+export type TextModalState = {
+    isAiModalOpen: boolean;
+    isAiAssistModalOpen: boolean;
+    aiAssistModalMessage: string;
+    aiAssistModalDefaultTab: string;
+};
+
+export type AudioModalActions = {
+    playActiveCardAudio: () => void;
+    playCustomTextAudio: (text: string) => void;
+    playIntroAudio: () => void;
+    playOutroAudio: () => void;
+};
+
+export type TextModalActions = {
+    openAiModal: () => void;
+    closeAiModal: () => void;
+    openAiAssistModal: (message: string) => void;
+    closeAiAssistModal: () => void;
 };
 

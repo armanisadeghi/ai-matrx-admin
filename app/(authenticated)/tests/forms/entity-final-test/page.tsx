@@ -1,17 +1,12 @@
 // app/(authenticated)/tests/forms/entity-management-smart-fields/page.tsx
-import {Metadata} from 'next';
+'use client'
 import MergedEntityLayout from "./MergedEntityLayout";
 import React from "react";
 import {getUnifiedLayoutProps} from './configs';
 
-export const metadata: Metadata = {
-    title: 'Entity Smart Layout',
-    description: 'Manage and edit entities with a predefined layout',
-};
-
-export default async function EntityManagementPage() {
+export default function EntityManagementPage() {
     const layoutProps = getUnifiedLayoutProps({
-        entityKey: 'registeredFunction',
+        entityKey: 'emails',
         defaultFormComponent: 'ArmaniFormSmart',
         quickReferenceType: 'LIST',
         isExpanded: true,

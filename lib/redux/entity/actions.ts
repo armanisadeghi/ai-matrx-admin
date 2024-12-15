@@ -1,18 +1,20 @@
 // lib/redux/entity/actions.ts
 
-import {AllEntityFieldKeys, AllEntityNameVariations, EntityData, EntityKeys} from "@/types/entityTypes";
+import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {
-    BatchOperationPayload,
     FilterPayload,
     MatrxRecordId,
     SubscriptionConfig,
     EntityMetadata,
     LoadingState,
-    QuickReferenceRecord, EntityMetrics, EntityRecordArray, EntityRecordMap, EntityFlags,
-    EntityError,
+    QuickReferenceRecord,
+    EntityMetrics,
+    EntityRecordArray,
+    EntityFlags,
+    FlexibleQueryOptions,
+    QueryOptions
 } from "@/lib/redux/entity/types/stateTypes";
 import { UnifiedQueryOptions } from "@/lib/redux/schema/globalCacheSelectors";
-import { QueryOptions } from "./sagas/sagaHelpers";
 
 
 export type EntityRecordPayload<TEntity extends EntityKeys> = {
@@ -38,30 +40,6 @@ export interface FetchRecordsSuccessPayload<TEntity extends EntityKeys> {
 }
 
 
-interface FlexibleQueryOptions {
-    entityNameAnyFormat: AllEntityNameVariations;
-    callback?: string;
-    recordKeys?: MatrxRecordId[];
-
-    matrxRecordId?: MatrxRecordId;
-
-    filters?: Partial<Record<AllEntityFieldKeys, unknown>>;
-    sorts?: Array<{
-        column: AllEntityFieldKeys;
-        ascending?: boolean;
-        append?: boolean;
-    }>;
-    limit?: number;
-    offset?: number;
-    maxCount?: number;
-    columns?: AllEntityFieldKeys[];
-    data?: unknown | unknown[];
-    page?: number;
-    pageSize?: number;
-
-    callbackId?: string;
-}
-
 export interface SortPayload {
     field: string;
     direction: 'asc' | 'desc';
@@ -80,10 +58,7 @@ export interface FetchRecordsPayload {
     };
 }
 
-export type CreateRecordPayload = {
-    tempRecordId: MatrxRecordId;
-    callbackId?: string;
-};
+export type CreateRecordPayload = FlexibleQueryOptions;
 
 export type UpdateRecordPayload = {
     matrxRecordId: MatrxRecordId;
@@ -127,6 +102,11 @@ export type ExecuteCustomQueryPayload = {
     query: UnifiedQueryOptions<EntityKeys>;
     callbackId?: string;
 };
+
+export type createRecordSuccessPayload = {
+    tempRecordId: MatrxRecordId;
+    data: EntityData<EntityKeys>;
+}
 
 export interface EntityActions<TEntity extends EntityKeys> {
     // Fetch Actions

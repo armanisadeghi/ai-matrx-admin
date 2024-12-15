@@ -1,13 +1,11 @@
 // lib/redux/entity/sagas.ts
 
-import {call, put, takeLatest, delay, all, select, fork, takeEvery} from "redux-saga/effects";
+import {call, put, takeLatest, delay, all, takeEvery} from "redux-saga/effects";
 import {PayloadAction} from "@reduxjs/toolkit";
-import {createEntitySlice} from "@/lib/redux/entity/slice";
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {MatrxRecordId,} from "@/lib/redux/entity/types/stateTypes";
 import {UnifiedQueryOptions,} from "@/lib/redux/schema/globalCacheSelectors";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
-import {createRecordKey, parseRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {
     handleFetchOne,
     handleFetchPaginated,
@@ -16,24 +14,20 @@ import {
     handleFetchAll,
     handleFetchQuickReference,
     handleDelete,
-    handleBatchOperation,
     handleExecuteCustomQuery,
-    handleSubscriptionEvents,
-    handleRefreshData,
-    handleFilterChange,
-    handleHistoryUpdate,
-    handleCacheInvalidation,
     handleFetchMetrics,
     handleGetOrFetchSelectedRecords,
     handleFetchSelectedRecords
 } from "@/lib/redux/entity/sagas/sagaHandlers";
-import {DeleteRecordPayload, FetchOneWithFkIfkPayload, getOrFetchSelectedRecordsPayload} from "../actions";
+import {
+    CreateRecordPayload,
+    DeleteRecordPayload,
+    FetchOneWithFkIfkPayload,
+    getOrFetchSelectedRecordsPayload
+} from "../actions";
 import {withConversion, withFullConversion, withFullRelationConversion} from "@/lib/redux/entity/sagas/sagaHelpers";
-import { getEntitySlice } from "../entitySlice";
+import { getEntitySlice } from "@/lib/redux";
 
-
-const trace = "SAGAS";
-const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
 type SagaAction<P = any> = PayloadAction<P> & { type: string };
 
@@ -125,8 +119,8 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 ),
                 takeLatest(
                     actions.createRecord.type,
-                    function* (action: SagaAction<EntityData<TEntity>>) {
-                        sagaLogger.log('debug', 'Handling createRecord', action.payload);
+                    function* (action: SagaAction<CreateRecordPayload>) {
+                        sagaLogger.log('info', 'Handling createRecord', action.payload);
                         if (shouldSkip(actions.createRecord.type, action.payload)) return;
                         yield call(withFullConversion, handleCreate, entityKey, actions, action);
                         setCache(actions.createRecord.type, action.payload);

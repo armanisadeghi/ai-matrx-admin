@@ -14,7 +14,8 @@ import {SocketProvider} from '@/providers/SocketProvider';
 import {RefProvider} from '@/lib/refs';
 import {ShikiProvider} from '@/providers/ShikiProvider';
 import {RecoilRoot} from 'recoil';
-import { ToastProvider } from '@/providers';
+import {ToastProvider} from '@/providers';
+import {AudioModalProvider} from "@/providers/AudioModalProvider";
 
 export function Providers(
     {
@@ -34,10 +35,12 @@ export function Providers(
                                 <NextUIProvider>
                                     <TooltipProvider>
                                         <ToastProvider>
-                                            <ShikiProvider initialLanguages={['typescript', 'javascript']}>
-                                                {children}
-                                            </ShikiProvider>
-                                            <Toaster/>
+                                            <AudioModalProvider>
+                                                <ShikiProvider initialLanguages={['typescript', 'javascript']}>
+                                                    {children}
+                                                </ShikiProvider>
+                                                <Toaster/>
+                                            </AudioModalProvider>
                                         </ToastProvider>
                                     </TooltipProvider>
                                 </NextUIProvider>

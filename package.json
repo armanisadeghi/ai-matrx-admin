@@ -102,6 +102,7 @@
     "gasp": "latest",
     "google-fonts": "latest",
     "groq-sdk": "latest",
+    "html2canvas": "^1.4.1",
     "jsonlint-mod": "latest",
     "katex": "latest",
     "libphonenumber-js": "^1.11.16",

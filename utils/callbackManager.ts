@@ -1,11 +1,9 @@
-// lib/utils/callbackManager.ts
-
 import { v4 as uuidv4 } from 'uuid';
 
 export type Callback<T = any> = (data: T) => void;
 
 class CallbackManager {
-    private callbacks: Map<string, Callback>;
+    private callbacks: Map<string, Callback<any>>;
 
     constructor() {
         this.callbacks = new Map();

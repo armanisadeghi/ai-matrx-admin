@@ -2,8 +2,8 @@ import React from "react";
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {useCallback} from "react";
 import SmartButtonBase from "./SmartButtonBase";
+import {SmartButtonProps} from "../types";
 import {Plus} from "lucide-react";
-import {SmartButtonProps} from "./types";
 
 export const SmartNewButton = (
     {
@@ -13,7 +13,8 @@ export const SmartNewButton = (
     const entityCrud = useEntityCrud(entityKey);
     const {
         flags,
-        dataState,
+        isLoading,
+        operationMode,
         startCreateMode
     } = entityCrud;
 
@@ -22,9 +23,9 @@ export const SmartNewButton = (
     // 2. During any loading operation
     // 3. During delete confirmation
     const isDisabled =
-        ['create', 'update'].includes(flags.operationMode || '') ||
-        dataState.isLoading ||
-        flags.operationMode === 'delete';
+        ['create', 'update'].includes(operationMode || '') ||
+        isLoading ||
+        operationMode === 'delete';
 
     const handleNew = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -51,7 +52,7 @@ export const SmartNewButton = (
             disabled={isDisabled}
             size={size}
             variant="default"
-            loading={dataState.isLoading}
+            loading={isLoading}
         >
             <Plus className="h-4 w-4"/>
             New

@@ -1,6 +1,5 @@
 import React, {memo} from 'react';
-
-import {SmartButtonProps} from "./types";
+import {SmartButtonProps} from "../types";
 import LoadingButton from '@/components/ui/loaders/loading-button';
 
 export const SmartButtonBase = memo((

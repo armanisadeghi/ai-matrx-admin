@@ -26,13 +26,15 @@ export default function Layout(
             />
             <MatrxDynamicPanel
                 initialPosition="left"
-                defaultExpanded={false}
+                defaultExpanded={true}
                 expandButtonProps={{
                     label: 'Entity State',
                 }}
             >
                 <EnhancedEntityAnalyzer
-                    defaultExpanded={false}/>
+                    defaultExpanded={true}
+                    selectedEntityKey="emails"
+                />
             </MatrxDynamicPanel>
             <main className="flex-1 overflow-hidden">
                 {children}

@@ -1,7 +1,6 @@
 // lib/redux/entity/entityLogger.ts
-import { BaseLogger } from "@/lib/logger/base-logger";
-import { ApplicationLog, LogLevel, DetailLevel } from "@/lib/logger/types";
-import { logConfig, runtimeState } from "@/lib/logger/config";
+
+import {ApplicationLog, BaseLogger, DetailLevel, logConfig, LogLevel, runtimeState} from '@/utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 class EntityLogger extends BaseLogger {

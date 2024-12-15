@@ -144,7 +144,7 @@ export type LogEntry =
     | ApplicationLog;
 
 // Storage types for persistence
-export interface LogStorage {
+export interface LogStorageType {
     app: LogEntry[];
     schema: SchemaResolutionLog[];
     performance: PerformanceLog[];

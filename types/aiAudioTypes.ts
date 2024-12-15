@@ -80,14 +80,4 @@ export interface AiAudioData {
     [key: string]: any;
 }
 
-const aiAudioInitialData: AiAudioData = {
-    availableVoices: [],
-    customVoices: [],
-    voiceClones: [],
-    transcripts: [],
-    meetingNotes: [],
-    savedAudio: [],
-    userAudioFiles: [],
-};
-
 export type AiAudioSchema = BaseModuleSchema<AiAudioConfig, AiAudioUserPreferences, AiAudioData>;

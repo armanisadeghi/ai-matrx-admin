@@ -6,12 +6,13 @@ import * as React from 'react';
 import {useCallback, useMemo} from 'react';
 import {useAppDispatch, useAppSelector, useAppStore} from '@/lib/redux/hooks';
 import {EntityKeys} from '@/types/entityTypes';
-import {EntityOperationMode, MatrxRecordId,} from '@/lib/redux/entity/types/stateTypes';
+import {EntityOperationMode, FlexibleQueryOptions, MatrxRecordId,} from '@/lib/redux/entity/types/stateTypes';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {useEntityValidation} from "@/lib/redux/entity/hooks/useEntityValidation";
 import {useEntity} from "@/lib/redux/entity/hooks/useEntity";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
+import {UpdateRecordPayload} from '../actions';
 
 export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
@@ -113,26 +114,18 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
 
 
     // CRUD Operations using callback manager
-    const handleCreate = useCallback((callback?: Callback) => {
-        const tempRecords = entity.selectedRecordIds.filter(matrxRecordId =>
-            entity.isTemporaryRecordId(matrxRecordId)
-        );
-
-        if (tempRecords.length === 0) return false;
-
-        tempRecords.forEach(tempId => {
-            dispatch(actions.addPendingOperation(tempId));
+    const handleCreate = useCallback((createPayloadArray: FlexibleQueryOptions[], callback?: Callback) => {
+        createPayloadArray.forEach(createPayload => {
+            dispatch(actions.addPendingOperation(createPayload.tempRecordId));
             const wrappedCallback = (result: { success: boolean; error?: any }) => {
-                dispatch(actions.removePendingOperation(tempId));
                 callback?.(result);
             };
             const callbackId = callbackManager.register(wrappedCallback);
-            dispatch(actions.createRecord({tempRecordId: tempId, callbackId}));
+            dispatch(actions.createRecord({...createPayload, callbackId}));
         });
 
         return true;
     }, [entity, dispatch, actions]);
-
 
     const handleUpdate = useCallback((recordId: MatrxRecordId, callback?: Callback) => {
         dispatch(actions.addPendingOperation(recordId));
@@ -141,9 +134,13 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
             callback?.(result);
         };
         const callbackId = callbackManager.register(wrappedCallback);
-        dispatch(actions.updateRecord({matrxRecordId: recordId, callbackId}));
-    }, [dispatch, actions]);
 
+        const payload: UpdateRecordPayload = {
+            matrxRecordId: recordId,
+            callbackId,
+        };
+        dispatch(actions.updateRecord(payload));
+    }, [dispatch, actions]);
 
     const handleBatchUpdate = useCallback((recordIds?: MatrxRecordId[], callback?: Callback) => {
         const targetRecords = recordIds || entity.selectedRecordIds;
@@ -294,7 +291,6 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
         startCreateMode,
         startUpdateMode,
         cancelOperation,
-        operationMode: entity.operationMode,
         updateField,
         updateFieldForActiveRecord,
         handleCreate,
@@ -307,7 +303,12 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
         updateSelectedRecords,
         deleteSelectedRecords,
         isOperationPending,
+
+        isLoading: dataState.isLoading,
         hasUnsavedChanges: entity.hasUnsavedChanges,
+        operationMode: entity.operationMode,
+
+
         validation,
         selection: entity,
         getUnsavedRecord: entity.unsavedRecordById,
@@ -318,10 +319,16 @@ export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) =>
         flags,
         dataState,
 
+        setMode,
+
         crud: crudHandlers,
         activeRecordCrud,
         selectedRecordsCrud,
         CrudById,
         batchCrud,
+
+        activeRecordId: entity.activeRecordId,
+        selectedRecordIds: entity.selectedRecordIds,
+
     };
 };

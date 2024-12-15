@@ -17,14 +17,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Context Collection Screenshot Demo',
+        path: 'screenshot-demo/context-collection',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Screenshot Demo',
+        path: 'screenshot-demo',
         relative: true,
         description: ''
     },

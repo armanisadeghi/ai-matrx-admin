@@ -1,12 +1,12 @@
 // lib/logger/config.ts
-import { LogLevel, DetailLevel } from "@/lib/logger/types";
+import {LogLevel} from '@/utils/logger';
 
 export const logConfig = {
     environment: process.env.NODE_ENV || 'development',
     service: process.env.SERVICE_NAME || 'next-app',
     debug: process.env.NODE_ENV === 'development',
-    logLevel: process.env.LOG_LEVEL || 'info',
-    consoleLogLevel: process.env.CONSOLE_LOG_LEVEL || 'none',
+    logLevel: process.env.LOG_LEVEL || 'debug',
+    consoleLogLevel: process.env.CONSOLE_LOG_LEVEL || 'debug',
     detailLevel: process.env.DETAIL_LEVEL || 'standard',
     console: true,
     duplicateSuppressionInterval: 500,

@@ -1,4 +1,4 @@
-import MarkdownRenderer from "@/app/(authenticated)/flash-cards/ai/MarkdownRenderer";
+import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 
 interface FlashcardAnswerProps {
     content: string;

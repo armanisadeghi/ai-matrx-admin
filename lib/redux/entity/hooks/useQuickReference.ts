@@ -17,9 +17,8 @@ import {
 } from '@/lib/redux/entity/types/stateTypes';
 import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
-import { getEntitySlice } from '../entitySlice';
+import { getEntitySlice } from '@/lib/redux';
 import { FetchMode } from '../actions';
-import { useEntityCrud } from './useEntityCrud';
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -112,6 +111,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
 
     React.useEffect(() => {
         if (!loadingState.loading && !isQuickReferenceFetchComplete) {
+            console.log('--fetching quick reference');
             dispatch(actions.fetchQuickReference({
                 maxRecords: entityDefaultSettings.maxQuickReferenceRecords
             }));

@@ -444,6 +444,10 @@
     border-radius: 3px;
 }
 
+:root {
+    --primary-rgb: 14, 165, 233; /* Example RGB values for a blue color */
+}
+
 .shiki-wrapper {
     @apply font-mono text-sm overflow-x-auto;
 }

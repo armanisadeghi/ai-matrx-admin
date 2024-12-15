@@ -35,12 +35,12 @@ interface EntityTextareaFinalProps extends EntityComponentBaseProps,
 }
 
 const FloatingLabel = React.memo(({
-    id,
-    label,
-    isFocused,
-    hasValue,
-    disabled
-}: {
+                                      id,
+                                      label,
+                                      isFocused,
+                                      hasValue,
+                                      disabled
+                                  }: {
     id: string;
     label: string;
     isFocused: boolean;
@@ -52,12 +52,12 @@ const FloatingLabel = React.memo(({
         className={cn(
             "absolute left-3 transition-all duration-200 ease-in-out pointer-events-none z-20 text-sm",
             (isFocused || hasValue)
-                ? cn("absolute -top-2 text-sm",
-                    disabled
-                        ? '[&]:text-gray-400 dark:[&]:text-gray-400'
-                        : '[&]:text-blue-500 dark:[&]:text-blue-500'
-                )
-                : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
+            ? cn("absolute -top-2 text-sm",
+                disabled
+                ? '[&]:text-gray-400 dark:[&]:text-gray-400'
+                : '[&]:text-blue-500 dark:[&]:text-blue-500'
+            )
+            : 'top-3 [&]:text-gray-400 dark:[&]:text-gray-400'
         )}
     >
         <span className="px-1 relative z-20">{label}</span>
@@ -65,10 +65,10 @@ const FloatingLabel = React.memo(({
 ));
 
 const StandardLabel = React.memo(({
-    id,
-    label,
-    disabled
-}: {
+                                      id,
+                                      label,
+                                      disabled
+                                  }: {
     id: string;
     label: string;
     disabled: boolean;
@@ -84,24 +84,36 @@ const StandardLabel = React.memo(({
     </Label>
 ));
 
-const EntityTextareaFinal = React.forwardRef<HTMLTextAreaElement, EntityTextareaFinalProps>(({
-    entityKey,
-    dynamicFieldInfo,
-    value = '',
-    onChange,
-    density = 'normal',
-    animationPreset = 'smooth',
-    size = 'default',
-    className,
-    variant = 'default',
-    disabled = false,
-    floatingLabel = true,
-    ...props
-}, ref) => {
+const EntityTextareaFinal = React.forwardRef<HTMLTextAreaElement, EntityTextareaFinalProps>((
+    {
+        entityKey,
+        dynamicFieldInfo,
+        value = '',
+        onChange,
+        density = 'normal',
+        animationPreset = 'smooth',
+        size = 'default',
+        className,
+        variant = 'default',
+        disabled = false,
+        floatingLabel = true,
+        ...props
+    }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     const variantStyles = useVariantStyles(variant);
 
     const rows = (dynamicFieldInfo.componentProps as Record<string, unknown>)?.rows as number ?? 3;
+
+    // TEMPORARY DEBUG SAFEGUARD - REMOVE AFTER TESTING
+    const safeValue = (() => {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(value);
+        }
+        return String(value);
+    })();
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChange(e.target.value);
@@ -109,7 +121,7 @@ const EntityTextareaFinal = React.forwardRef<HTMLTextAreaElement, EntityTextarea
 
     const textareaProps = {
         id: dynamicFieldInfo.name,
-        value: value as string,
+        value: safeValue, // Using our safe value here
         onChange: handleChange,
         required: dynamicFieldInfo.isRequired,
         disabled,
@@ -128,7 +140,7 @@ const EntityTextareaFinal = React.forwardRef<HTMLTextAreaElement, EntityTextarea
 
     if (floatingLabel) {
         return (
-            <div className="relative mt-2 border border-red-500">
+            <div className="relative mt-2">
                 <Textarea
                     {...textareaProps}
                     onFocus={() => setIsFocused(true)}
@@ -138,7 +150,7 @@ const EntityTextareaFinal = React.forwardRef<HTMLTextAreaElement, EntityTextarea
                     id={dynamicFieldInfo.name}
                     label={dynamicFieldInfo.displayName}
                     isFocused={isFocused}
-                    hasValue={!!value}
+                    hasValue={!!safeValue}
                     disabled={disabled}
                 />
             </div>

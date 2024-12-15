@@ -60,8 +60,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-
-
     const selectRecordsForFetching = (matrxRecordIds: MatrxRecordId[]) => createSelector(
         [selectAllRecords],
         (existingRecords) => {
@@ -267,6 +265,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectActiveRecordWithId = createSelector(
         [selectEntity, selectActiveRecordId],
         (entity, activeRecordId) => {
+            if (activeRecordId?.toString().startsWith('new-record-')) {
+                return {
+                    matrxRecordId: activeRecordId,
+                    record: null
+                };
+            }
             if (!activeRecordId || !entity.records[activeRecordId]) {
                 return {matrxRecordId: null, record: null};
             }
@@ -276,7 +280,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             };
         }
     );
-
 
     // === End Selection Selectors ==================================================
 
@@ -490,19 +493,32 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             )
     );
 
-    const selectChangeComparison = createSelector(
+    // Create separate selectors for expensive computations
+    const selectRecordPair = createSelector(
         [
-            selectActiveRecordWithId,
-            selectFieldInfo,
-            (state) => state,
+            selectEntity,
+            (_: RootState, recordId: MatrxRecordId) => recordId,
+            (state: RootState) => state,
         ],
-        (activeRecordData, fieldInfo, state) => {
-            const {matrxRecordId, record: originalRecord} = activeRecordData;
-            const unsavedRecord = matrxRecordId ?
-                                  selectUnsavedRecordById(state, matrxRecordId) : null;
+        (entity, recordId, state) => {
+            const originalRecord = entity.records[recordId] || null;
+            const unsavedRecord = recordId ? selectUnsavedRecordById(state, recordId) : null;
+            const isNewRecord = !originalRecord && !!unsavedRecord;
+            return {originalRecord, unsavedRecord, isNewRecord};
+        }
+    );
 
-            // Get changed fields
-            const changedFields = new Set(
+    const selectChangedFieldsSet = createSelector(
+        [
+            selectRecordPair,
+            selectFieldInfo,
+        ],
+        ({originalRecord, unsavedRecord, isNewRecord}, fieldInfo) => {
+            if (isNewRecord) {
+                return new Set(fieldInfo.map(field => field.name));
+            }
+
+            return new Set(
                 fieldInfo
                     .filter(field =>
                         originalRecord &&
@@ -511,27 +527,89 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     )
                     .map(field => field.name)
             );
+        }
+    );
 
-            // Create field comparison data
-            const fieldComparisons = fieldInfo.map(field => ({
-                ...field,
-                hasChanged: changedFields.has(field.name),
+    const selectChangedFieldData = createSelector(
+        [
+            selectRecordPair,
+            selectChangedFieldsSet,
+        ],
+        ({unsavedRecord, isNewRecord}, changedFields) => {
+            // If it's a new record, include all fields from unsavedRecord
+            if (isNewRecord && unsavedRecord) {
+                return {...unsavedRecord};
+            }
+
+            // For updates, only include changed fields
+            if (unsavedRecord) {
+                return Array.from(changedFields).reduce((acc, fieldName) => ({
+                    ...acc,
+                    [fieldName]: unsavedRecord[fieldName]
+                }), {});
+            }
+
+            return {};
+        }
+    );
+
+
+    const selectFieldComparisons = createSelector(
+        [
+            selectRecordPair,
+            selectChangedFieldsSet,
+            selectFieldInfo,
+        ],
+        ({originalRecord, unsavedRecord, isNewRecord}, changedFields, fieldInfo) => {
+            return fieldInfo.map(field => ({
+                name: field.name,
+                displayName: field.displayName,
+                hasChanged: isNewRecord || changedFields.has(field.name),
                 originalValue: originalRecord?.[field.name],
                 newValue: unsavedRecord?.[field.name],
-                displayValue: unsavedRecord?.[field.name] ?? originalRecord?.[field.name]
             }));
+        }
+    );
+
+    // Main selector maintains same interface but uses optimized sub-selectors
+    const selectChangeComparisonById = createSelector(
+        [
+            selectEntity,
+            (_: RootState, recordId: MatrxRecordId) => recordId,
+            selectFieldInfo,
+            (state: RootState) => state,
+        ],
+        (entity, recordId, fieldInfo, state) => {
+            const {originalRecord, unsavedRecord, isNewRecord} = selectRecordPair(state, recordId);
+            const changedFields = selectChangedFieldsSet(state, recordId);
+            const fieldComparisons = selectFieldComparisons(state, recordId);
+            const changedFieldData = selectChangedFieldData(state, recordId);
 
             return {
-                matrxRecordId,
+                matrxRecordId: recordId,
                 originalRecord,
                 unsavedRecord,
                 fieldInfo: fieldComparisons,
                 changedFields,
-                hasChanges: changedFields.size > 0,
-                isNewRecord: !originalRecord && !!unsavedRecord,
+                changedFieldData,
+                hasChanges: isNewRecord || changedFields.size > 0,
+                isNewRecord,
                 displayName: unsavedRecord?.[selectDisplayField(state)] ??
                     originalRecord?.[selectDisplayField(state)]
             };
+        }
+    );
+
+
+    const selectChangeComparison = createSelector(
+        [
+            selectActiveRecordWithId,
+            selectFieldInfo,
+            (state) => state,
+        ],
+        (activeRecordData, fieldInfo, state) => {
+            if (!activeRecordData.matrxRecordId) return null;
+            return selectChangeComparisonById(state, activeRecordData.matrxRecordId);
         }
     );
 
@@ -785,7 +863,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-
     const selectFieldMetadata = createSelector(
         [selectFieldInfo, (_: RootState, fieldName: string) => fieldName],
         (fields, fieldName) => fields.find(f => f.name === fieldName)
@@ -991,6 +1068,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectNativeFields,
         selectRelationshipFields,
 
+        selectRecordPair,
+        selectChangedFieldsSet,
+        selectFieldComparisons,
+        selectChangeComparisonById,
 
     };
 };

@@ -1,6 +1,6 @@
 import EntityLogger from "./entityLogger";
-import { EntityOperationMode, EntityState } from "@/lib/redux/entity/types/stateTypes";
-import { EntityKeys } from "@/types/entityTypes";
+import {EntityOperationMode, EntityState} from "@/lib/redux/entity/types/stateTypes";
+import {EntityKeys} from "@/types/entityTypes";
 import {
     addToUnsavedRecords,
     clearUnsavedRecords,
@@ -30,28 +30,40 @@ export class EntityModeManager {
         targetMode: EntityOperationMode,
         state: EntityState<EntityKeys>
     ): ModeTransitionResult {
+        // TODO: This is a temporary workaround because it comes back that we have an operation when we dont
         if (state.pendingOperations.length > 0) {
-            return {
-                error: 'Cannot change modes while operations are pending',
-                canProceed: false
-            };
+            this.logger.log('warn', 'There are pending operations', {
+                pendingOperations: state.pendingOperations,
+                pendingOperationsCount: state.pendingOperations.length
+            });
+            //
+            // return {
+            //     error: 'Cannot change modes while operations are pending',
+            //     canProceed: false
+            // };
         }
 
         if (state.flags.hasUnsavedChanges) {
             const unsavedCount = Object.keys(state.unsavedRecords).length;
+
             if (unsavedCount > 1) {
-                return {
-                    error: 'Multiple records have unsaved changes',
-                    canProceed: false
-                };
+                this.logger.log('warn', 'Multiple records have unsaved changes', {
+                    unsavedCount: unsavedCount,
+                    hasUnsavedChanges: state.flags.hasUnsavedChanges
+                });
+
+                // return {
+                //     error: 'Multiple records have unsaved changes',
+                //     canProceed: false
+                // };
             }
-            return {
-                error: 'Unsaved changes exist',
-                canProceed: false
-            };
+            // return {
+            //     error: 'Unsaved changes exist',
+            //     canProceed: false
+            // };
         }
 
-        return { canProceed: true };
+        return {canProceed: true};
     }
 
     private exitCreateMode(state: EntityState<EntityKeys>): void {
@@ -129,7 +141,7 @@ export class EntityModeManager {
 
         // Set operation flags
         state.flags.operationMode = 'create';
-        state.flags.hasUnsavedChanges = true;
+        // state.flags.hasUnsavedChanges = true;
         state.flags.isValidated = false;
         state.flags.operationFlags.CREATE_STATUS = 'IDLE';
     }
@@ -208,7 +220,8 @@ export class EntityModeManager {
             from: currentMode,
             to: targetMode,
             hasUnsavedChanges: state.flags.hasUnsavedChanges,
-            pendingOperations: state.pendingOperations.length
+            pendingOperations: state.pendingOperations,
+            pendingOperationsCount: state.pendingOperations.length
         });
 
         const validationResult = this.validateTransition(currentMode, targetMode, state);
@@ -223,6 +236,6 @@ export class EntityModeManager {
         this.exitCurrentMode(state, currentMode);
         this.enterNewMode(state, targetMode);
 
-        return { canProceed: true };
+        return {canProceed: true};
     }
 }

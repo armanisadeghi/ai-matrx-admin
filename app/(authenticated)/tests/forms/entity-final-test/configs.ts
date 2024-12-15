@@ -37,7 +37,7 @@ export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
 
 // Form Style Default Options
 export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
-    splitRatio: 15,
+    splitRatio: 20,
     formLayout: 'grid',
     formColumns: 2,
     formDirection: 'row',
@@ -66,7 +66,7 @@ export const DEFAULT_DYNAMIC_STYLE_OPTIONS: DynamicStyleOptions = {
 };
 
 export const DEFAULT_RESIZABLE_LAYOUT_OPTIONS: ResizableThreePaneLayoutProps = {
-    leftColumnWidth: 20,
+    leftColumnWidth: 25,
     topLeftHeight: 15,
     minColumnWidth: 10,
     minSectionHeight: 10,

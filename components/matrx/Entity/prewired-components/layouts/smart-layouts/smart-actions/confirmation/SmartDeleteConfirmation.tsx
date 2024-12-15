@@ -23,12 +23,12 @@ export const SmartDeleteConfirmation = (
     const entityCrud = useEntityCrud(entityKey);
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const comparison = useAppSelector(selectors.selectChangeComparison);
-    const {handleDelete, selection} = entityCrud;
+    const {handleDelete, activeRecordId} = entityCrud;
 
     const handleConfirm = useCallback(() => {
-        if (!selection.activeRecordId) return;
+        if (!activeRecordId) return;
 
-        handleDelete(selection.activeRecordId, (result) => {
+        handleDelete(activeRecordId, (result) => {
             if (result.success) {
                 onOpenChange(false);
                 onComplete?.(true);
@@ -37,7 +37,7 @@ export const SmartDeleteConfirmation = (
                 onComplete?.(false);
             }
         });
-    }, [selection.activeRecordId, handleDelete, onOpenChange, onComplete]);
+    }, [activeRecordId, handleDelete, onOpenChange, onComplete]);
 
     return (
         <ConfirmationDialog
@@ -58,7 +58,6 @@ export const SmartDeleteConfirmation = (
                     <div className="text-sm font-medium mb-2">Record Details:</div>
                     <div className="grid grid-cols-1 gap-2">
                         {comparison.fieldInfo.map(field => {
-                            if (field.isPrimaryKey) return null;
                             return (
                                 <div key={field.name} className="text-sm">
                                     <span className="font-medium text-muted-foreground">

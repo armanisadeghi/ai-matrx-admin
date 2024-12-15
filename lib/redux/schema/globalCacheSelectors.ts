@@ -5,19 +5,23 @@ import {
     AnyEntityDatabaseTable,
     EntityFieldKeys,
     EntityKeys,
-    EntityPrettyFields,
     AllEntityNameVariations,
     EntitySelectOption,
-    PrettyEntityName, AllEntityFieldKeys, AnyDatabaseColumnForEntity
+    PrettyEntityName, AllEntityFieldKeys
 } from "@/types/entityTypes";
 import {SchemaEntity} from "@/types/schema";
 import {NameFormat} from "@/types/AutomationSchemaTypes";
 
-import {GlobalCacheState} from "./globalCacheSlice";
-import {DisplayFieldMetadata, EntityStateField, MatrxRecordId, PrimaryKeyMetadata} from "../entity/types/stateTypes";
-import {createMatrxRecordId, parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
+import {GlobalCacheState} from "@/lib/redux";
+import {
+    DisplayFieldMetadata,
+    EntityStateField,
+    FlexibleQueryOptions,
+    PrimaryKeyMetadata,
+    QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject
+} from "../entity/types/stateTypes";
+import {parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
-import {FlexibleQueryOptions, QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject} from "../entity/sagas/sagaHelpers";
 
 const trace = 'GLOBAL CACHE SELECTORS';
 const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
@@ -130,8 +134,7 @@ export const selectEntityFields = createSelector(
     (fields, fieldsByEntity, entityName): EntityStateField[] => {
         const fieldIds = fieldsByEntity[entityName] || [];
         if (fieldIds.length === 0) return [];
-        const result = fieldIds.map(id => fields[id]).filter(Boolean);
-        return result;
+        return fieldIds.map(id => fields[id]).filter(Boolean);
     }
 );
 
@@ -140,9 +143,9 @@ export const selectField = createSelector(
         selectFields,
         (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
     ],
-    (fields, params): EntityStateField | undefined => {
+    (fields, params) => {
         const fieldId = `${params.entityName}__${params.fieldName}`;
-        return fields[fieldId];
+        return fields[fieldId] || {};
     }
 );
 
@@ -319,8 +322,7 @@ export const selectAllFieldPrettyNames = createSelector(
 
         const prettyNames: Record<string, string> = {};
         Object.keys(entityFields).forEach((fieldName) => {
-            const prettyName = entityFields[fieldName]?.['pretty'] || fieldName;
-            prettyNames[fieldName] = prettyName;
+            prettyNames[fieldName] = entityFields[fieldName]?.['pretty'] || fieldName;
         });
 
         return prettyNames;
@@ -358,23 +360,6 @@ export const selectFieldSchema = createSelector(
 
 export type KeyMapping = { [oldKey: string]: string };
 
-interface FormatConversionPayload<T extends Record<string, any>> {
-    entityName: EntityKeys;
-    data: T | T[];
-    format: NameFormat;
-}
-
-interface UnknownFormatPayload<T extends Record<string, any>> {
-    entityNameOrAlias: string;
-    data: T | T[];
-    targetFormat: NameFormat;
-}
-
-interface UnknownFieldFormatPayload {
-    entityNameOrAlias: string;
-    fieldNameOrAlias: string;
-    targetFormat: NameFormat;
-}
 
 // Existing selector with console logs added
 export const selectReplaceKeysInObject = createSelector(
@@ -804,7 +789,7 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             databaseDisplayField: fieldMap[frontendDisplayField] || frontendDisplayField,
         };
 
-        logger.log('info', 'Starting conversion with options:', options);
+        logger.log('debug', 'Starting conversion with options:', options);
 
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
@@ -822,7 +807,7 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             }
         }
 
-        logger.log('info', 'Record keys processed:', result.recordKeys);
+        logger.log('debug', 'Record keys processed:', result.recordKeys);
 
         if (options.filters) {
             result.filters = selectReplaceKeysInObject(
@@ -832,7 +817,7 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             ) as Partial<Record<string, unknown>>;
         }
 
-        logger.log('info', 'Filters processed:', result.filters);
+        logger.log('debug', 'Filters processed:', result.filters);
 
         if (options.sorts) {
             result.sorts = options.sorts.map(sort => ({
@@ -841,7 +826,7 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             }));
         }
 
-        logger.log('info', 'Sorts processed:', result.sorts);
+        logger.log('debug', 'Sorts processed:', result.sorts);
 
         if (options.columns) {
             result.columns = options.columns.map(
@@ -849,19 +834,19 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             );
         }
 
-        logger.log('info', 'Columns processed:', result.columns);
+        logger.log('debug', 'Columns processed:', result.columns);
 
         if (typeof options.limit !== 'undefined') {
             result.limit = options.limit;
         }
 
-        logger.log('info', 'Limit processed:', result.limit);
+        logger.log('debug', 'Limit processed:', result.limit);
 
         if (typeof options.offset !== 'undefined') {
             result.offset = options.offset;
         }
 
-        logger.log('info', 'Offset processed:', result.offset);
+        logger.log('debug', 'Offset processed:', result.offset);
 
 
         if (options.data) {
@@ -896,9 +881,13 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
         result.primaryKeysAndValues = primaryKeysAndValues;
         result.recordKeys = recordKeys;
 
-        logger.log('info', 'Data processed:', result.data);
-        logger.log('info', 'Primary keys and values extracted:', primaryKeysAndValues);
-        logger.log('info', 'Conversion complete:', result);
+        if (options.tempRecordId) {
+            result.tempRecordId = options.tempRecordId;
+        }
+
+        logger.log('debug', 'Data processed:', result.data);
+        logger.log('debug', 'Primary keys and values extracted:', primaryKeysAndValues);
+        logger.log('debug', 'selectUnifiedDatabaseObjectConversion Conversion complete:', result);
 
         return result;
     }

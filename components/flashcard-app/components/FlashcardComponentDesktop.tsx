@@ -1,8 +1,6 @@
 'use client';
 
 import React, { Suspense } from 'react';
-
-import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from '@/components/flashcard-app/flashcard-display/flashcard-display';
 import PerformanceChart from '@/components/flashcard-app/performance/performance-chart';
 import EditFlashcardDialog from './EditFlashcardDialog';
@@ -18,28 +16,39 @@ import {
 } from '@/components/matrx/LoadingComponents';
 import { ensureId } from "@/utils/schema/schemaUtils";
 import { getFlashcardSet } from '@/app/(authenticated)/flashcard/app-data';
+import SmartFlashcardControls from './SmartFlashcardControls/SmartFlashcardControls';
 
 const FlashcardComponent: React.FC<{ dataSetId: string }> = ({ dataSetId }) => {
     const initialFlashcards = getFlashcardSet(dataSetId);
-
     const flashcardHook = useFlashcard(initialFlashcards);
-
     const {
         allFlashcards,
         currentIndex,
-        editingCard,
-        aiModalState: {
+        firstName,
+        handleNext,
+        handlePrevious,
+        handleSelectChange,
+        activeFlashcard,
+        shuffleCards,
+        textModalState: {
+            isAiModalOpen,
             isAiAssistModalOpen,
             aiAssistModalMessage,
             aiAssistModalDefaultTab,
         },
-        aiModalActions: {
-            closeAiAssistModal
+        textModalActions: {
+            openAiModal,
+            closeAiModal,
+            openAiAssistModal,
+            closeAiAssistModal,
         },
+        setFontSize,
+        audioModalActions,
         handleAction,
         setEditingCard,
-    } = flashcardHook;
+        editingCard,
 
+    } = flashcardHook;
     const flashcardsWithUUIDs = ensureId(allFlashcards);
 
     return (
@@ -58,7 +67,7 @@ const FlashcardComponent: React.FC<{ dataSetId: string }> = ({ dataSetId }) => {
             </div>
 
             <Suspense fallback={<SmallComponentLoading />}>
-                <FlashcardControls flashcardHook={flashcardHook} />
+                <SmartFlashcardControls flashcardHook={flashcardHook} />
             </Suspense>
 
             <div className="mt-4">
@@ -69,7 +78,7 @@ const FlashcardComponent: React.FC<{ dataSetId: string }> = ({ dataSetId }) => {
                 <MatrxTable
                     data={flashcardsWithUUIDs}
                     onAction={handleAction}
-                    defaultVisibleColumns={['lesson', 'topic', 'front', 'reviewCount', 'correctCount', 'incorrectCount']}
+                    defaultVisibleColumns={[ 'front', 'reviewCount', 'correctCount', 'incorrectCount', 'lesson', 'topic']}
                 />
             </Suspense>
 

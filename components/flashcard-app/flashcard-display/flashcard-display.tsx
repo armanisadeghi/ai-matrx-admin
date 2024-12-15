@@ -12,13 +12,13 @@ export default function FlashcardDisplay({ flashcardHook }: { flashcardHook: Ret
         handleFlip,
         handleAnswer,
         mobileHandlers,
-        aiModalActions: { openAiModal }
+        textModalActions: { openAiModal }
     } = flashcardHook;
 
     if (!activeFlashcard) return null;
 
     return (
-        <div className="w-full min-h-[400px] lg:h-full [perspective:1000px]" {...mobileHandlers}>
+        <div className="w-full min-h-[400px] lg:h-full [perspective:1000px]">
             <div
                 className={`relative w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${
                     isFlipped ? "[transform:rotateY(180deg)]" : ""

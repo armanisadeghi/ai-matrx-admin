@@ -1,0 +1,31 @@
+/* styles/globals.css (or your main CSS file) */
+.ai-help-highlight {
+    position: relative;
+    z-index: 1;
+}
+
+.ai-help-highlight::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: rgba(var(--primary-rgb), 0.1);
+    border: 2px solid rgb(var(--primary-rgb));
+    border-radius: 4px;
+    z-index: -1;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

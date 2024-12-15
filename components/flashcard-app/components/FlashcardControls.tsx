@@ -2,14 +2,20 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Minus, Plus, Shuffle } from 'lucide-react';
+import {
+    AArrowDown,
+    AArrowUp,
+    ArrowLeft,
+    ArrowRight,
+    Shuffle,
+    Headphones,
+    MessageSquare
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import AudioModal from '@/app/(authenticated)/flash-cards/audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
-import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
-import { useWindowSize } from "@uidotdev/usehooks";
+import { useFlashcard } from "@/hooks/flashcard-app/useFlashcard";
 import {introOutroText} from '@/app/(authenticated)/flashcard/app-data';
-
+import AiAssistModal from "@/app/(authenticated)/flash-cards/ai/AiAssistModal";
 
 const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
     const {
@@ -21,162 +27,186 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
         handleSelectChange,
         activeFlashcard,
         shuffleCards,
-        aiModalActions: {
-            openAudioModal,
-            closeAudioModal,
+        textModalState: {
+            isAiModalOpen,
+            isAiAssistModalOpen,
+            aiAssistModalMessage,
+            aiAssistModalDefaultTab,
+        },
+        textModalActions: {
             openAiModal,
             closeAiModal,
             openAiAssistModal,
-        },
-        aiModalState: {
-            isAudioModalOpen,
-            isAiModalOpen,
+            closeAiAssistModal,
         },
         setFontSize,
+        audioModalActions : {
+            playActiveCardAudio,
+            playCustomTextAudio,
+            playIntroAudio,
+            playOutroAudio
+        }
     } = flashcardHook;
-
-    const { width } = useWindowSize();
-    const isMobile = width ? width < 640 : false;
-
-    const introText = introOutroText.introText;
-    const outroText = introOutroText.outroText;
 
     const [modalText, setModalText] = React.useState("");
 
     const handleOpenAudioModalWithText = (text: string) => {
-        setModalText(text);
-        openAudioModal();
+        playCustomTextAudio(text);
     };
+
+    const iconButtonConfigs = [
+        {
+            id: 'previous',
+            icon: ArrowLeft,
+            onClick: handlePrevious,
+            title: 'Previous'
+        },
+        {
+            id: 'next',
+            icon: ArrowRight,
+            onClick: handleNext,
+            title: 'Next'
+        },
+        {
+            id: 'shuffle',
+            icon: Shuffle,
+            onClick: shuffleCards,
+            title: 'Shuffle'
+        },
+        {
+            id: 'decrease-font',
+            icon: AArrowDown,
+            onClick: () => setFontSize((prev) => Math.max(18, prev - 2)),
+            title: 'Decrease font size'
+        },
+        {
+            id: 'increase-font',
+            icon: AArrowUp,
+            onClick: () => setFontSize((prev) => Math.min(36, prev + 2)),
+            title: 'Increase font size'
+        },
+        {
+            id: 'audio-help',
+            icon: Headphones,
+            onClick: playActiveCardAudio,
+            title: "I'm confused (Audio help)"
+        },
+        {
+            id: 'chat-help',
+            icon: MessageSquare,
+            onClick: openAiModal,
+            title: 'Ask a question (Chat)'
+        }
+    ];
+
+    const actionButtonConfigs = [
+        {
+            id: 'intro',
+            label: 'Intro',
+            onClick: () => handleOpenAudioModalWithText(introOutroText.introText)
+        },
+        {
+            id: 'outro',
+            label: 'Outro',
+            onClick: () => handleOpenAudioModalWithText(introOutroText.outroText)
+        },
+        {
+            id: 'confused',
+            label: "I'm confused",
+            onClick: playActiveCardAudio
+        },
+        {
+            id: 'question',
+            label: 'I have a question',
+            onClick: openAiModal
+        },
+        {
+            id: 'example',
+            label: 'Give me an example',
+            onClick: () => openAiAssistModal('example')
+        },
+        {
+            id: 'split',
+            label: 'Split cards',
+            onClick: () => openAiAssistModal('split')
+        },
+        {
+            id: 'combine',
+            label: 'Combine cards',
+            onClick: () => openAiAssistModal('combine')
+        },
+        {
+            id: 'compare',
+            label: 'Compare Cards',
+            onClick: () => openAiAssistModal('compare')
+        }
+    ];
 
     return (
         <div className="w-full flex flex-col space-y-2">
-            <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-1">
-                <div className={`w-full flex flex-col sm:flex-row gap-1 sm:gap-0 sm:space-x-1 ${isMobile ? 'flex-col-reverse' : ''}`}>
-                    <Button
-                        onClick={handlePrevious}
-                        variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4"/> Previous
-                    </Button>
-                    <Button
-                        onClick={handleNext}
-                        variant="outline"
-                        className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card"
-                    >
-                        Next <ArrowRight className="ml-2 h-4 w-4"/>
-                    </Button>
+            {/* Top controls section - grid for desktop, stack for mobile */}
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Left column - Icon buttons */}
+                <div className="w-full flex justify-center sm:justify-start">
+                    <div className="inline-flex items-center gap-2 bg-card/50 rounded-lg p-2">
+                        {iconButtonConfigs.map(({ id, icon: Icon, onClick, title }) => (
+                            <Button
+                                key={id}
+                                onClick={onClick}
+                                variant="outline"
+                                size="icon"
+                                className="w-10 h-10 hover:scale-105 transition-transform bg-card"
+                                title={title}
+                            >
+                                <Icon className="h-6 w-6"/>
+                            </Button>
+                        ))}
+                    </div>
                 </div>
 
-                <Button
-                    onClick={shuffleCards}
-                    variant="outline"
-                    className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card"
-                >
-                    <Shuffle className="mr-2 h-4 w-4"/> Shuffle
-                </Button>
-                <Select onValueChange={handleSelectChange} value={currentIndex.toString()}>
-                    <SelectTrigger className="w-full sm:w-auto flex-1 hover:scale-105 transition-transform bg-card">
-                        <SelectValue placeholder="Select a flashcard"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        {allFlashcards.map((card, index) => (
-                            <SelectItem key={card.order} value={index.toString()}>
-                                {`${card.order}: ${card.front.length > 50 ? card.front.substring(0, 50) + '...' : card.front}`}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
-                <Button
-                    onClick={() => handleOpenAudioModalWithText(introText)}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    Intro
-                </Button>
-                <Button
-                    onClick={() => handleOpenAudioModalWithText(outroText)}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    Outro
-                </Button>
-                <Button
-                    onClick={openAudioModal}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    I'm confused
-                </Button>
-                <Button
-                    onClick={openAiModal}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    I have a question
-                </Button>
-                <Button
-                    onClick={() => openAiAssistModal('example')}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    Give me an example
-                </Button>
-                <div className="flex items-center justify-between w-full px-3 py-1 rounded-md border bg-card hover:scale-105 transition-transform">
-                    <Button
-                        onClick={() => setFontSize((prev) => Math.max(18, prev - 2))}
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 p-0"
-                    >
-                        <Minus className="h-4 w-4"/>
-                    </Button>
-                    <span className="text-sm whitespace-nowrap">Font Size</span>
-                    <Button
-                        onClick={() => setFontSize((prev) => Math.min(36, prev + 2))}
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 p-0"
-                    >
-                        <Plus className="h-4 w-4"/>
-                    </Button>
+                {/* Right column - Select component */}
+                <div className="w-full flex items-center">
+                    <Select onValueChange={handleSelectChange} value={currentIndex.toString()}>
+                        <SelectTrigger className="w-full bg-card">
+                            <SelectValue placeholder="Select a flashcard"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allFlashcards.map((card, index) => (
+                                <SelectItem key={card.order} value={index.toString()}>
+                                    {`${card.order}: ${card.front.length > 50 ? card.front.substring(0, 50) + '...' : card.front}`}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-                <Button
-                    onClick={() => openAiAssistModal('split')}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    Split cards
-                </Button>
-                <Button
-                    onClick={() => openAiAssistModal('combine')}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    Combine cards
-                </Button>
-                <Button
-                    onClick={() => openAiAssistModal('compare')}
-                    variant="outline"
-                    className="w-full hover:scale-105 transition-transform bg-card"
-                >
-                    Compare Cards
-                </Button>
+            </div>
+
+            {/* Action Buttons Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {actionButtonConfigs.map(button => (
+                    <Button
+                        key={button.id}
+                        onClick={button.onClick}
+                        variant="outline"
+                        className="w-full hover:scale-105 transition-transform bg-card"
+                    >
+                        {button.label}
+                    </Button>
+                ))}
             </div>
 
             {activeFlashcard && (
                 <>
-                    <AudioModal
-                        isOpen={isAudioModalOpen}
-                        onClose={closeAudioModal}
-                        text={modalText || activeFlashcard.audioExplanation || ''}
-                    />
                     <AiChatModal
                         isOpen={isAiModalOpen}
                         onClose={closeAiModal}
                         firstName={firstName}
+                    />
+                    <AiAssistModal
+                        isOpen={isAiAssistModalOpen}
+                        onClose={closeAiAssistModal}
+                        message={aiAssistModalMessage}
+                        defaultTab={aiAssistModalDefaultTab}
                     />
                 </>
             )}

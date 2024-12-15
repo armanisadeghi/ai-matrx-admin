@@ -1,6 +1,6 @@
 import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
 
-import {schemaLogger} from '@/lib/logger/schema-logger';
+
 import {
     AllEntityNameVariations,
     AllFieldNameVariations,
@@ -18,7 +18,6 @@ import {
     FieldNameFormat,
     FieldNameFormats,
     isFetchStrategy,
-    TypeBrand,
     UnifiedSchemaCache
 } from "@/types/entityTypes";
 import {
@@ -27,7 +26,7 @@ import {
     fieldNameFormats,
     fieldNameToCanonical
 } from "@/utils/schema/lookupSchema";
-import {NameFormat} from "@/types/AutomationSchemaTypes";
+import {NameFormat, TypeBrand} from "@/types/AutomationSchemaTypes";
 import {createFieldId, EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
 
 
@@ -1979,6 +1978,7 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
 
 import fs from 'fs';
 import { SchemaField } from "@/lib/redux/schema/concepts/types";
+import { schemaLogger } from "../logger";
 
 export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
     // Enable all output sections

@@ -4,9 +4,8 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Minus, Plus, Shuffle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import AudioModal from '../audio/AudioModal';
 import AiChatModal from "@/app/(authenticated)/flash-cards/ai/AiChatModal";
-import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import { useFlashcard } from '@/hooks/flashcard-app/useFlashcard';
 
 const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcard> }> = ({ flashcardHook }) => {
     const {
@@ -18,18 +17,25 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
         handleSelectChange,
         activeFlashcard,
         shuffleCards,
-        aiModalActions: {
-            openAudioModal,
-            closeAudioModal,
+        textModalState: {
+            isAiModalOpen,
+            isAiAssistModalOpen,
+            aiAssistModalMessage,
+            aiAssistModalDefaultTab,
+        },
+        textModalActions: {
             openAiModal,
             closeAiModal,
             openAiAssistModal,
-        },
-        aiModalState: {
-            isAudioModalOpen,
-            isAiModalOpen,
+            closeAiAssistModal,
         },
         setFontSize,
+        audioModalActions : {
+            playActiveCardAudio,
+            playCustomTextAudio,
+            playIntroAudio,
+            playOutroAudio
+        }
     } = flashcardHook;
 
     return (
@@ -62,7 +68,7 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
                 <Button
-                    onClick={openAudioModal}
+                    onClick={playActiveCardAudio}
                     variant="outline"
                     className="w-full hover:scale-105 transition-transform bg-card"
                 >
@@ -125,18 +131,11 @@ const FlashcardControls: React.FC<{ flashcardHook: ReturnType<typeof useFlashcar
             </div>
 
             {activeFlashcard && (
-                <>
-                    <AudioModal
-                        isOpen={isAudioModalOpen}
-                        onClose={closeAudioModal}
-                        text={activeFlashcard.audioExplanation || ''}
-                    />
                     <AiChatModal
                         isOpen={isAiModalOpen}
                         onClose={closeAiModal}
                         firstName={firstName}
                     />
-                </>
             )}
         </div>
     );

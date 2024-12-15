@@ -1,12 +1,9 @@
-// components/common/crud/SmartDeleteButton.tsx
-
+import React, {memo, useCallback, useState} from "react";
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
-import {memo, useCallback, useState} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {Trash2} from "lucide-react";
-import SmartDeleteConfirmation from "./SmartDeleteConfirmation";
-import {SmartButtonProps} from "./types";
-
+import {SmartButtonProps} from "../types";
+import SmartDeleteConfirmation from "../confirmation/SmartDeleteConfirmation";
 
 export const SmartDeleteButton = memo((
     {
@@ -14,11 +11,11 @@ export const SmartDeleteButton = memo((
         size = 'default'
     }: SmartButtonProps) => {
     const entityCrud = useEntityCrud(entityKey);
-    const {selection, isOperationPending} = entityCrud;
+    const {isOperationPending, activeRecordId} = entityCrud;
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-    const isDisabled = !selection.activeRecordId ||
-        isOperationPending(selection.activeRecordId);
+    const isDisabled = !activeRecordId ||
+        isOperationPending(activeRecordId);
 
     const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -47,16 +44,17 @@ export const SmartDeleteButton = memo((
                 Delete
             </SmartButtonBase>
 
-            <SmartDeleteConfirmation
-                entityKey={entityKey}
-                open={isConfirmOpen}
-                onOpenChange={handleOpenChange}
-                onComplete={handleComplete}
-            />
+            {isConfirmOpen && (
+                <SmartDeleteConfirmation
+                    entityKey={entityKey}
+                    open={isConfirmOpen}
+                    onOpenChange={handleOpenChange}
+                    onComplete={handleComplete}
+                />
+            )}
         </>
     );
 });
-
 
 SmartDeleteButton.displayName = 'SmartDeleteButton';
 

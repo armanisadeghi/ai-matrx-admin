@@ -4,11 +4,11 @@ import React, { Suspense } from 'react';
 
 import FlashcardControls from './FlashcardControls';
 import FlashcardDisplay from '@/components/flashcard-app/-dev/display-all-in-one';
-import PerformanceChart from './PerformanceChart';
+import PerformanceChart from '@/components/flashcard-app/-dev/PerformanceChart';
 import EditFlashcardDialog from './EditFlashcardDialog';
 import { Progress } from "@/components/ui/progress";
 
-import { useFlashcard } from "@/app/(authenticated)/flash-cards/hooks/useFlashcard";
+import { useFlashcard } from "@/hooks/flashcard-app/useFlashcard";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import {
     SmallComponentLoading,
@@ -22,25 +22,35 @@ import AiAssistModal from '@/app/(authenticated)/flash-cards/ai/AiAssistModal';
 
 const FlashcardComponentMobile: React.FC<{ dataSetId }> = ({ dataSetId }) => {
     const initialFlashcards = getFlashcardSet(dataSetId);
-
     const flashcardHook = useFlashcard(initialFlashcards);
-
     const {
         allFlashcards,
         currentIndex,
-        editingCard,
-        aiModalState: {
+        firstName,
+        handleNext,
+        handlePrevious,
+        handleSelectChange,
+        activeFlashcard,
+        shuffleCards,
+        textModalState: {
+            isAiModalOpen,
             isAiAssistModalOpen,
             aiAssistModalMessage,
             aiAssistModalDefaultTab,
         },
-        aiModalActions: {
-            closeAiAssistModal
+        textModalActions: {
+            openAiModal,
+            closeAiModal,
+            openAiAssistModal,
+            closeAiAssistModal,
         },
+        setFontSize,
+        audioModalActions,
         handleAction,
         setEditingCard,
-    } = flashcardHook;
+        editingCard,
 
+    } = flashcardHook;
     const flashcardsWithUUIDs = ensureId(allFlashcards);
 
     return (

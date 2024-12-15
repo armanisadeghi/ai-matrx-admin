@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Credenza,
     CredenzaContent,
@@ -7,20 +7,40 @@ import {
     CredenzaDescription,
     CredenzaBody,
 } from "@/components/ui/added-ui/credenza-modal/credenza";
-import { Beaker } from 'lucide-react';
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {Headphones} from 'lucide-react';
 import TextToSpeechPlayer from './TextToSpeechPlayer';
-import { motion, AnimatePresence } from 'framer-motion';
+import {motion, AnimatePresence} from 'framer-motion';
+import {useWindowSize} from "@uidotdev/usehooks";
+import {cn} from "@/lib/utils";
 
 interface AudioModalProps {
     isOpen: boolean;
     onClose: () => void;
     text: string;
+    icon?: React.ReactNode;
+    title?: string;
+    description?: string;
+    hideText?: boolean;
+    className?: string;
 }
 
-const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
+const AudioModal: React.FC<AudioModalProps> = (
+    {
+        isOpen,
+        onClose,
+        text,
+        icon = <Headphones className="h-6 w-6 sm:h-8 sm:w-8"/>,
+        title = "Audio",
+        description = "Listen to the audio and see the text.",
+        hideText = false,
+        className,
+    }) => {
     const [displayedText, setDisplayedText] = useState('');
     const [isTextComplete, setIsTextComplete] = useState(false);
     const [startTextAnimation, setStartTextAnimation] = useState(false);
+    const {width} = useWindowSize();
+    const isMobile = width ? width < 640 : false;
 
     useEffect(() => {
         if (isOpen) {
@@ -28,7 +48,6 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
             setIsTextComplete(false);
             setStartTextAnimation(false);
 
-            // Delay the start of text animation by 2 seconds
             const delayTimer = setTimeout(() => {
                 setStartTextAnimation(true);
             }, 1000);
@@ -38,7 +57,7 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
     }, [isOpen]);
 
     useEffect(() => {
-        if (startTextAnimation) {
+        if (startTextAnimation && !hideText) {
             let index = 0;
             const intervalId = setInterval(() => {
                 if (index < text.length) {
@@ -48,43 +67,54 @@ const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, text }) => {
                     clearInterval(intervalId);
                     setIsTextComplete(true);
                 }
-            }, 50); // Adjust this value to control the speed of text appearance
+            }, 50);
             return () => clearInterval(intervalId);
         }
-    }, [startTextAnimation, text]);
+    }, [startTextAnimation, text, hideText]);
 
     return (
         <Credenza open={isOpen} onOpenChange={onClose}>
-            <CredenzaContent className="sm:max-w-[800px] max-h-[80vh]">
+            <CredenzaContent
+                className={cn(
+                    "sm:max-w-[800px] max-h-[90vh] w-[95vw] sm:w-[90vw]",
+                    className
+                )}
+            >
                 <CredenzaHeader>
-                    <CredenzaTitle className="text-3xl font-bold flex items-center">
-                        <Beaker className="mr-2 h-8 w-8" />
-                        Chemistry Explanation
+                    <CredenzaTitle className="text-xl sm:text-3xl font-bold flex items-center gap-2">
+                        {icon}
+                        {title}
                     </CredenzaTitle>
-                    <CredenzaDescription className="text-lg">
-                        Listen to the audio explanation of the concept.
+                    <CredenzaDescription className="text-base sm:text-lg text-muted-foreground">
+                        {description}
                     </CredenzaDescription>
                 </CredenzaHeader>
-                <CredenzaBody className="mt-6">
-                    <div className="space-y-4">
-                        <AnimatePresence>
-                            {startTextAnimation && displayedText && (
-                                <motion.p
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="text-lg leading-relaxed"
-                                >
-                                    {displayedText}
-                                </motion.p>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                    <div className="mt-8">
+                <CredenzaBody className="mt-4 sm:mt-6 flex flex-col gap-4">
+                    {!hideText && (
+                        <ScrollArea className="flex-grow h-[30vh] sm:h-[40vh] w-full rounded-md border p-4">
+                            <AnimatePresence>
+                                {startTextAnimation && displayedText && (
+                                    <motion.div
+                                        initial={{opacity: 0}}
+                                        animate={{opacity: 1}}
+                                        exit={{opacity: 0}}
+                                        className="text-base sm:text-lg leading-relaxed"
+                                    >
+                                        {displayedText}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </ScrollArea>
+                    )}
+                    <div className={cn(
+                        "w-full",
+                        hideText ? "mt-0" : "mt-4 sm:mt-6"
+                    )}>
                         <TextToSpeechPlayer
                             text={text}
                             autoPlay={true}
-                            onPlaybackEnd={() => {}}
+                            onPlaybackEnd={() => {
+                            }}
                         />
                     </div>
                 </CredenzaBody>

@@ -3,9 +3,10 @@
 import {configureStore, ThunkAction, Action} from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
-import {loggerMiddleware} from '@/lib/logger/redux-middleware';
+
 import {createRootReducer} from "@/lib/redux/rootReducer";
 import { socketMiddleware } from './socket/socketMiddleware';
+import { loggerMiddleware } from '@/utils/logger';
 
 
 const sagaMiddleware = createSagaMiddleware();

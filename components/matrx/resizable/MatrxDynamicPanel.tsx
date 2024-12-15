@@ -110,7 +110,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
         defaultExpanded = false,
         isExpanded: controlledExpanded,
         onExpandedChange,
-        defaultSize = 20,
+        defaultSize = 15,
         minSize = 1,
         maxSize = 100,
         header,
@@ -326,7 +326,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             >
                 <div
                     className={cn(
-                        "border-b p-3 flex items-center bg-background sticky top-0",
+                        "border-b p-3 flex items-center bg-background sticky top-0 scrollbar-none",
                         isVertical ? "justify-between" : "flex-wrap gap-2"
                     )}
                     style={{zIndex: 10}}
@@ -362,7 +362,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
                     </div>
                 </div>
                 <div
-                    className="overflow-auto"
+                    className="overflow-auto scrollbar-none"
                     style={{
                         height: 'calc(100% - 48px)',
                         touchAction: 'pan-y',

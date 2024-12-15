@@ -13,6 +13,7 @@ import {
     EntityMetadata,
     EntityMetrics, SelectionMode,
     EntityOperationMode,
+    QueryOptions,
 } from "@/lib/redux/entity/types/stateTypes";
 import {
     clearError,
@@ -29,19 +30,18 @@ import {
     removeSelections,
     setSpecificSelectionMode,
     handleSelectionForDeletedRecord,
-    setNewActiveRecord,
+    setNewActiveRecord, removeFromUnsavedRecords, checkAndUpdateUnsavedChanges,
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "./utils/entityLogger";
 import {
-    CreateRecordPayload, DeleteRecordPayload,
+    CreateRecordPayload, createRecordSuccessPayload, DeleteRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
     FetchOnePayload, FetchOneWithFkIfkPayload, FetchQuickReferencePayload, FetchRecordsPayload,
     getOrFetchSelectedRecordsPayload, UpdateRecordPayload
 } from "@/lib/redux/entity/actions";
-import {QueryOptions} from "./sagas/sagaHelpers";
 import {Callback} from "@/utils/callbackManager";
-import { EntityModeManager } from "./utils/crudOpsManagement";
+import {EntityModeManager} from "./utils/crudOpsManagement";
 
 
 export const createEntitySlice = <TEntity extends EntityKeys>(
@@ -234,7 +234,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<FetchQuickReferencePayload>
                         ) => {
-                            entityLogger.log('debug', 'fetchQuickReference', action.payload);
+                            entityLogger.log('info', 'fetchQuickReference', action.payload);
                             setLoading(state, 'FETCH_QUICK_REFERENCE');
                         },
                         fetchQuickReferenceSuccess: (
@@ -397,7 +397,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         },
 
 
-
                         setOperationMode: (
                             state: EntityState<TEntity>,
                             action: PayloadAction<EntityOperationMode>
@@ -426,9 +425,9 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 };
                                 return;
                             }
-                            setLoading(state, 'CREATE');
+                            // Since we are only STARTING the process, there is nothing to load so we use 'reverseLoading' = true
+                            setLoading(state, 'CREATE', true);
                         },
-
 
 
                         createRecord: (
@@ -447,14 +446,37 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         },
                         createRecordSuccess: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<EntityData<TEntity>>
+                            action: PayloadAction<createRecordSuccessPayload>
                         ) => {
-                            entityLogger.log('debug', 'createRecordSuccess', action.payload);
-                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                            state.records[recordKey] = action.payload;
+                            entityLogger.log('info', 'createRecordSuccess', action.payload);
+                            const preDebugData = {
+                                pendingOperations: state.pendingOperations,
+                                unsavedRecords: state.unsavedRecords,
+                                payload: action.payload
+                            }
+                            entityLogger.log('info','createRecordSuccess debugData:', preDebugData);
 
-                            // Let mode manager handle the transition back to view
+                            const tempId = action.payload.tempRecordId;
+                            const data = action.payload.data;
+
+                            state.pendingOperations = state.pendingOperations.filter(
+                                matrxRecordId => matrxRecordId !== tempId
+                            );
+                            removeFromUnsavedRecords(state, tempId);
+
+                            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, data);
+                            state.records[recordKey] = data;
+
+                            const postDebugData = {
+                                pendingOperations: state.pendingOperations,
+                                unsavedRecords: state.unsavedRecords,
+                                payload: action.payload
+                            }
+                            entityLogger.log('info','createRecordSuccess postDebugData:', postDebugData);
+
+
                             const result = modeManager.changeMode(state, 'view');
+
                             if (result.canProceed) {
                                 setNewActiveRecord(state, recordKey);
                                 setSuccess(state, 'CREATE');
@@ -482,7 +504,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<UpdateRecordPayload>
                         ) => {
-                            entityLogger.log('debug', 'updateRecord', action.payload);
+                            entityLogger.log('info', 'slice - updateRecord', action.payload);
                             const matrxRecordId = action.payload.matrxRecordId;
                             const unsavedData = state.unsavedRecords[matrxRecordId];
                             if (!unsavedData) {
@@ -533,10 +555,8 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                             state.records[recordKey] = record;
                             state.flags.isModified = true;
-                            state.flags.hasUnsavedChanges = true;
+                            // state.flags.hasUnsavedChanges = true;
                         },
-
-
 
                         updateUnsavedField: (
                             state: EntityState<TEntity>,
@@ -547,15 +567,17 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             }>
                         ) => {
                             const {recordId, field, value} = action.payload;
-                            if (state.unsavedRecords[recordId]?.[field] !== value) {
+                            const existingRecord = state.unsavedRecords[recordId];
+                            if (existingRecord?.[field] !== value) {
                                 state.unsavedRecords[recordId] = {
-                                    ...state.unsavedRecords[recordId],
+                                    ...existingRecord,
                                     [field]: value
                                 };
-
                                 if (!state.flags.hasUnsavedChanges) {
                                     state.flags.hasUnsavedChanges = true;
-                                    state.flags.operationMode = 'update';
+                                    if (state.flags.operationMode !== 'create') {
+                                        state.flags.operationMode = 'update';
+                                    }
                                 }
                             }
                         },
@@ -604,7 +626,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
                         ) => {
                             const recordKey = action.payload.matrxRecordId;
-                            entityLogger.log('debug', 'deleteRecordSuccess', {recordKey});
+                            entityLogger.log('info', 'deleteRecordSuccess', {recordKey});
                             delete state.records[recordKey];
                             handleSelectionForDeletedRecord(state, recordKey);
 
@@ -614,6 +636,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 state.records[state.selection.lastActiveRecord]) {
                                 setNewActiveRecord(state, state.selection.lastActiveRecord);
                             }
+                            checkAndUpdateUnsavedChanges(state);
 
                             setSuccess(state, 'DELETE');
                             state.flags.isModified = true;

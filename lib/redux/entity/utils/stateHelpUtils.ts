@@ -21,14 +21,24 @@ const utilsLogger = EntityLogger.createLoggerWithDefaults("UTILS", "NoEntity", "
 
 export const setLoading = <TEntity extends EntityKeys>(
     state: EntityState<TEntity>,
-    operation: EntityOperations
+    operation: EntityOperations,
+    reverseLoading: boolean = false
 ) => {
     const flagKey = `${operation}_STATUS` as keyof EntityOperationFlags;
 
-    utilsLogger.log('debug', `stateHelpUtils.ts setLoading Setting loading state for operation:`, operation);
+    const preState = {
+        operation: operation,
+        initialized: state.loading.initialized,
+        loading: state.loading.loading,
+        error: state.loading.error,
+        reverseLoading: reverseLoading,
+    }
+
+    utilsLogger.log('info', `stateHelpUtils.ts setLoading Setting loading state for operation:`, preState);
 
     // Ensure initialization
     if (!state.loading.initialized) {
+        utilsLogger.log('warn', 'stateHelpUtils.ts setLoading called but state.loading.initialized is false.');
         state.loading.initialized = true;
         state.loading.loading = false;
         state.loading.error = null;
@@ -52,6 +62,21 @@ export const setLoading = <TEntity extends EntityKeys>(
     state.loading.error = null;
     state.loading.lastOperation = operation;
     state.flags.operationFlags[flagKey] = 'LOADING';
+
+    if (reverseLoading) {
+        state.loading.loading = false;
+    }
+
+    const postState = {
+        operation: operation,
+        initialized: state.loading.initialized,
+        loading: state.loading.loading,
+        error: state.loading.error,
+        reverseLoading: reverseLoading,
+    }
+
+    utilsLogger.log('info', `stateHelpUtils.ts setLoading Finished:`, postState);
+
     return true;
 };
 
@@ -175,15 +200,32 @@ export const addToUnsavedRecords = (state, recordKey: MatrxRecordId) => {
     }
 };
 
-export const removeFromUnsavedRecords = (state, recordKey: MatrxRecordId) => {
-    if (state.unsavedRecords[recordKey]) {
-        delete state.unsavedRecords[recordKey];
-        utilsLogger.log('debug', 'Removed record from unsaved', { recordKey });
+export const checkAndUpdateUnsavedChanges = <TEntity extends EntityKeys>(state: EntityState<TEntity>) => {
+    const hasUnsavedRecords = Object.keys(state.unsavedRecords).length > 0;
+
+    if (!hasUnsavedRecords && state.flags.hasUnsavedChanges) {
+        state.flags.hasUnsavedChanges = false;
+        utilsLogger.log('debug', 'Cleared unsaved changes flag');
+    } else if (hasUnsavedRecords && !state.flags.hasUnsavedChanges) {
+        state.flags.hasUnsavedChanges = true;
+        utilsLogger.log('debug', 'Set unsaved changes flag');
     }
 };
 
-export const clearUnsavedRecords = (state) => {
+export const removeFromUnsavedRecords = <TEntity extends EntityKeys>(
+    state: EntityState<TEntity>,
+    recordKey: MatrxRecordId
+) => {
+    if (state.unsavedRecords[recordKey]) {
+        delete state.unsavedRecords[recordKey];
+        utilsLogger.log('debug', 'Removed record from unsaved', { recordKey });
+        checkAndUpdateUnsavedChanges(state);
+    }
+};
+
+export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntityState<TEntity>) => {
     state.unsavedRecords = {};
+    state.flags.hasUnsavedChanges = false;
     utilsLogger.log('debug', 'Cleared all unsaved records');
 };
 
@@ -456,7 +498,7 @@ export const parseMatrxRecordId = (
         if (field && value !== undefined) {
             acc[field as AllEntityFieldKeys] = value;
         } else {
-            throw new Error(`Invalid format in record key part: ${pair}`);
+            throw new Error(`parseMatrxRecordId Invalid format in record key part: ${pair}`);
         }
 
         return acc;
@@ -505,7 +547,7 @@ export const parseRecordKey = (key: MatrxRecordId): Record<AllEntityFieldKeys, u
         if (field && value !== undefined) {
             acc[field] = value;
         } else {
-            throw new Error(`Invalid format in record key part: ${pair}`);
+            throw new Error(`parseRecordKey Invalid format in record key part: ${pair}`);
         }
         return acc;
     }, {} as Record<AllEntityFieldKeys, unknown>);
