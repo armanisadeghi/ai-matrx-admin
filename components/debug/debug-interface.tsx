@@ -6,8 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, Filter, Search, Trash2, RefreshCw, MaximizeIcon, MinimizeIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { LogEntry, SchemaResolutionLog } from '@/lib/logger/types';
-import { LogStorage } from '@/lib/logger/storage';
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {LogEntry, LogStorage, SchemaResolutionLog} from '@/utils/logger';
 
 export default function DebugInterface() {
     const [activeTab, setActiveTab] = useState('app');

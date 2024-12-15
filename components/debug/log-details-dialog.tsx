@@ -5,7 +5,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { LogEntry } from "@/lib/logger/types";
+import { LogEntry } from "@/utils/logger";
 import { formatDistanceToNow } from 'date-fns';
 
 interface LogDetailsDialogProps {

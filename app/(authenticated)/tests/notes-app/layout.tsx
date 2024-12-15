@@ -23,11 +23,9 @@ export default function NotesLayout(
                 className="sticky top-0 z-10"
             />
             <main className="flex-1 overflow-hidden">
-                <StorageProvider>
                 <NotesManagerProvider>
-                        {children}
-                    </NotesManagerProvider>
-                </StorageProvider>
+                    {children}
+                </NotesManagerProvider>
             </main>
         </div>
     );
