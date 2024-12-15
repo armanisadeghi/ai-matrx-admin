@@ -1,8 +1,8 @@
 // app/api/logs/route.ts
 // STATUS: NEW FILE
 import { NextResponse } from 'next/server';
-import { LogEntry } from '@/lib/logger/types';
-import { logConfig } from '@/lib/logger/config';
+import { LogEntry } from '@/utils/logger';
+import { logConfig } from '@/utils/logger';
 
 export async function POST(request: Request) {
     try {

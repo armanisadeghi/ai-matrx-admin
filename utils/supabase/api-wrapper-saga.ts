@@ -11,7 +11,7 @@ import {
     EntityNameFormat,
     EntityRecord
 } from "@/types/entityTypes";
-import {schemaLogger} from "@/lib/logger/schema-logger";
+import {schemaLogger} from "@/utils/logger";
 import {RealtimeChannel} from "@supabase/realtime-js";
 type PostgrestResult<T> = {
     data: T | null;

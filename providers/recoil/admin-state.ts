@@ -1,4 +1,4 @@
-import {DetailLevel, LogLevel} from '@/lib/logger/types';
+import {DetailLevel, LogLevel} from '@/utils/logger';
 import {atom, selector} from 'recoil';
 
 export const ADMIN_DEBUG_DEFAULTS = {
