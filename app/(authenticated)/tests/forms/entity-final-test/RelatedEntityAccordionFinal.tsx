@@ -1,3 +1,14 @@
+// Modified hook interface (useFetchRelatedFinal.ts)
+interface UseFetchRelatedFinalResult {
+    records: Record<string, any>;
+    displayField: string;
+    hoveredItem: string | null;
+    setHoveredItem: (id: string | null) => void;
+    entityPrettyName: string;
+    hasRecords: boolean; // New field
+}
+
+// Component
 import * as React from 'react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui";
 import {cn} from "@/lib/utils";
@@ -18,7 +29,6 @@ export interface RelatedEntityAccordionFinalProps {
     className?: string;
 }
 
-
 function RelatedEntityAccordionFinal(
     {
         entityKey,
@@ -34,16 +44,17 @@ function RelatedEntityAccordionFinal(
         hoveredItem,
         setHoveredItem,
         entityPrettyName,
+        hasRecords,
+        recordCount,
     } = useFetchRelatedFinal({entityKey, activeEntityRecordId, activeEntityKey, fieldValue});
 
-    const layoutProps = getUpdatedUnifiedLayoutProps(unifiedLayoutProps, {
+    const layoutProps = React.useMemo(() => getUpdatedUnifiedLayoutProps(unifiedLayoutProps, {
         entityKey: entityKey,
         defaultFormComponent: 'ArmaniFormSmart',
         entitiesToHide: activeEntityKey ? [activeEntityKey] : undefined,
-    });
+    }), [unifiedLayoutProps, entityKey, activeEntityKey]);
 
-    console.log("===== Layout Props: ", layoutProps);
-    console.log("===== activeEntityKey: ", activeEntityKey);
+    if (!hasRecords) return null;
 
     return (
         <div className="col-span-full">
@@ -54,40 +65,39 @@ function RelatedEntityAccordionFinal(
             >
                 <div className="mb-2">
                     <h3 className="text-lg font-medium text-secondary-foreground px-3 py-1 inline-block rounded-md">
-                        Associated {entityPrettyName} Records
+                        {entityPrettyName} Records: {recordCount}
                     </h3>
                 </div>
-                {(Object.entries(records).map(([matrxRecordId, record]) => (
-                        <AccordionItem
-                            key={matrxRecordId}
-                            value={matrxRecordId}
+                {Object.entries(records).map(([matrxRecordId, record]) => (
+                    <AccordionItem
+                        key={matrxRecordId}
+                        value={matrxRecordId}
+                        className={cn(
+                            "border rounded-lg transition-colors duration-200",
+                            hoveredItem === matrxRecordId && "border-secondary"
+                        )}
+                        onMouseEnter={() => setHoveredItem(matrxRecordId)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                    >
+                        <AccordionTrigger
                             className={cn(
-                                "border rounded-lg transition-colors duration-200",
-                                hoveredItem === matrxRecordId && "border-secondary"
+                                "px-2 rounded-lg transition-colors duration-200",
+                                hoveredItem === matrxRecordId && "bg-secondary/50"
                             )}
-                            onMouseEnter={() => setHoveredItem(matrxRecordId)}
-                            onMouseLeave={() => setHoveredItem(null)}
                         >
-                            <AccordionTrigger
-                                className={cn(
-                                    "px-2 rounded-lg transition-colors duration-200",
-                                    hoveredItem === matrxRecordId && "bg-secondary/50"
-                                )}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <ChevronRight
-                                        className="h-5 w-5 text-primary shrink-0 transition-transform duration-200"/>
-                                    <span className="font-semibold text-primary">
-                                        {record[displayField] || '-'}
-                                    </span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <ArmaniFormFinal {...layoutProps} />
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))
-                )}
+                            <div className="flex items-center space-x-2">
+                                <ChevronRight
+                                    className="h-5 w-5 text-primary shrink-0 transition-transform duration-200"/>
+                                <span className="font-semibold text-primary">
+                                    {record[displayField] || '-'}
+                                </span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <ArmaniFormFinal {...layoutProps} />
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
             </Accordion>
         </div>
     );

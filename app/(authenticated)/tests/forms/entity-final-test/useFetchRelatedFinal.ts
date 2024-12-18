@@ -17,22 +17,6 @@ interface useFetchRelatedFinalParams {
     fieldValue?: any;
 }
 
-export type ViewModeOption = 'view' | 'edit' | 'create';
-
-export interface EntityBaseFieldProps {
-    entityKey: EntityKeys;
-    dynamicFieldInfo: EntityStateField;
-    value: any;
-    onChange: (value: any) => void;
-    density?: 'compact' | 'normal' | 'comfortable';
-    animationPreset?: 'none' | 'subtle' | 'smooth' | 'energetic' | 'playful' |  'feedback' | 'error';
-    size?: 'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
-    variant?: MatrxVariant;
-    labelPosition?: 'default' | 'left' | 'right' | 'top' | 'bottom';
-    disabled?: boolean;
-    floatingLabel?: boolean;
-    className?: string;
-}
 
 interface UseFetchRelatedReturn {
     records: Record<MatrxRecordId, any>;
@@ -45,6 +29,8 @@ interface UseFetchRelatedReturn {
     matrxRecordId: MatrxRecordId | null;
     individualFieldInfo: EntityStateField[] | null;
     entityPrettyName: AllEntityNameVariations;
+    hasRecords: boolean;
+    recordCount: number; // New field
 }
 
 export function useFetchRelatedFinal(
@@ -85,6 +71,14 @@ export function useFetchRelatedFinal(
 
     const {records, fieldInfo: individualFieldInfo, displayField} = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
 
+    // Compute both hasRecords and recordCount in a single memo
+    const {hasRecords, recordCount} = React.useMemo(() => {
+        const count = Object.keys(records).length;
+        return {
+            hasRecords: count > 0,
+            recordCount: count
+        };
+    }, [records]);
 
     React.useEffect(() => {
         if (matrxRecordId) {
@@ -111,13 +105,9 @@ export function useFetchRelatedFinal(
         return text.slice(0, maxLength) + '...';
     };
 
-
     // TODO: This hook needs to check for all of the relationship rules and maintain them.
     // For example, if it's one to one, it can't allow create operations.
     // Regardless, if there are any create operations, it needs to maintain the relationship.
-
-
-
 
     return {
         records,
@@ -130,5 +120,7 @@ export function useFetchRelatedFinal(
         matrxRecordId,
         individualFieldInfo,
         entityPrettyName,
+        hasRecords,
+        recordCount,
     };
 }

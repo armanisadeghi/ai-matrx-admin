@@ -6,14 +6,12 @@ import {getUnifiedLayoutProps} from './configs';
 
 export default function EntityManagementPage() {
     const layoutProps = getUnifiedLayoutProps({
-        entityKey: 'emails',
+        entityKey: 'recipe',
         defaultFormComponent: 'ArmaniFormSmart',
         quickReferenceType: 'LIST',
         isExpanded: true,
         handlers: {}
     });
-
-    console.log('EntityManagementPage: layoutProps:', layoutProps);
 
     return (
         <div className="flex-1 p-0 gap-0 ">

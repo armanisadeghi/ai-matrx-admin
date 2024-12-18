@@ -15,10 +15,6 @@ import {createEntitySelectors, useAppSelector} from "@/lib/redux";
 export const filterRelFields = (relationshipFields, entitiesToHide) => {
     const fields = relationshipFields || [];
     const entitiesToHideList = entitiesToHide || [];
-
-    console.log('======== relationshipFields: fields:', relationshipFields);
-    console.log('======== entitiesToHide:', entitiesToHide);
-
     return {
         filteredRelFields: fields.filter(field =>
             !entitiesToHideList.includes(field.entityName)
@@ -42,8 +38,6 @@ const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
         relationshipFields,
         unifiedLayoutProps.entitiesToHide
     );
-
-
     const {
         visibleFieldsInfo,
         allowedFieldsInfo,
@@ -128,19 +122,6 @@ const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
                         {filteredRelFields.map(renderRelationshipField)}
                     </div>
                 )}
-
-                <div className="space-y-2">
-                    {hiddenRelFields.length > 0 ? (
-                        hiddenRelFields.map(field => (
-                            <div key={field.entityName}>
-                                <p>Name: {field.name}</p>
-                                <p>Entity Name: {field.entityName}</p>
-                            </div>
-                        ))
-                    ) : (
-                        <p>None Hidden</p>
-                    )}
-                </div>
             </div>
         </div>
     );
