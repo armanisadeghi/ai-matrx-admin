@@ -1,11 +1,9 @@
-'use client';
-
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Play, Pause, RotateCcw, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, {useState, useRef, useEffect} from 'react';
+import {Card, CardContent} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Slider} from '@/components/ui/slider';
+import {Play, Pause, RotateCcw, AlertCircle} from 'lucide-react';
+import {Alert, AlertDescription} from '@/components/ui/alert';
 
 interface AudioPlayerTesterProps {
     blob?: Blob;
@@ -15,13 +13,14 @@ interface AudioPlayerTesterProps {
     onPositionChange?: (position: number) => void;
 }
 
-export default function AudioPlayerTester({
-                                              blob,
-                                              waveformData,
-                                              title,
-                                              duration,
-                                              onPositionChange
-                                          }: AudioPlayerTesterProps) {
+export default function AudioPlayerTester(
+    {
+        blob,
+        waveformData,
+        title,
+        duration,
+        onPositionChange
+    }: AudioPlayerTesterProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [audioDuration, setAudioDuration] = useState(duration || 0);
@@ -136,7 +135,7 @@ export default function AudioPlayerTester({
             <Card className="w-full">
                 <CardContent className="pt-6">
                     <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle className="h-4 w-4"/>
                         <AlertDescription className="ml-2">
                             {audioError}
                             {blob && (

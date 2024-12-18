@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import AudioPlayerTester from './AudioPlayerTester';
+
 import { useAudioStore } from '@/hooks/idb/useAudioStore';
 import { Recording, RecordingChunk, RecordingStatus } from '@/types/audioRecording.types';
+import AudioPlayerTester from './audioPlayerTester';
 
 const DEFAULT_CHUNK_SIZE = 4096;
 const DEFAULT_SAMPLE_RATE = 44100;

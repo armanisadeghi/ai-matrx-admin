@@ -8,6 +8,7 @@ const RecordView = (props) => {
     const [minute, setMinute] = useState("00");
     const [isActive, setIsActive] = useState(false);
     const [counter, setCounter] = useState(0);
+
     useEffect(() => {
         let intervalId;
 
@@ -16,14 +17,16 @@ const RecordView = (props) => {
                 const secondCounter = counter % 60;
                 const minuteCounter = Math.floor(counter / 60);
 
-                let computedSecond =
+                let computedSecond = String(
                     String(secondCounter).length === 1
                         ? `0${secondCounter}`
-                        : secondCounter;
-                let computedMinute =
+                        : secondCounter
+                );
+                let computedMinute = String(
                     String(minuteCounter).length === 1
                         ? `0${minuteCounter}`
-                        : minuteCounter;
+                        : minuteCounter
+                );
 
                 setSecond(computedSecond);
                 setMinute(computedMinute);
@@ -34,6 +37,7 @@ const RecordView = (props) => {
 
         return () => clearInterval(intervalId);
     }, [isActive, counter]);
+
 
     function stopTimer() {
         setIsActive(false);
