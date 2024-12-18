@@ -54,8 +54,6 @@ export function useFetchRelatedFinal(
         activeEntityKey,
         fieldValue,
     }: useFetchRelatedFinalParams): UseFetchRelatedReturn {
-    const quickReference = useQuickReference(entityKey);
-
     const dispatch = useAppDispatch();
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);

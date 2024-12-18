@@ -151,7 +151,8 @@ export function getUpdatedUnifiedLayoutProps(
         quickReferenceType?: QuickReferenceComponentType | string;
         isExpanded?: boolean;
         handlers?: UnifiedLayoutHandlers;
-        [key: string]: any; // Allow overriding any key in the existingProps
+        entitiesToHide?: EntityKeys[];
+        [key: string]: any;
     }
 ): UnifiedLayoutProps {
     const {
@@ -160,6 +161,7 @@ export function getUpdatedUnifiedLayoutProps(
         quickReferenceType = existingProps.dynamicLayoutOptions.componentOptions.quickReferenceType,
         isExpanded = existingProps.layoutState.isExpanded,
         handlers = existingProps.handlers,
+        entitiesToHide = existingProps.entitiesToHide,
         ...otherOverrides
     } = overrides || {};
 
@@ -200,5 +202,8 @@ export function getUpdatedUnifiedLayoutProps(
             ...otherOverrides.selectComponentOptions,
         },
         defaultFormComponent: defaultFormComponent,
+        entitiesToHide: Array.isArray(existingProps.entitiesToHide)
+            ? [...existingProps.entitiesToHide, ...(entitiesToHide || [])]
+            : entitiesToHide || [],
     };
 }

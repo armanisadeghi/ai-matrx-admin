@@ -11,12 +11,38 @@ import EntityBaseFieldFinal, {
 } from "@/app/(authenticated)/tests/forms/entity-final-test/EntityBaseFieldFinal";
 import {createEntitySelectors, useAppSelector} from "@/lib/redux";
 
+
+export const filterRelFields = (relationshipFields, entitiesToHide) => {
+    const fields = relationshipFields || [];
+    const entitiesToHideList = entitiesToHide || [];
+
+    console.log('======== relationshipFields: fields:', relationshipFields);
+    console.log('======== entitiesToHide:', entitiesToHide);
+
+    return {
+        filteredRelFields: fields.filter(field =>
+            !entitiesToHideList.includes(field.entityName)
+        ),
+        hiddenRelFields: fields.filter(field =>
+            entitiesToHideList.includes(field.entityName)
+        )
+    };
+};
+
+
+
 const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
     const { nativeFields, relationshipFields } = useAppSelector(selectors.selectFieldGroups);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
+
+    const { filteredRelFields, hiddenRelFields } = filterRelFields(
+        relationshipFields,
+        unifiedLayoutProps.entitiesToHide
+    );
+
 
     const {
         visibleFieldsInfo,
@@ -97,11 +123,24 @@ const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
                     </div>
                 )}
 
-                {relationshipFields.length > 0 && (
+                {filteredRelFields.length > 0 && (
                     <div className="space-y-2">
-                        {relationshipFields.map(renderRelationshipField)}
+                        {filteredRelFields.map(renderRelationshipField)}
                     </div>
                 )}
+
+                <div className="space-y-2">
+                    {hiddenRelFields.length > 0 ? (
+                        hiddenRelFields.map(field => (
+                            <div key={field.entityName}>
+                                <p>Name: {field.name}</p>
+                                <p>Entity Name: {field.entityName}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>None Hidden</p>
+                    )}
+                </div>
             </div>
         </div>
     );

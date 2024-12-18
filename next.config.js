@@ -6,7 +6,6 @@ const copyFiles = require('./utils/next-config/copyFiles');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     experimental: {
-        after: true,
         serverActions: {
             bodySizeLimit: '10mb',
         },

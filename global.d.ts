@@ -14,6 +14,11 @@ declare module 'immer' {
     type Draft<T> = T
 }
 
+export interface HTMLInputElement {
+    webkitdirectory?: boolean | string;
+}
+
+
 // declare namespace SchemaTypes {
 //     export * from './types/automationTableTypes.ts';
 // }

@@ -1,0 +1,118 @@
+{
+  "last_updated": "2024-12-16 14:02:38",
+  "table_count": 30,
+  "view_count": 2,
+  "tables_with_primary_key": 30,
+  "tables_without_primary_key": 0,
+  "no_primary_key_tables": [],
+  "total_columns": 212,
+  "unique_column_types": [
+    "_jsonb",
+    "int2",
+    "timestamptz",
+    "_uuid",
+    "json",
+    "jsonb",
+    "float4",
+    "int8",
+    "text",
+    "uuid",
+    "int4",
+    "bool",
+    "varchar"
+  ],
+  "most_common_column_types": {
+    "uuid": 59,
+    "text": 35,
+    "jsonb": 35,
+    "varchar": 25,
+    "bool": 12,
+    "timestamptz": 10,
+    "int2": 7,
+    "int4": 6,
+    "data_type": 3,
+    "int8": 2
+  },
+  "all_enum_base_types": [
+    "recipe_status",
+    "data_source",
+    "data_destination",
+    "data_type",
+    "broker_role",
+    "default_component",
+    "model_role",
+    "destination_component",
+    "function_role",
+    "cognition_matrices"
+  ],
+  "tables_by_size": [
+    "arg",
+    "recipe",
+    "user_preferences",
+    "ai_endpoint",
+    "ai_model"
+  ],
+  "views_by_size": [
+    "<View name=view_registered_function>",
+    "<View name=view_registered_function_all_rels>"
+  ],
+  "fetch_strategies": {
+    "simple": 30
+  },
+  "tables_with_foreign_keys": 17,
+  "tables_with_inverse_foreign_keys": 13,
+  "tables_with_many_to_many": 20,
+  "default_component_count": {
+    "UUID_FIELD": 59,
+    "INPUT": 25,
+    "TEXTAREA": 35,
+    "SWITCH": 12,
+    "JSON_EDITOR": 37,
+    "NUMBER_INPUT": 17,
+    "SELECT": 15,
+    "DATE_PICKER": 10,
+    "UUID_ARRAY": 2
+  },
+  "calc_validation_functions_count": {
+    "[]": 212
+  },
+  "calc_exclusion_rules_count": {
+    "[]": 212
+  },
+  "sub_component_props_count": {},
+  "estimated_row_counts": {
+    "registered_function": 16,
+    "recipe": 14,
+    "broker": 9,
+    "arg": 7,
+    "system_function": 3,
+    "emails": 2,
+    "extractor": 2,
+    "recipe_function": 2,
+    "tool": 2,
+    "ai_model": 1,
+    "automation_boundary_broker": 1,
+    "automation_matrix": 1,
+    "display_option": 1,
+    "processor": 1,
+    "recipe_broker": 1,
+    "recipe_display": 1,
+    "recipe_model": 1,
+    "recipe_processor": 1,
+    "recipe_tool": 1,
+    "transformer": 1,
+    "action": 0,
+    "ai_endpoint": 0,
+    "data_input_component": 0,
+    "data_output_component": 0,
+    "flashcard_data": -1,
+    "flashcard_history": -1,
+    "flashcard_images": -1,
+    "flashcard_set_relations": -1,
+    "flashcard_sets": -1,
+    "user_preferences": -1
+  },
+  "foreign_key_relationships_total": 26,
+  "referenced_by_relationships_total": 25,
+  "many_to_many_relationships_total": 36
+}

@@ -263,24 +263,32 @@ export const flashcardGrader_response_format = {
 
 
 async function location() {
-    const headersList = await headers();
-
-    const country = headersList.get("x-vercel-ip-country");
-    const region = headersList.get("x-vercel-ip-country-region");
-    const city = headersList.get("x-vercel-ip-city");
-
-    if (!country || !region || !city) return "unknown";
-
-    return `${city}, ${region}, ${country}`;
+    return 'Unknown'
 }
 
 async function time() {
-    const headersList = await headers();
-    return new Date().toLocaleString("en-US", {
-        timeZone: headersList.get("x-vercel-ip-timezone") || undefined,
-    });
+    return 'Unknown'
+
 }
 
+// async function location() {
+//     const headersList = await headers();
+//
+//     const country = headersList.get("x-vercel-ip-country");
+//     const region = headersList.get("x-vercel-ip-country-region");
+//     const city = headersList.get("x-vercel-ip-city");
+//
+//     if (!country || !region || !city) return "unknown";
+//
+//     return `${city}, ${region}, ${country}`;
+// }
+//
+// async function time() {
+//     const headersList = await headers();
+//     return new Date().toLocaleString("en-US", {
+//         timeZone: headersList.get("x-vercel-ip-timezone") || undefined,
+//     });
+// }
 
 
 

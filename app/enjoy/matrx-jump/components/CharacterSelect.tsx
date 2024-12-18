@@ -2,7 +2,10 @@
 'use client';
 
 import React from 'react';
-import { Square, Circle, Triangle, Star, Ghost, Bird } from 'lucide-react';
+import { Square, Circle, Triangle, Star, Ghost, Bird, Heart, Flower } from 'lucide-react';
+import { PiButterflyFill } from "react-icons/pi";
+import { GiSeaDragon } from "react-icons/gi";
+
 import type { Character } from '../types';
 
 const CHARACTERS: Character[] = [
@@ -67,7 +70,126 @@ const CHARACTERS: Character[] = [
         icon: Bird,
         name: 'Bird',
         render: (ctx, x, y, width, height) => {
-            ctx.ellipse(x + width/2, y + height/2, width/2, height/3, 0, 0, Math.PI * 2);
+            // Body
+            ctx.ellipse(x + width/2, y + height/2, width/3, height/4, 0, 0, Math.PI * 2);
+
+            // Head
+            ctx.moveTo(x + width*0.7, y + height/2);
+            ctx.arc(x + width*0.75, y + height/3, width/6, 0, Math.PI * 2);
+
+            // Beak
+            ctx.moveTo(x + width*0.85, y + height/3);
+            ctx.lineTo(x + width*0.95, y + height/3);
+            ctx.lineTo(x + width*0.85, y + height/2.8);
+            ctx.closePath();
+
+            // Wing
+            ctx.moveTo(x + width/2, y + height/2);
+            ctx.quadraticCurveTo(
+                x + width/2, y + height/4,
+                x + width*0.7, y + height/3
+            );
+        }
+    },
+    {
+        icon: PiButterflyFill ,
+        name: 'Butterfly',
+        render: (ctx, x, y, width, height) => {
+            // Left wing
+            ctx.moveTo(x + width/2, y + height/2);
+            ctx.bezierCurveTo(
+                x + width*0.2, y + height*0.2,
+                x + width*0.1, y + height*0.6,
+                x + width/2, y + height/2
+            );
+
+            // Right wing
+            ctx.moveTo(x + width/2, y + height/2);
+            ctx.bezierCurveTo(
+                x + width*0.8, y + height*0.2,
+                x + width*0.9, y + height*0.6,
+                x + width/2, y + height/2
+            );
+
+            // Body
+            ctx.moveTo(x + width/2, y + height*0.2);
+            ctx.lineTo(x + width/2, y + height*0.8);
+        }
+    },
+    {
+        icon: GiSeaDragon ,
+        name: 'Dragon',
+        render: (ctx, x, y, width, height) => {
+            // Body
+            ctx.moveTo(x + width*0.3, y + height/2);
+            ctx.bezierCurveTo(
+                x + width*0.4, y + height*0.3,
+                x + width*0.6, y + height*0.3,
+                x + width*0.7, y + height/2
+            );
+
+            // Head
+            ctx.moveTo(x + width*0.7, y + height/2);
+            ctx.arc(x + width*0.8, y + height*0.4, width*0.1, 0, Math.PI * 2);
+
+            // Spikes
+            for(let i = 0; i < 3; i++) {
+                const spikeX = x + width*(0.4 + i*0.15);
+                ctx.moveTo(spikeX, y + height*0.35);
+                ctx.lineTo(spikeX, y + height*0.2);
+            }
+
+            // Tail
+            ctx.moveTo(x + width*0.3, y + height/2);
+            ctx.quadraticCurveTo(
+                x + width*0.1, y + height*0.6,
+                x + width*0.2, y + height*0.7
+            );
+        }
+    },
+    {
+        icon: Heart,
+        name: 'Heart',
+        render: (ctx, x, y, width, height) => {
+            const topCurveHeight = height * 0.3;
+            ctx.moveTo(x + width/2, y + height);
+
+            // Left curve
+            ctx.bezierCurveTo(
+                x, y + height*0.7,
+                x, y + topCurveHeight,
+                x + width/2, y + topCurveHeight
+            );
+
+            // Right curve
+            ctx.bezierCurveTo(
+                x + width, y + topCurveHeight,
+                x + width, y + height*0.7,
+                x + width/2, y + height
+            );
+        }
+    },
+    {
+        icon: Flower,
+        name: 'Flower',
+        render: (ctx, x, y, width, height) => {
+            const centerX = x + width/2;
+            const centerY = y + height/2;
+            const petalSize = width/4;
+
+            // Draw 5 petals
+            for(let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5;
+                const petalX = centerX + Math.cos(angle) * petalSize;
+                const petalY = centerY + Math.sin(angle) * petalSize;
+
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(petalX, petalY, petalSize, 0, Math.PI * 2);
+            }
+
+            // Center of flower
+            ctx.moveTo(centerX + petalSize/2, centerY);
+            ctx.arc(centerX, centerY, petalSize/2, 0, Math.PI * 2);
         }
     }
 ];

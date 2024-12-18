@@ -134,6 +134,7 @@ export interface UnifiedLayoutProps {
     unifiedCrudHandlers?: UnifiedCrudHandlers;
     unifiedStepHandlers?: UnifiedStepHandlers;
     className?: string;
+    entitiesToHide?: EntityKeys[];
 }
 
 

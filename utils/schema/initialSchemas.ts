@@ -234,7 +234,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
-                foreignKeyReference: {'table': 'automation_matrix', 'column': 'description'},
+                foreignKeyReference: {'table': 'automation_matrix', 'column': 'id'},
                 description: '"Matrix" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
             },
             transformer: {
@@ -296,7 +296,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'action',
                 databaseTable: 'action',
-                foreignKeyReference: {'table': 'transformer', 'column': 'output_params'},
+                foreignKeyReference: {'table': 'transformer', 'column': 'id'},
                 description: '"Transformer" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Transformer.',
             },
             nodeType: {
@@ -453,6 +453,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                relationshipMap: {automation_matrix: 'id', transformer: 'id'},
             },
             transformerReference: {
                 fieldNameFormats: {
@@ -484,6 +485,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['transformer'][]>,
                 entityName: 'transformer',
                 databaseTable: 'transformer',
+                relationshipMap: {automation_matrix: 'id', transformer: 'id'},
             },
         },
         entityNameFormats: {
@@ -1717,13 +1719,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'recipe_model',
                 relatedColumn: 'ai_model',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'ai_model',
-                relatedTable: 'recipe',
-                relatedColumn: 'recipe',
-                junctionTable: 'recipe_model'
             }
         ],
     },
@@ -2228,7 +2223,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'arg',
                 databaseTable: 'arg',
-                foreignKeyReference: {'table': 'registered_function', 'column': '........pg.dropped.7........'},
+                foreignKeyReference: {'table': 'registered_function', 'column': 'id'},
                 description: '"Registered Function" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
             },
             registeredFunctionReference: {
@@ -2261,6 +2256,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                relationshipMap: {registered_function: 'id'},
             },
         },
         entityNameFormats: {
@@ -2447,7 +2443,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
-                foreignKeyReference: {'table': 'automation_matrix', 'column': 'name'},
+                foreignKeyReference: {'table': 'automation_matrix', 'column': 'id'},
                 description: '"Matrix" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
             },
             broker: {
@@ -2509,7 +2505,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'automationBoundaryBroker',
                 databaseTable: 'automation_boundary_broker',
-                foreignKeyReference: {'table': 'broker', 'column': 'value'},
+                foreignKeyReference: {'table': 'broker', 'column': 'id'},
                 description: '"Broker" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             sparkSource: {
@@ -2724,6 +2720,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                relationshipMap: {broker: 'id', automation_matrix: 'id'},
             },
             automationMatrixReference: {
                 fieldNameFormats: {
@@ -2755,6 +2752,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['automationMatrix'][]>,
                 entityName: 'automationMatrix',
                 databaseTable: 'automation_matrix',
+                relationshipMap: {broker: 'id', automation_matrix: 'id'},
             },
         },
         entityNameFormats: {
@@ -3321,20 +3319,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'automation_boundary_broker',
                 relatedColumn: 'matrix',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'matrix',
-                relatedTable: 'transformer',
-                relatedColumn: 'transformer',
-                junctionTable: 'action'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'matrix',
-                relatedTable: 'broker',
-                relatedColumn: 'broker',
-                junctionTable: 'automation_boundary_broker'
             }
         ],
     },
@@ -4186,7 +4170,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'broker',
                 databaseTable: 'broker',
-                foreignKeyReference: {'table': 'data_input_component', 'column': 'color_overrides'},
+                foreignKeyReference: {'table': 'data_input_component', 'column': 'id'},
                 description: '"Custom Source Component" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.',
             },
             additionalParams: {
@@ -4815,6 +4799,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['dataInputComponent'][]>,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
+                relationshipMap: {data_input_component: 'id'},
             },
             recipeBrokerInverse: {
                 fieldNameFormats: {
@@ -4950,20 +4935,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'automation_boundary_broker',
                 relatedColumn: 'broker',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'broker',
-                relatedTable: 'automation_matrix',
-                relatedColumn: 'matrix',
-                junctionTable: 'automation_boundary_broker'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'broker',
-                relatedTable: 'recipe',
-                relatedColumn: 'recipe',
-                junctionTable: 'recipe_broker'
             }
         ],
     },
@@ -5893,7 +5864,7 @@ export const initialAutomationTableSchema = {
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:component',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:component',
 
-                dataType: 'any // ERROR! Original Value: default_component Type Not Found!' as const,
+                dataType: 'string' as const,
                 isRequired: true,
                 maxLength: null,
                 isArray: false,
@@ -6053,7 +6024,7 @@ export const initialAutomationTableSchema = {
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',
                 foreignKeyReference: null,
-                description: '"Component" field for dataInputComponent. This is a required field. Your entry must be an any // ERROR! Original Value: default_component Type Not Found! data type.',
+                description: '"Component" field for dataInputComponent. This is a required field. Your entry must be an string data type.',
             },
             brokerInverse: {
                 fieldNameFormats: {
@@ -7142,13 +7113,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'recipe_display',
                 relatedColumn: 'display',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'display',
-                relatedTable: 'recipe',
-                relatedColumn: 'recipe',
-                junctionTable: 'recipe_display'
             }
         ],
     },
@@ -8199,8 +8163,8 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
-                foreignKeyReference: {'table': 'auth.users', 'column': 'id'},
-                description: '"User Id" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
+                foreignKeyReference: {'table': 'users', 'column': 'id'},
+                description: '"User Id" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
             },
             topic: {
                 fieldNameFormats: {
@@ -9197,13 +9161,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'flashcard_images',
                 relatedColumn: 'flashcard_id',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'flashcard_id',
-                relatedTable: 'flashcard_sets',
-                relatedColumn: 'set_id',
-                junctionTable: 'flashcard_set_relations'
             }
         ],
     },
@@ -9369,7 +9326,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
-                foreignKeyReference: {'table': 'flashcard_data', 'column': 'user_id'},
+                foreignKeyReference: {'table': 'flashcard_data', 'column': 'id'},
                 description: '"Flashcard Id" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             userId: {
@@ -9431,8 +9388,8 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardHistory',
                 databaseTable: 'flashcard_history',
-                foreignKeyReference: {'table': 'auth.users', 'column': 'aud'},
-                description: '"User Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
+                foreignKeyReference: {'table': 'users', 'column': 'id'},
+                description: '"User Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
             },
             reviewCount: {
                 fieldNameFormats: {
@@ -9774,6 +9731,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                relationshipMap: {flashcard_data: 'id'},
             },
         },
         entityNameFormats: {
@@ -9960,7 +9918,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardImages',
                 databaseTable: 'flashcard_images',
-                foreignKeyReference: {'table': 'flashcard_data', 'column': 'user_id'},
+                foreignKeyReference: {'table': 'flashcard_data', 'column': 'id'},
                 description: '"Flashcard Id" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
             },
             filePath: {
@@ -10303,6 +10261,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                relationshipMap: {flashcard_data: 'id'},
             },
         },
         entityNameFormats: {
@@ -10492,7 +10451,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSetRelations',
                 databaseTable: 'flashcard_set_relations',
-                foreignKeyReference: {'table': 'flashcard_sets', 'column': 'user_id'},
+                foreignKeyReference: {'table': 'flashcard_sets', 'column': 'set_id'},
                 description: '"Set Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardSets.',
             },
             order: {
@@ -10587,6 +10546,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardData'][]>,
                 entityName: 'flashcardData',
                 databaseTable: 'flashcard_data',
+                relationshipMap: {flashcard_data: 'id', flashcard_sets: 'set_id'},
             },
             flashcardSetsReference: {
                 fieldNameFormats: {
@@ -10618,6 +10578,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['flashcardSets'][]>,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
+                relationshipMap: {flashcard_data: 'id', flashcard_sets: 'set_id'},
             },
         },
         entityNameFormats: {
@@ -10811,8 +10772,8 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'flashcardSets',
                 databaseTable: 'flashcard_sets',
-                foreignKeyReference: {'table': 'auth.users', 'column': 'id'},
-                description: '"User Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
+                foreignKeyReference: {'table': 'users', 'column': 'id'},
+                description: '"User Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
             },
             name: {
                 fieldNameFormats: {
@@ -11423,13 +11384,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'flashcard_set_relations',
                 relatedColumn: 'set_id',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'set_id',
-                relatedTable: 'flashcard_data',
-                relatedColumn: 'flashcard_id',
-                junctionTable: 'flashcard_set_relations'
             }
         ],
     },
@@ -11657,7 +11611,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'processor',
                 databaseTable: 'processor',
-                foreignKeyReference: {'table': 'processor', 'column': 'depends_default'},
+                foreignKeyReference: {'table': 'processor', 'column': 'id'},
                 description: '"Depends Default" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Processor.',
             },
             defaultExtractors: {
@@ -11814,6 +11768,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                relationshipMap: {None: 'id'},
             },
             recipeProcessorInverse: {
                 fieldNameFormats: {
@@ -11873,13 +11828,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'recipe_processor',
                 relatedColumn: 'processor',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'processor',
-                relatedTable: 'recipe',
-                relatedColumn: 'recipe',
-                junctionTable: 'recipe_processor'
             }
         ],
     },
@@ -12810,48 +12758,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'recipe_function',
                 relatedColumn: 'recipe',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'recipe',
-                relatedTable: 'broker',
-                relatedColumn: 'broker',
-                junctionTable: 'recipe_broker'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'recipe',
-                relatedTable: 'display_option',
-                relatedColumn: 'display',
-                junctionTable: 'recipe_display'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'recipe',
-                relatedTable: 'system_function',
-                relatedColumn: 'function',
-                junctionTable: 'recipe_function'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'recipe',
-                relatedTable: 'ai_model',
-                relatedColumn: 'ai_model',
-                junctionTable: 'recipe_model'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'recipe',
-                relatedTable: 'processor',
-                relatedColumn: 'processor',
-                junctionTable: 'recipe_processor'
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'recipe',
-                relatedTable: 'tool',
-                relatedColumn: 'tool',
-                junctionTable: 'recipe_tool'
             }
         ],
     },
@@ -13017,7 +12923,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
-                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
+                foreignKeyReference: {'table': 'recipe', 'column': 'id'},
                 description: '"Recipe" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             broker: {
@@ -13079,7 +12985,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeBroker',
                 databaseTable: 'recipe_broker',
-                foreignKeyReference: {'table': 'broker', 'column': 'value'},
+                foreignKeyReference: {'table': 'broker', 'column': 'id'},
                 description: '"Broker" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             brokerRole: {
@@ -13245,6 +13151,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                relationshipMap: {broker: 'id', recipe: 'id'},
             },
             recipeReference: {
                 fieldNameFormats: {
@@ -13276,6 +13183,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                relationshipMap: {broker: 'id', recipe: 'id'},
             },
         },
         entityNameFormats: {
@@ -13469,7 +13377,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
-                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
+                foreignKeyReference: {'table': 'recipe', 'column': 'id'},
                 description: '"Recipe" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             display: {
@@ -13531,7 +13439,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeDisplay',
                 databaseTable: 'recipe_display',
-                foreignKeyReference: {'table': 'display_option', 'column': 'default_params'},
+                foreignKeyReference: {'table': 'display_option', 'column': 'id'},
                 description: '"Display" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a DisplayOption.',
             },
             priority: {
@@ -13688,6 +13596,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['displayOption'][]>,
                 entityName: 'displayOption',
                 databaseTable: 'display_option',
+                relationshipMap: {display_option: 'id', recipe: 'id'},
             },
             recipeReference: {
                 fieldNameFormats: {
@@ -13719,6 +13628,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                relationshipMap: {display_option: 'id', recipe: 'id'},
             },
         },
         entityNameFormats: {
@@ -13912,7 +13822,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
-                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
+                foreignKeyReference: {'table': 'recipe', 'column': 'id'},
                 description: '"Recipe" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             function: {
@@ -13974,7 +13884,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeFunction',
                 databaseTable: 'recipe_function',
-                foreignKeyReference: {'table': 'system_function', 'column': 'description'},
+                foreignKeyReference: {'table': 'system_function', 'column': 'id'},
                 description: '"Function" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
             },
             role: {
@@ -14164,6 +14074,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                relationshipMap: {system_function: 'id', recipe: 'id'},
             },
             recipeReference: {
                 fieldNameFormats: {
@@ -14195,6 +14106,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                relationshipMap: {system_function: 'id', recipe: 'id'},
             },
         },
         entityNameFormats: {
@@ -14388,7 +14300,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
-                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
+                foreignKeyReference: {'table': 'recipe', 'column': 'id'},
                 description: '"Recipe" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             aiModel: {
@@ -14450,7 +14362,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeModel',
                 databaseTable: 'recipe_model',
-                foreignKeyReference: {'table': 'ai_model', 'column': 'common_name'},
+                foreignKeyReference: {'table': 'ai_model', 'column': 'id'},
                 description: '"Ai Model" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a AiModel.',
             },
             role: {
@@ -14620,6 +14532,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['aiModel'][]>,
                 entityName: 'aiModel',
                 databaseTable: 'ai_model',
+                relationshipMap: {ai_model: 'id', recipe: 'id'},
             },
             recipeReference: {
                 fieldNameFormats: {
@@ -14651,6 +14564,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                relationshipMap: {ai_model: 'id', recipe: 'id'},
             },
         },
         entityNameFormats: {
@@ -14844,7 +14758,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
-                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
+                foreignKeyReference: {'table': 'recipe', 'column': 'id'},
                 description: '"Recipe" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             processor: {
@@ -14906,7 +14820,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeProcessor',
                 databaseTable: 'recipe_processor',
-                foreignKeyReference: {'table': 'processor', 'column': 'depends_default'},
+                foreignKeyReference: {'table': 'processor', 'column': 'id'},
                 description: '"Processor" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Processor.',
             },
             params: {
@@ -15001,6 +14915,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['processor'][]>,
                 entityName: 'processor',
                 databaseTable: 'processor',
+                relationshipMap: {processor: 'id', recipe: 'id'},
             },
             recipeReference: {
                 fieldNameFormats: {
@@ -15032,6 +14947,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                relationshipMap: {processor: 'id', recipe: 'id'},
             },
         },
         entityNameFormats: {
@@ -15225,7 +15141,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
-                foreignKeyReference: {'table': 'recipe', 'column': 'name'},
+                foreignKeyReference: {'table': 'recipe', 'column': 'id'},
                 description: '"Recipe" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
             },
             tool: {
@@ -15287,7 +15203,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'recipeTool',
                 databaseTable: 'recipe_tool',
-                foreignKeyReference: {'table': 'tool', 'column': 'source'},
+                foreignKeyReference: {'table': 'tool', 'column': 'id'},
                 description: '"Tool" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Tool.',
             },
             params: {
@@ -15382,6 +15298,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['recipe'][]>,
                 entityName: 'recipe',
                 databaseTable: 'recipe',
+                relationshipMap: {recipe: 'id', tool: 'id'},
             },
             toolReference: {
                 fieldNameFormats: {
@@ -15413,6 +15330,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['tool'][]>,
                 entityName: 'tool',
                 databaseTable: 'tool',
+                relationshipMap: {recipe: 'id', tool: 'id'},
             },
         },
         entityNameFormats: {
@@ -15854,7 +15772,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
-                foreignKeyReference: {'table': 'broker', 'column': 'display_name'},
+                foreignKeyReference: {'table': 'broker', 'column': 'id'},
                 description: '"Return Broker" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
             },
             brokerReference: {
@@ -15887,6 +15805,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['broker'][]>,
                 entityName: 'broker',
                 databaseTable: 'broker',
+                relationshipMap: {broker: 'id'},
             },
             systemFunctionInverse: {
                 fieldNameFormats: {
@@ -16459,7 +16378,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
-                foreignKeyReference: {'table': 'registered_function', 'column': '........pg.dropped.7........'},
+                foreignKeyReference: {'table': 'registered_function', 'column': 'id'},
                 description: '"Rf Id" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
             },
             registeredFunctionReference: {
@@ -16492,6 +16411,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['registeredFunction'][]>,
                 entityName: 'registeredFunction',
                 databaseTable: 'registered_function',
+                relationshipMap: {registered_function: 'id'},
             },
             toolInverse: {
                 fieldNameFormats: {
@@ -16589,13 +16509,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'recipe_function',
                 relatedColumn: 'function',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'function',
-                relatedTable: 'recipe',
-                relatedColumn: 'recipe',
-                junctionTable: 'recipe_function'
             }
         ],
     },
@@ -17071,7 +16984,7 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'tool',
                 databaseTable: 'tool',
-                foreignKeyReference: {'table': 'system_function', 'column': 'rf_id'},
+                foreignKeyReference: {'table': 'system_function', 'column': 'id'},
                 description: '"System Function" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
             },
             additionalParams: {
@@ -17166,6 +17079,7 @@ export const initialAutomationTableSchema = {
                 typeReference: {} as TypeBrand<TableSchemaStructure['systemFunction'][]>,
                 entityName: 'systemFunction',
                 databaseTable: 'system_function',
+                relationshipMap: {system_function: 'id'},
             },
             recipeToolInverse: {
                 fieldNameFormats: {
@@ -17225,13 +17139,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'recipe_tool',
                 relatedColumn: 'tool',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'tool',
-                relatedTable: 'recipe',
-                relatedColumn: 'recipe',
-                junctionTable: 'recipe_tool'
             }
         ],
     },
@@ -17575,13 +17482,6 @@ export const initialAutomationTableSchema = {
                 relatedTable: 'action',
                 relatedColumn: 'transformer',
                 junctionTable: null
-            },
-            {
-                relationshipType: 'manyToMany',
-                column: 'transformer',
-                relatedTable: 'automation_matrix',
-                relatedColumn: 'matrix',
-                junctionTable: 'action'
             }
         ],
     },
@@ -17685,8 +17585,8 @@ export const initialAutomationTableSchema = {
                 enumValues: null,
                 entityName: 'userPreferences',
                 databaseTable: 'user_preferences',
-                foreignKeyReference: {'table': 'auth.users', 'column': 'instance_id'},
-                description: '"User Id" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a AuthUsers.',
+                foreignKeyReference: {'table': 'users', 'column': 'id'},
+                description: '"User Id" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
             },
             preferences: {
                 fieldNameFormats: {

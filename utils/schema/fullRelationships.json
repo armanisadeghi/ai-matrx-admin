@@ -1,0 +1,1047 @@
+{
+  "flashcardHistory": {
+    "self-referential": [],
+    "many-to-many": [
+      "flashcardData"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "flashcardHistory",
+      "table_name": "flashcard_history",
+      "foreignKeys": {
+        "flashcardData": {
+          "foreign_table": "flashcard_data",
+          "foreign_entity": "flashcardData",
+          "column": "flashcard_id",
+          "fieldName": "flashcard_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "flashcard_history_flashcard_id_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "flashcardSets": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "flashcardSetRelations"
+    ],
+    "relationshipDetails": {
+      "entityName": "flashcardSets",
+      "table_name": "flashcard_sets",
+      "foreignKeys": {},
+      "referencedBy": {
+        "flashcardSetRelations": {
+          "foreign_table": "flashcard_set_relations",
+          "foreign_entity": "flashcardSetRelations",
+          "field": "set_id",
+          "column": "set_id",
+          "foreign_field": "set_id",
+          "foreign_column": "set_id",
+          "constraint_name": "flashcard_set_relations_set_id_fkey"
+        }
+      }
+    }
+  },
+  "emails": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "emails",
+      "table_name": "emails",
+      "foreignKeys": {},
+      "referencedBy": {}
+    }
+  },
+  "flashcardSetRelations": {
+    "self-referential": [],
+    "many-to-many": [
+      "flashcardData",
+      "flashcardSets"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "flashcardSetRelations",
+      "table_name": "flashcard_set_relations",
+      "foreignKeys": {
+        "flashcardData": {
+          "foreign_table": "flashcard_data",
+          "foreign_entity": "flashcardData",
+          "column": "flashcard_id",
+          "fieldName": "flashcard_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "flashcard_set_relations_flashcard_id_fkey"
+        },
+        "flashcardSets": {
+          "foreign_table": "flashcard_sets",
+          "foreign_entity": "flashcardSets",
+          "column": "set_id",
+          "fieldName": "set_id",
+          "foreign_field": "set_id",
+          "foreign_column": "set_id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "flashcard_set_relations_set_id_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "flashcardImages": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [
+      "flashcardData"
+    ],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "flashcardImages",
+      "table_name": "flashcard_images",
+      "foreignKeys": {
+        "flashcardData": {
+          "foreign_table": "flashcard_data",
+          "foreign_entity": "flashcardData",
+          "column": "flashcard_id",
+          "fieldName": "flashcard_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-one",
+          "constraint_name": "flashcard_images_flashcard_id_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "flashcardData": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "flashcardHistory",
+      "flashcardSetRelations",
+      "flashcardImages"
+    ],
+    "relationshipDetails": {
+      "entityName": "flashcardData",
+      "table_name": "flashcard_data",
+      "foreignKeys": {},
+      "referencedBy": {
+        "flashcardHistory": {
+          "foreign_table": "flashcard_history",
+          "foreign_entity": "flashcardHistory",
+          "field": "flashcard_id",
+          "column": "flashcard_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "flashcard_history_flashcard_id_fkey"
+        },
+        "flashcardSetRelations": {
+          "foreign_table": "flashcard_set_relations",
+          "foreign_entity": "flashcardSetRelations",
+          "field": "flashcard_id",
+          "column": "flashcard_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "flashcard_set_relations_flashcard_id_fkey"
+        },
+        "flashcardImages": {
+          "foreign_table": "flashcard_images",
+          "foreign_entity": "flashcardImages",
+          "field": "flashcard_id",
+          "column": "flashcard_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "flashcard_images_flashcard_id_fkey"
+        }
+      }
+    }
+  },
+  "recipeDisplay": {
+    "self-referential": [],
+    "many-to-many": [
+      "displayOption",
+      "recipe"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "recipeDisplay",
+      "table_name": "recipe_display",
+      "foreignKeys": {
+        "displayOption": {
+          "foreign_table": "display_option",
+          "foreign_entity": "displayOption",
+          "column": "display",
+          "fieldName": "display",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_display_display_fkey"
+        },
+        "recipe": {
+          "foreign_table": "recipe",
+          "foreign_entity": "recipe",
+          "column": "recipe",
+          "fieldName": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_display_recipe_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "recipeProcessor": {
+    "self-referential": [],
+    "many-to-many": [
+      "processor",
+      "recipe"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "recipeProcessor",
+      "table_name": "recipe_processor",
+      "foreignKeys": {
+        "processor": {
+          "foreign_table": "processor",
+          "foreign_entity": "processor",
+          "column": "processor",
+          "fieldName": "processor",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_processors_processor_fkey"
+        },
+        "recipe": {
+          "foreign_table": "recipe",
+          "foreign_entity": "recipe",
+          "column": "recipe",
+          "fieldName": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_processors_recipe_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "aiEndpoint": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "aiEndpoint",
+      "table_name": "ai_endpoint",
+      "foreignKeys": {},
+      "referencedBy": {}
+    }
+  },
+  "action": {
+    "self-referential": [],
+    "many-to-many": [
+      "automationMatrix",
+      "transformer"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "action",
+      "table_name": "action",
+      "foreignKeys": {
+        "automationMatrix": {
+          "foreign_table": "automation_matrix",
+          "foreign_entity": "automationMatrix",
+          "column": "matrix",
+          "fieldName": "matrix",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "action_matrix_fkey"
+        },
+        "transformer": {
+          "foreign_table": "transformer",
+          "foreign_entity": "transformer",
+          "column": "transformer",
+          "fieldName": "transformer",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "action_transformer_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "aiModel": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "recipeModel"
+    ],
+    "relationshipDetails": {
+      "entityName": "aiModel",
+      "table_name": "ai_model",
+      "foreignKeys": {},
+      "referencedBy": {
+        "recipeModel": {
+          "foreign_table": "recipe_model",
+          "foreign_entity": "recipeModel",
+          "field": "ai_model",
+          "column": "ai_model",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_model_ai_model_fkey"
+        }
+      }
+    }
+  },
+  "automationMatrix": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "action",
+      "automationBoundaryBroker"
+    ],
+    "relationshipDetails": {
+      "entityName": "automationMatrix",
+      "table_name": "automation_matrix",
+      "foreignKeys": {},
+      "referencedBy": {
+        "action": {
+          "foreign_table": "action",
+          "foreign_entity": "action",
+          "field": "matrix",
+          "column": "matrix",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "action_matrix_fkey"
+        },
+        "automationBoundaryBroker": {
+          "foreign_table": "automation_boundary_broker",
+          "foreign_entity": "automationBoundaryBroker",
+          "field": "matrix",
+          "column": "matrix",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "boundary_brokers_matrix_fkey"
+        }
+      }
+    }
+  },
+  "dataInputComponent": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "broker"
+    ],
+    "relationshipDetails": {
+      "entityName": "dataInputComponent",
+      "table_name": "data_input_component",
+      "foreignKeys": {},
+      "referencedBy": {
+        "broker": {
+          "foreign_table": "broker",
+          "foreign_entity": "broker",
+          "field": "custom_source_component",
+          "column": "custom_source_component",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "broker_custom_component_fkey"
+        }
+      }
+    }
+  },
+  "dataOutputComponent": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "dataOutputComponent",
+      "table_name": "data_output_component",
+      "foreignKeys": {},
+      "referencedBy": {}
+    }
+  },
+  "extractor": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "extractor",
+      "table_name": "extractor",
+      "foreignKeys": {},
+      "referencedBy": {}
+    }
+  },
+  "recipe": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "recipeDisplay",
+      "recipeProcessor",
+      "recipeModel",
+      "recipeBroker",
+      "recipeTool",
+      "recipeFunction"
+    ],
+    "relationshipDetails": {
+      "entityName": "recipe",
+      "table_name": "recipe",
+      "foreignKeys": {},
+      "referencedBy": {
+        "recipeDisplay": {
+          "foreign_table": "recipe_display",
+          "foreign_entity": "recipeDisplay",
+          "field": "recipe",
+          "column": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_display_recipe_fkey"
+        },
+        "recipeProcessor": {
+          "foreign_table": "recipe_processor",
+          "foreign_entity": "recipeProcessor",
+          "field": "recipe",
+          "column": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_processors_recipe_fkey"
+        },
+        "recipeModel": {
+          "foreign_table": "recipe_model",
+          "foreign_entity": "recipeModel",
+          "field": "recipe",
+          "column": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_model_recipe_fkey"
+        },
+        "recipeBroker": {
+          "foreign_table": "recipe_broker",
+          "foreign_entity": "recipeBroker",
+          "field": "recipe",
+          "column": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_broker_recipe_fkey"
+        },
+        "recipeTool": {
+          "foreign_table": "recipe_tool",
+          "foreign_entity": "recipeTool",
+          "field": "recipe",
+          "column": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_tools_recipe_fkey"
+        },
+        "recipeFunction": {
+          "foreign_table": "recipe_function",
+          "foreign_entity": "recipeFunction",
+          "field": "recipe",
+          "column": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_function_recipe_fkey"
+        }
+      }
+    }
+  },
+  "recipeBroker": {
+    "self-referential": [],
+    "many-to-many": [
+      "broker",
+      "recipe"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "recipeBroker",
+      "table_name": "recipe_broker",
+      "foreignKeys": {
+        "broker": {
+          "foreign_table": "broker",
+          "foreign_entity": "broker",
+          "column": "broker",
+          "fieldName": "broker",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_broker_broker_fkey"
+        },
+        "recipe": {
+          "foreign_table": "recipe",
+          "foreign_entity": "recipe",
+          "column": "recipe",
+          "fieldName": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_broker_recipe_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "recipeModel": {
+    "self-referential": [],
+    "many-to-many": [
+      "aiModel",
+      "recipe"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "recipeModel",
+      "table_name": "recipe_model",
+      "foreignKeys": {
+        "aiModel": {
+          "foreign_table": "ai_model",
+          "foreign_entity": "aiModel",
+          "column": "ai_model",
+          "fieldName": "ai_model",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_model_ai_model_fkey"
+        },
+        "recipe": {
+          "foreign_table": "recipe",
+          "foreign_entity": "recipe",
+          "column": "recipe",
+          "fieldName": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_model_recipe_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "systemFunction": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [
+      "registeredFunction"
+    ],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "tool",
+      "recipeFunction"
+    ],
+    "relationshipDetails": {
+      "entityName": "systemFunction",
+      "table_name": "system_function",
+      "foreignKeys": {
+        "registeredFunction": {
+          "foreign_table": "registered_function",
+          "foreign_entity": "registeredFunction",
+          "column": "rf_id",
+          "fieldName": "rf_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-one",
+          "constraint_name": "system_function_function_fkey"
+        }
+      },
+      "referencedBy": {
+        "tool": {
+          "foreign_table": "tool",
+          "foreign_entity": "tool",
+          "field": "system_function",
+          "column": "system_function",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "tool_system_function_fkey"
+        },
+        "recipeFunction": {
+          "foreign_table": "recipe_function",
+          "foreign_entity": "recipeFunction",
+          "field": "function",
+          "column": "function",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_function_function_fkey"
+        }
+      }
+    }
+  },
+  "tool": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [
+      "systemFunction"
+    ],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "recipeTool"
+    ],
+    "relationshipDetails": {
+      "entityName": "tool",
+      "table_name": "tool",
+      "foreignKeys": {
+        "systemFunction": {
+          "foreign_table": "system_function",
+          "foreign_entity": "systemFunction",
+          "column": "system_function",
+          "fieldName": "system_function",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-one",
+          "constraint_name": "tool_system_function_fkey"
+        }
+      },
+      "referencedBy": {
+        "recipeTool": {
+          "foreign_table": "recipe_tool",
+          "foreign_entity": "recipeTool",
+          "field": "tool",
+          "column": "tool",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_tools_tool_fkey"
+        }
+      }
+    }
+  },
+  "registeredFunction": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [
+      "broker"
+    ],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "systemFunction",
+      "arg"
+    ],
+    "relationshipDetails": {
+      "entityName": "registeredFunction",
+      "table_name": "registered_function",
+      "foreignKeys": {
+        "broker": {
+          "foreign_table": "broker",
+          "foreign_entity": "broker",
+          "column": "return_broker",
+          "fieldName": "return_broker",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-one",
+          "constraint_name": "registered_function_return_broker_fkey"
+        }
+      },
+      "referencedBy": {
+        "systemFunction": {
+          "foreign_table": "system_function",
+          "foreign_entity": "systemFunction",
+          "field": "rf_id",
+          "column": "rf_id",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "system_function_function_fkey"
+        },
+        "arg": {
+          "foreign_table": "arg",
+          "foreign_entity": "arg",
+          "field": "registered_function",
+          "column": "registered_function",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "args_registered_function_fkey"
+        }
+      }
+    }
+  },
+  "arg": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [
+      "registeredFunction"
+    ],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "arg",
+      "table_name": "arg",
+      "foreignKeys": {
+        "registeredFunction": {
+          "foreign_table": "registered_function",
+          "foreign_entity": "registeredFunction",
+          "column": "registered_function",
+          "fieldName": "registered_function",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-one",
+          "constraint_name": "args_registered_function_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "automationBoundaryBroker": {
+    "self-referential": [],
+    "many-to-many": [
+      "broker",
+      "automationMatrix"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "automationBoundaryBroker",
+      "table_name": "automation_boundary_broker",
+      "foreignKeys": {
+        "broker": {
+          "foreign_table": "broker",
+          "foreign_entity": "broker",
+          "column": "broker",
+          "fieldName": "broker",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "boundary_brokers_broker_fkey"
+        },
+        "automationMatrix": {
+          "foreign_table": "automation_matrix",
+          "foreign_entity": "automationMatrix",
+          "column": "matrix",
+          "fieldName": "matrix",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "boundary_brokers_matrix_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "broker": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [
+      "dataInputComponent"
+    ],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "recipeBroker",
+      "registeredFunction",
+      "automationBoundaryBroker"
+    ],
+    "relationshipDetails": {
+      "entityName": "broker",
+      "table_name": "broker",
+      "foreignKeys": {
+        "dataInputComponent": {
+          "foreign_table": "data_input_component",
+          "foreign_entity": "dataInputComponent",
+          "column": "custom_source_component",
+          "fieldName": "custom_source_component",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-one",
+          "constraint_name": "broker_custom_component_fkey"
+        }
+      },
+      "referencedBy": {
+        "recipeBroker": {
+          "foreign_table": "recipe_broker",
+          "foreign_entity": "recipeBroker",
+          "field": "broker",
+          "column": "broker",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_broker_broker_fkey"
+        },
+        "registeredFunction": {
+          "foreign_table": "registered_function",
+          "foreign_entity": "registeredFunction",
+          "field": "return_broker",
+          "column": "return_broker",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "registered_function_return_broker_fkey"
+        },
+        "automationBoundaryBroker": {
+          "foreign_table": "automation_boundary_broker",
+          "foreign_entity": "automationBoundaryBroker",
+          "field": "broker",
+          "column": "broker",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "boundary_brokers_broker_fkey"
+        }
+      }
+    }
+  },
+  "displayOption": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "recipeDisplay"
+    ],
+    "relationshipDetails": {
+      "entityName": "displayOption",
+      "table_name": "display_option",
+      "foreignKeys": {},
+      "referencedBy": {
+        "recipeDisplay": {
+          "foreign_table": "recipe_display",
+          "foreign_entity": "recipeDisplay",
+          "field": "display",
+          "column": "display",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_display_display_fkey"
+        }
+      }
+    }
+  },
+  "processor": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "recipeProcessor",
+      "processor"
+    ],
+    "relationshipDetails": {
+      "entityName": "processor",
+      "table_name": "processor",
+      "foreignKeys": {
+        "self_reference": {
+          "foreign_table": "self_reference",
+          "foreign_entity": "self_reference",
+          "column": "depends_default",
+          "fieldName": "depends_default",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "self-referential",
+          "constraint_name": "processors_depends_default_fkey"
+        }
+      },
+      "referencedBy": {
+        "recipeProcessor": {
+          "foreign_table": "recipe_processor",
+          "foreign_entity": "recipeProcessor",
+          "field": "processor",
+          "column": "processor",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "recipe_processors_processor_fkey"
+        }
+      }
+    }
+  },
+  "recipeFunction": {
+    "self-referential": [],
+    "many-to-many": [
+      "systemFunction",
+      "recipe"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "recipeFunction",
+      "table_name": "recipe_function",
+      "foreignKeys": {
+        "systemFunction": {
+          "foreign_table": "system_function",
+          "foreign_entity": "systemFunction",
+          "column": "function",
+          "fieldName": "function",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_function_function_fkey"
+        },
+        "recipe": {
+          "foreign_table": "recipe",
+          "foreign_entity": "recipe",
+          "column": "recipe",
+          "fieldName": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_function_recipe_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "recipeTool": {
+    "self-referential": [],
+    "many-to-many": [
+      "recipe",
+      "tool"
+    ],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "recipeTool",
+      "table_name": "recipe_tool",
+      "foreignKeys": {
+        "recipe": {
+          "foreign_table": "recipe",
+          "foreign_entity": "recipe",
+          "column": "recipe",
+          "fieldName": "recipe",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_tools_recipe_fkey"
+        },
+        "tool": {
+          "foreign_table": "tool",
+          "foreign_entity": "tool",
+          "column": "tool",
+          "fieldName": "tool",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "relationship_type": "many-to-many",
+          "constraint_name": "recipe_tools_tool_fkey"
+        }
+      },
+      "referencedBy": {}
+    }
+  },
+  "transformer": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [
+      "action"
+    ],
+    "relationshipDetails": {
+      "entityName": "transformer",
+      "table_name": "transformer",
+      "foreignKeys": {},
+      "referencedBy": {
+        "action": {
+          "foreign_table": "action",
+          "foreign_entity": "action",
+          "field": "transformer",
+          "column": "transformer",
+          "foreign_field": "id",
+          "foreign_column": "id",
+          "constraint_name": "action_transformer_fkey"
+        }
+      }
+    }
+  },
+  "userPreferences": {
+    "self-referential": [],
+    "many-to-many": [],
+    "one-to-one": [],
+    "many-to-one": [],
+    "one-to-many": [],
+    "undefined": [],
+    "inverse_references": [],
+    "relationshipDetails": {
+      "entityName": "userPreferences",
+      "table_name": "user_preferences",
+      "foreignKeys": {},
+      "referencedBy": {}
+    }
+  }
+}

@@ -61,5 +61,5 @@ export const pages: ModulePage[] = [
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');
 
-export const MODULE_HOME = 'test/tailwind-test';
+export const MODULE_HOME = 'tailwind-test';
 export const MODULE_NAME = 'Tailwind Tests';

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useCallback, useMemo } from 'react';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
-import { useAppDispatch } from '@/lib/redux/hooks';
-import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import React, {createContext, useContext, useCallback, useMemo} from 'react';
+import {EntityKeys, EntityData} from '@/types/entityTypes';
+import {useAppDispatch} from '@/lib/redux/hooks';
+import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 
 type RelationshipType = 'one-to-one' | 'one-to-many' | 'many-to-one' | 'many-to-many';
 
@@ -26,18 +26,22 @@ type EntityRelationshipContextValue = {
     getRelatedEntities: (entityName: EntityKeys) => EntityKeys[];
     fetchRelatedRecord: (entityName: EntityKeys, relatedEntity: EntityKeys, recordId: string) => void;
     getRelationshipType: (entityName: EntityKeys, relatedEntity: EntityKeys) => RelationshipType | undefined;
-    getRelationshipFields: (entityName: EntityKeys, relatedEntity: EntityKeys) => { local: string; foreign: string } | undefined;
+    getRelationshipFields: (entityName: EntityKeys, relatedEntity: EntityKeys) => {
+        local: string;
+        foreign: string
+    } | undefined;
 };
 
 const EntityRelationshipContext = createContext<EntityRelationshipContextValue | null>(null);
 
-export function EntityRelationshipProvider({
-                                               relationshipMap,
-                                               children
-                                           }: {
-    relationshipMap: RelationshipMap;
-    children: React.ReactNode;
-}) {
+export function EntityRelationshipProvider(
+    {
+        relationshipMap,
+        children
+    }: {
+        relationshipMap: RelationshipMap;
+        children: React.ReactNode;
+    }) {
     const dispatch = useAppDispatch();
 
     const getRelationships = useCallback((entityName: EntityKeys) => {
@@ -67,8 +71,8 @@ export function EntityRelationshipProvider({
         relatedEntity: EntityKeys,
         recordId: string
     ) => {
-        const { actions } = getEntitySlice(relatedEntity);
-        dispatch(actions.fetchOne({ matrxRecordId: recordId }));
+        const {actions} = getEntitySlice(relatedEntity);
+        dispatch(actions.fetchOne({matrxRecordId: recordId}));
     }, [dispatch]);
 
     const value = useMemo(() => ({

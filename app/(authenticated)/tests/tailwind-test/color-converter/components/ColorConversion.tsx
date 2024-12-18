@@ -1,34 +1,25 @@
-// app/(authenticated)/tests/color-converter/components/ColorConversion.tsx
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Colord } from 'colord';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { getColorFormats } from '@/utils/color-utils/color-change-util';
-import FullJsonViewer from "@/components/ui/JsonComponents/JsonViewerComponent";
-
+import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 
 interface ColorConversionProps {
     color: Colord;
 }
 
 export default function ColorConversion({ color }: ColorConversionProps) {
-    const [jsonData, setJsonData] = useState({});
-    const colorFormats = getColorFormats(color);
+    // Memoize color formats to prevent unnecessary recalculations
+    const colorFormats = useMemo(() => getColorFormats(color), [color]);
 
-    useEffect(() => {
-        // Combine all color formats into a single object
-        const combinedFormats = Object.entries(colorFormats).reduce((acc, [name, value]) => {
-            acc[name] = value;
-            return acc;
-        }, {} as { [key: string]: any });
-
-        // Update state with combined formats
-        setJsonData(combinedFormats);
-    }, [colorFormats]);
+    // Format input values for display
+    const formatValue = (value: unknown): string => {
+        return typeof value === 'object' ? JSON.stringify(value) : String(value);
+    };
 
     return (
         <Card className="bg-background">
@@ -37,26 +28,30 @@ export default function ColorConversion({ color }: ColorConversionProps) {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {/* Display individual color format inputs */}
-                    {Object.entries(colorFormats).map(([name, value]) => (
-                        <div key={name} className="grid grid-cols-[1fr_2fr] items-center gap-2">
-                            <Label htmlFor={name} className="text-foreground">
-                                {name}
-                            </Label>
-                            <Input
-                                id={name}
-                                value={typeof value === 'object' ? JSON.stringify(value) : value}
-                                readOnly
-                                className="bg-input text-foreground"
-                            />
-                        </div>
-                    ))}
+                    {/* Color format inputs */}
+                    <div className="grid gap-4">
+                        {Object.entries(colorFormats).map(([name, value]) => (
+                            <div key={name} className="grid grid-cols-[1fr_2fr] items-center gap-2">
+                                <Label htmlFor={name} className="text-foreground capitalize">
+                                    {name}
+                                </Label>
+                                <Input
+                                    id={name}
+                                    value={formatValue(value)}
+                                    readOnly
+                                    className="bg-input text-foreground font-mono text-sm"
+                                />
+                            </div>
+                        ))}
+                    </div>
 
-                    {/* Display the combined JSON object */}
-                    <div className="mt-4">
+                    {/* JSON viewer */}
+                    <div className="pt-4">
                         <FullJsonViewer
-                            data={jsonData}
+                            data={colorFormats}
                             title="Combined Color Formats"
+                            maxHeight="400px"
+                            hideControls={false}
                         />
                     </div>
                 </div>

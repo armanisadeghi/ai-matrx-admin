@@ -39,7 +39,11 @@ function RelatedEntityAccordionFinal(
     const layoutProps = getUpdatedUnifiedLayoutProps(unifiedLayoutProps, {
         entityKey: entityKey,
         defaultFormComponent: 'ArmaniFormSmart',
+        entitiesToHide: activeEntityKey ? [activeEntityKey] : undefined,
     });
+
+    console.log("===== Layout Props: ", layoutProps);
+    console.log("===== activeEntityKey: ", activeEntityKey);
 
     return (
         <div className="col-span-full">

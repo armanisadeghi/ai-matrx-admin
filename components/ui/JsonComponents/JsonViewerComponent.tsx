@@ -350,8 +350,8 @@ export const EnhancedJsonViewer: React.FC<EnhancedJsonViewerProps> = ({
 };
 
 interface EnhancedJsonViewerGroupProps {
-    viewers: Array<{
-        id: string;
+    viewers?: Array<{
+        id?: string;
         data: object | string;
         title: string;
         allowMinimize?: boolean;
@@ -369,7 +369,7 @@ interface EnhancedJsonViewerGroupProps {
 }
 
 export const EnhancedJsonViewerGroup: React.FC<EnhancedJsonViewerGroupProps> = ({
-    viewers,
+    viewers = [],
     layout = 'autoGrid',
     minimizedPosition = 'top',
     className,
@@ -377,6 +377,10 @@ export const EnhancedJsonViewerGroup: React.FC<EnhancedJsonViewerGroupProps> = (
     disabled: groupDisabled = false,
 }) => {
     const viewersWithUniqueIds = useMemo(() => {
+        if (!Array.isArray(viewers) || viewers.length === 0) {
+            return [];
+        }
+
         const idTracker = new Set<string>();
         return viewers.map((viewer, index) => {
             let uniqueId = viewer.id || `viewer-${index}-new`;
@@ -390,15 +394,13 @@ export const EnhancedJsonViewerGroup: React.FC<EnhancedJsonViewerGroupProps> = (
 
     const [minimizedStates, setMinimizedStates] = useState<Record<string, boolean>>({});
 
-    const handleMinimizeChange = (id: string, isMinimized: boolean) => {
+    const handleMinimizeChange = useCallback((id: string, isMinimized: boolean) => {
         if (groupDisabled) return;
-        setMinimizedStates((prev) => ({
-            ...prev,
-            [id]: isMinimized,
-        }));
-    };
+        setMinimizedStates(prev => ({...prev, [id]: isMinimized}));
+    }, [groupDisabled]);
 
-    const {minimizedViewers, expandedViewers} = viewersWithUniqueIds.reduce(
+    const {minimizedViewers, expandedViewers} = useMemo(() => {
+        return viewersWithUniqueIds.reduce(
         (acc, viewer) => {
             if (minimizedStates[viewer.id] && !groupDisabled && !viewer.disabled) {
                 acc.minimizedViewers.push(viewer);
@@ -412,6 +414,7 @@ export const EnhancedJsonViewerGroup: React.FC<EnhancedJsonViewerGroupProps> = (
             expandedViewers: typeof viewersWithUniqueIds;
         }
     );
+    }, [viewersWithUniqueIds, minimizedStates, groupDisabled]);
 
     const layoutClasses = {
         grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1',
@@ -438,7 +441,7 @@ export const EnhancedJsonViewerGroup: React.FC<EnhancedJsonViewerGroupProps> = (
 
     const isHorizontalMinimized = minimizedPosition === 'top' || minimizedPosition === 'bottom';
 
-    const renderViewerComponent = (
+    const renderViewerComponent = useCallback((
         viewer: typeof viewersWithUniqueIds[0],
         isMinimized: boolean
     ) => {
@@ -464,7 +467,11 @@ export const EnhancedJsonViewerGroup: React.FC<EnhancedJsonViewerGroupProps> = (
                 />
             </div>
         );
-    };
+    }, [groupDisabled, handleMinimizeChange]);
+
+    if (!Array.isArray(viewers) || viewers.length === 0) {
+        return null;
+    }
 
     return (
         <div

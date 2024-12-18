@@ -193,12 +193,16 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectSelectedRecordIds = createSelector(
         [selectEntity],
-        (entity) => entity.selection.selectedRecords
+        (entity) => entity?.selection?.selectedRecords ?? new Set()
     );
 
     const selectSelectedRecords = createSelector(
         [selectEntity],
         (entity) => {
+            if (!entity?.selection?.selectedRecords || !entity?.records) {
+                return [];
+            }
+
             return Array.from(entity.selection.selectedRecords)
                 .map(recordKey => entity.records[recordKey])
                 .filter(Boolean);
@@ -208,19 +212,23 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectSelectedRecordsWithKey = createSelector(
         [selectEntity],
         (entity) => {
+            if (!entity?.selection?.selectedRecords || !entity?.records) {
+                return {};
+            }
+
             return Array.from(entity.selection.selectedRecords).reduce((acc, recordKey) => {
                 const record = entity.records[recordKey];
                 if (record) {
                     acc[recordKey] = record;
                 }
                 return acc;
-            }, {} as Record<string, typeof entity.records[keyof typeof entity.records]>);
+            }, {} as Record<string, NonNullable<typeof entity.records[keyof typeof entity.records]>>);
         }
     );
 
     const selectActiveRecordId = createSelector(
         [selectEntity],
-        (entity) => entity.selection.activeRecord
+        (entity) => entity?.selection?.activeRecord ?? null
     );
 
     const selectSelectionMode = createSelector(
@@ -372,8 +380,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                         const bValue = b[sort.field];
                         if (aValue !== bValue) {
                             return sort.direction === 'asc'
-                                   ? (aValue > bValue ? 1 : -1)
-                                   : (aValue < bValue ? 1 : -1);
+                                ? (aValue > bValue ? 1 : -1)
+                                : (aValue < bValue ? 1 : -1);
                         }
                     }
                     return 0;
@@ -721,8 +729,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             ...pagination,
             totalFilteredRecords: filteredRecords.length,
             currentPageRecords: filteredRecords.length > 0
-                                ? Math.min(pagination.pageSize, filteredRecords.length - (pagination.page - 1) * pagination.pageSize)
-                                : 0,
+                ? Math.min(pagination.pageSize, filteredRecords.length - (pagination.page - 1) * pagination.pageSize)
+                : 0,
             isFirstPage: pagination.page === 1,
             isLastPage: pagination.page === pagination.totalPages,
             pageOptions: Array.from({length: pagination.totalPages}, (_, i) => ({

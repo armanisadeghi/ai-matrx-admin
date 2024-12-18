@@ -1,6 +1,7 @@
-// types/game.ts
-
+// types.ts
 import { LucideIcon } from 'lucide-react';
+
+export type GameStatus = 'selecting' | 'ready' | 'playing' | 'gameover';
 
 export interface GameObject {
     x: number;
@@ -15,7 +16,6 @@ export interface Player extends GameObject {
 }
 
 export interface Platform extends GameObject {}
-
 export interface Coin extends GameObject {
     collected: boolean;
 }
@@ -36,14 +36,14 @@ export interface GameState {
     score: number;
 }
 
+export interface Character {
+    icon: LucideIcon | any;
+    name: string;
+    render: (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => void;
+}
+
 export interface GameControls {
     rightPressed: boolean;
     leftPressed: boolean;
 }
 
-
-export interface Character {
-    icon: LucideIcon;
-    name: string;
-    render: (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => void;
-}

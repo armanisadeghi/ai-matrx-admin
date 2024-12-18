@@ -1,4 +1,3 @@
-// EntityHookProvider.tsx
 'use client';
 
 import React from 'react';
@@ -39,10 +38,14 @@ type HookResults = {
 const hookInstancesMap = new Map<EntityKeys, Partial<HookResults>>();
 
 function createHookInstance(
-    entityName: EntityKeys,
+    entityName: EntityKeys | undefined,
     hookName: keyof HookMap,
     creator: () => any
 ): any {
+    if (!entityName) {
+        return null;
+    }
+
     if (!hookInstancesMap.has(entityName)) {
         hookInstancesMap.set(entityName, {});
     }
@@ -56,26 +59,37 @@ function createHookInstance(
     return instances[hookName];
 }
 
-export const hookCreators: Record<keyof HookMap, (entityName: EntityKeys) => any> = {
-    entity: (entityName) => createHookInstance(entityName, 'entity', () => useEntity(entityName)),
-    entitySelection: (entityName) => createHookInstance(entityName, 'entitySelection', () => useEntitySelection(entityName)),
-    activeRecords: (entityName) => createHookInstance(entityName, 'activeRecords', () => useActiveRecords(entityName)),
-    entityAnalyzer: (entityName) => createHookInstance(entityName, 'entityAnalyzer', () => useEntityAnalyzer(entityName)),
-    entityCrud: (entityName) => createHookInstance(entityName, 'entityCrud', () => useEntityCrud(entityName)),
-    entityForm: (entityName) => createHookInstance(entityName, 'entityForm', () => useEntityForm(entityName)),
-    entityMetrics: (entityName) => createHookInstance(entityName, 'entityMetrics', () => useEntityMetrics(entityName)),
-    entityToasts: (entityName) => createHookInstance(entityName, 'entityToasts', () => useEntityToasts(entityName)),
-    fetchRecords: (entityName) => createHookInstance(entityName, 'fetchRecords', () => useFetchRecords(entityName)),
-    quickReference: (entityName) => createHookInstance(entityName, 'quickReference', () => useQuickReference(entityName)),
-    validatedUpdateOrCreate: (entityName) => createHookInstance(entityName, 'validatedUpdateOrCreate', () => useValidatedUpdateOrCreate(entityName)),
-    validation: (entityName) => createHookInstance(entityName, 'validation', () => useEntityValidation(entityName))
+const createNullHookResults = (hookNames: Array<keyof HookMap>) => {
+    return hookNames.reduce((acc, hookName) => {
+        acc[hookName] = null;
+        return acc;
+    }, {} as Partial<HookResults>);
+};
+
+export const hookCreators: Record<keyof HookMap, (entityName: EntityKeys | undefined) => any> = {
+    entity: (entityName) => createHookInstance(entityName, 'entity', () => entityName ? useEntity(entityName) : null),
+    entitySelection: (entityName) => createHookInstance(entityName, 'entitySelection', () => entityName ? useEntitySelection(entityName) : null),
+    activeRecords: (entityName) => createHookInstance(entityName, 'activeRecords', () => entityName ? useActiveRecords(entityName) : null),
+    entityAnalyzer: (entityName) => createHookInstance(entityName, 'entityAnalyzer', () => entityName ? useEntityAnalyzer(entityName) : null),
+    entityCrud: (entityName) => createHookInstance(entityName, 'entityCrud', () => entityName ? useEntityCrud(entityName) : null),
+    entityForm: (entityName) => createHookInstance(entityName, 'entityForm', () => entityName ? useEntityForm(entityName) : null),
+    entityMetrics: (entityName) => createHookInstance(entityName, 'entityMetrics', () => entityName ? useEntityMetrics(entityName) : null),
+    entityToasts: (entityName) => createHookInstance(entityName, 'entityToasts', () => entityName ? useEntityToasts(entityName) : null),
+    fetchRecords: (entityName) => createHookInstance(entityName, 'fetchRecords', () => entityName ? useFetchRecords(entityName) : null),
+    quickReference: (entityName) => createHookInstance(entityName, 'quickReference', () => entityName ? useQuickReference(entityName) : null),
+    validatedUpdateOrCreate: (entityName) => createHookInstance(entityName, 'validatedUpdateOrCreate', () => entityName ? useValidatedUpdateOrCreate(entityName) : null),
+    validation: (entityName) => createHookInstance(entityName, 'validation', () => entityName ? useEntityValidation(entityName) : null)
 };
 
 export function useEntityHooks(
-    entityName: EntityKeys,
+    entityName: EntityKeys | undefined,
     hookNames: Array<keyof HookMap>
 ) {
     return React.useMemo(() => {
+        if (!entityName) {
+            return createNullHookResults(hookNames);
+        }
+
         return hookNames.reduce((acc, hookName) => {
             acc[hookName] = hookCreators[hookName](entityName);
             return acc;

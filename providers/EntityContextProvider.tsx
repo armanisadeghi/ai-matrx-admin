@@ -2,11 +2,11 @@
 
 // https://claude.ai/chat/724a1052-6818-45cc-9591-aa17066327e0
 
-import React, { createContext, useContext, useCallback, useMemo } from 'react';
-import { EntityKeys, EntityData } from '@/types/entityTypes';
-import { useEntityHooks, type HookMap, type HookResults } from './EntityHookProvider';
-import { useFetchRelated } from '@/lib/redux/entity/hooks/useFetchRelated';
-import { EntityStateField } from '@/lib/redux/entity/types/stateTypes';
+import React, {createContext, useContext, useCallback, useMemo} from 'react';
+import {EntityKeys, EntityData} from '@/types/entityTypes';
+import {useEntityHooks, type HookMap, type HookResults} from './EntityHookProvider';
+import {useFetchRelated} from '@/lib/redux/entity/hooks/useFetchRelated';
+import {EntityStateField} from '@/lib/redux/entity/types/stateTypes';
 
 type Relationship = {
     type: 'one-to-one' | 'one-to-many' | 'many-to-one' | 'many-to-many';
@@ -37,21 +37,25 @@ type EntityContextValue = {
     ) => Partial<ExtendedHookResults>;
     getRelationships: (entityName: EntityKeys) => { [key in EntityKeys]?: Relationship[] } | undefined;
     getRelationshipType: (entityName: EntityKeys, relatedEntity: EntityKeys) => Relationship['type'] | undefined;
-    getRelationshipFields: (entityName: EntityKeys, relatedEntity: EntityKeys) => { local: string; foreign: string } | undefined;
+    getRelationshipFields: (entityName: EntityKeys, relatedEntity: EntityKeys) => {
+        local: string;
+        foreign: string
+    } | undefined;
     switchActiveEntity: (entityName: EntityKeys) => void;
 };
 
 const EntityContext = createContext<EntityContextValue | null>(null);
 
-export function EntityContextProvider({
-                                          initialEntity,
-                                          relationshipMap,
-                                          children
-                                      }: {
-    initialEntity: EntityKeys;
-    relationshipMap: RelationshipMap;
-    children: React.ReactNode;
-}) {
+export function EntityContextProvider(
+    {
+        initialEntity,
+        relationshipMap,
+        children
+    }: {
+        initialEntity: EntityKeys;
+        relationshipMap: RelationshipMap;
+        children: React.ReactNode;
+    }) {
     const [activeEntityName, setActiveEntityName] = React.useState<EntityKeys>(initialEntity);
     const hookCache = React.useRef(new Map<string, Partial<ExtendedHookResults>>());
 
@@ -153,19 +157,19 @@ export function useRelatedEntityHooks(
     fieldInfo?: EntityStateField,
     formData?: EntityData<EntityKeys>
 ) {
-    const { getRelatedEntityHooks } = useEntityContext();
+    const {getRelatedEntityHooks} = useEntityContext();
     return getRelatedEntityHooks(entityName, hooks, fieldInfo, formData);
 }
 
 export function useActiveEntityHooks(
     hooks: Array<keyof HookMap>
 ) {
-    const { activeEntityName, getEntityHooks } = useEntityContext();
+    const {activeEntityName, getEntityHooks} = useEntityContext();
     return getEntityHooks(activeEntityName, hooks);
 }
 
 export function useEntityRelationships(entityName: EntityKeys) {
-    const { getRelationships, getRelationshipType, getRelationshipFields } = useEntityContext();
+    const {getRelationships, getRelationshipType, getRelationshipFields} = useEntityContext();
 
     return {
         relationships: getRelationships(entityName),
