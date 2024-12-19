@@ -2,9 +2,7 @@ import * as React from 'react';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useAppDispatch, useAppSelector, useAppStore} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {
-    useEntitySelection,
-} from '@/lib/redux/entity/hooks/useEntitySelection';
+import {useEntitySelection,} from '@/lib/redux/entity/hooks/useEntitySelection';
 import {
     LoadingState,
     EntityError,
@@ -13,12 +11,13 @@ import {
     MatrxRecordId,
     EntityStateField,
     SelectionSummary,
-    SelectionMode,
+    SelectionMode, FlexibleQueryOptions,
 } from '@/lib/redux/entity/types/stateTypes';
 import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
-import { getEntitySlice } from '@/lib/redux';
-import { FetchMode } from '../actions';
+import {getEntitySlice} from '@/lib/redux';
+import {FetchMode} from '../actions';
+import {useCallback} from "react";
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -45,9 +44,9 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
 
     // Record Operations
     createRecord: (
-        tempId: MatrxRecordId,
+        createPayloadArray: FlexibleQueryOptions[],
         callbacks?: Callback,
-    ) => void;
+    ) => boolean;
 
     updateRecord: (
         matrxRecordId: MatrxRecordId,
@@ -74,7 +73,6 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
 
     fetchMode: FetchMode;
     setFetchMode: React.Dispatch<React.SetStateAction<FetchMode>>;
-    handleRecordSelectWithRelation: (recordKey: MatrxRecordId) => void;
 }
 
 export function useQuickReference<TEntity extends EntityKeys>(
@@ -118,13 +116,19 @@ export function useQuickReference<TEntity extends EntityKeys>(
         }
     }, [entityKey]);
 
-    const createRecord = React.useCallback((tempRecordId: MatrxRecordId, callback?: Callback) => {
-        const wrappedCallback = (result: { success: boolean; error?: any }) => {
-            callback?.(result);
-        };
-        const callbackId = callbackManager.register(wrappedCallback);
-        dispatch(actions.createRecord({tempRecordId, callbackId}));
-    }, [actions, dispatch]);
+    const createRecord = useCallback((createPayloadArray: FlexibleQueryOptions[], callback?: Callback) => {
+        createPayloadArray.forEach(createPayload => {
+            dispatch(actions.addPendingOperation(createPayload.tempRecordId));
+            const wrappedCallback = (result: { success: boolean; error?: any }) => {
+                callback?.(result);
+            };
+            const callbackId = callbackManager.register(wrappedCallback);
+            dispatch(actions.createRecord({...createPayload, callbackId}));
+        });
+
+        return true;
+    }, [dispatch, actions]);
+
 
     const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
@@ -175,15 +179,6 @@ export function useQuickReference<TEntity extends EntityKeys>(
         }
     }, [selection.selectionMode, actions, dispatch]);
 
-    const handleRecordSelectWithRelation = React.useCallback((recordKey: MatrxRecordId) => {
-        if (selection.selectionMode === 'multiple') {
-            selection.handleToggleSelectionWithRelation(recordKey);
-            dispatch(actions.setActiveRecord(recordKey));
-        } else {
-            selection.handleSingleSelection(recordKey);
-            dispatch(actions.setActiveRecord(recordKey));
-        }
-    }, [selection.selectionMode, actions, dispatch]);
 
 
     const getCardClassName = React.useCallback((recordKey: MatrxRecordId) => {
@@ -191,8 +186,8 @@ export function useQuickReference<TEntity extends EntityKeys>(
         const isMultiple = selection.selectionMode === 'multiple';
         return `${baseClasses} ${
             selection.isSelected(recordKey)
-            ? `border-primary ${isMultiple ? 'bg-accent' : 'border-2 bg-accent'}`
-            : 'border-transparent'
+                ? `border-primary ${isMultiple ? 'bg-accent' : 'border-2 bg-accent'}`
+                : 'border-transparent'
         }`;
     }, [selection]);
 
@@ -239,8 +234,6 @@ export function useQuickReference<TEntity extends EntityKeys>(
 
         flexFormField,
         getCardClassName,
-
-        handleRecordSelectWithRelation,
 
     };
 }

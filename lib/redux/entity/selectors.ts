@@ -189,34 +189,34 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-    // Selection Selectors ==================================================
+// Selection Selectors ==================================================
+
+    const selectSelectionState = createSelector(
+        [selectEntity],
+        (entity) => entity.selection
+    );
 
     const selectSelectedRecordIds = createSelector(
-        [selectEntity],
-        (entity) => entity?.selection?.selectedRecords ?? new Set()
+        [selectSelectionState],
+        (selection) => selection.selectedRecords || []
     );
 
     const selectSelectedRecords = createSelector(
-        [selectEntity],
-        (entity) => {
-            if (!entity?.selection?.selectedRecords || !entity?.records) {
-                return [];
-            }
-
-            return Array.from(entity.selection.selectedRecords)
+        [selectEntity, selectSelectedRecordIds],
+        (entity, selectedIds) => {
+            if (!selectedIds.length) return [];
+            return selectedIds
                 .map(recordKey => entity.records[recordKey])
                 .filter(Boolean);
         }
     );
 
     const selectSelectedRecordsWithKey = createSelector(
-        [selectEntity],
-        (entity) => {
-            if (!entity?.selection?.selectedRecords || !entity?.records) {
-                return {};
-            }
+        [selectEntity, selectSelectedRecordIds],
+        (entity, selectedIds) => {
+            if (!selectedIds.length || !entity?.records) return {};
 
-            return Array.from(entity.selection.selectedRecords).reduce((acc, recordKey) => {
+            return selectedIds.reduce((acc, recordKey) => {
                 const record = entity.records[recordKey];
                 if (record) {
                     acc[recordKey] = record;
@@ -227,20 +227,18 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectActiveRecordId = createSelector(
-        [selectEntity],
-        (entity) => entity?.selection?.activeRecord ?? null
+        [selectSelectionState],
+        (selection) => selection.activeRecord ?? null
     );
 
     const selectSelectionMode = createSelector(
-        [selectEntity],
-        (entity) => entity.selection.selectionMode
+        [selectSelectionState],
+        (selection) => selection.selectionMode
     );
 
     const selectIsRecordSelected = createSelector(
-        [selectEntity, (_: RootState, recordId: MatrxRecordId) => recordId],
-        (entity, recordId) => {
-            return entity.selection.selectedRecords.includes(recordId);
-        }
+        [selectSelectedRecordIds, (_: RootState, recordId: MatrxRecordId) => recordId],
+        (selectedIds, recordId) => selectedIds.includes(recordId)
     );
 
     const selectIsRecordActive = createSelector(
@@ -783,26 +781,25 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (metrics) => metrics.lastUpdated
     );
 
-    // Performance-specific selectors
     const selectResponseTimeMetrics = createSelector(
         [selectPerformanceMetrics],
-        (metrics) => metrics.responseTimes
+        (metrics) => metrics?.responseTimes ?? []
     );
 
     const selectThroughputMetrics = createSelector(
         [selectPerformanceMetrics],
-        (metrics) => metrics.throughput
+        (metrics) => metrics?.throughput ?? []
     );
 
     // Cache-specific selectors
     const selectCacheHitRate = createSelector(
         [selectCacheStats],
-        (stats) => stats.hitRate
+        (stats) => stats.hitRate ?? []
     );
 
     const selectCacheSize = createSelector(
         [selectCacheStats],
-        (stats) => stats.size
+        (stats) => stats.size ?? []
     );
 
     // Error-specific selectors

@@ -1,24 +1,13 @@
-// Modified hook interface (useFetchRelatedFinal.ts)
-interface UseFetchRelatedFinalResult {
-    records: Record<string, any>;
-    displayField: string;
-    hoveredItem: string | null;
-    setHoveredItem: (id: string | null) => void;
-    entityPrettyName: string;
-    hasRecords: boolean; // New field
-}
-
-// Component
 import * as React from 'react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui";
 import {cn} from "@/lib/utils";
 import {ChevronRight} from 'lucide-react';
 import ArmaniFormFinal from "@/app/(authenticated)/tests/forms/entity-final-test/ArmaniFormFinal";
 import {getUpdatedUnifiedLayoutProps} from "@/app/(authenticated)/tests/forms/entity-final-test/configs";
+import {useFetchRelatedFinal} from "@/app/(authenticated)/tests/forms/entity-final-test/useFetchRelatedFinal";
 import {EntityKeys} from "@/types";
 import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
-import {useFetchRelatedFinal} from "@/app/(authenticated)/tests/forms/entity-final-test/useFetchRelatedFinal";
 
 export interface RelatedEntityAccordionFinalProps {
     entityKey: EntityKeys;
@@ -38,6 +27,8 @@ function RelatedEntityAccordionFinal(
         fieldValue,
     }: RelatedEntityAccordionFinalProps) {
 
+    // console.log("+++++ RelatedEntityAccordionFinal Entity:", entityKey);
+
     const {
         records,
         displayField,
@@ -54,7 +45,9 @@ function RelatedEntityAccordionFinal(
         entitiesToHide: activeEntityKey ? [activeEntityKey] : undefined,
     }), [unifiedLayoutProps, entityKey, activeEntityKey]);
 
-    if (!hasRecords) return null;
+    // if (!hasRecords) return null;
+
+    // console.log("Records: ", records);
 
     return (
         <div className="col-span-full">

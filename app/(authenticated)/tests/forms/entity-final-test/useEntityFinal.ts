@@ -4,35 +4,23 @@ import {useMemo, useCallback, useState} from 'react';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppSelector, useAppDispatch, useAppStore} from '@/lib/redux/hooks';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {
-    MatrxRecordId,
-    FilterPayload,
-    SortPayload, FlexibleQueryOptions,
-} from '@/lib/redux/entity/types/stateTypes';
+import {MatrxRecordId, FilterPayload, SortPayload, FlexibleQueryOptions} from '@/lib/redux/entity/types/stateTypes';
 import {RootState} from '@/lib/redux/store';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
 import {Draft} from "immer";
-import {useEntitySelection} from "@/lib/redux/entity/hooks/useEntitySelection";
 import {Callback, callbackManager} from "@/utils/callbackManager";
-import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
-import {useEntityValidation} from "@/lib/redux/entity/hooks/useEntityValidation";
-import {useEntityToasts} from './useEntityToasts';
-import {FetchRecordsPayload} from '../actions';
+import {useQuickRef} from './useQuickRef';
+import {FetchRecordsPayload, useEntityToasts} from '@/lib/redux';
+import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 
-const entityDefaultSettings = {
-    maxQuickReferenceRecords: 1000
-}
-
-export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
+export const useEntityFinal = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const dispatch = useAppDispatch();
     const store = useAppStore();
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const [lastError, setLastError] = useState<any>(null);
 
-    const selection = useEntitySelection(entityKey);
-    const quickReference = useQuickReference(entityKey);
-    const validation = useEntityValidation(entityKey);
+    const quickReference = useQuickRef(entityKey);
     const toasts = useEntityToasts(entityKey);
 
     const safeDispatch = useCallback((action: any) => {
@@ -253,31 +241,26 @@ export const useEntity = <TEntity extends EntityKeys>(entityKey: TEntity) => {
         quickReferenceByPrimaryKey,
 
         // Selection Management (from useEntitySelection)
-        selectedRecordIds: selection.selectedRecordIds,
-        activeRecordId: selection.activeRecordId,
-        selectedRecords: selection.selectedRecords,
-        activeRecord: selection.activeRecord,
-        selectionMode: selection.selectionMode,
-        summary: selection.summary,
+        selectedRecordIds: quickReference.selectedRecordIds,
+        activeRecordId: quickReference.activeRecordId,
+        selectedRecords: quickReference.selectedRecords,
+        activeRecord: quickReference.activeRecord,
+        selectionMode: quickReference.selectionMode,
+        summary: quickReference.summary,
 
         // Selection Utilities
-        isSelected: selection.isSelected,
-        isActive: selection.isActive,
-        toggleSelectionMode: selection.toggleSelectionMode,
-        clearSelection: selection.clearSelection,
-        handleSingleSelection: selection.handleSingleSelection,
-        handleToggleSelection: selection.handleToggleSelection,
-        addToSelection: selection.handleAddToSelection,
-        fetchMode: selection.fetchMode,
-        setFetchMode: selection.setFetchMode,
+        isSelected: quickReference.isSelected,
+        isActive: quickReference.isActive,
+        toggleSelectionMode: quickReference.toggleSelectionMode,
+        clearSelection: quickReference.clearSelection,
+        handleSingleSelection: quickReference.handleSingleSelection,
+        handleToggleSelection: quickReference.handleToggleSelection,
+        addToSelection: quickReference.handleAddToSelection,
+        fetchMode: quickReference.fetchMode,
+        setFetchMode: quickReference.setFetchMode,
 
 
-        // All Active Records, Quick Reference, Validation hooks extended
         quickReference,
-        validation,
-        // activeRecordsAnyEntity,
-
-
         // Pagination
         paginationInfo,
         paginationExtended,

@@ -7,8 +7,7 @@ import SmartCrudButtons
 import {useFieldVisibility} from "@/lib/redux/entity/hooks/useFieldVisibility";
 import MultiSelect from '@/components/ui/loaders/multi-select';
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
-import EntityBaseFieldFinal, {
-} from "@/app/(authenticated)/tests/forms/entity-final-test/EntityBaseFieldFinal";
+import EntityBaseFieldFinal, {} from "@/app/(authenticated)/tests/forms/entity-final-test/EntityBaseFieldFinal";
 import {createEntitySelectors, useAppSelector} from "@/lib/redux";
 
 
@@ -26,18 +25,18 @@ export const filterRelFields = (relationshipFields, entitiesToHide) => {
 };
 
 
-
 const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-
-    const { nativeFields, relationshipFields } = useAppSelector(selectors.selectFieldGroups);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
+    const {nativeFields, relationshipFields} = useAppSelector(selectors.selectFieldGroups);
+    const {filteredRelFields, hiddenRelFields} = filterRelFields(relationshipFields, unifiedLayoutProps.entitiesToHide);
 
-    const { filteredRelFields, hiddenRelFields } = filterRelFields(
-        relationshipFields,
-        unifiedLayoutProps.entitiesToHide
-    );
+    // console.log('\n==== Entity Name', entityKey);
+    // console.log('Hidden Entities', unifiedLayoutProps.entitiesToHide);
+    // console.log("hiddenRelFields", hiddenRelFields);
+    // console.log("filteredRelFields", filteredRelFields);
+
     const {
         visibleFieldsInfo,
         allowedFieldsInfo,

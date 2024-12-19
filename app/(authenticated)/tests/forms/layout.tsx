@@ -5,6 +5,7 @@ import {ModuleHeader} from '@/components/matrx/navigation';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
+import ModuleHeaderWithProvider from "../../../../components/matrx/navigation/ModuleHeaderWithProvider";
 
 export default function Layout(
     {
@@ -17,7 +18,7 @@ export default function Layout(
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
             {/* Make the header sticky */}
-            <ModuleHeader
+            <ModuleHeaderWithProvider
                 pages={filteredPages}
                 currentPath={currentPath}
                 moduleHome={MODULE_HOME}

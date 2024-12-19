@@ -1,16 +1,19 @@
 'use client';
 
 import React, {useState, useEffect, useRef} from 'react';
+import {useAppSelector} from "@/lib/redux/hooks";
+import {RootState} from "@/lib/redux/store";
+
 import {cn} from '@/lib/utils';
 import {ScrollArea} from '@/components/ui';
 import {EntitySelection, UnifiedLayoutProps} from "@/components/matrx/Entity";
-import {useAppSelector} from "@/lib/redux/hooks";
-import {RootState} from "@/lib/redux/store";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
-import {EntityKeys} from '@/types/entityTypes';
 import {useWindowSize} from "@uidotdev/usehooks";
 import ArmaniFormFinal from './ArmaniFormFinal';
 import QuickReferenceFinal from './QuickReferenceFinal';
+
+import {EntityKeys} from '@/types/entityTypes';
+
 
 const LeftColumn: React.FC<{
     selectedEntity: EntityKeys | null;

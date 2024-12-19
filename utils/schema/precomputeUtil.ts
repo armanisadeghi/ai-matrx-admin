@@ -28,6 +28,7 @@ import {
 } from "@/utils/schema/lookupSchema";
 import {NameFormat, TypeBrand} from "@/types/AutomationSchemaTypes";
 import {createFieldId, EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
+import {asEntityRelationships, entityRelationships} from "./fullRelationships";
 
 
 /**
@@ -292,6 +293,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             entityNameToBackend,
             fieldNameToDatabase,
             fieldNameToBackend,
+            fullEntityRelationships: asEntityRelationships(entityRelationships)
         };
 
         schemaLogger.logResolution({

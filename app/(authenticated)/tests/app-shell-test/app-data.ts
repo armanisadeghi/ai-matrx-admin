@@ -1,9 +1,6 @@
-'use client';
+import { Layouts } from "./types";
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-
-const layouts = {
+export const layouts: Layouts = {
     complexDashboard: {
         desktop: [
             { id: 'featured', gridArea: '1 / 1 / 3 / 4', minHeight: '250px' },
@@ -50,67 +47,3 @@ const layouts = {
     },
     // Add more layout configurations here
 };
-
-const AdvancedDynamicLayoutNew = ({ layoutType, children }) => {
-    const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-
-    useEffect(() => {
-        const handleResize = () => setWindowWidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const getResponsiveLayout = () => {
-        if (windowWidth >= 1024) return 'desktop';
-        if (windowWidth >= 768) return 'tablet';
-        return 'mobile';
-    };
-
-    const selectedLayout = layouts[layoutType]?.[getResponsiveLayout()] || layouts.complexDashboard[getResponsiveLayout()];
-
-    const gridStyle = {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(12, 1fr)',
-        gridAutoRows: 'minmax(50px, auto)',
-        gap: '1rem',
-        padding: '1rem',
-        backgroundColor: '#1a202c',
-        borderRadius: '0.5rem',
-        minHeight: '100vh',
-    };
-
-    const childrenMap = React.Children.toArray(children).reduce((acc, child) => {
-        if (React.isValidElement(child) && child.props.id) {
-            acc[child.props.id] = child;
-        }
-        return acc;
-    }, {});
-
-    return (
-        <div style={gridStyle}>
-            {selectedLayout.map(({ id, gridArea, minHeight }) => (
-                <motion.div
-                    key={id}
-                    style={{
-                        gridArea,
-                        minHeight,
-                        backgroundColor: childrenMap[id] ? '#2d3748' : 'transparent',
-                        borderRadius: '0.375rem',
-                        padding: childrenMap[id] ? '1rem' : '0',
-                        boxShadow: childrenMap[id] ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    {childrenMap[id]}
-                </motion.div>
-            ))}
-        </div>
-    );
-};
-
-export default AdvancedDynamicLayoutNew;

@@ -1,3 +1,5 @@
+// app/(authenticated)/layout.tsx
+
 import {redirect} from 'next/navigation';
 import {createClient} from "@/utils/supabase/server";
 import {Providers} from "@/app/Providers";

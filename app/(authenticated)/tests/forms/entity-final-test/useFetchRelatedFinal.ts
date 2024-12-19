@@ -1,13 +1,11 @@
-import {useCallback, useState} from 'react';
+import {useCallback} from 'react';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
-import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
-import {AllEntityNameVariations, EntityData, EntityKeys} from '@/types/entityTypes';
+import {AllEntityNameVariations, EntityKeys} from '@/types/entityTypes';
 import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {Callback, callbackManager} from '@/utils/callbackManager';
 import * as React from "react";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {makeSelectEntityNameByFormat} from "@/lib/redux/schema/globalCacheSelectors";
 
 interface useFetchRelatedFinalParams {
@@ -49,9 +47,15 @@ export function useFetchRelatedFinal(
     const matrxRecordId: MatrxRecordId = useAppSelector(state =>
         fieldValue ? selectors.selectMatrxRecordIdFromValue(state, fieldValue) : null
     );
-
+    // console.log("------useFetchRelatedFinal with Field Value: ", fieldValue);
+    //
+    // console.log("matrxRecordId: ", matrxRecordId);
+    // console.log("Entity Name: ", entityKey);
 
     const fetchOne = useCallback((recordId: MatrxRecordId, callback?: Callback) => {
+        // console.log("fetchOne entity and id: ", entityKey, recordId);
+
+
         if (callback) {
             const callbackId = callbackManager.register(callback);
             dispatch(

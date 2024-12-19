@@ -16,6 +16,7 @@ import {Draft} from "immer";
 import {BaseSagaContext} from "@/lib/redux";
 import {FetchOneWithFkIfkPayload, getOrFetchSelectedRecordsPayload} from "../actions";
 import {createStructuredError} from "@/utils/errorContext";
+import {supabase} from "@/utils/supabase/client";
 
 const DEBOUNCE_MS = 300;
 const CACHE_DURATION = 5 * 60 * 1000;
@@ -1204,9 +1205,15 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
                 .eq('operation_type', 'delete'),
         });
 
+        // const {data, error} = yield supabase
+        //     .rpc('fetch_all_fk_ifk', rpcArgs, {
+        //         count: 'exact'
+        //     });
+
         // Fetch performance metrics
         const performanceMetrics = yield call(async () => {
-            const response = await api.rpc('get_entity_performance_metrics', {
+            const response = await supabase
+                .rpc('get_entity_performance_metrics', {
                 entity_name: entityKey
             });
             return response.data;
@@ -1214,7 +1221,7 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
 
         // Fetch cache statistics
         const cacheStats = yield call(async () => {
-            const response = await api.rpc('get_entity_cache_stats', {
+            const response = await supabase.rpc('get_entity_cache_stats', {
                 entity_name: entityKey
             });
             return response.data;
@@ -1222,7 +1229,7 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
 
         // Fetch error rates
         const errorRates = yield call(async () => {
-            const response = await api.rpc('get_entity_error_rates', {
+            const response = await supabase.rpc('get_entity_error_rates', {
                 entity_name: entityKey,
                 time_range: '24h'
             });

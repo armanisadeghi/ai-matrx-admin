@@ -79,16 +79,16 @@ export const useEntityMetrics = <TEntity extends EntityKeys>(entityKey: TEntity)
         return (cacheStats.totalHits / total) * 100;
     }, [cacheStats]);
 
-    // Auto-refresh metrics on mount
-    useEffect(() => {
-        fetchMetrics();
-
-        const refreshInterval = setInterval(() => {
-            fetchMetrics();
-        }, 5 * 60 * 1000); // Refresh every 5 minutes
-
-        return () => clearInterval(refreshInterval);
-    }, [fetchMetrics]);
+    // // Auto-refresh metrics on mount
+    // useEffect(() => {
+    //     fetchMetrics();
+    //
+    //     const refreshInterval = setInterval(() => {
+    //         fetchMetrics();
+    //     }, 5 * 60 * 1000); // Refresh every 5 minutes
+    //
+    //     return () => clearInterval(refreshInterval);
+    // }, [fetchMetrics]);
 
     return {
         // Raw metrics data

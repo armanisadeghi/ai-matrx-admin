@@ -7,6 +7,7 @@ import {motion} from 'framer-motion';
 import {ChevronLeft, Home, Settings, Boxes, TestTube2} from 'lucide-react';
 import {IconApps} from "@tabler/icons-react";
 import {Button} from '@/components/ui/button';
+import MatrxBreadcrumb from '@/components/navigation/MatrxBreadcrumb';
 import {
     Select,
     SelectContent,
@@ -23,17 +24,15 @@ import {
 } from "@/components/ui/tooltip";
 import {cn} from '@/lib/utils';
 import {ModulePage} from './types';
+import {useModuleHeader} from '@/providers/ModuleHeaderProvider';
 
-// Extended interface to include children
 interface ModuleHeaderProps {
     pages: ModulePage[];
     currentPath?: string;
     moduleHome: string;
     moduleName?: string;
     className?: string;
-    children?: React.ReactNode;
 }
-
 
 export const HeaderItemWrapper = ({children, className}: { children: React.ReactNode; className?: string }) => (
     <div className={cn("h-8 flex items-center px-2", className)}>
@@ -41,17 +40,20 @@ export const HeaderItemWrapper = ({children, className}: { children: React.React
     </div>
 );
 
-export default function ModuleHeader(
+export default function ModuleHeaderWithProvider(
     {
         pages,
         currentPath,
         moduleHome,
         moduleName,
         className = '',
-        children
     }: ModuleHeaderProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const {headerItems} = useModuleHeader();
+
+    const leftItems = headerItems.filter(item => item.section !== 'right');
+    const rightItems = headerItems.filter(item => item.section === 'right');
 
     const headerVariants = {
         initial: {opacity: 0, y: -20},
@@ -93,7 +95,23 @@ export default function ModuleHeader(
         return pathname === fullPath;
     });
 
-    const currentTitle = moduleName || currentPage?.title || 'Select Page';
+    // Create breadcrumb items based on current path
+    const getBreadcrumbItems = () => {
+        return [
+            {
+                id: 'module',
+                label: moduleName || '',
+                icon: <Home className="h-4 w-4" />,
+                isCurrent: false
+            }
+        ];
+    };
+
+    const handleBreadcrumbNavigation = (id: string) => {
+        if (id === 'module') {
+            router.push(moduleHome);
+        }
+    };
 
     const adminShortcuts = [
         {path: '/admin', icon: Settings, label: 'Admin'},
@@ -109,18 +127,18 @@ export default function ModuleHeader(
             animate="animate"
             className={cn(
                 "h-12 flex items-center justify-between bg-background/60 backdrop-blur-sm border-b px-4",
-                "overflow-hidden", // Prevent scrolling
+                "overflow-hidden",
                 className
             )}
         >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
                 <motion.div
                     variants={buttonVariants}
                     initial="initial"
                     animate="animate"
                     whileHover="hover"
                 >
-                    <Link href=".." className="mr-2">
+                    <Link href=".." className="mr-1">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -151,16 +169,23 @@ export default function ModuleHeader(
                 <motion.div
                     initial={{opacity: 0, x: -20}}
                     animate={{opacity: 1, x: 0}}
-                    className="pl-2 border-l ml-2 flex items-center gap-4"
-                >
-                    <h1 className="text-sm font-medium text-muted-foreground truncate max-w-[200px]">
-                        {currentTitle}
-                    </h1>
+                    className="flex items-center gap-4"
+                    >
+                    <MatrxBreadcrumb
+                        items={getBreadcrumbItems()}
+                        onNavigate={handleBreadcrumbNavigation}
+                        className="ml-1"
+                    />
 
-                    <div className="w-48">
-                        <Select onValueChange={handleNavigation}>
-                            <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Navigate to..."/>
+                    <div className="flex items-center gap-2">
+                        <Select
+                            value={currentPage ? getFullPath(currentPage) : undefined}
+                            onValueChange={handleNavigation}
+                        >
+                            <SelectTrigger className="h-8 w-75">
+                                <SelectValue>
+                                    {currentPage?.title || "Navigate to..."}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
@@ -175,12 +200,22 @@ export default function ModuleHeader(
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
+
+                        {leftItems.map(item => (
+                            <HeaderItemWrapper key={item.id}>
+                                {item.component}
+                            </HeaderItemWrapper>
+                        ))}
                     </div>
                 </motion.div>
             </div>
 
-            <div className="flex-1 flex items-center justify-end gap-2">
-                {children}
+            <div className="flex items-center gap-2">
+                {rightItems.map(item => (
+                    <HeaderItemWrapper key={item.id}>
+                        {item.component}
+                    </HeaderItemWrapper>
+                ))}
 
                 <TooltipProvider>
                     <div className="flex items-center gap-1">

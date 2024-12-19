@@ -5,11 +5,11 @@ import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import {CheckSquare} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
-import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';
 import SmartCrudWrapper, {
     SmartCrudWrapperProps
 } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
 import EntityQuickRefCardItem from './EntityQuickRefCardItem';
+import {useQuickRef} from "./useQuickRef";
 
 interface EntityQuickReferenceCardsProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -45,7 +45,7 @@ function EntityQuickReferenceFinal<TEntity extends EntityKeys>(
         handleRecordSelect,
         toggleSelectionMode,
         setFetchMode,
-    } = useQuickReference(entityKey);
+    } = useQuickRef(entityKey);
 
     React.useEffect(() => {
         setFetchMode('fkIfk');

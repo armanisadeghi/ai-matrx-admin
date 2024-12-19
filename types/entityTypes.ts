@@ -521,6 +521,7 @@ export interface UnifiedSchemaCache {
     entityNameToBackend: Record<EntityKeys, string>;
     fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
     fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
+    fullEntityRelationships?: Record<EntityKeys, FullEntityRelationships>
 }
 
 
@@ -837,6 +838,7 @@ import {Draft} from 'immer';
 import {EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
 import {ComponentProps, DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
 import {SchemaField} from "@/lib/redux/schema/concepts/types";
+import {FullEntityRelationships} from "@/utils/schema/fullRelationships";
 
 type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true

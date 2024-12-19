@@ -7,6 +7,7 @@ import {Provider} from 'react-redux';
 import {AppStore, makeStore} from '@/lib/redux/store';
 import {loadPreferences} from '@/lib/redux/middleware/preferencesMiddleware';
 import {InitialReduxState} from '@/types/reduxTypes';
+import {EntityRelationshipManager} from '@/utils/schema/relationshipUtils';
 
 export default function StoreProvider(
     {
@@ -16,9 +17,11 @@ export default function StoreProvider(
         children: React.ReactNode;
         initialState?: InitialReduxState;
     }) {
-    const storeRef = useRef<AppStore>();
+    const storeRef = useRef<AppStore | null>(null);
+
     if (!storeRef.current) {
         storeRef.current = makeStore(initialState);
+        EntityRelationshipManager.getInstance(initialState?.globalCache);
     }
 
     useEffect(() => {
@@ -27,6 +30,9 @@ export default function StoreProvider(
         }
     }, []);
 
+    if (!storeRef.current) {
+        throw new Error('Redux store failed to initialize');
+    }
 
     return <Provider store={storeRef.current}>{children}</Provider>;
 }

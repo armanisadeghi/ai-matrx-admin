@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+
 import { UseStorageExplorerReturn } from "@/hooks/file-operations/useStorageExplorer";
 import {
     Database as BucketIcon,
@@ -8,6 +8,7 @@ import {
     RefreshCw as RefreshIcon,
     ChevronUp as UpIcon
 } from 'lucide-react';
+import MatrxBreadcrumb from "../navigation/MatrxBreadcrumb";
 
 export interface StorageHeaderProps {
     explorer: UseStorageExplorerReturn;
@@ -26,6 +27,21 @@ export default function StorageHeader({ explorer, logs }: StorageHeaderProps) {
         isLoading,
         buckets,
     } = explorer;
+
+    const breadcrumbItems = [
+        {
+            id: 'root',
+            label: currentBucket,
+            icon: <BucketIcon className="h-4 w-4" />,
+            isCurrent: currentPath.length === 0
+        },
+        ...currentPath.map((folder, index) => ({
+            id: folder,
+            label: folder,
+            icon: <FolderIcon className="h-4 w-4" />,
+            isCurrent: index === currentPath.length - 1
+        }))
+    ];
 
     const handleBreadcrumbAction = (key: string) => {
         if (key === 'root') {
@@ -81,40 +97,11 @@ export default function StorageHeader({ explorer, logs }: StorageHeaderProps) {
                 )}
 
                 {currentBucket && (
-                    <Breadcrumbs
+                    <MatrxBreadcrumb
+                        items={breadcrumbItems}
+                        onNavigate={handleBreadcrumbAction}
                         className="ml-4"
-                        classNames={{
-                            list: "gap-1",
-                        }}
-                        itemClasses={{
-                            item: [
-                                "px-2 py-0.5 border-small border-default-400 rounded-small",
-                                "data-[current=true]:border-foreground data-[current=true]:bg-foreground data-[current=true]:text-background transition-colors",
-                                "data-[disabled=true]:border-default-400 data-[disabled=true]:bg-default-100",
-                            ],
-                            separator: "hidden",
-                        }}
-                        size="sm"
-                        onAction={handleBreadcrumbAction}
-                    >
-                        <BreadcrumbItem
-                            key="root"
-                            startContent={<BucketIcon className="h-4 w-4" />}
-                            isCurrent={currentPath.length === 0}
-                        >
-                            {currentBucket}
-                        </BreadcrumbItem>
-
-                        {currentPath.map((folder, index) => (
-                            <BreadcrumbItem
-                                key={folder}
-                                startContent={<FolderIcon className="h-4 w-4" />}
-                                isCurrent={index === currentPath.length - 1}
-                            >
-                                {folder}
-                            </BreadcrumbItem>
-                        ))}
-                    </Breadcrumbs>
+                    />
                 )}
             </div>
 

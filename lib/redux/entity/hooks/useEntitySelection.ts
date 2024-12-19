@@ -28,7 +28,6 @@ export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Core Selection Operations
     handleAddToSelection: (recordKey: MatrxRecordId) => void;
     handleToggleSelection: (recordKey: MatrxRecordId) => void;
-    handleToggleSelectionWithRelation?: (recordKey: MatrxRecordId) => void;
 
     // Selection Checks
     isSelected: (recordKey: MatrxRecordId) => boolean;
@@ -76,8 +75,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         dispatch(actions.addToSelection(recordKey));
     }, [dispatch, actions]);
 
-    const getRecordId = React.useCallback(
-        (record: EntityData<TEntity>) => {
+    const getRecordId = React.useCallback((record: EntityData<TEntity>) => {
             const entityState = useAppSelector(selectors.selectEntity);
             return getRecordIdByRecord(entityState, record);
         },

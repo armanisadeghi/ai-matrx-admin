@@ -16,6 +16,8 @@ import {ShikiProvider} from '@/providers/ShikiProvider';
 import {RecoilRoot} from 'recoil';
 import {StorageProvider, ToastProvider} from '@/providers';
 import {AudioModalProvider} from "@/providers/AudioModalProvider";
+import {ModuleHeaderProvider} from '@/providers/ModuleHeaderProvider';
+import {EntityProvider} from '@/providers/entity-context/EntityProvider';
 
 export function Providers(
     {
@@ -29,26 +31,31 @@ export function Providers(
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <RecoilRoot>
                 <StoreProvider initialState={initialReduxState}>
-                    <SocketProvider>
-                        <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                            <RefProvider>
-                                <StorageProvider>
-                                    <NextUIProvider>
-                                        <TooltipProvider>
-                                            <ToastProvider>
-                                                <AudioModalProvider>
-                                                    <ShikiProvider initialLanguages={['typescript', 'javascript']}>
-                                                        {children}
-                                                    </ShikiProvider>
-                                                    <Toaster/>
-                                                </AudioModalProvider>
-                                            </ToastProvider>
-                                        </TooltipProvider>
-                                    </NextUIProvider>
-                                </StorageProvider>
-                            </RefProvider>
-                        </ThemeProvider>
-                    </SocketProvider>
+                    <EntityProvider>
+                        <SocketProvider>
+                            <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                                <RefProvider>
+                                    <StorageProvider>
+                                        <NextUIProvider>
+                                            <TooltipProvider>
+                                                <ToastProvider>
+                                                    <AudioModalProvider>
+                                                        <ModuleHeaderProvider>
+                                                            <ShikiProvider
+                                                                initialLanguages={['typescript', 'javascript']}>
+                                                                {children}
+                                                            </ShikiProvider>
+                                                        </ModuleHeaderProvider>
+                                                        <Toaster/>
+                                                    </AudioModalProvider>
+                                                </ToastProvider>
+                                            </TooltipProvider>
+                                        </NextUIProvider>
+                                    </StorageProvider>
+                                </RefProvider>
+                            </ThemeProvider>
+                        </SocketProvider>
+                    </EntityProvider>
                 </StoreProvider>
             </RecoilRoot>
         </SchemaProvider>

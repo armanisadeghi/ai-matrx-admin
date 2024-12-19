@@ -12,10 +12,8 @@ export function useFieldVisibility<TEntity extends EntityKeys>(
     entityKey: TEntity,
     unifiedLayoutProps: UnifiedLayoutProps
 ) {
-    const dispatch = useAppDispatch();
     const store = useAppStore();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { actions } = useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const formStyleOptions = unifiedLayoutProps.dynamicLayoutOptions?.formStyleOptions || {};
     const dynamicFieldInfo = selectors.selectFieldInfo(store.getState());
     const enableSearch = formStyleOptions.formEnableSearch ?? false;
