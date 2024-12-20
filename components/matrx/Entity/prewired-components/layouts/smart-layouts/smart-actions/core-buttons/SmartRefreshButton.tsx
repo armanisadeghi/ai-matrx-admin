@@ -1,8 +1,8 @@
-import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
 import { RotateCw } from "lucide-react";
+import { getEntitySlice, useAppDispatch} from "@/lib/redux";
 
 export interface SmartRefreshButtonProps extends SmartButtonProps {
     hideText?: boolean;
@@ -13,17 +13,17 @@ export const SmartRefreshButton = ({
     size = 'default',
     hideText = false
 }: SmartRefreshButtonProps) => {
-    const entityCrud = useEntityCrud(entityKey);
-    const { setMode } = entityCrud;
+    const dispatch = useAppDispatch();
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
+    const startViewMode = useCallback(() => {
+        dispatch(actions.setOperationMode("view"));
+    }, [dispatch, actions]);
 
     const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
-
-        setMode('view');
-
-        // TODO: Add your fetch/refresh logic here after the flags are reset
-    }, [setMode]);
+        startViewMode();
+    }, []);
 
     return (
         <SmartButtonBase

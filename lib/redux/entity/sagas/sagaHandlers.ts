@@ -14,7 +14,7 @@ import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
 import {Draft} from "immer";
 import {BaseSagaContext} from "@/lib/redux";
-import {FetchOneWithFkIfkPayload, getOrFetchSelectedRecordsPayload} from "../actions";
+import {FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload} from "../actions";
 import {createStructuredError} from "@/utils/errorContext";
 import {supabase} from "@/utils/supabase/client";
 
@@ -242,7 +242,7 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
 function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     entityKey: TEntity,
     actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
-    action: PayloadAction<getOrFetchSelectedRecordsPayload>,
+    action: PayloadAction<GetOrFetchSelectedRecordsPayload>,
     unifiedDatabaseObject?: UnifiedDatabaseObject,
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleGetOrFetchSelectedRecords', entityKey);

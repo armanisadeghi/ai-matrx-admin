@@ -4,7 +4,7 @@ import {cn} from "@/lib/utils";
 import {ChevronRight} from 'lucide-react';
 import ArmaniFormFinal from "@/app/(authenticated)/tests/forms/entity-final-test/ArmaniFormFinal";
 import {getUpdatedUnifiedLayoutProps} from "@/app/(authenticated)/tests/forms/entity-final-test/configs";
-import {useFetchRelatedFinal} from "@/app/(authenticated)/tests/forms/entity-final-test/useFetchRelatedFinal";
+import {useFetchRelatedFinal} from "./hooks/useFetchRelatedFinal";
 import {EntityKeys} from "@/types";
 import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";

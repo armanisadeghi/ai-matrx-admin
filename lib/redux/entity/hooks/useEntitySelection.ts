@@ -5,7 +5,7 @@ import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {SelectionMode, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
 import {getRecordIdByRecord} from "@/lib/redux/entity/utils/stateHelpUtils";
-import {FetchMode, getOrFetchSelectedRecordsPayload} from "@/lib/redux/entity/actions";
+import {FetchMode, GetOrFetchSelectedRecordsPayload} from "@/lib/redux/entity/actions";
 
 export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Current Selection State
@@ -49,6 +49,10 @@ export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
 export const useEntitySelection = <TEntity extends EntityKeys>(
     entityKey: TEntity
 ): UseEntitySelectionReturn<TEntity> => {
+
+    console.log(' === useEntitySelection ===')
+
+
     const dispatch = useAppDispatch();
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
@@ -112,7 +116,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
 
     const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
 
-    //getOrFetchSelectedRecordsPayload
+    //GetOrFetchSelectedRecordsPayload
 
     React.useEffect(() => {
         // Early returns should be combined to reduce complexity
@@ -126,7 +130,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         }
 
         // Memoize the payload to prevent unnecessary recreations
-        const payload: getOrFetchSelectedRecordsPayload = {
+        const payload: GetOrFetchSelectedRecordsPayload = {
             matrxRecordIds: selectedRecordIds,
             fetchMode,
         };

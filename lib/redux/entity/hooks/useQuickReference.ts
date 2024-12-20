@@ -78,6 +78,10 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
 export function useQuickReference<TEntity extends EntityKeys>(
     entityKey: TEntity
 ): UseQuickReferenceReturn<TEntity> {
+
+    console.log(' === useQuickReference ===')
+
+
     const dispatch = useAppDispatch();
     const store = useAppStore();
 

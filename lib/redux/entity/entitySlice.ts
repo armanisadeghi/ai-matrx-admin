@@ -2,9 +2,10 @@
 'use client';
 
 import {createEntitySlice} from './slice';
-import {EntityKeys, AutomationEntities, AutomationEntity} from '@/types/entityTypes';
-import {EntityMetadata} from "@/lib/redux/entity/types/stateTypes";
+import {EntityKeys, AutomationEntities, AutomationEntity, Relationship} from '@/types/entityTypes';
+import {EntityMetadata, EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {createInitialState, extractFieldsFromSchema} from "@/lib/redux/entity/utils/initialize";
+import { createEntitySelectors } from './selectors';
 
 export const initializeEntitySlice = <TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -18,9 +19,8 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(
         schemaType: schema.schemaType,
         primaryKeyMetadata: schema.primaryKeyMetadata,
         displayFieldMetadata: schema.displayFieldMetadata,
-        fields: extractFieldsFromSchema(schema, entityKey),
-        // @ts-ignore
-        relationships: schema.relationships,
+        fields: extractFieldsFromSchema(schema, entityKey) as EntityStateField[],
+        relationships: schema.relationships as unknown as  Relationship[],
     };
 
     return {
@@ -60,4 +60,13 @@ export function getEntitySlice(entityKey: EntityKeys) {
     return slice;
 }
 
+const entitySelectorsRegistry = new Map<EntityKeys, ReturnType<typeof createEntitySelectors>>();
 
+export const getEntitySelectors = (entityKey: EntityKeys) => {
+    let selectors = entitySelectorsRegistry.get(entityKey);
+    if (!selectors) {
+        selectors = createEntitySelectors(entityKey);
+        entitySelectorsRegistry.set(entityKey, selectors);
+    }
+    return selectors;
+};

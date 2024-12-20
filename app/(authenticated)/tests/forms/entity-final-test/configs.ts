@@ -113,6 +113,7 @@ export function getUnifiedLayoutProps(options?: {
     isExpanded?: boolean;
     handlers?: UnifiedLayoutHandlers;
 }): UnifiedLayoutProps {
+
     const {
         entityKey = 'registeredFunction',
         defaultFormComponent = 'ArmaniFormSmart',

@@ -38,7 +38,7 @@ import {
     ExecuteCustomQueryPayload,
     FetchAllPayload,
     FetchOnePayload, FetchOneWithFkIfkPayload, FetchQuickReferencePayload, FetchRecordsPayload,
-    getOrFetchSelectedRecordsPayload, UpdateRecordPayload
+    GetOrFetchSelectedRecordsPayload, UpdateRecordPayload
 } from "@/lib/redux/entity/actions";
 import {Callback} from "@/utils/callbackManager";
 import {EntityModeManager} from "./utils/crudOpsManagement";
@@ -73,7 +73,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state.records[recordKey] = record;
                             setSuccess(state, 'FETCH_ONE');
 
-                            addRecordToSelection(state, recordKey);
+                            addRecordToSelection(state, entityKey, recordKey);
                             state.cache.stale = false;
                         },
 
@@ -173,7 +173,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 const recordKey = createRecordKey(primaryKeyMetadata, record);
                                 entityLogger.log('info', 'Adding record to selection', recordKey);
                                 state.records[recordKey] = record;
-                                addRecordToSelection(state, recordKey);
+                                addRecordToSelection(state, entityKey, recordKey);
                             });
                             setSuccess(state, 'FETCHED_AS_RELATED');
                             entityLogger.log('info', 'fetchedAsRelatedSuccess set to success');
@@ -282,7 +282,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                         getOrFetchSelectedRecords: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<getOrFetchSelectedRecordsPayload>
+                            action: PayloadAction<GetOrFetchSelectedRecordsPayload>
                         ) => {
                             entityLogger.log('debug', 'getOrFetchSelectedRecords', action.payload);
                             setLoading(state, 'GET_OR_FETCH_RECORDS');
@@ -363,10 +363,10 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                         ) => {
 
                             if (isMatrxRecordId(action.payload)) {
-                                addRecordToSelection(state, action.payload);
+                                addRecordToSelection(state, entityKey, action.payload);
                             } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
                                 const matrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
-                                addRecordToSelection(state, matrxRecordId);
+                                addRecordToSelection(state, entityKey, matrxRecordId);
                             } else {
                                 entityLogger.log('error', 'Invalid Record in addToSelection', action.payload);
                             }
@@ -383,11 +383,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
+                            console.log("Entity Slice Set Active Record Action Payload: ", action.payload);
                             state.selection.lastActiveRecord = state.selection.activeRecord;
                             state.selection.activeRecord = action.payload;
 
                             if (!state.selection.selectedRecords.includes(action.payload)) {
-                                addRecordToSelection(state, action.payload);
+                                console.log("Adding Active Record to Selection: ", action.payload);
+                                addRecordToSelection(state, entityKey, action.payload);
                             }
                         },
 

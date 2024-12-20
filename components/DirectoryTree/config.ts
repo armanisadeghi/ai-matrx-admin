@@ -5,9 +5,7 @@ import {
 } from 'lucide-react';
 import {
     FileTypeInfo,
-    FileCategory,
-    COMMON_MIME_TYPES,
-    FILE_EXTENSIONS
+    FileCategory, FileCategorySubCategory,
 } from '@/types/file-operations.types';
 
 import {
@@ -109,7 +107,6 @@ export const DEFAULT_CONFIG: DirectoryTreeConfig = {
 };
 
 
-
 export interface FileTypeConfig extends FileTypeInfo {
     icon: React.ComponentType;
     category: FileCategory;
@@ -207,6 +204,299 @@ export interface EnhancedDirectoryTreeConfig extends DirectoryTreeConfig {
         compactMode: boolean;
     };
 }
+
+
+export const COMMON_MIME_TYPES = {
+    // Code Files
+    CODE: {
+        JAVASCRIPT: ['application/javascript', 'text/javascript'],
+        TYPESCRIPT: ['application/typescript', 'text/typescript'],
+        PYTHON: ['text/x-python', 'application/x-python'],
+        JSON: ['application/json'],
+        HTML: ['text/html'],
+        CSS: ['text/css'],
+        MARKDOWN: ['text/markdown'],
+        XML: ['application/xml', 'text/xml'],
+        YAML: ['application/yaml', 'text/yaml'],
+        PLAIN: ['text/plain'],
+    },
+
+    // Documentation & Notes
+    DOCUMENT: {
+        // Microsoft Office
+        WORD: [
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ],
+        EXCEL: [
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ],
+        POWERPOINT: [
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        ],
+        // Google Workspace
+        GOOGLE_DOC: ['application/vnd.google-apps.document'],
+        GOOGLE_SHEET: ['application/vnd.google-apps.spreadsheet'],
+        GOOGLE_SLIDES: ['application/vnd.google-apps.presentation'],
+        // Other Formats
+        PDF: ['application/pdf'],
+        RTF: ['application/rtf'],
+        TEXT: ['text/plain'],
+    },
+
+    // Media Files
+    AUDIO: {
+        BASIC: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
+        VOICE: ['audio/webm', 'audio/aac', 'audio/mp4'],
+        MIDI: ['audio/midi', 'audio/x-midi'],
+        STREAMING: ['application/vnd.apple.mpegurl', 'application/x-mpegurl'],
+    },
+
+    IMAGE: {
+        BASIC: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        VECTOR: ['image/svg+xml'],
+        RAW: ['image/raw', 'image/x-raw'],
+        DESIGN: ['image/vnd.adobe.photoshop', 'image/x-xcf'],
+    },
+
+    VIDEO: {
+        BASIC: ['video/mp4', 'video/webm', 'video/ogg'],
+        STREAMING: ['application/x-mpegURL', 'video/MP2T'],
+        RECORDING: ['video/webm', 'video/quicktime'],
+    },
+
+    // Archives & Data
+    ARCHIVE: {
+        COMPRESSED: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
+        DISK_IMAGE: ['application/x-iso9660-image', 'application/x-raw-disk-image'],
+    },
+
+    DATA: {
+        CSV: ['text/csv'],
+        XML: ['application/xml', 'text/xml'],
+        JSON: ['application/json'],
+        SQLITE: ['application/x-sqlite3'],
+    },
+} as const;
+
+export const FILE_EXTENSIONS = {
+    CODE: {
+        JAVASCRIPT: ['.js', '.jsx', '.mjs'],
+        TYPESCRIPT: ['.ts', '.tsx', '.d.ts'],
+        PYTHON: ['.py', '.pyw', '.pyx', '.pxd', '.pxi'],
+        WEB: ['.html', '.htm', '.css', '.scss', '.sass', '.less'],
+        CONFIG: ['.json', '.yaml', '.yml', '.toml', '.ini', '.env'],
+        MARKDOWN: ['.md', '.mdx', '.markdown'],
+    },
+
+    // Documentation & Notes
+    DOCUMENT: {
+        MICROSOFT: ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'],
+        GOOGLE: ['.gdoc', '.gsheet', '.gslide'],
+        TEXT: ['.txt', '.rtf', '.pdf'],
+        NOTES: ['.note', '.md', '.txt'],
+    },
+
+    // Media Files
+    AUDIO: {
+        BASIC: ['.mp3', '.wav', '.ogg', '.m4a'],
+        VOICE: ['.webm', '.aac', '.mp4a'],
+        MIDI: ['.mid', '.midi'],
+        PLAYLIST: ['.m3u', '.m3u8', '.pls'],
+    },
+
+    IMAGE: {
+        BASIC: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
+        VECTOR: ['.svg', '.ai', '.eps'],
+        RAW: ['.raw', '.cr2', '.nef', '.arw'],
+        DESIGN: ['.psd', '.xcf', '.sketch'],
+    },
+
+    VIDEO: {
+        BASIC: ['.mp4', '.webm', '.ogg', '.mov'],
+        STREAMING: ['.m3u8', '.ts'],
+        RECORDING: ['.webm', '.mov'],
+    },
+
+    // Archives & Data
+    ARCHIVE: {
+        COMPRESSED: ['.zip', '.rar', '.7z', '.tar', '.gz'],
+        DISK_IMAGE: ['.iso', '.img', '.dmg'],
+    },
+
+    DATA: {
+        STRUCTURED: ['.csv', '.xml', '.json', '.sqlite', '.db'],
+        CONFIG: ['.env', '.ini', '.cfg', '.conf'],
+    },
+} as const;
+
+export const FILE_EXTENSIONS_LOOKUP = {
+    js: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs},
+    jsx: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJsx},
+    mjs: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs},
+    ts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs},
+    tsx: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTsx},
+    dts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs},
+    py: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
+    pyw: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
+    pyx: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
+    pxd: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
+    pxi: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
+    html: {category: "CODE", subCategory: "WEB", icon: IconFileTypeHtml},
+    htm: {category: "CODE", subCategory: "WEB", icon: IconFileTypeHtml},
+    css: {category: "CODE", subCategory: "WEB", icon: IconFileTypeCss},
+    scss: {category: "CODE", subCategory: "WEB", icon: IconFileTypeCss},
+    sass: {category: "CODE", subCategory: "WEB", icon: IconFileTypeCss},
+    less: {category: "CODE", subCategory: "WEB", icon: IconFileTypeCss},
+    json: {category: "CODE", subCategory: "CONFIG", icon: FileJson},
+    yaml: {category: "CODE", subCategory: "CONFIG", icon: FileCode},
+    yml: {category: "CODE", subCategory: "CONFIG", icon: FileCode},
+    toml: {category: "CODE", subCategory: "CONFIG", icon: FileCode},
+    ini: {category: "CODE", subCategory: "CONFIG", icon: FileCode},
+    env: {category: "CODE", subCategory: "CONFIG", icon: FileCode},
+    md: {category: "CODE", subCategory: "MARKDOWN", icon: FileCode},
+    mdx: {category: "CODE", subCategory: "MARKDOWN", icon: FileCode},
+    markdown: {category: "CODE", subCategory: "MARKDOWN", icon: FileCode},
+    doc: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypeDoc},
+    docx: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypeDocx},
+    xls: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypeXls},
+    xlsx: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypeXls},
+    ppt: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypePpt},
+    pptx: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypePpt},
+    gdoc: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File},
+    gsheet: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File},
+    gslide: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File},
+    txt: {category: "DOCUMENT", subCategory: "TEXT", icon: IconFileTypeTxt},
+    rtf: {category: "DOCUMENT", subCategory: "TEXT", icon: File},
+    pdf: {category: "DOCUMENT", subCategory: "TEXT", icon: IconFileTypePdf},
+    note: {category: "DOCUMENT", subCategory: "NOTES", icon: File},
+    mp3: {category: "AUDIO", subCategory: "BASIC", icon: File},
+    wav: {category: "AUDIO", subCategory: "BASIC", icon: File},
+    ogg: {category: "AUDIO", subCategory: "BASIC", icon: File},
+    m4a: {category: "AUDIO", subCategory: "BASIC", icon: File},
+    webm: {category: "AUDIO", subCategory: "VOICE", icon: File},
+    aac: {category: "AUDIO", subCategory: "VOICE", icon: File},
+    mp4a: {category: "AUDIO", subCategory: "VOICE", icon: File},
+    mid: {category: "AUDIO", subCategory: "MIDI", icon: File},
+    midi: {category: "AUDIO", subCategory: "MIDI", icon: File},
+    m3u: {category: "AUDIO", subCategory: "PLAYLIST", icon: File},
+    m3u8: {category: "AUDIO", subCategory: "PLAYLIST", icon: File},
+    pls: {category: "AUDIO", subCategory: "PLAYLIST", icon: File},
+    jpg: {category: "IMAGE", subCategory: "BASIC", icon: IconFileTypeJpg},
+    jpeg: {category: "IMAGE", subCategory: "BASIC", icon: IconFileTypeJpg},
+    png: {category: "IMAGE", subCategory: "BASIC", icon: IconFileTypePng},
+    gif: {category: "IMAGE", subCategory: "BASIC", icon: IconGif},
+    webp: {category: "IMAGE", subCategory: "BASIC", icon: File},
+    svg: {category: "IMAGE", subCategory: "VECTOR", icon: File},
+    ai: {category: "IMAGE", subCategory: "VECTOR", icon: File},
+    eps: {category: "IMAGE", subCategory: "VECTOR", icon: File},
+    raw: {category: "IMAGE", subCategory: "RAW", icon: File},
+    cr2: {category: "IMAGE", subCategory: "RAW", icon: File},
+    nef: {category: "IMAGE", subCategory: "RAW", icon: File},
+    arw: {category: "IMAGE", subCategory: "RAW", icon: File},
+    psd: {category: "IMAGE", subCategory: "DESIGN", icon: File},
+    xcf: {category: "IMAGE", subCategory: "DESIGN", icon: File},
+    sketch: {category: "IMAGE", subCategory: "DESIGN", icon: File},
+    mp4: {category: "VIDEO", subCategory: "BASIC", icon: FileVideo},
+    mov: {category: "VIDEO", subCategory: "BASIC", icon: FileVideo},
+    zip: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: IconFileTypeZip},
+    rar: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
+    '7z': {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
+    tar: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
+    gz: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
+    iso: {category: "ARCHIVE", subCategory: "DISK_IMAGE", icon: File},
+    img: {category: "ARCHIVE", subCategory: "DISK_IMAGE", icon: File},
+    dmg: {category: "ARCHIVE", subCategory: "DISK_IMAGE", icon: File},
+    csv: {category: "DATA", subCategory: "STRUCTURED", icon: IconFileTypeCsv},
+    xml: {category: "DATA", subCategory: "STRUCTURED", icon: IconFileTypeXml},
+    sqlite: {category: "DATA", subCategory: "STRUCTURED", icon: File},
+    db: {category: "DATA", subCategory: "STRUCTURED", icon: File},
+    cfg: {category: "DATA", subCategory: "CONFIG", icon: File},
+    conf: {category: "DATA", subCategory: "CONFIG", icon: File},
+}
+
+
+export const COMMON_MIME_TYPES_LOOKUP: Record<string, FileCategorySubCategory> = {
+    'application/javascript': {category: "CODE", subCategory: "JAVASCRIPT"},
+    'text/javascript': {category: "CODE", subCategory: "JAVASCRIPT"},
+    'application/typescript': {category: "CODE", subCategory: "TYPESCRIPT"},
+    'text/typescript': {category: "CODE", subCategory: "TYPESCRIPT"},
+    'text/x-python': {category: "CODE", subCategory: "PYTHON"},
+    'application/x-python': {category: "CODE", subCategory: "PYTHON"},
+    'application/json': {category: "CODE", subCategory: "JSON"},
+    'text/html': {category: "CODE", subCategory: "HTML"},
+    'text/css': {category: "CODE", subCategory: "CSS"},
+    'text/markdown': {category: "CODE", subCategory: "MARKDOWN"},
+    'application/xml': {category: "CODE", subCategory: "XML"},
+    'text/xml': {category: "CODE", subCategory: "XML"},
+    'application/yaml': {category: "CODE", subCategory: "YAML"},
+    'text/yaml': {category: "CODE", subCategory: "YAML"},
+    'text/plain': {category: "CODE", subCategory: "PLAIN"},
+
+    // Documentation & Notes
+    'application/msword': {category: "DOCUMENT", subCategory: "WORD"},
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
+        category: "DOCUMENT",
+        subCategory: "WORD"
+    },
+    'application/vnd.ms-excel': {category: "DOCUMENT", subCategory: "EXCEL"},
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {category: "DOCUMENT", subCategory: "EXCEL"},
+    'application/vnd.ms-powerpoint': {category: "DOCUMENT", subCategory: "POWERPOINT"},
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': {
+        category: "DOCUMENT",
+        subCategory: "POWERPOINT"
+    },
+    'application/vnd.google-apps.document': {category: "DOCUMENT", subCategory: "GOOGLE_DOC"},
+    'application/vnd.google-apps.spreadsheet': {category: "DOCUMENT", subCategory: "GOOGLE_SHEET"},
+    'application/vnd.google-apps.presentation': {category: "DOCUMENT", subCategory: "GOOGLE_SLIDES"},
+    'application/pdf': {category: "DOCUMENT", subCategory: "PDF"},
+    'application/rtf': {category: "DOCUMENT", subCategory: "RTF"},
+
+    // Media Files
+    'audio/mpeg': {category: "AUDIO", subCategory: "BASIC"},
+    'audio/ogg': {category: "AUDIO", subCategory: "BASIC"},
+    'audio/wav': {category: "AUDIO", subCategory: "BASIC"},
+    'audio/webm': {category: "AUDIO", subCategory: "VOICE"},
+    'audio/aac': {category: "AUDIO", subCategory: "VOICE"},
+    'audio/mp4': {category: "AUDIO", subCategory: "VOICE"},
+    'audio/midi': {category: "AUDIO", subCategory: "MIDI"},
+    'audio/x-midi': {category: "AUDIO", subCategory: "MIDI"},
+
+    // Image Files
+    'image/jpeg': {category: "IMAGE", subCategory: "BASIC"},
+    'image/png': {category: "IMAGE", subCategory: "BASIC"},
+    'image/gif': {category: "IMAGE", subCategory: "BASIC"},
+    'image/webp': {category: "IMAGE", subCategory: "BASIC"},
+    'image/svg+xml': {category: "IMAGE", subCategory: "VECTOR"},
+
+    // Archives & Data
+    'application/zip': {category: "ARCHIVE", subCategory: "COMPRESSED"},
+    'application/x-rar-compressed': {category: "ARCHIVE", subCategory: "COMPRESSED"},
+    'application/x-7z-compressed': {category: "ARCHIVE", subCategory: "COMPRESSED"},
+    'application/x-iso9660-image': {category: "ARCHIVE", subCategory: "DISK_IMAGE"},
+
+    // Add more MIME types as needed
+};
+
+export const getFileCategorySubCategoryByName = (fileName: string): FileCategorySubCategory => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    const lookup = FILE_EXTENSIONS_LOOKUP[ext];
+    if (lookup) {
+        return lookup;
+    }
+    return {category: "UNKNOWN", subCategory: "UNKNOWN"}
+};
+
+export const getFileCategoryByMimeType = (mimeType: string): FileCategorySubCategory => {
+    const lookup = COMMON_MIME_TYPES_LOOKUP[mimeType];
+    if (lookup) {
+        return lookup;
+    }
+    return {category: "UNKNOWN", subCategory: "UNKNOWN"}
+};
+
 
 // Enhanced default configuration
 export const ENHANCED_DEFAULT_CONFIG: EnhancedDirectoryTreeConfig = {
@@ -308,7 +598,7 @@ export const sortItems = (
     items: [string, any][],
     config: EnhancedDirectoryTreeConfig
 ): [string, any][] => {
-    const { sorting, filter } = config;
+    const {sorting, filter} = config;
 
     return items.sort(([keyA, valueA], [keyB, valueB]) => {
         const isADirectory = valueA !== null && typeof valueA === 'object';
@@ -321,7 +611,7 @@ export const sortItems = (
 
         // Natural sorting for names
         if (sorting.natural) {
-            return keyA.localeCompare(keyB, undefined, { numeric: true });
+            return keyA.localeCompare(keyB, undefined, {numeric: true});
         }
 
         // Regular sorting
@@ -336,7 +626,7 @@ export const shouldShowItem = (
     isDirectory: boolean,
     config: EnhancedDirectoryTreeConfig
 ): boolean => {
-    const { filter } = config;
+    const {filter} = config;
     if (filter.hideHiddenFiles && name.startsWith('.')) {
         return false;
     }

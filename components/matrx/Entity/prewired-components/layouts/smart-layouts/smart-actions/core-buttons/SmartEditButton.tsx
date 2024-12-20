@@ -1,13 +1,23 @@
-import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { Edit2 } from "lucide-react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
+import {createEntitySelectors, getEntitySlice, useAppDispatch, useAppSelector} from "@/lib/redux";
 
 
 export const SmartEditButton = ({ entityKey, size = 'default' }: SmartButtonProps) => {
-    const entityCrud = useEntityCrud(entityKey);
-    const { operationMode, startUpdateMode, activeRecordId, selectedRecordIds } = entityCrud;
+    const dispatch = useAppDispatch();
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
+    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
+    const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
+    const operationMode = useAppSelector(selectors.selectOperationMode);
+    const startUpdateMode = useCallback(() => {
+        if (activeRecordId || selectedRecordIds.length > 0) {
+            dispatch(actions.startRecordUpdate());
+        }
+    }, [dispatch, actions, activeRecordId, selectedRecordIds]);
+
 
     const isDisabled = operationMode !== 'view' ||
         (!activeRecordId && selectedRecordIds.length === 0);

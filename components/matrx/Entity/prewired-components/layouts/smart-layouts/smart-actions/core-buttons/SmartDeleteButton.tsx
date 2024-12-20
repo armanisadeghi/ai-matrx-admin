@@ -1,17 +1,26 @@
 import React, {memo, useCallback, useState} from "react";
-import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import SmartButtonBase from "./SmartButtonBase";
 import {Trash2} from "lucide-react";
 import {SmartButtonProps} from "../types";
 import SmartDeleteConfirmation from "../confirmation/SmartDeleteConfirmation";
+import {createEntitySelectors, useAppSelector} from "@/lib/redux";
+import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 
 export const SmartDeleteButton = memo((
     {
         entityKey,
         size = 'default'
     }: SmartButtonProps) => {
-    const entityCrud = useEntityCrud(entityKey);
-    const {isOperationPending, activeRecordId} = entityCrud;
+
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
+    const pendingOperations = useAppSelector(selectors.selectPendingOperations);
+    const isOperationPending = useCallback((matrxRecordId: MatrxRecordId) =>
+            pendingOperations.includes(matrxRecordId)
+        , [pendingOperations]);
+
+
+
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     const isDisabled = !activeRecordId ||

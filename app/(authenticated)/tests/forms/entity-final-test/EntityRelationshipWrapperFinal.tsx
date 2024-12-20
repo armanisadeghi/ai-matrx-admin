@@ -34,7 +34,7 @@ const EntityRelationshipWrapperFinal = (
 
     const entityKeyToUse = (fieldMetadata: EntityStateField) => {
         if (!fieldMetadata.isNative) {
-            console.log('EntityRelationshipWrapperFinal: returning entityName:', fieldMetadata.entityName);
+            // console.log('EntityRelationshipWrapperFinal: returning entityName:', fieldMetadata.entityName);
             return fieldMetadata.entityName;
         } else {
             throw new Error('EntityRelationshipWrapperFinal: field is not an entity relationship');

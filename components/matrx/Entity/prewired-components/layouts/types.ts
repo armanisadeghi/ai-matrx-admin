@@ -14,13 +14,7 @@ import {EntityError, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {
     SmartCrudWrapperProps
 } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
-
-export interface FormComponentOptions {
-    entitySelectionComponent?: any;
-    quickReferenceType?: QuickReferenceComponentType;
-    quickReferenceCrudWrapperProps?: SmartCrudWrapperProps | Partial<SmartCrudWrapperProps>;
-    formLayoutType?: PageLayoutOptions;
-}
+import {QuickRefVariant} from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/quick-ref-item";
 
 export interface FormFieldFiltering {
     excludeFields?: string[];    // Fields to hide
@@ -54,12 +48,6 @@ export interface DynamicStyleOptions {
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
     variant?: MatrxVariant;
-}
-
-export interface DynamicLayoutOptions {
-    componentOptions?: FormComponentOptions;
-    formStyleOptions?: FormStyleOptions;
-    inlineEntityOptions?: InlineEntityOptions;
 }
 
 export interface UnifiedLayoutState {
@@ -120,6 +108,27 @@ export interface UnifiedStepHandlers {
     onPrevStep?: () => void;
 }
 
+export interface FormComponentOptions {
+    entitySelectionComponent?: any;
+    quickReferenceType?: QuickReferenceComponentType;
+    quickReferenceCrudWrapperProps?: SmartCrudWrapperProps | Partial<SmartCrudWrapperProps>;
+    formLayoutType?: PageLayoutOptions;
+}
+
+
+
+export interface QuickRefOptions {
+    mainComponent?: QuickReferenceComponentType;
+    itemComponent?: QuickRefVariant;
+    QuickReferenceComponent?: React.ReactNode;
+}
+
+export interface DynamicLayoutOptions {
+    componentOptions?: FormComponentOptions;
+    formStyleOptions?: FormStyleOptions;
+    inlineEntityOptions?: InlineEntityOptions;
+}
+
 export interface UnifiedLayoutProps {
     activeRecordId?: MatrxRecordId;
     layoutState: UnifiedLayoutState;
@@ -135,7 +144,10 @@ export interface UnifiedLayoutProps {
     unifiedStepHandlers?: UnifiedStepHandlers;
     className?: string;
     entitiesToHide?: EntityKeys[];
+    smartCrudOptions?: SmartCrudWrapperProps;
+    quickRefOptions?: QuickRefOptions;
 }
+
 
 
 

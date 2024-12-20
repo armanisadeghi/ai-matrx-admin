@@ -189,16 +189,26 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
 
-// Selection Selectors ==================================================
+    // Selection Selectors ==================================================
 
     const selectSelectionState = createSelector(
         [selectEntity],
-        (entity) => entity.selection
+        (entity) => {
+            return entity.selection;
+        }
     );
 
-    const selectSelectedRecordIds = createSelector(
-        [selectSelectionState],
-        (selection) => selection.selectedRecords || []
+    const selectSelectedRecordIds = (state: RootState): MatrxRecordId[] => {
+        return state.entities[entityKey].selection.selectedRecords || [];
+    };
+
+
+    const selectIsRecordSelected = createSelector(
+        [selectSelectedRecordIds, (_: RootState, recordId: MatrxRecordId) => recordId],
+        (selectedIds, recordId) => {
+            console.log('Checking if selected:', { recordId, selectedIds });
+            return selectedIds.includes(recordId);
+        }
     );
 
     const selectSelectedRecords = createSelector(
@@ -236,10 +246,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (selection) => selection.selectionMode
     );
 
-    const selectIsRecordSelected = createSelector(
-        [selectSelectedRecordIds, (_: RootState, recordId: MatrxRecordId) => recordId],
-        (selectedIds, recordId) => selectedIds.includes(recordId)
-    );
 
     const selectIsRecordActive = createSelector(
         [selectActiveRecordId, (_: RootState, recordId: MatrxRecordId) => recordId],

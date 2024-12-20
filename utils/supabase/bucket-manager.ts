@@ -48,7 +48,6 @@ export class StorageClient {
             .remove([path]);
     }
 
-    // Bulk operations
     async uploadMany(files: { path: string; file: File | ArrayBuffer; options?: FileUploadOptions }[]) {
         const promises = files.map(({ path, file, options }) =>
             this.upload(path, file, options)

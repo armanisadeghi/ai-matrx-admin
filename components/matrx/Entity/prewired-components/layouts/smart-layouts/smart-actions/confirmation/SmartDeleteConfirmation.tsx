@@ -1,10 +1,10 @@
-// components/common/crud/SmartDeleteConfirmation.tsx
+import React, {useCallback, useMemo} from "react";
 import {EntityKeys} from "@/types/entityTypes";
-import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
-import {useCallback, useMemo} from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {useAppSelector} from "@/lib/redux/hooks";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
+import {getEntitySlice} from "@/lib/redux";
+import {Callback, callbackManager} from "@/utils/callbackManager";
 
 interface SmartDeleteConfirmationProps {
     entityKey: EntityKeys;
@@ -20,24 +20,33 @@ export const SmartDeleteConfirmation = (
         onOpenChange,
         onComplete
     }: SmartDeleteConfirmationProps) => {
-    const entityCrud = useEntityCrud(entityKey);
+    const dispatch = useAppDispatch();
+    const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+
+    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
     const comparison = useAppSelector(selectors.selectChangeComparison);
-    const {handleDelete, activeRecordId} = entityCrud;
+
+    const handleComplete = useCallback<Callback<boolean>>((success) => {
+        if (!activeRecordId) return;
+
+        dispatch(actions.removePendingOperation(activeRecordId));
+        if (success) {
+            onOpenChange(false);
+        }
+        onComplete?.(success);
+    }, [activeRecordId, actions, dispatch, onOpenChange, onComplete]);
 
     const handleConfirm = useCallback(() => {
         if (!activeRecordId) return;
 
-        handleDelete(activeRecordId, (result) => {
-            if (result.success) {
-                onOpenChange(false);
-                onComplete?.(true);
-            } else {
-                console.error('Delete operation failed:', result.error);
-                onComplete?.(false);
-            }
-        });
-    }, [activeRecordId, handleDelete, onOpenChange, onComplete]);
+        dispatch(actions.addPendingOperation(activeRecordId));
+
+        dispatch(actions.deleteRecord({
+            matrxRecordId: activeRecordId,
+            callbackId: callbackManager.register(handleComplete)
+        }));
+    }, [activeRecordId, actions, dispatch, handleComplete]);
 
     return (
         <ConfirmationDialog
@@ -57,17 +66,15 @@ export const SmartDeleteConfirmation = (
                 <div className="rounded-md border p-4 bg-muted/50">
                     <div className="text-sm font-medium mb-2">Record Details:</div>
                     <div className="grid grid-cols-1 gap-2">
-                        {comparison.fieldInfo.map(field => {
-                            return (
-                                <div key={field.name} className="text-sm">
-                                    <span className="font-medium text-muted-foreground">
-                                        {field.displayName}:
-                                    </span>
-                                    {' '}
-                                    <span>{comparison.originalRecord?.[field.name] || '-'}</span>
-                                </div>
-                            );
-                        })}
+                        {comparison.fieldInfo.map(field => (
+                            <div key={field.name} className="text-sm">
+                                <span className="font-medium text-muted-foreground">
+                                    {field.displayName}:
+                                </span>
+                                {' '}
+                                <span>{comparison.originalRecord?.[field.name] || '-'}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

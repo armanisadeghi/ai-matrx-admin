@@ -1,11 +1,12 @@
+import React, {useMemo, useCallback} from "react";
 import {EntityKeys} from "@/types/entityTypes";
-import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
-import {useMemo, useCallback} from "react";
 import ConfirmationDialog from "./ConfirmationDialog";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {useAppSelector} from "@/lib/redux/hooks";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import {cn} from "@/lib/utils";
 import {useEntityToasts} from "@/lib/redux/entity/hooks/useEntityToasts";
+import {Callback, callbackManager} from "@/utils/callbackManager";
+import {getEntitySlice} from "@/lib/redux";
 
 interface SmartUpdateConfirmationProps {
     entityKey: EntityKeys;
@@ -13,40 +14,46 @@ interface SmartUpdateConfirmationProps {
     onOpenChange: (open: boolean) => void;
 }
 
+type UpdateResult = {
+    success: boolean;
+    error?: unknown;
+};
+
 export const SmartUpdateConfirmation = (
     {
         entityKey,
         open,
         onOpenChange,
     }: SmartUpdateConfirmationProps) => {
-    const entityCrud = useEntityCrud(entityKey);
+    const dispatch = useAppDispatch();
+    const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const entityToasts = useEntityToasts(entityKey);
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const comparison = useAppSelector(selectors.selectChangeComparison);
-    const {handleUpdate} = entityCrud;
+
+    const handleComplete = useCallback<Callback<UpdateResult>>(({success, error}) => {
+        if (!comparison.matrxRecordId) return;
+
+        dispatch(actions.removePendingOperation(comparison.matrxRecordId));
+
+        if (success) {
+            entityToasts.handleUpdateSuccess();
+            onOpenChange(false);
+        } else {
+            entityToasts.handleError(error, 'update');
+        }
+    }, [comparison.matrxRecordId, actions, dispatch, entityToasts, onOpenChange]);
 
     const handleConfirm = useCallback(() => {
-        console.log('Update confirmation - handleConfirm', {
-            recordId: comparison.matrxRecordId
-        });
+        if (!comparison.matrxRecordId) return;
 
-        const callback = (result: { success: boolean; error?: any }) => {
-            if (result.success) {
-                entityToasts.handleUpdateSuccess();
-                onOpenChange(false);
-            } else {
-                entityToasts.handleError(result.error, 'update');
-            }
-        };
+        dispatch(actions.addPendingOperation(comparison.matrxRecordId));
 
-        if (comparison.matrxRecordId) {
-            handleUpdate(comparison.matrxRecordId, callback);
-        }
-    }, [handleUpdate, comparison.matrxRecordId, entityToasts, onOpenChange]);
-
-    const handleCancel = useCallback(() => {
-        onOpenChange(false);
-    }, [onOpenChange]);
+        dispatch(actions.updateRecord({
+            matrxRecordId: comparison.matrxRecordId,
+            callbackId: callbackManager.register(handleComplete)
+        }));
+    }, [comparison.matrxRecordId, actions, dispatch, handleComplete]);
 
     if (!comparison.hasChanges) {
         return null;
@@ -58,7 +65,7 @@ export const SmartUpdateConfirmation = (
             onOpenChange={onOpenChange}
             title={`Save Changes${comparison.displayName ? ` - ${comparison.displayName}` : ''} [UPDATE DIALOG]`}
             onConfirm={handleConfirm}
-            onCancel={handleCancel}
+            onCancel={() => onOpenChange(false)}
             confirmText="Save"
             intent="default"
         >

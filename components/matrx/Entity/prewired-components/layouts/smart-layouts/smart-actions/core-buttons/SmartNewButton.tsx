@@ -1,22 +1,28 @@
 import React from "react";
-import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {useCallback} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
 import {Plus} from "lucide-react";
+import {createEntitySelectors, getEntitySlice, useAppDispatch, useAppSelector} from "@/lib/redux";
 
 export const SmartNewButton = (
     {
         entityKey,
         size = 'default'
     }: SmartButtonProps) => {
-    const entityCrud = useEntityCrud(entityKey);
-    const {
-        flags,
-        isLoading,
-        operationMode,
-        startCreateMode
-    } = entityCrud;
+
+    const dispatch = useAppDispatch();
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
+    const operationMode = useAppSelector(selectors.selectOperationMode);
+    const flags = useAppSelector(selectors.selectEntityFlags);
+    const dataState = useAppSelector(selectors.selectDataState);
+    const isLoading = dataState.isLoading
+    const startCreateMode = useCallback((count: number = 1) => {
+        dispatch(actions.startRecordCreation({count}));
+    }, [dispatch, actions]);
+
+
 
     // According to our state matrix, New button should be disabled when:
     // 1. Currently in create or update mode

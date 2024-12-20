@@ -27,6 +27,7 @@ export * from './entity/hooks/useFetchRelated';
 export * from './entity/hooks/useFieldVisibility';
 export * from './entity/hooks/useQuickReference';
 export * from './entity/hooks/useValidatedUpdateOrCreate';
+export * from './entity/hooks/coreHooks';
 export * from './entity/sagas/sagaHandlers';
 export * from './entity/sagas/sagaHelpers';
 export * from './entity/sagas/watcherSaga';

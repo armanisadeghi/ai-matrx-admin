@@ -8,56 +8,17 @@ import {FileObject, Bucket} from '@supabase/storage-js';
 export type SupabaseFileObject = FileObject;
 export type SupabaseBucket = Bucket;
 
-export interface UseStorageExplorerProps {
+interface UseStorageExplorerProps {
     onLog?: (message: string, type: 'success' | 'error' | 'info') => void;
+    onApiResponse?: (operation: string, response: unknown, error?: unknown, request?: unknown) => void;
 }
 
-export interface UseStorageExplorerReturn {
-    // Bucket State
-    buckets: BucketInfo[];
-    currentBucket: string;
-    isBucketLoading: boolean;
-    bucketError: string | null;
+type StorageOperation<T> = Promise<{
+    data: T;
+    error: Error | null;
+}>;
 
-    // File/Folder State
-    currentPath: string[];
-    items: StorageItem[];
-    selectedItem: StorageItem | null;
-    isLoading: boolean;
-    error: string | null;
-    isRoot: boolean;
-
-    // Bucket Operations
-    loadBuckets: () => Promise<void>;
-    createBucket: (name: string, isPublic?: boolean) => Promise<boolean>;
-    deleteBucket: (name: string) => Promise<void>;
-    setCurrentBucket: (bucket: string) => void;
-
-    // Item Selection
-    setSelectedItem: (item: StorageItem | null) => void;
-
-    // Navigation
-    navigateToFolder: (folderName: string) => void;
-    navigateUp: () => void;
-    navigateToRoot: () => void;
-
-    // File Operations
-    uploadFile: (file: File, customFileName?: string) => Promise<StorageResponse<StorageItem>>;
-    moveItem: (item: StorageItem, newPath: string[]) => Promise<void>;
-    copyItem: (item: StorageItem, newPath: string[]) => Promise<void>;
-    deleteItem: (item: StorageItem) => Promise<void>;
-    createFolder: (folderName: string) => Promise<void>;
-
-    // Utility Operations
-    refresh: () => Promise<void>;
-    getPublicUrl: (item: StorageItem) => string;
-    downloadItem: (item: StorageItem) => Promise<void>;
-    getItemDetails: (item: StorageItem) => Record<string, string>;
-    validateOperation: (operation: string, item: StorageItem) => boolean;
-    getFileTypeInfo: (fileName: string) => FileTypeInfo;
-}
-
-export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
+export function useStorageExplorer({ onLog, onApiResponse }: UseStorageExplorerProps = {}) {
     // Bucket State
     const [buckets, setBuckets] = useState<BucketInfo[]>([]);
     const [currentBucket, setCurrentBucket] = useState<string>('');
@@ -76,6 +37,36 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
 
     const log = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
         onLog?.(message, type);
+    };
+
+    const executeStorageOperation = async <T,>(
+        operation: string,
+        func: () => StorageOperation<T>,
+        request?: unknown
+    ): Promise<{ data: T | null; error: Error | null }> => {
+        try {
+            const startTime = Date.now();
+            const response = await func();
+            const duration = Date.now() - startTime;
+
+            // Log the API response
+            onApiResponse?.(operation, {
+                data: response.data,
+                error: response.error,
+                duration,
+                timestamp: new Date().toISOString()
+            }, response.error, request);
+
+            if (response.error) {
+                throw response.error;
+            }
+
+            return { data: response.data, error: null };
+        } catch (error) {
+            // Log any unexpected errors
+            onApiResponse?.(operation, null, error, request);
+            return { data: null, error: error as Error };
+        }
     };
 
     // Load buckets on mount
@@ -99,10 +90,15 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
         setIsBucketLoading(true);
         setBucketError(null);
 
-        try {
-            const { data, error } = await StorageClient.listBuckets();
-            if (error) throw error;
+        const { data, error } = await executeStorageOperation(
+            'listBuckets',
+            () => StorageClient.listBuckets()
+        );
 
+        if (error) {
+            setBucketError(error.message);
+            log(`Failed to load buckets: ${error.message}`, 'error');
+        } else if (data) {
             setBuckets(data.map((bucket: SupabaseBucket): BucketInfo => ({
                 id: bucket.id,
                 name: bucket.name,
@@ -114,46 +110,47 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
                 allowedMimeTypes: bucket.allowed_mime_types
             })));
             log('Buckets loaded successfully', 'success');
-        } catch (err) {
-            setBucketError(err.message);
-            log(`Failed to load buckets: ${err.message}`, 'error');
-        } finally {
-            setIsBucketLoading(false);
         }
+
+        setIsBucketLoading(false);
     };
 
 
 
     const createBucket = async (name: string, isPublic: boolean = false) => {
-        try {
-            const { error } = await StorageClient.createBucket(name, {
-                public: isPublic,
-            });
-            if (error) throw error;
+        const { error } = await executeStorageOperation(
+            'createBucket',
+            () => StorageClient.createBucket(name, { public: isPublic }),
+            { name, isPublic }
+        );
 
-            log(`Bucket "${name}" created successfully`, 'success');
-            await loadBuckets();
-            return true;
-        } catch (err) {
-            log(`Failed to create bucket: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Failed to create bucket: ${error.message}`, 'error');
+            throw error;
         }
+
+        log(`Bucket "${name}" created successfully`, 'success');
+        await loadBuckets();
+        return true;
     };
 
     const deleteBucket = async (name: string) => {
-        try {
-            const { error } = await StorageClient.deleteBucket(name);
-            if (error) throw error;
+        const { error } = await executeStorageOperation(
+            'deleteBucket',
+            () => StorageClient.deleteBucket(name),
+            { name }
+        );
 
-            if (currentBucket === name) {
-                setCurrentBucket('');
-            }
-            log(`Bucket "${name}" deleted successfully`, 'success');
-            await loadBuckets();
-        } catch (err) {
-            log(`Failed to delete bucket: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Failed to delete bucket: ${error.message}`, 'error');
+            throw error;
         }
+
+        if (currentBucket === name) {
+            setCurrentBucket('');
+        }
+        log(`Bucket "${name}" deleted successfully`, 'success');
+        await loadBuckets();
     };
 
     // Directory Operations
@@ -163,49 +160,54 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
         setIsLoading(true);
         setError(null);
 
-        try {
-            const storage = new StorageClient(currentBucket);
-            const { data, error } = await storage.list(currentFullPath);
-            if (error) throw error;
+        const storage = new StorageClient(currentBucket);
+        const { data, error } = await executeStorageOperation(
+            'listDirectory',
+            () => storage.list(currentFullPath),
+            { bucket: currentBucket, path: currentFullPath }
+        );
 
-            // Properly process the storage list using our utility
+        if (error) {
+            setError(error.message);
+            log(`Failed to load directory: ${error.message}`, 'error');
+        } else if (data) {
             const processedItems = processStorageList(data as SupabaseFileObject[], currentPath);
             setItems(processedItems);
             log('Directory loaded successfully', 'success');
-        } catch (err) {
-            setError(err.message);
-            log(`Failed to load directory: ${err.message}`, 'error');
-        } finally {
-            setIsLoading(false);
         }
+
+        setIsLoading(false);
     };
+
 
 
     const createFolder = async (folderName: string) => {
         if (!currentBucket) return;
 
-        try {
-            const storage = new StorageClient(currentBucket);
-            const fullPath = currentPath.length > 0
-                ? `${currentPath.join('/')}/${folderName}/.keep`
-                : `${folderName}/.keep`;
+        const storage = new StorageClient(currentBucket);
+        const fullPath = currentPath.length > 0
+            ? `${currentPath.join('/')}/${folderName}/.keep`
+            : `${folderName}/.keep`;
 
-            // Create a File object instead of a Blob
-            const emptyFile = new File([""], ".keep", {
-                type: "application/x-directory"
-            });
+        const emptyFile = new File([""], ".keep", {
+            type: "application/x-directory"
+        });
 
-            const { error } = await storage.upload(fullPath, emptyFile, {
+        const { error } = await executeStorageOperation(
+            'createFolder',
+            () => storage.upload(fullPath, emptyFile, {
                 contentType: 'application/x-directory'
-            });
-            if (error) throw error;
+            }),
+            { bucket: currentBucket, path: fullPath }
+        );
 
-            log(`Folder "${folderName}" created successfully`, 'success');
-            await loadCurrentDirectory();
-        } catch (err) {
-            log(`Failed to create folder: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Failed to create folder: ${error.message}`, 'error');
+            throw error;
         }
+
+        log(`Folder "${folderName}" created successfully`, 'success');
+        await loadCurrentDirectory();
     };
 
     // Navigation functions
@@ -231,31 +233,29 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
     const uploadFile = async (file: File, customFileName?: string) => {
         if (!currentBucket) return;
 
-        try {
-            // Validate file type if needed
-            // const isValid = validateFileType(file, yourValidationRules);
-            // if (!isValid) throw new Error('Invalid file type');
+        const storage = new StorageClient(currentBucket);
+        const fileName = customFileName || file.name;
+        const fullPath = currentPath.length > 0
+            ? `${currentPath.join('/')}/${fileName}`
+            : fileName;
 
-            const storage = new StorageClient(currentBucket);
-            const fileName = customFileName || file.name;
-            const fullPath = currentPath.length > 0
-                ? `${currentPath.join('/')}/${fileName}`
-                : fileName;
-
-            const { data, error } = await storage.upload(fullPath, file, {
+        const { data, error } = await executeStorageOperation(
+            'uploadFile',
+            () => storage.upload(fullPath, file, {
                 cacheControl: '3600',
                 upsert: true
-            });
+            }),
+            { bucket: currentBucket, path: fullPath, fileName }
+        );
 
-            if (error) throw error;
-
-            log(`File uploaded successfully: ${fileName}`, 'success');
-            loadCurrentDirectory();
-            return data;
-        } catch (err) {
-            log(`Upload failed: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Upload failed: ${error.message}`, 'error');
+            throw error;
         }
+
+        log(`File uploaded successfully: ${fileName}`, 'success');
+        await loadCurrentDirectory();
+        return data;
     };
 
     const moveItem = async (item: StorageItem, newPath: string[]) => {
@@ -264,93 +264,117 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
             throw new Error('Invalid operation for this item type');
         }
 
-        try {
-            const storage = new StorageClient(currentBucket);
-            const sourcePath = [...currentPath, item.name].join('/');
-            const destinationPath = [...newPath, item.name].join('/');
+        const storage = new StorageClient(currentBucket);
+        const sourcePath = [...currentPath, item.name].join('/');
+        const destinationPath = [...newPath, item.name].join('/');
 
-            const { error } = await storage.move(sourcePath, destinationPath);
-            if (error) throw error;
+        const { error } = await executeStorageOperation(
+            'moveItem',
+            () => storage.move(sourcePath, destinationPath),
+            { bucket: currentBucket, sourcePath, destinationPath }
+        );
 
-            log(`Item moved successfully: ${item.name}`, 'success');
-            loadCurrentDirectory();
-        } catch (err) {
-            log(`Move failed: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Move failed: ${error.message}`, 'error');
+            throw error;
         }
+
+        log(`Item moved successfully: ${item.name}`, 'success');
+        await loadCurrentDirectory();
     };
 
 
     const copyItem = async (item: StorageItem, newPath: string[]) => {
         if (!currentBucket || !item) return;
 
-        try {
-            const storage = new StorageClient(currentBucket);
-            const sourcePath = [...currentPath, item.name].join('/');
-            const destinationPath = [...newPath, item.name].join('/');
+        const storage = new StorageClient(currentBucket);
+        const sourcePath = [...currentPath, item.name].join('/');
+        const destinationPath = [...newPath, item.name].join('/');
 
-            const { error } = await storage.copy(sourcePath, destinationPath);
-            if (error) throw error;
+        const { error } = await executeStorageOperation(
+            'copyItem',
+            () => storage.copy(sourcePath, destinationPath),
+            { bucket: currentBucket, sourcePath, destinationPath }
+        );
 
-            log(`Item copied successfully: ${item.name}`, 'success');
-            loadCurrentDirectory();
-        } catch (err) {
-            log(`Copy failed: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Copy failed: ${error.message}`, 'error');
+            throw error;
         }
+
+        log(`Item copied successfully: ${item.name}`, 'success');
+        await loadCurrentDirectory();
     };
 
     const deleteItem = async (item: StorageItem) => {
         if (!currentBucket || !item) return;
 
-        try {
-            const storage = new StorageClient(currentBucket);
-            const fullPath = [...currentPath, item.name].join('/');
+        const storage = new StorageClient(currentBucket);
+        const fullPath = [...currentPath, item.name].join('/');
 
-            const { error } = await storage.delete(fullPath);
-            if (error) throw error;
+        const { error } = await executeStorageOperation(
+            'deleteItem',
+            () => storage.delete(fullPath),
+            { bucket: currentBucket, path: fullPath }
+        );
 
-            log(`Item deleted successfully: ${item.name}`, 'success');
-            loadCurrentDirectory();
-        } catch (err) {
-            log(`Delete failed: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Delete failed: ${error.message}`, 'error');
+            throw error;
         }
+
+        log(`Item deleted successfully: ${item.name}`, 'success');
+        await loadCurrentDirectory();
     };
 
     const getPublicUrl = (item: StorageItem): string => {
-        if (!currentBucket) return '';
+        if (!currentBucket || !item) return '';
+
         const storage = new StorageClient(currentBucket);
         const fullPath = [...currentPath, item.name].join('/');
-        const { data } = storage.getPublicUrl(fullPath);
-        return data.publicUrl;
+
+        // This was incorrect - getPublicUrl is synchronous in StorageClient
+        const result = storage.getPublicUrl(fullPath);
+
+        // Log the operation for consistency
+        onApiResponse?.('getPublicUrl', {
+            data: result,
+            duration: 0,
+            timestamp: new Date().toISOString()
+        }, null, { bucket: currentBucket, path: fullPath });
+
+        return result.data.publicUrl;
     };
+
 
     const downloadItem = async (item: StorageItem) => {
         if (!currentBucket || !item) return;
 
-        try {
-            const storage = new StorageClient(currentBucket);
-            const fullPath = [...currentPath, item.name].join('/');
-            const { data, error } = await storage.download(fullPath);
-            if (error) throw error;
+        const storage = new StorageClient(currentBucket);
+        const fullPath = [...currentPath, item.name].join('/');
 
-            // Create and trigger download
-            const blob = new Blob([data], { type: 'application/octet-stream' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = item.name;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+        const { data, error } = await executeStorageOperation(
+            'downloadItem',
+            () => storage.download(fullPath),
+            { bucket: currentBucket, path: fullPath }
+        );
 
-            log(`Downloaded ${item.name} successfully`, 'success');
-        } catch (err) {
-            log(`Download failed: ${err.message}`, 'error');
-            throw err;
+        if (error) {
+            log(`Download failed: ${error.message}`, 'error');
+            throw error;
         }
+
+        const blob = new Blob([data], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = item.name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        log(`Downloaded ${item.name} successfully`, 'success');
     };
 
     return {
@@ -400,3 +424,5 @@ export function useStorageExplorer({ onLog }: UseStorageExplorerProps = {}) {
 
     };
 }
+
+export type UseStorageExplorerReturn = ReturnType<typeof useStorageExplorer>;

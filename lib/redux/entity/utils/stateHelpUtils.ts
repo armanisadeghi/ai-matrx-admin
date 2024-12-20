@@ -12,6 +12,8 @@ import {
     PrimaryKeyMetadata
 } from "@/lib/redux/entity/types/stateTypes";
 import EntityLogger from "./entityLogger";
+import {AppDispatch, createEntitySelectors, getEntitySlice, RootState, useAppDispatch, useAppSelector, useEntityActions } from "@/lib/redux";
+import { useMemo } from "react";
 
 // EntityLogger.addFeatureToFilter("utils");
 
@@ -150,12 +152,12 @@ export interface SelectionSummary {
 
 export type SelectionMode = 'single' | 'multiple' | 'none';
 
-export const createSelectionHelper = (selectedRecords: string[]) => ({
-    isSelected: (recordKey: string) => selectedRecords.includes(recordKey),
+export const createSelectionHelper = (selectedRecords: MatrxRecordId[]) => ({
+    isSelected: (recordKey: MatrxRecordId) => selectedRecords.includes(recordKey),
     count: selectedRecords.length,
     isEmpty: selectedRecords.length === 0,
     toArray: () => [...selectedRecords],
-    has: (recordKey: string) => selectedRecords.includes(recordKey),
+    has: (recordKey: MatrxRecordId) => selectedRecords.includes(recordKey),
 });
 
 /*
@@ -187,7 +189,7 @@ export function getRecordIdByRecord<TEntity extends EntityKeys>(
 // Unsaved data management ========================================================
 
 
-export const addToUnsavedRecords = (state, recordKey: MatrxRecordId) => {
+export const addToUnsavedRecords = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
     if (!state.records[recordKey]) {
         utilsLogger.log('warn', 'Attempted to add non-existent record to unsaved', { recordKey });
         return;
@@ -229,7 +231,7 @@ export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntitySta
     utilsLogger.log('debug', 'Cleared all unsaved records');
 };
 
-export const generateTemporaryRecordId = (state) => {
+export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
     const prefix = 'new-record-';
     const existingTempIds = Object.keys(state.unsavedRecords)
         .filter(id => id.startsWith(prefix))
@@ -240,7 +242,7 @@ export const generateTemporaryRecordId = (state) => {
     return `${prefix}${nextNumber}`;
 };
 
-export const updateUnsavedRecord = (state, recordKey: MatrxRecordId, changes: Partial<EntityData<EntityKeys>>) => {
+export const updateUnsavedRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId, changes: Partial<EntityData<EntityKeys>>) => {
     if (state.unsavedRecords[recordKey]) {
         state.unsavedRecords[recordKey] = {
             ...state.unsavedRecords[recordKey],
@@ -256,12 +258,12 @@ export const updateUnsavedRecord = (state, recordKey: MatrxRecordId, changes: Pa
 
 // Selection management ========================================================
 
-export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
+export const addRecordToSelection = (state: EntityState<EntityKeys>, entityKey: EntityKeys, recordKey: MatrxRecordId) => {
     console.log('addRecordToSelection called', {recordKey});
 
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
-        addToUnsavedRecords(state, recordKey);  // Add this line
+        addToUnsavedRecords(state, recordKey);
         updateSelectionMode(state, recordKey);
     } else {
         utilsLogger.log('debug', 'Record already in selection, no change:', {
@@ -271,7 +273,7 @@ export const addRecordToSelection = (state, recordKey: MatrxRecordId) => {
     }
 };
 
-export const removeRecordFromSelection = (state, recordKey: MatrxRecordId) => {
+export const removeRecordFromSelection = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
     state.selection.selectedRecords = state.selection.selectedRecords.filter(
         key => key !== recordKey
     );
@@ -288,7 +290,7 @@ export const removeRecordFromSelection = (state, recordKey: MatrxRecordId) => {
     updateSelectionMode(state);
 };
 
-export const removeActiveRecord = (state) => {
+export const removeActiveRecord = (state: EntityState<EntityKeys>) => {
     const oldActiveRecord = state.selection.activeRecord;
     state.selection.lastActiveRecord = oldActiveRecord;
     state.selection.activeRecord = null;
@@ -298,7 +300,7 @@ export const removeActiveRecord = (state) => {
     });
 }
 
-export const findBestActiveRecord = (state) => {
+export const findBestActiveRecord = (state: EntityState<EntityKeys>) => {
     const result = state.selection.lastActiveRecord || state.selection.selectedRecords[0] || state.selection.lastSelected;
     utilsLogger.log('debug', 'Found best active record:', {
         result,
@@ -311,7 +313,7 @@ export const findBestActiveRecord = (state) => {
     return result;
 }
 
-export const setNewActiveRecord = (state, recordKey) => {
+export const setNewActiveRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
     if (state.selection.activeRecord === recordKey) {
         utilsLogger.log('debug', 'Skipping setNewActiveRecord - record already active:', {
             recordKey
@@ -338,7 +340,7 @@ export const setNewActiveRecord = (state, recordKey) => {
     }
 }
 
-export const updateSelectionMode = (state, recordKey = null) => {
+export const updateSelectionMode = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId = null) => {
     utilsLogger.log('debug', 'Updating selection mode. With or without Record Key. Got: ', {recordKey});
     if (state.selection.selectedRecords.length === 1) {
         utilsLogger.log('debug', 'Switching to single selection mode');
@@ -352,7 +354,7 @@ export const updateSelectionMode = (state, recordKey = null) => {
     }
 };
 
-export const switchToSingleSelectionMode = (state, recordKey = null) => {
+export const switchToSingleSelectionMode = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId = null) => {
     utilsLogger.log('debug', 'Starting switchToSingleSelectionMode. Got recordKey: ', {recordKey});
 
     if (recordKey !== null) {
@@ -370,19 +372,19 @@ export const switchToSingleSelectionMode = (state, recordKey = null) => {
     state.selection.selectionMode = 'single';
 }
 
-export const switchToMultipleSelectionMode = (state) => {
+export const switchToMultipleSelectionMode = (state: EntityState<EntityKeys>) => {
     state.selection.selectionMode = 'multiple';
     console.log('switchToMultipleSelectionMode called');
     removeActiveRecord(state);
 }
 
-export const switchToNoSelectionMode = (state) => {
+export const switchToNoSelectionMode = (state: EntityState<EntityKeys>) => {
     state.selection.selectionMode = 'none';
     console.log('switchToNoSelectionMode called');
     removeSelections(state);
 }
 
-export const setSpecificSelectionMode = (state, mode) => {
+export const setSpecificSelectionMode = (state: EntityState<EntityKeys>, mode) => {
     if (mode === 'single') {
         switchToSingleSelectionMode(state);
     } else if (mode === 'multiple') {
@@ -392,7 +394,7 @@ export const setSpecificSelectionMode = (state, mode) => {
     }
 }
 
-export const toggleSelectionMode = (state) => {
+export const toggleSelectionMode = (state: EntityState<EntityKeys>) => {
     if (state.selection.selectionMode === 'single' || state.selection.selectionMode === 'none') {
         switchToMultipleSelectionMode(state);
     } else if (state.selection.selectionMode === 'multiple') {
@@ -400,7 +402,7 @@ export const toggleSelectionMode = (state) => {
     }
 };
 
-export const removeSelections = (state) => {
+export const removeSelections = (state: EntityState<EntityKeys>) => {
     if (state.selection.selectedRecords.length > 0) {
         state.selection.lastSelected = state.selection.selectedRecords[0]
     }
@@ -410,7 +412,7 @@ export const removeSelections = (state) => {
     removeActiveRecord(state);
 }
 
-export const handleSelectionForDeletedRecord = (state, recordKey) => {
+export const handleSelectionForDeletedRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
     if (state.selection.selectedRecords.includes(recordKey)) {
         removeRecordFromSelection(state, recordKey);
     }
@@ -421,17 +423,17 @@ export const handleSelectionForDeletedRecord = (state, recordKey) => {
     removeFromUnsavedRecords(state, recordKey);
 }
 
-export const setStateIsModified = (state) => {
+export const setStateIsModified = (state: EntityState<EntityKeys>) => {
     state.flags.isModified = true;
     state.flags.isValidated = false;
 }
 
-export const resetStateIsModified = (state) => {
+export const resetStateIsModified = (state: EntityState<EntityKeys>) => {
     state.flags.isModified = false;
 }
 
 
-export const setError = (state, action) => {
+export const setError = (state: EntityState<EntityKeys>, action) => {
     state.loading.loading = false;
     state.loading.error = {
         message: action.payload?.message || 'An error occurred',

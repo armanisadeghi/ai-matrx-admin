@@ -3,15 +3,13 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";
-
 import {cn} from '@/lib/utils';
 import {ScrollArea} from '@/components/ui';
 import {EntitySelection, UnifiedLayoutProps} from "@/components/matrx/Entity";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {useWindowSize} from "@uidotdev/usehooks";
 import ArmaniFormFinal from './ArmaniFormFinal';
-import QuickReferenceFinal from './QuickReferenceFinal';
-
+import DynamicQuickReference from './dynamic-quick-ref/DynamicQuickReference';
 import {EntityKeys} from '@/types/entityTypes';
 
 
@@ -33,7 +31,7 @@ const LeftColumn: React.FC<{
                 />
                 {selectedEntity && (
                     <div className="flex-1">
-                        <QuickReferenceFinal
+                        <DynamicQuickReference
                             key={`quickref-${selectedEntity}-${updateKey}`}
                             entityKey={selectedEntity}
                             smartCrudProps={unifiedLayoutProps.dynamicLayoutOptions.componentOptions.quickReferenceCrudWrapperProps}

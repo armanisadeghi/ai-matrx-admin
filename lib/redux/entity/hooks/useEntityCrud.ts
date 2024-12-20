@@ -15,6 +15,10 @@ import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {UpdateRecordPayload} from '../actions';
 
 export const useEntityCrud = <TEntity extends EntityKeys>(entityKey: TEntity) => {
+
+    console.log(' === useEntitySelection ===')
+
+
     const dispatch = useAppDispatch();
     const store = useAppStore();
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);

@@ -1,10 +1,10 @@
-import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
-import {memo, useCallback, useState} from "react";
+import React, {memo, useCallback, useState} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
 import {Save} from "lucide-react";
 import SmartUpdateConfirmation from "../confirmation/SmartUpdateConfirmation";
 import SmartCreateConfirmation from "../confirmation/SmartCreateConfirmation";
+import {createEntitySelectors, useAppSelector} from "@/lib/redux";
 
 export const SmartSaveButton = memo((
     {
@@ -12,9 +12,13 @@ export const SmartSaveButton = memo((
         size = 'default',
         hideText = false
     }: SmartButtonProps) => {
-    const entityCrud = useEntityCrud(entityKey);
-    const {flags, isLoading, hasUnsavedChanges, operationMode} = entityCrud;
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const operationMode = useAppSelector(selectors.selectOperationMode);
+    const hasUnsavedChanges = useAppSelector(selectors.selectHasUnsavedChanges);
+
+    const entityStatus = useAppSelector(selectors.selectEntityStatus);
+    const isLoading = entityStatus === 'loading';
 
     const isValidMode = operationMode === 'create' || operationMode === 'update';
 

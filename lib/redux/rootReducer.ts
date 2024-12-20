@@ -20,6 +20,7 @@ import {fieldReducer} from "@/lib/redux/concepts/fields/fieldSlice";
 import socketReducer from './features/socket/socketSlice';
 import notesReducer from './notes/notesSlice';
 import tagsReducer from './notes/tagsSlice';
+import { storageReducer } from './storage';
 
 
 const featureReducers = Object.keys(featureSchemas).reduce((acc, featureName) => {
@@ -62,8 +63,15 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         socket: socketReducer,
         notes: notesReducer,
         tags: tagsReducer,
+        storage: storageReducer,
     });
 };
+
+
+
+
+
+
 
 
 // import chatReducer from './features/aiChats/chatSlice';

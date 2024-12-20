@@ -81,7 +81,7 @@ export type FetchOnePayload = {
 
 export type FetchMode = 'native' | 'fkIfk' | 'fk' | 'ifk' | 'm2m' | null;
 
-export type getOrFetchSelectedRecordsPayload = {
+export type GetOrFetchSelectedRecordsPayload = {
     matrxRecordIds: MatrxRecordId[];
     fetchMode?: FetchMode;
     callbackId?: string;
@@ -153,7 +153,7 @@ export interface EntityActions<TEntity extends EntityKeys> {
     removeFromSelection: (payload: MatrxRecordId) => void;
     setActiveRecord: (payload: MatrxRecordId) => void;
     clearActiveRecord: () => void;
-    getOrFetchSelectedRecords: (payload: getOrFetchSelectedRecordsPayload) => void;
+    getOrFetchSelectedRecords: (payload: GetOrFetchSelectedRecordsPayload) => void;
 
     // History Actions
     pushToHistory: (payload: {

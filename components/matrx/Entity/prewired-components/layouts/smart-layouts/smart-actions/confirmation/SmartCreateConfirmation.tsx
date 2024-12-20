@@ -1,12 +1,13 @@
-import {EntityKeys} from "@/types/entityTypes";
-import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
 import {useMemo, useCallback} from "react";
+import {EntityKeys} from "@/types/entityTypes";
 import ConfirmationDialog from "./ConfirmationDialog";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {useAppSelector} from "@/lib/redux/hooks";
+import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
 import {cn} from "@/lib/utils";
 import {useEntityToasts} from "@/lib/redux/entity/hooks/useEntityToasts";
 import {FlexibleQueryOptions} from "@/lib/redux/entity/types/stateTypes";
+import {Callback, callbackManager} from "@/utils/callbackManager";
+import {getEntitySlice} from "@/lib/redux";
 
 interface SmartCreateConfirmationProps {
     entityKey: EntityKeys;
@@ -14,48 +15,57 @@ interface SmartCreateConfirmationProps {
     onOpenChange: (open: boolean) => void;
 }
 
+type CreateResult = {
+    success: boolean;
+    error?: unknown;
+};
+
 export const SmartCreateConfirmation = (
     {
         entityKey,
         open,
         onOpenChange,
     }: SmartCreateConfirmationProps) => {
-    const entityCrud = useEntityCrud(entityKey);
+    const dispatch = useAppDispatch();
+    const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const entityToasts = useEntityToasts(entityKey);
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const comparison = useAppSelector(selectors.selectChangeComparison);
 
-    console.log('SmartCreateConfirmation - comparison:', comparison);
+    const handleComplete = useCallback<Callback<CreateResult>>(({success, error}) => {
+        if (success) {
+            entityToasts.handleCreateSuccess();
+            onOpenChange(false);
+        } else {
+            entityToasts.handleError(error, 'create');
+        }
+    }, [entityToasts, onOpenChange]);
 
-    const {handleCreate} = entityCrud;
+    const handleCreate = useCallback((createPayloadArray: FlexibleQueryOptions[]) => {
+        createPayloadArray.forEach(createPayload => {
+            dispatch(actions.addPendingOperation(createPayload.tempRecordId));
+
+            dispatch(actions.createRecord({
+                ...createPayload,
+                callbackId: callbackManager.register((result: CreateResult) => {
+                    dispatch(actions.removePendingOperation(createPayload.tempRecordId));
+                    handleComplete(result);
+                })
+            }));
+        });
+    }, [dispatch, actions, handleComplete]);
 
     const handleConfirm = useCallback(() => {
-        console.log('Create confirmation - handleConfirm', {
-            recordId: comparison.matrxRecordId
-        });
+        if (!comparison.matrxRecordId) return;
 
-        const callback = (result: { success: boolean; error?: any }) => {
-            if (result.success) {
-                entityToasts.handleCreateSuccess();
-                onOpenChange(false);
-            } else {
-                entityToasts.handleError(result.error, 'create');
-            }
+        const createPayload: FlexibleQueryOptions = {
+            entityNameAnyFormat: entityKey,
+            tempRecordId: comparison.matrxRecordId,
+            data: comparison.changedFieldData
         };
 
-        if (comparison.matrxRecordId) {
-            const createPayload: FlexibleQueryOptions = {
-                entityNameAnyFormat: entityKey,
-                tempRecordId: comparison.matrxRecordId,
-                data: comparison.changedFieldData
-            }
-            handleCreate([createPayload], callback);
-        }
-    }, [handleCreate, comparison.matrxRecordId, entityToasts, onOpenChange]);
-
-    const handleCancel = useCallback(() => {
-        onOpenChange(false);
-    }, [onOpenChange]);
+        handleCreate([createPayload]);
+    }, [comparison.matrxRecordId, comparison.changedFieldData, entityKey, handleCreate]);
 
     return (
         <ConfirmationDialog
@@ -63,7 +73,7 @@ export const SmartCreateConfirmation = (
             onOpenChange={onOpenChange}
             title="Create New Record"
             onConfirm={handleConfirm}
-            onCancel={handleCancel}
+            onCancel={() => onOpenChange(false)}
             confirmText="Create"
             intent="default"
         >

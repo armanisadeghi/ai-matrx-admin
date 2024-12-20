@@ -1,5 +1,5 @@
 import {AllEntityFieldKeys, AutomationEntity, EntityField, EntityKeys} from "@/types/entityTypes";
-import {EntityMetadata, EntityMetrics, EntityState} from "@/lib/redux/entity/types/stateTypes";
+import {EntityMetadata, EntityMetrics, EntityState, EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import {TypeBrand} from "@/utils/schema/initialSchemas";
 
@@ -114,7 +114,7 @@ export function extractFieldsFromSchema<TEntity extends EntityKeys>(
             displayName: field.fieldNameFormats.pretty,
             entityName: entityKey,
             ...field,
-        };
+        } as EntityStateField;
     });
 }
 

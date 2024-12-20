@@ -1,5 +1,5 @@
 // types/file-operations.types.ts
-import { FileObject, Bucket } from '@supabase/storage-js';
+import {FileObject, Bucket} from '@supabase/storage-js';
 
 export interface StorageItem {
     // Basic Info
@@ -157,133 +157,6 @@ export const parseStoragePath = (fullPath: string): { path: string[]; fileName: 
     };
 };
 
-export const COMMON_MIME_TYPES = {
-    // Code Files
-    CODE: {
-        JAVASCRIPT: ['application/javascript', 'text/javascript'],
-        TYPESCRIPT: ['application/typescript', 'text/typescript'],
-        PYTHON: ['text/x-python', 'application/x-python'],
-        JSON: ['application/json'],
-        HTML: ['text/html'],
-        CSS: ['text/css'],
-        MARKDOWN: ['text/markdown'],
-        XML: ['application/xml', 'text/xml'],
-        YAML: ['application/yaml', 'text/yaml'],
-        PLAIN: ['text/plain'],
-    },
-
-    // Documentation & Notes
-    DOCUMENT: {
-        // Microsoft Office
-        WORD: [
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ],
-        EXCEL: [
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ],
-        POWERPOINT: [
-            'application/vnd.ms-powerpoint',
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        ],
-        // Google Workspace
-        GOOGLE_DOC: ['application/vnd.google-apps.document'],
-        GOOGLE_SHEET: ['application/vnd.google-apps.spreadsheet'],
-        GOOGLE_SLIDES: ['application/vnd.google-apps.presentation'],
-        // Other Formats
-        PDF: ['application/pdf'],
-        RTF: ['application/rtf'],
-        TEXT: ['text/plain'],
-    },
-
-    // Media Files
-    AUDIO: {
-        BASIC: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
-        VOICE: ['audio/webm', 'audio/aac', 'audio/mp4'],
-        MIDI: ['audio/midi', 'audio/x-midi'],
-        STREAMING: ['application/vnd.apple.mpegurl', 'application/x-mpegurl'],
-    },
-
-    IMAGE: {
-        BASIC: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-        VECTOR: ['image/svg+xml'],
-        RAW: ['image/raw', 'image/x-raw'],
-        DESIGN: ['image/vnd.adobe.photoshop', 'image/x-xcf'],
-    },
-
-    VIDEO: {
-        BASIC: ['video/mp4', 'video/webm', 'video/ogg'],
-        STREAMING: ['application/x-mpegURL', 'video/MP2T'],
-        RECORDING: ['video/webm', 'video/quicktime'],
-    },
-
-    // Archives & Data
-    ARCHIVE: {
-        COMPRESSED: ['application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed'],
-        DISK_IMAGE: ['application/x-iso9660-image', 'application/x-raw-disk-image'],
-    },
-
-    DATA: {
-        CSV: ['text/csv'],
-        XML: ['application/xml', 'text/xml'],
-        JSON: ['application/json'],
-        SQLITE: ['application/x-sqlite3'],
-    },
-} as const;
-
-export const FILE_EXTENSIONS = {
-    // Code Files
-    CODE: {
-        JAVASCRIPT: ['.js', '.jsx', '.mjs'],
-        TYPESCRIPT: ['.ts', '.tsx', '.d.ts'],
-        PYTHON: ['.py', '.pyw', '.pyx', '.pxd', '.pxi'],
-        WEB: ['.html', '.htm', '.css', '.scss', '.sass', '.less'],
-        CONFIG: ['.json', '.yaml', '.yml', '.toml', '.ini', '.env'],
-        MARKDOWN: ['.md', '.mdx', '.markdown'],
-    },
-
-    // Documentation & Notes
-    DOCUMENT: {
-        MICROSOFT: ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'],
-        GOOGLE: ['.gdoc', '.gsheet', '.gslide'],
-        TEXT: ['.txt', '.rtf', '.pdf'],
-        NOTES: ['.note', '.md', '.txt'],
-    },
-
-    // Media Files
-    AUDIO: {
-        BASIC: ['.mp3', '.wav', '.ogg', '.m4a'],
-        VOICE: ['.webm', '.aac', '.mp4a'],
-        MIDI: ['.mid', '.midi'],
-        PLAYLIST: ['.m3u', '.m3u8', '.pls'],
-    },
-
-    IMAGE: {
-        BASIC: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
-        VECTOR: ['.svg', '.ai', '.eps'],
-        RAW: ['.raw', '.cr2', '.nef', '.arw'],
-        DESIGN: ['.psd', '.xcf', '.sketch'],
-    },
-
-    VIDEO: {
-        BASIC: ['.mp4', '.webm', '.ogg', '.mov'],
-        STREAMING: ['.m3u8', '.ts'],
-        RECORDING: ['.webm', '.mov'],
-    },
-
-    // Archives & Data
-    ARCHIVE: {
-        COMPRESSED: ['.zip', '.rar', '.7z', '.tar', '.gz'],
-        DISK_IMAGE: ['.iso', '.img', '.dmg'],
-    },
-
-    DATA: {
-        STRUCTURED: ['.csv', '.xml', '.json', '.sqlite', '.db'],
-        CONFIG: ['.env', '.ini', '.cfg', '.conf'],
-    },
-} as const;
-
 // Helper type to get file category
 export type FileCategory =
     | 'CODE'
@@ -293,25 +166,43 @@ export type FileCategory =
     | 'VIDEO'
     | 'ARCHIVE'
     | 'DATA'
-    | 'UNKNOWN';
+    | 'UNKNOWN'
+
+export type FileCategorySubCategory = {
+    category: FileCategory;
+    subCategory: string;
+} | 'UNKNOWN';
+
+
 
 export interface FileTypeInfo {
     id: string;
     name: string;
-    extensions: string[];
-    mimeTypes: string[];
+    extension: string;
+    mimeType: string;
     icon: string | React.ComponentType;
     category: FileCategory;
+    subCategory?: string;
+    description?: string;
+    color?: string;
+    canPreview?: boolean;
+}
+
+export interface FolderTypeInfo {
+    id: null;
+    name: string;
+    extension: null;
+    mimeType: null;
+    icon: string | React.ComponentType;
+    category: 'FOLDER';
+    subCategory?: string;
+    canPreview?: boolean;
     description?: string;
     color?: string;
 }
 
-// Helper functions for file type detection
-export const getFileCategory = (fileName: string): FileCategory => {
-    const ext = fileName.toLowerCase().split('.').pop() || '';
-    // Implementation would check against FILE_EXTENSIONS categories
-    return 'UNKNOWN';
-};
+
+
 
 export const isCodeFile = (fileName: string): boolean => {
     const ext = fileName.toLowerCase().split('.').pop() || '';

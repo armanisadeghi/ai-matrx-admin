@@ -3,16 +3,16 @@
 import {configureStore, ThunkAction, Action} from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import {createRootSaga} from "@/lib/redux/sagas/rootSaga";
-
 import {createRootReducer} from "@/lib/redux/rootReducer";
 import { socketMiddleware } from './socket/socketMiddleware';
 import { loggerMiddleware } from '@/utils/logger';
+import { storageMiddleware } from './storage/storageMiddleware';
 
 
 const sagaMiddleware = createSagaMiddleware();
 
 
-export const makeStore = (initialState) => {
+export const makeStore = (initialState: any) => {
     if (!initialState?.globalCache?.schema) {
         throw new Error('Schema must be provided to create store');
     }
@@ -27,10 +27,16 @@ export const makeStore = (initialState) => {
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
                 serializableCheck: {
-                    ignoredPaths: ['globalCache.schema']
+                    ignoredPaths: [
+                        'globalCache.schema',
+                        'storage.items',
+                        'storage.buckets'
+                    ],
+                    ignoredActions: [
+                        'storage/setStorageState'
+                    ]
                 }
-            }).concat(sagaMiddleware, loggerMiddleware, socketMiddleware),
-
+            }).concat(sagaMiddleware, loggerMiddleware, socketMiddleware, storageMiddleware),
         devTools: process.env.NODE_ENV !== 'production',
     });
 

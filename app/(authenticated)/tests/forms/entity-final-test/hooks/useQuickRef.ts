@@ -1,18 +1,27 @@
 import * as React from 'react';
-import {FetchMode, getEntitySlice, getOrFetchSelectedRecordsPayload} from '@/lib/redux';
-import {useAppDispatch, useAppSelector, useAppStore} from '@/lib/redux/hooks';
-import {createEntitySelectors} from '@/lib/redux/entity/selectors';
+import {FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools} from '@/lib/redux';
+import {useAppSelector} from '@/lib/redux/hooks';
 import {MatrxRecordId, SelectionMode} from '@/lib/redux/entity/types/stateTypes';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import { useQuickReferenceFetch } from './useQuickReferenceFetch';
-import { useSelectedRecordsProcessor } from './useSelectedRecordsProcessor';
+
+const useAreArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) => {
+    return React.useMemo(
+        () => a.length === b.length && a.every((val, idx) => val === b[idx]),
+        [a, b]
+    );
+};
+
+const useHasOnlyNewRecords = (selectedRecordIds: MatrxRecordId[]) => {
+    return React.useMemo(
+        () => selectedRecordIds.every(recordId => recordId.startsWith('new-record-')),
+        [selectedRecordIds]
+    );
+};
 
 export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const dispatch = useAppDispatch();
-    const store = useAppStore();
-    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
+    const { actions, selectors, dispatch } = useEntityTools(entityKey);
     const [fetchMode, setFetchMode] = React.useState<FetchMode>("native");
+    const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
@@ -24,65 +33,72 @@ export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
     const flexFormField = useAppSelector(selectors.selectFlexFormField);
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
     const quickReferenceState = useAppSelector(selectors.selectQuickReferenceState);
-    const isQuickReferenceFetchComplete = useAppSelector(selectors.selectIsQuickReferenceFetchComplete);
     const errorState = useAppSelector(selectors.selectErrorState);
     const isValidated = useAppSelector(selectors.selectIsValidated);
     const summary = useAppSelector(selectors.selectSelectionSummary);
+    const hasOnlyNewRecords = useHasOnlyNewRecords(selectedRecordIds);
+    const isEqual = useAreArraysEqual(lastProcessedIds, selectedRecordIds);
 
-    useQuickReferenceFetch(
-        entityKey,
-        loadingState,
-        isQuickReferenceFetchComplete,
+    const payload: GetOrFetchSelectedRecordsPayload = React.useMemo(
+        () => {
+            return {
+                matrxRecordIds: selectedRecordIds,
+                fetchMode,
+            };
+        },
+        [selectedRecordIds, fetchMode]
+    );
+
+    React.useEffect(() => {
+        if (
+            selectedRecordIds.length === 0 ||
+            hasOnlyNewRecords ||
+            isEqual
+        ) {
+            return;
+        }
+        dispatch(actions.getOrFetchSelectedRecords(payload));
+        setLastProcessedIds(selectedRecordIds);
+
+    }, [
+        selectedRecordIds,
+        hasOnlyNewRecords,
+        isEqual,
+        payload,
         dispatch,
         actions
+    ]);
+
+    const isSelected = React.useCallback((recordKey: MatrxRecordId) =>
+        selectedRecordIds.includes(recordKey), [selectedRecordIds]);
+
+    const isActive = React.useCallback((recordKey: MatrxRecordId) =>
+        activeRecordId === recordKey, [activeRecordId]);
+
+    const handleAddToSelection = React.useCallback((recordKey: MatrxRecordId) => {
+        dispatch(actions.addToSelection(recordKey));
+    }, [dispatch, actions]);
+
+    const getRecordId = React.useCallback((record: EntityData<TEntity>) => {
+            const entityState = useAppSelector(selectors.selectEntity);
+            return getRecordIdByRecord(entityState, record);
+        },
+        [selectors]
     );
 
-    useSelectedRecordsProcessor(
-        selectedRecordIds,
-        loadingState,
-        dispatch,
-        actions,
-        fetchMode
-    );
+    const handleToggleSelection = React.useCallback((recordKey: MatrxRecordId) => {
+        if (isSelected(recordKey)) {
+            dispatch(actions.removeFromSelection(recordKey));
+        } else {
+            dispatch(actions.addToSelection(recordKey));
+        }
+    }, [dispatch, actions, isSelected]);
 
-    // Rest of your existing callbacks...
-    const isSelected = React.useCallback(
-        (recordId: MatrxRecordId) => selectors.selectIsRecordSelected(store.getState(), recordId),
-        [selectors, store]
-    );
-
-    const isActive = React.useCallback(
-        (recordId: MatrxRecordId) => selectors.selectIsRecordActive(store.getState(), recordId),
-        [selectors, store]
-    );
-
-    const getRecordIdByRecord = React.useCallback(
-        (record: EntityData<TEntity>): MatrxRecordId | null =>
-            selectors.selectRecordIdByRecord(store.getState(), record),
-        [selectors, store]
-    );
 
     const getDisplayValue = React.useCallback((record: EntityData<TEntity>) => {
         const displayField = fieldInfo.find(field => field.isDisplayField);
         return displayField ? (record[displayField.name] || 'Unnamed Record') : 'Unnamed Record';
     }, [fieldInfo]);
-
-    // Action dispatchers
-    const handleAddToSelection = React.useCallback(
-        (recordKey: MatrxRecordId) => dispatch(actions.addToSelection(recordKey)),
-        [dispatch, actions]
-    );
-
-    const handleToggleSelection = React.useCallback(
-        (recordKey: MatrxRecordId) => {
-            if (isSelected(recordKey)) {
-                dispatch(actions.removeFromSelection(recordKey));
-            } else {
-                dispatch(actions.addToSelection(recordKey));
-            }
-        },
-        [dispatch, actions, isSelected]
-    );
 
     const handleSingleSelection = React.useCallback(
         (recordKey: MatrxRecordId) => dispatch(actions.setSwitchSelectedRecord(recordKey)),
@@ -129,21 +145,19 @@ export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
         [isSelected, selectionMode]
     );
 
-    // Memoized return object
     return React.useMemo(() => ({
         entityDisplayName,
         fieldInfo,
         quickReferenceRecords,
         quickReferenceState,
-        activeRecordId,
         selectedRecordIds,
         selectedRecords,
+        activeRecordId,
         activeRecord,
         selectionMode,
-        setSelectionMode,
-        handleToggleSelection,
-        toggleSelectionMode,
         clearSelection,
+        setSelectionMode,
+        toggleSelectionMode,
         summary,
         handleAddToSelection,
         isSelected,
@@ -159,20 +173,22 @@ export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
         handleRecordSelect,
         flexFormField,
         getCardClassName,
+        handleToggleSelection,
+        getRecordId
+
     }), [
         entityDisplayName,
         fieldInfo,
         quickReferenceRecords,
         quickReferenceState,
-        activeRecordId,
         selectedRecordIds,
         selectedRecords,
+        activeRecordId,
         activeRecord,
         selectionMode,
         setSelectionMode,
-        handleToggleSelection,
-        toggleSelectionMode,
         clearSelection,
+        toggleSelectionMode,
         summary,
         handleAddToSelection,
         isSelected,
@@ -187,6 +203,8 @@ export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
         handleRecordSelect,
         flexFormField,
         getCardClassName,
+        handleToggleSelection,
+        getRecordId,
     ]);
 }
 

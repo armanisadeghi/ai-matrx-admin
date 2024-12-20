@@ -6,7 +6,7 @@ import {getUnifiedLayoutProps} from './configs';
 
 export default function EntityManagementPage() {
     const layoutProps = getUnifiedLayoutProps({
-        entityKey: 'recipe',
+        entityKey: 'emails',
         defaultFormComponent: 'ArmaniFormSmart',
         quickReferenceType: 'LIST',
         isExpanded: true,
