@@ -1,15 +1,9 @@
 // utils/file-operations/file-type-manager.ts
 
-import {
-    FileTypeInfo,
-    FileCategory,
-    FolderTypeInfo
-} from '@/types/file-operations.types';
-import {
-    ENHANCED_FILE_ICONS,
-    EnhancedDirectoryTreeConfig, COMMON_MIME_TYPES, getFileDetails
-} from '@/components/DirectoryTree/config';
-import {StorageItem} from '@/utils/supabase/StorageBase';
+import { StorageItem } from "./StorageBase";
+import { FileCategory, FileTypeInfo, FolderTypeInfo } from "./types";
+import {getFileDetailsByExtension} from "@/utils/file-operations/constants";
+
 
 
 export class FileTypeManager {
@@ -47,6 +41,26 @@ export class FileTypeManager {
         }
     }
 
+    getFileDetails(item: StorageItem): FileTypeInfo {
+        const fileDetails = getFileDetailsByExtension(item.name);
+        const extension = item.name.includes('.') ? `.${item.name.split('.').pop()?.toLowerCase()}` : '';
+        const mimeType = item.metadata?.mimetype || 'application/octet-stream';
+
+        return {
+            id: item.id || '',
+            name: item.name,
+            extension,
+            mimeType,
+            icon: fileDetails.icon,
+            category: fileDetails.category,
+            subCategory: fileDetails.subCategory,
+            canPreview: this.canPreviewFile(item, fileDetails.category),
+            description: fileDetails.subCategory || 'File',
+            color: fileDetails.color || 'default'
+        };
+    }
+
+
     getItemTypeInfo(item: StorageItem): FileTypeInfo | FolderTypeInfo {
         if (item.isFolder) {
             return {
@@ -63,9 +77,9 @@ export class FileTypeManager {
             };
         }
 
-        const fileDetails = getFileDetails(item.name);
+        const fileDetails = getFileDetailsByExtension(item.name);
         const extension = item.name.includes('.') ? `.${item.name.split('.').pop()?.toLowerCase()}` : '';
-        const mimeType = item.metadata?.mimetype || COMMON_MIME_TYPES[fileDetails.category] || 'application/octet-stream';
+        const mimeType = item.metadata?.mimetype || 'application/octet-stream';
 
         return {
             id: item.id || '',

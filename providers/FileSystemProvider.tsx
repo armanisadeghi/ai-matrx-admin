@@ -1,8 +1,16 @@
 // providers/FileSystemProvider.tsx
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import FileSystemManager, {BucketTreeStructure} from '@/utils/supabase/FileSystemManager';
 import { useToastManager } from '@/hooks/useToastManager';
+import {
+    FileSystemManager,
+    BucketStructure,
+    BucketTreeStructure,
+    FileTypeDetails,
+    getFileDetailsByExtension,
+    isStructureWithContents, IconComponent,
+} from '@/utils/file-operations';
+
 
 interface StorageContextType {
     isLoading: boolean;
@@ -27,6 +35,19 @@ interface StorageContextType {
     getPublicUrl: (bucketName: string, path: string) => string;
     getBuckets: () => Promise<any[]>;
     setCurrentBucket: (bucketName: string) => void;
+
+    getFileDetails: (fileName: string) => FileTypeDetails;
+    getFileIcon: (fileName: string) => IconComponent;
+    getFileColor: (fileName: string) => string;
+    filterFilesByCategory: (files: BucketStructure[], category: string) => BucketStructure[];
+    filterFilesBySubCategory: (files: BucketStructure[], subCategory: string) => BucketStructure[];
+
+    currentPath: string[];
+    setCurrentPath: (path: string[]) => void;
+    navigateToPath: (path: string | string[]) => void;
+    navigateUp: () => void;
+    getFullPath: () => string;
+
 }
 
 const FileSystemContext = createContext<StorageContextType | undefined>(undefined);
@@ -35,6 +56,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [isLoading, setIsLoading] = useState(false);
     const [currentBucket, setCurrentBucket] = useState<string | null>(null);
     const fileSystemManager = FileSystemManager.getInstance();
+    const [currentPath, setCurrentPath] = useState<string[]>([]);
 
     const toast = useToastManager('storage');
 
@@ -71,7 +93,13 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         initializeStorage();
     }, []);
 
-    // Wrapper function for operations with loading state and toast notifications
+    const processFileDetails = (structure: BucketStructure): BucketStructure => {
+        if (structure.type !== 'FOLDER') {
+            structure.details = getFileDetailsByExtension(structure.path);
+        }
+        return structure;
+    };
+
     const withLoadingAndToast = async <T,>(
         operation: () => Promise<T>,
         successMessage: string,
@@ -79,13 +107,16 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     ): Promise<T | null> => {
         return toast.loading(
             async () => {
-        setIsLoading(true);
-        try {
-            const result = await operation();
-            return result;
-        } finally {
-            setIsLoading(false);
-        }
+                setIsLoading(true);
+                try {
+                    const result = await operation();
+                    if (result && isStructureWithContents(result)) {
+                        result.contents = result.contents.map(processFileDetails);
+                    }
+                    return result;
+                } finally {
+                    setIsLoading(false);
+                }
             },
             {
                 loading: "Processing storage request...",
@@ -93,6 +124,65 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 error: errorMessage
             }
         );
+    };
+
+    const navigateToPath = (path: string | string[]) => {
+        if (typeof path === 'string') {
+            setCurrentPath(path.split('/').filter(Boolean));
+        } else {
+            setCurrentPath(path);
+        }
+    };
+
+    const navigateUp = () => {
+        setCurrentPath(prev => prev.slice(0, -1));
+    };
+
+    const getFullPath = () => {
+        return currentPath.join('/');
+    };
+
+    const handleSetCurrentBucket = (bucketName: string) => {
+        setCurrentBucket(bucketName);
+        setCurrentPath([]);
+    };
+
+    const getFileDetails = (fileName: string): FileTypeDetails => {
+        return getFileDetailsByExtension(fileName);
+    };
+
+    const getFileIcon = (fileName: string): React.ComponentType => {
+        return getFileDetailsByExtension(fileName).icon;
+    };
+
+    const getFileColor = (fileName: string): string => {
+        return getFileDetailsByExtension(fileName).color;
+    };
+
+    const filterFilesByCategory = (files: BucketStructure[], category: string): BucketStructure[] => {
+        return files.filter(file =>
+            file.details?.category === category
+        );
+    };
+
+    const filterFilesBySubCategory = (files: BucketStructure[], subCategory: string): BucketStructure[] => {
+        return files.filter(file =>
+            file.details?.subCategory === subCategory
+        );
+    };
+
+    const getFilesByCategory = (bucketName: string): Record<string, BucketStructure[]> => {
+        const structure = getBucketStructure(bucketName);
+        if (!structure) return {};
+
+        return structure.contents.reduce((acc, file) => {
+            if (file.type !== 'FOLDER') {
+                const category = file.details?.category || 'UNKNOWN';
+                acc[category] = acc[category] || [];
+                acc[category].push(file);
+            }
+            return acc;
+        }, {} as Record<string, BucketStructure[]>);
     };
 
     // Example of a function using the new withLoadingAndToast
@@ -192,7 +282,12 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const value = {
         isLoading,
         currentBucket,
-        setCurrentBucket,
+        currentPath,
+        setCurrentPath,
+        navigateToPath,
+        navigateUp,
+        getFullPath,
+        setCurrentBucket: handleSetCurrentBucket,
         uploadFile,
         downloadFile,
         deleteFile,
@@ -207,6 +302,12 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         getBucketStructure,
         getAllBucketStructures,
         getBuckets,
+        getFileDetails,
+        getFileIcon,
+        getFileColor,
+        filterFilesByCategory,
+        filterFilesBySubCategory,
+        getFilesByCategory,
     };
 
     return (
@@ -223,40 +324,3 @@ export const useFileSystem = () => {
     }
     return context;
 };
-
-// Usage example:
-/*
-function App() {
-    return (
-        <FileSystemProvider>
-            <YourComponents />
-        </FileSystemProvider>
-    );
-}
-
-function YourComponent() {
-    const { 
-        uploadFile, 
-        downloadFile, 
-        isLoading,
-        getBucketStructure 
-    } = useStorage();
-
-    const handleUpload = async (file: File) => {
-        const success = await uploadFile('my-bucket', 'path/to/file.pdf', file);
-        if (success) {
-            // Handle successful upload
-        }
-    };
-
-    return (
-        <div>
-            {isLoading ? (
-                <LoadingSpinner />
-            ) : (
-                // Your component content
-            )}
-        </div>
-    );
-}
-*/

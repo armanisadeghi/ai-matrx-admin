@@ -1,6 +1,5 @@
 // components/file-operations/utils.ts
 import {
-    FileTypeValidation,
     FileCategory,
     FileTypeInfo,
     StorageItem
@@ -73,6 +72,11 @@ export function formatFileSize(bytes: number): string {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+export interface FileTypeValidation {
+    allowedTypes?: string[];
+    maxSize?: number;
+    validateContent?: boolean;
+}
 export const validateFileType = (file: File, validation: FileTypeValidation): boolean => {
     if (!validation) return true;
     const {allowedTypes, maxSize, validateContent} = validation;

@@ -2,14 +2,12 @@
 'use client';
 
 import React from 'react';
-import { useStorage } from '@/contexts/StorageContext';
-import { Button } from '@/components/ui/button';
-import {
-    ChevronRight
-} from 'lucide-react';
+import {useStorage} from '@/contexts/StorageContext';
+import {Button} from '@/components/ui/button';
+import {ChevronRight} from 'lucide-react';
 
 function PathBreadcrumbs() {
-    const { currentPath, navigateToFolder } = useStorage();
+    const {currentPath, navigateToFolder} = useStorage();
 
     return (
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -23,7 +21,7 @@ function PathBreadcrumbs() {
             </Button>
             {currentPath.map((folder, index) => (
                 <React.Fragment key={folder}>
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4"/>
                     <Button
                         variant="ghost"
                         size="sm"

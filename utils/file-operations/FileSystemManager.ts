@@ -1,17 +1,10 @@
+// utils/file-operations/FileSystemManager.ts
+
 import {SupabaseClient} from "@supabase/supabase-js";
+import { supabase } from "@/utils/supabase/client";
 import StorageDebugger from "@/utils/supabase/StorageDebugger";
-import { supabase } from "./client";
-import {Bucket, StorageItem, StorageMetadata} from './StorageBase';
+import { BucketTreeStructure } from "./types";
 
-interface BucketStructure {
-    path: string;
-    type: string;
-}
-
-interface BucketTreeStructure {
-    name: string;
-    contents: BucketStructure[];
-}
 
 class FileSystemManager {
     private static instance: FileSystemManager;
@@ -376,4 +369,3 @@ class FileSystemManager {
 }
 
 export default FileSystemManager;
-export type {Bucket, StorageItem, StorageMetadata, BucketStructure, BucketTreeStructure};
