@@ -2,8 +2,6 @@
 import {
     FileTypeValidation,
     FileCategory,
-    COMMON_MIME_TYPES,
-    FILE_EXTENSIONS,
     FileTypeInfo,
     StorageItem
 } from '@/types/file-operations.types';
@@ -23,6 +21,7 @@ import {
     FileVolume2Icon, FolderIcon,
 } from 'lucide-react';
 import { FileObject, Bucket } from '@supabase/storage-js';
+import {COMMON_MIME_TYPES, FILE_EXTENSIONS } from '../DirectoryTree/config';
 
 export * from '@/types/file-operations.types';
 

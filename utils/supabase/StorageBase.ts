@@ -1,38 +1,5 @@
 import {Bucket as SupabaseBucket} from "@supabase/storage-js/dist/module/lib/types";
 
-class Bucket {
-    id: string;
-    name: string;
-    owner: string;
-    public: boolean;
-    file_size_limit: number | null;
-    allowed_mime_types: string[] | null;
-    created_at: string;
-    updated_at: string;
-    rootItem: StorageItem;
-
-    constructor(data: SupabaseBucket) {
-        this.id = data.id;
-        this.name = data.name;
-        this.owner = data.owner;
-        this.public = data.public;
-        this.file_size_limit = data.file_size_limit ?? null;
-        this.allowed_mime_types = data.allowed_mime_types ?? null;
-        this.created_at = data.created_at;
-        this.updated_at = data.updated_at;
-        this.rootItem = new StorageItem({
-            name: '',
-            id: null,
-            updated_at: null,
-            created_at: null,
-            last_accessed_at: null,
-            metadata: null,
-            path: []
-        });
-        this.rootItem.isLoaded = true;
-    }
-}
-
 class StorageMetadata {
     eTag: string;
     size: number;
@@ -114,6 +81,42 @@ class StorageItem {
         return this.children.size > 0;
     }
 }
+
+
+class Bucket {
+    id: string;
+    name: string;
+    owner: string;
+    public: boolean;
+    file_size_limit: number | null;
+    allowed_mime_types: string[] | null;
+    created_at: string;
+    updated_at: string;
+    rootItem: StorageItem;
+
+    constructor(data: SupabaseBucket) {
+        this.id = data.id;
+        this.name = data.name;
+        this.owner = data.owner;
+        this.public = data.public;
+        this.file_size_limit = data.file_size_limit ?? null;
+        this.allowed_mime_types = data.allowed_mime_types ?? null;
+        this.created_at = data.created_at;
+        this.updated_at = data.updated_at;
+        this.rootItem = new StorageItem({
+            name: '',
+            id: null,
+            updated_at: null,
+            created_at: null,
+            last_accessed_at: null,
+            metadata: null,
+            path: []
+        });
+        this.rootItem.isLoaded = true;
+    }
+}
+
+
 
 export {
     Bucket,

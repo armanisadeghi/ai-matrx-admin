@@ -1,9 +1,9 @@
 // components/DirectoryTree/TreeRenderer.tsx
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { shouldShowItem, sortItems, getFileCategory } from './config';
-import type { EnhancedDirectoryTreeConfig } from './config';
-import { renderContextMenu, renderItemContent } from './DirectoryItemRenderers';
+import {motion, AnimatePresence} from 'framer-motion';
+import {shouldShowItem, sortItems, getFileCategory} from './config';
+import type {EnhancedDirectoryTreeConfig} from './config';
+import {renderContextMenu, renderItemContent} from './DirectoryItemRenderers';
 
 interface TreeRendererProps {
     node: Record<string, any>;
@@ -41,21 +41,22 @@ const renderCategoryGroup = (
     );
 };
 
-export const TreeRenderer: React.FC<TreeRendererProps> = ({
-                                                              node,
-                                                              path = '',
-                                                              level = 0,
-                                                              expanded,
-                                                              finalConfig,
-                                                              onSelect,
-                                                              toggleDir,
-                                                              matchesSearch,
-                                                              onStartRename,
-                                                              onPreview,
-                                                              onCopy,
-                                                              onDownload,
-                                                              onDelete,
-                                                          }) => {
+export const TreeRenderer: React.FC<TreeRendererProps> = (
+    {
+        node,
+        path = '',
+        level = 0,
+        expanded,
+        finalConfig,
+        onSelect,
+        toggleDir,
+        matchesSearch,
+        onStartRename,
+        onPreview,
+        onCopy,
+        onDownload,
+        onDelete,
+    }) => {
     const handleItemClick = (e: React.MouseEvent, itemPath: string, isDirectory: boolean) => {
         // Prevent click if it's coming from the context menu
         if ((e.target as HTMLElement).closest('[role="menuitem"]')) {
@@ -76,16 +77,16 @@ export const TreeRenderer: React.FC<TreeRendererProps> = ({
         if (!shouldShowItem(name, isDirectory, finalConfig)) return null;
         if (!matchesSearch(itemPath)) return null;
 
-        const indentStyle = { marginLeft: `${currentLevel * finalConfig.display.indentSize}px` };
+        const indentStyle = {marginLeft: `${currentLevel * finalConfig.display.indentSize}px`};
 
         const itemContent = renderItemContent(itemPath, isDirectory, item, expanded, finalConfig);
 
         return (
             <motion.div
                 key={itemPath}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
             >
                 <div
                     className={`
@@ -112,9 +113,9 @@ export const TreeRenderer: React.FC<TreeRendererProps> = ({
                 <AnimatePresence>
                     {isDirectory && expanded[itemPath] && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
+                            initial={{opacity: 0, height: 0}}
+                            animate={{opacity: 1, height: 'auto'}}
+                            exit={{opacity: 0, height: 0}}
                         >
                             <TreeRenderer
                                 node={item}

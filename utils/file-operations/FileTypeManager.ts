@@ -7,9 +7,7 @@ import {
 } from '@/types/file-operations.types';
 import {
     ENHANCED_FILE_ICONS,
-    getFileCategory,
-    getEnhancedFileIcon,
-    EnhancedDirectoryTreeConfig, getFileCategorySubCategoryByName, COMMON_MIME_TYPES
+    EnhancedDirectoryTreeConfig, COMMON_MIME_TYPES, getFileDetails
 } from '@/components/DirectoryTree/config';
 import {StorageItem} from '@/utils/supabase/StorageBase';
 
@@ -17,52 +15,13 @@ import {StorageItem} from '@/utils/supabase/StorageBase';
 export class FileTypeManager {
     private static instance: FileTypeManager;
 
-    private constructor() {
-    }
+    private constructor() {}
 
     static getInstance(): FileTypeManager {
         if (!FileTypeManager.instance) {
             FileTypeManager.instance = new FileTypeManager();
         }
         return FileTypeManager.instance;
-    }
-
-    getItemTypeInfo(item: StorageItem): FileTypeInfo | FolderTypeInfo {
-        if (item.isFolder) {
-            return {
-                id: null,
-                name: item.name,
-                extension: null,
-                mimeType: null,
-                icon: ENHANCED_FILE_ICONS.categories.UNKNOWN.DEFAULT,
-                category: 'FOLDER',
-                subCategory: null,
-                canPreview: false,
-                description: 'Folder',
-                color: "default"
-
-            };
-        }
-
-        const extension = item.name.includes('.') ? `.${item.name.split('.').pop()?.toLowerCase()}` : '';
-        const categorySubcategory = getFileCategorySubCategoryByName(item.name);
-        const icon = getEnhancedFileIcon(item.name);
-        const category = categorySubcategory.category
-        const subCategory = categorySubcategory.subCategory
-        const mimeType = item.metadata?.mimetype || COMMON_MIME_TYPES[category] || 'application/octet-stream';
-        const canPreview = this.canPreviewFile(item, category);
-        const id = item.id || null;
-        const name = item.name || '';
-        const description = 'Folder'
-        const color = "default"
-
-        return {
-            category,
-            extension,
-            icon,
-            mimeType,
-            canPreview
-        };
     }
 
     private canPreviewFile(item: StorageItem, category: FileCategory): boolean {
@@ -88,11 +47,44 @@ export class FileTypeManager {
         }
     }
 
+    getItemTypeInfo(item: StorageItem): FileTypeInfo | FolderTypeInfo {
+        if (item.isFolder) {
+            return {
+                id: null,
+                name: item.name,
+                extension: null,
+                mimeType: null,
+                icon: ENHANCED_FILE_ICONS.categories.UNKNOWN.DEFAULT,
+                category: 'FOLDER',
+                subCategory: 'FOLDER',
+                canPreview: false,
+                description: 'Folder',
+                color: 'default'
+            };
+        }
+
+        const fileDetails = getFileDetails(item.name);
+        const extension = item.name.includes('.') ? `.${item.name.split('.').pop()?.toLowerCase()}` : '';
+        const mimeType = item.metadata?.mimetype || COMMON_MIME_TYPES[fileDetails.category] || 'application/octet-stream';
+
+        return {
+            id: item.id || '',
+            name: item.name,
+            extension,
+            mimeType,
+            icon: fileDetails.icon,
+            category: fileDetails.category,
+            subCategory: fileDetails.subCategory,
+            canPreview: this.canPreviewFile(item, fileDetails.category),
+            description: fileDetails.subCategory || 'File',
+            color: fileDetails.color || 'default'
+        };
+    }
+
     sortItems(items: StorageItem[], config: EnhancedDirectoryTreeConfig): StorageItem[] {
-        const {sorting} = config;
+        const { sorting } = config;
 
         return [...items].sort((a, b) => {
-            // Folders first if configured
             if (sorting.foldersFirst && a.isFolder !== b.isFolder) {
                 return a.isFolder ? -1 : 1;
             }
@@ -100,7 +92,7 @@ export class FileTypeManager {
             switch (sorting.by) {
                 case 'name':
                     return sorting.natural
-                        ? a.name.localeCompare(b.name, undefined, {numeric: true})
+                        ? a.name.localeCompare(b.name, undefined, { numeric: true })
                         : a.name.localeCompare(b.name);
                 case 'date':
                     const aDate = a.updated_at || a.created_at || '';
@@ -125,24 +117,22 @@ export class FileTypeManager {
     }
 
     filterItems(items: StorageItem[], config: EnhancedDirectoryTreeConfig): StorageItem[] {
-        const {filter} = config;
+        const { filter } = config;
 
         return items.filter(item => {
-            // Hidden files
             if (filter.hideHiddenFiles && item.name.startsWith('.')) {
                 return false;
             }
 
-            // Folders are always shown unless explicitly excluded
             if (item.isFolder) {
                 return !filter.excludePatterns.some(pattern =>
                     new RegExp(pattern.replace(/\*/g, '.*')).test(item.name)
                 );
             }
 
-            // MIME type filtering
             if (filter.includeMimeTypes?.length || filter.excludeMimeTypes?.length) {
                 const itemType = this.getItemTypeInfo(item);
+                if (!('mimeType' in itemType)) return false;
 
                 if (filter.includeMimeTypes?.length &&
                     !filter.includeMimeTypes.includes(itemType.mimeType)) {
@@ -155,15 +145,14 @@ export class FileTypeManager {
                 }
             }
 
-            // Pattern exclusion
             return !filter.excludePatterns.some(pattern =>
                 new RegExp(pattern.replace(/\*/g, '.*')).test(item.name)
             );
         });
     }
 
-    groupItemsByCategory(items: StorageItem[]): Record<FileCategory, StorageItem[]> {
-        const groupedItems: Record<FileCategory, StorageItem[]> = {
+    groupItemsByCategory(items: StorageItem[]): Partial<Record<FileCategory | 'FOLDER', StorageItem[]>> {
+        const groupedItems: Partial<Record<FileCategory | 'FOLDER', StorageItem[]>> = {
             FOLDER: [],
             CODE: [],
             DOCUMENT: [],
@@ -178,19 +167,20 @@ export class FileTypeManager {
         items.forEach(item => {
             const typeInfo = this.getItemTypeInfo(item);
             const category = item.isFolder ? 'FOLDER' : typeInfo.category;
-            if (category in groupedItems) {
-                groupedItems[category as FileCategory].push(item);
-            } else {
-                groupedItems.UNKNOWN.push(item);
+
+            if (!groupedItems[category]) {
+                groupedItems[category] = [];
             }
+
+            groupedItems[category]!.push(item);
         });
 
         return groupedItems;
     }
 }
 
-// Enhance StorageManager with file type capabilities
-export function withFileTypes(manager: StorageManager) {
+// Helper function to work with StorageManager
+export function withFileTypes(manager: any) {
     const fileTypeManager = FileTypeManager.getInstance();
 
     return {

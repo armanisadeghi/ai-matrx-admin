@@ -1,0 +1,68 @@
+{
+  "sources": {
+    "sourceId": {
+      "metadata": {
+        "lastSync": "timestamp",
+        "status": "ready",
+        "type": "supabase",
+        "rootPath": "/",
+        "displayName": "Main Storage"
+      },
+      "tree": {
+        "/": {  // Root always exists
+          "type": "folder",
+          "name": "Root",
+          "path": "/",
+          "timestamp": 1234567890,
+          "status": "known",
+          "children": ["/docs", "/images"]
+        },
+        "/docs/file.txt": {
+          "type": "file",
+          "name": "file.txt",
+          "path": "/docs/file.txt",
+          "timestamp": 1234567890,
+          "status": "known",
+          "size": 1024,
+          "contentHash": "hash_value",
+          "content": {
+            "data": "content_data",
+            "fetchedAt": "timestamp",
+            "modified": false,
+            "cached": true
+          }
+        }
+      }
+    }
+  },
+  "sync": {
+    "lastGlobalSync": "timestamp",
+    "queue": [{
+      "id": "op_id",
+      "sourceId": "sourceId",
+      "type": "add",
+      "status": "pending",
+      "timestamp": "timestamp",
+      "priority": 1,
+      "paths": {
+        "source": "/path/to/source",
+        "target": "/path/to/target"
+      },
+      "retryCount": 0
+    }],
+    "conflicts": [{
+      "id": "conflict_id",
+      "type": "version",
+      "paths": ["/path1", "/path2"],
+      "sources": ["source1", "source2"],
+      "timestamp": "timestamp",
+      "resolution": "pending"
+    }]
+  },
+  "ui": {
+    "selectedPaths": ["/docs/file.txt"],
+    "expandedFolders": ["/", "/docs"],
+    "activeFile": "/docs/file.txt",
+    "view": "list"
+  }
+}

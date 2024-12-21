@@ -168,13 +168,6 @@ export type FileCategory =
     | 'DATA'
     | 'UNKNOWN'
 
-export type FileCategorySubCategory = {
-    category: FileCategory;
-    subCategory: string;
-} | 'UNKNOWN';
-
-
-
 export interface FileTypeInfo {
     id: string;
     name: string;
@@ -203,13 +196,6 @@ export interface FolderTypeInfo {
 
 
 
-
-export const isCodeFile = (fileName: string): boolean => {
-    const ext = fileName.toLowerCase().split('.').pop() || '';
-    return Object.values(FILE_EXTENSIONS.CODE)
-        .flat()
-        .some(validExt => validExt.slice(1) === ext);
-};
 
 export interface FileTypeValidation {
     allowedTypes?: string[];

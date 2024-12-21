@@ -16,20 +16,14 @@ class StorageManager {
     private buckets: Map<string, Bucket>;
     private currentBucket: string;
     private loadingPaths: Set<string>;
-    private maxDepth: number;
-    private maxItemsPerFolder: number;
-    private prefetchDepth: number;
     private currentPath: string[];
     private debugger: StorageDebugger;
 
     private constructor() {
-        this.supabase = supabase
+        this.supabase = supabase;
         this.buckets = new Map();
         this.currentBucket = '';
         this.loadingPaths = new Set();
-        this.maxDepth = 5;
-        this.maxItemsPerFolder = 1000;
-        this.prefetchDepth = 3;
         this.currentPath = [];
         this.debugger = StorageDebugger.getInstance();
     }
@@ -41,38 +35,35 @@ class StorageManager {
         return StorageManager.instance;
     }
 
-    private async loadFolderContents(
-        bucket: Bucket,
-        path: string[],
-        currentDepth: number = 0
-    ): Promise<void> {
+    private async loadFolderContents(bucket: Bucket, path: string[]): Promise<void> {
         const fullPath = path.join('/');
         if (this.loadingPaths.has(fullPath)) return;
         this.loadingPaths.add(fullPath);
         try {
-            const {data, error} = await this.supabase.storage
+            const { data, error } = await this.supabase.storage
                 .from(bucket.name)
                 .list(fullPath);
             if (error) throw error;
             if (!data) return;
+
+            // Find the parent folder
             let parentFolder = bucket.rootItem;
             for (const segment of path) {
                 const next = parentFolder.getChild(segment);
                 if (next && next.isFolder) parentFolder = next;
             }
+
+            // Clear existing children and load new contents
             parentFolder.children.clear();
             for (const item of data) {
                 const newItem = new StorageItem({
                     ...item,
-                    path: [...path]
+                    path: [...path],
                 });
                 parentFolder.addChild(newItem);
-                if (newItem.isFolder && currentDepth < this.prefetchDepth) {
-                    await this.loadFolderContents(bucket, [...path, newItem.name], currentDepth + 1);
-                }
             }
+
             parentFolder.isLoaded = true;
-            parentFolder.loadDepth = currentDepth;
         } finally {
             this.loadingPaths.delete(fullPath);
         }
@@ -107,6 +98,7 @@ class StorageManager {
     async navigateToFolder(folderPath: string[]): Promise<StorageItem[]> {
         const bucket = this.buckets.get(this.currentBucket);
         if (!bucket) throw new Error('No bucket selected');
+
         let currentFolder = bucket.rootItem;
         for (const segment of folderPath) {
             const nextFolder = currentFolder.getChild(segment);
@@ -115,17 +107,11 @@ class StorageManager {
             }
             currentFolder = nextFolder;
         }
-        if (!currentFolder.isLoaded || currentFolder.loadDepth < this.prefetchDepth) {
+
+        if (!currentFolder.isLoaded) {
             await this.loadFolderContents(bucket, folderPath);
         }
-        const subfolders = Array.from(currentFolder.children.values())
-            .filter(item => item.isFolder);
-        for (const subfolder of subfolders) {
-            const subfolderPath = [...folderPath, subfolder.name];
-            if (!subfolder.isLoaded || subfolder.loadDepth < 1) {
-                await this.loadFolderContents(bucket, subfolderPath, currentFolder.loadDepth + 1);
-            }
-        }
+
         this.currentPath = folderPath;
         return Array.from(currentFolder.children.values());
     }
@@ -332,39 +318,6 @@ class StorageManager {
         const bucket = this.buckets.get(this.currentBucket);
         if (!bucket) throw new Error('No bucket selected');
         await this.loadFolderContents(bucket, this.currentPath);
-    }
-
-    private async trackOperation<T>(
-        operation: string,
-        func: () => Promise<T>,
-        metadata?: Record<string, unknown>
-    ): Promise<T> {
-        const startTime = Date.now();
-        try {
-            const result = await func();
-            const duration = Date.now() - startTime;
-
-            this.debugger.logOperation({
-                operation,
-                data: result,
-                duration,
-                timestamp: new Date().toISOString(),
-                metadata
-            });
-
-            return result;
-        } catch (error) {
-            const duration = Date.now() - startTime;
-            this.debugger.logOperation({
-                operation,
-                data: null,
-                error,
-                duration,
-                timestamp: new Date().toISOString(),
-                metadata
-            });
-            throw error;
-        }
     }
 }
 

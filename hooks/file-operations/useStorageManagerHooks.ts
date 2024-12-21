@@ -1,6 +1,9 @@
+// File Location: hooks/file-operations/useStorageManagerHooks.ts
+
 'use client';
 import React, {useState, useEffect, useCallback} from 'react';
 import StorageManager from '@/utils/supabase/StorageManager';
+import {toast} from "@/components/ui/use-toast";
 
 export function useStorageManager() {
     const [manager] = useState(() => StorageManager.getInstance());
@@ -10,6 +13,7 @@ export function useStorageManager() {
 export function useBuckets(manager: StorageManager) {
     const [buckets, setBuckets] = useState(() => manager.getCurrentBucket() ? [manager.getCurrentBucket()] : []);
     const [currentBucket, setCurrentBucket] = useState(manager.getCurrentBucket());
+    const [loading, setLoading] = useState(false);
 
     const listBuckets = useCallback(async () => {
         const result = await manager.listBuckets();
@@ -17,12 +21,31 @@ export function useBuckets(manager: StorageManager) {
         return result;
     }, [manager]);
 
+
+    useEffect(() => {
+        const fetchBuckets = async () => {
+            setLoading(true);
+            try {
+                await listBuckets();
+            } catch (error) {
+                toast({
+                    title: 'Error',
+                    description: 'Failed to fetch buckets',
+                    variant: 'destructive',
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBuckets();
+    }, [listBuckets]);
+
     const selectBucket = useCallback(async (bucketName: string) => {
         await manager.selectBucket(bucketName);
         setCurrentBucket(manager.getCurrentBucket());
     }, [manager]);
 
-    return { buckets, currentBucket, listBuckets, selectBucket };
+    return { buckets, currentBucket, listBuckets, selectBucket, loading };
 }
 
 export function useFolderNavigation(manager: StorageManager) {

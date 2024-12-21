@@ -1,0 +1,114 @@
+{
+  "fsNodes": {
+    "byId": {
+      "source1:/path/to/file.txt": {
+        "id": "source1:/path/to/file.txt",
+        "sourceId": "source1",
+        "path": "/path/to/file.txt",
+        "name": "file.txt",
+        "type": "file",
+        "parentPath": "/path/to",
+        "size": 1024,
+        "contentHash": "hash123",
+        "timestamps": {
+          "modified": 1234567890,
+          "stateUpdated": 1234567890,
+          "idbUpdated": 1234567890,
+          "cloudUpdated": 1234567890
+        },
+        "availability": {
+          "inState": true,
+          "inIdb": true,
+          "inCloud": true
+        }
+      }
+    },
+    "allIds": ["source1:/path/to/file.txt"]
+  },
+  "fetchStatus": {
+    "source1:/path/to": {
+      "status": "fetched",
+      "lastFetched": 1234567890,
+      "childrenFetched": true,
+      "error": null
+    },
+    "source1:/path/to/file.txt": {
+      "status": "fetched",
+      "lastFetched": 1234567890,
+      "contentFetched": true,
+      "error": null
+    }
+  },
+  "contents": {
+    "source1:/path/to/file.txt": {
+      "data": "file content",
+      "contentType": "text/plain",
+      "hash": "hash123",
+      "size": 1024,
+      "source": "cloud",
+      "fetchedAt": 1234567890,
+      "modified": false,
+      "cached": true,
+      "locations": {
+        "idbKey": "idb-key-123",
+        "cloudPath": "/path/to/file.txt",
+        "tempPath": null
+      }
+    }
+  },
+  "sources": {
+    "byId": {
+      "source1": {
+        "id": "source1",
+        "type": "supabase",
+        "name": "Main Storage",
+        "status": "ready",
+        "lastSync": 1234567890,
+        "bucket": "bucket-name",
+        "rootPath": "/"
+      }
+    },
+    "allIds": ["source1"]
+  },
+  "operations": {
+    "byId": {
+      "op1": {
+        "id": "op1",
+        "type": "move",
+        "sourceId": "source1",
+        "status": "pending",
+        "timestamp": 1234567890,
+        "sourcePath": "/old/path",
+        "targetPath": "/new/path",
+        "retryCount": 0,
+        "syncStatus": {
+          "state": "completed",
+          "idb": "pending",
+          "cloud": "pending"
+        }
+      }
+    },
+    "allIds": ["op1"],
+    "queue": ["op1"]
+  },
+  "sync": {
+    "lastGlobalSync": 1234567890,
+    "inProgress": false,
+    "errors": [],
+    "operations": {
+      "sync1": {
+        "id": "sync1",
+        "type": "state_to_cloud",
+        "status": "pending",
+        "paths": ["/path/to/file.txt"],
+        "timestamp": 1234567890
+      }
+    }
+  },
+  "ui": {
+    "selectedNodes": ["source1:/path/to/file.txt"],
+    "expandedFolders": ["source1:/path/to"],
+    "activeNode": "source1:/path/to/file.txt",
+    "view": "list"
+  }
+}

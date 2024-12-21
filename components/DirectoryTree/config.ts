@@ -1,11 +1,14 @@
 // components/DirectoryTree/config.ts
 import {
     FileJson, FileText, FileCode, FileImage,
-    FileInput, FileVideo, FileSpreadsheet, File
+    FileInput, FileVideo, FileSpreadsheet, File,
+    FileAudio,
+    Table2,
+    FileArchive
 } from 'lucide-react';
 import {
     FileTypeInfo,
-    FileCategory, FileCategorySubCategory,
+    FileCategory,
 } from '@/types/file-operations.types';
 
 import {
@@ -31,7 +34,10 @@ import {
     IconFileTypeSql,
     IconFileTypeTs,
     IconFileTypeTsx,
+    IconBrandPython,
 } from "@tabler/icons-react";
+import React from "react";
+import {TwoColorPythonIcon} from "@/components/DirectoryTree/custom-icons";
 
 export const FILE_ICONS = {
     '.bmp': IconFileTypeBmp,
@@ -332,18 +338,26 @@ export const FILE_EXTENSIONS = {
     },
 } as const;
 
-export const FILE_EXTENSIONS_LOOKUP = {
-    js: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs},
-    jsx: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJsx},
-    mjs: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs},
-    ts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs},
-    tsx: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTsx},
-    dts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs},
-    py: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
-    pyw: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
-    pyx: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
-    pxd: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
-    pxi: {category: "CODE", subCategory: "PYTHON", icon: FileCode},
+
+export type FileTypeDetails = {
+    category: FileCategory;
+    subCategory: string;
+    icon: React.ComponentType;
+    color?: string
+}
+
+export const FILE_EXTENSIONS_LOOKUP: Record<string, FileTypeDetails> = {
+    js: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs, color: 'text-amber-500'},
+    jsx: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJsx, color: 'text-amber-500'},
+    mjs: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs, color: 'text-amber-500'},
+    ts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs, color: 'text-sky-500'},
+    tsx: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTsx, color: 'text-sky-500'},
+    dts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs, color: 'text-sky-500'},
+    py: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: ''},
+    pyw: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: ''},
+    pyx: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: ''},
+    pxd: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: ''},
+    pxi: {category: "CODE", subCategory: "PYTHON", icon: IconBrandPython},
     html: {category: "CODE", subCategory: "WEB", icon: IconFileTypeHtml},
     htm: {category: "CODE", subCategory: "WEB", icon: IconFileTypeHtml},
     css: {category: "CODE", subCategory: "WEB", icon: IconFileTypeCss},
@@ -366,46 +380,46 @@ export const FILE_EXTENSIONS_LOOKUP = {
     ppt: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypePpt},
     pptx: {category: "DOCUMENT", subCategory: "MICROSOFT", icon: IconFileTypePpt},
     gdoc: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File},
-    gsheet: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File},
+    gsheet: {category: "DOCUMENT", subCategory: "GOOGLE", icon: Table2},
     gslide: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File},
     txt: {category: "DOCUMENT", subCategory: "TEXT", icon: IconFileTypeTxt},
     rtf: {category: "DOCUMENT", subCategory: "TEXT", icon: File},
     pdf: {category: "DOCUMENT", subCategory: "TEXT", icon: IconFileTypePdf},
     note: {category: "DOCUMENT", subCategory: "NOTES", icon: File},
-    mp3: {category: "AUDIO", subCategory: "BASIC", icon: File},
-    wav: {category: "AUDIO", subCategory: "BASIC", icon: File},
-    ogg: {category: "AUDIO", subCategory: "BASIC", icon: File},
-    m4a: {category: "AUDIO", subCategory: "BASIC", icon: File},
-    webm: {category: "AUDIO", subCategory: "VOICE", icon: File},
-    aac: {category: "AUDIO", subCategory: "VOICE", icon: File},
-    mp4a: {category: "AUDIO", subCategory: "VOICE", icon: File},
-    mid: {category: "AUDIO", subCategory: "MIDI", icon: File},
-    midi: {category: "AUDIO", subCategory: "MIDI", icon: File},
-    m3u: {category: "AUDIO", subCategory: "PLAYLIST", icon: File},
-    m3u8: {category: "AUDIO", subCategory: "PLAYLIST", icon: File},
-    pls: {category: "AUDIO", subCategory: "PLAYLIST", icon: File},
+    mp3: {category: "AUDIO", subCategory: "BASIC", icon: FileAudio},
+    wav: {category: "AUDIO", subCategory: "BASIC", icon: FileAudio},
+    ogg: {category: "AUDIO", subCategory: "BASIC", icon: FileAudio},
+    m4a: {category: "AUDIO", subCategory: "BASIC", icon: FileAudio},
+    webm: {category: "AUDIO", subCategory: "VOICE", icon: FileAudio},
+    aac: {category: "AUDIO", subCategory: "VOICE", icon: FileAudio},
+    mp4a: {category: "AUDIO", subCategory: "VOICE", icon: FileAudio},
+    mid: {category: "AUDIO", subCategory: "MIDI", icon: FileAudio},
+    midi: {category: "AUDIO", subCategory: "MIDI", icon: FileAudio},
+    m3u: {category: "AUDIO", subCategory: "PLAYLIST", icon: FileAudio},
+    m3u8: {category: "AUDIO", subCategory: "PLAYLIST", icon: FileAudio},
+    pls: {category: "AUDIO", subCategory: "PLAYLIST", icon: FileAudio},
     jpg: {category: "IMAGE", subCategory: "BASIC", icon: IconFileTypeJpg},
     jpeg: {category: "IMAGE", subCategory: "BASIC", icon: IconFileTypeJpg},
     png: {category: "IMAGE", subCategory: "BASIC", icon: IconFileTypePng},
     gif: {category: "IMAGE", subCategory: "BASIC", icon: IconGif},
-    webp: {category: "IMAGE", subCategory: "BASIC", icon: File},
-    svg: {category: "IMAGE", subCategory: "VECTOR", icon: File},
-    ai: {category: "IMAGE", subCategory: "VECTOR", icon: File},
-    eps: {category: "IMAGE", subCategory: "VECTOR", icon: File},
-    raw: {category: "IMAGE", subCategory: "RAW", icon: File},
-    cr2: {category: "IMAGE", subCategory: "RAW", icon: File},
-    nef: {category: "IMAGE", subCategory: "RAW", icon: File},
-    arw: {category: "IMAGE", subCategory: "RAW", icon: File},
-    psd: {category: "IMAGE", subCategory: "DESIGN", icon: File},
-    xcf: {category: "IMAGE", subCategory: "DESIGN", icon: File},
-    sketch: {category: "IMAGE", subCategory: "DESIGN", icon: File},
+    webp: {category: "IMAGE", subCategory: "BASIC", icon: FileImage},
+    svg: {category: "IMAGE", subCategory: "VECTOR", icon: FileImage},
+    ai: {category: "IMAGE", subCategory: "VECTOR", icon: FileImage},
+    eps: {category: "IMAGE", subCategory: "VECTOR", icon: FileImage},
+    raw: {category: "IMAGE", subCategory: "RAW", icon: FileImage},
+    cr2: {category: "IMAGE", subCategory: "RAW", icon: FileImage},
+    nef: {category: "IMAGE", subCategory: "RAW", icon: FileImage},
+    arw: {category: "IMAGE", subCategory: "RAW", icon: FileImage},
+    psd: {category: "IMAGE", subCategory: "DESIGN", icon: FileImage},
+    xcf: {category: "IMAGE", subCategory: "DESIGN", icon: FileImage},
+    sketch: {category: "IMAGE", subCategory: "DESIGN", icon: FileImage},
     mp4: {category: "VIDEO", subCategory: "BASIC", icon: FileVideo},
     mov: {category: "VIDEO", subCategory: "BASIC", icon: FileVideo},
     zip: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: IconFileTypeZip},
-    rar: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
-    '7z': {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
-    tar: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
-    gz: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: File},
+    rar: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: FileArchive},
+    '7z': {category: "ARCHIVE", subCategory: "COMPRESSED", icon: FileArchive},
+    tar: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: FileArchive},
+    gz: {category: "ARCHIVE", subCategory: "COMPRESSED", icon: FileArchive},
     iso: {category: "ARCHIVE", subCategory: "DISK_IMAGE", icon: File},
     img: {category: "ARCHIVE", subCategory: "DISK_IMAGE", icon: File},
     dmg: {category: "ARCHIVE", subCategory: "DISK_IMAGE", icon: File},
@@ -417,6 +431,71 @@ export const FILE_EXTENSIONS_LOOKUP = {
     conf: {category: "DATA", subCategory: "CONFIG", icon: File},
 }
 
+export const DEFAULT_ICONS = {
+    CODE: {
+        DEFAULT: FileCode,
+        JAVASCRIPT: IconFileTypeJs,
+        TYPESCRIPT: IconFileTypeTs,
+        PYTHON: FileCode,
+        JSON: FileJson,
+        HTML: IconFileTypeHtml,
+        CSS: IconFileTypeCss,
+        MARKDOWN: FileText,
+    },
+    DOCUMENT: {
+        DEFAULT: FileText,
+        WORD: IconFileTypeDoc,
+        EXCEL: IconFileTypeXls,
+        POWERPOINT: IconFileTypePpt,
+        PDF: IconFileTypePdf,
+    },
+    AUDIO: {
+        DEFAULT: FileInput,
+    },
+    IMAGE: {
+        DEFAULT: FileImage,
+        JPG: IconFileTypeJpg,
+        PNG: IconFileTypePng,
+        GIF: IconGif,
+        BMP: IconFileTypeBmp,
+    },
+    VIDEO: {
+        DEFAULT: FileVideo,
+    },
+    ARCHIVE: {
+        DEFAULT: IconFileTypeZip,
+    },
+    DATA: {
+        DEFAULT: FileJson,
+        CSV: IconFileTypeCsv,
+        XML: IconFileTypeXml,
+        SQL: IconFileTypeSql,
+    },
+    UNKNOWN: {
+        DEFAULT: File,
+    }
+} as const
+
+for (const key in FILE_EXTENSIONS_LOOKUP) {
+    const entry = FILE_EXTENSIONS_LOOKUP[key];
+    if (entry.color === undefined || entry.color === '') {
+        entry.color = 'text-gray-500';
+    }
+}
+
+export const getFileDetails = (fileName: string): FileTypeDetails => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    const lookup = FILE_EXTENSIONS_LOOKUP[ext];
+    if (lookup) {
+        return lookup;
+    }
+    return {category: "UNKNOWN", subCategory: "UNKNOWN", icon: File, color: 'text-gray-500'};
+};
+
+export type FileCategorySubCategory = {
+    category: FileCategory;
+    subCategory: string;
+}
 
 export const COMMON_MIME_TYPES_LOOKUP: Record<string, FileCategorySubCategory> = {
     'application/javascript': {category: "CODE", subCategory: "JAVASCRIPT"},
@@ -478,15 +557,6 @@ export const COMMON_MIME_TYPES_LOOKUP: Record<string, FileCategorySubCategory> =
     'application/x-iso9660-image': {category: "ARCHIVE", subCategory: "DISK_IMAGE"},
 
     // Add more MIME types as needed
-};
-
-export const getFileCategorySubCategoryByName = (fileName: string): FileCategorySubCategory => {
-    const ext = fileName.toLowerCase().split('.').pop() || '';
-    const lookup = FILE_EXTENSIONS_LOOKUP[ext];
-    if (lookup) {
-        return lookup;
-    }
-    return {category: "UNKNOWN", subCategory: "UNKNOWN"}
 };
 
 export const getFileCategoryByMimeType = (mimeType: string): FileCategorySubCategory => {
@@ -556,6 +626,8 @@ export const ENHANCED_DEFAULT_CONFIG: EnhancedDirectoryTreeConfig = {
         }
     }
 };
+
+
 
 // Helper functions for the enhanced system
 export const getFileCategory = (filename: string): FileCategory => {
@@ -654,4 +726,86 @@ export const shouldShowItem = (
     }
 
     return true;
+};
+
+export const isCodeFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.CODE)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+export const isImageFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.IMAGE)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+export const isVideoFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.VIDEO)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+export const isAudioFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.AUDIO)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+export const isDocumentFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.DOCUMENT)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+export const isArchiveFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.ARCHIVE)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+export const isDataFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return Object.values(FILE_EXTENSIONS.DATA)
+        .flat()
+        .some(validExt => validExt.slice(1) === ext);
+};
+
+
+export const isFolder = (fileName: string): boolean => {
+    return !fileName.includes('.');
+};
+
+export const isPreviewableFile = (fileName: string): boolean => {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return ENHANCED_DEFAULT_CONFIG.preview.supportedTypes.includes(`.${ext}`);
+};
+
+export const canPreviewFile = (item: { name: string; size: number }, category: FileCategory): boolean => {
+    // Size check
+    const maxPreviewSize = ENHANCED_DEFAULT_CONFIG.preview.maxSize;
+    if (item.size > maxPreviewSize) return false;
+
+    // Check supported categories and extensions
+    switch (category) {
+        case 'CODE':
+        case 'DOCUMENT':
+            return true;
+        case 'IMAGE':
+            return ['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(
+                item.name.split('.').pop()?.toLowerCase() || ''
+            );
+        case 'VIDEO':
+            return false; // Video preview might need special handling
+        case 'AUDIO':
+            return false; // Audio preview might need special handling
+        default:
+            return false;
+    }
 };

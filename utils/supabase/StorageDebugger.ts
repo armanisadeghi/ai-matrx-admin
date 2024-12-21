@@ -2,11 +2,8 @@ import { EventEmitter } from 'events';
 
 interface DebugEvent {
     operation: string;
-    data: unknown;
-    error?: unknown;
-    duration: number;
-    timestamp: string;
-    metadata?: Record<string, unknown>;
+    request: unknown;
+    response: unknown;
 }
 
 class StorageDebugger extends EventEmitter {
@@ -23,7 +20,8 @@ class StorageDebugger extends EventEmitter {
         return StorageDebugger.instance;
     }
 
-    logOperation(event: DebugEvent): void {
+    logOperation(operation: string, request: unknown, response: unknown): void {
+        const event: DebugEvent = { operation, request, response };
         this.emit('operation', event);
     }
 }
