@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import PathBreadcrumbs from './PathBreadcrumbs';
-import { StorageConfig, StorageItem } from '@/types/storage';
+import { StorageItem } from '@/types/file-operations.types';
 
 export function StorageExplorer() {
     const {

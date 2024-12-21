@@ -14,10 +14,11 @@ import {SocketProvider} from '@/providers/SocketProvider';
 import {RefProvider} from '@/lib/refs';
 import {ShikiProvider} from '@/providers/ShikiProvider';
 import {RecoilRoot} from 'recoil';
-import {StorageProvider, ToastProvider} from '@/providers';
+import {ToastProvider} from '@/providers';
 import {AudioModalProvider} from "@/providers/AudioModalProvider";
 import {ModuleHeaderProvider} from '@/providers/ModuleHeaderProvider';
 import {EntityProvider} from '@/providers/entity-context/EntityProvider';
+import {FileSystemProvider} from "@/providers/FileSystemProvider";
 
 export function Providers(
     {
@@ -35,7 +36,7 @@ export function Providers(
                         <SocketProvider>
                             <ThemeProvider defaultTheme="dark" enableSystem={false}>
                                 <RefProvider>
-                                    <StorageProvider>
+                                    <FileSystemProvider>
                                         <NextUIProvider>
                                             <TooltipProvider>
                                                 <ToastProvider>
@@ -51,7 +52,7 @@ export function Providers(
                                                 </ToastProvider>
                                             </TooltipProvider>
                                         </NextUIProvider>
-                                    </StorageProvider>
+                                    </FileSystemProvider>
                                 </RefProvider>
                             </ThemeProvider>
                         </SocketProvider>
