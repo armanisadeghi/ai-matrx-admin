@@ -6,10 +6,10 @@ import EntityQuickReferenceFinal from '../QuickReferenceFinal';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {EntityFieldList} from './EntityFieldList';
 import {fieldNameToCanonical} from '@/utils/schema/lookupSchema';
-import {EntityContextProvider, useEntityContext} from '@/providers/EntityContextProvider';
+
 
 function TestQuickReferenceContent() {
-    const {activeEntityName, switchActiveEntity} = useEntityContext();
+
 
     const entityNames = React.useMemo(() =>
             Object.keys(fieldNameToCanonical) as EntityKeys[],
