@@ -10,7 +10,7 @@ export default function ParentComponent() {
 
     return (
         <div>
-            <IconSearchCard onIconSelect={handleIconSelect} />
+            {/*<IconSearchCard onIconSelect={handleIconSelect} />*/}
         </div>
     );
 }
