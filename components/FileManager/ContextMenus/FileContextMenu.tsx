@@ -1,12 +1,6 @@
 // components/FileManager/ContextMenus/FileContextMenu.tsx
 import React from 'react';
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuTrigger,
-} from "@/components/ui/context-menu"
+import {ContextMenuItem, ContextMenuSeparator,} from "@/components/ui/context-menu"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,26 +12,20 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {useDialog} from '../DialogManager';
-import {useContextMenu} from '../ContextMenuProvider';
 import {useFileSystem} from '@/providers/FileSystemProvider';
-import {Copy, Download, Edit, ExternalLink, Move, Trash} from 'lucide-react';
-import {FileContextMenuProps} from './types';
+import {Copy, Download, Edit, ExternalLink, Move, Trash, Upload} from 'lucide-react';
+import {MenuData} from "@/providers/ContextMenuProvider";
 
-export const FileContextMenu: React.FC<FileContextMenuProps> = (
-    {
-        children,
-        path,
-        bucketName,
-    }) => {
-    const {openMenu, closeMenu, menuState} = useContextMenu();
+interface FileMenuProps {
+    menuData: MenuData;
+    onClose: () => void;
+}
+
+export const FileContextMenu: React.FC<FileMenuProps> = ({menuData = {}, onClose}) => {
     const {downloadFile, deleteFile, getPublicUrl} = useFileSystem();
+    const {path = '', bucketName = ''} = menuData as { path: string; bucketName: string };
     const {openDialog} = useDialog();
     const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
-
-    const handleContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
-        openMenu(e, 'file', {path, bucketName});
-    };
 
     const handleDownload = async () => {
         const blob = await downloadFile(bucketName, path);
@@ -51,6 +39,7 @@ export const FileContextMenu: React.FC<FileContextMenuProps> = (
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         }
+        onClose();
     };
 
     const handleDelete = async () => {
@@ -90,47 +79,32 @@ export const FileContextMenu: React.FC<FileContextMenuProps> = (
 
     return (
         <>
-            <div onContextMenu={handleContextMenu}>
-                {children}
-            </div>
-
-            {menuState.isOpen && menuState.type === 'file' && menuState.data.path === path && (
-                <ContextMenuContent
-                    className="w-64"
-                    style={{
-                        position: 'fixed',
-                        top: menuState.y,
-                        left: menuState.x,
-                    }}
-                >
-                    <ContextMenuItem onClick={handleDownload}>
-                        <Download className="mr-2 h-4 w-4"/>
-                        Download
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={() => window.open(getPublicUrl(bucketName, path))}>
-                        <ExternalLink className="mr-2 h-4 w-4"/>
-                        Open in new tab
-                    </ContextMenuItem>
-                    <ContextMenuSeparator/>
-                    <ContextMenuItem onClick={handleCopy}>
-                        <Copy className="mr-2 h-4 w-4"/>
-                        Copy to...
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={handleMove}>
-                        <Move className="mr-2 h-4 w-4"/>
-                        Move to...
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={handleRename}>
-                        <Edit className="mr-2 h-4 w-4"/>
-                        Rename
-                    </ContextMenuItem>
-                    <ContextMenuSeparator/>
-                    <ContextMenuItem onClick={handleDelete} className="text-red-600">
-                        <Trash className="mr-2 h-4 w-4"/>
-                        Delete
-                    </ContextMenuItem>
-                </ContextMenuContent>
-            )}
+            <ContextMenuItem onClick={handleDownload}>
+                <Download className="mr-2 h-4 w-4"/>
+                Download
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => window.open(getPublicUrl(bucketName, path))}>
+                <ExternalLink className="mr-2 h-4 w-4"/>
+                Open in new tab
+            </ContextMenuItem>
+            <ContextMenuSeparator/>
+            <ContextMenuItem onClick={handleCopy}>
+                <Copy className="mr-2 h-4 w-4"/>
+                Copy to...
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleMove}>
+                <Move className="mr-2 h-4 w-4"/>
+                Move to...
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleRename}>
+                <Edit className="mr-2 h-4 w-4"/>
+                Rename
+            </ContextMenuItem>
+            <ContextMenuSeparator/>
+            <ContextMenuItem onClick={handleDelete} className="text-red-600">
+                <Trash className="mr-2 h-4 w-4"/>
+                Delete
+            </ContextMenuItem>
 
             <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
                 <AlertDialogContent>

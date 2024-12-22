@@ -22,7 +22,7 @@ export const RenameDialog: React.FC<RenameDialogProps> = (
     {
         isOpen,
         onClose,
-        path,
+        path = '', // Provide default empty string
         type
     }) => {
     const {currentBucket, renameFile, renameFolder} = useFileSystem();

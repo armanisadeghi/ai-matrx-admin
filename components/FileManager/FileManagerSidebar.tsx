@@ -1,10 +1,10 @@
 // components/FileManager/FileManagerSidebar.tsx
 import React from 'react';
-import { TreeView } from './TreeView';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {TreeView} from './TreeView';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {ChevronLeft, ChevronRight} from 'lucide-react';
 
 export const FileManagerSidebar: React.FC = () => {
     const [collapsed, setCollapsed] = React.useState(false);
@@ -18,19 +18,16 @@ export const FileManagerSidebar: React.FC = () => {
                 onClick={() => setCollapsed(!collapsed)}
             >
                 {collapsed ? (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4"/>
                 ) : (
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-4 w-4"/>
                 )}
             </Button>
 
             <Card className="h-full rounded-none border-0">
                 <ScrollArea className="h-full">
                     {!collapsed && (
-                        <div className="p-2">
-                            <h2 className="text-lg font-semibold mb-4">Files</h2>
-                            <TreeView />
-                        </div>
+                        <TreeView/>
                     )}
                 </ScrollArea>
             </Card>

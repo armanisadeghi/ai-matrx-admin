@@ -1,11 +1,10 @@
 // components/FileManager/FileManagerContent/FilePreview.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFileSystem } from '@/providers/FileSystemProvider';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
-import {BucketStructure} from "@/utils/file-operations";
-
+import { Download, ExternalLink, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import { BucketStructure } from "@/utils/file-operations";
 import { cn } from '@/lib/utils';
 
 interface FilePreviewProps {
@@ -16,11 +15,28 @@ interface FilePreviewProps {
 export const FilePreview: React.FC<FilePreviewProps> = ({ file, isDialog }) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [publicUrl, setPublicUrl] = useState<string>('');
+    const [isUrlLoading, setIsUrlLoading] = useState(true);
     const { currentBucket, getPublicUrl, getFileDetails, downloadFile } = useFileSystem();
 
     const fileDetails = getFileDetails(file.path);
-    const publicUrl = getPublicUrl(currentBucket!, file.path);
     const fileExtension = file.path.split('.').pop()?.toLowerCase();
+
+    useEffect(() => {
+        const loadPublicUrl = async () => {
+            setIsUrlLoading(true);
+            try {
+                const url = await getPublicUrl(currentBucket!, file.path);
+                setPublicUrl(url);
+            } catch (error) {
+                console.error('Error loading public URL:', error);
+            } finally {
+                setIsUrlLoading(false);
+            }
+        };
+
+        loadPublicUrl();
+    }, [currentBucket, file.path, getPublicUrl]);
 
     const handleDownload = async () => {
         setIsLoading(true);
@@ -43,13 +59,18 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ file, isDialog }) => {
                 onClick={handleDownload}
                 disabled={isLoading}
             >
-                <Download className="h-4 w-4 mr-2" />
+                {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                )}
                 Download
             </Button>
             <Button
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(publicUrl, '_blank')}
+                disabled={isUrlLoading || !publicUrl}
             >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Open in new tab
@@ -72,6 +93,24 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ file, isDialog }) => {
     );
 
     const renderPreview = () => {
+        if (isUrlLoading) {
+            return (
+                <div className="flex items-center justify-center h-[400px]">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            );
+        }
+
+        if (!publicUrl) {
+            return (
+                <div className="flex flex-col items-center justify-center h-[400px]">
+                    <p className="text-sm text-muted-foreground">
+                        Unable to load preview
+                    </p>
+                </div>
+            );
+        }
+
         const previewClasses = cn(
             'rounded-lg',
             isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'w-full'
@@ -120,7 +159,6 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ file, isDialog }) => {
                         Your browser does not support the audio tag.
                     </audio>
                 );
-            // Add more file types as needed
             case 'txt':
             case 'json':
             case 'md':
@@ -143,8 +181,13 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ file, isDialog }) => {
                             size="sm"
                             onClick={handleDownload}
                             className="mt-4"
+                            disabled={isLoading}
                         >
-                            <Download className="h-4 w-4 mr-2" />
+                            {isLoading ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Download className="h-4 w-4 mr-2" />
+                            )}
                             Download to view
                         </Button>
                     </div>

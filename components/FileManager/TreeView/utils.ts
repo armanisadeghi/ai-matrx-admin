@@ -6,30 +6,28 @@ interface TreeNode {
     path: string;
     type: 'bucket' | 'folder' | 'file';
     children?: TreeNode[];
+    bucketName: string;
 }
 
 export const buildTreeData = (structures: Map<string, BucketTreeStructure>): TreeNode[] => {
     const treeData: TreeNode[] = [];
 
-    // Convert bucket structures to tree nodes
     structures.forEach((structure, bucketName) => {
         const bucketNode: TreeNode = {
             label: bucketName,
             path: bucketName,
             type: 'bucket',
-            children: []
+            children: [],
+            bucketName // Add bucketName to the node
         };
 
-        // Create a map to store all nodes for easy reference
         const nodeMap = new Map<string, TreeNode>();
         nodeMap.set(bucketName, bucketNode);
 
-        // Process each item in the bucket
         structure.contents.forEach(item => {
             const pathParts = item.path.split('/');
             let currentPath = bucketName;
 
-            // Process each part of the path
             pathParts.forEach((part, index) => {
                 const isLast = index === pathParts.length - 1;
                 const fullPath = index === 0 ? part : `${currentPath}/${part}`;
@@ -39,10 +37,10 @@ export const buildTreeData = (structures: Map<string, BucketTreeStructure>): Tre
                         label: part,
                         path: fullPath,
                         type: isLast ? (item.type === 'FOLDER' ? 'folder' : 'file') : 'folder',
-                        children: []
+                        children: [],
+                        bucketName // Add bucketName to each node
                     };
 
-                    // Add to parent's children
                     const parentNode = nodeMap.get(currentPath);
                     if (parentNode) {
                         parentNode.children = parentNode.children || [];
@@ -59,7 +57,6 @@ export const buildTreeData = (structures: Map<string, BucketTreeStructure>): Tre
         treeData.push(bucketNode);
     });
 
-    // Sort nodes recursively
     const sortNodes = (nodes: TreeNode[]) => {
         return nodes.sort((a, b) => {
             // Folders before files

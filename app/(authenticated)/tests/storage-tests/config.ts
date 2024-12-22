@@ -40,20 +40,20 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Supabase Bucket Test 5',
+        path: 'storage-test-5',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Supabase Bucket Test 4',
+        path: 'storage-test-4',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Supabase Bucket Test 3',
+        path: 'storage-test-3',
         relative: true,
         description: ''
     },

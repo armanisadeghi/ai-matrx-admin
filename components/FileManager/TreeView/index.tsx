@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import { TreeItem } from './TreeItem';
 import { useFileSystem } from '@/providers/FileSystemProvider';
-import {buildTreeData} from "./utils";
+import { buildTreeData } from "./utils";
 
 interface TreeNode {
     label: string;
     path: string;
     type: 'bucket' | 'folder' | 'file';
     children?: TreeNode[];
+    bucketName: string;
 }
 
 export const TreeView: React.FC = () => {
@@ -40,6 +41,7 @@ export const TreeView: React.FC = () => {
                     type={node.type}
                     isExpanded={isExpanded}
                     onToggle={() => toggleNode(node.path)}
+                    bucketName={node.bucketName}
                 />
                 {isExpanded && node.children?.map(child => renderNode(child, level + 1))}
             </div>

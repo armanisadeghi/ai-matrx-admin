@@ -1,12 +1,6 @@
 // components/FileManager/ContextMenus/FolderContextMenu.tsx
 import React from 'react';
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuTrigger,
-} from "@/components/ui/context-menu"
+import {ContextMenuContent, ContextMenuItem, ContextMenuSeparator,} from "@/components/ui/context-menu"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,31 +12,20 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {useDialog} from '../DialogManager';
-import {useContextMenu} from '../ContextMenuProvider';
 import {useFileSystem} from '@/providers/FileSystemProvider';
 import {Edit, FolderPlus, RefreshCw, Trash, Upload} from 'lucide-react';
-import {FolderContextMenuProps} from './types';
+import {MenuData} from '@/providers/ContextMenuProvider';
 
-export const FolderContextMenu: React.FC<FolderContextMenuProps> = (
-    {
-        children,
-        path,
-        bucketName,
-    }) => {
-    const {openMenu, closeMenu, menuState} = useContextMenu();
+interface FolderMenuProps {
+    menuData: MenuData;
+    onClose: () => void;
+}
 
-    const {
-        deleteFile,
-        refreshFolderContents,
-        uploadFile,
-    } = useFileSystem();
+export const FolderContextMenu: React.FC<FolderMenuProps> = ({menuData = {}, onClose}) => {
+    const {uploadFile, deleteFile, refreshFolderContents} = useFileSystem();
+    const {path = '', bucketName = ''} = menuData as { path: string; bucketName: string };
     const {openDialog} = useDialog();
     const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
-
-    const handleContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
-        openMenu(e, 'folder', {path, bucketName});
-    };
 
     const handleUpload = async () => {
         const input = document.createElement('input');
@@ -91,43 +74,28 @@ export const FolderContextMenu: React.FC<FolderContextMenuProps> = (
 
     return (
         <>
-            <div onContextMenu={handleContextMenu}>
-                {children}
-            </div>
-
-            {menuState.isOpen && menuState.type === 'folder' && menuState.data.path === path && (
-                <ContextMenuContent
-                    className="w-64"
-                    style={{
-                        position: 'fixed',
-                        top: menuState.y,
-                        left: menuState.x,
-                    }}
-                >
-                    <ContextMenuItem onClick={handleUpload}>
-                        <Upload className="mr-2 h-4 w-4"/>
-                        Upload files
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={handleCreateFolder}>
-                        <FolderPlus className="mr-2 h-4 w-4"/>
-                        New folder
-                    </ContextMenuItem>
-                    <ContextMenuSeparator/>
-                    <ContextMenuItem onClick={handleRename}>
-                        <Edit className="mr-2 h-4 w-4"/>
-                        Rename
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={handleRefresh}>
-                        <RefreshCw className="mr-2 h-4 w-4"/>
-                        Refresh
-                    </ContextMenuItem>
-                    <ContextMenuSeparator/>
-                    <ContextMenuItem onClick={handleDelete} className="text-red-600">
-                        <Trash className="mr-2 h-4 w-4"/>
-                        Delete
-                    </ContextMenuItem>
-                </ContextMenuContent>
-            )}
+            <ContextMenuItem onClick={handleUpload}>
+                <Upload className="mr-2 h-4 w-4"/>
+                Upload files
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleCreateFolder}>
+                <FolderPlus className="mr-2 h-4 w-4"/>
+                New folder
+            </ContextMenuItem>
+            <ContextMenuSeparator/>
+            <ContextMenuItem onClick={handleRename}>
+                <Edit className="mr-2 h-4 w-4"/>
+                Rename
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleRefresh}>
+                <RefreshCw className="mr-2 h-4 w-4"/>
+                Refresh
+            </ContextMenuItem>
+            <ContextMenuSeparator/>
+            <ContextMenuItem onClick={handleDelete} className="text-red-600">
+                <Trash className="mr-2 h-4 w-4"/>
+                Delete
+            </ContextMenuItem>
 
             <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
                 <AlertDialogContent>

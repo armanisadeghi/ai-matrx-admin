@@ -19,6 +19,7 @@ import {AudioModalProvider} from "@/providers/AudioModalProvider";
 import {ModuleHeaderProvider} from '@/providers/ModuleHeaderProvider';
 import {EntityProvider} from '@/providers/entity-context/EntityProvider';
 import {FileSystemProvider} from "@/providers/FileSystemProvider";
+import {ContextMenuProvider} from '@/providers/ContextMenuProvider';
 
 export function Providers(
     {
@@ -34,27 +35,29 @@ export function Providers(
                 <StoreProvider initialState={initialReduxState}>
                     <EntityProvider>
                         <SocketProvider>
-                            <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                                <RefProvider>
-                                    <FileSystemProvider>
-                                        <NextUIProvider>
-                                            <TooltipProvider>
-                                                <ToastProvider>
-                                                    <AudioModalProvider>
-                                                        <ModuleHeaderProvider>
-                                                            <ShikiProvider
-                                                                initialLanguages={['typescript', 'javascript']}>
-                                                                {children}
-                                                            </ShikiProvider>
-                                                        </ModuleHeaderProvider>
-                                                        <Toaster/>
-                                                    </AudioModalProvider>
-                                                </ToastProvider>
-                                            </TooltipProvider>
-                                        </NextUIProvider>
-                                    </FileSystemProvider>
-                                </RefProvider>
-                            </ThemeProvider>
+                            <ContextMenuProvider>
+                                <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                                    <RefProvider>
+                                        <FileSystemProvider>
+                                            <NextUIProvider>
+                                                <TooltipProvider>
+                                                    <ToastProvider>
+                                                        <AudioModalProvider>
+                                                            <ModuleHeaderProvider>
+                                                                <ShikiProvider
+                                                                    initialLanguages={['typescript', 'javascript']}>
+                                                                    {children}
+                                                                </ShikiProvider>
+                                                            </ModuleHeaderProvider>
+                                                            <Toaster/>
+                                                        </AudioModalProvider>
+                                                    </ToastProvider>
+                                                </TooltipProvider>
+                                            </NextUIProvider>
+                                        </FileSystemProvider>
+                                    </RefProvider>
+                                </ThemeProvider>
+                            </ContextMenuProvider>
                         </SocketProvider>
                     </EntityProvider>
                 </StoreProvider>

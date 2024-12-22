@@ -401,6 +401,8 @@ export const FILE_EXTENSION_DEFAULTS: FileTypeDetails = {
 
 
 export const getFileDetailsByExtension = (fileName: string): FileTypeDetails => {
+    // if (fileName == '.emptyFolderPlaceholder') return null;
+
     const ext = fileName.toLowerCase().split('.').pop() || '';
     const extConfig = FILE_EXTENSIONS_LOOKUP[ext] || {category: "UNKNOWN", subCategory: "UNKNOWN"};
 
@@ -420,3 +422,13 @@ export const getFileDetailsByExtension = (fileName: string): FileTypeDetails => 
 
     return result;
 };
+
+// utils/file-filters.ts
+
+const SYSTEM_FILES = new Set(['.emptyFolderPlaceholder', '.folder']);
+
+export const isSystemFile = (path: string): boolean => {
+    const name = path.split('/').pop() || '';
+    return SYSTEM_FILES.has(name);
+};
+

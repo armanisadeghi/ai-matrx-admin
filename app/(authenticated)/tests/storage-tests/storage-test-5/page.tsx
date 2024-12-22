@@ -12,7 +12,6 @@ export default function FileManagerPage() {
                 <FileManager
                     defaultBucket="any-file"
                     showDebugger={true}
-                    allowedFileTypes={['jpg', 'png', 'pdf', 'mp4']}
                     maxFileSize={1024 * 1024 * 50} // 50MB
                 />
             </div>

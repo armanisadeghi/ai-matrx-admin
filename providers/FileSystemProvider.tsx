@@ -32,7 +32,7 @@ interface StorageContextType {
     getAllBucketStructures: () => Map<string, BucketTreeStructure>;
 
     // Utility methods
-    getPublicUrl: (bucketName: string, path: string) => string;
+    getPublicUrl: (bucketName: string, path: string) => Promise<string>;
     getBuckets: () => Promise<any[]>;
     setCurrentBucket: (bucketName: string) => void;
 
@@ -48,6 +48,26 @@ interface StorageContextType {
     navigateUp: () => void;
     getFullPath: () => string;
 
+    getSignedUrl: (bucketName: string, filePath: string) => Promise<string | null>;
+    getPublicUrlSync: (bucketName: string, filePath: string) => string;
+
+    // Missing structure operations
+    loadBucketStructure: (bucketName: string, forceRefresh?: boolean) => Promise<BucketTreeStructure | null>;
+    loadAllBucketStructures: (forceRefresh?: boolean) => Promise<boolean>;
+
+    // Missing utility methods
+    getFilesByCategory: (bucketName: string) => Record<string, BucketStructure[]>;
+
+    // Add sync status methods
+    getSyncStatus: () => Promise<{
+        pendingUploads: number;
+        modifiedFiles: number;
+        conflicts: number;
+    }>;
+
+    // Add force sync method
+    forceSyncBucket: (bucketName: string) => Promise<boolean>;
+
 }
 
 const FileSystemContext = createContext<StorageContextType | undefined>(undefined);
@@ -57,8 +77,29 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [currentBucket, setCurrentBucket] = useState<string | null>(null);
     const fileSystemManager = FileSystemManager.getInstance();
     const [currentPath, setCurrentPath] = useState<string[]>([]);
+    const [syncStatus, setSyncStatus] = useState<{
+        pendingUploads: number;
+        modifiedFiles: number;
+        conflicts: number;
+    }>({
+        pendingUploads: 0,
+        modifiedFiles: 0,
+        conflicts: 0
+    });
 
     const toast = useToastManager('storage');
+
+    useEffect(() => {
+        const checkSyncStatus = async () => {
+            const status = await getSyncStatus();
+            setSyncStatus(status);
+        };
+
+        const interval = setInterval(checkSyncStatus, 90000); // Check every 90 seconds
+        checkSyncStatus(); // Initial check
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Register storage-specific default messages
     useEffect(() => {
@@ -279,6 +320,65 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const getBuckets = async () =>
         fileSystemManager.getBuckets();
 
+    const getSignedUrl = async (bucketName: string, filePath: string) => {
+        return withLoadingAndToast(
+            () => fileSystemManager.getSignedUrl(bucketName, filePath),
+            'Signed URL generated successfully',
+            'Failed to generate signed URL'
+        );
+    };
+
+    const getPublicUrlSync = (bucketName: string, filePath: string) =>
+        fileSystemManager.getPublicUrlSync(bucketName, filePath);
+
+    const loadBucketStructure = async (bucketName: string, forceRefresh?: boolean) => {
+        return withLoadingAndToast(
+            () => fileSystemManager.loadBucketStructure(bucketName, forceRefresh),
+            'Bucket structure loaded successfully',
+            'Failed to load bucket structure'
+        );
+    };
+
+    const loadAllBucketStructures = async (forceRefresh?: boolean) => {
+        return withLoadingAndToast(
+            () => fileSystemManager.loadAllBucketStructures(forceRefresh),
+            'All bucket structures loaded successfully',
+            'Failed to load bucket structures'
+        );
+    };
+
+    const getSyncStatus = async () => {
+        const fileSystemManager = FileSystemManager.getInstance();
+        const localStorage = fileSystemManager.getLocalStorage();
+
+        const pendingUploads = await localStorage.getPendingUploads();
+        const modifiedFiles = await localStorage.getModifiedFiles();
+        const conflicts = await localStorage.getConflicts();
+
+        return {
+            pendingUploads: pendingUploads.length,
+            modifiedFiles: modifiedFiles.length,
+            conflicts: conflicts.length
+        };
+    };
+
+    const forceSyncBucket = async (bucketName: string) => {
+        return withLoadingAndToast(
+            async () => {
+                await fileSystemManager.loadBucketStructure(bucketName, true);
+                const status = await getSyncStatus();
+                if (status.conflicts > 0) {
+                    toast.warning(`Found ${status.conflicts} conflicts that need resolution`);
+                }
+                return true;
+            },
+            'Bucket synced successfully',
+            'Failed to sync bucket'
+        );
+    };
+
+
+
     const value = {
         isLoading,
         currentBucket,
@@ -308,6 +408,13 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         filterFilesByCategory,
         filterFilesBySubCategory,
         getFilesByCategory,
+        getSignedUrl,
+        getPublicUrlSync,
+        loadBucketStructure,
+        loadAllBucketStructures,
+        getSyncStatus,
+        forceSyncBucket,
+        syncStatus,
     };
 
     return (

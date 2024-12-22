@@ -5,6 +5,7 @@ import {FilePreview} from './FilePreview';
 import {FileMetadata} from './FileMetadata';
 import {useFileSystem} from '@/providers/FileSystemProvider';
 import {BucketStructure} from "@/utils/file-operations";
+import {shouldShowItem} from './utils';
 
 interface FileManagerContentProps {
     allowedFileTypes?: string[];
@@ -21,36 +22,11 @@ export const FileManagerContent: React.FC<FileManagerContentProps> = (
 
     const structure = currentBucket ? getBucketStructure(currentBucket) : undefined;
     const currentItems = structure?.contents.filter(item => {
+        if (!shouldShowItem(item)) return false;
+
         const itemPath = item.path.split('/').slice(0, -1).join('/');
         return itemPath === currentPath.join('/');
     });
-
-    // Filter items based on allowed file types and size
-    const filteredItems = React.useMemo(() => {
-        if (!currentItems) return [];
-
-        return currentItems.filter(item => {
-            // Always include folders
-            if (item.type === 'FOLDER') return true;
-
-            // Check file extension if allowedFileTypes is provided
-            if (allowedFileTypes?.length) {
-                const extension = item.path.split('.').pop()?.toLowerCase();
-                if (!extension || !allowedFileTypes.includes(`.${extension}`)) {
-                    return false;
-                }
-            }
-
-            // Check file size if maxFileSize is provided
-            if (maxFileSize && item.metadata?.size) {
-                if (item.metadata.size > maxFileSize) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-    }, [currentItems, allowedFileTypes, maxFileSize]);
 
     const handleSelect = (item: BucketStructure) => {
         setSelectedFile(item);
@@ -60,7 +36,7 @@ export const FileManagerContent: React.FC<FileManagerContentProps> = (
         <div className="flex-1 flex overflow-hidden">
             <div className="flex-1 p-4 overflow-auto">
                 <FileList
-                    items={filteredItems}
+                    items={currentItems || []}
                     onSelect={handleSelect}
                     selectedFile={selectedFile}
                     allowedFileTypes={allowedFileTypes}

@@ -1,7 +1,7 @@
 import {SupabaseClient} from '@supabase/supabase-js';
 import {supabase} from "@/utils/supabase/client";
-import StorageDebugger from './StorageDebugger';
-import {Bucket, StorageItem, StorageMetadata} from './StorageBase';
+import {Bucket, StorageItem, StorageMetadata} from '@/utils/file-operations/StorageBase';
+import StorageDebugger from '@/utils/file-operations/StorageDebugger';
 
 interface StorageResponse<T> {
     data: T | null;

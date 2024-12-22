@@ -43,14 +43,14 @@ const DebuggerConsole = ({ height = 'h-96' }) => {
                                         <div>
                                             <span className="font-medium">Request: </span>
                                             <span className="font-mono text-xs">
-                        {JSON.stringify(event.request, null, 2)}
-                      </span>
+                                                {JSON.stringify(event.request, null, 2)}
+                                              </span>
                                         </div>
                                         <div>
                                             <span className="font-medium">Response: </span>
                                             <span className="font-mono text-xs">
-                        {JSON.stringify(event.response, null, 2)}
-                      </span>
+                                                {JSON.stringify(event.response, null, 2)}
+                                              </span>
                                         </div>
                                     </div>
                                 </div>
