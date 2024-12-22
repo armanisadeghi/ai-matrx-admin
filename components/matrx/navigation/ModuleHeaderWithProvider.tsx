@@ -2,12 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import {useRouter, usePathname} from 'next/navigation';
+import {useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {motion} from 'framer-motion';
 import {ChevronLeft, Home, Settings, Boxes, TestTube2} from 'lucide-react';
 import {IconApps} from "@tabler/icons-react";
 import {Button} from '@/components/ui/button';
-import MatrxBreadcrumb from '@/components/navigation/MatrxBreadcrumb';
+import MatrxBreadcrumb from "@/components/matrx/navigation/breadcumbs/MatrxBreadcrumb";
 import {
     Select,
     SelectContent,
@@ -43,13 +43,13 @@ export const HeaderItemWrapper = ({children, className}: { children: React.React
 export default function ModuleHeaderWithProvider(
     {
         pages,
-        currentPath,
         moduleHome,
         moduleName,
         className = '',
     }: ModuleHeaderProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const {headerItems} = useModuleHeader();
 
     const leftItems = headerItems.filter(item => item.section !== 'right');

@@ -193,6 +193,7 @@ class FileSystemManager {
             { success: true, metadata }
         );
     }
+
     async uploadFile(bucketName: string, path: string, file: File): Promise<boolean> {
         try {
             // First, store locally with pending status

@@ -124,7 +124,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 await fileSystemManager.loadAllBucketStructures();
                 toast.success("Storage system initialized successfully");
             } catch (error) {
-                toast.error(error); // The error handling is built into the toast manager
+                toast.error(error);
                 console.error('Storage initialization error:', error);
             } finally {
                 setIsLoading(false);

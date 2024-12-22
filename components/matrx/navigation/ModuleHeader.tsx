@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {useRouter, usePathname} from 'next/navigation';
 import {motion} from 'framer-motion';
-import {ChevronLeft, Home, Settings, Boxes, TestTube2} from 'lucide-react';
+import {ChevronLeft, Home, Settings, Boxes, TestTube2, PanelLeftOpen} from 'lucide-react';
 import {IconApps} from "@tabler/icons-react";
 import {Button} from '@/components/ui/button';
 import {
@@ -34,12 +34,6 @@ interface ModuleHeaderProps {
     children?: React.ReactNode;
 }
 
-
-export const HeaderItemWrapper = ({children, className}: { children: React.ReactNode; className?: string }) => (
-    <div className={cn("h-8 flex items-center px-2", className)}>
-        {children}
-    </div>
-);
 
 export default function ModuleHeader(
     {
@@ -114,6 +108,7 @@ export default function ModuleHeader(
             )}
         >
             <div className="flex items-center gap-2">
+                <PanelLeftOpen/>
                 <motion.div
                     variants={buttonVariants}
                     initial="initial"

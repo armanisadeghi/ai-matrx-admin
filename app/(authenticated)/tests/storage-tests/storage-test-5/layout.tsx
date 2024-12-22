@@ -1,7 +1,8 @@
-// /app/(authenticated)/tests/app-shell-test/layout.tsx
-import React from "react";
+// /layout.tsx
+
 import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
-import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
+import {filteredPages, MODULE_HOME, MODULE_NAME} from '../config';
+import React from "react";
 
 export default function Layout(
     {

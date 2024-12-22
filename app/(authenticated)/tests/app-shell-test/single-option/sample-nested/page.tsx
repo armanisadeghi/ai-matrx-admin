@@ -1,4 +1,4 @@
-import EnhancedDynamicLayout from "../components/EnhancedDynamicLayout";
+import EnhancedDynamicLayout from "../../components/EnhancedDynamicLayout";
 import Link from 'next/link'
 
 
@@ -6,7 +6,7 @@ export default function Page() {
 
     return (
         <div className="my-8">
-            <Link href="/tests/app-shell-test/single-option/sample-nested">Sample Nested</Link>
+            <Link href="/tests/app-shell-test/single-option/sample-nested/sample-nested-again">Go to Sample Nested Again</Link>
 
             <EnhancedDynamicLayout
                 layoutType="complexDashboard"

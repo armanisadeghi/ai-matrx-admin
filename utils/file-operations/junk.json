@@ -1,0 +1,329 @@
+{
+  "name": "any-file",
+  "type": "bucket",
+  "contents": [
+    {
+      "id": "ea3498be-18a0-448d-b77a-c9ff33a2c79a",
+      "name": "DFEH-Workplace-Harassment-Guide.pdf",
+      "path": "DFEH-Workplace-Harassment-Guide.pdf",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"3c4e1c425a1c08333cd379ea2e6182ae\"",
+        "size": 156257,
+        "mimetype": "application/pdf",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:05:42.000Z",
+        "contentLength": 156257,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:05:41.465927",
+      "updated_at": "2024-12-17T22:05:41.465927"
+    },
+    {
+      "id": "a815a925-2b41-48ce-a46f-3737fc8839da",
+      "name": "02 Click Pay.docx",
+      "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/02 Click Pay.docx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"1a7d06ef3745cc579ac99a479ada6248-1\"",
+        "size": 22045,
+        "mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-19T23:39:29.000Z",
+        "contentLength": 22045,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-19T23:39:28.801374",
+      "updated_at": "2024-12-19T23:39:28.801374"
+    },
+    {
+      "id": "df4f80ea-99ee-4180-bd7d-f4defe80258b",
+      "name": "3.2_360x.webp",
+      "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/3.2_360x.webp",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"86337eae4cb896317df77c8639ccc7ae-1\"",
+        "size": 10644,
+        "mimetype": "image/webp",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-19T23:39:08.000Z",
+        "contentLength": 10644,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-19T23:39:08.111307",
+      "updated_at": "2024-12-19T23:39:08.111307"
+    },
+    {
+      "id": "475451a7-26ce-4d22-819f-0d56f15aec3e",
+      "name": "page.tsx",
+      "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/page.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"f163d9cd8ffd644a924a8c3bd4c41170-1\"",
+        "size": 3622,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-19T23:38:42.000Z",
+        "contentLength": 3622,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-19T23:38:42.035364",
+      "updated_at": "2024-12-19T23:38:42.035364"
+    },
+    {
+      "id": "da001174-d5e4-40e0-ae30-afcd707b24f1",
+      "name": ".emptyFolderPlaceholder",
+      "path": "Sample Folder/Sub Folder 2/.emptyFolderPlaceholder",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+        "size": 0,
+        "mimetype": "application/octet-stream",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-19T23:38:03.000Z",
+        "contentLength": 0,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-19T23:38:02.778148",
+      "updated_at": "2024-12-19T23:38:02.778148"
+    },
+    {
+      "id": "0099909c-b2fc-4f75-9733-800a4fd08a14",
+      "name": "table_data (1).csv",
+      "path": "Sample Folder/Sub Folder 2/table_data (1).csv",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"6f9a08a5f269b3c0d2f91cf2ec6c7220\"",
+        "size": 382,
+        "mimetype": "text/csv",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-20T01:14:28.000Z",
+        "contentLength": 382,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-20T01:14:27.22145",
+      "updated_at": "2024-12-20T01:14:27.22145"
+    },
+    {
+      "id": "c02c9f42-9970-4346-ac36-e64f9c183184",
+      "name": "sample_data.txt",
+      "path": "Sample Folder/sample_data.txt",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"293253bf3c4a0436fc28e846d20c0246-1\"",
+        "size": 2456,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-19T23:39:58.000Z",
+        "contentLength": 2456,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-19T23:39:58.028703",
+      "updated_at": "2024-12-19T23:39:58.028703"
+    },
+    {
+      "id": "4323d758-8162-4d52-babb-662a7c98e1d1",
+      "name": "BucketOperations.tsx",
+      "path": "bucket-tests/BucketOperations.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"084c85d7fde935dc661efde5cd3930e2\"",
+        "size": 11001,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 11001,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.881908",
+      "updated_at": "2024-12-17T22:08:05.881908"
+    },
+    {
+      "id": "18ad78ac-6cd3-479a-8e17-dabddcdf19d1",
+      "name": "BulkOps.tsx",
+      "path": "bucket-tests/BulkOps.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"a68899fda5dc008bdfd20b902b7fe377\"",
+        "size": 9116,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 9116,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.63307",
+      "updated_at": "2024-12-17T22:08:05.63307"
+    },
+    {
+      "id": "304366f7-b486-4790-a3c5-6eaca61b37fa",
+      "name": "FileList.tsx",
+      "path": "bucket-tests/FileList.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"4f01e0f24c9199481147d4cf0b8fc130\"",
+        "size": 4460,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 4460,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.595759",
+      "updated_at": "2024-12-17T22:08:05.595759"
+    },
+    {
+      "id": "aa1c9464-6a7b-4282-a17f-e0dcfa1a9397",
+      "name": "FileOperations.tsx",
+      "path": "bucket-tests/FileOperations.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"02586ffa0d60f918b42020ef9424ff61\"",
+        "size": 9232,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 9232,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.627584",
+      "updated_at": "2024-12-17T22:08:05.627584"
+    },
+    {
+      "id": "c6c95786-4718-4bbd-844a-b3053094d180",
+      "name": "MoveFileOperation.tsx",
+      "path": "bucket-tests/MoveFileOperation.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"581afca726a8e863c0e72db0b7a896ec\"",
+        "size": 2231,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 2231,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.568261",
+      "updated_at": "2024-12-17T22:08:05.568261"
+    },
+    {
+      "id": "9544e3a2-cb70-49cb-9400-2c76d4de1f4a",
+      "name": "StorageTestUI.tsx",
+      "path": "bucket-tests/StorageTestUI.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"fb362fd3fedb3b2a1148a39ae1ff8f4c\"",
+        "size": 7389,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 7389,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.686877",
+      "updated_at": "2024-12-17T22:08:05.686877"
+    },
+    {
+      "id": "94be1408-0736-4737-8b42-0dd49f043b74",
+      "name": ".emptyFolderPlaceholder",
+      "path": "bucket-tests/Untitled folder/.emptyFolderPlaceholder",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+        "size": 0,
+        "mimetype": "application/octet-stream",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:09:29.000Z",
+        "contentLength": 0,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:09:29.025762",
+      "updated_at": "2024-12-17T22:09:29.025762"
+    },
+    {
+      "id": "7d267be0-297d-43b5-b468-1c014c89442c",
+      "name": "UtilityOperations.tsx",
+      "path": "bucket-tests/UtilityOperations.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"c20dccc17feaf44c6fe47398fa92dff1\"",
+        "size": 4685,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 4685,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.66099",
+      "updated_at": "2024-12-17T22:08:05.66099"
+    },
+    {
+      "id": "4f8bf427-2af2-4d47-8ff8-dc4f0385339f",
+      "name": "next.config.js",
+      "path": "bucket-tests/next.config.js",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"f92564d550dfdd14b8ffcb013f02bc10\"",
+        "size": 1163,
+        "mimetype": "text/javascript",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-21T00:35:43.000Z",
+        "contentLength": 1163,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-21T00:35:42.969413",
+      "updated_at": "2024-12-21T00:35:42.969413"
+    },
+    {
+      "id": "d7288a9f-598c-4b1c-aab8-d177c87191de",
+      "name": "page.tsx",
+      "path": "bucket-tests/page.tsx",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"6e1e5949858049b2cbf6261ff0f21de4\"",
+        "size": 179,
+        "mimetype": "text/plain",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T22:08:06.000Z",
+        "contentLength": 179,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T22:08:05.567318",
+      "updated_at": "2024-12-17T22:08:05.567318"
+    },
+    {
+      "id": "ffc3ddc8-30e6-45e5-afcd-b6269b3cbb16",
+      "name": "table_data (1).csv",
+      "path": "bucket-tests/table_data (1).csv",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"6f9a08a5f269b3c0d2f91cf2ec6c7220\"",
+        "size": 382,
+        "mimetype": "text/csv",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-21T00:35:08.000Z",
+        "contentLength": 382,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-21T00:35:07.130515",
+      "updated_at": "2024-12-21T00:35:07.130515"
+    },
+    {
+      "id": "5b45ac0f-d3db-4053-bce6-9afadc606e67",
+      "name": "pd ratings.pdf",
+      "path": "pd ratings.pdf",
+      "type": "file",
+      "metadata": {
+        "eTag": "\"dce067e7e50ad26917a973cbf4ba34c7\"",
+        "size": 4005811,
+        "mimetype": "application/pdf",
+        "cacheControl": "max-age=3600",
+        "lastModified": "2024-12-17T21:57:17.000Z",
+        "contentLength": 4005811,
+        "httpStatusCode": 200
+      },
+      "created_at": "2024-12-17T21:57:03.344039",
+      "updated_at": "2024-12-17T21:57:16.990782"
+    }
+  ]
+}

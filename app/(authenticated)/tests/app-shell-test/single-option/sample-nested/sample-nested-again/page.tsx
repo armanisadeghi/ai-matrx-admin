@@ -1,13 +1,9 @@
-import EnhancedDynamicLayout from "../components/EnhancedDynamicLayout";
-import Link from 'next/link'
-
+import EnhancedDynamicLayout from "../../../components/EnhancedDynamicLayout";
 
 export default function Page() {
 
     return (
-        <div className="my-8">
-            <Link href="/tests/app-shell-test/single-option/sample-nested">Sample Nested</Link>
-
+        <>
             <EnhancedDynamicLayout
                 layoutType="complexDashboard"
                 backgroundColor="bg-gray-900"
@@ -30,8 +26,6 @@ export default function Page() {
                 <div id="footer1">Footer Content 1</div>
                 <div id="footer2">Footer Content 2</div>
             </EnhancedDynamicLayout>
-
-        </div>
-
+        </>
     );
 }

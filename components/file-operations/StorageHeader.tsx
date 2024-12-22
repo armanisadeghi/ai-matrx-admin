@@ -8,7 +8,7 @@ import {
     RefreshCw as RefreshIcon,
     ChevronUp as UpIcon
 } from 'lucide-react';
-import MatrxBreadcrumb from "../navigation/MatrxBreadcrumb";
+import MatrxBreadcrumb from "@/components/matrx/navigation/breadcumbs/MatrxBreadcrumb";
 
 export interface StorageHeaderProps {
     explorer: UseStorageExplorerReturn;

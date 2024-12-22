@@ -3,15 +3,16 @@ import React from 'react';
 import {ResizablePanelGroup, ResizablePanel, ResizableHandle} from '@/components/ui/resizable';
 import PanelContent from './dev/PanelContent';
 
-export const PanelLeft = ({
-                              header,
-                              headerProps,
-                              children,
-                              defaultSize = 20,
-                              minSize = 1,
-                              maxSize = 99,
-                              onResize,
-                          }) => {
+export const PanelLeft = (
+    {
+        header,
+        headerProps,
+        children,
+        defaultSize = 20,
+        minSize = 1,
+        maxSize = 99,
+        onResize,
+    }) => {
     return (
         <div className="fixed inset-0 z-50" data-testid="panel-container-left">
             <ResizablePanelGroup
@@ -44,15 +45,16 @@ export const PanelLeft = ({
 };
 
 // PanelRight.jsx
-export const PanelRight = ({
-                               header,
-                               headerProps,
-                               children,
-                               defaultSize = 20,
-                               minSize = 1,
-                               maxSize = 99,
-                               onResize,
-                           }) => {
+export const PanelRight = (
+    {
+        header,
+        headerProps,
+        children,
+        defaultSize = 20,
+        minSize = 1,
+        maxSize = 99,
+        onResize,
+    }) => {
     return (
         <div className="fixed inset-0 z-50" data-testid="panel-container-right">
             <ResizablePanelGroup
