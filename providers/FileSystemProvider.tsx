@@ -9,7 +9,35 @@ import {
     FileTypeDetails,
     getFileDetailsByExtension,
     isStructureWithContents, IconComponent,
+    BucketStructureWithNodes,
 } from '@/utils/file-operations';
+import { fileNodeManager } from '@/utils/file-operations/utils';
+import { DialogProvider } from '@/components/FileManager/DialogManager';
+
+export interface FileConfigurationMethods {
+    // Add methods
+    addHiddenFiles: (filenames: string[]) => void;
+    addHiddenFolders: (foldernames: string[]) => void;
+    addHiddenPrefixes: (prefixes: string[]) => void;
+    addDisallowedFileTypes: (fileTypes: string[]) => void;
+
+    // Remove methods
+    removeHiddenFiles: (filenames: string[]) => void;
+    removeHiddenFolders: (foldernames: string[]) => void;
+    removeHiddenPrefixes: (prefixes: string[]) => void;
+    removeDisallowedFileTypes: (fileTypes: string[]) => void;
+
+    // Update methods
+    updateMaxFileSize: (size: number) => void;
+
+    // Reset methods
+    resetToDefaults: () => void;
+    resetHiddenFiles: () => void;
+    resetHiddenFolders: () => void;
+    resetHiddenPrefixes: () => void;
+    resetDisallowedFileTypes: () => void;
+    resetMaxFileSize: () => void;
+}
 
 
 interface StorageContextType {
@@ -28,10 +56,13 @@ interface StorageContextType {
     // Structure management
     refreshBucketStructure: (bucketName: string) => Promise<BucketTreeStructure | null>;
     refreshFolderContents: (bucketName: string, folderPath: string) => Promise<boolean | null>;
-    getBucketStructure: (bucketName: string) => BucketTreeStructure | undefined;
-    getAllBucketStructures: () => Map<string, BucketTreeStructure>;
+
+    getBucketStructure: (bucketName: string) => BucketStructureWithNodes | undefined;
+    getAllBucketStructures: () => Map<string, BucketStructureWithNodes>;
 
     // Utility methods
+    fileConfigurationMethods: FileConfigurationMethods;
+
     getPublicUrl: (bucketName: string, path: string) => Promise<string>;
     getBuckets: () => Promise<any[]>;
     setCurrentBucket: (bucketName: string) => void;
@@ -73,6 +104,7 @@ interface StorageContextType {
 const FileSystemContext = createContext<StorageContextType | undefined>(undefined);
 
 export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [isInitialized, setIsInitialized] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [currentBucket, setCurrentBucket] = useState<string | null>(null);
     const fileSystemManager = FileSystemManager.getInstance();
@@ -109,20 +141,20 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             info: "Processing storage request",
             loading: "Storage operation in progress",
             warning: "Storage operation warning",
-            notify: "Storage notification"
+            notify: "Storage notification",
         });
 
         // Cleanup when component unmounts
         return () => toast.removeDefaults?.('storage');
     }, []);
 
-    // Initialize storage manager
     useEffect(() => {
         const initializeStorage = async () => {
             setIsLoading(true);
             try {
-                await fileSystemManager.loadAllBucketStructures();
+                await fileSystemManager.loadAllBucketStructures(true);
                 toast.success("Storage system initialized successfully");
+                setIsInitialized(true);
             } catch (error) {
                 toast.error(error);
                 console.error('Storage initialization error:', error);
@@ -134,8 +166,9 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         initializeStorage();
     }, []);
 
+
     const processFileDetails = (structure: BucketStructure): BucketStructure => {
-        if (structure.type !== 'FOLDER') {
+        if (structure.type !== 'folder') {
             structure.details = getFileDetailsByExtension(structure.path);
         }
         return structure;
@@ -217,7 +250,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (!structure) return {};
 
         return structure.contents.reduce((acc, file) => {
-            if (file.type !== 'FOLDER') {
+            if (file.type !== 'folder') {
                 const category = file.details?.category || 'UNKNOWN';
                 acc[category] = acc[category] || [];
                 acc[category].push(file);
@@ -307,15 +340,23 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         );
     };
 
-    // Direct access methods (no loading state or toast needed)
     const getPublicUrl = (bucketName: string, path: string) =>
         fileSystemManager.getPublicUrl(bucketName, path);
 
-    const getBucketStructure = (bucketName: string) =>
-        fileSystemManager.getBucketStructure(bucketName);
 
-    const getAllBucketStructures = () =>
-        fileSystemManager.getAllBucketStructures();
+    const getBucketStructure = (bucketName: string): BucketStructureWithNodes | undefined => {
+        if (!isInitialized) return undefined;
+        const structure = fileSystemManager.getBucketStructure(bucketName);
+        if (!structure || !structure.contents) return undefined;
+        return fileNodeManager.processBucketStructure(structure);
+    };
+
+    const getAllBucketStructures = (): Map<string, BucketStructureWithNodes> => {
+        if (!isInitialized) return new Map();
+        const allStructures = fileSystemManager.getAllBucketStructures();
+        if (!allStructures) return new Map();
+        return fileNodeManager.processAllBucketStructures(allStructures);
+    };
 
     const getBuckets = async () =>
         fileSystemManager.getBuckets();
@@ -377,6 +418,73 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         );
     };
 
+    const fileConfigurationMethods: FileConfigurationMethods = {
+        // Add methods
+        addHiddenFiles: (filenames: string[]) => {
+            fileNodeManager.addHiddenFiles(filenames);
+        },
+
+        addHiddenFolders: (foldernames: string[]) => {
+            fileNodeManager.addHiddenFolders(foldernames);
+        },
+
+        addHiddenPrefixes: (prefixes: string[]) => {
+            fileNodeManager.addHiddenPrefixes(prefixes);
+        },
+
+        addDisallowedFileTypes: (fileTypes: string[]) => {
+            fileNodeManager.addDisallowedFileTypes(fileTypes);
+        },
+
+        // Remove methods
+        removeHiddenFiles: (filenames: string[]) => {
+            fileNodeManager.removeHiddenFiles(filenames);
+        },
+
+        removeHiddenFolders: (foldernames: string[]) => {
+            fileNodeManager.removeHiddenFolders(foldernames);
+        },
+
+        removeHiddenPrefixes: (prefixes: string[]) => {
+            fileNodeManager.removeHiddenPrefixes(prefixes);
+        },
+
+        removeDisallowedFileTypes: (fileTypes: string[]) => {
+            fileNodeManager.removeDisallowedFileTypes(fileTypes);
+        },
+
+        // Update methods
+        updateMaxFileSize: (size: number) => {
+            fileNodeManager.updateMaxFileSize(size);
+        },
+
+        // Reset methods
+        resetToDefaults: () => {
+            fileNodeManager.resetToDefaults();
+        },
+
+        resetHiddenFiles: () => {
+            fileNodeManager.resetHiddenFiles();
+        },
+
+        resetHiddenFolders: () => {
+            fileNodeManager.resetHiddenFolders();
+        },
+
+        resetHiddenPrefixes: () => {
+            fileNodeManager.resetHiddenPrefixes();
+        },
+
+        resetDisallowedFileTypes: () => {
+            fileNodeManager.resetDisallowedFileTypes();
+        },
+
+        resetMaxFileSize: () => {
+            fileNodeManager.resetMaxFileSize();
+        }
+    };
+
+
 
 
     const value = {
@@ -415,11 +523,14 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         getSyncStatus,
         forceSyncBucket,
         syncStatus,
+        fileConfigurationMethods,
     };
 
     return (
         <FileSystemContext.Provider value={value}>
-            {children}
+            <DialogProvider>
+                {children}
+            </DialogProvider>
         </FileSystemContext.Provider>
     );
 };

@@ -8,7 +8,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import {EnterInput} from "@/components/ui/input";
 import {useFileSystem} from '@/providers/FileSystemProvider';
 
 interface CreateFolderDialogProps {
@@ -45,9 +45,10 @@ export const CreateFolderDialog: React.FC<CreateFolderDialogProps> = (
                     <DialogTitle>Create new folder</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                    <Input
+                    <EnterInput
                         value={folderName}
                         onChange={(e) => setFolderName(e.target.value)}
+                        onEnter={handleCreate}
                         placeholder="Enter folder name"
                         autoFocus
                     />

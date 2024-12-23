@@ -20,7 +20,7 @@ class StorageManager {
             const serializedValue = localStorage.getItem(fullKey);
             return Promise.resolve(serializedValue ? JSON.parse(serializedValue) : null);
         } catch (error) {
-            console.error(`Error retrieving item from localStorage: ${error}`);
+            console.error(`Redux Sagas Storage, Error retrieving item from localStorage: ${error}`);
             return Promise.resolve(null);
         }
     }

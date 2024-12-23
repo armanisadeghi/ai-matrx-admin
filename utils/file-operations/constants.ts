@@ -1,5 +1,5 @@
 import React from "react";
-import {File, FileArchive, FileAudio, FileCode, FileImage, FileJson, FileVideo, Table2} from "lucide-react";
+import {File, FileArchive, FileAudio, FileCode, FileImage, FileJson, FileVideo, Table2, Folder, Lock, Package, Globe} from "lucide-react";
 import {
     IconBlocks,
     IconBrandAbstract,
@@ -10,18 +10,12 @@ import {
     IconFileDatabase,
     IconFileText,
     IconFileTypeCss,
-    IconFileTypeCsv,
     IconFileTypeDoc,
     IconFileTypeDocx,
     IconFileTypeHtml,
     IconFileTypeJpg,
-    IconFileTypeJs,
-    IconFileTypeJsx,
-    IconFileTypePdf,
     IconFileTypePng,
     IconFileTypePpt,
-    IconFileTypeTs,
-    IconFileTypeTsx,
     IconFileTypeTxt,
     IconFileTypeXls,
     IconFileTypeXml,
@@ -41,11 +35,18 @@ import {
     IconVolume2,
     IconWorldWww
 } from "@tabler/icons-react";
+import { SiTypescript, SiJavascript } from "react-icons/si";
+import { FaFilePdf } from "react-icons/fa";
+import { GrDocumentCsv } from "react-icons/gr";
+import { GrDocumentTxt } from "react-icons/gr";
+
 import {TwoColorPythonIcon} from "@/components/DirectoryTree/custom-icons";
-import {CategoryConfig, ContextMenuActions, FeatureConfig, FileConfig, FilterConfig, FolderConfig,
+import {
+    CategoryConfig, ContextMenuActions, FeatureConfig, FileConfig, FilterConfig, FolderConfig,
     PreviewConfig, sortConfig, VisualConfig, TreeConfig,
     FileTypeDetails,
-    FileCategory} from "./types";
+    FileCategory, IconComponent, FolderTypeInfo, FolderTypeDetails,
+} from "./types";
 
 export const FEATURE_DEFAULTS: FeatureConfig = {
     search: true,
@@ -96,7 +97,7 @@ export const CATEGORY_DEFAULTS: CategoryConfig = {
     enabled: true,
     groupByCategory: true,
     showCategoryHeaders: true,
-    categories: ['CODE', 'DOCUMENT', 'AUDIO', 'IMAGE', 'VIDEO', 'ARCHIVE', 'DATA', 'UNKNOWN'],
+    categories: ['CODE', 'DOCUMENT', 'AUDIO', 'IMAGE', 'VIDEO', 'ARCHIVE', 'DATA', 'UNKNOWN', 'FOLDER'],
 };
 
 export const PREVIEW_DEFAULTS: PreviewConfig = {
@@ -171,11 +172,11 @@ export const CATEGORY_FILE_DEFAULTS: Partial<Record<FileCategory, Partial<FileTy
 export const SUBCATEGORY_FILE_DEFAULTS: Record<string, Partial<FileTypeDetails>> = {
     // Code Subcategories
     JAVASCRIPT: {
-        icon: IconFileTypeJs,
+        icon: SiJavascript,
         color: 'text-amber-500'
     },
     TYPESCRIPT: {
-        icon: IconFileTypeTs,
+        icon: SiTypescript,
         color: 'text-sky-500'
     },
     PYTHON: {
@@ -285,12 +286,12 @@ export const SUBCATEGORY_FILE_DEFAULTS: Record<string, Partial<FileTypeDetails>>
 
 export const FILE_EXTENSIONS_LOOKUP: Record<string, FileTypeDetails> = {
     // Code Files
-    js: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs, color: 'text-amber-500', canPreview: true},
-    jsx: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJsx, color: 'text-amber-500', canPreview: true},
-    mjs: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs, color: 'text-amber-500', canPreview: true},
-    ts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs, color: 'text-sky-500', canPreview: true},
-    tsx: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTsx, color: 'text-sky-500', canPreview: true},
-    dts: {category: "CODE", subCategory: "TYPESCRIPT", icon: IconFileTypeTs, color: 'text-sky-500', canPreview: true},
+    js: {category: "CODE", subCategory: "JAVASCRIPT", icon: SiJavascript, color: 'text-amber-500', canPreview: true},
+    jsx: {category: "CODE", subCategory: "JAVASCRIPT", icon: SiJavascript, color: 'text-amber-500', canPreview: true},
+    mjs: {category: "CODE", subCategory: "JAVASCRIPT", icon: SiJavascript, color: 'text-amber-500', canPreview: true},
+    ts: {category: "CODE", subCategory: "TYPESCRIPT", icon: SiTypescript, color: 'text-sky-500', canPreview: true},
+    tsx: {category: "CODE", subCategory: "TYPESCRIPT", icon: SiTypescript, color: 'text-sky-500', canPreview: true},
+    dts: {category: "CODE", subCategory: "TYPESCRIPT", icon: SiTypescript, color: 'text-sky-500', canPreview: true},
     py: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: '', canPreview: true},
     pyw: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: '', canPreview: true},
     pyx: {category: "CODE", subCategory: "PYTHON", icon: TwoColorPythonIcon, color: '', canPreview: true},
@@ -322,9 +323,9 @@ export const FILE_EXTENSIONS_LOOKUP: Record<string, FileTypeDetails> = {
     gdoc: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File, color: 'text-blue-500', canPreview: false},
     gsheet: {category: "DOCUMENT", subCategory: "GOOGLE", icon: Table2, color: 'text-green-500', canPreview: false},
     gslide: {category: "DOCUMENT", subCategory: "GOOGLE", icon: File, color: 'text-yellow-500', canPreview: false},
-    txt: {category: "DOCUMENT", subCategory: "TEXT", icon: IconFileTypeTxt, color: 'text-gray-500', canPreview: true},
+    txt: {category: "DOCUMENT", subCategory: "TEXT", icon: GrDocumentTxt , color: 'text-blue-500', canPreview: true},
     rtf: {category: "DOCUMENT", subCategory: "TEXT", icon: File, color: 'text-gray-500', canPreview: false},
-    pdf: {category: "DOCUMENT", subCategory: "TEXT", icon: IconFileTypePdf, color: 'text-red-500', canPreview: true},
+    pdf: {category: "DOCUMENT", subCategory: "TEXT", icon: FaFilePdf , color: 'text-red-500', canPreview: true},
     note: {category: "DOCUMENT", subCategory: "NOTES", icon: File, color: 'text-yellow-500', canPreview: true},
 
     // Audio
@@ -360,7 +361,7 @@ export const FILE_EXTENSIONS_LOOKUP: Record<string, FileTypeDetails> = {
     '7z': {category: "ARCHIVE", subCategory: "COMPRESSED", icon: FileArchive, color: 'text-gray-600', canPreview: false},
 
     // Data Files
-    csv: {category: "DATA", subCategory: "STRUCTURED", icon: IconFileTypeCsv, color: 'text-green-600', canPreview: true},
+    csv: {category: "DATA", subCategory: "STRUCTURED", icon: GrDocumentCsv, color: 'text-green-600', canPreview: true},
     xml: {category: "DATA", subCategory: "STRUCTURED", icon: IconFileTypeXml, color: 'text-orange-600', canPreview: true},
     sqlite: {category: "DATA", subCategory: "STRUCTURED", icon: File, color: 'text-blue-600', canPreview: false},
     db: {category: "DATA", subCategory: "STRUCTURED", icon: File, color: 'text-blue-600', canPreview: false},
@@ -400,9 +401,76 @@ export const FILE_EXTENSION_DEFAULTS: FileTypeDetails = {
 }
 
 
-export const getFileDetailsByExtension = (fileName: string): FileTypeDetails => {
-    // if (fileName == '.emptyFolderPlaceholder') return null;
 
+export const getFileDetails = (extension: string): FileTypeDetails => {
+    const extConfig = FILE_EXTENSIONS_LOOKUP[extension] || {category: "UNKNOWN", subCategory: "UNKNOWN"};
+    const result = { ...GLOBAL_FILE_DEFAULTS };
+    if (extConfig.category) {
+        const categoryDefaults = CATEGORY_FILE_DEFAULTS[extConfig.category] || {};
+        Object.assign(result, categoryDefaults);
+    }
+    if (extConfig.subCategory) {
+        const subCategoryDefaults = SUBCATEGORY_FILE_DEFAULTS[extConfig.subCategory] || {};
+        Object.assign(result, subCategoryDefaults);
+    }
+    Object.assign(result, extConfig);
+    return result;
+};
+
+export const FOLDER_TYPE_DEFAULTS: FolderTypeDetails = {
+    category: "FOLDER",
+    subCategory: "FOLDER",
+    icon: Folder,
+    color: 'text-gray-500',
+    protected: false,
+    description: ''
+}
+
+
+const SOME_DEFAULT_LIST: { pattern: RegExp; details: Partial<FolderTypeDetails> }[] = [
+    {
+        pattern: /node_modules/i,
+        details: {
+            category: "FOLDER",
+            subCategory: "FOLDER",
+            icon: Package,
+            color: 'text-green-500',
+        }
+    },
+    {
+        pattern: /(personal|private|confidential)/i,
+        details: {
+            category: "FOLDER",
+            subCategory: "FOLDER",
+            icon: Lock,
+            color: 'text-red-500',
+            protected: true
+        }
+    },
+    {
+        pattern: /public/i,
+        details: {
+            category: "FOLDER",
+            subCategory: "FOLDER",
+            icon: Globe,
+            color: 'text-blue-500'
+        }
+    }
+];
+
+export const getFolderDetails = (name: string): FolderTypeDetails => {
+    for (const rule of SOME_DEFAULT_LIST) {
+        if (rule.pattern.test(name)) {
+            return {
+                ...FOLDER_TYPE_DEFAULTS,
+                ...rule.details
+            };
+        }
+    }
+    return FOLDER_TYPE_DEFAULTS;
+};
+
+export const getFileDetailsByExtension = (fileName: string): FileTypeDetails => {
     const ext = fileName.toLowerCase().split('.').pop() || '';
     const extConfig = FILE_EXTENSIONS_LOOKUP[ext] || {category: "UNKNOWN", subCategory: "UNKNOWN"};
 

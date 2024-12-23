@@ -2,7 +2,6 @@
 export interface FileManagerProps {
     defaultBucket?: string;
     showDebugger?: boolean;
-    allowedFileTypes?: string[];
     maxFileSize?: number;
     // Add any other configuration options
 }

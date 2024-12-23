@@ -53,12 +53,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <motion.div
                 style={{
                     background: useMotionTemplate`
-        radial-gradient(
-          ${visible ? radius + "px" : "0px"} circle at ${mouseX}px ${mouseY}px,
-          var(--blue-500),
-          transparent 80%
-        )
-      `,
+                    radial-gradient(
+                      ${visible ? radius + "px" : "0px"} circle at ${mouseX}px ${mouseY}px,
+                      var(--blue-500),
+                      transparent 80%
+                    )
+                  `,
                 }}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => setVisible(true)}
@@ -76,6 +76,36 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
 );
 Input.displayName = "Input";
+
+interface EnterInputProps extends InputProps {
+    onEnter?: () => void;
+}
+
+export const EnterInput = React.forwardRef<HTMLInputElement, EnterInputProps>(
+    ({ onEnter, ...props }, ref) => {
+        const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter' && onEnter) {
+                e.preventDefault();
+                onEnter();
+            }
+        };
+
+        return (
+            <Input
+                {...props}
+                ref={ref}
+                onKeyDown={(e) => {
+                    handleKeyDown(e);
+                    if (props.onKeyDown) {
+                        props.onKeyDown(e);
+                    }
+                }}
+            />
+        );
+    }
+);
+
+EnterInput.displayName = 'EnterInput';
 
 const BasicInput = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, type, variant = 'default', ...props }, ref) => {

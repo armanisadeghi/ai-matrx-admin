@@ -1,7 +1,7 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { supabase } from "@/utils/supabase/client";
+import {SupabaseClient} from "@supabase/supabase-js";
+import {supabase} from "@/utils/supabase/client";
 import StorageDebugger from "./StorageDebugger";
-import { BucketTreeStructure } from "./types";
+import {BucketTreeStructure} from "./types";
 import LocalFileSystem from "./LocalFileSystem";
 
 class FileSystemManager {
@@ -22,16 +22,24 @@ class FileSystemManager {
     }
 
     private async initializeSyncCheck() {
-        // Check for any pending operations on startup
-        const pendingUploads = await this.localStorage.getPendingUploads();
-        const modifiedFiles = await this.localStorage.getModifiedFiles();
-        const conflicts = await this.localStorage.getConflicts();
+        if (!this.localStorage.isBrowser()) {
+            return; // Skip sync check if not in browser
+        }
 
-        this.debugger.logOperation('initializeSyncCheck', {}, {
-            pendingUploads: pendingUploads.length,
-            modifiedFiles: modifiedFiles.length,
-            conflicts: conflicts.length
-        });
+        try {
+            const pendingUploads = await this.localStorage.getPendingUploads();
+            const modifiedFiles = await this.localStorage.getModifiedFiles();
+            const conflicts = await this.localStorage.getConflicts();
+
+            this.debugger.logOperation('initializeSyncCheck', {}, {
+                pendingUploads: pendingUploads?.length || 0,
+                modifiedFiles: modifiedFiles?.length || 0,
+                conflicts: conflicts?.length || 0
+            });
+        } catch (error) {
+            console.error('Error during sync check:', error);
+            this.debugger.logOperation('initializeSyncCheck', {}, {error});
+        }
     }
 
     static getInstance(): FileSystemManager {
@@ -53,16 +61,21 @@ class FileSystemManager {
                 if (localStructure) {
                     this.bucketStructures.set(bucketName, localStructure.structure);
                     this.debugger.logOperation('loadBucketStructure',
-                        { bucketName, source: 'local' },
-                        { data: localStructure }
+                        {bucketName, source: 'local'},
+                        {data: localStructure}
                     );
                     return localStructure.structure;
                 }
             }
 
             // Fetch from server
-            const { data, error } = await this.supabase
-                .rpc('update_bucket_tree_structure', { bucket_name: bucketName });
+            const {data, error} = await this.supabase
+                .rpc('update_bucket_tree_structure', {bucket_name: bucketName});
+
+            this.debugger.logOperation('loadBucketStructure',
+                {bucketName, source: 'server'},
+                {data, error}
+            );
 
             if (error) throw error;
 
@@ -71,15 +84,11 @@ class FileSystemManager {
             await this.localStorage.updateBucketStructure(bucketName, data);
             await this.localStorage.updateSyncState(bucketName);
 
-            this.debugger.logOperation('loadBucketStructure',
-                { bucketName, source: 'server' },
-                { data }
-            );
 
             return data;
         } catch (error) {
             console.error(`Error loading bucket structure for ${bucketName}:`, error);
-            this.debugger.logOperation('loadBucketStructure', { bucketName }, { error });
+            this.debugger.logOperation('loadBucketStructure', {bucketName}, {error});
             return null;
         }
     }
@@ -96,16 +105,20 @@ class FileSystemManager {
                     });
 
                     this.debugger.logOperation('loadAllBucketStructures',
-                        { source: 'local' },
-                        { success: true, structureCount: localStructures.length }
+                        {source: 'local'},
+                        {localStructures, success: true, structureCount: localStructures.length}
                     );
+
                     return true;
                 }
             }
 
             // Fetch from server
-            const { data, error } = await this.supabase
-                .rpc('update_all_bucket_structures');
+            const {data, error} = await this.supabase
+                .rpc('update_all_bucket_tree_structures');
+
+            this.debugger.logOperation('loadAllBucketStructures', {forceRefresh}, {data, error});
+            console.log('data', data);
 
             if (error) throw error;
 
@@ -120,23 +133,25 @@ class FileSystemManager {
             }
 
             this.debugger.logOperation('loadAllBucketStructures',
-                { source: 'server' },
-                { success: true, structureCount: data.results.length }
+                {source: 'server'},
+                {success: true, structureCount: data.results.length}
             );
 
             return true;
         } catch (error) {
             console.error('Error loading all bucket structures:', error);
-            this.debugger.logOperation('loadAllBucketStructures', {}, { error });
+            this.debugger.logOperation('loadAllBucketStructures', {}, {error});
             return false;
         }
     }
 
     getBucketStructure(bucketName: string): BucketTreeStructure | undefined {
+        console.log('bucketStructures', this.bucketStructures);
         return this.bucketStructures.get(bucketName);
     }
 
     getAllBucketStructures(): Map<string, BucketTreeStructure> {
+        console.log('bucketStructures', this.bucketStructures);
         return new Map(this.bucketStructures);
     }
 
@@ -189,8 +204,8 @@ class FileSystemManager {
         await this.localStorage.updateBucketStructure(bucketName, structure);
 
         this.debugger.logOperation('updateStructure',
-            { bucketName, path, operation, fileType, newPath },
-            { success: true, metadata }
+            {bucketName, path, operation, fileType, newPath},
+            {success: true, metadata}
         );
     }
 
@@ -219,12 +234,22 @@ class FileSystemManager {
                 .from(bucketName)
                 .upload(path, file);
 
+            this.debugger.logOperation('uploadFile: result',
+                {bucketName, path, file},
+                {result}
+            );
+
             if (result.error) throw result.error;
 
             // Get additional metadata from Supabase
-            const { data: metadata } = await this.supabase.storage
+            const {data: metadata} = this.supabase.storage
                 .from(bucketName)
                 .getPublicUrl(path);
+
+            this.debugger.logOperation('uploadFile: Metadata',
+                {bucketName, path},
+                {metadata}
+            );
 
             // Update local file status and metadata
             await this.localStorage.updateFile({
@@ -242,18 +267,13 @@ class FileSystemManager {
             // Update structure
             await this.updateStructureAfterFileOperation(bucketName, path, 'add', fileType, undefined, metadata);
 
-            this.debugger.logOperation('uploadFile',
-                { bucketName, path },
-                { success: true, metadata }
-            );
-
             return true;
         } catch (error) {
             // Mark local file as modified if upload failed
             await this.localStorage.updateFileStatus(`${bucketName}:${path}`, 'modified');
 
             console.error('Error uploading file:', error);
-            this.debugger.logOperation('uploadFile', { bucketName, path }, { error });
+            this.debugger.logOperation('uploadFile', {bucketName, path}, {error});
             return false;
         }
     }
@@ -274,8 +294,8 @@ class FileSystemManager {
             await this.updateStructureAfterFileOperation(bucketName, path, 'delete', '');
 
             this.debugger.logOperation('deleteFile',
-                { bucketName, path },
-                { success: true }
+                {bucketName, path},
+                {success: true}
             );
 
             return true;
@@ -284,7 +304,7 @@ class FileSystemManager {
             await this.localStorage.revertDeletion(bucketName, path);
 
             console.error('Error deleting file:', error);
-            this.debugger.logOperation('deleteFile', { bucketName, path }, { error });
+            this.debugger.logOperation('deleteFile', {bucketName, path}, {error});
             return false;
         }
     }
@@ -312,8 +332,8 @@ class FileSystemManager {
             await this.updateStructureAfterFileOperation(bucketName, oldPath, 'rename', '', newPath);
 
             this.debugger.logOperation('moveFile',
-                { bucketName, oldPath, newPath },
-                { success: true }
+                {bucketName, oldPath, newPath},
+                {success: true}
             );
 
             return true;
@@ -322,7 +342,7 @@ class FileSystemManager {
             await this.localStorage.revertMove(bucketName, oldPath, newPath);
 
             console.error('Error moving file:', error);
-            this.debugger.logOperation('moveFile', { bucketName, oldPath, newPath }, { error });
+            this.debugger.logOperation('moveFile', {bucketName, oldPath, newPath}, {error});
             return false;
         }
     }
@@ -334,15 +354,15 @@ class FileSystemManager {
 
             const result = await this.supabase.storage
                 .from(bucketName)
-                .upload(`${folderPath}/.folder`, new Blob([]));
+                .upload(`${folderPath}/.emptyFolder`, new Blob([]));
 
             if (result.error) throw result.error;
 
             await this.updateStructureAfterFileOperation(bucketName, folderPath, 'add', 'FOLDER');
 
             this.debugger.logOperation('createFolder',
-                { bucketName, folderPath },
-                { success: true }
+                {bucketName, folderPath},
+                {success: true}
             );
 
             return true;
@@ -351,7 +371,7 @@ class FileSystemManager {
             await this.localStorage.deleteFolder(bucketName, folderPath);
 
             console.error('Error creating folder:', error);
-            this.debugger.logOperation('createFolder', { bucketName, folderPath }, { error });
+            this.debugger.logOperation('createFolder', {bucketName, folderPath}, {error});
             return false;
         }
     }
@@ -362,14 +382,14 @@ class FileSystemManager {
             const localFile = await this.localStorage.getFile(bucketName, filePath);
             if (localFile && localFile.status === 'synced') {
                 this.debugger.logOperation('downloadFile',
-                    { bucketName, filePath, source: 'local' },
-                    { success: true, size: localFile.blob.size }
+                    {bucketName, filePath, source: 'local'},
+                    {success: true, size: localFile.blob.size}
                 );
                 return localFile.blob;
             }
 
             // If not in local storage or not synced, download from Supabase
-            const { data: signedUrl, error: signedUrlError } = await this.supabase.storage
+            const {data: signedUrl, error: signedUrlError} = await this.supabase.storage
                 .from(bucketName)
                 .createSignedUrl(filePath, 60);
 
@@ -398,14 +418,14 @@ class FileSystemManager {
             });
 
             this.debugger.logOperation('downloadFile',
-                { bucketName, filePath, source: 'remote' },
-                { success: true, size: blob.size }
+                {bucketName, filePath, source: 'remote'},
+                {success: true, size: blob.size}
             );
 
             return blob;
         } catch (error) {
             console.error('Error downloading file:', error);
-            this.debugger.logOperation('downloadFile', { bucketName, filePath }, { error });
+            this.debugger.logOperation('downloadFile', {bucketName, filePath}, {error});
             return null;
         }
     }
@@ -440,8 +460,8 @@ class FileSystemManager {
             await this.updateStructureAfterFileOperation(bucketName, oldPath, 'rename', '', newPath);
 
             this.debugger.logOperation('renameFile',
-                { bucketName, oldPath, newPath },
-                { success: true }
+                {bucketName, oldPath, newPath},
+                {success: true}
             );
             return true;
         } catch (error) {
@@ -451,7 +471,7 @@ class FileSystemManager {
             }
 
             console.error('Error renaming file:', error);
-            this.debugger.logOperation('renameFile', { bucketName, oldPath, newPath }, { error });
+            this.debugger.logOperation('renameFile', {bucketName, oldPath, newPath}, {error});
             return false;
         }
     }
@@ -503,8 +523,8 @@ class FileSystemManager {
             await this.updateStructureAfterFileOperation(bucketName, destinationPath, 'add', fileType);
 
             this.debugger.logOperation('copyFile',
-                { bucketName, sourcePath, destinationPath },
-                { success: true }
+                {bucketName, sourcePath, destinationPath},
+                {success: true}
             );
             return true;
         } catch (error) {
@@ -512,7 +532,7 @@ class FileSystemManager {
             await this.localStorage.deleteFile(bucketName, destinationPath);
 
             console.error('Error copying file:', error);
-            this.debugger.logOperation('copyFile', { bucketName, sourcePath, destinationPath }, { error });
+            this.debugger.logOperation('copyFile', {bucketName, sourcePath, destinationPath}, {error});
             return false;
         }
     }
@@ -551,8 +571,8 @@ class FileSystemManager {
             await this.localStorage.updateFolderStructure(bucketName, oldPath, newPath);
 
             this.debugger.logOperation('renameFolder',
-                { bucketName, oldPath, newPath },
-                { success: true, itemsMoved: itemsToMove.length }
+                {bucketName, oldPath, newPath},
+                {success: true, itemsMoved: itemsToMove.length}
             );
             return true;
         } catch (error) {
@@ -560,7 +580,7 @@ class FileSystemManager {
             await this.localStorage.revertFolderRename(bucketName, oldPath, newPath);
 
             console.error('Error renaming folder:', error);
-            this.debugger.logOperation('renameFolder', { bucketName, oldPath, newPath }, { error });
+            this.debugger.logOperation('renameFolder', {bucketName, oldPath, newPath}, {error});
             return false;
         }
     }
@@ -571,7 +591,7 @@ class FileSystemManager {
             const localStructure = await this.localStorage.getFolderContents(bucketName, folderPath);
 
             // Get remote structure
-            const { data, error } = await this.supabase.storage
+            const {data, error} = await this.supabase.storage
                 .from(bucketName)
                 .list(folderPath);
 
@@ -600,20 +620,20 @@ class FileSystemManager {
             }
 
             this.debugger.logOperation('refreshFolderContents',
-                { bucketName, folderPath },
-                { success: true, itemCount: data.length }
+                {bucketName, folderPath},
+                {success: true, itemCount: data.length}
             );
             return true;
         } catch (error) {
             console.error('Error refreshing folder contents:', error);
-            this.debugger.logOperation('refreshFolderContents', { bucketName, folderPath }, { error });
+            this.debugger.logOperation('refreshFolderContents', {bucketName, folderPath}, {error});
             return false;
         }
     }
 
     async getPublicUrl(bucketName: string, filePath: string): Promise<string> {
         try {
-            const { data } = this.supabase.storage
+            const {data} = this.supabase.storage
                 .from(bucketName)
                 .getPublicUrl(filePath);
 
@@ -621,8 +641,8 @@ class FileSystemManager {
             await this.localStorage.cachePublicUrl(bucketName, filePath, data.publicUrl);
 
             this.debugger.logOperation('getPublicUrl',
-                { bucketName, filePath },
-                { success: true, url: data.publicUrl }
+                {bucketName, filePath},
+                {success: true, url: data.publicUrl}
             );
             return data.publicUrl;
         } catch (error) {
@@ -631,8 +651,8 @@ class FileSystemManager {
                 const cachedUrl = await this.localStorage.getCachedPublicUrl(bucketName, filePath);
                 if (cachedUrl) {
                     this.debugger.logOperation('getPublicUrl',
-                        { bucketName, filePath, source: 'cache' },
-                        { success: true, url: cachedUrl }
+                        {bucketName, filePath, source: 'cache'},
+                        {success: true, url: cachedUrl}
                     );
                     return cachedUrl;
                 }
@@ -641,14 +661,14 @@ class FileSystemManager {
             }
 
             console.error('Error getting public URL:', error);
-            this.debugger.logOperation('getPublicUrl', { bucketName, filePath }, { error });
+            this.debugger.logOperation('getPublicUrl', {bucketName, filePath}, {error});
             return '';
         }
     }
 
     getPublicUrlSync(bucketName: string, filePath: string): string {
         try {
-            const { data } = this.supabase.storage
+            const {data} = this.supabase.storage
                 .from(bucketName)
                 .getPublicUrl(filePath);
 
@@ -657,31 +677,31 @@ class FileSystemManager {
                 .catch(error => console.error('Error caching URL:', error));
 
             this.debugger.logOperation('getPublicUrlSync',
-                { bucketName, filePath },
-                { success: true, url: data.publicUrl }
+                {bucketName, filePath},
+                {success: true, url: data.publicUrl}
             );
             return data.publicUrl;
         } catch (error) {
             console.error('Error getting public URL:', error);
-            this.debugger.logOperation('getPublicUrlSync', { bucketName, filePath }, { error });
+            this.debugger.logOperation('getPublicUrlSync', {bucketName, filePath}, {error});
             return '';
         }
     }
 
     async getSignedUrl(bucketName: string, filePath: string): Promise<string> {
         try {
-            const { data } = await this.supabase.storage
+            const {data} = await this.supabase.storage
                 .from(bucketName)
                 .createSignedUrl(filePath, 60);
 
             this.debugger.logOperation('getSignedUrl',
-                { bucketName, filePath },
-                { success: true, url: data.signedUrl }
+                {bucketName, filePath},
+                {success: true, url: data.signedUrl}
             );
             return data.signedUrl;
         } catch (error) {
             console.error('Error getting signed URL:', error);
-            this.debugger.logOperation('getSignedUrl', { bucketName, filePath }, { error });
+            this.debugger.logOperation('getSignedUrl', {bucketName, filePath}, {error});
             return '';
         }
     }
@@ -693,14 +713,14 @@ class FileSystemManager {
             const localBuckets = await this.localStorage.getBuckets();
             if (localBuckets.length > 0) {
                 this.debugger.logOperation('getBuckets',
-                    { source: 'local' },
-                    { success: true, count: localBuckets.length }
+                    {source: 'local'},
+                    {success: true, count: localBuckets.length}
                 );
                 return localBuckets;
             }
 
             // Fetch from Supabase if not in local storage
-            const { data, error } = await this.supabase.storage.listBuckets();
+            const {data, error} = await this.supabase.storage.listBuckets();
 
             if (error) throw error;
 
@@ -708,13 +728,13 @@ class FileSystemManager {
             await this.localStorage.storeBuckets(data);
 
             this.debugger.logOperation('getBuckets',
-                { source: 'remote' },
-                { success: true, count: data.length }
+                {source: 'remote'},
+                {success: true, count: data.length}
             );
             return data;
         } catch (error) {
             console.error('Error getting buckets:', error);
-            this.debugger.logOperation('getBuckets', {}, { error });
+            this.debugger.logOperation('getBuckets', {}, {error});
             return [];
         }
     }

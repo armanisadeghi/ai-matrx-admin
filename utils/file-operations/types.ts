@@ -30,15 +30,7 @@ export type FileCategory =
     | 'ARCHIVE'
     | 'DATA'
     | 'UNKNOWN'
-
-export type FileTypeDetails = {
-    category: FileCategory;
-    subCategory: string;
-    icon: IconComponent;
-    color?: string
-    canPreview?: boolean;
-}
-
+    | 'FOLDER';
 
 export interface VisualConfig {
     indentSize?: number;
@@ -75,6 +67,7 @@ export interface FolderConfig {
     showFileCount?: boolean;
     customIcons?: boolean;
 }
+
 export interface CategoryConfig {
     enabled: boolean;
     groupByCategory: boolean;
@@ -138,12 +131,31 @@ export interface FolderTypeInfo {
     subCategory?: string;
     description?: string;
     color?: string;
+    protected?: boolean;
 }
+
+export interface FolderTypeDetails {
+    icon: IconComponent;
+    category: 'FOLDER';
+    subCategory?: string;
+    description?: string;
+    color?: string;
+    protected?: boolean;
+}
+
+export type FileTypeDetails = {
+    category: FileCategory;
+    subCategory: string;
+    icon: IconComponent;
+    color?: string
+    canPreview?: boolean;
+}
+
 
 export interface BucketStructure {
     path: string;
     type: string;
-    details?: FileTypeDetails;
+    details?: FileTypeDetails | FolderTypeDetails;
     metadata?: StorageMetadata;
     id?: string;
     updated_at?: string;
@@ -153,8 +165,36 @@ export interface BucketStructure {
 
 export interface StructureWithContents {
     contents: BucketStructure[];
+
     [key: string]: any;
 }
+
+export interface NodeStructure {
+    path: string;
+    type: string | 'FOLDER'
+    bucketName: string;
+    name: string;
+    contentType: 'FOLDER' | 'FILE' | 'BUCKET';
+    extension: string | 'FOLDER';
+    isEmpty: boolean; // false for files
+    details?: FileTypeDetails | FolderTypeDetails;
+    children?: NodeStructure[];
+
+    // we don't have these yet so ignore them, but if they're there, don't lose them.
+    metadata?: StorageMetadata;
+    id?: string;
+    updated_at?: string;
+    created_at?: string;
+    last_accessed_at?: string;
+}
+
+export interface BucketStructureWithNodes {
+    name: string;
+    contents: NodeStructure[];
+
+    [key: string]: any;
+}
+
 
 export const isStructureWithContents = (value: unknown): value is StructureWithContents => {
     return value !== null
@@ -163,9 +203,14 @@ export const isStructureWithContents = (value: unknown): value is StructureWithC
         && Array.isArray((value as StructureWithContents).contents);
 };
 
+export interface BucketStructureContent {
+    path: string;
+    type: string | 'FOLDER'
+}
+
 export interface BucketTreeStructure {
     name: string;
-    contents: BucketStructure[];
+    contents: BucketStructureContent[];
 }
 
 

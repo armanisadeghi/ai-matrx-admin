@@ -59,7 +59,7 @@ function useLocalStorageManager(): UseLocalStorageManager {
             const serializedValue = localStorage.getItem(fullKey);
             return serializedValue ? JSON.parse(serializedValue) : null;
         } catch (error) {
-            console.error(`Error retrieving item from localStorage: ${error}`);
+            console.error(`Use local storage manager... Error retrieving item from localStorage: ${error}`);
             return null;
         }
     }, [constructKey]);

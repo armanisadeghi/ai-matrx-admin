@@ -8,7 +8,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import {EnterInput} from "@/components/ui/input";
 import {useFileSystem} from '@/providers/FileSystemProvider';
 
 interface RenameDialogProps {
@@ -55,9 +55,10 @@ export const RenameDialog: React.FC<RenameDialogProps> = (
                     <DialogTitle>Rename {type}</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                    <Input
+                    <EnterInput
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
+                        onEnter={handleRename}
                         placeholder={`Enter new ${type} name`}
                         autoFocus
                     />

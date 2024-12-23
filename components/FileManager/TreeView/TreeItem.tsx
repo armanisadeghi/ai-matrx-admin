@@ -8,53 +8,79 @@ import {
     ContextMenuContent,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+    FileCategory,
+    FileTypeDetails,
+    FolderTypeDetails,
+    IconComponent,
+    StorageMetadata
+} from "@/utils/file-operations";
 
 interface TreeItemProps {
-    label: string;
+    name: string;
     path: string;
     level: number;
-    type: 'bucket' | 'folder' | 'file';
+    contentType: 'BUCKET' | 'FOLDER' | 'FILE';
+    details: FileTypeDetails | FolderTypeDetails;
+    isEmpty: boolean;
+    bucketName: string;
     isExpanded?: boolean;
     onToggle?: () => void;
-    icon?: React.ComponentType<{ className?: string }>;
-    bucketName: string;
 }
+
 
 export const TreeItem: React.FC<TreeItemProps> = (
     {
-        label,
+        name,
         path,
         level,
-        type,
+        contentType,
+        details,
+        bucketName,
         isExpanded,
+        isEmpty,
         onToggle,
-        icon,
-        bucketName
+        ...rest
     }) => {
     const {getMenuComponent} = useContextMenu();
     const {
-        getFileIcon,
-        getFileColor,
         downloadFile,
         navigateToPath,
-        setCurrentBucket
+        setCurrentBucket,
+        setCurrentPath
     } = useFileSystem();
 
-    const IconComponent = icon || (type === 'file' ? getFileIcon(label) : null);
-    const color = type === 'file' ? getFileColor(label) : '';
-    const menuType = type === 'bucket' ? 'folder' : type;
+    const renderIcon = () => {
+        if (!details?.icon) return null;
+
+        const IconComponent = details.icon;
+        const iconColor = details?.color || 'text-foreground';
+
+        return <IconComponent className={cn('h-4 w-4 mr-2', iconColor)}/>;
+    };
+
+    const shouldShowChevron = () => {
+        if (contentType === 'FILE') return false;
+        return !isEmpty;
+    };
+
+    const menuType = contentType === 'BUCKET' ? 'FOLDER' : contentType;
     const MenuComponent = getMenuComponent(menuType);
 
     const handleClick = async (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (type === 'bucket') {
+        const pathParts = path.split('/');
+
+        if (contentType === 'BUCKET') {
             setCurrentBucket(path);
+            setCurrentPath([]);
             onToggle?.();
-        } else if (type === 'folder') {
-            navigateToPath(path.split('/'));
+        } else if (contentType === 'FOLDER') {
+            navigateToPath(pathParts);
             onToggle?.();
-        } else if (type === 'file') {
+        } else if (contentType === 'FILE') {
+            navigateToPath(pathParts.slice(0, -1)); // Navigate to containing folder
             await downloadFile(bucketName, path);
         }
     };
@@ -67,7 +93,8 @@ export const TreeItem: React.FC<TreeItemProps> = (
     const menuData = {
         path,
         bucketName,
-        type
+        contentType,
+        ...rest
     };
 
     return (
@@ -81,20 +108,24 @@ export const TreeItem: React.FC<TreeItemProps> = (
                     style={{paddingLeft: `${level * 16}px`}}
                     onClick={handleClick}
                 >
-                    {type !== 'file' && (
-                        <button
-                            onClick={handleChevronClick}
-                            className="p-1 hover:bg-accent rounded-sm"
-                        >
-                            {isExpanded ? (
-                                <ChevronDown className="h-4 w-4"/>
-                            ) : (
-                                <ChevronRight className="h-4 w-4"/>
-                            )}
-                        </button>
-                    )}
-                    {IconComponent && <IconComponent className={cn('h-4 w-4 mr-2', color)}/>}
-                    <span className="truncate">{label}</span>
+                    <div className="flex items-center min-w-[24px]">
+                        {shouldShowChevron() && (
+                            <button
+                                onClick={handleChevronClick}
+                                className="p-1 hover:bg-accent rounded-sm"
+                            >
+                                {isExpanded ? (
+                                    <ChevronDown className="h-4 w-4"/>
+                                ) : (
+                                    <ChevronRight className="h-4 w-4"/>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex items-center">
+                        {renderIcon()}
+                        <span className="truncate">{name}</span>
+                    </div>
                 </div>
             </ContextMenuTrigger>
             {MenuComponent && (

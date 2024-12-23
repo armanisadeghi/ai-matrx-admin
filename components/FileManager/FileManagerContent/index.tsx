@@ -1,34 +1,21 @@
-// components/FileManager/FileManagerContent/index.tsx
 import React from 'react';
-import {FileList} from './FileList';
-import {FilePreview} from './FilePreview';
-import {FileMetadata} from './FileMetadata';
-import {useFileSystem} from '@/providers/FileSystemProvider';
-import {BucketStructure} from "@/utils/file-operations";
-import {shouldShowItem} from './utils';
+import { FileList } from './FileList';
+import { FilePreview } from './FilePreview';
+import { FileMetadata } from './FileMetadata';
+import { useFileSystem } from '@/providers/FileSystemProvider';
+import { NodeStructure } from "@/utils/file-operations/types";
 
-interface FileManagerContentProps {
-    allowedFileTypes?: string[];
-    maxFileSize?: number;  // in bytes
-}
-
-export const FileManagerContent: React.FC<FileManagerContentProps> = (
-    {
-        allowedFileTypes,
-        maxFileSize
-    }) => {
-    const [selectedFile, setSelectedFile] = React.useState<BucketStructure | null>(null);
-    const {currentBucket, currentPath, getBucketStructure} = useFileSystem();
+export const FileManagerContent: React.FC = () => {
+    const [selectedFile, setSelectedFile] = React.useState<NodeStructure | null>(null);
+    const { currentBucket, currentPath, getBucketStructure } = useFileSystem();
 
     const structure = currentBucket ? getBucketStructure(currentBucket) : undefined;
     const currentItems = structure?.contents.filter(item => {
-        if (!shouldShowItem(item)) return false;
-
-        const itemPath = item.path.split('/').slice(0, -1).join('/');
-        return itemPath === currentPath.join('/');
+        const itemPath = item.path.split('/').slice(0, -1).join('/'); // Parent directory of the item
+        return itemPath === currentPath.join('/'); // Match the current path
     });
 
-    const handleSelect = (item: BucketStructure) => {
+    const handleSelect = (item: NodeStructure) => {
         setSelectedFile(item);
     };
 
@@ -39,14 +26,12 @@ export const FileManagerContent: React.FC<FileManagerContentProps> = (
                     items={currentItems || []}
                     onSelect={handleSelect}
                     selectedFile={selectedFile}
-                    allowedFileTypes={allowedFileTypes}
-                    maxFileSize={maxFileSize}
                 />
             </div>
-            {selectedFile && selectedFile.type !== 'FOLDER' && (
+            {selectedFile && selectedFile.type !== 'folder' && (
                 <div className="w-1/3 border-l p-4 flex flex-col">
-                    <FilePreview file={selectedFile}/>
-                    <FileMetadata file={selectedFile}/>
+                    <FilePreview file={selectedFile} />
+                    <FileMetadata file={selectedFile} />
                 </div>
             )}
         </div>

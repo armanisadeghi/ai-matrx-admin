@@ -1,4 +1,6 @@
 // utils/file-operations/LocalFileSystem.ts
+'use client';
+
 import { openDB, IDBPDatabase } from 'idb';
 
 interface LocalFile {
@@ -32,51 +34,71 @@ class LocalFileSystem {
         return LocalFileSystem.instance;
     }
 
+    isBrowser(): boolean {
+        return typeof window !== 'undefined' && typeof window.indexedDB !== 'undefined';
+    }
+
     private async initDB() {
+        if (!this.isBrowser()) {
+            console.warn('IndexedDB is not available in this environment');
+            return null;
+        }
+
         if (!this.db) {
-            this.db = await openDB(this.DB_NAME, 1, {
-                upgrade(db) {
-                    // Store for actual file data
-                    if (!db.objectStoreNames.contains('files')) {
-                        const fileStore = db.createObjectStore('files', { keyPath: 'id' });
-                        fileStore.createIndex('bucketName', 'bucketName');
-                        fileStore.createIndex('path', 'path');
-                        fileStore.createIndex('status', 'status');
-                        fileStore.createIndex('version', 'version');
-                    }
+            try {
+                this.db = await openDB(this.DB_NAME, 1, {
+                    upgrade(db) {
+                        // Store for actual file data
+                        if (!db.objectStoreNames.contains('files')) {
+                            const fileStore = db.createObjectStore('files', { keyPath: 'id' });
+                            fileStore.createIndex('bucketName', 'bucketName');
+                            fileStore.createIndex('path', 'path');
+                            fileStore.createIndex('status', 'status');
+                            fileStore.createIndex('version', 'version');
+                        }
 
-                    // Store for bucket/folder structure
-                    if (!db.objectStoreNames.contains('metadata')) {
-                        const metaStore = db.createObjectStore('metadata', { keyPath: 'id' });
-                        metaStore.createIndex('bucketName', 'bucketName');
-                        metaStore.createIndex('type', 'type');
-                    }
+                        // Store for bucket/folder structure
+                        if (!db.objectStoreNames.contains('metadata')) {
+                            const metaStore = db.createObjectStore('metadata', { keyPath: 'id' });
+                            metaStore.createIndex('bucketName', 'bucketName');
+                            metaStore.createIndex('type', 'type');
+                        }
 
-                    // Store for sync state
-                    if (!db.objectStoreNames.contains('syncState')) {
-                        const syncStore = db.createObjectStore('syncState', { keyPath: 'id' });
-                        syncStore.createIndex('lastSync', 'lastSync');
-                    }
-                },
-            });
+                        // Store for sync state
+                        if (!db.objectStoreNames.contains('syncState')) {
+                            const syncStore = db.createObjectStore('syncState', { keyPath: 'id' });
+                            syncStore.createIndex('lastSync', 'lastSync');
+                        }
+                    },
+                });
+            } catch (error) {
+                console.error('Failed to initialize IndexedDB:', error);
+                return null;
+            }
         }
         return this.db;
     }
 
-    // Methods for file operations
+    async getDbSafe(): Promise<IDBPDatabase | null> {
+        if (!this.isBrowser()) return null;
+        return await this.initDB();
+    }
+
     async storeFile(file: LocalFile): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
+        if (!db) return;
         await db.put(this.STORES.FILES, file);
     }
 
     async getFile(bucketName: string, path: string): Promise<LocalFile | null> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
+        if (!db) return null;
         const id = `${bucketName}:${path}`;
         return await db.get(this.STORES.FILES, id);
     }
 
     async updateFileStatus(id: string, status: LocalFile['status']): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const file = await tx.store.get(id);
         if (file) {
@@ -85,9 +107,8 @@ class LocalFileSystem {
         }
     }
 
-    // Methods for structure/metadata operations
     async updateBucketStructure(bucketName: string, structure: any): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         await db.put(this.STORES.METADATA, {
             id: `bucket:${bucketName}`,
             bucketName,
@@ -98,13 +119,14 @@ class LocalFileSystem {
     }
 
     async getBucketStructure(bucketName: string): Promise<any> {
+        if (!this.isBrowser()) return null;
         const db = await this.initDB();
+        if (!db) return null;
         return await db.get(this.STORES.METADATA, `bucket:${bucketName}`);
     }
 
-    // Sync state management
     async updateSyncState(bucketName: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         await db.put(this.STORES.SYNC_STATE, {
             id: bucketName,
             lastSync: Date.now()
@@ -112,53 +134,51 @@ class LocalFileSystem {
     }
 
     async getLastSyncTime(bucketName: string): Promise<number> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const state = await db.get(this.STORES.SYNC_STATE, bucketName);
         return state?.lastSync || 0;
     }
 
-    // Query methods
     async getPendingUploads(): Promise<LocalFile[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const index = db.transaction(this.STORES.FILES).store.index('status');
         return await index.getAll('pending_upload');
     }
 
     async getModifiedFiles(): Promise<LocalFile[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const index = db.transaction(this.STORES.FILES).store.index('status');
         return await index.getAll('modified');
     }
 
     async getConflicts(): Promise<LocalFile[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const index = db.transaction(this.STORES.FILES).store.index('status');
         return await index.getAll('conflict');
     }
+
     async getAllBucketStructures(): Promise<any[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.METADATA, 'readonly');
         const index = tx.store.index('type');
         return await index.getAll('bucket');
     }
 
     async deleteFile(bucketName: string, path: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `${bucketName}:${path}`;
         await db.delete(this.STORES.FILES, id);
     }
 
     async updateFilePath(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const oldId = `${bucketName}:${oldPath}`;
         const file = await tx.store.get(oldId);
 
         if (file) {
-            // Delete old entry
             await tx.store.delete(oldId);
 
-            // Create new entry with updated path
             const newId = `${bucketName}:${newPath}`;
             file.id = newId;
             file.path = newPath;
@@ -167,11 +187,10 @@ class LocalFileSystem {
     }
 
     async deleteFolder(bucketName: string, folderPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const index = tx.store.index('path');
 
-        // Get all files that start with the folder path
         const range = IDBKeyRange.bound(
             `${folderPath}/`,
             `${folderPath}/\uffff`
@@ -186,7 +205,7 @@ class LocalFileSystem {
     }
 
     async updateFileMetadata(bucketName: string, path: string, metadata: any): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const id = `${bucketName}:${path}`;
         const file = await tx.store.get(id);
@@ -198,27 +217,27 @@ class LocalFileSystem {
     }
 
     async getFilesByBucket(bucketName: string): Promise<LocalFile[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readonly');
         const index = tx.store.index('bucketName');
         return await index.getAll(bucketName);
     }
 
     async fileExists(bucketName: string, path: string): Promise<boolean> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `${bucketName}:${path}`;
         const file = await db.get(this.STORES.FILES, id);
         return !!file;
     }
 
     async clearBucketStructure(bucketName: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `bucket:${bucketName}`;
         await db.delete(this.STORES.METADATA, id);
     }
 
     async clearBucketFiles(bucketName: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const index = tx.store.index('bucketName');
         const range = IDBKeyRange.only(bucketName);
@@ -231,9 +250,8 @@ class LocalFileSystem {
         }
     }
 
-    // Add these utility methods as well
-    async isStructureStale(bucketName: string, threshold: number = 900000): Promise<boolean> { // 15 minutes default
-        const db = await this.initDB();
+    async isStructureStale(bucketName: string, threshold: number = 900000): Promise<boolean> {
+        const db = await this.getDbSafe();
         const structure = await db.get(this.STORES.METADATA, `bucket:${bucketName}`);
         if (!structure) return true;
 
@@ -241,13 +259,13 @@ class LocalFileSystem {
     }
 
     async getStructureLastUpdated(bucketName: string): Promise<number | null> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const structure = await db.get(this.STORES.METADATA, `bucket:${bucketName}`);
         return structure?.lastUpdated || null;
     }
 
     async markFolderForRename(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const index = tx.store.index('path');
         const range = IDBKeyRange.bound(
@@ -269,7 +287,7 @@ class LocalFileSystem {
     }
 
     async revertFolderRename(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const index = tx.store.index('path');
         const range = IDBKeyRange.bound(
@@ -291,7 +309,7 @@ class LocalFileSystem {
     }
 
     async getFolderContents(bucketName: string, folderPath: string): Promise<any[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readonly');
         const index = tx.store.index('path');
         const range = IDBKeyRange.bound(
@@ -311,7 +329,7 @@ class LocalFileSystem {
     }
 
     async updateFolderStructure(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const structure = await this.getBucketStructure(bucketName);
         if (structure) {
             structure.structure.contents = structure.structure.contents.map((item: any) => {
@@ -328,7 +346,7 @@ class LocalFileSystem {
     }
 
     async updateFile(fileData: Partial<LocalFile> & { id: string }): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const existingFile = await tx.store.get(fileData.id);
 
@@ -343,16 +361,14 @@ class LocalFileSystem {
     }
 
     async moveFile(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const oldId = `${bucketName}:${oldPath}`;
         const file = await tx.store.get(oldId);
 
         if (file) {
-            // Delete old entry
             await tx.store.delete(oldId);
 
-            // Create new entry
             const newFile = {
                 ...file,
                 id: `${bucketName}:${newPath}`,
@@ -365,7 +381,7 @@ class LocalFileSystem {
     }
 
     async createFolder(bucketName: string, folderPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         await db.put(this.STORES.METADATA, {
             id: `folder:${bucketName}:${folderPath}`,
             bucketName,
@@ -381,16 +397,14 @@ class LocalFileSystem {
         newPath: string,
         fileData?: Partial<LocalFile>
     ): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.FILES, 'readwrite');
         const oldId = `${bucketName}:${oldPath}`;
         const file = await tx.store.get(oldId);
 
         if (file) {
-            // Delete old entry
             await tx.store.delete(oldId);
 
-            // Create new entry with updated data
             const newFile = {
                 ...file,
                 ...fileData,
@@ -403,7 +417,7 @@ class LocalFileSystem {
     }
 
     async markFileForDeletion(bucketName: string, path: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `${bucketName}:${path}`;
         const file = await db.get(this.STORES.FILES, id);
         if (file) {
@@ -414,7 +428,7 @@ class LocalFileSystem {
     }
 
     async revertDeletion(bucketName: string, path: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `${bucketName}:${path}`;
         const file = await db.get(this.STORES.FILES, id);
         if (file) {
@@ -427,7 +441,7 @@ class LocalFileSystem {
     }
 
     async markFileForMove(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `${bucketName}:${oldPath}`;
         const file = await db.get(this.STORES.FILES, id);
         if (file) {
@@ -441,7 +455,7 @@ class LocalFileSystem {
     }
 
     async revertMove(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const newId = `${bucketName}:${newPath}`;
         const file = await db.get(this.STORES.FILES, newId);
         if (file) {
@@ -464,7 +478,7 @@ class LocalFileSystem {
     }
 
     async markFileForRename(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const id = `${bucketName}:${oldPath}`;
         const file = await db.get(this.STORES.FILES, id);
         if (file) {
@@ -478,7 +492,7 @@ class LocalFileSystem {
     }
 
     async revertRename(bucketName: string, oldPath: string, newPath: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const newId = `${bucketName}:${newPath}`;
         const file = await db.get(this.STORES.FILES, newId);
         if (file) {
@@ -501,7 +515,7 @@ class LocalFileSystem {
     }
 
     async cachePublicUrl(bucketName: string, path: string, url: string): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         await db.put(this.STORES.METADATA, {
             id: `url:${bucketName}:${path}`,
             url,
@@ -510,7 +524,7 @@ class LocalFileSystem {
     }
 
     async getCachedPublicUrl(bucketName: string, path: string): Promise<string | null> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const cached = await db.get(this.STORES.METADATA, `url:${bucketName}:${path}`);
         if (cached && Date.now() - cached.timestamp < 3600000) { // 1 hour cache
             return cached.url;
@@ -519,7 +533,7 @@ class LocalFileSystem {
     }
 
     async storeBuckets(buckets: any[]): Promise<void> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.METADATA, 'readwrite');
         await Promise.all(buckets.map(bucket =>
             tx.store.put({
@@ -532,7 +546,7 @@ class LocalFileSystem {
     }
 
     async getBuckets(): Promise<any[]> {
-        const db = await this.initDB();
+        const db = await this.getDbSafe();
         const tx = db.transaction(this.STORES.METADATA, 'readonly');
         const index = tx.store.index('type');
         return await index.getAll('bucket-info');

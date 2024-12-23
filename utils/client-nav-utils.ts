@@ -2,18 +2,17 @@
 import React from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-// Parse the pathname
 export function getCurrentParsedPathName() {
     const pathName = usePathname();
-    const segments = pathName.split('/').filter(Boolean); // Remove empty segments from leading or trailing slashes
+    const segments = pathName.split('/').filter(Boolean);
     const result = segments.map((segment, index) => {
         const toTitleCase = (str: string) =>
             str
-                .replace(/[_-]/g, ' ') // Replace underscores and hyphens with spaces
-                .replace(/([a-z])([A-Z])/g, '$1 $2') // Add spaces between camelCase or PascalCase
-                .replace(/\s+/g, ' ') // Normalize extra spaces
-                .trim() // Remove leading/trailing spaces
-                .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()); // Title Case each word
+                .replace(/[_-]/g, ' ')
+                .replace(/([a-z])([A-Z])/g, '$1 $2')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
 
         const href = '/' + segments.slice(0, index + 1).join('/');
         const name = toTitleCase(segment);
@@ -29,7 +28,6 @@ export function getCurrentParsedPathName() {
     return result;
 }
 
-// Parse search params
 export function getParsedSearchParams() {
     const searchParams = useSearchParams();
     const result: { key: string; value: string; encoded: string }[] = [];
@@ -45,7 +43,6 @@ export function getParsedSearchParams() {
     return result;
 }
 
-// Get both parsed pathname and search params
 export function getParsedPathNameAndSearchParams() {
     const parsedPathName = getCurrentParsedPathName();
     const parsedSearchParams = getParsedSearchParams();
