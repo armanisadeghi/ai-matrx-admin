@@ -18,7 +18,7 @@ import {ToastProvider} from '@/providers';
 import {AudioModalProvider} from "@/providers/AudioModalProvider";
 import {ModuleHeaderProvider} from '@/providers/ModuleHeaderProvider';
 import {EntityProvider} from '@/providers/entity-context/EntityProvider';
-import {FileSystemProvider} from "@/providers/FileSystemProvider";
+import {FileSystemProvider} from '@/providers/FileSystemProvider';
 import {ContextMenuProvider} from '@/providers/ContextMenuProvider';
 
 export function Providers(
@@ -36,12 +36,12 @@ export function Providers(
                     <EntityProvider>
                         <SocketProvider>
                             <ContextMenuProvider>
-                                <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                                    <RefProvider>
-                                        <FileSystemProvider>
-                                            <NextUIProvider>
-                                                <TooltipProvider>
-                                                    <ToastProvider>
+                                <ToastProvider>
+                                    <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                                        <RefProvider>
+                                            <FileSystemProvider>
+                                                <NextUIProvider>
+                                                    <TooltipProvider>
                                                         <AudioModalProvider>
                                                             <ModuleHeaderProvider>
                                                                 <ShikiProvider
@@ -51,12 +51,12 @@ export function Providers(
                                                             </ModuleHeaderProvider>
                                                             <Toaster/>
                                                         </AudioModalProvider>
-                                                    </ToastProvider>
-                                                </TooltipProvider>
-                                            </NextUIProvider>
-                                        </FileSystemProvider>
-                                    </RefProvider>
-                                </ThemeProvider>
+                                                    </TooltipProvider>
+                                                </NextUIProvider>
+                                            </FileSystemProvider>
+                                        </RefProvider>
+                                    </ThemeProvider>
+                                </ToastProvider>
                             </ContextMenuProvider>
                         </SocketProvider>
                     </EntityProvider>

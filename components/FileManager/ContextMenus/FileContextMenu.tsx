@@ -1,130 +1,80 @@
-// components/FileManager/ContextMenus/FileContextMenu.tsx
 import React from 'react';
-import {ContextMenuItem, ContextMenuSeparator,} from "@/components/ui/context-menu"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {useDialog} from '../DialogManager';
-import {useFileSystem} from '@/providers/FileSystemProvider';
-import {Copy, Download, Edit, ExternalLink, Move, Trash, Upload} from 'lucide-react';
-import {MenuData} from "@/providers/ContextMenuProvider";
+import { ContextMenuItem, ContextMenuSeparator } from "@/components/ui/context-menu";
+import { Copy, Download, Edit, ExternalLink, Move, Trash, LucideIcon } from 'lucide-react';
+import { MenuData } from "@/providers/ContextMenuProvider";
+import { useFileSystem } from "@/providers/FileSystemProvider";
+import {useFileSystemDialog} from '@/components/FileManager/Dialogs/FileSystemDialogProvider';
 
-interface FileMenuProps {
-    menuData: MenuData;
-    onClose: () => void;
+interface MenuItem {
+    icon: LucideIcon;
+    label: string;
+    action: 'download' | 'openTab' | 'copy' | 'move' | 'rename' | 'delete';
+    className?: string;
 }
 
-export const FileContextMenu: React.FC<FileMenuProps> = ({menuData = {}, onClose}) => {
-    const {downloadFile, deleteFile, getPublicUrl} = useFileSystem();
-    const {path = '', bucketName = ''} = menuData as { path: string; bucketName: string };
-    const {openDialog} = useDialog();
-    const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
+const MENU_ITEMS: MenuItem[] = [
+    { icon: Download, label: 'Download', action: 'download' },
+    { icon: ExternalLink, label: 'Open in new tab', action: 'openTab' },
+    { icon: Copy, label: 'Copy to...', action: 'copy' },
+    { icon: Move, label: 'Move to...', action: 'move' },
+    { icon: Edit, label: 'Rename', action: 'rename' },
+    { icon: Trash, label: 'Delete', action: 'delete', className: 'text-red-600' }
+];
 
-    const handleDownload = async () => {
-        const blob = await downloadFile(bucketName, path);
-        if (blob) {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = path.split('/').pop() || 'download';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+const FileMenuItem: React.FC<{
+    item: MenuItem;
+    onComplete: () => void;
+}> = ({ item, onComplete }) => {
+    const { downloadFile, openInNewTab } = useFileSystem();
+    const { openDialog } = useFileSystemDialog();
+
+    const handleClick = async () => {
+        let success = true;
+
+        switch (item.action) {
+            case 'download':
+                success = await downloadFile();
+                break;
+            case 'openTab':
+                success = await openInNewTab();
+                break;
+            case 'copy':
+            case 'move':
+            case 'rename':
+            case 'delete':
+                openDialog(item.action);
+                break;
         }
-        onClose();
-    };
 
-    const handleDelete = async () => {
-        setShowDeleteAlert(true);
-    };
-
-    const confirmDelete = async () => {
-        await deleteFile(bucketName, path);
-        setShowDeleteAlert(false);
-    };
-
-    const handleCopy = () => {
-        openDialog('move', {
-            sourcePath: path,
-            type: 'file',
-            mode: 'copy',
-            bucketName
-        });
-    };
-
-    const handleMove = () => {
-        openDialog('move', {
-            sourcePath: path,
-            type: 'file',
-            mode: 'move',
-            bucketName
-        });
-    };
-
-    const handleRename = () => {
-        openDialog('rename', {
-            path,
-            type: 'file',
-            bucketName
-        });
+        if (success) onComplete();
     };
 
     return (
-        <>
-            <ContextMenuItem onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4"/>
-                Download
-            </ContextMenuItem>
-            <ContextMenuItem onClick={() => window.open(getPublicUrl(bucketName, path))}>
-                <ExternalLink className="mr-2 h-4 w-4"/>
-                Open in new tab
-            </ContextMenuItem>
-            <ContextMenuSeparator/>
-            <ContextMenuItem onClick={handleCopy}>
-                <Copy className="mr-2 h-4 w-4"/>
-                Copy to...
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleMove}>
-                <Move className="mr-2 h-4 w-4"/>
-                Move to...
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleRename}>
-                <Edit className="mr-2 h-4 w-4"/>
-                Rename
-            </ContextMenuItem>
-            <ContextMenuSeparator/>
-            <ContextMenuItem onClick={handleDelete} className="text-red-600">
-                <Trash className="mr-2 h-4 w-4"/>
-                Delete
-            </ContextMenuItem>
+        <ContextMenuItem
+            onClick={handleClick}
+            className={item.className}
+        >
+            <item.icon className="mr-2 h-4 w-4"/>
+            {item.label}
+        </ContextMenuItem>
+    );
+};
 
-            <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete "{path.split('/').pop()}"
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={confirmDelete}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+export const FileContextMenu: React.FC<{
+    menuData: MenuData;
+    onClose: () => void;
+}> = ({ onClose }) => {
+    return (
+        <>
+            {MENU_ITEMS.map((item, index) => (
+                <React.Fragment key={item.action}>
+                    {index === 2 || index === 5 && <ContextMenuSeparator />}
+                    <FileMenuItem
+                        item={item}
+                        onComplete={onClose}
+                    />
+                </React.Fragment>
+            ))}
         </>
     );
 };

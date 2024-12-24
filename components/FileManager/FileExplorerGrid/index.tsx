@@ -3,39 +3,69 @@ import React from 'react';
 import { useFileSystem } from '@/providers/FileSystemProvider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileCard } from './FileCard';
-import { BucketStructure } from '@/utils/file-operations';
+import { NodeStructure } from '@/utils/file-operations';
+import { FilePreview } from '../FilePreview';
 
-interface FileExplorerGridProps {
-    onFileSelect: (file: BucketStructure) => void;
-    selectedFile?: BucketStructure | null;
-}
+export const FileExplorerGrid: React.FC = () => {
+    const {
+        activeNode,
+        structures,
+        currentBucket,
+        navigateToNode
+    } = useFileSystem();
 
-export const FileExplorerGrid: React.FC<FileExplorerGridProps> = ({
-                                                                      onFileSelect,
-                                                                      selectedFile
-                                                                  }) => {
-    const { currentBucket, currentPath, getBucketStructure } = useFileSystem();
+    const [selectedFile, setSelectedFile] = React.useState<NodeStructure | null>(null);
 
-    const structure = currentBucket ? getBucketStructure(currentBucket) : undefined;
-    const currentItems = structure?.contents.filter(item => {
-        const itemPath = item.path.split('/').slice(0, -1).join('/');
-        return itemPath === currentPath.join('/');
-    });
+    const currentItems = React.useMemo(() => {
+        if (!currentBucket || !structures.has(currentBucket)) return [];
+
+        // If active node is a folder, show its children
+        if (activeNode?.contentType === 'FOLDER') {
+            return activeNode.children || [];
+        }
+
+        // If we're at root level, show bucket contents
+        const structure = structures.get(currentBucket);
+        return structure?.contents || [];
+    }, [activeNode, currentBucket, structures]);
+
+    const handleFileSelect = (item: NodeStructure) => {
+        setSelectedFile(item);
+
+        if (item.contentType === 'FOLDER') {
+            navigateToNode(item);
+        }
+    };
+
+    const handleDoubleClick = (item: NodeStructure) => {
+        if (item.contentType === 'FOLDER') {
+            navigateToNode(item);
+        }
+        // For files, we'll handle preview/open logic
+    };
 
     return (
-        <div className="border-b">
-            <ScrollArea className="h-[240px]"> {/* Shows 3 rows of cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-2">
-                    {currentItems?.map((item) => (
-                        <FileCard
-                            key={item.path}
-                            file={item}
-                            isSelected={selectedFile?.path === item.path}
-                            onClick={() => onFileSelect(item)}
-                        />
-                    ))}
+        <div className="flex h-full">
+            <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 p-2">
+                        {currentItems.map((item) => (
+                            <FileCard
+                                key={item.path}
+                                file={item}
+                                isSelected={selectedFile?.path === item.path}
+                                onClick={() => handleFileSelect(item)}
+                                onDoubleClick={() => handleDoubleClick(item)}
+                            />
+                        ))}
+                    </div>
+                </ScrollArea>
+            </div>
+            {selectedFile && selectedFile.contentType === 'FILE' && (
+                <div className="w-1/3 border-l">
+                    <FilePreview file={selectedFile} />
                 </div>
-            </ScrollArea>
+            )}
         </div>
     );
 };

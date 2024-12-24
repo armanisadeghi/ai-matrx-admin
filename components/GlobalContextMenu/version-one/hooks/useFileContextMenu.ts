@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Copy, Download, Edit, ExternalLink, Move, Trash } from 'lucide-react';
 import { useFileSystem } from '@/providers/FileSystemProvider';
-import { useDialog } from '@/components/FileManager/DialogManager';
+import {useFileSystemDialog} from '@/components/FileManager/Dialogs/FileSystemDialogProvider';
 import { ContextMenuItemProps } from '../types';
 
 export interface UseFileContextMenuProps {
@@ -13,7 +13,7 @@ export interface UseFileContextMenuProps {
 
 export const useFileContextMenu = ({ path, bucketName, onClose }: UseFileContextMenuProps) => {
     const { downloadFile, deleteFile, getPublicUrl } = useFileSystem();
-    const { openDialog } = useDialog();
+    const { openDialog } = useFileSystemDialog();
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     const handleDownload = async () => {

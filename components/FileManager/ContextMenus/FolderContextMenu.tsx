@@ -1,121 +1,79 @@
-// components/FileManager/ContextMenus/FolderContextMenu.tsx
 import React from 'react';
-import {ContextMenuContent, ContextMenuItem, ContextMenuSeparator,} from "@/components/ui/context-menu"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {useDialog} from '../DialogManager';
-import {useFileSystem} from '@/providers/FileSystemProvider';
-import {Edit, FolderPlus, RefreshCw, Trash, Upload} from 'lucide-react';
-import {MenuData} from '@/providers/ContextMenuProvider';
+import { ContextMenuItem, ContextMenuSeparator } from "@/components/ui/context-menu";
+import { Edit, FolderPlus, RefreshCw, Trash, Upload, LucideIcon } from 'lucide-react';
+import { MenuData } from "@/providers/ContextMenuProvider";
+import { useFileSystem } from "@/providers/FileSystemProvider";
+import {useFileSystemDialog} from '@/components/FileManager/Dialogs/FileSystemDialogProvider';
 
-interface FolderMenuProps {
-    menuData: MenuData;
-    onClose: () => void;
+interface MenuItem {
+    icon: LucideIcon;
+    label: string;
+    action: 'upload' | 'createFolder' | 'rename' | 'refresh' | 'delete';
+    className?: string;
 }
 
-export const FolderContextMenu: React.FC<FolderMenuProps> = ({menuData = {}, onClose}) => {
-    const {uploadFile, deleteFile, refreshFolderContents} = useFileSystem();
-    const {path = '', bucketName = ''} = menuData as { path: string; bucketName: string };
-    const {openDialog} = useDialog();
-    const [showDeleteAlert, setShowDeleteAlert] = React.useState(false);
+const FOLDER_MENU_ITEMS: MenuItem[] = [
+    { icon: Upload, label: 'Upload files', action: 'upload' },
+    { icon: FolderPlus, label: 'New folder', action: 'createFolder' },
+    { icon: Edit, label: 'Rename', action: 'rename' },
+    { icon: RefreshCw, label: 'Refresh', action: 'refresh' },
+    { icon: Trash, label: 'Delete', action: 'delete', className: 'text-red-600' }
+];
 
-    const handleUpload = async () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.multiple = true;
-        input.onchange = async (e) => {
-            const files = (e.target as HTMLInputElement).files;
-            if (files) {
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    await uploadFile(bucketName, `${path}/${file.name}`, file);
-                }
-                await refreshFolderContents(bucketName, path);
-            }
-        };
-        input.click();
-    };
+const FolderMenuItem: React.FC<{
+    item: MenuItem;
+    onComplete: () => void;
+}> = ({ item, onComplete }) => {
+    const { uploadFilesToCurrentFolder, refreshCurrentFolder } = useFileSystem();
+    const { openDialog } = useFileSystemDialog();
 
-    const handleCreateFolder = () => {
-        openDialog('createFolder', {
-            currentPath: path,
-            bucketName
-        });
-    };
+    const handleClick = async () => {
+        let success = true;
 
-    const handleDelete = () => {
-        setShowDeleteAlert(true);
-    };
+        switch (item.action) {
+            case 'upload':
+                success = await uploadFilesToCurrentFolder();
+                break;
+            case 'refresh':
+                success = await refreshCurrentFolder();
+                break;
+            case 'createFolder':
+            case 'rename':
+            case 'delete':
+                openDialog(item.action);
+                break;
+        }
 
-    const confirmDelete = async () => {
-        await deleteFile(bucketName, path);
-        setShowDeleteAlert(false);
-    };
-
-    const handleRename = () => {
-        openDialog('rename', {
-            path,
-            type: 'folder',
-            bucketName
-        });
-    };
-
-    const handleRefresh = async () => {
-        await refreshFolderContents(bucketName, path);
+        if (success) onComplete();
     };
 
     return (
-        <>
-            <ContextMenuItem onClick={handleUpload}>
-                <Upload className="mr-2 h-4 w-4"/>
-                Upload files
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleCreateFolder}>
-                <FolderPlus className="mr-2 h-4 w-4"/>
-                New folder
-            </ContextMenuItem>
-            <ContextMenuSeparator/>
-            <ContextMenuItem onClick={handleRename}>
-                <Edit className="mr-2 h-4 w-4"/>
-                Rename
-            </ContextMenuItem>
-            <ContextMenuItem onClick={handleRefresh}>
-                <RefreshCw className="mr-2 h-4 w-4"/>
-                Refresh
-            </ContextMenuItem>
-            <ContextMenuSeparator/>
-            <ContextMenuItem onClick={handleDelete} className="text-red-600">
-                <Trash className="mr-2 h-4 w-4"/>
-                Delete
-            </ContextMenuItem>
+        <ContextMenuItem
+            onClick={handleClick}
+            className={item.className}
+        >
+            <item.icon className="mr-2 h-4 w-4"/>
+            {item.label}
+        </ContextMenuItem>
+    );
+};
 
-            <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete the folder "{path.split('/').pop()}" and all its contents
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={confirmDelete}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+export const FolderContextMenu: React.FC<{
+    menuData: MenuData;
+    onClose: () => void;
+}> = ({ onClose }) => {
+    return (
+        <>
+            {FOLDER_MENU_ITEMS.map((item, index) => (
+                <React.Fragment key={item.action}>
+                    {index === 2 && <ContextMenuSeparator />}
+                    {index === 4 && <ContextMenuSeparator />}
+                    <FolderMenuItem
+                        item={item}
+                        onComplete={onClose}
+                    />
+                </React.Fragment>
+            ))}
         </>
     );
 };

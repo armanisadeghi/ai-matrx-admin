@@ -3,6 +3,7 @@ import {supabase} from "@/utils/supabase/client";
 import StorageDebugger from "./StorageDebugger";
 import {BucketTreeStructure} from "./types";
 import LocalFileSystem from "./LocalFileSystem";
+import {getCreatePath} from "@/utils/file-operations/utils";
 
 class FileSystemManager {
     private static instance: FileSystemManager;
@@ -171,7 +172,6 @@ class FileSystemManager {
                 structure.contents.push({
                     path,
                     type: fileType,
-                    metadata: metadata || null
                 });
                 break;
 
@@ -188,9 +188,7 @@ class FileSystemManager {
                         structure.contents[itemIndex] = {
                             ...structure.contents[itemIndex],
                             path: newPath,
-                            metadata: metadata || structure.contents[itemIndex].metadata
                         };
-                        // Update local storage path
                         await this.localStorage.updateFilePath(bucketName, path, newPath);
                     }
                 }
@@ -347,31 +345,29 @@ class FileSystemManager {
         }
     }
 
-    async createFolder(bucketName: string, folderPath: string): Promise<boolean> {
+    async createFolder(bucketName: string, path: string): Promise<boolean> {
         try {
-            // Create folder marker locally first
-            await this.localStorage.createFolder(bucketName, folderPath);
+            await this.localStorage.createFolder(bucketName, path);
 
             const result = await this.supabase.storage
                 .from(bucketName)
-                .upload(`${folderPath}/.emptyFolder`, new Blob([]));
+                .upload(`${path}/.emptyFolder`, new Blob([]));
 
             if (result.error) throw result.error;
 
-            await this.updateStructureAfterFileOperation(bucketName, folderPath, 'add', 'FOLDER');
+            await this.updateStructureAfterFileOperation(bucketName, path, 'add', 'FOLDER');
 
             this.debugger.logOperation('createFolder',
-                {bucketName, folderPath},
+                {bucketName, path},
                 {success: true}
             );
 
             return true;
         } catch (error) {
-            // Remove local folder marker if failed
-            await this.localStorage.deleteFolder(bucketName, folderPath);
+            await this.localStorage.deleteFolder(bucketName, path);
 
             console.error('Error creating folder:', error);
-            this.debugger.logOperation('createFolder', {bucketName, folderPath}, {error});
+            this.debugger.logOperation('createFolder', {bucketName, path}, {error});
             return false;
         }
     }
@@ -611,7 +607,7 @@ class FileSystemManager {
                     data,
                     bucketName,
                     folderPath
-                );
+                )
 
                 structure.contents.push(...mergedContents);
 

@@ -1,135 +1,256 @@
-[
-  [
-    "any-file",
+{
+  "results": [
     {
-      "name": "any-file",
-      "contents": [
-        {
-          "path": "DFEH-Workplace-Harassment-Guide.pdf",
-          "type": "pdf"
-        },
-        {
-          "path": "Sample Folder",
-          "type": "FOLDER"
-        },
-        {
-          "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/02 Click Pay.docx",
-          "type": "docx"
-        },
-        {
-          "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/3.2_360x.webp",
-          "type": "webp"
-        },
-        {
-          "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/6129_4_Soho-Black-Asymmetric-Cowl-Neck-Dress_1.webp",
-          "type": "webp"
-        },
-        {
-          "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/page.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "Sample Folder/Sub Folder 2/table_data (1).csv",
-          "type": "csv"
-        },
-        {
-          "path": "Sample Folder/sample_data_renamed.txt",
-          "type": "txt"
-        },
-        {
-          "path": "Sample Sub Folder",
-          "type": "FOLDER"
-        },
-        {
-          "path": "Sub Folder 2",
-          "type": "FOLDER"
-        },
-        {
-          "path": "bucket-tests",
-          "type": "FOLDER"
-        },
-        {
-          "path": "bucket-tests/BucketOperations.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/BulkOps.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/FileList.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/FileOperations.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/MoveFileOperation.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/StorageTestUI.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/UtilityOperations.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/next.config.js",
-          "type": "js"
-        },
-        {
-          "path": "bucket-tests/page.tsx",
-          "type": "tsx"
-        },
-        {
-          "path": "bucket-tests/table_data (1).csv",
-          "type": "csv"
-        },
-        {
-          "path": "sub-sub-folder",
-          "type": "FOLDER"
-        },
-        {
-          "path": "sub-sub-folder/pd ratings.pdf",
-          "type": "pdf"
-        }
-      ]
+      "bucket": "any-file",
+      "structure": {
+        "name": "any-file",
+        "contents": [
+          {
+            "path": "DFEH-Workplace-Harassment-Guide.pdf",
+            "type": "pdf"
+          },
+          {
+            "path": "Sample Folder",
+            "type": "FOLDER"
+          },
+          {
+            "path": "Sample Folder/4-second-pre-start-timer.mp3",
+            "type": "mp3"
+          },
+          {
+            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/02 Click Pay.docx",
+            "type": "docx"
+          },
+          {
+            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/3.2_360x.webp",
+            "type": "webp"
+          },
+          {
+            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/6129_4_Soho-Black-Asymmetric-Cowl-Neck-Dress_1.webp",
+            "type": "webp"
+          },
+          {
+            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/page.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "Sample Folder/Sub Folder 2/table_data (1).csv",
+            "type": "csv"
+          },
+          {
+            "path": "Sample Folder/sample_data_renamed.txt",
+            "type": "txt"
+          },
+          {
+            "path": "Sample Sub Folder",
+            "type": "FOLDER"
+          },
+          {
+            "path": "Sub Folder 2",
+            "type": "FOLDER"
+          },
+          {
+            "path": "bucket-tests",
+            "type": "FOLDER"
+          },
+          {
+            "path": "bucket-tests/BucketOperations.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/BulkOps.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/FileList.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/FileOperations.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/MoveFileOperation.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/StorageTestUI.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/UtilityOperations.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/next.config.js",
+            "type": "js"
+          },
+          {
+            "path": "bucket-tests/page.tsx",
+            "type": "tsx"
+          },
+          {
+            "path": "bucket-tests/table_data (1).csv",
+            "type": "csv"
+          },
+          {
+            "path": "nextjs-01-login.zip",
+            "type": "zip"
+          },
+          {
+            "path": "nginx-1.25.4.zip",
+            "type": "zip"
+          },
+          {
+            "path": "sub-sub-folder",
+            "type": "FOLDER"
+          },
+          {
+            "path": "sub-sub-folder/pd ratings.pdf",
+            "type": "pdf"
+          }
+        ]
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    },
+    {
+      "bucket": "audio",
+      "structure": {
+        "name": "audio",
+        "contents": []
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    },
+    {
+      "bucket": "code-editor",
+      "structure": {
+        "name": "code-editor",
+        "contents": [
+          {
+            "path": "CopyFileOperation.tsx",
+            "type": "tsx"
+          }
+        ]
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    },
+    {
+      "bucket": "docs",
+      "structure": {
+        "name": "docs",
+        "contents": [
+          {
+            "path": "02 Click Pay.docx",
+            "type": "docx"
+          },
+          {
+            "path": "Vasaro Runway Show Pur Fae.docx",
+            "type": "docx"
+          },
+          {
+            "path": "Vasaro_LoC.docx",
+            "type": "docx"
+          },
+          {
+            "path": "proposal v.docx",
+            "type": "docx"
+          }
+        ]
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    },
+    {
+      "bucket": "images",
+      "structure": {
+        "name": "images",
+        "contents": [
+          {
+            "path": "business-coach-female-avatar.jpeg",
+            "type": "jpeg"
+          },
+          {
+            "path": "business-coach-male-avatar.jpeg",
+            "type": "jpeg"
+          },
+          {
+            "path": "candice-ai-avatar.jpeg",
+            "type": "jpeg"
+          },
+          {
+            "path": "debate-coach-female-avatar.jpeg",
+            "type": "jpeg"
+          },
+          {
+            "path": "debate-coach-male-avatar.jpeg",
+            "type": "jpeg"
+          },
+          {
+            "path": "development-expert-male-avatar.jpeg",
+            "type": "jpeg"
+          }
+        ]
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    },
+    {
+      "bucket": "notes",
+      "structure": {
+        "name": "notes",
+        "contents": [
+          {
+            "path": "custom",
+            "type": "FOLDER"
+          },
+          {
+            "path": "custom/my sample custom note.txt",
+            "type": "txt"
+          },
+          {
+            "path": "private",
+            "type": "FOLDER"
+          },
+          {
+            "path": "private/my sample private note.txt",
+            "type": "txt"
+          },
+          {
+            "path": "standard",
+            "type": "FOLDER"
+          },
+          {
+            "path": "standard/my sample note.txt",
+            "type": "txt"
+          }
+        ]
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    },
+    {
+      "bucket": "video",
+      "structure": {
+        "name": "video",
+        "contents": [
+          {
+            "path": "Baufra font.rar",
+            "type": "rar"
+          },
+          {
+            "path": "Other Instagram issue _ Job_ 235819968928179 - arman@armansadeghi.com - armansadeghi.com Mail - 14 March 2023.mp4",
+            "type": "mp4"
+          },
+          {
+            "path": "Snapinsta.app_video_10000000_211358131764358_4776911779466818692_n.mp4",
+            "type": "mp4"
+          },
+          {
+            "path": "oIWyyNSnkBLdFh1eDi6i0AIjEDeabWLgHRUoBA.mp4",
+            "type": "mp4"
+          }
+        ]
+      },
+      "updated_at": "2024-12-23T19:19:57.514371+00:00"
     }
   ],
-  [
-    "audio",
-    {
-      "name": "audio",
-      "contents": []
-    }
-  ],
-  [
-    "code-editor",
-    {
-      "name": "code-editor",
-      "contents": [
-        {
-          "path": "CopyFileOperation.tsx",
-          "type": "tsx"
-        }
-      ]
-    }
-  ],
-  [
-    "docs",
-    {
-      "name": "docs",
-      "contents": []
-    }
-  ],
-  [
-    "video",
-    {
-      "name": "video",
-      "contents": []
-    }
-  ]
-]
+  "updated_at": "2024-12-23T19:19:57.514371+00:00",
+  "bucket_count": 7
+}

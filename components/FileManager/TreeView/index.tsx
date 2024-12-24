@@ -1,24 +1,9 @@
+'use client';
+
 import React, { useState } from 'react';
-import { TreeItem } from './TreeItem';
+import { TreeItem } from './TreeItems';
 import { useFileSystem } from '@/providers/FileSystemProvider';
-import {BucketStructureWithNodes, FileCategory, IconComponent} from "@/utils/file-operations";
-
-export interface FolderTypeDetails {
-    icon: IconComponent;
-    category: 'FOLDER';
-    subCategory?: string;
-    description?: string;
-    color?: string;
-    protected?: boolean;
-}
-
-export type FileTypeDetails = {
-    category: FileCategory;
-    subCategory: string;
-    icon: IconComponent;
-    color?: string
-    canPreview?: boolean;
-}
+import { BucketStructureWithNodes } from "@/utils/file-operations";
 
 export interface BaseNodeStructure {
     name: string;
@@ -27,20 +12,13 @@ export interface BaseNodeStructure {
     contentType: 'FOLDER' | 'FILE' | 'BUCKET';
     extension: string | 'FOLDER';
     isEmpty: boolean;
-    details?: FileTypeDetails | FolderTypeDetails;
     children?: BaseNodeStructure[];
-    type: string | 'FOLDER'
-}
-
-export interface TreeItemProps extends BaseNodeStructure {
-    level: number;
-    isExpanded: boolean;
-    onToggle: () => void;
+    type: string | 'FOLDER';
 }
 
 export const TreeView: React.FC = () => {
     const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-    const { getAllBucketStructures } = useFileSystem(); // Added setActiveNode
+    const { getAllBucketStructures } = useFileSystem();
 
     const structures: Map<string, BucketStructureWithNodes> = getAllBucketStructures();
 
@@ -70,13 +48,22 @@ export const TreeView: React.FC = () => {
         );
     };
 
+    const createBucketNode = (bucketStructure: BucketStructureWithNodes): BaseNodeStructure => ({
+        name: bucketStructure.name,
+        path: bucketStructure.name,
+        bucketName: bucketStructure.name,
+        contentType: 'BUCKET',
+        extension: 'FOLDER',
+        isEmpty: bucketStructure.contents.length === 0,
+        children: bucketStructure.contents,
+        type: 'FOLDER'
+    });
+
     return (
         <div className="p-2">
-            {Array.from(structures.values()).map((bucketStructure: BucketStructureWithNodes) => (
-                <div key={bucketStructure.name}>
-                    {bucketStructure.contents.map((node: BaseNodeStructure) => renderNode(node))}
-                </div>
-            ))}
+            {Array.from(structures.values()).map((bucketStructure: BucketStructureWithNodes) =>
+                renderNode(createBucketNode(bucketStructure))
+            )}
         </div>
     );
 };

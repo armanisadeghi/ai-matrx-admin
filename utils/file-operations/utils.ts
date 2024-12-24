@@ -2,16 +2,102 @@ import {
     BucketStructureContent,
     BucketStructureWithNodes,
     BucketTreeStructure,
+    FolderContents, FolderContentsInput, FolderContentsWithNodes,
     NodeStructure
 } from "@/utils/file-operations/types";
-import {getFileDetails} from "@/utils/file-operations/constants";
-import {getFolderDetails} from "@/utils/file-operations/constants";
 
 const DEFAULT_HIDDEN_FILES = ["Thumbs.db", "desktop.ini", ".DS_Store", ".Spotlight-V100", ".Trashes"];
 const DEFAULT_HIDDEN_PREFIXES = ["._"];
 const DEFAULT_HIDDEN_FOLDERS = ['.idea', '.git', 'node_modules', 'dist', 'build', 'coverage', 'PRIVATE-USER-PERSONAL'];
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 50; // 50MB
 const DEFAULT_DISALLOWED_FILE_TYPES = ['.exe', '.bat', '.sh'];
+
+
+// UTILITY: Takes the current path and a new segment (file or folder name) and returns the new full path
+export const getCreatePath = (segments, newSegment) => {
+    const trimmedSegment = newSegment.trim();
+    return segments.length
+        ? `${segments.join('/')}/${trimmedSegment}`
+        : trimmedSegment;
+};
+
+// Get filename without extension
+export const getFileNameWithoutExtension = (filename: string) => {
+    return filename.replace(/\.[^/.]+$/, '');
+};
+
+// Get parent path
+export const getParentPath = (segments) => {
+    return segments.slice(0, -1);
+};
+
+// Check if path is root
+export const isRootPath = (segments) => {
+    return segments.length === 0;
+};
+
+// Sanitize filename (remove invalid characters)
+export const sanitizeFileName = ((filename: string) => {
+    return filename.replace(/[/\\?%*:|"<>]/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim();
+});
+
+// Format file size
+export const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+// Get file extension from filename
+export const getFileExtension = ((filename: string) => {
+    return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2);
+});
+
+
+// Generate unique filename if duplicate exists
+export const getUniqueFileName = ((filename: string, existingFiles) => {
+    const name = getFileNameWithoutExtension(filename);
+    const ext = getFileExtension(filename);
+    let counter = 1;
+    let newFilename = filename;
+
+    while (existingFiles.includes(newFilename)) {
+        newFilename = `${name} (${counter}).${ext}`;
+        counter++;
+    }
+
+    return newFilename;
+});
+
+export const downloadBlob = (blob: Blob, filename: string): boolean => {
+    try {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        return true;
+    } catch (error) {
+        console.error('Error triggering download:', error);
+        return false;
+    }
+};
+
+export const getFilenameFromPath = (path: string | string[]): string => {
+    if (Array.isArray(path)) {
+        return path[path.length - 1] || 'download';
+    }
+    const segments = path.split('/');
+    return segments[segments.length - 1] || 'download';
+};
+
 
 interface FileFilterConfig {
     hiddenFiles: Set<string>;
@@ -178,10 +264,6 @@ class FileNodeManager {
                             contentType: item.contentType,
                             extension: item.extension,
                             isEmpty: item.contentType === 'FILE' ? false : true,
-                            ...(item.contentType === 'FILE' && {
-                                details: getFileDetails(item.extension)
-                            }),
-                            // Preserve additional fields
                             ...(item.metadata && {metadata: item.metadata}),
                             ...(item.id && {id: item.id}),
                             ...(item.updated_at && {updated_at: item.updated_at}),
@@ -192,7 +274,6 @@ class FileNodeManager {
                             contentType: 'FOLDER',
                             extension: 'FOLDER',
                             isEmpty: true,
-                            details: getFolderDetails(part)
                         })
                     };
 
@@ -254,7 +335,6 @@ class FileNodeManager {
     }
 
     processBucketStructure(structure: BucketTreeStructure): BucketStructureWithNodes {
-        console.log('Processing bucket structure: ', structure);
         const updatedStructure = this.processCoreStructure(structure.contents, structure.name);
         const filteredFiles = this.processFiles(updatedStructure);
         const finalFiltered = this.processFolders(filteredFiles);
@@ -263,6 +343,19 @@ class FileNodeManager {
 
         return {
             name: structure.name,
+            contents: hierarchicalNodes,
+        };
+    }
+
+    processFolderContents(structure: FolderContentsInput, bucketName: string): FolderContentsWithNodes {
+        const updatedStructure = this.processCoreStructure(structure.contents, bucketName);
+        const filteredFiles = this.processFiles(updatedStructure);
+        const finalFiltered = this.processFolders(filteredFiles);
+        const sortedItems = this.sortItems(finalFiltered);
+        const hierarchicalNodes = this.buildTreeNode(bucketName, sortedItems);
+
+        return {
+            path: structure.path,
             contents: hierarchicalNodes,
         };
     }
@@ -276,6 +369,8 @@ class FileNodeManager {
 
         return processedStructures;
     }
+
+
 }
 
 export const fileNodeManager = FileNodeManager.getInstance();

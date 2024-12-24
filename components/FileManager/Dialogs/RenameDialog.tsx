@@ -1,4 +1,3 @@
-// components/FileManager/Dialogs/RenameDialog.tsx
 import React from 'react';
 import {
     Dialog,
@@ -7,45 +6,34 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {EnterInput} from "@/components/ui/input";
-import {useFileSystem} from '@/providers/FileSystemProvider';
+import { Button } from "@/components/ui/button";
+import { useFileSystem } from '@/providers/FileSystemProvider';
+import { ValidatedEnterInput } from '@/components/ui/matrx/input-intel';
 
 interface RenameDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    path: string;
-    type: 'file' | 'folder';
+    onSubmit: (value: string) => Promise<void>;
 }
 
-export const RenameDialog: React.FC<RenameDialogProps> = (
-    {
-        isOpen,
-        onClose,
-        path = '', // Provide default empty string
-        type
-    }) => {
-    const {currentBucket, renameFile, renameFolder} = useFileSystem();
-    const [newName, setNewName] = React.useState('');
-    const currentName = path.split('/').pop() || '';
+export const RenameDialog: React.FC<RenameDialogProps> = ({
+    isOpen,
+    onClose,
+    onSubmit
+}) => {
+    const { currentPath, getCurrentItemType } = useFileSystem();
+    const type = getCurrentItemType();
+    const currentName = currentPath[currentPath.length - 1] || '';
+    const [newName, setNewName] = React.useState(currentName);
 
     React.useEffect(() => {
         setNewName(currentName);
     }, [currentName]);
 
-    const handleRename = async () => {
-        if (!newName.trim()) return;
-
-        const parentPath = path.split('/').slice(0, -1).join('/');
-        const newPath = parentPath ? `${parentPath}/${newName}` : newName;
-
-        if (type === 'file') {
-            await renameFile(currentBucket!, path, newPath);
-        } else {
-            await renameFolder(currentBucket!, path, newPath);
-        }
-
-        onClose();
+    const handleSubmit = async (value?: string) => {
+        if (!value) return;
+        await onSubmit(value);
+        setNewName('');
     };
 
     return (
@@ -55,10 +43,19 @@ export const RenameDialog: React.FC<RenameDialogProps> = (
                     <DialogTitle>Rename {type}</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                    <EnterInput
+                    <ValidatedEnterInput
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
-                        onEnter={handleRename}
+                        onEnter={handleSubmit}
+                        validations={[
+                            'notBlank',
+                            { type: 'maxLength', params: 255 },
+                            {
+                                type: 'regex',
+                                params: /^[^<>:"/\\|?*]+$/,
+                                errorMessage: `${type} name contains invalid characters`
+                            }
+                        ]}
                         placeholder={`Enter new ${type} name`}
                         autoFocus
                     />
@@ -67,7 +64,7 @@ export const RenameDialog: React.FC<RenameDialogProps> = (
                     <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button onClick={handleRename}>
+                    <Button onClick={() => handleSubmit(newName)}>
                         Rename
                     </Button>
                 </DialogFooter>

@@ -1,4 +1,3 @@
-// components/FileManager/Dialogs/CreateFolderDialog.tsx
 import React from 'react';
 import {
     Dialog,
@@ -7,35 +6,27 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {EnterInput} from "@/components/ui/input";
-import {useFileSystem} from '@/providers/FileSystemProvider';
+import { Button } from "@/components/ui/button";
+import {ValidatedEnterInput} from "@/components/ui/matrx/input-intel";
 
 interface CreateFolderDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    currentPath: string;
+    onSubmit: (folderName: string) => Promise<void>;
 }
 
-export const CreateFolderDialog: React.FC<CreateFolderDialogProps> = (
-    {
-        isOpen,
-        onClose,
-        currentPath
-    }) => {
-    const {currentBucket, createFolder} = useFileSystem();
+export const CreateFolderDialog: React.FC<CreateFolderDialogProps> = ({
+    isOpen,
+    onClose,
+    onSubmit
+}) => {
     const [folderName, setFolderName] = React.useState('');
 
-    const handleCreate = async () => {
-        if (!folderName.trim()) return;
-
-        const newPath = currentPath
-            ? `${currentPath}/${folderName}`
-            : folderName;
-
-        await createFolder(currentBucket!, newPath);
-        setFolderName('');
-        onClose();
+    const handleSubmit = async (value?: string) => {
+        if (value) {
+            await onSubmit(value);
+            setFolderName('');
+        }
     };
 
     return (
@@ -45,10 +36,19 @@ export const CreateFolderDialog: React.FC<CreateFolderDialogProps> = (
                     <DialogTitle>Create new folder</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                    <EnterInput
+                    <ValidatedEnterInput
                         value={folderName}
                         onChange={(e) => setFolderName(e.target.value)}
-                        onEnter={handleCreate}
+                        onEnter={handleSubmit}
+                        validations={[
+                            'notBlank',
+                            { type: 'maxLength', params: 255 },
+                            {
+                                type: 'regex',
+                                params: /^[^<>:"/\\|?*]+$/,
+                                errorMessage: 'Folder name contains invalid characters'
+                            }
+                        ]}
                         placeholder="Enter folder name"
                         autoFocus
                     />
@@ -57,7 +57,7 @@ export const CreateFolderDialog: React.FC<CreateFolderDialogProps> = (
                     <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button onClick={handleCreate}>
+                    <Button onClick={() => handleSubmit(folderName)}>
                         Create
                     </Button>
                 </DialogFooter>

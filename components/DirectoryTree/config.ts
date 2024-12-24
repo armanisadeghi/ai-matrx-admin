@@ -38,6 +38,7 @@ import {
 } from "@tabler/icons-react";
 import React from "react";
 import {TwoColorPythonIcon} from "@/components/DirectoryTree/custom-icons";
+import {FileTypeDetails} from "@/utils/file-operations";
 
 export const FILE_ICONS = {
     '.bmp': IconFileTypeBmp,
@@ -338,13 +339,6 @@ export const FILE_EXTENSIONS = {
     },
 } as const;
 
-
-export type FileTypeDetails = {
-    category: FileCategory;
-    subCategory: string;
-    icon: React.ComponentType;
-    color?: string
-}
 
 export const FILE_EXTENSIONS_LOOKUP: Record<string, FileTypeDetails> = {
     js: {category: "CODE", subCategory: "JAVASCRIPT", icon: IconFileTypeJs, color: 'text-amber-500'},

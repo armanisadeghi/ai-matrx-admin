@@ -165,9 +165,17 @@ export interface BucketStructure {
 
 export interface StructureWithContents {
     contents: BucketStructure[];
-
     [key: string]: any;
 }
+
+export interface NodeStructureWithMetadata extends NodeStructure {
+    metadata?: StorageMetadata;
+    id?: string;
+    updated_at?: string;
+    created_at?: string;
+    last_accessed_at?: string;
+}
+
 
 export interface NodeStructure {
     path: string;
@@ -177,22 +185,26 @@ export interface NodeStructure {
     contentType: 'FOLDER' | 'FILE' | 'BUCKET';
     extension: string | 'FOLDER';
     isEmpty: boolean; // false for files
-    details?: FileTypeDetails | FolderTypeDetails;
     children?: NodeStructure[];
-
-    // we don't have these yet so ignore them, but if they're there, don't lose them.
     metadata?: StorageMetadata;
-    id?: string;
-    updated_at?: string;
-    created_at?: string;
-    last_accessed_at?: string;
+    details?: FileTypeDetails | FolderTypeDetails;
 }
 
 export interface BucketStructureWithNodes {
     name: string;
     contents: NodeStructure[];
-
     [key: string]: any;
+}
+
+export interface FolderContentsInput {
+    path: string;
+    contents: BucketStructure[];
+}
+
+// Our processed output type
+export interface FolderContentsWithNodes {
+    path: string;
+    contents: NodeStructure[];
 }
 
 

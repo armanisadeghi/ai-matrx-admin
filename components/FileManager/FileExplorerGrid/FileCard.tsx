@@ -1,19 +1,23 @@
 // components/FileManager/FileExplorerGrid/FileCard.tsx
-import React from 'react';
+import React, {useMemo} from 'react';
+import {getFileDetails, getFolderDetails, NodeStructure} from '@/utils/file-operations';
 import { useFileSystem } from '@/providers/FileSystemProvider';
 import { cn } from '@/lib/utils';
-import { BucketStructure } from '@/utils/file-operations';
-import { FolderIcon } from 'lucide-react';
 
 interface FileCardProps {
-    file: BucketStructure;
+    file: NodeStructure;
     isSelected: boolean;
     onClick: () => void;
+    onDoubleClick: () => void;
 }
 
 export const FileCard: React.FC<FileCardProps> = ({ file, isSelected, onClick }) => {
-    const { getFileIcon, getFileColor } = useFileSystem();
-    const FileIcon = file.type === 'FOLDER' ? FolderIcon : getFileIcon(file.path);
+
+    const details = file.type === 'FOLDER' ?
+        getFolderDetails(file.name) :
+        getFileDetails(file.extension);
+    const IconComponent = details.icon;
+    const color = details.color;
 
     return (
         <div
@@ -24,7 +28,7 @@ export const FileCard: React.FC<FileCardProps> = ({ file, isSelected, onClick })
             )}
             onClick={onClick}
         >
-            <FileIcon className={cn('h-6 w-6 mb-1', file.type === 'FOLDER' ? 'text-yellow-500' : getFileColor(file.path))} />
+            <IconComponent className={cn('h-6 w-6 mb-1', color)} />
             <span className="text-xs truncate w-full">
                 {file.path.split('/').pop()}
             </span>

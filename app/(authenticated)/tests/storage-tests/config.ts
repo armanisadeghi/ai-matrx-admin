@@ -1,6 +1,7 @@
 // config.ts
 
 import {ModulePage} from "@/components/matrx/navigation/types";
+import {DirectoryTreeConfig} from "@/components/FileManager/TreeView/concepts/DirectoryTree";
 
 export const pages: ModulePage[] = [
     {
@@ -75,3 +76,13 @@ export const filteredPages = pages.filter(page => page.path !== 'link-here');
 
 export const MODULE_HOME = '/tests/storage-tests';
 export const MODULE_NAME = 'Storage Tests';
+
+export const DEFAULT_STORAGE_TREE_CONFIG: DirectoryTreeConfig = {
+    excludeFiles: [],
+    excludeDirs: [],
+    hideHiddenFiles: false,
+    showIcons: true,
+    indentSize: 24,
+    sortFoldersFirst: true,
+};
+
