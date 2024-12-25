@@ -2,7 +2,7 @@ import {
     BucketStructureContent,
     BucketStructureWithNodes,
     BucketTreeStructure,
-    FolderContents, FolderContentsInput, FolderContentsWithNodes,
+    FolderContentsInput, FolderContentsWithNodes,
     NodeStructure
 } from "@/utils/file-operations/types";
 

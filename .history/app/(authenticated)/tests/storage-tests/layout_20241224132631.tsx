@@ -1,0 +1,17 @@
+// /layout.tsx
+export default function Layout({children}: { children: React.ReactNode }) {
+    return (
+        <div className="flex flex-col h-full">
+            <div className="sticky top-0 z-50">
+                <ModuleHeaderWithProvider
+                    pages={filteredPages}
+                    moduleHome={MODULE_HOME}
+                    moduleName={MODULE_NAME}
+                />
+            </div>
+            <main className="flex-1">
+                {children}
+            </main>
+        </div>
+    );
+}

@@ -1,0 +1,32 @@
+'use client';
+
+import { useState } from 'react';
+import { PDFViewer, Document, Page } from '@react-pdf/renderer';
+
+interface PDFViewerProps {
+  url: string;
+  onError?: () => void;
+}
+
+export default function PDFView({ url, onError }: PDFViewerProps) {
+  const [numPages, setNumPages] = useState<number>();
+  const [pageNumber, setPageNumber] = useState(1);
+
+  return (
+    <div className="w-full h-[calc(100vh-12rem)]">
+      <PDFViewer className="w-full h-full">
+        <Document
+          file={url}
+          onLoadSuccess={({ numPages: nextNumPages }) => {
+            setNumPages(nextNumPages);
+          }}
+          onLoadError={onError}
+        >
+          {Array.from(new Array(numPages), (el, index) => (
+            <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+          ))}
+        </Document>
+      </PDFViewer>
+    </div>
+  );
+}

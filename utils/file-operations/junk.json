@@ -1,256 +1,632 @@
-{
-  "results": [
-    {
-      "bucket": "any-file",
-      "structure": {
-        "name": "any-file",
-        "contents": [
-          {
-            "path": "DFEH-Workplace-Harassment-Guide.pdf",
-            "type": "pdf"
-          },
-          {
-            "path": "Sample Folder",
-            "type": "FOLDER"
-          },
-          {
-            "path": "Sample Folder/4-second-pre-start-timer.mp3",
-            "type": "mp3"
-          },
-          {
-            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/02 Click Pay.docx",
-            "type": "docx"
-          },
-          {
-            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/3.2_360x.webp",
-            "type": "webp"
-          },
-          {
-            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/6129_4_Soho-Black-Asymmetric-Cowl-Neck-Dress_1.webp",
-            "type": "webp"
-          },
-          {
-            "path": "Sample Folder/Sample Sub Folder/sub-sub-folder/page.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "Sample Folder/Sub Folder 2/table_data (1).csv",
-            "type": "csv"
-          },
-          {
-            "path": "Sample Folder/sample_data_renamed.txt",
-            "type": "txt"
-          },
-          {
-            "path": "Sample Sub Folder",
-            "type": "FOLDER"
-          },
-          {
-            "path": "Sub Folder 2",
-            "type": "FOLDER"
-          },
-          {
-            "path": "bucket-tests",
-            "type": "FOLDER"
-          },
-          {
-            "path": "bucket-tests/BucketOperations.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/BulkOps.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/FileList.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/FileOperations.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/MoveFileOperation.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/StorageTestUI.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/UtilityOperations.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/next.config.js",
-            "type": "js"
-          },
-          {
-            "path": "bucket-tests/page.tsx",
-            "type": "tsx"
-          },
-          {
-            "path": "bucket-tests/table_data (1).csv",
-            "type": "csv"
-          },
-          {
-            "path": "nextjs-01-login.zip",
-            "type": "zip"
-          },
-          {
-            "path": "nginx-1.25.4.zip",
-            "type": "zip"
-          },
-          {
-            "path": "sub-sub-folder",
-            "type": "FOLDER"
-          },
-          {
-            "path": "sub-sub-folder/pd ratings.pdf",
-            "type": "pdf"
-          }
-        ]
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+[
+  {
+    "id": "494efc68-93b5-4e28-a970-209ba9160c4c",
+    "bucket_id": "Images",
+    "name": "Avatars/Education/.emptyFolderPlaceholder",
+    "owner": null,
+    "created_at": "2024-12-24 19:56:32.169313+00",
+    "updated_at": "2024-12-24 19:56:32.169313+00",
+    "last_accessed_at": "2024-12-24 19:56:32.169313+00",
+    "metadata": {
+      "eTag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+      "size": 0,
+      "mimetype": "application/octet-stream",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:56:33.000Z",
+      "contentLength": 0,
+      "httpStatusCode": 200
     },
-    {
-      "bucket": "audio",
-      "structure": {
-        "name": "audio",
-        "contents": []
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    "path_tokens": [
+      "Avatars",
+      "Education",
+      ".emptyFolderPlaceholder"
+    ],
+    "version": "7b95277e-c7e4-4136-8cb0-f0b069a6e4cc",
+    "owner_id": null,
+    "user_metadata": {}
+  },
+  {
+    "id": "05f875b7-256b-47e0-9bb7-75c9b982dc2e",
+    "bucket_id": "Images",
+    "name": "Avatars/Education/english-tutor-female-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.681775+00",
+    "updated_at": "2024-12-24 19:56:57.56522+00",
+    "last_accessed_at": "2024-12-23 19:23:28.681775+00",
+    "metadata": {
+      "eTag": "\"7ea1fea339a404866fece50dec34a5dd\"",
+      "size": 102687,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:56:58.000Z",
+      "contentLength": 102687,
+      "httpStatusCode": 200
     },
-    {
-      "bucket": "code-editor",
-      "structure": {
-        "name": "code-editor",
-        "contents": [
-          {
-            "path": "CopyFileOperation.tsx",
-            "type": "tsx"
-          }
-        ]
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    "path_tokens": [
+      "Avatars",
+      "Education",
+      "english-tutor-female-avatar.jpeg"
+    ],
+    "version": "7cfb4951-a004-4bc1-ac0e-8bc7545f0cb0",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "6422b0c2-6088-46d6-a2a7-eb5ac89776ce",
+    "bucket_id": "Images",
+    "name": "Avatars/Education/english-tutor-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.814515+00",
+    "updated_at": "2024-12-24 19:56:57.565291+00",
+    "last_accessed_at": "2024-12-23 19:23:28.814515+00",
+    "metadata": {
+      "eTag": "\"9f2f19b1298cf572bfde395784c79841\"",
+      "size": 87659,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:56:58.000Z",
+      "contentLength": 87659,
+      "httpStatusCode": 200
     },
-    {
-      "bucket": "docs",
-      "structure": {
-        "name": "docs",
-        "contents": [
-          {
-            "path": "02 Click Pay.docx",
-            "type": "docx"
-          },
-          {
-            "path": "Vasaro Runway Show Pur Fae.docx",
-            "type": "docx"
-          },
-          {
-            "path": "Vasaro_LoC.docx",
-            "type": "docx"
-          },
-          {
-            "path": "proposal v.docx",
-            "type": "docx"
-          }
-        ]
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    "path_tokens": [
+      "Avatars",
+      "Education",
+      "english-tutor-male-avatar.jpeg"
+    ],
+    "version": "1cd7cdff-1615-4b6a-b0a6-5ecf979d10d4",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "fbac9a61-fdbe-4eea-8fde-f3eb9773301b",
+    "bucket_id": "Images",
+    "name": "Avatars/Education/flashcard-grader-male.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.839251+00",
+    "updated_at": "2024-12-24 19:56:57.813736+00",
+    "last_accessed_at": "2024-12-23 19:23:28.839251+00",
+    "metadata": {
+      "eTag": "\"a9934525ec431d65ba131de1c1c71408\"",
+      "size": 91345,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:56:58.000Z",
+      "contentLength": 91345,
+      "httpStatusCode": 200
     },
-    {
-      "bucket": "images",
-      "structure": {
-        "name": "images",
-        "contents": [
-          {
-            "path": "business-coach-female-avatar.jpeg",
-            "type": "jpeg"
-          },
-          {
-            "path": "business-coach-male-avatar.jpeg",
-            "type": "jpeg"
-          },
-          {
-            "path": "candice-ai-avatar.jpeg",
-            "type": "jpeg"
-          },
-          {
-            "path": "debate-coach-female-avatar.jpeg",
-            "type": "jpeg"
-          },
-          {
-            "path": "debate-coach-male-avatar.jpeg",
-            "type": "jpeg"
-          },
-          {
-            "path": "development-expert-male-avatar.jpeg",
-            "type": "jpeg"
-          }
-        ]
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    "path_tokens": [
+      "Avatars",
+      "Education",
+      "flashcard-grader-male.jpeg"
+    ],
+    "version": "132e654d-0f25-428a-b565-d17094e7babf",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "131a2ddd-9037-4783-ba63-08cad501d97f",
+    "bucket_id": "Images",
+    "name": "Avatars/Education/history-tutor-female-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.711223+00",
+    "updated_at": "2024-12-24 19:56:57.600359+00",
+    "last_accessed_at": "2024-12-23 19:23:28.711223+00",
+    "metadata": {
+      "eTag": "\"4ed8f96c294ea39990ad0f7e05bfbf30\"",
+      "size": 105499,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:56:58.000Z",
+      "contentLength": 105499,
+      "httpStatusCode": 200
     },
-    {
-      "bucket": "notes",
-      "structure": {
-        "name": "notes",
-        "contents": [
-          {
-            "path": "custom",
-            "type": "FOLDER"
-          },
-          {
-            "path": "custom/my sample custom note.txt",
-            "type": "txt"
-          },
-          {
-            "path": "private",
-            "type": "FOLDER"
-          },
-          {
-            "path": "private/my sample private note.txt",
-            "type": "txt"
-          },
-          {
-            "path": "standard",
-            "type": "FOLDER"
-          },
-          {
-            "path": "standard/my sample note.txt",
-            "type": "txt"
-          }
-        ]
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
+    "path_tokens": [
+      "Avatars",
+      "Education",
+      "history-tutor-female-avatar.jpeg"
+    ],
+    "version": "34a33d6e-4d28-4ea2-ba61-440c987d0052",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "fae8c8d5-0f5e-41bc-a8ba-1fc35c0f587c",
+    "bucket_id": "Images",
+    "name": "Avatars/business-coach-female-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.659342+00",
+    "updated_at": "2024-12-24 19:52:55.967679+00",
+    "last_accessed_at": "2024-12-23 19:23:28.659342+00",
+    "metadata": {
+      "eTag": "\"55a5b4a9ccb8f0d25c8e81ef2e3a409c\"",
+      "size": 117772,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:52:56.000Z",
+      "contentLength": 117772,
+      "httpStatusCode": 200
     },
-    {
-      "bucket": "video",
-      "structure": {
-        "name": "video",
-        "contents": [
-          {
-            "path": "Baufra font.rar",
-            "type": "rar"
-          },
-          {
-            "path": "Other Instagram issue _ Job_ 235819968928179 - arman@armansadeghi.com - armansadeghi.com Mail - 14 March 2023.mp4",
-            "type": "mp4"
-          },
-          {
-            "path": "Snapinsta.app_video_10000000_211358131764358_4776911779466818692_n.mp4",
-            "type": "mp4"
-          },
-          {
-            "path": "oIWyyNSnkBLdFh1eDi6i0AIjEDeabWLgHRUoBA.mp4",
-            "type": "mp4"
-          }
-        ]
-      },
-      "updated_at": "2024-12-23T19:19:57.514371+00:00"
-    }
-  ],
-  "updated_at": "2024-12-23T19:19:57.514371+00:00",
-  "bucket_count": 7
-}
+    "path_tokens": [
+      "Avatars",
+      "business-coach-female-avatar.jpeg"
+    ],
+    "version": "d3adb93e-8393-4759-8625-f86353bcffa0",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "1f5f842b-8f45-4c78-a9ba-984c3fa7d06b",
+    "bucket_id": "Images",
+    "name": "Avatars/business-coach-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.621445+00",
+    "updated_at": "2024-12-24 19:52:56.032525+00",
+    "last_accessed_at": "2024-12-23 19:23:28.621445+00",
+    "metadata": {
+      "eTag": "\"425ebcdb32ecaca8dacfc2b538d3a657\"",
+      "size": 94039,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:52:56.000Z",
+      "contentLength": 94039,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "business-coach-male-avatar.jpeg"
+    ],
+    "version": "c794b13a-fcde-44e9-83ea-984dbe16c42a",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "a4c0c7f2-9d87-494a-9acf-14f6ce862037",
+    "bucket_id": "Images",
+    "name": "Avatars/candice-ai-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.779063+00",
+    "updated_at": "2024-12-24 19:52:55.959338+00",
+    "last_accessed_at": "2024-12-23 19:23:28.779063+00",
+    "metadata": {
+      "eTag": "\"1230238e466952af2d39dfbc914cc7bf\"",
+      "size": 75309,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:52:56.000Z",
+      "contentLength": 75309,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "candice-ai-avatar.jpeg"
+    ],
+    "version": "44ea0092-dae4-42c1-95a7-43caaf69b2b7",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "d27258d9-36f9-4463-9193-ceaf90b06fb1",
+    "bucket_id": "Images",
+    "name": "Avatars/debate-coach-female-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.735425+00",
+    "updated_at": "2024-12-24 19:53:09.60302+00",
+    "last_accessed_at": "2024-12-23 19:23:28.735425+00",
+    "metadata": {
+      "eTag": "\"ed7dba4a618d72944f662223704429b9\"",
+      "size": 75199,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 75199,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "debate-coach-female-avatar.jpeg"
+    ],
+    "version": "aa207405-cce5-43b6-b60f-8ac557bd7008",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "6fcf6599-bc6d-4c88-86dc-8598f23eb745",
+    "bucket_id": "Images",
+    "name": "Avatars/debate-coach-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.609082+00",
+    "updated_at": "2024-12-24 19:53:09.523609+00",
+    "last_accessed_at": "2024-12-23 19:23:28.609082+00",
+    "metadata": {
+      "eTag": "\"3e899a572180b68ce894780445c98910\"",
+      "size": 80249,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 80249,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "debate-coach-male-avatar.jpeg"
+    ],
+    "version": "5315bd13-1b05-40af-a40d-f5629e4894a1",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "10f3848e-c647-44ba-a9dd-a6521eb720bb",
+    "bucket_id": "Images",
+    "name": "Avatars/development-expert-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:28.631815+00",
+    "updated_at": "2024-12-24 19:53:09.520517+00",
+    "last_accessed_at": "2024-12-23 19:23:28.631815+00",
+    "metadata": {
+      "eTag": "\"240f6ced241b7909195466d92ebe683d\"",
+      "size": 92632,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 92632,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "development-expert-male-avatar.jpeg"
+    ],
+    "version": "e17c6873-baaf-40ae-bfa0-46d0a7c9f76c",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "051c017c-992b-4432-9d5e-f73c33ef30f0",
+    "bucket_id": "Images",
+    "name": "Avatars/history-tutor-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.456726+00",
+    "updated_at": "2024-12-24 19:53:09.498103+00",
+    "last_accessed_at": "2024-12-23 19:23:29.456726+00",
+    "metadata": {
+      "eTag": "\"80d009ce2a9b774dc8e1eebe5033fdcb\"",
+      "size": 85867,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 85867,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "history-tutor-male-avatar.jpeg"
+    ],
+    "version": "3233c75d-c837-4fc9-99e6-374756d42e63",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "d7fadea6-14f3-4dee-b633-6acd58167254",
+    "bucket_id": "Images",
+    "name": "Avatars/hr-expoert-female-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.436627+00",
+    "updated_at": "2024-12-24 19:53:09.518282+00",
+    "last_accessed_at": "2024-12-23 19:23:29.436627+00",
+    "metadata": {
+      "eTag": "\"ef78fb048a871f9907f8b29e47b73d21\"",
+      "size": 110728,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 110728,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "hr-expoert-female-avatar.jpeg"
+    ],
+    "version": "94f33f6b-f6f5-4f70-ac93-c772ae427716",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "a9bd6d8a-0134-4f4c-97cb-284c0f3c9e8e",
+    "bucket_id": "Images",
+    "name": "Avatars/math-tutor-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.639484+00",
+    "updated_at": "2024-12-24 19:53:09.498821+00",
+    "last_accessed_at": "2024-12-23 19:23:29.639484+00",
+    "metadata": {
+      "eTag": "\"de680c9fa891f7e9c2cc7bdeee21a3a8\"",
+      "size": 90043,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 90043,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "math-tutor-avatar.jpeg"
+    ],
+    "version": "b230e46c-cbf1-4b6d-92d1-0ddc30962765",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "1390cd11-5df3-4960-b77b-4accbe766911",
+    "bucket_id": "Images",
+    "name": "Avatars/math-tutor-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.53543+00",
+    "updated_at": "2024-12-24 19:53:09.544142+00",
+    "last_accessed_at": "2024-12-23 19:23:29.53543+00",
+    "metadata": {
+      "eTag": "\"6661807ef8cdd44e2ac9c708acb737b2\"",
+      "size": 66843,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 66843,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "math-tutor-male-avatar.jpeg"
+    ],
+    "version": "3687c7d2-e6ac-44a5-ba05-08776ec9fbc4",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "52e3de9e-8d00-480d-a357-cb9a9fce7153",
+    "bucket_id": "Images",
+    "name": "Avatars/matrx-ai-avatar-female.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.527001+00",
+    "updated_at": "2024-12-24 19:53:09.595912+00",
+    "last_accessed_at": "2024-12-23 19:23:29.527001+00",
+    "metadata": {
+      "eTag": "\"4d6e45fcae31fd5633c76b7751ab3edd\"",
+      "size": 107419,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 107419,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "matrx-ai-avatar-female.jpeg"
+    ],
+    "version": "71ec0756-024b-476c-b068-b9c427837405",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "f7e7a0e4-35c2-4727-b756-7144ddedb1b5",
+    "bucket_id": "Images",
+    "name": "Avatars/matrx-ai-avatar-male.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.508963+00",
+    "updated_at": "2024-12-24 19:53:09.407991+00",
+    "last_accessed_at": "2024-12-23 19:23:29.508963+00",
+    "metadata": {
+      "eTag": "\"8bc30ead336d6f0523ed58c83b9b631d\"",
+      "size": 60555,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 60555,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "matrx-ai-avatar-male.jpeg"
+    ],
+    "version": "5407b1ef-8eb8-4866-9f15-f0dc6cb394f3",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "e1d45939-ee35-4ec0-826d-361da56ca05b",
+    "bucket_id": "Images",
+    "name": "Avatars/python-developer-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.656617+00",
+    "updated_at": "2024-12-24 19:53:09.517414+00",
+    "last_accessed_at": "2024-12-23 19:23:29.656617+00",
+    "metadata": {
+      "eTag": "\"6b5f5b7bbf33e54536ca737ce057b6f8\"",
+      "size": 154173,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 154173,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "python-developer-male-avatar.jpeg"
+    ],
+    "version": "1ec2b753-e836-4bc9-93ad-15564d50e25d",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "d6b080ba-575d-4855-b13e-659ebd28fdec",
+    "bucket_id": "Images",
+    "name": "Avatars/react-developer-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.475767+00",
+    "updated_at": "2024-12-24 19:53:09.740592+00",
+    "last_accessed_at": "2024-12-23 19:23:29.475767+00",
+    "metadata": {
+      "eTag": "\"626d212f4afc164154eed98ccd1fbecf\"",
+      "size": 88078,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 88078,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "react-developer-male-avatar.jpeg"
+    ],
+    "version": "89caeb9a-9d23-4e3b-9a2e-0538d5cacaaf",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "7d36ff90-f60a-428b-8e96-ee5725cf798a",
+    "bucket_id": "Images",
+    "name": "Avatars/science-tutor-female-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.663707+00",
+    "updated_at": "2024-12-24 19:53:09.488112+00",
+    "last_accessed_at": "2024-12-23 19:23:29.663707+00",
+    "metadata": {
+      "eTag": "\"ce4bc6932605e0ba4e687493e2938bc0\"",
+      "size": 124956,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 124956,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "science-tutor-female-avatar.jpeg"
+    ],
+    "version": "73910587-be04-4e4f-bba3-7d24ee09e4ac",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "0ed05e14-9b7e-422e-b1bf-29ccc5ef605c",
+    "bucket_id": "Images",
+    "name": "Avatars/science-tutor-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:29.642881+00",
+    "updated_at": "2024-12-24 19:53:09.553855+00",
+    "last_accessed_at": "2024-12-23 19:23:29.642881+00",
+    "metadata": {
+      "eTag": "\"0680b1f940b688f219c22578288d0af1\"",
+      "size": 141334,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 141334,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "science-tutor-male-avatar.jpeg"
+    ],
+    "version": "1278f064-ae5d-461c-9d04-cf47e0263d90",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "2950e313-a8a1-4c54-9553-bdc69838d907",
+    "bucket_id": "Images",
+    "name": "Avatars/typescript-developer-male-avatar.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:30.280277+00",
+    "updated_at": "2024-12-24 19:53:09.468549+00",
+    "last_accessed_at": "2024-12-23 19:23:30.280277+00",
+    "metadata": {
+      "eTag": "\"176eaf81d1c09f7a6fe320d8f47647ad\"",
+      "size": 77862,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 77862,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "typescript-developer-male-avatar.jpeg"
+    ],
+    "version": "435422e4-5d38-401a-a418-99377cb2e814",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "b6324174-736a-476b-b964-fc06bd95442f",
+    "bucket_id": "Images",
+    "name": "Avatars/voice-avatar-british-female.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:30.226781+00",
+    "updated_at": "2024-12-24 19:53:09.470467+00",
+    "last_accessed_at": "2024-12-23 19:23:30.226781+00",
+    "metadata": {
+      "eTag": "\"b0433c9a8da716734e9b24749627b5b1\"",
+      "size": 87819,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 87819,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "voice-avatar-british-female.jpeg"
+    ],
+    "version": "a617ede1-fe09-4f75-8acf-2de2733f432e",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "039641fc-039d-4161-bdc6-814cc84131c0",
+    "bucket_id": "Images",
+    "name": "Avatars/voice-avatar-default-female.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:30.339159+00",
+    "updated_at": "2024-12-24 19:53:09.638447+00",
+    "last_accessed_at": "2024-12-23 19:23:30.339159+00",
+    "metadata": {
+      "eTag": "\"49633bc85f9c312e9cb59054bd2caef4\"",
+      "size": 76628,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 76628,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "voice-avatar-default-female.jpeg"
+    ],
+    "version": "391d3d60-7786-4e97-b66e-5e9ab0099d68",
+    "owner_id": null,
+    "user_metadata": null
+  },
+  {
+    "id": "43f61d2b-d9fd-45fc-9da9-32f1052e204e",
+    "bucket_id": "Images",
+    "name": "Avatars/voice-avatar-default.jpeg",
+    "owner": null,
+    "created_at": "2024-12-23 19:23:30.285487+00",
+    "updated_at": "2024-12-24 19:53:09.582382+00",
+    "last_accessed_at": "2024-12-23 19:23:30.285487+00",
+    "metadata": {
+      "eTag": "\"3ec55cde2cb852f5fb664ce48cc0ef3c\"",
+      "size": 86736,
+      "mimetype": "image/jpeg",
+      "cacheControl": "max-age=3600",
+      "lastModified": "2024-12-24T19:53:10.000Z",
+      "contentLength": 86736,
+      "httpStatusCode": 200
+    },
+    "path_tokens": [
+      "Avatars",
+      "voice-avatar-default.jpeg"
+    ],
+    "version": "589d64eb-ac07-4bc5-900f-5eea9b9a309d",
+    "owner_id": null,
+    "user_metadata": null
+  }
+]
