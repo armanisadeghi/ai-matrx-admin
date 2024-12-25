@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TestResults from "./TestResults";
 import StorageItemTest from "./StorageItemTest";
-import BucketListTest from "./BucketListTest";
-import FileDownloadTest from "./FileDownloadTest";
-import BucketContentsTest from "./BucketContentsTest";
+import BucketListTest from "./buckets/BucketListTest";
+import FileDownloadTest from "./files/FileDownloadTest";
+import BucketContentsTest from "./buckets/BucketContentsTest";
 import PathContentsTest from "./PathContentsTest";
-import TreeDownloadTest from "./TreeDownloadTest";
+import TreeDownloadTest from "./tree/TreeDownloadTest";
 
 export type Result = {
   data: unknown;

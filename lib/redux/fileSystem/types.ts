@@ -1,60 +1,143 @@
-interface NodeMetadata {
-    size: number;
-    mimetype: string;
-    lastModified: string;
-    // ... other metadata
+// lib/redux/fileSystem/types.ts
+
+export const FILE_SYSTEM_ACTION_PREFIX = "fileSystem";
+
+export interface NodeContent {
+  blob: Blob;
+  isDirty: boolean;
+  tempId?: string;
 }
 
-interface NodeContent {
-    blob?: Blob;
-    isContentDirty: boolean;
-    lastSynced?: string;
+export interface StorageMetadata {
+  name: string;
+  id: string | null;
+  updated_at: string | null;
+  created_at: string | null;
+  last_accessed_at: string | null;
+  eTag: string;
+  size: number;
+  mimetype: string;
+  cacheControl: string;
+  lastModified: string;
+  contentLength: number;
+  httpStatusCode: number;
 }
+
+// Node types
+export type NodeItemId = string;
+export type NodeContentType = "FILE" | "FOLDER";
+export type NodeStatus =
+  | "idle"
+  | "loading_content"
+  | "loading_metadata"
+  | "loading_children"
+  | "operation_pending"
+  | "error"
+  | "success";
+
+export type NodeOperation =
+  | "none"
+  | "rename"
+  | "move"
+  | "delete"
+  | "updating_content";
 
 export interface FileSystemNode {
-    id: string;
-    bucketName: string;
-    path: string;
-    name: string;
-    contentType: 'FILE' | 'FOLDER' | 'BUCKET';
-    extension: string;
-    parentPath: string | null;
-    metadata?: NodeMetadata;
-    content?: NodeContent;
-    isMetadataFetched: boolean;
-    isContentFetched: boolean;
+  itemid: NodeItemId;
+  storagePath: string;
+  parentId: string | null;
+  name: string;
+  contentType: NodeContentType;
+  extension: string;
+  isMetadataFetched: boolean;
+  metadata?: StorageMetadata;
+  isContentFetched: boolean;
+  content?: NodeContent;
+  status: NodeStatus;
+  operation: NodeOperation;
+  isDirty: boolean;
+  lastSynced?: string;
+  syncError?: string;
+  publicUrl?: string; // Add this field
 }
 
-export interface FileSystemState {
-    nodes: Record<string, FileSystemNode>;
-    buckets: Record<string, {
-        name: string;
-        isFetched: boolean;
-        isDirty: boolean;
-    }>;
-    activeBucketName: string | null;
-    activeNodePath: string | null;
-    isInitialized: boolean;
-    isLoading: boolean;
-    error: string | null;
+// State types
+export interface FileManagement {
+  nodes: Record<NodeItemId, FileSystemNode>;
+  selectedNodes: Set<NodeItemId>;
+  isInitialized: boolean;
+  isLoading: boolean;
+  operationLock: boolean;
+  nodesInOperation: Set<NodeItemId>;
+  error: string | null;
+  currentOperation?: {
+    type: string;
+    status: OperationStatus;
+  };
 }
 
-
-export interface SupabaseMetadata {
-    eTag: string;
-    size: number;
-    mimetype: string;
-    cacheControl: string;
-    lastModified: string;
-    contentLength: number;
-    httpStatusCode: number;
+// Operation types
+export interface OperationStatus {
+  isLoading: boolean;
+  error?: string | null;
+  data?: any;
 }
 
-export interface SupabaseItem {
-    name: string;
-    id: string | null;
-    created_at: string | null;
-    updated_at: string | null;
-    last_accessed_at: string | null;
-    metadata: SupabaseMetadata | null;
+export type OperationResult<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+};
+
+// Thunk types
+export interface ThunkConfig {
+  rejectValue: string;
 }
+
+// Operation specific types
+export interface FetchNodeMetadataResult {
+  nodeId: NodeItemId;
+  metadata: StorageMetadata;
+}
+
+export interface FetchNodeContentResult {
+  nodeId: NodeItemId;
+  content: NodeContent;
+}
+
+export interface UpdateNodeContentArgs {
+  nodeId: NodeItemId;
+  content: Blob;
+}
+
+export interface MoveNodeArgs {
+  nodeId: NodeItemId;
+  newParentId: NodeItemId;
+}
+
+export interface RenameNodeArgs {
+  nodeId: NodeItemId;
+  newName: string;
+}
+
+// Action payload types
+export interface SetOperationStatusPayload {
+  type: string;
+  status: OperationStatus;
+}
+
+export interface UpdateNodePayload {
+  nodeId: NodeItemId;
+  updates: Partial<FileSystemNode>;
+}
+
+// Initial state
+export const initialState: FileManagement = {
+  nodes: {},
+  selectedNodes: new Set(),
+  isInitialized: false,
+  isLoading: false,
+  operationLock: false,
+  nodesInOperation: new Set(),
+  error: null,
+};

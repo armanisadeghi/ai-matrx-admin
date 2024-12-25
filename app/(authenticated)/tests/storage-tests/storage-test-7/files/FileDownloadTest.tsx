@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { supabase } from "@/utils/supabase/client";
-import TestContainer, { TestMode } from './TestContainer';
-import BucketSelect from './BucketSelect';
-import FolderSelect from './FolderSelect';
-import FileSelect from './FileSelect';
-import { Result } from './page';
+import TestContainer, { TestMode } from '../TestContainer';
+import BucketSelect from '../buckets/BucketSelect';
+import FolderSelect from '../folders/FolderSelect';
+import FileSelect from '../files/FileSelect';
+import { Result } from '../page';
 
 type FileDownloadTestProps = {
   onResultsChange: (cliResult: Result) => void;

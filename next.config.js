@@ -9,8 +9,8 @@ const nextConfig = {
         serverActions: {
             bodySizeLimit: '10mb',
         },
-        serverComponentsExternalPackages: ['@react-pdf/renderer']
     },
+    serverExternalPackages: ['@react-pdf/renderer', 'canvas', 'next-mdx-remote', 'vscode-oniguruma', 'websocket'],
     typescript: {
         ignoreBuildErrors: true,
     },

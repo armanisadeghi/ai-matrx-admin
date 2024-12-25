@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { supabase } from "@/utils/supabase/client";
-import TestContainer, { TestMode } from './TestContainer';
+import TestContainer, { TestMode } from '../TestContainer';
 import BucketSelect from './BucketSelect';
-import { Result } from './page';
+import { Result } from '../page';
 
 type BucketContentsTestProps = {
   onResultsChange: (cliResult: Result, sqlResult: Result) => void;

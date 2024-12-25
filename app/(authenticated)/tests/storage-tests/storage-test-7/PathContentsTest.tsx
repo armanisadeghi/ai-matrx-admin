@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { supabase } from "@/utils/supabase/client";
 import { Input } from '@/components/ui/input';
 import TestContainer, { TestMode } from './TestContainer';
-import BucketSelect from './BucketSelect';
-import FolderSelect from './FolderSelect';
+import BucketSelect from './buckets/BucketSelect';
+import FolderSelect from './folders/FolderSelect';
 import { Result } from './page';
 
 type PathContentsTestProps = {

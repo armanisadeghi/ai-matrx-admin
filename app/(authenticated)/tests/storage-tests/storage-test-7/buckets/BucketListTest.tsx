@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from "@/utils/supabase/client";
-import TestContainer, { TestMode } from './TestContainer';
+import TestContainer, { TestMode } from '../TestContainer';
 
 type Result = {
   data: unknown;

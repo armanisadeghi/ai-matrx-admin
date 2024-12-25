@@ -1,56 +1,61 @@
+// TreeDownloadTest.tsx
 'use client';
 
 import { useState } from 'react';
 import { supabase } from "@/utils/supabase/client";
 import TreeTestContainer, { TestMode } from './TreeTestContainer';
-import BucketSelect from './BucketSelect';
-import { Card } from '@/components/ui/card';
-import { Result } from './page';
-import StorageTree from './StorageTree';
+import { Result } from '../page';
+import StorageNavigator from './StorageNavigator';
+import { TreeItem } from './types';
 
 type TreeDownloadTestProps = {
   onResultsChange: (cliResult: Result) => void;
 };
 
 export default function TreeDownloadTest({ onResultsChange }: TreeDownloadTestProps) {
-  const [selectedBucket, setSelectedBucket] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPath, setSelectedPath] = useState('');
-  const [selectedFile, setSelectedFile] = useState<{
-    name: string;
-    id: string;
-    metadata?: { mimetype?: string } | null;
-  } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<TreeItem | null>(null);
+  const [selectedBucket, setSelectedBucket] = useState('');
 
-  const handleFileSelect = (path: string, file: { name: string; id: string; metadata?: { mimetype?: string } | null }) => {
+  const handleFileSelect = async (bucketName: string, path: string, file: TreeItem) => {
+    setSelectedBucket(bucketName);
     setSelectedPath(path);
     setSelectedFile(file);
+    
+    setIsLoading(true);
+    try {
+      const result = await handleDownload(bucketName, path, file);
+      onResultsChange(result);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (bucketName: string, path: string, file: TreeItem) => {
     try {
-      if (!selectedBucket || !selectedPath || !selectedFile) {
+      if (!bucketName || !path || !file) {
         throw new Error('Please select a file to download');
       }
-
+      
       const { data: blob, error: downloadError } = await supabase
         .storage
-        .from(selectedBucket)
-        .download(selectedPath);
+        .from(bucketName)
+        .download(path);
 
       if (downloadError) throw downloadError;
 
       const { data: metadata } = await supabase
         .storage
-        .from(selectedBucket)
-        .getPublicUrl(selectedPath);
+        .from(bucketName)
+        .getPublicUrl(path);
 
       return { 
         data: { 
           blob, 
           metadata,
-          path: selectedPath,
-          mimeType: blob.type
+          path,
+          mimeType: file.metadata?.mimetype || blob.type
         }, 
         error: '' 
       };
@@ -68,9 +73,17 @@ export default function TreeDownloadTest({ onResultsChange }: TreeDownloadTestPr
       return;
     }
 
+    if (!selectedBucket || !selectedPath || !selectedFile) {
+      onResultsChange({ 
+        data: null, 
+        error: 'Please select a file first' 
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const result = await handleDownload();
+      const result = await handleDownload(selectedBucket, selectedPath, selectedFile);
       onResultsChange(result);
     } finally {
       setIsLoading(false);
@@ -83,28 +96,15 @@ export default function TreeDownloadTest({ onResultsChange }: TreeDownloadTestPr
       isLoading={isLoading}
       onSubmit={handleSubmit}
     >
-      <div className="w-64 flex-none">
-        <BucketSelect 
-          value={selectedBucket} 
-          onValueChange={(bucket) => {
-            setSelectedBucket(bucket);
-            setSelectedPath('');
-            setSelectedFile(null);
-          }}
-        />
+      <div className="w-full max-w-xl mx-auto">
+        <StorageNavigator onFileSelect={handleFileSelect} />
+        
         {selectedFile && (
           <div className="mt-4 text-sm text-muted-foreground">
             Selected: {selectedPath}
           </div>
         )}
       </div>
-      
-      <Card className="flex-1">
-        <StorageTree 
-          bucketName={selectedBucket}
-          onFileSelect={handleFileSelect}
-        />
-      </Card>
     </TreeTestContainer>
   );
 }
