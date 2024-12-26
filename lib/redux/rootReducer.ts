@@ -1,5 +1,5 @@
 // lib/redux/rootReducer.ts
-import { combineReducers } from "@reduxjs/toolkit";
+import { combineReducers, Reducer } from "@reduxjs/toolkit";
 import { featureSchemas } from "./dynamic/featureSchema";
 import { createFeatureSlice } from "./slices/featureSliceCreator";
 import { createModuleSlice } from "./slices/moduleSliceCreator";
@@ -24,24 +24,25 @@ import socketReducer from "./features/socket/socketSlice";
 import notesReducer from "./notes/notesSlice";
 import tagsReducer from "./notes/tagsSlice";
 import { storageReducer } from "./storage";
-import { createFileSystemSlice } from "./fileSystem/createFileNodesSlice";
-import { FileManagement } from "./fileSystem/types";
+import { createFileSystemSlice } from "./fileSystem/slice";
+import { AvailableBuckets, FileManagement } from "./fileSystem/types";
 
-export const supabaseBuckets = [
+export const availableBuckets = [
   "userContent",
   "Audio",
   "Images",
   "Documents",
   "Videos",
   "Code",
+  "any-file",
 ] as const;
-export type Buckets = (typeof supabaseBuckets)[number];
-export type FileSystemState = { [K in Buckets]: FileManagement };
 
-const fileSystemReducers = supabaseBuckets.reduce((acc, bucket) => {
+export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
+
+const fileSystemReducers = availableBuckets.reduce<{ [K in AvailableBuckets]: Reducer<FileManagement> }>((acc, bucket) => {
   acc[bucket] = createFileSystemSlice(bucket).reducer;
   return acc;
-}, {} as Record<Buckets, any>);
+}, {} as { [K in AvailableBuckets]: Reducer<FileManagement> });
 
 const featureReducers = Object.keys(featureSchemas).reduce(
   (acc, featureName) => {
@@ -75,7 +76,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
   return combineReducers({
     ...featureReducers,
     ...moduleReducers,
-    fileSystem: combineReducers(fileSystemReducers),
+    fileSystem: combineReducers(fileSystemReducers) as Reducer<FileSystemState>,
     entities: combineReducers(entityReducers),
     entityFields: fieldReducer,
     layout: layoutReducer,
