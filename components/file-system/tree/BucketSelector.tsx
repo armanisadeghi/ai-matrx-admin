@@ -1,4 +1,4 @@
-// components/FileExplorer/BucketSelector.tsx
+// components\file-system\tree\BucketSelector.tsx
 import React from 'react';
 import { useFileSystem } from '@/lib/redux/fileSystem/Provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

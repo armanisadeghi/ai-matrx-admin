@@ -8,6 +8,7 @@ import { socketMiddleware } from "./socket/socketMiddleware";
 import { loggerMiddleware } from "@/utils/logger";
 import { storageMiddleware } from "./storage/storageMiddleware";
 import { SerializableStateInvariantMiddlewareOptions } from "@reduxjs/toolkit";
+import { enableMapSet } from "immer";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -61,3 +62,5 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action
 >;
+
+enableMapSet();

@@ -7,11 +7,15 @@ import {
   NodeContentType,
   NodeContent,
   NodeStatus,
-  NodeOperation,
+  NodeCache,
+  ListOptions,
+  AvailableBuckets,
+  FileManagement,
 } from "./types";
 
 // Core timing constants
 const STALE_THRESHOLD = 30 * 60 * 1000; // 30 minutes in milliseconds
+
 
 export function isStale(timestamp: string | null): boolean {
   if (!timestamp) return true;
@@ -40,29 +44,33 @@ export function processStorageMetadata(
   };
 }
 
-export function createNodeFromStorageItem(
+export interface CreateNodeOptions {
+  bucket: AvailableBuckets,
   item: SupabaseStorageItem,
+  parentId: string | null,
+  parentPath: string | null,
+  content?: NodeContent
+}
+
+
+export function createNodeFromStorageItem(
+  bucket: AvailableBuckets,
+  item: SupabaseStorageItem,
+  parentId: string | null = null,
   parentPath: string | null = null,
   content?: NodeContent
 ): FileSystemNode {
+  
   const isFolder = item.id === null;
   const now = new Date().toISOString();
-
-  // Just use regular UUID for itemid
   const nodeId = uuidv4();
 
-  // Properly handle storage paths
-  let storagePath = "";
-  if (isFolder) {
-    // For folders, use the name as the path component
-    storagePath = parentPath ? `${parentPath}/${item.name}` : item.name;
-  } else {
-    // For files, use the Supabase ID which is the full path
-    storagePath = item.id || "";
-  }
+  parentId = parentId ?? `root`;
 
-  // Normalize the path
-  storagePath = normalizeStoragePath(storagePath);
+
+  // Properly handle storage paths
+  const path = parentPath ? `${parentPath}/${item.name}` : item.name;
+  const storagePath = normalizeStoragePath(path);
 
   const contentType: NodeContentType = isFolder ? "FOLDER" : "FILE";
   const extension = isFolder ? "" : item.name.split(".").pop() || "";
@@ -71,9 +79,10 @@ export function createNodeFromStorageItem(
   const isMetadataFetched = isFolder ? true : !!item.metadata;
 
   return {
-    itemid: nodeId,
+    itemId: nodeId,
+    bucket,
     storagePath,
-    parentId: parentPath, // This should be the ID of the parent node
+    parentId: parentId,
     name: item.name,
     contentType,
     extension,
@@ -81,10 +90,11 @@ export function createNodeFromStorageItem(
     metadata: isFolder ? undefined : processStorageMetadata(item),
     isContentFetched: !!content,
     content,
-    status: "idle" as NodeStatus,
-    operation: "none" as NodeOperation,
+    status: "idle",
+    operation: null,
     isDirty: false,
     fetchedAt: now,
+    childrenFetchedAt: null,
     contentFetchedAt: content ? now : null,
     isStale: false,
     lastSynced: now,
@@ -124,10 +134,13 @@ export function getNodePath(
 }
 
 // In fileSystemUtils.ts
-export function shouldFetchList(cache: { timestamp: string; isStale: boolean } | undefined): boolean {
-    if (!cache) return true;
-    return cache.isStale || isStale(cache.timestamp);
+export function shouldFetchList(
+  cache: { timestamp: string; isStale: boolean } | undefined
+): boolean {
+  if (!cache) return true;
+  return cache.isStale || isStale(cache.timestamp);
 }
+
 // Update check functions
 export function shouldFetchContent(node: FileSystemNode): boolean {
   if (!node) return false;
@@ -147,7 +160,7 @@ export function shouldFetchMetadata(node: FileSystemNode): boolean {
 export function isNodeValid(node: FileSystemNode): boolean {
   if (!node) return false;
   return (
-    typeof node.itemid === "string" &&
+    typeof node.itemId === "string" &&
     typeof node.name === "string" &&
     (typeof node.parentId === "string" || node.parentId === null) &&
     typeof node.storagePath === "string" &&
@@ -166,3 +179,216 @@ export function hasConsistentMetadata(node: FileSystemNode): boolean {
   }
   return node.isMetadataFetched ? !!node.metadata : true;
 }
+
+
+
+export function getCachedNodes(
+  nodeCache: Record<string, NodeCache>,
+  nodes: Record<string, FileSystemNode>,
+  parentId: string | null
+): FileSystemNode[] | null {
+  if (!parentId || !nodeCache[parentId]) return null;
+  const cache = nodeCache[parentId];
+
+  if (cache.isStale || shouldFetchList(cache)) return null;
+
+  return cache.childNodeIds.map((id) => nodes[id]).filter(Boolean);
+}
+
+
+function filterNodes(
+  nodes: FileSystemNode[],
+  filterOptions?: ListOptions["filter"]
+): FileSystemNode[] {
+  if (!filterOptions) return nodes;
+
+  let filteredNodes = [...nodes];
+
+  if (filterOptions.contentType) {
+    filteredNodes = filteredNodes.filter((node) =>
+      filterOptions.contentType.includes(node.contentType)
+    );
+  }
+
+  if (filterOptions.extension) {
+    filteredNodes = filteredNodes.filter((node) =>
+      filterOptions.extension.includes(node.extension)
+    );
+  }
+
+  return filteredNodes;
+}
+
+function sortNodes(
+  nodes: FileSystemNode[],
+  sortBy?: ListOptions["sortBy"]
+): FileSystemNode[] {
+  if (!sortBy) return nodes;
+
+  return [...nodes].sort((a, b) => {
+    if (a.contentType !== b.contentType) {
+      return a.contentType === "FOLDER" ? -1 : 1;
+    }
+
+    const aVal = a[sortBy.column as keyof FileSystemNode];
+    const bVal = b[sortBy.column as keyof FileSystemNode];
+
+    return sortBy.order === "asc"
+      ? String(aVal).localeCompare(String(bVal))
+      : String(bVal).localeCompare(String(aVal));
+  });
+}
+
+function limitNodes(
+  nodes: FileSystemNode[],
+  limit?: ListOptions["limit"]
+): FileSystemNode[] {
+  return limit ? nodes.slice(0, limit) : nodes;
+}
+
+export function normalNodeSort(nodes: FileSystemNode[]): FileSystemNode[] {
+  return nodes.sort((a, b) => {
+    if (a.contentType !== b.contentType) {
+      return a.contentType === "FOLDER" ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
+}
+
+const HIDDEN_FILE_NAMES = [
+  ".DS_Store",
+  "Thumbs.db",
+  "desktop.ini",
+  ".emptyFolderPlaceholder",
+];
+const HIDDEN_FILE_EXTENSIONS = [
+  "DS_Store",
+  "Thumbs",
+  "db",
+  "desktop",
+  "ini",
+  "emptyFolderPlaceholder",
+];
+const HIDDEN_DIRECTORY_NAMES = [
+  ".git",
+  ".github",
+  ".vscode",
+  "node_modules",
+  ".history",
+  "venv",
+  "env",
+];
+
+export function isHiddenNode(node: FileSystemNode): boolean {
+  if (node.contentType === "FOLDER") {
+    return HIDDEN_DIRECTORY_NAMES.includes(node.name);
+  }
+
+  return (
+    HIDDEN_FILE_NAMES.includes(node.name) ||
+    HIDDEN_FILE_EXTENSIONS.includes(node.extension)
+  );
+}
+
+export function filterHiddenNodes(nodes: FileSystemNode[]): FileSystemNode[] {
+  return nodes.filter((node) => !isHiddenNode(node));
+}
+
+export function processNodes(
+  nodes: FileSystemNode[],
+  options?: ListOptions
+): FileSystemNode[] {
+  const safeOptions = options || {};
+
+  let processedNodes = filterNodes(nodes, safeOptions.filter) as FileSystemNode[];
+
+  processedNodes = safeOptions.sortBy
+    ? sortNodes(processedNodes, safeOptions.sortBy) as FileSystemNode[]
+    : normalNodeSort(processedNodes) as FileSystemNode[];
+
+  processedNodes = filterHiddenNodes(processedNodes);
+  processedNodes = limitNodes(processedNodes, safeOptions.limit);
+
+  return processedNodes;
+}
+
+
+export function getNewPath(fullPath: string, newName: string): string {
+  const pathParts = fullPath.split('/');
+  const parentPath = pathParts.slice(0, -1).join('/');
+  return parentPath ? `${parentPath}/${newName}` : newName;
+}
+
+
+
+export type OptimisticUpdate = {
+  previousState: FileSystemNode;
+  updatedState: FileSystemNode;
+  nodeId: string;
+};
+
+// 1. Optimistic update helper
+export const createOptimisticRenameUpdate = (
+  node: FileSystemNode,
+  newName: string
+): OptimisticUpdate => {
+  const newPath = getNewPath(node.storagePath, newName);
+  const now = new Date().toISOString();
+  
+  // Maintain all existing properties while only updating necessary ones
+  const optimisticNode = {
+    ...node,
+    name: newName,
+    storagePath: newPath,
+    isDirty: true,
+    lastSynced: now,
+    fetchedAt: now,
+    // Don't change other properties like parentId, itemId, content, metadata, etc.
+  };
+
+  return {
+    previousState: { ...node },
+    updatedState: optimisticNode,
+    nodeId: node.itemId
+  };
+};
+
+// 2. Revert helper
+export const revertRenameUpdate = (
+  state: FileManagement,
+  update: OptimisticUpdate
+) => {
+  state.nodes[update.nodeId] = {
+    ...update.previousState,
+    isStale: true, // Mark as stale to ensure next fetch
+  };
+};
+
+// 3. Apply server update helper
+export const applyServerRenameUpdate = (
+  state: FileManagement,
+  updatedNode: FileSystemNode,
+  oldNodeId: string
+) => {
+  // If the ID changed, remove the old node
+  if (updatedNode.itemId !== oldNodeId) {
+    delete state.nodes[oldNodeId];
+  }
+  
+  // Update or add the new node
+  state.nodes[updatedNode.itemId] = {
+    ...updatedNode,
+    isDirty: false,
+    lastSynced: new Date().toISOString(),
+    isStale: false,
+  };
+};
+
+
+interface DuplicateCheckResult {
+  shouldUpdate: boolean;
+  nodeToKeep: FileSystemNode;
+  nodeToRemove?: FileSystemNode;
+  requiresBackup?: boolean;
+}
+

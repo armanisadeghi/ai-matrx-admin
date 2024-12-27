@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col h-full">
       <MatrxDynamicPanel
         initialPosition="left"
-        defaultExpanded={true}
+        defaultExpanded={false}
         expandButtonProps={{
           label: "Redux Logs",
         }}

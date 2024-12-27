@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { logEmitter } from "./ReduxLogger";
 import DataDisplay from "./DataDisplay";
+import LogDetailView from "./LogDetailView";
 
 interface CollapsibleCardProps {
   title: string;
@@ -77,19 +78,19 @@ interface LogIconProps {
 const LogIcon: React.FC<LogIconProps> = ({ type }) => {
   switch (type?.toLowerCase()) {
     case "error":
-      return <AlertCircle className="w-3 h-3 text-red-500 dark:text-red-400" />;
+      return <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400" />;
     case "warning":
       return (
-        <AlertCircle className="w-3 h-3 text-yellow-500 dark:text-yellow-400" />
+        <AlertCircle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
       );
     case "success":
       return (
-        <CheckCircle className="w-3 h-3 text-green-500 dark:text-green-400" />
+        <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-400" />
       );
     case "debug":
-      return <Bug className="w-3 h-3 text-purple-500 dark:text-purple-400" />;
+      return <Bug className="w-4 h-4 text-purple-500 dark:text-purple-400" />;
     default:
-      return <Info className="w-3 h-3 text-blue-500 dark:text-blue-400" />;
+      return <Info className="w-4 h-4 text-blue-500 dark:text-blue-400" />;
   }
 };
 
@@ -184,7 +185,6 @@ const ReduxLogViewer: React.FC<ReduxLogViewerProps> = ({ maxLogs = 100 }) => {
             <DataDisplay data={configs} />
           </CollapsibleCard>
         )}
-
         {Object.keys(state).length > 0 && (
           <CollapsibleCard title="State" icon={Database} defaultExpanded={true}>
             <JsonDataDisplay data={state} />
@@ -194,37 +194,10 @@ const ReduxLogViewer: React.FC<ReduxLogViewerProps> = ({ maxLogs = 100 }) => {
         <CollapsibleCard title="Logs" icon={Bug} defaultExpanded={true}>
           <div className="space-y-1">
             {logs.map((log) => (
-              <div
-                key={log.id}
-                className="p-2 rounded border border-border bg-card hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex flex-col gap-1 min-w-0">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <LogIcon type={log.type} />
-                    <span className="text-xs font-medium text-muted-foreground shrink-0">
-                      {formatTimestamp(log.timestamp)}
-                    </span>
-                    <span className="text-sm font-medium text-foreground truncate">
-                      {log.message}
-                    </span>
-                  </div>
-                  {log.action?.type && (
-                    <div>
-                      <code className="text-xs px-1 py-0.5 rounded bg-muted text-muted-foreground break-all">
-                        {log.action.type}
-                      </code>
-                    </div>
-                  )}
-                  {log.data && Object.keys(log.data).length > 0 && (
-                    <div className="mt-1">
-                      <DataDisplay data={log.data} />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <LogDetailView key={log.id} log={log} />
             ))}
           </div>
-        </CollapsibleCard>
+        </CollapsibleCard>{" "}
       </div>
     </div>
   );

@@ -1,15 +1,31 @@
 // lib/redux/fileSystem/slice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AvailableBuckets } from "./types";
+import { AvailableBuckets, FileSystemNode } from "./types";
 import {
   FileManagement,
   FileOperation,
-  FileSystemNode,
   NodeItemId,
   OperationStatus,
-  SelectionState,
 } from "./types";
 import { createFileSystemOperations } from "./thunks";
+import {
+  handleListContents,
+  handleDownloadFile,
+  handleGetPublicFile,
+  handleUploadFile,
+  handleDeleteFile,
+  handleMoveFile,
+  handleSyncNode,
+  handleNodeSelection,
+  handleRenameActiveNode,
+  handleDuplicateSelections,
+  handleMoveSelections,
+} from "./sliceHelpers";
+import {
+  applyServerRenameUpdate,
+  OptimisticUpdate,
+  revertRenameUpdate,
+} from "./fileSystemUtils";
 
 // Initial State
 export const initialState: FileManagement = {
@@ -38,9 +54,8 @@ export const createFileSystemSlice = (
     name: `fileSystem/${bucketName}`,
     initialState: customInitialState,
     reducers: {
-      // Selection Management
       selectNode(
-        state,
+        state: FileManagement,
         action: PayloadAction<{
           nodeId: NodeItemId;
           isMultiSelect: boolean;
@@ -48,51 +63,10 @@ export const createFileSystemSlice = (
         }>
       ) {
         const { nodeId, isMultiSelect, isRangeSelect } = action.payload;
-        const selection = state.selection;
-
-        if (!isMultiSelect && !isRangeSelect) {
-          // Single selection
-          selection.selectedNodes = new Set([nodeId]);
-          selection.lastSelected = nodeId;
-          selection.selectionAnchor = nodeId;
-          state.activeNode = nodeId; // Set active node for single selection
-        } else if (isMultiSelect) {
-          // Multi-selection (Ctrl/Cmd)
-          if (selection.selectedNodes.has(nodeId)) {
-            selection.selectedNodes.delete(nodeId);
-            if (state.activeNode === nodeId) {
-              state.activeNode = null;
-            }
-          } else {
-            selection.selectedNodes.add(nodeId);
-          }
-          selection.lastSelected = nodeId;
-          selection.selectionAnchor = nodeId;
-        } else if (isRangeSelect && selection.selectionAnchor) {
-          // Range selection (Shift)
-          const nodes = Object.values(state.nodes);
-          const anchorIndex = nodes.findIndex(
-            (n) => n.itemid === selection.selectionAnchor
-          );
-          const targetIndex = nodes.findIndex((n) => n.itemid === nodeId);
-
-          if (anchorIndex !== -1 && targetIndex !== -1) {
-            const start = Math.min(anchorIndex, targetIndex);
-            const end = Math.max(anchorIndex, targetIndex);
-
-            selection.selectedNodes = new Set(
-              nodes.slice(start, end + 1).map((n) => n.itemid)
-            );
-            selection.lastSelected = nodeId;
-          }
-        }
-
-        console.log("Selection", selection);
-        console.log("Active Node", state.activeNode);
-        console.log("ALL NODES", state.nodes);
+        handleNodeSelection(state, nodeId, isMultiSelect, isRangeSelect);
       },
 
-      clearSelection(state) {
+      clearSelection(state: FileManagement) {
         state.selection = {
           selectedNodes: new Set(),
           lastSelected: undefined,
@@ -101,7 +75,6 @@ export const createFileSystemSlice = (
         state.activeNode = null;
       },
 
-      // Operation Lock Management
       acquireOperationLock(
         state,
         action: PayloadAction<{
@@ -145,7 +118,6 @@ export const createFileSystemSlice = (
         const node = state.nodes[action.payload.nodeId];
         if (node) {
           node.isStale = true;
-          // Also mark the node's cache entry as stale
           if (state.nodeCache[action.payload.nodeId]) {
             state.nodeCache[action.payload.nodeId].isStale = true;
           }
@@ -159,13 +131,54 @@ export const createFileSystemSlice = (
         const cache = state.nodeCache[action.payload.nodeId];
         if (cache) {
           cache.isStale = true;
-          // Also mark all child nodes as stale
           cache.childNodeIds.forEach((childId) => {
             if (state.nodes[childId]) {
               state.nodes[childId].isStale = true;
             }
           });
         }
+      },
+
+      startNodeOperation(
+        state: FileManagement,
+        action: PayloadAction<{ nodeId: NodeItemId; operation: FileOperation }>
+      ) {
+        const { nodeId, operation } = action.payload;
+        state.nodesInOperation.add(nodeId);
+        if (state.nodes[nodeId]) {
+          state.nodes[nodeId].status = "operation_pending";
+          state.nodes[nodeId].operation = operation;
+        }
+        state.currentOperation = {
+          type: operation,
+          status: { isLoading: true },
+        };
+      },
+
+      applyOptimisticRename: (
+        state: FileManagement,
+        action: PayloadAction<OptimisticUpdate>
+      ) => {
+        const { nodeId, updatedState } = action.payload;
+        state.nodes[nodeId] = updatedState;
+      },
+
+      revertRename: (
+        state: FileManagement,
+        action: PayloadAction<OptimisticUpdate>
+      ) => {
+        revertRenameUpdate(state, action.payload);
+      },
+
+      applyServerRename: (
+        state: FileManagement,
+        action: PayloadAction<{
+          updatedNode: FileSystemNode;
+          oldNodeId: string;
+        }>
+      ) => {
+        const { updatedNode, oldNodeId } = action.payload;
+        applyServerRenameUpdate(state, updatedNode, oldNodeId);
       },
 
       setOperationStatus(
@@ -181,173 +194,52 @@ export const createFileSystemSlice = (
         state.currentOperation = { type, status };
 
         if (status.data) {
-          const now = new Date().toISOString();
-
           switch (type) {
-            case "listContents": {
-              const nodes = status.data as FileSystemNode[];
-              const parentId = nodes[0]?.parentId || null;
-
-              console.log("List Contents", nodes);
-              console.log("Parent ID", parentId);
-
-              // Update nodes
-              nodes.forEach((node) => {
-                state.nodes[node.itemid] = {
-                  ...node,
-                  fetchedAt: now,
-                  isStale: false,
-                };
-              });
-
-              // Update node cache
-              if (parentId !== null) {
-                state.nodeCache[parentId] = {
-                  timestamp: now,
-                  isStale: false,
-                  childNodeIds: nodes.map((n) => n.itemid),
-                };
-              }
-
-              // If we're at root level and there's no active node, set the first folder as active
-              if (parentId === null && !state.activeNode && nodes.length > 0) {
-                const firstFolder = nodes.find(
-                  (node) => node.contentType === "FOLDER"
-                );
-                if (firstFolder) {
-                  state.activeNode = firstFolder.itemid;
-                  state.selection.selectedNodes = new Set([firstFolder.itemid]);
-                  state.selection.lastSelected = firstFolder.itemid;
-                  state.selection.selectionAnchor = firstFolder.itemid;
-                }
-              }
-
-              console.log("NODES", state.nodes);
-              console.log("CACHE", state.nodeCache);
-              console.log("ACTIVE NODE", state.activeNode);
-              console.log("SELECTION", state.selection);
-
-              // Set initialized flag when first listContents completes
-              if (!state.isInitialized) {
-                state.isInitialized = true;
-              }
+            case "listContents":
+              handleListContents(state, status);
               break;
-            }
 
-            case "downloadFile": {
-              const { nodeId, blob, metadata } = status.data;
-              if (state.nodes[nodeId]) {
-                state.nodes[nodeId] = {
-                  ...state.nodes[nodeId],
-                  content: { blob, isDirty: false },
-                  isContentFetched: true,
-                  metadata,
-                  contentFetchedAt: now,
-                  isStale: false,
-                };
-              }
+            case "downloadFile":
+              handleDownloadFile(state, status);
               break;
-            }
 
-            case "getPublicFile": {
-              const { nodeId, url } = status.data;
-              if (state.nodes[nodeId]) {
-                state.nodes[nodeId] = {
-                  ...state.nodes[nodeId],
-                  publicUrl: url,
-                  fetchedAt: now,
-                  isStale: false,
-                };
-              }
+            case "getPublicFile":
+              handleGetPublicFile(state, status);
               break;
-            }
 
-            case "uploadFile": {
-              const node = status.data as FileSystemNode;
-              state.nodes[node.itemid] = {
-                ...node,
-                fetchedAt: now,
-                contentFetchedAt: now,
-                isStale: false,
-              };
-
-              // Update parent's cache to include new node
-              if (node.parentId) {
-                const parentCache = state.nodeCache[node.parentId];
-                if (parentCache) {
-                  parentCache.childNodeIds.push(node.itemid);
-                  parentCache.timestamp = now;
-                }
-              }
+            case "uploadFile":
+              handleUploadFile(state, status);
               break;
-            }
 
-            case "deleteFile": {
-              const nodeId = status.data as NodeItemId;
-              const node = state.nodes[nodeId];
-              if (node) {
-                // Mark parent's cache as stale
-                if (node.parentId && state.nodeCache[node.parentId]) {
-                  const parentCache = state.nodeCache[node.parentId];
-                  parentCache.isStale = true;
-                  parentCache.childNodeIds = parentCache.childNodeIds.filter(
-                    (id) => id !== nodeId
-                  );
-                }
-                delete state.nodes[nodeId];
-                delete state.nodeCache[nodeId]; // Clean up node's cache if it exists
-                state.selection.selectedNodes.delete(nodeId);
-                state.nodesInOperation.delete(nodeId);
-                if (state.activeNode === nodeId) {
-                  state.activeNode = null;
-                }
-              }
+            case "deleteFile":
+              handleDeleteFile(state, status);
               break;
-            }
 
-            case "moveFile": {
-              const node = status.data as FileSystemNode;
-              // Update old parent's cache
-              const oldNode = state.nodes[node.itemid];
-              if (oldNode?.parentId && state.nodeCache[oldNode.parentId]) {
-                const oldParentCache = state.nodeCache[oldNode.parentId];
-                oldParentCache.childNodeIds =
-                  oldParentCache.childNodeIds.filter(
-                    (id) => id !== node.itemid
-                  );
-                oldParentCache.isStale = true;
-              }
-
-              // Update new parent's cache
-              if (node.parentId && state.nodeCache[node.parentId]) {
-                const newParentCache = state.nodeCache[node.parentId];
-                newParentCache.childNodeIds.push(node.itemid);
-                newParentCache.isStale = true;
-              }
-
-              state.nodes[node.itemid] = {
-                ...node,
-                fetchedAt: now,
-                isStale: false,
-              };
+            case "moveFile":
+              handleMoveFile(state, status);
               break;
-            }
 
-            case "syncNode": {
-              const node = status.data as FileSystemNode;
-              if (state.nodes[node.itemid]) {
-                state.nodes[node.itemid] = {
-                  ...node,
-                  fetchedAt: now,
-                  contentFetchedAt: now,
-                  isStale: false,
-                };
-                state.nodesInOperation.delete(node.itemid);
-              }
+            case "renameActiveNode":
+              handleRenameActiveNode(state, status);
               break;
-            }
+
+            case "duplicateSelections":
+              handleDuplicateSelections(state, status);
+              break;
+
+            case "moveSelections":
+              handleMoveSelections(state, status);
+              break;
+
+            case "syncNode":
+              handleSyncNode(state, status);
+              break;
+
+            default:
+              console.warn(`Unhandled operation type: ${type}`);
           }
         }
+
         if (!status.isLoading) {
           state.operationLock = false;
           state.nodesInOperation = new Set();

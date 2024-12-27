@@ -1,6 +1,6 @@
 // /layout.tsx
 
-import {ModuleHeader} from '@/components/matrx/navigation';
+import ModuleHeaderWithProvider from '@/components/matrx/navigation/ModuleHeaderDual';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 
 export default function Layout(
@@ -14,7 +14,7 @@ export default function Layout(
     return (
         <div className="flex flex-col h-full">
             <div className="sticky top-0 z-10 bg-matrx-card-background">
-                <ModuleHeader
+                <ModuleHeaderWithProvider
                     pages={filteredPages}
                     currentPath={currentPath}
                     moduleHome={MODULE_HOME}

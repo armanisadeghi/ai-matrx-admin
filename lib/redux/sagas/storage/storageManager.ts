@@ -1,20 +1,52 @@
-// lib/redux/sagas/storage/storageManager.ts
-
 import { StorageVerification } from '@/hooks/useLocalStorageManager';
 
 class StorageManager {
+    private isClient: boolean;
+
+    constructor() {
+        // Initialize isClient as false
+        this.isClient = false;
+        // Update isClient after mounting
+        if (typeof window !== 'undefined') {
+            this.isClient = true;
+        }
+    }
+
+    private checkEnvironment(): boolean {
+        // Update isClient status (in case it changed)
+        this.isClient = typeof window !== 'undefined';
+        return this.isClient;
+    }
+
     setItem<T>(module: string, feature: string, key: string, value: T): Promise<StorageVerification> {
+        if (!this.checkEnvironment()) {
+            return Promise.resolve({ 
+                success: false, 
+                message: 'localStorage is not available in server environment' 
+            });
+        }
+
         try {
             const fullKey = this.constructKey(module, feature, key);
             const serializedValue = JSON.stringify(value);
             localStorage.setItem(fullKey, serializedValue);
-            return Promise.resolve({ success: true, message: `Item set successfully: ${fullKey}` });
+            return Promise.resolve({ 
+                success: true, 
+                message: `Item set successfully: ${fullKey}` 
+            });
         } catch (error) {
-            return Promise.resolve({ success: false, message: `Error setting item: ${error}` });
+            return Promise.resolve({ 
+                success: false, 
+                message: `Error setting item: ${error}` 
+            });
         }
     }
 
     getItem<T>(module: string, feature: string, key: string): Promise<T | null> {
+        if (!this.checkEnvironment()) {
+            return Promise.resolve(null);
+        }
+
         try {
             const fullKey = this.constructKey(module, feature, key);
             const serializedValue = localStorage.getItem(fullKey);

@@ -179,7 +179,9 @@ export const useVoiceChat = () => {
             id: nanoid(),
             title: `Conversation ${conversations.length + 1}`,
             messages: [],
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            structuredData: [],
+            audioFeedback: [],
         };
         setConversations(prev => [newConversation, ...prev]);
         setCurrentConversationId(newConversation.id);

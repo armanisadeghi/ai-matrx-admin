@@ -111,15 +111,8 @@ export const clearStateWatchers = () => {
   stateWatchers.clear();
 };
 
-// Emit functions
 export const emitLog = (log: any) => {
-  const timestamp = new Date().toISOString();
-  const uniqueId = `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  logEmitter.emit("newLog", { 
-    ...log, 
-    id: uniqueId,
-    timestamp: log.timestamp || timestamp
-  });
+  logEmitter.emit("newLog", log);
 };
 
 export const emitConfig = (configs: any) => {

@@ -4,7 +4,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { useFileSystem } from '@/lib/redux/fileSystem/Provider';
 import BucketSelector from '@/components/file-system/tree/BucketSelector';
-import FileTree from './components/FileExplorer/FileTree';
+import FileTree from '@/components/file-system/draggable/FileTree';
 import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
 
 export default function FileExplorer() {

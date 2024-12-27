@@ -14,6 +14,8 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
   const [videoClient, setVideoClient] = useState<StreamVideoClient>();
   const user = useSelector((state: RootState) => state.user);
 
+  console.log('API_KEY',API_KEY)
+
   useEffect(() => {
     if (!user || !API_KEY) return;
 

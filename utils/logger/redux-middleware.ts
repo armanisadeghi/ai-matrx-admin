@@ -6,7 +6,6 @@ import { logConfig } from "./config";
 import { v4 as uuidv4 } from "uuid";
 import { emitLog } from "./components/ReduxLogger";
 
-
 interface ReduxAction {
   type: string;
   payload?: unknown;
@@ -58,11 +57,23 @@ class ReduxLogger extends BaseLogger {
 
 const reduxLogger = ReduxLogger.getInstance();
 
+// List of prefixes to exclude (case-insensitive)
+const excludedPrefixes = ["socket", "theme", "entity", 'userPreferences'];
+
 export const loggerMiddleware: Middleware =
   (store) => (next) => async (action: ReduxAction) => {
     const prevState = store.getState();
     let result;
     let error = null;
+
+    // Check if the action type starts with any excluded prefix (case-insensitive)
+    const shouldExclude = excludedPrefixes.some((prefix) =>
+      action.type.toLowerCase().startsWith(prefix.toLowerCase())
+    );
+
+    if (shouldExclude) {
+      return next(action); // Skip logging and proceed with the action
+    }
 
     try {
       // Process the action and capture its result
@@ -74,6 +85,12 @@ export const loggerMiddleware: Middleware =
 
     const nextState = store.getState();
 
+    // Extract the slice name (assuming action.type is in the format 'sliceName/actionName')
+    const sliceName = action.type.split('/')[0];
+
+    // Extract only the affected slice's state
+    const prevSliceState = prevState[sliceName];
+    const nextSliceState = nextState[sliceName];
 
     reduxLogger.logAction(
       {
@@ -82,8 +99,8 @@ export const loggerMiddleware: Middleware =
         result,
         error,
       },
-      prevState,
-      nextState
+      prevSliceState,
+      nextSliceState
     );
 
     if (error) {
@@ -93,25 +110,24 @@ export const loggerMiddleware: Middleware =
     return result;
   };
 
-  export const logInlineAction = (
-    message: string,
-    context: any = {}
-  ) => {
-    const log: ReduxLog = {
-      id: uuidv4(),
-      category: 'redux',
-      level: 'info',
-      message,
-      action: null,
-      prevState: null,
-      nextState: null,
-      context: {
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development',
-        ...context,
-      },
-    };
-  
-    emitLog(log);
+export const logInlineAction = (
+  message: string,
+  context: any = {}
+) => {
+  const log: ReduxLog = {
+    id: uuidv4(),
+    category: 'redux',
+    level: 'info',
+    message,
+    action: null,
+    prevState: null,
+    nextState: null,
+    context: {
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      ...context,
+    },
   };
-  
+
+  emitLog(log);
+};

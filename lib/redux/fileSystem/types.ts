@@ -19,13 +19,6 @@ export type NodeStatus =
   | "error"
   | "success";
 
-export type NodeOperation =
-  | "none"
-  | "rename"
-  | "move"
-  | "delete"
-  | "updating_content";
-
 export type FileOperation =
   | "listContents"
   | "downloadFile"
@@ -34,6 +27,10 @@ export type FileOperation =
   | "moveFile"
   | "getPublicFile"
   | "createFile"
+  | "createFolder"
+  | "renameActiveNode"
+  | "duplicateSelections"
+  | "moveSelections"
   | "syncNode";
 
 // Storage Types
@@ -77,7 +74,7 @@ export interface NodeContent {
 }
 
 export interface FileSystemNode {
-  itemid: NodeItemId;
+  itemId: NodeItemId;
   storagePath: string;
   parentId: string | null;
   name: string;
@@ -87,15 +84,19 @@ export interface FileSystemNode {
   metadata?: StorageMetadata;
   isContentFetched: boolean;
   content?: NodeContent;
+
   status: NodeStatus;
-  operation: NodeOperation;
+  operation: FileOperation;
+  
   isDirty: boolean;
   lastSynced?: string;
   syncError?: string;
   publicUrl?: string;
   fetchedAt: string | null;
+  childrenFetchedAt: string | null;
   contentFetchedAt: string | null;
   isStale: boolean;
+  bucket: AvailableBuckets;
 }
 
 // Cache Management
@@ -120,6 +121,7 @@ export interface FileManagement {
   activeNode: NodeItemId | null;
   isInitialized: boolean;
   isLoading: boolean;
+
   operationLock: boolean;
   nodesInOperation: Set<NodeItemId>;
   error: string | null;
@@ -127,6 +129,7 @@ export interface FileManagement {
     type: FileOperation;
     status: OperationStatus;
   };
+
   nodeCache: Record<NodeItemId, NodeCache>;
   staleDuration: number;
   currentParentId: NodeItemId | null;

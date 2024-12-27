@@ -1,0 +1,14 @@
+'use client';
+
+import { useWindowSize } from "@uidotdev/usehooks";
+import ModuleHeaderDesktop from "./ModuleHeaderDesktop";
+import ModuleHeaderMobile from "./ModuleHeaderMobile";
+import { ModuleHeaderProps } from "./types";
+
+export default function ModuleHeaderWithProvider(props: ModuleHeaderProps) {
+    const { width } = useWindowSize();
+    
+    return width < 768
+           ? <ModuleHeaderMobile {...props} />
+           : <ModuleHeaderDesktop {...props} />;
+}

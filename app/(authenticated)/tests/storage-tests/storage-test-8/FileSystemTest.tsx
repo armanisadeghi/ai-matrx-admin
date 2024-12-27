@@ -52,12 +52,12 @@ const FileSystemTest = () => {
   // Handle node click with selection support
   const handleNodeClick = (node: FileSystemNode, event: React.MouseEvent) => {
     // Handle selection
-    selectNode(node.itemid, event);
+    selectNode(node.itemId, event);
     
     // Handle navigation for folders
     if (node.contentType === "FOLDER") {
-      navigateToNode(node.itemid);
-      loadNodeChildren(node.itemid);
+      navigateToNode(node.itemId);
+      loadNodeChildren(node.itemId);
     }
   };
 
@@ -115,9 +115,9 @@ const FileSystemTest = () => {
                 {!activeNode ? (
                   rootNodes.map((node) => (
                     <NodeItem 
-                      key={node.itemid}
+                      key={node.itemId}
                       node={node}
-                      isSelected={isSelected(node.itemid)}
+                      isSelected={isSelected(node.itemId)}
                       onClick={handleNodeClick}
                     />
                   ))
@@ -125,9 +125,9 @@ const FileSystemTest = () => {
                   // Show active node's children
                   activeNodeChildren.map((node) => (
                     <NodeItem 
-                      key={node.itemid}
+                      key={node.itemId}
                       node={node}
-                      isSelected={isSelected(node.itemid)}
+                      isSelected={isSelected(node.itemId)}
                       onClick={handleNodeClick}
                     />
                   ))

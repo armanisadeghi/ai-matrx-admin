@@ -37,7 +37,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
     
     console.log('Tree Traversal State:', {
       activeNode: activeNode?.name,
-      activeNodeId: activeNode?.itemid,
+      activeNodeId: activeNode?.itemId,
       childrenCount: activeNodeChildren?.length,
       children: activeNodeChildren?.map(n => n.name),
       isFolder: isActiveNodeFolder
@@ -160,7 +160,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
         const lastNode = selectedNodes[selectedNodes.length - 1];
         clearSelection();
         if (lastNode) {
-          selectNode(lastNode.itemid);
+          selectNode(lastNode.itemId);
         }
       }
     }, [selectedNodes, clearSelection, selectNode]);
@@ -261,7 +261,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
     const acquireLockForActive = useCallback(
       (operation: FileOperation) => {
         if (activeNode) {
-          return acquireLock(operation, [activeNode.itemid]);
+          return acquireLock(operation, [activeNode.itemId]);
         }
         return false;
       },
@@ -273,7 +273,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
         if (selectedNodes.length > 0) {
           return acquireLock(
             operation,
-            selectedNodes.map(node => node.itemid)
+            selectedNodes.map(node => node.itemId)
           );
         }
         return false;
@@ -461,7 +461,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
     ) => {
       if (acquireLock('moveFile', [nodeId])) {
         try {
-          const node = selectedNodes.find(n => n.itemid === nodeId);
+          const node = selectedNodes.find(n => n.itemId === nodeId);
           if (!node) throw new Error('Node not found');
   
           const parentPath = node.storagePath.split('/').slice(0, -1).join('/');
@@ -515,7 +515,7 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
     const createFile = useCallback(async (
       options: CreateFileOptions
     ) => {
-      const parentId = options.parentId || activeNode?.itemid || null;
+      const parentId = options.parentId || activeNode?.itemId || null;
       
       if (acquireLock('createFile', [parentId || ''])) {
         try {
@@ -759,14 +759,14 @@ export const createFileSystemHooks = (bucketName: AvailableBuckets) => {
     const copyPublicUrls = useCallback(async () => {
       if (!selectedNodes.length) return;
       
-      if (acquireLock('getPublicFile', selectedNodes.map(n => n.itemid))) {
+      if (acquireLock('getPublicFile', selectedNodes.map(n => n.itemId))) {
         try {
           const urls = await Promise.all(
             selectedNodes.map(async (node) => {
               if (node.publicUrl) return node.publicUrl;
               
               const result = await dispatch(actions.getPublicUrl({
-                nodeId: node.itemid
+                nodeId: node.itemId
               })).unwrap();
               
               return result.url;

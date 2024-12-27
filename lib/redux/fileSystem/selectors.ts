@@ -26,7 +26,7 @@ const createBucketSpecificSelector = <T>(
 export const createActiveNodeSelectors = (bucketName: AvailableBuckets) => ({
   selectActiveNode: createBucketSpecificSelector<FileSystemNode | null>(
     bucketName,
-    (state) => (state.activeNode ? state.nodes[state.activeNode] : null)
+    (state) => state?.activeNode && state.nodes ? state.nodes[state.activeNode] : null
   ),
 
   selectActiveNodeId: createBucketSpecificSelector<NodeItemId | null>(
@@ -89,7 +89,7 @@ export const createActiveNodeSelectors = (bucketName: AvailableBuckets) => ({
       if (!activeNodeData) return [];
 
       return Object.values(state.nodes)
-        .filter((node) => node.parentId === activeNodeData.itemid)
+        .filter((node) => node.parentId === activeNodeData.itemId)
         .sort((a, b) => {
           if (a.contentType !== b.contentType) {
             return a.contentType === "FOLDER" ? -1 : 1;
@@ -195,69 +195,96 @@ export const createSelectionSelectors = (bucketName: AvailableBuckets) => ({
 
 // Node Utility Selectors
 export const createNodeUtilitySelectors = (bucketName: AvailableBuckets) => ({
-  // Generic node selectors
+  selectAllNodes: createBucketSpecificSelector<FileSystemNode[]>(
+    bucketName,
+    (state) => state?.nodes ? Object.values(state.nodes) : []
+  ),
+
   selectNode: (nodeId: NodeItemId) =>
     createBucketSpecificSelector<FileSystemNode | undefined>(
       bucketName,
-      (state) => state.nodes[nodeId]
+      (state) => state?.nodes?.[nodeId]
     ),
 
   selectNodeExists: (nodeId: NodeItemId) =>
     createBucketSpecificSelector<boolean>(
       bucketName,
-      (state) => nodeId in state.nodes
+      (state) => Boolean(state?.nodes && nodeId in state.nodes)
     ),
 
   selectIsNodeFolder: (nodeId: NodeItemId) =>
     createBucketSpecificSelector<boolean>(
       bucketName,
-      (state) => state.nodes[nodeId]?.contentType === "FOLDER"
+      (state) => state?.nodes?.[nodeId]?.contentType === "FOLDER"
     ),
 
   selectNodeChildren: (nodeId: NodeItemId) =>
-    createBucketSpecificSelector<FileSystemNode[]>(bucketName, (state) => {
-      return Object.values(state.nodes)
-        .filter((node) => node.parentId === nodeId)
-        .sort((a, b) => {
+    createBucketSpecificSelector<FileSystemNode[]>(
+      bucketName,
+      (state) => {
+        if (!state?.nodes) return [];
+        
+        const nodes = Object.values(state.nodes)
+          .filter((node): node is FileSystemNode => 
+            Boolean(node && node.parentId === nodeId)
+          );
+        
+        return nodes.sort((a, b) => {
           if (a.contentType !== b.contentType) {
             return a.contentType === "FOLDER" ? -1 : 1;
           }
           return a.name.localeCompare(b.name);
         });
-    }),
+      }
+    ),
+
+  selectRootNodes: createBucketSpecificSelector<FileSystemNode[]>(
+    bucketName,
+    (state) => state?.nodes ? 
+      Object.values(state.nodes)
+        .filter((node): node is FileSystemNode => 
+          Boolean(node && node.parentId === null)
+        ) : 
+      []
+  ),
 
   selectNodeChildCounts: (nodeId: NodeItemId) =>
-    createBucketSpecificSelector(bucketName, (state) => {
-      const cache = state.nodeCache[nodeId];
-      if (!cache) return { total: 0, files: 0, folders: 0 };
+    createBucketSpecificSelector(
+      bucketName,
+      (state) => {
+        if (!state?.nodes || !state?.nodeCache?.[nodeId]?.childNodeIds) {
+          return { total: 0, files: 0, folders: 0 };
+        }
 
-      const children = cache.childNodeIds
-        .map((id) => state.nodes[id])
-        .filter(Boolean);
-      return {
-        total: children.length,
-        files: children.filter((n) => n.contentType === "FILE").length,
-        folders: children.filter((n) => n.contentType === "FOLDER").length,
-      };
-    }),
+        const childNodeIds = state.nodeCache[nodeId].childNodeIds;
+        const children = childNodeIds
+          .map(id => state.nodes[id])
+          .filter((node): node is FileSystemNode => node !== undefined);
 
-  // File-specific selectors
+        return {
+          total: children.length,
+          files: children.filter(n => n.contentType === "FILE").length,
+          folders: children.filter(n => n.contentType === "FOLDER").length,
+        };
+      }
+    ),
+
   selectNodeExtension: (nodeId: NodeItemId) =>
     createBucketSpecificSelector<string | undefined>(
       bucketName,
-      (state) => state.nodes[nodeId]?.extension
+      (state) => state?.nodes?.[nodeId]?.extension
     ),
 
   selectNodeMimeType: (nodeId: NodeItemId) =>
     createBucketSpecificSelector<string | undefined>(
       bucketName,
-      (state) => state.nodes[nodeId]?.metadata?.mimetype
+      (state) => state?.nodes?.[nodeId]?.metadata?.mimetype
     ),
 
   selectNodeSize: (nodeId: NodeItemId) =>
     createBucketSpecificSelector<number | undefined>(
       bucketName,
-      (state) => state.nodes[nodeId]?.metadata?.size
+      (state) => state?.nodes?.[nodeId]?.metadata?.size
     ),
 });
 

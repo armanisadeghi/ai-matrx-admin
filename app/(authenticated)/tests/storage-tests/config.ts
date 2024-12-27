@@ -12,16 +12,10 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Supabase Bucket Test 10',
+        path: 'storage-test-10',
         relative: true,
         description: ''
-    },
-    {
-        title: 'Supabase Bucket Test 8 With Redux Integration',
-        path: 'redux-test',
-        relative: true,
-        description: 'Uses Redux'
     },
     {
         title: 'Supabase Bucket Test 8',
@@ -29,6 +23,13 @@ export const pages: ModulePage[] = [
         relative: true,
         description: 'Uses Redux'
     },
+        {
+        title: 'Supabase Bucket Test 9 With Redux Integration',
+        path: 'redux-test',
+        relative: true,
+        description: 'Uses Redux'
+    },
+
     {
         title: 'Supabase Bucket Test 7',
         path: 'storage-test-7',

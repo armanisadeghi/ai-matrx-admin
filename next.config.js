@@ -31,6 +31,8 @@ const nextConfig = {
         CARTESIA_API_KEY: process.env.CARTESIA_API_KEY,
         NEWS_API_KEY: process.env.NEWS_API_KEY,
         PICOVOICE_ACCESS_KEY: process.env.PICOVOICE_ACCESS_KEY,
+        STREAM_SECRET_KEY: process.env.STREAM_SECRET_KEY,
+        STREAM_API_KEY: process.env.STREAM_API_KEY,
     },
 };
 
