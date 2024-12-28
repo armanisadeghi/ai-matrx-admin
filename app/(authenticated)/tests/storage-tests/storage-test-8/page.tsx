@@ -1,33 +1,28 @@
-'use client';
+"use client";
+import { TableLoadingComponent } from "@/components/matrx/LoadingComponents";
+import { useFileSystem } from "@/lib/redux/fileSystem/Provider";
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { useFileSystem } from '@/lib/redux/fileSystem/Provider';
-import BucketSelector from '@/components/file-system/tree/BucketSelector';
-import FileTree from './components/FileExplorer/FileTree';
-import { TableLoadingComponent } from '@/components/matrx/LoadingComponents';
-
-export default function FileExplorer() {
-  const { activeBucket, isInitialized, isLoading, error } = useFileSystem();
+export default function FileExplorerPage() {
+  const { isInitialized, isLoading, error } = useFileSystem();
 
   if (error) {
     return (
-      <div className="text-destructive p-4">
+      <div className="font-semibold m-2 text-destructive">
         Error: {error}
       </div>
     );
   }
 
+  if (isLoading && !isInitialized) {
+    return <TableLoadingComponent />;
+  }
+
   return (
-    <div className="p-4 space-y-4">
-      <BucketSelector />
-      {isLoading && !isInitialized ? (
-        <TableLoadingComponent />
-      ) : (
-        <Card className="p-4">
-          <FileTree />
-        </Card>
-      )}
-    </div>
+    <>
+      <div className="font-semibold m-2">File Preview</div>
+      <div className="flex-1 flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
+        File Preview Area
+      </div>
+    </>
   );
 }

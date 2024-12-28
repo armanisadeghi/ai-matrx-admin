@@ -29,7 +29,7 @@ export const VariableContentEditor = (
     return (
         <Card className={`w-full mb-4 ${!data.isConnected ? 'border-red-500' : ''}`}>
             <Collapsible open={isOpen}>
-            <CardHeader className="p-4 flex flex-row items-center space-y-0">
+            <CardHeader className="p-2 flex flex-row items-center space-y-0">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -54,7 +54,7 @@ export const VariableContentEditor = (
             </CardHeader>
 
                 <CollapsibleContent>
-                    <CardContent className="p-4 space-y-3">
+                    <CardContent className="p-2 space-y-3">
                         {/* Display Name & Official Name */}
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-2">

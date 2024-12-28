@@ -76,7 +76,7 @@ export default function NodeItem({ node, level }: NodeItemProps) {
     <div className="select-none">
       <div
         className={cn(
-          "flex items-center py-1 px-2 hover:bg-accent rounded-sm cursor-pointer",
+          "flex items-center py-1 px-0 hover:bg-accent rounded-sm cursor-pointer",
           isSelected && "bg-accent",
           `ml-${level * 4}`
         )}
@@ -93,9 +93,9 @@ export default function NodeItem({ node, level }: NodeItemProps) {
           </span>
         )}
         {isFolder ? (
-          <Folder className="h-4 w-4 text-blue-500 mx-2" />
+          <Folder className="h-4 w-4 text-blue-500 ml-0.5 mr-1.5" />
         ) : (
-          <File className="h-4 w-4 text-gray-500 mx-2" />
+          <File className="h-5 w-5 text-yellow-500 ml-0.5 mr-1.5" />
         )}
         <FileNameEditor
           name={node.name}

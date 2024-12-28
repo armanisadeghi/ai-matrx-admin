@@ -1,6 +1,7 @@
 // components/matrx/LoadingComponents.tsx
 
 import React from 'react';
+import { ChevronRight, Folder, File } from 'lucide-react';
 
 // Small Component Loading
 export const SmallComponentLoading: React.FC = () => (
@@ -295,6 +296,63 @@ export const FormLoadingTwoColumn: React.FC = () => (
             <div className="flex justify-end mt-8">
                 <div className="w-36 h-10 bg-primary rounded"></div>
             </div>
+        </div>
+    </div>
+);
+
+
+export const SidebarLoading: React.FC = () => (
+    <div className="flex gap-2 items-center p-4">
+        <div className="w-full max-w-2xl animate-pulse space-y-8">
+
+        {[...Array(3)].map((_, index) => (
+                <div key={index} className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label Placeholder */}
+                    <div className="h-4 bg-primary rounded w-1/2 mb-2"></div>
+                    <div className="h-12 bg-input rounded"></div> {/* Input Field Placeholder */}
+                </div>
+            ))}
+
+            <div className="grid grid-cols-1 gap-4 space-y-3">
+                {[...Array(2)].map((_, index) => (
+                    <div key={index}>
+                        <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
+                        <div className="h-12 bg-input rounded"></div>
+                    </div>
+                ))}
+            </div>
+            {[...Array(3)].map((_, index) => (
+                <div key={index} className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label Placeholder */}
+                    <div className="h-4 bg-primary rounded w-1/2 mb-2"></div>
+                    <div className="h-12 bg-input rounded"></div> {/* Input Field Placeholder */}
+                </div>
+            ))}
+
+            <div className="grid grid-cols-1 gap-4 space-y-3">
+                {[...Array(2)].map((_, index) => (
+                    <div key={index}>
+                        <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
+                        <div className="h-12 bg-input rounded"></div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
+export const EmptySidebar: React.FC = () => (
+    <div className="flex gap-2 items-center p-4">
+        <div className="w-full max-w-2xl space-y-8">
+
+        {[...Array(1)].map((_, index) => (
+                <div key={index} className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label Placeholder */}
+                    <div className="h-4 bg-primary rounded w-1/2 mb-2"></div>
+                    <div className="h-12 bg-input rounded"></div> {/* Input Field Placeholder */}
+                </div>
+            ))}
+
         </div>
     </div>
 );
