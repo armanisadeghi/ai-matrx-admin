@@ -1,17 +1,40 @@
-'use client';
+// Chip.tsx
+"use client";
 
-import React from 'react';
-import { X } from 'lucide-react';
+import React from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChipProps {
-  label: string;
+  content: string;
   id?: string;
   onRemove?: () => void;
   className?: string;
 }
 
-export const SimpleChip = ({ label, onRemove, className }: ChipProps) => {
+export const Chip: React.FC<ChipProps> = ({ content, onRemove }) => {
+  return (
+    <span
+      contentEditable={false}
+      className="inline-flex items-center gap-1 px-2 py-1 m-1 text-sm rounded-full 
+                 bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100
+                 select-none cursor-default"
+      data-chip
+    >
+      <span className="chip-content">{content}</span>
+      <button
+        onClick={onRemove}
+        className="inline-flex items-center hover:text-blue-700 dark:hover:text-blue-300
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+        type="button"
+      >
+        <X size={14} />
+      </button>
+    </span>
+  );
+};
+
+export const SimpleChip = ({ content, onRemove, className }: ChipProps) => {
   return (
     <span
       className={cn(
@@ -20,9 +43,9 @@ export const SimpleChip = ({ label, onRemove, className }: ChipProps) => {
         className
       )}
     >
-      {label}
+      {content}
       {onRemove && (
-        <button 
+        <button
           onClick={onRemove}
           className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
           aria-label="Remove chip"
@@ -34,14 +57,12 @@ export const SimpleChip = ({ label, onRemove, className }: ChipProps) => {
   );
 };
 
-
-
-export const GlowBorderChip = ({ label, onRemove, className }: ChipProps) => {
+export const GlowBorderChip = ({ content, onRemove, className }: ChipProps) => {
   return (
     <span className={cn("p-[3px] relative inline-flex items-center")}>
       <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
       <div className="px-8 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white hover:bg-transparent flex items-center gap-1">
-        {label}
+        {content}
         {onRemove && (
           <button
             onClick={onRemove}
@@ -56,14 +77,14 @@ export const GlowBorderChip = ({ label, onRemove, className }: ChipProps) => {
   );
 };
 
-export const ShimmerChip = ({ label, onRemove, className }: ChipProps) => {
+export const ShimmerChip = ({ content, onRemove, className }: ChipProps) => {
   return (
     <span
       className={cn(
         "inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
       )}
     >
-      {label}
+      {content}
       {onRemove && (
         <button
           onClick={onRemove}
@@ -78,7 +99,7 @@ export const ShimmerChip = ({ label, onRemove, className }: ChipProps) => {
 };
 
 export const TailwindConnectChip = ({
-  label,
+  content,
   onRemove,
   className,
 }: ChipProps) => {
@@ -91,12 +112,12 @@ export const TailwindConnectChip = ({
       <span className="absolute inset-0 overflow-hidden rounded-full">
         <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       </span>
-      <div className="relative flex items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-        <span>{label}</span>
+      <div className="relative flex items-center z-10 rounded-full bg-zinc-950 py-px px-4 ring-1 ring-white/10">
+        <span>{content}</span>
         {onRemove && (
           <button
             onClick={onRemove}
-            className="hover:bg-primary/20 rounded-full p-0.5 transition-colors ml-2"
+            className="hover:bg-primary/20 rounded-full p-0.5 transition-colors ml-1"
             aria-label="Remove chip"
           >
             <X size={14} />
@@ -108,7 +129,12 @@ export const TailwindConnectChip = ({
   );
 };
 
-export const BorderMagicChip = ({ label, onRemove, className }: ChipProps) => {
+
+export const BorderMagicChip = ({
+  content,
+  onRemove,
+  className,
+}: ChipProps) => {
   return (
     <span
       className={cn(
@@ -118,7 +144,7 @@ export const BorderMagicChip = ({ label, onRemove, className }: ChipProps) => {
     >
       <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
       <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-slate-950 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl">
-        {label}
+        {content}
         {onRemove && (
           <button
             onClick={onRemove}
@@ -133,7 +159,7 @@ export const BorderMagicChip = ({ label, onRemove, className }: ChipProps) => {
   );
 };
 
-export const PlaylistChip = ({ label, onRemove, className }: ChipProps) => {
+export const PlaylistChip = ({ content, onRemove, className }: ChipProps) => {
   return (
     <span
       className={cn(
@@ -141,7 +167,7 @@ export const PlaylistChip = ({ label, onRemove, className }: ChipProps) => {
         className
       )}
     >
-      {label}
+      {content}
       {onRemove && (
         <button
           onClick={onRemove}
@@ -155,7 +181,7 @@ export const PlaylistChip = ({ label, onRemove, className }: ChipProps) => {
   );
 };
 
-export const GreenPopChip = ({ label, onRemove, className }: ChipProps) => {
+export const GreenPopChip = ({ content, onRemove, className }: ChipProps) => {
   return (
     <span
       className={cn(
@@ -163,7 +189,7 @@ export const GreenPopChip = ({ label, onRemove, className }: ChipProps) => {
         className
       )}
     >
-      {label}
+      {content}
       {onRemove && (
         <button
           onClick={onRemove}
@@ -177,7 +203,11 @@ export const GreenPopChip = ({ label, onRemove, className }: ChipProps) => {
   );
 };
 
-export const TopGradientChip = ({ label, onRemove, className }: ChipProps) => {
+export const TopGradientChip = ({
+  content,
+  onRemove,
+  className,
+}: ChipProps) => {
   return (
     <div
       className={cn(
@@ -187,14 +217,10 @@ export const TopGradientChip = ({ label, onRemove, className }: ChipProps) => {
       contentEditable={false} // Entire chip is non-editable
       data-content-type="matrx-content" // Add the data attribute here
       style={{ userSelect: "none" }} // Disable text selection
-
     >
       <div className="absolute inset-x-0 h-px w-1/2 mx-auto -top-px shadow-2xl bg-gradient-to-r from-transparent via-teal-500 to-transparent" />
-      <span 
-      className="relative z-20"       
-      data-content-type="text"
-      >
-        {label}
+      <span className="relative z-20" data-content-type="text">
+        {content}
         {onRemove && (
           <button
             onClick={onRemove}
@@ -210,6 +236,8 @@ export const TopGradientChip = ({ label, onRemove, className }: ChipProps) => {
 };
 
 export const CHIP_VARIANTS = {
+  chip: Chip,
+  simpleChip: SimpleChip,
   glowBorderChip: GlowBorderChip,
   shimmerChip: ShimmerChip,
   tailwindConnectChip: TailwindConnectChip,
