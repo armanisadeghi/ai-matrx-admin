@@ -6,15 +6,21 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createRoot } from "react-dom/client";
 import { generateId } from "../utils/commonUtils";
+import { useVariablesStore } from "../../brokers-two/hooks/useVariablesStore";
 
 interface ChipProps {
   content: string;
   id?: string;
   onRemove?: () => void;
   className?: string;
+  brokerId?: string; // Add this
 }
 
-export const Chip: React.FC<ChipProps> = ({ content, onRemove }) => {
+export const Chip: React.FC<ChipProps> = ({ content, brokerId, onRemove }) => {
+  const displayName = useVariablesStore((state) =>
+    brokerId ? state.variables[brokerId]?.displayName : content
+  );
+
   return (
     <span
       contentEditable={false}
@@ -23,7 +29,7 @@ export const Chip: React.FC<ChipProps> = ({ content, onRemove }) => {
                  select-none cursor-default"
       data-chip
     >
-      <span className="chip-content">{content}</span>
+      <span className="chip-content">{displayName || content}</span>
       <button
         onClick={onRemove}
         className="inline-flex items-center hover:text-blue-700 dark:hover:text-blue-300
@@ -254,34 +260,36 @@ export const getRandomChip = () => {
   return CHIP_VARIANTS[randomKey];
 };
 
-
 export const linkBrokerToChip = async (text: string, suggestedId?: string) => {
-    console.log('Linking broker to chip:', {
-      originalText: text,
-      suggestedId,
-      textLength: text.length,
-      hasLineBreaks: text.includes('\n'),
-      lines: text.split('\n')
-    });
-  
-    // Simulate some processing time
-    await new Promise(resolve => setTimeout(resolve, 50));
+  console.log("Linking broker to chip:", {
+    originalText: text,
+    suggestedId,
+    textLength: text.length,
+    hasLineBreaks: text.includes("\n"),
+    lines: text.split("\n"),
+  });
 
-    const ChipId = generateId()
-  
-    // Return a mock result
-    return {
-      displayName: `My Favorite Chip ${ChipId}`,
-      id: ChipId
-    };
+  // Simulate some processing time
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  const ChipId = generateId();
+
+  // Return a mock result
+  return {
+    displayName: `My Favorite Chip ${ChipId}`,
+    id: ChipId,
   };
-
+};
 
 interface ChipCreationOptions {
   content: string;
   editorRef: React.RefObject<HTMLDivElement>;
   onProcessContent: () => void;
-  chipId?: string; // Optional ID for the chip
+  chipId?: string;
+  linkBrokerToChip?: (
+    text: string,
+    suggestedId?: string
+  ) => Promise<ChipLinkResult>;
 }
 
 export const createChipElement = ({
@@ -310,7 +318,8 @@ export const createChipElement = ({
 export const renderChipInContainer = (
   container: HTMLElement,
   content: string,
-  onProcessContent: () => void
+  onProcessContent: () => void,
+  brokerId: string
 ) => {
   const root = createRoot(container);
 
@@ -322,8 +331,9 @@ export const renderChipInContainer = (
     });
   };
 
-  const ChipComponent = CHIP_VARIANTS.chip;
-  root.render(<ChipComponent content={content} onRemove={removeChip} />);
+  root.render(
+    <Chip content={content} brokerId={brokerId} onRemove={removeChip} />
+  );
 
   // Add cursor positioning space
   const cursorNode = document.createTextNode("\u200B");
@@ -332,15 +342,20 @@ export const renderChipInContainer = (
   return root;
 };
 
-export const insertChipAtSelection = ({
+export const insertChipAtSelection = async ({
   content,
   editorRef,
   onProcessContent,
+  linkBrokerToChip,
 }: ChipCreationOptions) => {
-  if (!editorRef.current) return;
+  if (!editorRef.current || !linkBrokerToChip) return;
 
   const selection = window.getSelection();
   if (!selection || !selection.rangeCount) return;
+
+  // Create broker first
+  const suggestedId = generateId();
+  const linkResult = await linkBrokerToChip(content, suggestedId);
 
   // Ensure selection is within our editor
   const range = selection.getRangeAt(0);
@@ -348,19 +363,26 @@ export const insertChipAtSelection = ({
   while (node && node !== editorRef.current) {
     node = node.parentNode;
   }
-  if (!node) return; // Selection was outside editor
+  if (!node) return;
 
   Promise.resolve().then(() => {
-    const chipContainer = createChipElement({ content });
+    const chipContainer = createChipElement({
+      content: linkResult.displayName,
+      chipId: linkResult.id,
+    });
     range.deleteContents();
     range.insertNode(chipContainer);
 
-    renderChipInContainer(chipContainer, content, onProcessContent);
+    renderChipInContainer(
+      chipContainer,
+      linkResult.displayName,
+      onProcessContent,
+      linkResult.id
+    );
 
     setTimeout(() => onProcessContent(), 0);
   });
 };
-
 
 interface SelectionInfo {
   startNode: Node;
@@ -408,11 +430,14 @@ const getSelectionInfo = (
   };
 };
 
-const handleLineSelection = (
+const handleLineSelection = async (
   lineDiv: HTMLElement,
-  onProcessContent: () => void
+  onProcessContent: () => void,
+  linkBrokerToChip: (
+    text: string,
+    suggestedId?: string
+  ) => Promise<ChipLinkResult>
 ) => {
-  // Get all text content from the div
   const textContent = Array.from(lineDiv.childNodes)
     .map((node) => {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -426,22 +451,38 @@ const handleLineSelection = (
     .join(" ")
     .trim();
 
-  // Create a new chip for the entire line
-  const chipContainer = createChipElement({ content: textContent });
+  const suggestedId = generateId();
+  const linkResult = await linkBrokerToChip(textContent, suggestedId);
 
-  // Clear the div and insert the chip
+  const chipContainer = createChipElement({
+    content: linkResult.displayName,
+    chipId: linkResult.id,
+  });
+
   lineDiv.innerHTML = "";
   lineDiv.appendChild(chipContainer);
 
-  renderChipInContainer(chipContainer, textContent, onProcessContent);
+  renderChipInContainer(
+    chipContainer,
+    linkResult.displayName,
+    onProcessContent,
+    linkResult.id
+  );
   return true;
 };
 
-const handleMultiNodeSelection = (
+const handleMultiNodeSelection = async (
   range: Range,
   selectedText: string,
-  onProcessContent: () => void
+  onProcessContent: () => void,
+  linkBrokerToChip: (
+    text: string,
+    suggestedId?: string
+  ) => Promise<ChipLinkResult>
 ) => {
+  const suggestedId = generateId();
+  const linkResult = await linkBrokerToChip(selectedText, suggestedId);
+
   const startNode = range.startContainer;
   const endNode = range.endContainer;
 
@@ -488,9 +529,13 @@ const handleMultiNodeSelection = (
     firstInsertionPoint.appendChild(afterNode);
   }
 
-  renderChipInContainer(chipContainer, selectedText, onProcessContent);
+  renderChipInContainer(
+    chipContainer,
+    linkResult.displayName,
+    onProcessContent,
+    linkResult.id
+  );
 };
-
 
 // types.ts
 interface ChipLinkResult {
@@ -514,7 +559,7 @@ const createAndLinkChip = async ({
   linkBrokerToChip,
 }: ChipProcessingOptions) => {
   // First, get the link result
-  const suggestedId = generateId(); // We can provide this as a suggestion
+  const suggestedId = generateId();
   const linkResult = await linkBrokerToChip(content, suggestedId);
 
   // Create chip with the linked data
@@ -560,10 +605,12 @@ export const convertSelectionToChip = async ({
 
       lineDiv.innerHTML = "";
       lineDiv.appendChild(chipContainer);
+
       renderChipInContainer(
         chipContainer,
         linkResult.displayName,
-        onProcessContent
+        onProcessContent,
+        linkResult.id
       );
     } else if (selectionInfo.isMultiNode) {
       // Handle multi-node selection
@@ -607,7 +654,8 @@ export const convertSelectionToChip = async ({
       renderChipInContainer(
         chipContainer,
         linkResult.displayName,
-        onProcessContent
+        onProcessContent,
+        linkResult.id
       );
     } else {
       // Handle single node selection
@@ -646,7 +694,8 @@ export const convertSelectionToChip = async ({
       renderChipInContainer(
         chipContainer,
         linkResult.displayName,
-        onProcessContent
+        onProcessContent,
+        linkResult.id
       );
     }
 
@@ -684,133 +733,144 @@ const getMultiNodeContent = (range: Range): string => {
   return getFullContent(div);
 };
 
+// export const convertSelectionToChipOld = ({
+//     editorRef,
+//     onProcessContent,
+//   }: Omit<ChipCreationOptions, "content">) => {
+//     if (!editorRef.current) return;
 
+//     const selectionInfo = getSelectionInfo(editorRef);
+//     if (!selectionInfo || !selectionInfo.selectedText) return;
 
+//     Promise.resolve().then(() => {
+//       const selection = window.getSelection();
+//       if (!selection) return;
 
-export const convertSelectionToChipOld = ({
-    editorRef,
-    onProcessContent,
-  }: Omit<ChipCreationOptions, "content">) => {
-    if (!editorRef.current) return;
-  
-    const selectionInfo = getSelectionInfo(editorRef);
-    if (!selectionInfo || !selectionInfo.selectedText) return;
-  
-    Promise.resolve().then(() => {
-      const selection = window.getSelection();
-      if (!selection) return;
-  
-      const range = selection.getRangeAt(0);
-  
-      if (selectionInfo.isLineSelection) {
-        // Handle double-click line selection
-        const lineDiv = selectionInfo.startNode.parentElement;
-        if (lineDiv) {
-          handleLineSelection(lineDiv, onProcessContent);
-        }
-      } else if (selectionInfo.isMultiNode) {
-        // Handle multi-node selection
-        handleMultiNodeSelection(
-          range,
-          selectionInfo.selectedText,
-          onProcessContent
-        );
-      } else {
-        // Handle single node selection (existing logic)
-        const startNode = range.startContainer;
-        const fullText = startNode.textContent || "";
-        const beforeText = fullText.substring(0, range.startOffset);
-        const afterText = fullText.substring(range.endOffset);
-  
-        const beforeNode = document.createTextNode(
-          beforeText.length > 0 ? beforeText.trimEnd() + " " : ""
-        );
-  
-        const chipContainer = createChipElement({
-          content: selectionInfo.selectedText,
-        });
-        const afterNode = document.createTextNode(
-          afterText.length > 0 ? " " + afterText.trimStart() : ""
-        );
-  
-        startNode.parentNode?.replaceChild(beforeNode, startNode);
-        beforeNode.parentNode?.insertBefore(
-          chipContainer,
-          beforeNode.nextSibling
-        );
-        chipContainer.parentNode?.insertBefore(
-          afterNode,
-          chipContainer.nextSibling
-        );
-  
-        renderChipInContainer(
-          chipContainer,
-          selectionInfo.selectedText,
-          onProcessContent
-        );
-      }
-  
-      setTimeout(() => onProcessContent(), 0);
-    });
+//       const range = selection.getRangeAt(0);
+
+//       if (selectionInfo.isLineSelection) {
+//         // Handle double-click line selection
+//         const lineDiv = selectionInfo.startNode.parentElement;
+//         if (lineDiv) {
+//           handleLineSelection(lineDiv, onProcessContent);
+//         }
+//       } else if (selectionInfo.isMultiNode) {
+//         // Handle multi-node selection
+//         handleMultiNodeSelection(
+//           range,
+//           selectionInfo.selectedText,
+//           onProcessContent
+//         );
+//       } else {
+//         // Handle single node selection (existing logic)
+//         const startNode = range.startContainer;
+//         const fullText = startNode.textContent || "";
+//         const beforeText = fullText.substring(0, range.startOffset);
+//         const afterText = fullText.substring(range.endOffset);
+
+//         const beforeNode = document.createTextNode(
+//           beforeText.length > 0 ? beforeText.trimEnd() + " " : ""
+//         );
+
+//         const chipContainer = createChipElement({
+//           content: selectionInfo.selectedText,
+//         });
+//         const afterNode = document.createTextNode(
+//           afterText.length > 0 ? " " + afterText.trimStart() : ""
+//         );
+
+//         startNode.parentNode?.replaceChild(beforeNode, startNode);
+//         beforeNode.parentNode?.insertBefore(
+//           chipContainer,
+//           beforeNode.nextSibling
+//         );
+//         chipContainer.parentNode?.insertBefore(
+//           afterNode,
+//           chipContainer.nextSibling
+//         );
+
+//         renderChipInContainer(
+//           chipContainer,
+//           selectionInfo.selectedText,
+//           onProcessContent
+//         );
+//       }
+
+//       setTimeout(() => onProcessContent(), 0);
+//     });
+//   };
+
+//   export const convertSelectionToChipSimple = ({
+//     editorRef,
+//     onProcessContent,
+//   }: Omit<ChipCreationOptions, "content">) => {
+//     if (!editorRef.current) return;
+
+//     const selection = window.getSelection();
+//     if (!selection || !selection.rangeCount) return;
+
+//     // Ensure selection is within our editor
+//     let node = selection.anchorNode;
+//     while (node && node !== editorRef.current) {
+//       node = node.parentNode;
+//     }
+//     if (!node) return; // Selection was outside editor
+
+//     const range = selection.getRangeAt(0);
+//     const selectedText = range.toString().trim();
+//     if (!selectedText) return;
+
+//     if (
+//       range.startContainer !== range.endContainer ||
+//       range.startContainer.nodeType !== Node.TEXT_NODE
+//     ) {
+//       console.log(
+//         "Currently only supporting selections within a single text node"
+//       );
+//       return;
+//     }
+
+//     Promise.resolve().then(() => {
+//       const startNode = range.startContainer;
+//       const fullText = startNode.textContent || "";
+//       const beforeText = fullText.substring(0, range.startOffset);
+//       const afterText = fullText.substring(range.endOffset);
+
+//       const beforeNode = document.createTextNode(
+//         beforeText.length > 0 ? beforeText.trimEnd() + " " : ""
+//       );
+
+//       const chipContainer = createChipElement({ content: selectedText });
+//       const afterNode = document.createTextNode(
+//         afterText.length > 0 ? " " + afterText.trimStart() : ""
+//       );
+
+//       startNode.parentNode?.replaceChild(beforeNode, startNode);
+//       beforeNode.parentNode?.insertBefore(chipContainer, beforeNode.nextSibling);
+//       chipContainer.parentNode?.insertBefore(
+//         afterNode,
+//         chipContainer.nextSibling
+//       );
+
+//       renderChipInContainer(chipContainer, selectedText, onProcessContent);
+
+//       setTimeout(() => onProcessContent(), 0);
+//     });
+//   };
+
+export const createLinkBrokerToChip = (
+  createVariableFromText: (
+    text: string
+  ) => Promise<{ id: string; displayName: string }>
+) => {
+  return async (
+    text: string,
+    suggestedId?: string
+  ): Promise<ChipLinkResult> => {
+    const result = await createVariableFromText(text);
+    return {
+      id: result.id,
+      displayName: result.displayName,
+    };
   };
-
-
-
-  export const convertSelectionToChipSimple = ({
-    editorRef,
-    onProcessContent,
-  }: Omit<ChipCreationOptions, "content">) => {
-    if (!editorRef.current) return;
-  
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return;
-  
-    // Ensure selection is within our editor
-    let node = selection.anchorNode;
-    while (node && node !== editorRef.current) {
-      node = node.parentNode;
-    }
-    if (!node) return; // Selection was outside editor
-  
-    const range = selection.getRangeAt(0);
-    const selectedText = range.toString().trim();
-    if (!selectedText) return;
-  
-    if (
-      range.startContainer !== range.endContainer ||
-      range.startContainer.nodeType !== Node.TEXT_NODE
-    ) {
-      console.log(
-        "Currently only supporting selections within a single text node"
-      );
-      return;
-    }
-  
-    Promise.resolve().then(() => {
-      const startNode = range.startContainer;
-      const fullText = startNode.textContent || "";
-      const beforeText = fullText.substring(0, range.startOffset);
-      const afterText = fullText.substring(range.endOffset);
-  
-      const beforeNode = document.createTextNode(
-        beforeText.length > 0 ? beforeText.trimEnd() + " " : ""
-      );
-  
-      const chipContainer = createChipElement({ content: selectedText });
-      const afterNode = document.createTextNode(
-        afterText.length > 0 ? " " + afterText.trimStart() : ""
-      );
-  
-      startNode.parentNode?.replaceChild(beforeNode, startNode);
-      beforeNode.parentNode?.insertBefore(chipContainer, beforeNode.nextSibling);
-      chipContainer.parentNode?.insertBefore(
-        afterNode,
-        chipContainer.nextSibling
-      );
-  
-      renderChipInContainer(chipContainer, selectedText, onProcessContent);
-  
-      setTimeout(() => onProcessContent(), 0);
-    });
-  };
-  
+};

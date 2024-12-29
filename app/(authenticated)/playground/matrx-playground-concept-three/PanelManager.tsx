@@ -3,6 +3,7 @@ import { Panel, PanelGroup } from "react-resizable-panels";
 import { Button, Card } from "@/components/ui";
 import { Plus } from "lucide-react";
 import { VerticalPanel } from "./VerticalPanel";
+import { StructuredEditor } from "../../tests/recipe-creation/inline-chip-editor-5/components/StructuredEditor";
 
 interface PanelManagerProps {
   side: "left" | "right";
@@ -24,6 +25,10 @@ export function PanelManager({ side }: PanelManagerProps) {
     setSections([...sections, { id: newId, content: "New Section" }]);
   };
 
+  const handleStateChange = (state: any) => {
+    console.log(state);
+  };
+
   return (
     <Panel>
       <PanelGroup direction="vertical" className="h-full">
@@ -40,7 +45,11 @@ export function PanelManager({ side }: PanelManagerProps) {
         {/* Bottom flexible panel */}
         <Panel defaultSize={80} minSize={10} maxSize={100} order={999}>
           <Card className="h-full p-1 overflow-hidden bg-background">
-            Flexible Bottom Section
+            <StructuredEditor 
+              editorId="main-editor"
+              onStateChange={handleStateChange} 
+              showControls={true} 
+            />
           </Card>
         </Panel>
 

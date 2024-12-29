@@ -8,6 +8,7 @@ import type { ContentBlock, DocumentState } from "../types";
 import CursorTracker from "./CursorTracker";
 import SelectionTracker from "./SelectionTracker";
 import { createChipContainer } from "../utils/chipUtils";
+import { useStructuredEditor } from "@/app/contexts/StructuredEditorContext";
 
 const DEFAULT_CHIPS = ["Broker", "Task", "Note"];
 
@@ -18,10 +19,17 @@ interface StructuredEditorProps {
 }
 
 export const StructuredEditor: React.FC<StructuredEditorProps> = ({
-  onStateChange,
-  editorId,
-  showControls = true,
-}) => {
+    onStateChange,
+    editorId,
+    showControls = true,
+  }) => {
+    const { createVariableFromText } = useStructuredEditor();
+    const linkBrokerToChip = useCallback(
+      (text: string) => createVariableFromText(text),
+      [createVariableFromText]
+    );
+  
+
   const [isClient, setIsClient] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const [documentState, setDocumentState] = useState<DocumentState>({
@@ -234,15 +242,17 @@ export const StructuredEditor: React.FC<StructuredEditorProps> = ({
       onProcessContent: processContent,
       linkBrokerToChip
     });
-  }, [processContent]);
+  }, [processContent, linkBrokerToChip]);
   
+
+
   
   if (!isClient) {
     return null;
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       {showControls && (
         <div className="mb-4 space-y-2">
           <div className="flex items-center gap-2">
@@ -279,7 +289,7 @@ export const StructuredEditor: React.FC<StructuredEditorProps> = ({
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        className="min-h-[200px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
+        className="h-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
         onPaste={handlePaste}
         // onBlur={() => {
         //   setTimeout(() => processContent(), 0);
