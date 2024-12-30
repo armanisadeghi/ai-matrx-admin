@@ -1,14 +1,33 @@
+// providers\dialogs\useDialogRegistry.ts
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { DialogConfig } from './types';
 import { useDialog } from './DialogContext';
 
-export const useDialogRegistry = <T = any>(configs: DialogConfig<T>[]) => {
+export const useDialogRegistry = (configs: DialogConfig[]) => {
     const { registerDialog, unregisterDialog } = useDialog();
+    
+    // Use a ref to store configs to avoid unnecessary re-registrations
+    const configsRef = React.useRef(configs);
 
+    // Update ref if configs change
     useEffect(() => {
-        configs.forEach(config => registerDialog(config));
-        return () => configs.forEach(config => unregisterDialog(config.id));
-    }, [configs, registerDialog, unregisterDialog]);
+        configsRef.current = configs;
+    }, [configs]);
+
+    // Register/unregister dialogs
+    useEffect(() => {
+        // Register all dialogs
+        configsRef.current.forEach(config => {
+            registerDialog(config);
+        });
+
+        // Cleanup function to unregister all dialogs
+        return () => {
+            configsRef.current.forEach(config => {
+                unregisterDialog(config.id);
+            });
+        };
+    }, []); // Empty dependency array since we're using ref
 };

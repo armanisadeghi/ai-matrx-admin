@@ -1,65 +1,105 @@
-import { useState, useCallback } from "react";
+// MoveDialog.tsx
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { createFileSystemSlice } from "@/lib/redux/fileSystem/slice";
 import { createFileSystemSelectors } from "@/lib/redux/fileSystem/selectors";
-import { createStandardDialog } from "../../factory/usCreateDialog";
-import { useFileSystem } from "@/providers/FileSystemProvider";
+import { createStandardDialog } from "../../factory/CreateDialog";
+import { useFileSystem } from '@/lib/redux/fileSystem/Provider';
+import BasicFolderTree from "@/components/file-system/tree/BasicFolderTree";
+import { FileSystemNode, NodeItemId } from "@/lib/redux/fileSystem/types";
+import { BaseDialogProps } from "../../types";
 
 export const MoveDialog = () => {
-  const dispatch = useAppDispatch();
-  const { activeBucket } = useFileSystem();
-  const slice = createFileSystemSlice(activeBucket);
-  const selectors = createFileSystemSelectors(activeBucket);
-  const activeNode = useAppSelector(selectors.selectActiveNode);
-  const selectedNodes = useAppSelector(selectors.selectSelectedNodes);
-  const [targetFolderId, setTargetFolderId] = useState<string | null>(null);
+ const DialogComponent = ({ onClose }: Pick<BaseDialogProps, 'onClose'>) => {
+   const dispatch = useAppDispatch();
+   const { activeBucket } = useFileSystem();
+   const slice = createFileSystemSlice(activeBucket);
+   const selectors = createFileSystemSelectors(activeBucket);
+   const activeNode = useAppSelector(selectors.selectActiveNode);
+   const selectedNodes = useAppSelector(selectors.selectSelectedNodes);
 
-  const handleMove = useCallback(
-    async (close: () => void) => {
-      if (!targetFolderId) return;
+   const [originalSelection, setOriginalSelection] = useState<{
+     selectedNodes: NodeItemId[];
+     activeNode: NodeItemId | null;
+   } | null>(null);
+   const [targetFolderId, setTargetFolderId] = useState<NodeItemId | null>(null);
 
-      try {
-        await dispatch(
-          slice.actions.moveSelections({
-            newPath: targetFolderId,
-          })
-        ).unwrap();
-        close();
-      } catch (error) {
-        console.error("Failed to move items:", error);
-      }
-    },
-    [dispatch, slice.actions, targetFolderId]
-  );
+   useEffect(() => {
+     if (!originalSelection && activeNode) {
+       setOriginalSelection({
+         selectedNodes: selectedNodes.map((node) => node.itemId),
+         activeNode: activeNode.itemId,
+       });
+     }
+   }, [activeNode, originalSelection, selectedNodes]);
 
-  if (!activeNode) return null;
+   const handleFolderSelect = useCallback((node: FileSystemNode) => {
+     setTargetFolderId(node.itemId);
+   }, []);
 
-  const itemCount = selectedNodes.length || 1;
-  const itemText = itemCount === 1 ? activeNode.name : `${itemCount} items`;
+   const handleMove = useCallback(async () => {
+     if (!targetFolderId || !originalSelection) return;
 
-  return createStandardDialog({
-    id: "filesystem.move",
-    title: "Move Items",
-    description: `Select a destination folder for ${itemText}`,
-    content: (close) => (
-      <div className="space-y-4">
-        <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
-          <FolderTree
-            onSelect={setTargetFolderId}
-            selectedId={targetFolderId}
-            excludeIds={selectedNodes.map((node) => node.itemId)}
-          />
-        </div>
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={close}>
-            Cancel
-          </Button>
-          <Button onClick={() => handleMove(close)} disabled={!targetFolderId}>
-            Move
-          </Button>
-        </div>
-      </div>
-    ),
-  });
+     try {
+       // Restore original selection state
+       originalSelection.selectedNodes.forEach((nodeId) => {
+         dispatch(
+           slice.actions.selectNode({
+             nodeId,
+             isMultiSelect: true,
+             isRangeSelect: false,
+           })
+         );
+       });
+
+       if (originalSelection.activeNode) {
+         dispatch(
+           slice.actions.selectNode({
+             nodeId: originalSelection.activeNode,
+             isMultiSelect: false,
+             isRangeSelect: false,
+           })
+         );
+       }
+
+       await dispatch(
+         slice.actions.moveSelections({
+           newPath: targetFolderId,
+         })
+       ).unwrap();
+       onClose();
+     } catch (error) {
+       console.error("Failed to move items:", error);
+     }
+   }, [dispatch, slice.actions, targetFolderId, originalSelection, onClose]);
+
+   if (!activeNode) return null;
+
+   const itemCount = selectedNodes.length || 1;
+   const itemText = itemCount === 1 ? activeNode.name : `${itemCount} items`;
+
+   return createStandardDialog({
+     id: "filesystem.move",
+     title: "Move Items",
+     description: `Select a destination folder for ${itemText}`,
+     content: (
+       <div className="space-y-4">
+         <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+           <BasicFolderTree onFolderSelect={handleFolderSelect} />
+         </div>
+         <div className="flex justify-end space-x-2">
+           <Button variant="outline" onClick={onClose}>
+             Cancel
+           </Button>
+           <Button onClick={handleMove} disabled={!targetFolderId}>
+             Move
+           </Button>
+         </div>
+       </div>
+     ),
+   });
+ };
+
+ return DialogComponent;
 };

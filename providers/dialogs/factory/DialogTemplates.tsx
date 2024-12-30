@@ -6,6 +6,9 @@ import {
     DialogDescription,
     DialogFooter,
     DialogTrigger,
+    DialogPortal,
+    DialogOverlay,
+    DialogClose,
 } from "@/components/ui/dialog";
 
 import {
@@ -16,21 +19,22 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
+    AlertDialogOverlay,
+    AlertDialogPortal,
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AlertDialogConfig, DialogConfig, StandardDialogConfig } from "./types";
+import { AlertDialogConfig, StandardDialogConfig, DialogTemplateConfig } from "./types";
 
 interface DialogTemplateProps {
-    config: DialogConfig;
+    config: DialogTemplateConfig;
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-const StandardDialogTemplate: React.FC<DialogTemplateProps & { config: StandardDialogConfig }> = ({
+const StandardDialogTemplate: React.FC<Omit<DialogTemplateProps, 'config'> & { config: StandardDialogConfig }> = ({
     config,
     isOpen,
     onOpenChange,
@@ -39,43 +43,38 @@ const StandardDialogTemplate: React.FC<DialogTemplateProps & { config: StandardD
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            {config.trigger && (
-                <DialogTrigger asChild>
-                    {typeof config.trigger === 'function' 
-                        ? config.trigger(() => onOpenChange(true))
-                        : config.trigger
-                    }
-                </DialogTrigger>
-            )}
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{config.title}</DialogTitle>
-                    {config.description && (
-                        <DialogDescription>{config.description}</DialogDescription>
+            <DialogPortal>
+                <DialogOverlay />
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{config.title}</DialogTitle>
+                        {config.description && (
+                            <DialogDescription>{config.description}</DialogDescription>
+                        )}
+                    </DialogHeader>
+                    {config.content && (
+                        <div className="py-4">
+                            {typeof config.content === 'function'
+                                ? config.content(handleClose)
+                                : config.content
+                            }
+                        </div>
                     )}
-                </DialogHeader>
-                {config.content && (
-                    <div className="py-4">
-                        {typeof config.content === 'function'
-                            ? config.content(handleClose)
-                            : config.content
-                        }
-                    </div>
-                )}
-                {config.footer && (
-                    <DialogFooter>
-                        {typeof config.footer === 'function'
-                            ? config.footer(handleClose)
-                            : config.footer
-                        }
-                    </DialogFooter>
-                )}
-            </DialogContent>
+                    {config.footer && (
+                        <DialogFooter>
+                            {typeof config.footer === 'function'
+                                ? config.footer(handleClose)
+                                : config.footer
+                            }
+                        </DialogFooter>
+                    )}
+                </DialogContent>
+            </DialogPortal>
         </Dialog>
     );
 };
 
-const AlertDialogTemplate: React.FC<DialogTemplateProps & { config: AlertDialogConfig }> = ({
+const AlertDialogTemplate: React.FC<Omit<DialogTemplateProps, 'config'> & { config: AlertDialogConfig }> = ({
     config,
     isOpen,
     onOpenChange,
@@ -89,41 +88,37 @@ const AlertDialogTemplate: React.FC<DialogTemplateProps & { config: AlertDialogC
 
     return (
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-            {config.trigger && (
-                <AlertDialogTrigger asChild>
-                    {typeof config.trigger === 'function'
-                        ? config.trigger(() => onOpenChange(true))
-                        : config.trigger
-                    }
-                </AlertDialogTrigger>
-            )}
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{config.title}</AlertDialogTitle>
-                    {config.description && (
-                        <AlertDialogDescription>{config.description}</AlertDialogDescription>
-                    )}
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>
-                        {config.cancelLabel || 'Cancel'}
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={handleConfirm}
-                        className={cn(
-                            config.confirmVariant === 'destructive' && "bg-red-600 hover:bg-red-700"
+            <AlertDialogPortal>
+                <AlertDialogOverlay />
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{config.title}</AlertDialogTitle>
+                        {config.description && (
+                            <AlertDialogDescription>{config.description}</AlertDialogDescription>
                         )}
-                    >
-                        {config.confirmLabel || 'Continue'}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => onOpenChange(false)}>
+                            {config.cancelLabel || 'Cancel'}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirm}
+                            className={cn(
+                                config.confirmVariant === 'destructive' && "bg-red-600 hover:bg-red-700"
+                            )}
+                        >
+                            {config.confirmLabel || 'Continue'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialogPortal>
         </AlertDialog>
     );
 };
 
 export const DialogTemplate: React.FC<DialogTemplateProps> = (props) => {
-    return props.config.type === 'alert' 
-        ? <AlertDialogTemplate {...props as any} />
-        : <StandardDialogTemplate {...props as any} />;
+    if (props.config.type === 'alert') {
+        return <AlertDialogTemplate {...props as any} config={props.config as AlertDialogConfig} />;
+    }
+    return <StandardDialogTemplate {...props as any} config={props.config as StandardDialogConfig} />;
 };

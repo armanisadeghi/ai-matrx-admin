@@ -3,7 +3,7 @@ import { useFileSystem } from "@/providers/FileSystemProvider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { createStandardDialog } from "../../../factory/usCreateDialog";
+import { createStandardDialog } from "../../../factory/CreateDialog";
 
 export const RenameFileDialog = () => {
     const { currentPath, renameCurrentItem } = useFileSystem();

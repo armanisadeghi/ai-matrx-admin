@@ -18,9 +18,20 @@ import { ToastProvider } from "@/providers";
 import { AudioModalProvider } from "@/providers/AudioModalProvider";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
 import { EntityProvider } from "@/providers/entity-context/EntityProvider";
-import { FileSystemProvider } from "@/providers/FileSystemProvider";
+import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSystemProvider";
 import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
 import { DialogProvider } from "@/providers/dialogs/DialogContext";
+import { FileSystemDialogs } from "@/providers/dialogs/modules/filesystem";
+import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
+
+const allowedBuckets = [
+  "userContent",
+  "Audio",
+  "Images",
+  "Documents",
+  "Code",
+  "any-file",
+] as const;
 
 export function Providers({
   children,
@@ -40,19 +51,31 @@ export function Providers({
                   <ToastProvider>
                     <ThemeProvider defaultTheme="dark" enableSystem={false}>
                       <RefProvider>
-                        <FileSystemProvider>
-                          <NextUIProvider>
-                            <TooltipProvider>
-                              <AudioModalProvider>
-                                <ModuleHeaderProvider>
-                                  <ShikiProvider initialLanguages={[ "typescript", "javascript",]}>
-                                    {children}
-                                  </ShikiProvider>
-                                </ModuleHeaderProvider>
-                                <Toaster />
-                              </AudioModalProvider>
-                            </TooltipProvider>
-                          </NextUIProvider>
+                        <FileSystemProvider
+                          initialBucket="Audio"
+                          allowedBuckets={allowedBuckets}
+                        >
+                          <OldFileSystemProvider>
+                            <FileSystemDialogs />
+
+                            <NextUIProvider>
+                              <TooltipProvider>
+                                <AudioModalProvider>
+                                  <ModuleHeaderProvider>
+                                    <ShikiProvider
+                                      initialLanguages={[
+                                        "typescript",
+                                        "javascript",
+                                      ]}
+                                    >
+                                      {children}
+                                    </ShikiProvider>
+                                  </ModuleHeaderProvider>
+                                  <Toaster />
+                                </AudioModalProvider>
+                              </TooltipProvider>
+                            </NextUIProvider>
+                          </OldFileSystemProvider>
                         </FileSystemProvider>
                       </RefProvider>
                     </ThemeProvider>

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
-import { 
-    DialogContextValue, 
-    DialogState, 
-    DialogConfig, 
-    DialogRegistryType, 
+import {
+    DialogContextValue,
+    DialogState,
+    DialogConfig,
+    DialogRegistryType,
     BaseDialogProps
 } from './types';
 
@@ -14,7 +14,9 @@ const DialogContext = createContext<DialogContextValue | null>(null);
 type DialogAction =
     | { type: 'OPEN_DIALOG'; payload: { dialogId: string; props?: Record<string, any> } }
     | { type: 'CLOSE_DIALOG'; payload: { dialogId: string } }
-    | { type: 'CLOSE_ALL_DIALOGS' };
+    | { type: 'CLOSE_ALL_DIALOGS' }
+    | { type: 'DIALOG_REGISTERED'; payload: { dialogId: string } }
+    | { type: 'DIALOG_UNREGISTERED'; payload: { dialogId: string } };
 
 const dialogReducer = (state: DialogState, action: DialogAction): DialogState => {
     switch (action.type) {
@@ -39,6 +41,9 @@ const dialogReducer = (state: DialogState, action: DialogAction): DialogState =>
                 ...acc,
                 [dialogId]: { ...state[dialogId], isOpen: false }
             }), state);
+        case 'DIALOG_REGISTERED':
+        case 'DIALOG_UNREGISTERED':
+            return state; // No state update needed for registration
         default:
             return state;
     }
@@ -50,9 +55,13 @@ interface DialogProviderProps {
 
 export const DialogProvider: React.FC<DialogProviderProps> = ({ children }) => {
     const [dialogState, dispatch] = useReducer(dialogReducer, {});
-    const [registry] = React.useState<DialogRegistryType>(new Map());
-
+    const registryRef = React.useRef<DialogRegistryType>(new Map());
+    
     const openDialog = useCallback(<T = any>(dialogId: string, props?: Omit<T, keyof BaseDialogProps>) => {
+        if (!registryRef.current.has(dialogId)) {
+            console.warn(`No dialog registered with id: ${dialogId}`);
+            return;
+        }
         dispatch({ type: 'OPEN_DIALOG', payload: { dialogId, props } });
     }, []);
 
@@ -64,13 +73,15 @@ export const DialogProvider: React.FC<DialogProviderProps> = ({ children }) => {
         dispatch({ type: 'CLOSE_ALL_DIALOGS' });
     }, []);
 
-    const registerDialog = useCallback(<T = any>(config: DialogConfig<T>) => {
-        registry.set(config.id, config);
-    }, [registry]);
+    const registerDialog = useCallback((config: DialogConfig) => {
+        if (!registryRef.current.has(config.id)) {
+            registryRef.current.set(config.id, config);
+        }
+    }, []);
 
     const unregisterDialog = useCallback((dialogId: string) => {
-        registry.delete(dialogId);
-    }, [registry]);
+        registryRef.current.delete(dialogId);
+    }, []);
 
     const contextValue = React.useMemo<DialogContextValue>(() => ({
         openDialog,
@@ -80,21 +91,34 @@ export const DialogProvider: React.FC<DialogProviderProps> = ({ children }) => {
         unregisterDialog
     }), [openDialog, closeDialog, closeAllDialogs, registerDialog, unregisterDialog]);
 
-    return (
-        <DialogContext.Provider value={contextValue}>
-            {children}
-            {Array.from(registry.entries()).map(([dialogId, config]) => {
-                const DialogComponent = config.component;
-                const currentDialogState = dialogState[dialogId] || { isOpen: false };
+    const renderedDialogs = React.useMemo(() => {
+        return Array.from(registryRef.current.entries())
+            .filter(([dialogId]) => dialogState[dialogId]?.isOpen)
+            .map(([dialogId, config]) => {
+                const currentDialogState = dialogState[dialogId];
                 const combinedProps = {
                     ...config.defaultProps,
                     ...currentDialogState.props,
-                    isOpen: currentDialogState.isOpen,
+                    isOpen: true,
                     onClose: () => closeDialog(dialogId)
                 };
 
-                return <DialogComponent key={dialogId} {...combinedProps} />;
-            })}
+                // Create the component instance
+                const DialogComponent = config.component();
+
+                return (
+                    <React.Fragment key={dialogId}>
+                        {DialogComponent(combinedProps)}
+                    </React.Fragment>
+                );
+            });
+    }, [dialogState, closeDialog]);
+
+
+    return (
+        <DialogContext.Provider value={contextValue}>
+            {children}
+            {renderedDialogs}
         </DialogContext.Provider>
     );
 };
@@ -106,4 +130,3 @@ export const useDialog = () => {
     }
     return context;
 };
-

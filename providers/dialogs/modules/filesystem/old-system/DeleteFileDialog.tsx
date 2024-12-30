@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 
 import { useFileSystem } from "@/providers/FileSystemProvider";
-import { createAlertDialog } from "../../../factory/usCreateDialog";
+import { createAlertDialog } from "../../../factory/CreateDialog";
 
 export const DeleteFileDialog = () => {
     const { currentPath, deleteFile } = useFileSystem();

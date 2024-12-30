@@ -43,13 +43,16 @@ export default function DynamicPanelsPage() {
 
   // Placeholder props for PlaygroundHeader
   const placeholderProps = {
-    onToggleBrokers: () => leftPanelRef.current?.resize(isLeftCollapsed ? 12 : 0),
-    onToggleSettings: () => rightPanelRef.current?.resize(isRightCollapsed ? 12 : 0),
+    onToggleBrokers: () =>
+      leftPanelRef.current?.resize(isLeftCollapsed ? 12 : 0),
+    onToggleSettings: () =>
+      rightPanelRef.current?.resize(isRightCollapsed ? 12 : 0),
     onShowCode: () => console.log("Show code clicked"),
     currentMode: "default",
     onModeChange: (mode: string) => console.log(`Mode changed to: ${mode}`),
     version: 1,
-    onVersionChange: (version: number) => console.log(`Version changed to: ${version}`),
+    onVersionChange: (version: number) =>
+      console.log(`Version changed to: ${version}`),
     onPlay: () => console.log("Play clicked"),
     isLeftCollapsed,
     isRightCollapsed,
@@ -98,7 +101,7 @@ export default function DynamicPanelsPage() {
           onCollapse={onRightPanelChange}
           onExpand={onRightPanelChange}
         >
-          <Card className="h-full p-2 overflow-y-auto bg-background">
+          <Card className="h-full w-full rounded-none overflow-y-auto overflow-x-hidden bg-background">
             <ModelSettingsPanel />
           </Card>
         </Panel>

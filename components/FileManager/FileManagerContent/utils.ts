@@ -29,3 +29,4 @@ export const formatDate = (date: string | number | Date): string => {
 
 
 
+export { formatFileSize as formatBytes };

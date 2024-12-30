@@ -231,8 +231,16 @@ export const createFileSystemSlice = (
               handleMoveSelections(state, status);
               break;
 
+            case "deleteActiveNode":
+              handleDeleteFile(state, status);
+              break;
+
             case "syncNode":
               handleSyncNode(state, status);
+              break;
+
+            case "getPublicFile":
+              handleGetPublicFile(state, status);
               break;
 
             default:

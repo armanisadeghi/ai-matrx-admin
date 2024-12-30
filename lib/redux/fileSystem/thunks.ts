@@ -205,7 +205,6 @@ const renameActiveNode = async (
           },
         },
       });
-      
     } else {
       await moveOrRenameFile(bucketName, activeNode.storagePath, newPath);
     }
@@ -451,6 +450,22 @@ const uploadFileOperation = async (
   );
 };
 
+const deleteActiveNode = async (
+  bucketName: AvailableBuckets,
+  { getState }: { getState: () => RootState }
+): Promise<NodeItemId> => {
+  const { activeNode } = getFileSystemDetails(bucketName, getState);
+  if (!activeNode) throw new Error("No active node");
+
+  const { error } = await supabase.storage
+    .from(bucketName)
+    .remove([activeNode.storagePath]);
+
+  if (error) throw error;
+
+  return activeNode.itemId;
+};
+
 const deleteFilesOperation = async (
   bucketName: AvailableBuckets,
   options: BatchOperationOptions | undefined,
@@ -665,6 +680,53 @@ const createFileOperation = async (
   );
 };
 
+const createFolderOperation = async (
+  bucketName: AvailableBuckets,
+  { name, parentId = null }: { name: string; parentId?: NodeItemId | null },
+  { getState }: { getState: () => RootState }
+): Promise<FileSystemNode> => {
+  const { state, parentPath } = getFileSystemDetails(bucketName, getState);
+
+  // Create the folder path and placeholder file path
+  const folderPath = `${parentPath}/${name}`.replace(/^\/+/, "");
+  const placeholderPath = `${folderPath}/.emptyFolderPlaceholder`;
+
+  // Create an empty file as placeholder
+  const emptyFile = new File([""], ".emptyFolderPlaceholder");
+
+  const { data, error } = await supabase.storage
+    .from(bucketName)
+    .upload(placeholderPath, emptyFile, {
+      upsert: true,
+      contentType: "application/x-empty",
+    });
+
+  if (error) throw error;
+  if (!data) throw new Error("No data received from folder creation");
+
+  // Create a storage item for the folder itself
+  const folderStorageItem = {
+    name,
+    id: folderPath,
+    updated_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    last_accessed_at: new Date().toISOString(),
+    metadata: {
+      mimetype: "folder",
+      size: 0,
+      contentLength: 0,
+      lastModified: new Date().toISOString(),
+    },
+  };
+
+  return createNodeFromStorageItem(
+    bucketName,
+    folderStorageItem,
+    parentId,
+    parentPath,
+  );
+};
+
 const getPublicUrlOperation = async (
   bucketName: AvailableBuckets,
   { nodeId, expiresIn }: { nodeId: NodeItemId; expiresIn?: number },
@@ -743,7 +805,15 @@ export const createFileSystemOperations = (bucketName: AvailableBuckets) => ({
     "createFile",
     (options, helpers) => createFileOperation(bucketName, options, helpers)
   ),
-  getPublicUrl: createOperationThunk<
+
+  createFolder: createOperationThunk<
+    { name: string; parentId?: NodeItemId | null },
+    FileSystemNode
+  >(bucketName, "createFolder", (options, helpers) =>
+    createFolderOperation(bucketName, options, helpers)
+  ),
+
+  getPublicFile: createOperationThunk<
     { nodeId: NodeItemId; expiresIn?: number },
     { nodeId: NodeItemId; url: string; isPublic: boolean }
   >(bucketName, "getPublicFile", (options, helpers) =>
@@ -766,5 +836,11 @@ export const createFileSystemOperations = (bucketName: AvailableBuckets) => ({
     bucketName,
     "moveSelections",
     (options, helpers) => moveSelections(bucketName, options.newPath, helpers)
+  ),
+
+  deleteActiveNode: createOperationThunk<void, NodeItemId>(
+    bucketName,
+    "deleteActiveNode",
+    (_, helpers) => deleteActiveNode(bucketName, helpers)
   ),
 });

@@ -143,7 +143,7 @@ export const createSelectionSelectors = (bucketName: AvailableBuckets) => ({
   selectSelectedNodes: createBucketSpecificSelector<FileSystemNode[]>(
     bucketName,
     (state) =>
-      Array.from(state.selection.selectedNodes)
+      Array.from(state?.selection?.selectedNodes?.values() || [])
         .map((id) => state.nodes[id])
         .filter(Boolean)
         .sort((a, b) => {

@@ -1,47 +1,64 @@
-
-import { useFileSystem } from '@/providers/FileSystemProvider';
-import { useDialogRegistry } from '../../useDialogRegistry';
-import { DeleteDialog } from '@/components/FileManager/Dialogs/DeleteDialog';
-import { RenameDialog } from '@/components/FileManager/Dialogs/RenameDialog';
+import React from "react";
+import { useDialogRegistry } from "../../useDialogRegistry";
+import { DeleteDialog } from "./DeleteDialog";
+import { RenameDialog } from "./RenameDialog";
+import { CreateFileDialog } from "./CreateFileDialog";
+import { CreateFolderDialog } from "./CreateFolderDialog";
+import { UploadDialog } from "./UploadDialog";
+import { DownloadDialog } from "./DownloadDialog";
+import { MoveDialog } from "./MoveDialog";
+import { GetPublicDialog } from "./GetPublicDialog";
+import { SyncDialog } from "./SyncDialog";
+import { ListContentsDialog } from "./ListContentsDialog";
+import { DialogConfig } from "@/providers/dialogs/types";
 
 export const FileSystemDialogs: React.FC = () => {
-    const {
-        deleteFile,
-        renameCurrentItem
-    } = useFileSystem();
+  const dialogConfigs = React.useMemo(
+    () => [
+      {
+        id: "filesystem.delete",
+        component: DeleteDialog,
+      },
+      {
+        id: "filesystem.rename",
+        component: RenameDialog,
+      },
+      {
+        id: "filesystem.createFile",
+        component: CreateFileDialog,
+      },
+      {
+        id: "filesystem.createFolder",
+        component: CreateFolderDialog,
+      },
+      {
+        id: "filesystem.upload",
+        component: UploadDialog,
+      },
+      {
+        id: "filesystem.download",
+        component: DownloadDialog,
+      },
+      {
+        id: "filesystem.move",
+        component: MoveDialog,
+      },
+      {
+        id: "filesystem.getPublicFile",
+        component: GetPublicDialog,
+      },
+      {
+        id: "filesystem.sync",
+        component: SyncDialog,
+      },
+      {
+        id: "filesystem.listContents",
+        component: ListContentsDialog,
+      },
+    ] as DialogConfig[],
+    []
+  );
 
-    const dialogConfigs = [
-        {
-            id: 'filesystem.delete',
-            component: DeleteDialog,
-            defaultProps: {
-                onSubmit: deleteFile
-            }
-        },
-        {
-            id: 'filesystem.rename',
-            component: RenameDialog,
-            defaultProps: {
-                onSubmit: renameCurrentItem
-            }
-        }
-    ];
-
-    useDialogRegistry(dialogConfigs);
-
-    return null;
+  useDialogRegistry(dialogConfigs);
+  return null;
 };
-
-// // Usage in components:
-// const MyComponent = () => {
-//     const { openDialog } = useDialog();
-    
-//     const handleDelete = () => {
-//         openDialog('filesystem.delete', {
-//             // Additional props if needed
-//             customTitle: 'Delete this item?'
-//         });
-//     };
-    
-//     return <button onClick={handleDelete}>Delete</button>;
-// };

@@ -31,6 +31,8 @@ export type FileOperation =
   | "renameActiveNode"
   | "duplicateSelections"
   | "moveSelections"
+  | "deleteSelections"
+  | "deleteActiveNode"
   | "syncNode";
 
 // Storage Types
@@ -87,7 +89,7 @@ export interface FileSystemNode {
 
   status: NodeStatus;
   operation: FileOperation;
-  
+
   isDirty: boolean;
   lastSynced?: string;
   syncError?: string;
@@ -108,12 +110,11 @@ export interface NodeCache {
 
 // Selection State
 export interface SelectionState {
-    selectedNodes: Set<NodeItemId>;
-    lastSelected?: NodeItemId;
-    selectionAnchor?: NodeItemId;
-  }
-  
-  
+  selectedNodes: Set<NodeItemId>;
+  lastSelected?: NodeItemId;
+  selectionAnchor?: NodeItemId;
+}
+
 // State Management
 export interface FileManagement {
   nodes: Record<NodeItemId, FileSystemNode>;
@@ -137,61 +138,56 @@ export interface FileManagement {
 
 // Common operation interfaces
 export interface ListOptions {
-    limit?: number;
-    sortBy?: {
-      column: string;
-      order: "asc" | "desc";
-    };
-    forceFetch?: boolean;
-    filter?: {
-      contentType?: string[];
-      extension?: string[];
-    };
-  }
+  limit?: number;
+  sortBy?: {
+    column: string;
+    order: "asc" | "desc";
+  };
+  forceFetch?: boolean;
+  filter?: {
+    contentType?: string[];
+    extension?: string[];
+  };
+}
 
-  
-  export interface BatchOperationOptions {
-    forceFetch?: boolean;
-    parallel?: boolean;
-    continueOnError?: boolean;
-    batchSize?: number;
-  }
-  export interface SyncOptions {
-    forceFetch?: boolean;
-    validateContent?: boolean;
-    syncContent?: boolean;  // Whether to sync file content or just metadata
-    batch?: BatchOperationOptions;
-  }
-  
-      
-  export interface DownloadOptions {
-    forceFetch?: boolean;
-    preferCache?: boolean;
-    validateChecksum?: boolean;
-  }
-  
-  export interface UploadOptions {
-    overwrite?: boolean;
-    preserveMetadata?: boolean;
-    contentType?: string;
-    cacheControl?: string;
-  }
-  
-  export interface MoveOptions {
-    overwrite?: boolean;
-    preserveMetadata?: boolean;
-    batch?: BatchOperationOptions;
-  }
-  
-  export interface CreateFileOptions extends UploadOptions {
-    name: string;
-    content: File | Blob;
-    parentId?: NodeItemId | null;  // If not provided, creates at root
-    metadata?: Partial<StorageMetadata>;
-  }
-  
-  
-  
+export interface BatchOperationOptions {
+  forceFetch?: boolean;
+  parallel?: boolean;
+  continueOnError?: boolean;
+  batchSize?: number;
+}
+export interface SyncOptions {
+  forceFetch?: boolean;
+  validateContent?: boolean;
+  syncContent?: boolean; // Whether to sync file content or just metadata
+  batch?: BatchOperationOptions;
+}
+
+export interface DownloadOptions {
+  forceFetch?: boolean;
+  preferCache?: boolean;
+  validateChecksum?: boolean;
+}
+
+export interface UploadOptions {
+  overwrite?: boolean;
+  preserveMetadata?: boolean;
+  contentType?: string;
+  cacheControl?: string;
+}
+
+export interface MoveOptions {
+  overwrite?: boolean;
+  preserveMetadata?: boolean;
+  batch?: BatchOperationOptions;
+}
+
+export interface CreateFileOptions extends UploadOptions {
+  name: string;
+  content: File | Blob;
+  parentId?: NodeItemId | null; // If not provided, creates at root
+  metadata?: Partial<StorageMetadata>;
+}
 
 // Operation Types
 export interface OperationStatus {
@@ -199,7 +195,6 @@ export interface OperationStatus {
   error?: string | null;
   data?: any;
 }
-
 
 // Updated Action Types
 export interface UpdateNodePayload {
@@ -215,10 +210,10 @@ export interface ThunkConfig {
 // Action Types for FileSystem Slice
 export interface FileSystemSlice {
   reducer: Reducer<FileManagement>;
-  actions: FileSystemActions;
+  actions: FileSystemActionTypes;
 }
 
-export interface FileSystemActions {
+export interface FileSystemActionTypes {
   // Slice actions (synchronous)
   selectNode: (payload: {
     nodeId: NodeItemId;
@@ -278,4 +273,12 @@ export interface FileSystemActions {
     ThunkConfig
   >;
   syncNode: AsyncThunk<FileSystemNode, SyncOptions | undefined, ThunkConfig>;
+
+  // New thunk action
+  deleteActiveNode: AsyncThunk<NodeItemId, void, ThunkConfig>;
+  renameActiveNode: AsyncThunk<FileSystemNode[], { newName: string }, ThunkConfig>;
+
+  createFile: AsyncThunk<FileSystemNode, CreateFileOptions, ThunkConfig>;
+  createFolder: AsyncThunk<FileSystemNode, { name: string; parentId?: NodeItemId | null }, ThunkConfig>;
+
 }

@@ -298,3 +298,5 @@ export const StructuredEditor: React.FC<StructuredEditorProps> = ({
     </div>
   );
 };
+
+// https://claude.ai/chat/867e6474-fa70-47c1-9228-c898e3c096f3

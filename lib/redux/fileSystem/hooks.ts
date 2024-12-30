@@ -7,7 +7,7 @@ import {
   NodeItemId,
   FileSystemNode,
   FileOperation,
-  FileSystemActions,
+  FileSystemActionTypes ,
   ThunkConfig,
   StorageMetadata,
   AvailableBuckets,

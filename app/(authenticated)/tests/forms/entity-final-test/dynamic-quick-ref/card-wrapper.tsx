@@ -7,7 +7,7 @@ import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {useSelectQuickRef} from '../hooks/useSelectQuickRef';
 import {QuickRefVariant, QUICK_REF_VARIANTS} from './quick-ref-item';
 
-interface QuickRefRendererProps {
+export interface QuickRefRendererProps {
     entityKey: EntityKeys;
     variant?: QuickRefVariant;
     fetchMode?: FetchMode;
