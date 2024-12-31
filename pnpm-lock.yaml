@@ -35,6 +35,9 @@ importers:
       '@cartesia/cartesia-js':
         specifier: ^2.1.2
         version: 2.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@cerebras/cerebras_cloud_sdk':
+        specifier: ^1.15.0
+        version: 1.15.0
       '@deepgram/sdk':
         specifier: latest
         version: 3.9.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -983,6 +986,9 @@ packages:
 
   '@cartesia/cartesia-js@2.1.2':
     resolution: {integrity: sha512-jifuGsTUb2pbQ5eDDIwCNo8x6iIohv7Y7fYeQJwEFHHHagKLWro6DLAdSz6PTBF5Ripcb0mABcwAXZ3ZkmoLyA==}
+
+  '@cerebras/cerebras_cloud_sdk@1.15.0':
+    resolution: {integrity: sha512-cNz4c/veNnddyjutwhQ2TklwohHaIx4/K9PhGyTT1XT/tRRqwbBnXc9/nPHhReAtvRnf7rOY+mOeDe76NBvybQ==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -9747,6 +9753,18 @@ snapshots:
       - bufferutil
       - encoding
       - utf-8-validate
+
+  '@cerebras/cerebras_cloud_sdk@1.15.0':
+    dependencies:
+      '@types/node': 18.19.68
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.5.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:

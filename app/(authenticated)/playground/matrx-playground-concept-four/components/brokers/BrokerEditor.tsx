@@ -17,7 +17,7 @@ import {
   sourceTypes,
   getComponentIcon,
   getSourceIcon,
-} from "../../constants";
+} from "./constants";
 import { Button } from "@/components/ui";
 import { FloatingLabelInput } from "@/components/matrx/input";
 import { cn } from "@/utils";

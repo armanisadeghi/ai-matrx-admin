@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createRoot } from "react-dom/client";
 import { generateId } from "../utils/commonUtils";
-import { useVariablesStore } from "../../brokers-two/hooks/useVariablesStore";
+import { useVariablesStore } from '@/app/contexts/useVariablesStore';
 
 interface ChipProps {
   content: string;

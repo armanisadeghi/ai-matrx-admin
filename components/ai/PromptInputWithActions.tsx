@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { Button, Tooltip, ScrollShadow } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
-import PromptInput from "@/components/playground/prompt-input";
+import PromptInput from "@/components/playground/next-playground/prompt-input";
 import { cn } from "@/utils/cn";
 
 interface PromptInputWithActionsProps {

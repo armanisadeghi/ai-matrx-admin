@@ -7,7 +7,7 @@ import {Icon} from "@iconify/react";
 import {cn} from "./cn";
 
 import PromptInput from "./prompt-input";
-import {ideasData} from "@/components/playground/data";
+import {ideasData} from "@/components/playground/next-playground/data";
 
 export default function Component() {
     const ideas = ideasData

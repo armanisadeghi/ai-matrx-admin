@@ -21,6 +21,7 @@
     "@anthropic-ai/sdk": "latest",
     "@auth0/nextjs-auth0": "latest",
     "@cartesia/cartesia-js": "^2.1.2",
+    "@cerebras/cerebras_cloud_sdk": "^1.15.0",
     "@deepgram/sdk": "latest",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

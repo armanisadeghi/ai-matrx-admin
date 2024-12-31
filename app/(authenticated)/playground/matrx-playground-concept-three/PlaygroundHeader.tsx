@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,14 +50,22 @@ import {
   TrendingUpDown,
 } from "lucide-react";
 import { cn } from "@/utils";
+import QuickRefSearchableSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSearchableSelect";
+import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 
 interface PlaygroundHeaderProps {
+  initialSettings?: {
+    recipe?: QuickReferenceRecord;
+    version?: number;
+    provider?: QuickReferenceRecord;
+    model?: QuickReferenceRecord;
+    endpoint?: QuickReferenceRecord;
+  };    
   onToggleBrokers: () => void;
   onToggleSettings: () => void;
   onShowCode: () => void;
   currentMode: string;
   onModeChange: (mode: string) => void;
-  version: number;
   onVersionChange: (version: number) => void;
   onPlay: () => void;
   isLeftCollapsed?: boolean;
@@ -67,6 +75,13 @@ interface PlaygroundHeaderProps {
 }
 
 const PlaygroundHeader = ({
+  initialSettings = {
+    recipe: undefined,
+    version: 1,
+    provider: undefined,
+    model: undefined,
+    endpoint: undefined,
+  },
   onToggleBrokers,
   onToggleSettings,
   isLeftCollapsed,
@@ -76,11 +91,21 @@ const PlaygroundHeader = ({
   onShowCode,
   currentMode,
   onModeChange,
-  version,
   onVersionChange,
   onPlay,
 }: PlaygroundHeaderProps) => {
   const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
+
+
+  const [selectedRecipe, setSelectedRecipe] = useState<
+    QuickReferenceRecord | undefined
+  >(initialSettings?.recipe);
+
+  const handleRecipeChange = (record: QuickReferenceRecord) => {
+    setSelectedRecipe(record);
+  };
+
+
 
   const modes = [
     { id: "prompt", icon: <MessageSquare size={16} />, label: "Prompt" },
@@ -124,14 +149,20 @@ const PlaygroundHeader = ({
             <History size={16} />
           </Button>
         </div>
+        
+          <QuickRefSearchableSelect
+            entityKey="recipe"
+            initialSelectedRecord={selectedRecipe}
+            onRecordChange={handleRecipeChange}
+          />
 
         <Select
-          value={version.toString()}
+          value={initialSettings.version.toString()}
           onValueChange={(v) => onVersionChange(parseInt(v))}
         >
           <SelectTrigger className="h-8 w-24">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Version {version}</span>
+              <span className="text-sm">Version {initialSettings.version}</span>
             </div>
           </SelectTrigger>
           <SelectContent>

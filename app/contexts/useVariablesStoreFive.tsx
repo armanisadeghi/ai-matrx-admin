@@ -1,9 +1,9 @@
 // useVariablesStore.ts
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { Variable, EditorState, EditorRef } from '../types';
+import { Variable, EditorState, EditorRef } from '../(authenticated)/tests/recipe-creation/brokers-five/types';
 import ReactDOM from 'react-dom';
-import { VariableChip } from '../VariableChip';
+import { VariableChip } from '../(authenticated)/tests/recipe-creation/brokers-five/VariableChip';
 
 
 const VARIABLE_PATTERN = /\{([^}]+)\}!/g;
@@ -32,7 +32,7 @@ interface VariablesState {
 
 const getRandomColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
-export const useVariablesStore = create<VariablesState>((set, get) => ({
+export const useVariablesStoreFive = create<VariablesState>((set, get) => ({
     variables: {},
     editor: {
         content: '',

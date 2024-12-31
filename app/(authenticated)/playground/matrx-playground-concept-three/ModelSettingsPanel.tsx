@@ -5,7 +5,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ModelSettings from "./ModelSettings";
 import PlaygroundResources from "./PlaygroundResources";
 import MetricsCard from "./MetricsCard";
-import AdvancedSettings from "./AdvancedSettings";
 import { useMeasure } from "@uidotdev/usehooks";
 
 const ModelSettingsPanel = (initialSettings) => {
@@ -45,7 +44,6 @@ const ModelSettingsPanel = (initialSettings) => {
 
       <div className="p-2 space-y-4">
         <ModelSettings initialSettings={initialSettings} />
-        <AdvancedSettings />
       </div>
 
       <div className="mt-auto">

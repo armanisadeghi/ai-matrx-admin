@@ -1,5 +1,5 @@
 import React from 'react';
-import { useVariablesStore } from '@/app/(authenticated)/tests/recipe-creation/brokers-two/hooks/useVariablesStore';
+import { useVariablesStore } from '@/app/contexts/useVariablesStore';
 
 export const VariableChip = ({ id }: { id: string }) => {
     const variable = useVariablesStore(state => state.variables[id]);

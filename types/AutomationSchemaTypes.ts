@@ -1,4 +1,5 @@
 // File: types/AutomationSchemaTypes.ts
+
 import {AutomationEntity} from "@/types/entityTypes";
 
 export type TypeBrand<T> = { _typeBrand: T };
@@ -10,10 +11,6 @@ export type FieldDataOptionsType =
     | 'array'
     | 'object'
     | 'json'
-    | 'uuid'
-    | 'email'
-    | 'url'
-    | 'datetime'
     | 'null'
     | 'undefined'
     | 'any'
@@ -29,7 +26,12 @@ export type FieldDataOptionsType =
     | 'intersection'
     | 'literal'
     | 'void'
-    | 'never';
+    | 'never'
+    | 'uuid'
+    | 'email'
+    | 'url'
+    | 'phone'
+    | 'datetime';
 
 export type DataStructure =
     | 'single'
@@ -86,20 +88,28 @@ export type AutomationTableName =
     'action'
     | 'aiEndpoint'
     | 'aiModel'
+    | 'aiModelEndpoint'
+    | 'aiProvider'
+    | 'aiSettings'
     | 'arg'
     | 'automationBoundaryBroker'
     | 'automationMatrix'
     | 'broker'
+    | 'bucketStructures'
+    | 'bucketTreeStructures'
     | 'dataInputComponent'
     | 'dataOutputComponent'
     | 'displayOption'
     | 'emails'
     | 'extractor'
+    | 'fileStructure'
     | 'flashcardData'
     | 'flashcardHistory'
     | 'flashcardImages'
     | 'flashcardSetRelations'
     | 'flashcardSets'
+    | 'messageBroker'
+    | 'messageTemplate'
     | 'processor'
     | 'recipe'
     | 'recipeBroker'
@@ -129,20 +139,28 @@ export type AutomationEntityName = AutomationTableName | AutomationViewName;
 export type ActionType = AutomationEntity<"action">;
 export type AiEndpointType = AutomationEntity<"aiEndpoint">;
 export type AiModelType = AutomationEntity<"aiModel">;
+export type AiModelEndpointType = AutomationEntity<"aiModelEndpoint">;
+export type AiProviderType = AutomationEntity<"aiProvider">;
+export type AiSettingsType = AutomationEntity<"aiSettings">;
 export type ArgType = AutomationEntity<"arg">;
 export type AutomationBoundaryBrokerType = AutomationEntity<"automationBoundaryBroker">;
 export type AutomationMatrixType = AutomationEntity<"automationMatrix">;
 export type BrokerType = AutomationEntity<"broker">;
+export type BucketStructuresType = AutomationEntity<"bucketStructures">;
+export type BucketTreeStructuresType = AutomationEntity<"bucketTreeStructures">;
 export type DataInputComponentType = AutomationEntity<"dataInputComponent">;
 export type DataOutputComponentType = AutomationEntity<"dataOutputComponent">;
 export type DisplayOptionType = AutomationEntity<"displayOption">;
 export type EmailsType = AutomationEntity<"emails">;
 export type ExtractorType = AutomationEntity<"extractor">;
+export type FileStructureType = AutomationEntity<"fileStructure">;
 export type FlashcardDataType = AutomationEntity<"flashcardData">;
 export type FlashcardHistoryType = AutomationEntity<"flashcardHistory">;
 export type FlashcardImagesType = AutomationEntity<"flashcardImages">;
 export type FlashcardSetRelationsType = AutomationEntity<"flashcardSetRelations">;
 export type FlashcardSetsType = AutomationEntity<"flashcardSets">;
+export type MessageBrokerType = AutomationEntity<"messageBroker">;
+export type MessageTemplateType = AutomationEntity<"messageTemplate">;
 export type ProcessorType = AutomationEntity<"processor">;
 export type RecipeType = AutomationEntity<"recipe">;
 export type RecipeBrokerType = AutomationEntity<"recipeBroker">;

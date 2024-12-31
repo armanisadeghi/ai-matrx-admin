@@ -6,7 +6,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useVariablesStore } from './hooks/useVariablesStore';
+import { useVariablesStoreFive } from '@/app/contexts/useVariablesStoreFive';
 import { VariableChip } from './VariableChip';
 
 export const IntelligentEditor = () => {
@@ -24,7 +24,7 @@ export const IntelligentEditor = () => {
         deleteVariable,
         restoreVariable,
         updateVariable
-    } = useVariablesStore();
+    } = useVariablesStoreFive();
 
     const handleInput = useCallback(() => {
         requestAnimationFrame(() => {

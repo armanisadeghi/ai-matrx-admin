@@ -59,7 +59,7 @@ export function Providers({
                             <FileSystemDialogs />
 
                             <NextUIProvider>
-                              <TooltipProvider>
+                              <TooltipProvider delayDuration={200}>
                                 <AudioModalProvider>
                                   <ModuleHeaderProvider>
                                     <ShikiProvider

@@ -55,7 +55,7 @@ const LightSwitchToggle = (
     );
 
     const buttonBaseClasses = "relative w-1/2 h-full transition-all duration-300";
-    const activeButtonClasses = "bg-primary transform active:translate-y-1";
+    const activeButtonClasses = "bg-primary transform ";
     const inactiveButtonClasses = "bg-background transform -translate-y-1";
 
     return (
@@ -85,7 +85,7 @@ const LightSwitchToggle = (
                     />
                     <span
                         className={cn(
-                            "relative z-20 font-medium truncate px-2",  // Added truncate and padding
+                            "relative z-20 font-medium truncate px-1",
                             !isOn ? "dark:text-foreground text-muted-foreground" : "text-muted-foreground"
                         )}
                     >

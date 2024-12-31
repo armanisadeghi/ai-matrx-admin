@@ -3,6 +3,8 @@
 import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
 import { filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 import React from "react";
+import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
+import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
 
 export default function Layout({children}: { children: React.ReactNode }) {
     return (
@@ -14,6 +16,19 @@ export default function Layout({children}: { children: React.ReactNode }) {
                     moduleName={MODULE_NAME}
                 />
             </div>
+            <MatrxDynamicPanel
+                initialPosition="left"
+                defaultExpanded={true}
+                expandButtonProps={{
+                    label: 'Entity State',
+                }}
+            >
+                <EnhancedEntityAnalyzer
+                    defaultExpanded={true}
+                    selectedEntityKey="aiProvider"
+                />
+            </MatrxDynamicPanel>
+
             <main className="flex-1">
                 {children}
             </main>

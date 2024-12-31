@@ -242,6 +242,20 @@ export const selectEntityPrettyName = createSelector(
     (entityNameFormats, entityName) => entityNameFormats[entityName]?.['pretty'] as PrettyEntityName<EntityKeys>
 );
 
+const startsWithVowelSound = (word: string): boolean => {
+    const vowelRegex = /^[aeiou]/i;
+    return vowelRegex.test(word);
+};
+
+export const selectEntitySelectText = createSelector(
+    [selectEntityPrettyName],
+    (prettyName) => {
+        if (!prettyName) return 'Select a Record';
+        const article = startsWithVowelSound(prettyName) ? 'an' : 'a';
+        return `Select ${article} ${prettyName}`;
+    }
+);
+
 export const selectFormattedEntityOptions = createSelector(
     [(state: RootState) => state, selectEntityNames],
     (state, entityNames): EntitySelectOption<EntityKeys>[] => {

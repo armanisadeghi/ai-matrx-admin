@@ -1,6 +1,6 @@
 import React from "react";
 import MessageCard from "./message-card";
-import {messagesDemo} from "@/components/playground/data";
+import {messagesDemo} from "@/components/playground/next-playground/data";
 
 export default function Component() {
     const messages = messagesDemo

@@ -4,7 +4,7 @@
 import WindowManager from "@/components/matrx/windows";
 
 import RegisteredFunctionsList from "@/features/registered-function/components/RegisteredFunctionList";
-import Playground from "@/components/playground/Playground";
+import Playground from "@/components/playground/next-playground/Playground";
 import FunctionManagement from "@/features/registered-function/components/FunctionManagement";
 import CameraPage from "@/components/matrx/camera";
 

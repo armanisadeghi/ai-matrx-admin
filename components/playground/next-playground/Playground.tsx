@@ -17,7 +17,7 @@ import {
 import {Icon} from "@iconify/react";
 
 import PromptContainerWithConversation from "./prompt-container-with-conversation";
-import {DEFAULT_MODELS_DEMO, fineTuneModelsDemo, PlaygroundPreset, presetsDemo} from "@/components/playground/data";
+import {DEFAULT_MODELS_DEMO, fineTuneModelsDemo, PlaygroundPreset, presetsDemo} from "@/components/playground/next-playground/data";
 const presets = presetsDemo;
 const DEFAULT_MODELS = DEFAULT_MODELS_DEMO
 const fineTuneModels = fineTuneModelsDemo

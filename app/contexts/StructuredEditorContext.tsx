@@ -2,7 +2,7 @@
 
 // contexts/StructuredEditorContext.tsx
 import React, { createContext, useContext, useCallback } from 'react';
-import { useVariablesStore } from '../(authenticated)/tests/recipe-creation/brokers-two/hooks/useVariablesStore';
+import { useVariablesStore } from './useVariablesStore';
 
 
 interface StructuredEditorContextType {

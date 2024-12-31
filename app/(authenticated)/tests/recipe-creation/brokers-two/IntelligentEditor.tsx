@@ -5,7 +5,7 @@ import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} fr
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {useVariablesStore} from '@/app/(authenticated)/tests/recipe-creation/brokers-two/hooks/useVariablesStore';
+import { useVariablesStore } from '@/app/contexts/useVariablesStore';
 
 const VARIABLE_PATTERN = /\{([^}]+)\}!/g;
 

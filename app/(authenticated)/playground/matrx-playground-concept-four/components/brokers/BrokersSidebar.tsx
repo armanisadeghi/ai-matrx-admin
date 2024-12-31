@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useVariablesStore } from "../../hooks/useVariablesStore";
+
 import { Button } from "@/components/ui";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus } from "lucide-react";
 import BrokerEditor from "./BrokerEditor";
+import { useVariablesStore } from '@/app/contexts/useVariablesStore';
 
 export default function BrokerSidebar() {
   const { variables, addVariable, updateVariable, deleteVariable } = useVariablesStore();
