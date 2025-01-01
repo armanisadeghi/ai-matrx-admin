@@ -13,6 +13,7 @@ import PlaygroundHeader from "@/components/playground/header/PlaygroundHeader";
 import BrokerSidebar from "@/components/playground/brokers/BrokersSidebar";
 import { PanelManager } from "@/components/playground/panel-manager/PanelManager";
 import ModelSettingsPanel from "@/components/playground/settings/ModelSettingsPanel";
+import { ResultPanelManager } from "@/components/playground/panel-manager/ResultPanelManager";
 
 export default function DynamicPanelsPage() {
   const leftPanelRef = useRef<ImperativePanelHandle>(null);
@@ -34,19 +35,19 @@ export default function DynamicPanelsPage() {
   };
 
   const openLeftPanel = () => {
-    leftPanelRef.current?.resize(12);
+    leftPanelRef.current?.resize(15);
   };
 
   const openRightPanel = () => {
-    rightPanelRef.current?.resize(12);
+    rightPanelRef.current?.resize(15);
   };
 
   // Placeholder props for PlaygroundHeader
   const placeholderProps = {
     onToggleBrokers: () =>
-      leftPanelRef.current?.resize(isLeftCollapsed ? 12 : 0),
+      leftPanelRef.current?.resize(isLeftCollapsed ? 15 : 0),
     onToggleSettings: () =>
-      rightPanelRef.current?.resize(isRightCollapsed ? 12 : 0),
+      rightPanelRef.current?.resize(isRightCollapsed ? 15 : 0),
     onShowCode: () => console.log("Show code clicked"),
     currentMode: "default",
     onModeChange: (mode: string) => console.log(`Mode changed to: ${mode}`),
@@ -83,11 +84,11 @@ export default function DynamicPanelsPage() {
 
         <PanelResizeHandle />
 
-        <PanelManager side="left" />
+        <PanelManager />
 
         <PanelResizeHandle />
 
-        <PanelManager side="right" />
+        <ResultPanelManager initialPanels={2} />
 
         <PanelResizeHandle />
 

@@ -1,7 +1,7 @@
 // /layout.tsx
 "use  client";
 
-import { StructuredEditorProvider } from "@/app/contexts/StructuredEditorContext";
+import { StructuredEditorProvider } from "@/app/contexts/old/StructuredEditorContext";
 
 import { ModuleHeader } from "@/components/matrx/navigation";
 import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";

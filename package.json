@@ -195,6 +195,7 @@
     "ts-node": "latest",
     "unsplash-js": "latest",
     "use-long-press": "latest",
+    "use-undo": "^1.1.1",
     "usehooks-ts": "latest",
     "uuid": "latest",
     "vaul": "latest",

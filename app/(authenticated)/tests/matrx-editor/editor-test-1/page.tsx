@@ -1,6 +1,5 @@
 "use client";
 
-import { MatrxEditor } from "@/components/matrx-editor/MatrxEditor";
 import { MatrxEditorWithControls } from "@/components/matrx-editor/MatrxEditorWithControls";
 import { DocumentState } from "@/components/matrx-editor/types";
 import React, { useState, useEffect } from "react";
@@ -30,18 +29,19 @@ export default function EditorPage() {
       {/* Left side */}
       <div className="grid grid-rows-3 gap-4 h-full">
         {/* Top section */}
-        <div className="border rounded-lg p-4 bg-muted">
-          <p className="text-muted-foreground">Left Top Section Placeholder</p>
-        </div>
-        
-        {/* Middle section with editor */}
         <div className="border rounded-lg shadow-sm p-4 bg-background">
           <MatrxEditorWithControls
             editorId="editor-1"
             onStateChange={handleStateChange}
           />
         </div>
+
         
+        {/* Middle section with editor */}
+        <div className="border rounded-lg p-4 bg-muted">
+          <p className="text-muted-foreground">Left Top Section Placeholder</p>
+        </div>
+
         {/* Bottom section */}
         <div className="border rounded-lg p-4 bg-muted">
           <p className="text-muted-foreground">Left Bottom Section Placeholder</p>

@@ -1,8 +1,25 @@
 // editorUtils.ts
-import { generateId, getCursorPosition, setCursorPosition } from "../utils/commonUtils";
-import { createChipContainer } from "../utils/chipUtils";
+import {
+  generateId,
+  getCursorPosition,
+  setCursorPosition,
+} from "../utils/commonUtils";
 import type { ContentBlock, DocumentState } from "../types";
-import { renderChipInContainer } from "../components/Chip";
+
+import {
+  createTextNode,
+  createBrokerNode,
+  createLineBreakNode,
+  createCursorNode,
+} from "./core-dom-utils";
+import { renderBrokerChipInContainer } from "../broker/BrokerChipRender";
+import { useBrokers, BrokersProvider, type Broker } from '@/providers/brokers/BrokersProvider';
+
+const reconstructBrokerFromBlock = (block: ContentBlock): Broker | null => {
+  if (block.type !== "chip") return null;
+  const { getBroker } = useBrokers();
+  return getBroker(block.id);
+};
 
 export const setEditorContent = (
   editorRef: React.RefObject<HTMLDivElement>,
@@ -11,46 +28,53 @@ export const setEditorContent = (
 ) => {
   if (!editorRef.current) return;
 
-  console.log("Setting content with blocks:", newState.blocks);
-
   editorRef.current.innerHTML = "";
-
-  let currentDiv = document.createElement("div");
+  let currentDiv = createLineBreakNode().node as HTMLElement;
   editorRef.current.appendChild(currentDiv);
 
   newState.blocks.forEach((block) => {
     switch (block.type) {
       case "lineBreak":
-        currentDiv = document.createElement("div");
+        currentDiv = createLineBreakNode().node as HTMLElement;
         editorRef.current?.appendChild(currentDiv);
         break;
-      case "text":
+
+      case "text": {
         if (block.content === "") {
           const br = document.createElement("br");
           currentDiv.appendChild(br);
         } else {
-          const textNode = document.createTextNode(block.content);
-          currentDiv.appendChild(textNode);
+          const { node: textSpan } = createTextNode(block.content, block.id);
+          currentDiv.appendChild(textSpan);
         }
         break;
-      case "chip":
-        console.log("Recreating chip:", block.content);
+      }
 
-        const chipContainer = createChipContainer(block.id, block.content);
+      case "chip": {
+        const broker = reconstructBrokerFromBlock(block);
+        if (!broker) {
+          console.warn(`Skipping chip reconstruction for block ${block.id}`);
+          break;
+        }
+
         const onProcessContent = () => {
           const blocks = captureEditorContent(editorRef);
-          processEditorContent(editorRef, blocks, newState.version, setDocumentState);
+          processEditorContent(
+            editorRef,
+            blocks,
+            newState.version,
+            setDocumentState
+          );
         };
-        
-        renderChipInContainer(
-          chipContainer, 
-          block.content, 
-          onProcessContent,
-          block.id // Using block.id as brokerId, adjust if needed
-        );
 
+        const { node: chipContainer } = createBrokerNode(broker);
         currentDiv.appendChild(chipContainer);
+        renderBrokerChipInContainer(chipContainer, broker, onProcessContent);
+
+        const cursorNode = createCursorNode();
+        chipContainer.after(cursorNode);
         break;
+      }
     }
   });
 
@@ -60,76 +84,85 @@ export const setEditorContent = (
 export const captureEditorContent = (
   editorRef: React.RefObject<HTMLDivElement>
 ): ContentBlock[] => {
+  console.log('📸 Starting content capture');
   if (!editorRef.current) return [];
 
   const blocks: ContentBlock[] = [];
   let position = 0;
 
-  const addBlock = (type: ContentBlock["type"], content: string = "") => {
+  const addBlock = (
+    type: ContentBlock["type"],
+    content: string = "",
+    id?: string
+  ) => {
+    console.log('➕ Adding block', { type, content, id, position });
     blocks.push({
-      id: generateId(),
+      id: id || generateId(),
       type,
       content,
       position: position++,
     });
   };
 
-  // Process a line div's content
   const processLineContent = (lineDiv: HTMLElement) => {
-    // Add line break for every div except the first one
     if (blocks.length > 0) {
-      addBlock("lineBreak", "");
+      const lineBreakId = lineDiv.getAttribute("data-id");
+      addBlock("lineBreak", "", lineBreakId);
     }
 
     const childNodes = Array.from(lineDiv.childNodes);
 
-    // Check if this is an empty line
+    // Empty line check
     if (childNodes.length === 1 && childNodes[0] instanceof HTMLBRElement) {
       addBlock("text", "");
       return;
     }
 
-    // Process each child node in the line
     childNodes.forEach((node) => {
       if (node instanceof HTMLElement) {
-        if (node.hasAttribute("data-chip")) {
+        const nodeId = node.getAttribute("data-id");
+        const nodeType = node.getAttribute("data-type");
+
+        if (nodeType === "chip") {
           const content = node.getAttribute("data-chip-content") || "";
-          addBlock("chip", content);
+          addBlock("chip", content, nodeId);
         } else if (node.tagName === "BR") {
-          // Handle explicit line breaks within content
-          addBlock("text", "");
+          addBlock("text", "", nodeId);
+        } else if (nodeType === "text") {
+          addBlock("text", node.textContent || "", nodeId);
         }
-      } else if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-        // Skip zero-width spaces used for cursor positioning
-        if (node.textContent !== "\u200B") {
-          addBlock("text", node.textContent);
-        }
+      } else if (
+        node.nodeType === Node.TEXT_NODE &&
+        node.textContent &&
+        node.textContent !== "\u200B"
+      ) {
+        // Only for legacy text nodes that haven't been wrapped yet
+        addBlock("text", node.textContent);
       }
     });
   };
 
-  // First process any direct text nodes in the root
+  // Process direct text nodes in root
   const rootNodes = Array.from(editorRef.current.childNodes);
-  const directTextNodes = rootNodes.filter(
-    (node) =>
-      node.nodeType === Node.TEXT_NODE &&
-      node.textContent &&
-      node.textContent !== "\u200B"
-  );
-
-  if (directTextNodes.length > 0) {
-    directTextNodes.forEach((node) => {
+  rootNodes
+    .filter(
+      (node) =>
+        node.nodeType === Node.TEXT_NODE &&
+        node.textContent &&
+        node.textContent !== "\u200B"
+    )
+    .forEach((node) => {
       addBlock("text", node.textContent);
     });
-  }
 
-  // Then process all div children
+  // Process div children
   Array.from(editorRef.current.children).forEach((child) => {
     if (child instanceof HTMLElement && child.tagName === "DIV") {
       processLineContent(child);
     }
   });
 
+  console.log('📦 Finished capturing content', { blockCount: blocks.length });
   return blocks;
 };
 
@@ -139,21 +172,29 @@ export const processEditorContent = (
   version: number,
   setDocumentState: (state: DocumentState) => void
 ) => {
+  console.log('🔄 Starting content processing', { 
+    version,
+    blockCount: blocks.length 
+  });
+
   if (!editorRef.current) return;
 
   const cursorPos = getCursorPosition(editorRef.current);
+  console.log('📍 Cursor position before processing', cursorPos);
+
   const newState = {
     blocks,
     version: version + 1,
     lastUpdate: Date.now(),
   };
 
-  setEditorContent(editorRef, newState, setDocumentState);
+  console.log('🔄 Setting editor content');
+  // setEditorContent(editorRef, newState, setDocumentState);
 
   setTimeout(() => {
+    console.log('📍 Restoring cursor position');
     if (editorRef.current) {
       setCursorPosition(editorRef.current, cursorPos);
     }
   }, 0);
 };
-

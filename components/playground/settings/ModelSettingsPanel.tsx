@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ModelSettings from "../concepts/ModelSettings";
+import ModelSettings from "./ModelSettings";
 import PlaygroundResources from "../right-sidebar/PlaygroundResources";
 import MetricsCard from "./MetricsCard";
 import { useMeasure } from "@uidotdev/usehooks";

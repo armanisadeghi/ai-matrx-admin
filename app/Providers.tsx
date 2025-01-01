@@ -23,6 +23,7 @@ import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
 import { DialogProvider } from "@/providers/dialogs/DialogContext";
 import { FileSystemDialogs } from "@/providers/dialogs/modules/filesystem";
 import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
+import { BrokersProvider } from "@/providers/brokers/BrokersProvider";
 
 const allowedBuckets = [
   "userContent",
@@ -57,24 +58,25 @@ export function Providers({
                         >
                           <OldFileSystemProvider>
                             <FileSystemDialogs />
-
-                            <NextUIProvider>
-                              <TooltipProvider delayDuration={200}>
-                                <AudioModalProvider>
-                                  <ModuleHeaderProvider>
-                                    <ShikiProvider
-                                      initialLanguages={[
-                                        "typescript",
-                                        "javascript",
-                                      ]}
-                                    >
-                                      {children}
-                                    </ShikiProvider>
-                                  </ModuleHeaderProvider>
-                                  <Toaster />
-                                </AudioModalProvider>
-                              </TooltipProvider>
-                            </NextUIProvider>
+                            <BrokersProvider>
+                              <NextUIProvider>
+                                <TooltipProvider delayDuration={200}>
+                                  <AudioModalProvider>
+                                    <ModuleHeaderProvider>
+                                      <ShikiProvider
+                                        initialLanguages={[
+                                          "typescript",
+                                          "javascript",
+                                        ]}
+                                      >
+                                        {children}
+                                      </ShikiProvider>
+                                    </ModuleHeaderProvider>
+                                    <Toaster />
+                                  </AudioModalProvider>
+                                </TooltipProvider>
+                              </NextUIProvider>
+                            </BrokersProvider>
                           </OldFileSystemProvider>
                         </FileSystemProvider>
                       </RefProvider>

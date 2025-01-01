@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { useMatrxEditor } from './MatrxEditorContext';
-import type { Broker } from './useBrokersStore';
+import { useBrokers, BrokersProvider, type Broker } from '@/providers/brokers/BrokersProvider';
 
 interface BrokerActionButtonsProps {
     onBrokerCreate: (broker: Broker) => void;
@@ -15,12 +14,12 @@ export const BrokerActionButtons: React.FC<BrokerActionButtonsProps> = ({
   onBrokerConvert,
   getSelectedText
 }) => {
-  const { createNewBroker, convertSelectionToBroker } = useMatrxEditor();
+  const { createBroker, convertSelectionToBroker } = useBrokers();
 
   const handleCreateNewBroker = useCallback(() => {
-    const broker = createNewBroker();
+    const broker = createBroker();
     onBrokerCreate(broker);
-  }, [createNewBroker, onBrokerCreate]);
+  }, [createBroker, onBrokerCreate]);
 
   const handleConvertToBroker = useCallback(() => {
     const selectedText = getSelectedText?.() || window.getSelection()?.toString();

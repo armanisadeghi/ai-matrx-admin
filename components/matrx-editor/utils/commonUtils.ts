@@ -1,7 +1,7 @@
 // untils.ts
 import { createRoot } from 'react-dom/client';
 
-export const generateId = () => Math.random().toString(36).substr(2, 9);
+export const generateId = () => Math.random().toString(36).substring(2, 11);
 
 export const getCursorPosition = (element: HTMLElement): number => {
   const selection = window.getSelection();

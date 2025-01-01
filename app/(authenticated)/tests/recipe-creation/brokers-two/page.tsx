@@ -1,7 +1,7 @@
 'use client';
 
 // pages/variables.tsx
-import { useVariablesStore } from '@/app/contexts/useVariablesStore';
+import { useVariablesStore } from '@/app/contexts/old/useVariablesStore';
 import { IntelligentEditor } from './IntelligentEditor';
 import { VariableContentEditor } from './VariableContentEditor';
 import { VariablesDisplay } from './VariablesDisplay';

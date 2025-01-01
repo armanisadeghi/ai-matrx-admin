@@ -1,5 +1,5 @@
 import React from 'react';
-import { useVariablesStore } from '@/app/contexts/useVariablesStore';
+import { useVariablesStore } from '@/app/contexts/old/useVariablesStore';
 import { VariableChip } from './VariableChip';
 
 export const VariablesDisplay: React.FC = () => {

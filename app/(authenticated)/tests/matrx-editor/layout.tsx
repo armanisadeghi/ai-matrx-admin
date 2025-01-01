@@ -1,9 +1,9 @@
 // /layout.tsx
+'use client';
 
 import ModuleHeaderWithProvider from "@/components/matrx/navigation/module-header/ModuleHeader";
 import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";
 import React from "react";
-import { MatrxEditorProvider } from "@/components/matrx-editor/MatrxEditorContext";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         />
       </div>
       <main className="flex-1">
-        <MatrxEditorProvider>{children}</MatrxEditorProvider>
+        {children}
       </main>
     </div>
   );

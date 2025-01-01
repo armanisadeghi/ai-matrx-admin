@@ -1,61 +1,71 @@
+'use client';
+
 import React, { useState } from "react";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { Button, Card } from "@/components/ui";
 import { Plus } from "lucide-react";
-import { VerticalPanel } from "./VerticalPanel";
-import { StructuredEditor } from "../../tests/recipe-creation/inline-chip-editor-5/components/StructuredEditor";
+import { AdjustableEditorPanel } from "./AdjustableEditorPanel";
+import { MatrxEditor } from "@/components/matrx-editor-advanced/MatrxEditor";
 
 interface PanelManagerProps {
-  side: "left" | "right";
+  role?: "system" | "user" | "assistant";
 }
 
 type Section = {
   id: string;
-  content: React.ReactNode;
+  role: "system" | "user" | "assistant";
 };
 
-export function PanelManager({ side }: PanelManagerProps) {
+export function PanelManager({ role }: PanelManagerProps) {
   const [sections, setSections] = useState<Section[]>([
-    { id: `${side}1`, content: `${side} Content 1` },
-    { id: `${side}2`, content: `${side} Content 2` },
+    { id: 'system-1', role: 'system' },
   ]);
 
   const addSection = () => {
-    const newId = `${side}${sections.length + 1}`;
-    setSections([...sections, { id: newId, content: "New Section" }]);
+    const nextRole = sections.length % 2 === 1 ? 'user' : 'assistant';
+    const roleCount = sections.filter(s => s.role === nextRole).length + 1;
+    const newId = `${nextRole}-${roleCount}`;
+    
+    setSections([...sections, { 
+      id: newId, 
+      role: nextRole,
+    }]);
   };
 
   const handleStateChange = (state: any) => {
     console.log(state);
   };
 
+  const getButtonText = () => {
+    return `Add ${sections.length % 2 === 1 ? 'User' : 'Assistant'} Message`;
+  };
+
   return (
-    <Panel>
+    <Panel defaultSize={60}>
       <PanelGroup direction="vertical" className="h-full">
         {sections.map((section, index) => (
-          <VerticalPanel
+          <AdjustableEditorPanel
             key={section.id}
             id={section.id}
             order={index + 1}
-          >
-            {section.content}
-          </VerticalPanel>
+            role={section.role}
+            onStateChange={handleStateChange}
+          />
         ))}
 
         {/* Bottom flexible panel */}
         <Panel defaultSize={80} minSize={10} maxSize={100} order={999}>
           <Card className="h-full p-1 overflow-hidden bg-background">
-            <StructuredEditor 
+            <MatrxEditor 
               editorId="main-editor"
               onStateChange={handleStateChange} 
-              showControls={true} 
             />
           </Card>
         </Panel>
 
         <Button variant="ghost" className="w-full mt-2" onClick={addSection}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Section
+          {getButtonText()}
         </Button>
       </PanelGroup>
     </Panel>

@@ -1,5 +1,5 @@
 // components/ContentArea.tsx
-import { Variable } from '../../../../contexts/useVariablesStoreTwo';
+import { Variable } from '../../../../contexts/old/useVariablesStoreTwo';
 
 interface ContentAreaProps {
     variables: Variable[];

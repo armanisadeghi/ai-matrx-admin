@@ -1,7 +1,7 @@
 // page.tsx
 'use client';
 
-import { useVariablesStore } from '../../../../contexts/useVariablesStoreTwo';
+import { useVariablesStore } from '../../../../contexts/old/useVariablesStoreTwo';
 import { VariableComponent } from './VariableComponent';
 import { ContentArea } from './ContentArea';
 import { Button } from '@/components/ui/button';

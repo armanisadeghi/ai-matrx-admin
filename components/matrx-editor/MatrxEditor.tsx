@@ -1,3 +1,4 @@
+// MatrxEditor.tsx
 "use client";
 
 import React, {
@@ -8,44 +9,65 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import type { DocumentState } from "./types";
-import CursorTracker from "./debug/CursorTracker";
-import SelectionTracker from "./debug/SelectionTracker";
-import { useMatrxEditor } from "./MatrxEditorContext";
-import { useBrokersStore, Broker } from "./useBrokersStore";
-import {
-  setEditorContent,
-  captureEditorContent,
-  processEditorContent,
-} from "./utils/editorUtils";
-import { insertBrokerChipAtSelection } from "./brokerChipUtils";
-import { convertSelectionToBrokerChip } from "./utils/convertSelectionToBrokerChip";
+import type { ContentBlock, DocumentState } from "./types";
+
+import { captureEditorContent, setEditorContent } from "./utils/editorUtils";
 import { handleEditorPaste } from "./utils/pasteUtils";
+import { insertBrokerChipAtSelection } from "./broker/BrokerChipRender";
+import { convertSelectionToBrokerChip } from "./broker/convertSelectionToBrokerChip";
+import { createLineBreakNode } from "./utils/core-dom-utils";
+import { generateId } from "./utils/commonUtils";
+import { useBrokers, BrokersProvider, type Broker } from '@/providers/brokers/BrokersProvider';
 
 export interface MatrxEditorRef {
   insertBroker: (broker: Broker) => void;
   convertToBroker: (broker: Broker) => void;
+  updateContent: (state: DocumentState) => void;
 }
 
 interface MatrxEditorProps {
   onStateChange?: (state: DocumentState) => void;
   editorId: string;
-  showDebugControls?: boolean;
   onSelectionChange?: (selection: string | null) => void;
 }
 
 export const MatrxEditor = forwardRef<MatrxEditorRef, MatrxEditorProps>(
-  (
-    { onStateChange, editorId, showDebugControls = false, onSelectionChange },
-    ref
-  ) => {
+  ({ onStateChange, editorId, onSelectionChange }, ref) => {
     const [isClient, setIsClient] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
     const [documentState, setDocumentState] = useState<DocumentState>({
-      blocks: [],
+      blocks: [
+        // Initialize with an empty line break block
+        {
+          id: generateId(),
+          type: "lineBreak",
+          content: "",
+          position: 0
+        },
+        {
+          id: generateId(),
+          type: "text",
+          content: "",
+          position: 1
+        }
+      ],
       version: 0,
       lastUpdate: Date.now(),
     });
+
+    // Initialize editor structure when component mounts
+    useEffect(() => {
+      if (editorRef.current) {
+        // Clear any existing content
+        editorRef.current.innerHTML = '';
+        
+        // Create initial line break div if none exists
+        const initialLineDiv = createLineBreakNode().node as HTMLElement;
+        const br = document.createElement("br");
+        initialLineDiv.appendChild(br);
+        editorRef.current.appendChild(initialLineDiv);
+      }
+    }, [isClient]); // Run once when client-side rendering is ready
 
     useEffect(() => {
       setIsClient(true);
@@ -71,23 +93,33 @@ export const MatrxEditor = forwardRef<MatrxEditorRef, MatrxEditorProps>(
         document.removeEventListener("selectionchange", handleSelectionChange);
     }, [onSelectionChange]);
 
-    const processContent = useCallback(() => {
+    const updateState = useCallback((blocks: ContentBlock[]) => {
+      setDocumentState(prev => ({
+        blocks,
+        version: prev.version + 1,
+        lastUpdate: Date.now(),
+      }));
+    }, []);
+
+    const handleBlur = useCallback(() => {
       if (!editorRef.current) return;
       const blocks = captureEditorContent(editorRef);
-      processEditorContent(
-        editorRef,
-        blocks,
-        documentState.version,
-        setDocumentState
-      );
-    }, [documentState.version]);
+      updateState(blocks);
+    }, [updateState]);
 
-    
+    const handleContentUpdate = useCallback((newState: DocumentState) => {
+      if (!editorRef.current) return;
+      setEditorContent(editorRef, newState, (updatedState) => {
+        setDocumentState(updatedState);
+        onStateChange?.(updatedState);
+      });
+    }, [onStateChange]);
+
     const handlePaste = useCallback(
-      (e: React.ClipboardEvent) => {
-        handleEditorPaste(e, editorRef, processContent);
+      (e: React.ClipboardEvent<HTMLDivElement>) => {
+        handleEditorPaste(e, editorRef, handleBlur);
       },
-      [processContent]
+      [handleBlur]
     );
 
     useImperativeHandle(
@@ -98,7 +130,7 @@ export const MatrxEditor = forwardRef<MatrxEditorRef, MatrxEditorProps>(
           insertBrokerChipAtSelection({
             broker,
             editorRef,
-            onProcessContent: processContent,
+            onProcessContent: handleBlur,
           });
         },
         convertToBroker: (broker: Broker) => {
@@ -106,11 +138,12 @@ export const MatrxEditor = forwardRef<MatrxEditorRef, MatrxEditorProps>(
           convertSelectionToBrokerChip({
             broker,
             editorRef,
-            onProcessContent: processContent,
+            onProcessContent: handleBlur,
           });
         },
+        updateContent: handleContentUpdate,
       }),
-      [processContent]
+      [handleBlur, handleContentUpdate]
     );
 
     if (!isClient) {
@@ -118,24 +151,23 @@ export const MatrxEditor = forwardRef<MatrxEditorRef, MatrxEditorProps>(
     }
 
     return (
-      <div className="w-full h-full">
-        {showDebugControls && (
-          <div className="mb-4 space-y-2">
-            <div className="flex items-center gap-4">
-              <CursorTracker editorRef={editorRef} />
-              <div className="h-8 w-px bg-gray-200 dark:bg-gray-700" />
-              <SelectionTracker editorRef={editorRef} />
-            </div>
-          </div>
-        )}
+      <div className="w-full h-full flex flex-col overflow-auto min-h-0">
         <div
           ref={editorRef}
           contentEditable
           suppressContentEditableWarning
-          className="h-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700"
+          className="h-full p-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+                    border-gray-200 dark:border-gray-700 whitespace-pre-wrap"
           onPaste={handlePaste}
-        />
+          onBlur={handleBlur}
+          data-editor-id={editorId}
+        >
+          <div data-type="lineBreak" data-id={generateId()}><br /></div>
+        </div>
       </div>
     );
   }
 );
+
+MatrxEditor.displayName = "MatrxEditor";

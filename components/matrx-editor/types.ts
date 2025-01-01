@@ -1,7 +1,6 @@
 // types.ts
-
 export interface ContentBlock {
-  id: string;
+  id: string; // For text blocks: generated uuid, For chips: broker.id
   type: "text" | "chip" | "lineBreak";
   content: string;
   position: number;
@@ -13,9 +12,8 @@ export interface DocumentState {
   lastUpdate: number;
 }
 
-
 export interface BrokerChipEvent {
-  type: 'remove' | 'edit' | 'toggle';
+  type: "remove" | "edit" | "toggle";
   brokerId: string;
   content?: string;
 }

@@ -8,7 +8,7 @@ import type { ContentBlock, DocumentState } from "../types";
 import CursorTracker from "./CursorTracker";
 import SelectionTracker from "./SelectionTracker";
 import { createChipContainer } from "../utils/chipUtils";
-import { useStructuredEditor } from "@/app/contexts/StructuredEditorContext";
+import { useStructuredEditor } from "@/app/contexts/old/StructuredEditorContext";
 
 const DEFAULT_CHIPS = ["Broker", "Task", "Note"];
 

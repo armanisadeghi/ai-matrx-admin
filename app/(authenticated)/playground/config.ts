@@ -34,8 +34,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Matrx Playground Trying Full Broker Integration',
+        path: 'matrx-playground-five',
         relative: true,
         description: ''
     },

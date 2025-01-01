@@ -1,12 +1,13 @@
+// components/BrokerChip.tsx
 "use client";
 
 import React, { useCallback } from "react";
 import { X, Edit2 } from "lucide-react";
-import { Broker, useBrokersStore } from "./useBrokersStore";
+import { useBrokers, BrokersProvider, type Broker } from '@/providers/brokers/BrokersProvider';
 
 interface BrokerChipProps {
   broker: Broker;
-  onRemoveRequest: () => void;  // renamed to be clearer about its purpose
+  onRemoveRequest: () => void;
   className?: string;
 }
 
@@ -15,7 +16,7 @@ export const BrokerChip: React.FC<BrokerChipProps> = ({
   onRemoveRequest,
   className = ""
 }) => {
-  const updateBroker = useBrokersStore(state => state.updateBroker);
+  const { updateBroker } = useBrokers();
 
   const handleEdit = useCallback(() => {
     const newName = prompt('Enter new name:', broker.displayName);
@@ -28,7 +29,8 @@ export const BrokerChip: React.FC<BrokerChipProps> = ({
     <span
       contentEditable={false}
       className={`inline-flex items-center gap-1 px-2 py-1 m-1 text-sm rounded-full 
-                 bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100
+                 ${broker.color.light} ${broker.color.dark}
+                 text-gray-900 dark:text-gray-100
                  select-none cursor-default ${className}`}
       data-chip
       data-broker-id={broker.id}
@@ -36,24 +38,23 @@ export const BrokerChip: React.FC<BrokerChipProps> = ({
       <span 
         className="chip-content"
         onDoubleClick={handleEdit}
-        style={{ color: broker.color }}
       >
         {broker.displayName}
       </span>
       <div className="flex gap-1">
         <button
           onClick={handleEdit}
-          className="inline-flex items-center hover:text-blue-700 dark:hover:text-blue-300
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+          className="inline-flex items-center hover:opacity-75
+                     focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-full"
           type="button"
           aria-label="Edit name"
         >
           <Edit2 size={14} />
         </button>
         <button
-          onClick={onRemoveRequest}  // use the removal handler from parent
-          className="inline-flex items-center hover:text-blue-700 dark:hover:text-blue-300
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+          onClick={onRemoveRequest}
+          className="inline-flex items-center hover:opacity-75
+                     focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-full"
           type="button"
           aria-label="Remove"
         >

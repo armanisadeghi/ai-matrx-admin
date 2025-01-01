@@ -6,7 +6,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useVariablesStoreFive } from '@/app/contexts/useVariablesStoreFive';
+import { useVariablesStoreFive } from '@/app/contexts/old/useVariablesStoreFive';
 import { VariableChip } from './VariableChip';
 
 export const IntelligentEditor = () => {

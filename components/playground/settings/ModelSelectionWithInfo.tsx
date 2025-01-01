@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import ModelCard from "../concepts/ModelCard";
+import ModelCard from "./ModelCard";
 import QuickRefSearchableSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSearchableSelect";
 import QuickRefSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSelect";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";

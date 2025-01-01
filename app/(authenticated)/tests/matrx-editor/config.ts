@@ -58,8 +58,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Editor Test 2',
+        path: 'editor-test-2',
         relative: true,
         description: ''
     },
