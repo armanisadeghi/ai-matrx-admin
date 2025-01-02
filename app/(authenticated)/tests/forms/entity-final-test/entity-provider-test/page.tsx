@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import {EntityKeys} from '@/types/entityTypes';
-import EntityQuickReferenceFinal from '../QuickReferenceFinal';
+import EntityQuickReferenceFinal from '@/app/entities/quick-reference/QuickReferenceFinal';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {EntityFieldList} from './EntityFieldList';
 import {fieldNameToCanonical} from '@/utils/schema/lookupSchema';

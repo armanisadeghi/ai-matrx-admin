@@ -1,99 +1,108 @@
-import React from "react";
+'use client';
+
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Plus, History } from "lucide-react";
 import {
-  MessageSquare,
-  Brain,
-  BookOpen,
-  Workflow,
-  Bot,
-} from "lucide-react";
-import { cn } from "@/utils";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from "@/components/ui/select";
+import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
+import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
+import PlaygroundHistoryDialog from "./PlaygroundHistoryDialog";
+import PlaygroundNavContainer from "./PlaygroundNavContainer";
 
 interface PlaygroundHeaderCenterProps {
+  initialSettings?: {
+    recipe?: QuickReferenceRecord;
+    version?: number;
+  };
   currentMode?: string;
   onModeChange?: (mode: string) => void;
+  onVersionChange?: (version: number) => void;
 }
 
 const PlaygroundHeaderCenter = ({
+  initialSettings = {},
   currentMode = "prompt",
   onModeChange = () => {},
+  onVersionChange = () => {},
 }: PlaygroundHeaderCenterProps) => {
+  const [version, setVersion] = useState(initialSettings?.version ?? 1);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<
+    QuickReferenceRecord | undefined
+  >(initialSettings?.recipe);
+
+  const handleVersionChange = (newVersion: number) => {
+    setVersion(newVersion);
+    onVersionChange(newVersion);
+  };
+
+  const handleRecipeChange = (record: QuickReferenceRecord) => {
+    setSelectedRecipe(record);
+  };
+
   return (
-    <div className="flex-1 flex justify-center items-center">
-      <div className="bg-elevation2 h-8 flex rounded-xl overflow-hidden">
-        <Button
-          variant={currentMode === "prompt" ? "default" : "ghost"}
-          size="sm"
-          className={cn(
-            "gap-1.5 h-8 w-32 rounded-none",
-            currentMode === "prompt" && "bg-primary text-primary-foreground"
-          )}
-          onClick={() => onModeChange("prompt")}
+    <div className="flex items-center w-full px-2 h-10 gap-2">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="min-w-[160px] max-w-[320px] w-full">
+          <QuickRefSearchableSelect
+            entityKey="recipe"
+            initialSelectedRecord={selectedRecipe}
+            onRecordChange={handleRecipeChange}
+          />
+        </div>
+
+        <Select
+          value={version.toString()}
+          onValueChange={(v) => handleVersionChange(Number(v))}
         >
-          <MessageSquare size={16} />
-          <span className="text-sm">Prompt</span>
+          <SelectTrigger className="h-8 w-24">
+            <div className="flex items-center">
+              <span className="text-sm">
+                Version {initialSettings?.version ?? 1}
+              </span>
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Select Version</SelectLabel>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
+                <SelectItem key={v} value={v.toString()}>
+                  Version {v}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+
+        <Button variant="ghost" size="md" className="h-8 w-8 p-0 shrink-0">
+          <Plus size={16} />
         </Button>
-
-        <div className="w-px bg-border" />
-
         <Button
-          variant={currentMode === "evaluate" ? "default" : "ghost"}
-          size="sm"
-          className={cn(
-            "gap-1.5 h-8 w-32 rounded-none",
-            currentMode === "evaluate" && "bg-primary text-primary-foreground"
-          )}
-          onClick={() => onModeChange("evaluate")}
+          variant="ghost"
+          size="md"
+          className="h-8 w-8 p-0 shrink-0"
+          onClick={() => setIsHistoryOpen(true)}
         >
-          <Brain size={16} />
-          <span className="text-sm">Evaluate</span>
-        </Button>
-
-        <div className="w-px bg-border" />
-
-        <Button
-          variant={currentMode === "train" ? "default" : "ghost"}
-          size="sm"
-          className={cn(
-            "gap-1.5 h-8 w-32 rounded-none",
-            currentMode === "train" && "bg-primary text-primary-foreground"
-          )}
-          onClick={() => onModeChange("train")}
-        >
-          <BookOpen size={16} />
-          <span className="text-sm">Train</span>
-        </Button>
-
-        <div className="w-px bg-border" />
-
-        <Button
-          variant={currentMode === "recipe" ? "default" : "ghost"}
-          size="sm"
-          className={cn(
-            "gap-1.5 h-8 w-32 rounded-none",
-            currentMode === "recipe" && "bg-primary text-primary-foreground"
-          )}
-          onClick={() => onModeChange("recipe")}
-        >
-          <Workflow size={16} />
-          <span className="text-sm">Recipe</span>
-        </Button>
-
-        <div className="w-px bg-border" />
-
-        <Button
-          variant={currentMode === "agent" ? "default" : "ghost"}
-          size="sm"
-          className={cn(
-            "gap-1.5 h-8 w-32 rounded-none",
-            currentMode === "agent" && "bg-primary text-primary-foreground"
-          )}
-          onClick={() => onModeChange("agent")}
-        >
-          <Bot size={16} />
-          <span className="text-sm">Agent</span>
+          <History size={16} />
         </Button>
       </div>
+
+      <PlaygroundNavContainer
+        currentMode={currentMode}
+        onModeChange={onModeChange}
+      />
+
+      <PlaygroundHistoryDialog
+        isOpen={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
+      />
     </div>
   );
 };

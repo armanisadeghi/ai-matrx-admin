@@ -818,9 +818,10 @@ export type EntityData<TEntity extends EntityKeys> = {
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;
 export type userPreferencesData = EntityData<'userPreferences'>;
+export type brokerData = EntityData<'broker'>;
 
 
-type EntityDataOptional<TEntity extends EntityKeys> = {
+export type EntityDataOptional<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isNative'] extends true
                                                                   ? TField
                                                                   : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
@@ -832,7 +833,25 @@ type EntityDataOptional<TEntity extends EntityKeys> = {
 
 type registeredFunctionDataOptional = EntityDataOptional<'registeredFunction'>;
 type userPreferencesDataOptional = EntityDataOptional<'userPreferences'>;
+type brokerDataOptional = EntityDataOptional<'broker'>;
 
+
+export type EntityDataMixed<TEntity extends EntityKeys> = {
+    // Required fields (isRequired is true)
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends true
+        ? TField
+        : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+} & {
+    // Optional fields (isRequired is false)
+    [TField in keyof AutomationEntity<TEntity>['entityFields'] as AutomationEntity<TEntity>['entityFields'][TField]['isRequired'] extends false
+        ? TField
+        : never]?: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
+};
+
+
+type registeredFunctionDataMixed = EntityDataMixed<'registeredFunction'>;
+type userPreferencesDataMixed = EntityDataMixed<'userPreferences'>;
+type brokerDataMixed = EntityDataMixed<'broker'>;
 
 import {Draft} from 'immer';
 import {EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
@@ -853,7 +872,7 @@ type EntityDataDraft<TEntity extends EntityKeys> = Draft<{
 type registeredFunctionDataDraft = EntityDataDraft<'registeredFunction'>;
 type userPreferencesDataDraft = EntityDataDraft<'userPreferences'>;
 type registeredFunctionPrimaryKey = FieldIsPrimaryKey<'registeredFunction', 'id'>;
-
+type brokerDataDraft = EntityDataDraft<'broker'>;
 
 /**
  * Gets the pretty name for an entity

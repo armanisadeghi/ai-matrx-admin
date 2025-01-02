@@ -50,7 +50,7 @@ import {
   TrendingUpDown,
 } from "lucide-react";
 import { cn } from "@/utils";
-import QuickRefSearchableSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSearchableSelect";
+import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 
 interface PlaygroundHeaderProps {

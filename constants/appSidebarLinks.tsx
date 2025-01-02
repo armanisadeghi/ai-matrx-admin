@@ -21,11 +21,12 @@ import {
     Grid2x2Plus,
     TableCellsSplit,
     LayoutGrid,
-    ClipboardType, LandPlot
+    ClipboardType, LandPlot,
+    Microscope
 } from "lucide-react";
 import React from "react";
+import { BsFileEarmarkRichtextFill } from "react-icons/bs";
 
-``
 
 export const primaryLinks = [
     {
@@ -231,6 +232,27 @@ export const secondaryLinks = [
         href: '/admin',
         icon: (
             <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Playground Test',
+        href: '/playground', // https://lucide.dev/icons/
+        icon: (
+            <Microscope className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Matrx Editor Tests',
+        href: '/tests/matrx-editor', // https://lucide.dev/icons/
+        icon: (
+            <BsFileEarmarkRichtextFill className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Final Form Test',
+        href: '/tests/forms/entity-final-test', // https://lucide.dev/icons/
+        icon: (
+            <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
     {

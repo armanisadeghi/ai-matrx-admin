@@ -1,5 +1,3 @@
-'use client';
-
 import React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 import {cn} from "@/utils/cn";
@@ -12,7 +10,7 @@ interface EntitySwitchProps extends EntityBaseFieldProps,
 }
 
 const EntitySwitch = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     EntitySwitchProps
 >(({
        entityKey,

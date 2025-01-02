@@ -2,11 +2,11 @@
 
 import React, { createContext, useContext } from 'react';
 import { useBrokersStore } from './useBrokersStore';
-import { Broker } from './types';
+import { Broker, BrokerDataType, DataTypeToValueType } from './types';
 
 export type { Broker };
 
-interface EditorInstance {
+export interface EditorInstance {
   id: string;
   brokers: Set<string>;
   ref: React.RefObject<HTMLDivElement>;
@@ -28,6 +28,17 @@ interface BrokersContextType {
   deleteBroker: (id: string) => void;
   getBroker: (id: string) => Broker | undefined;
 
+  // Type-safe Value Management
+  updateBrokerValue: <T extends BrokerDataType>(
+    id: string,
+    value: DataTypeToValueType<T>,
+    dataType: T
+  ) => void;
+
+  // Sync State Management
+  markBrokerAsReady: (id: string) => void;
+  markBrokerAsNotReady: (id: string) => void;
+
   // Editor Linking
   linkEditor: (
     brokerId: string,
@@ -42,9 +53,7 @@ const BrokersContext = createContext<BrokersContextType | null>(null);
 
 export const useBrokers = () => {
   const context = useContext(BrokersContext);
-  console.log('Context value:', context);
   if (!context) {
-    console.log('Context is null!');
     throw new Error('useBrokers must be used within BrokersProvider');
   }
   return context;
@@ -70,6 +79,13 @@ export const BrokersProvider: React.FC<{ children: React.ReactNode }> = ({
     updateBroker: store.updateBroker,
     deleteBroker: store.deleteBroker,
     getBroker: store.getBroker,
+
+    // Type-safe Value Management
+    updateBrokerValue: store.updateBrokerValue,
+
+    // Sync State Management
+    markBrokerAsReady: store.markBrokerAsReady,
+    markBrokerAsNotReady: store.markBrokerAsNotReady,
 
     // Editor functions
     linkEditor: store.linkBrokerToEditor,

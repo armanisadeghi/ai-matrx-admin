@@ -1,7 +1,7 @@
 "use client";
 
-import QuickRefSearchableSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSearchableSelect";
-import QuickRefSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSelect";
+import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
+import QuickRefSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSelect";
 import React from "react";
 
 const TestSelectPage = () => {

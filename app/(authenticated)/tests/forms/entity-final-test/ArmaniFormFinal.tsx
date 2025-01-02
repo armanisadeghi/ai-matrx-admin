@@ -1,14 +1,15 @@
 'use client';
 
 import React, {useCallback, useMemo} from "react";
-import EntityRelationshipWrapperFinal from "./EntityRelationshipWrapperFinal";
+import EntityRelationshipWrapperFinal from "../../../../entities/relationships/EntityRelationshipWrapperFinal";
 import SmartCrudButtons
     from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
 import {useFieldVisibility} from "@/lib/redux/entity/hooks/useFieldVisibility";
 import MultiSelect from '@/components/ui/loaders/multi-select';
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
-import EntityBaseFieldFinal from "@/app/(authenticated)/tests/forms/entity-final-test/EntityBaseFieldFinal";
+
 import {createEntitySelectors, useAppSelector} from "@/lib/redux";
+import EntityBaseFieldFinal from "@/app/entities/fields/EntityBaseFieldFinal";
 
 
 export const filterRelFields = (relationshipFields, entitiesToHide) => {

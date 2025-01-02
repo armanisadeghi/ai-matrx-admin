@@ -1,7 +1,7 @@
 // hooks/useBrokersStore.ts
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { Broker } from "./types";
+import { Broker, BrokerDataType, DataTypeToValueType } from "./types";
 
 interface EditorInstance {
   id: string;
@@ -13,13 +13,14 @@ interface BrokersState {
   brokers: Record<string, Broker>;
   brokerCount: number;
   linkedEditors: Record<string, EditorInstance>;
-
+  // Core broker management
   addExistingBroker: (broker: Broker) => void;
   createBrokerFromText: (content: string) => Broker;
   createNewBroker: () => Broker;
   updateBroker: (id: string, data: Partial<Broker>) => void;
   deleteBroker: (id: string) => void;
   getBroker: (id: string) => Broker | undefined;
+  // Editor linking
   linkBrokerToEditor: (
     brokerId: string,
     editorId: string,
@@ -27,7 +28,17 @@ interface BrokersState {
   ) => void;
   unlinkBrokerFromEditor: (brokerId: string, editorId: string) => void;
   getLinkedEditors: (brokerId: string) => string[];
+  // Data type management
+  updateBrokerValue: <T extends BrokerDataType>(
+    id: string,
+    value: DataTypeToValueType<T>,
+    dataType: T
+  ) => void;
+  // Sync state
+  markBrokerAsReady: (id: string) => void;
+  markBrokerAsNotReady: (id: string) => void;
 }
+
 
 const brokerColors = [
   { light: "bg-red-100", dark: "dark:bg-red-900" },
@@ -60,20 +71,36 @@ const brokerColors = [
 const getNextAvailableColor = (
   brokers: Record<string, Broker>
 ): { light: string; dark: string } => {
-  // Extract used colors
   const usedColors = new Set(
     Object.values(brokers)
       .filter((broker) => !broker.isDeleted)
       .map((broker) => broker.color.light)
   );
 
-  // Find the first available unique color
-  const availableColor =
+  return (
     brokerColors.find((color) => !usedColors.has(color.light)) ||
-    brokerColors[Math.floor(Math.random() * brokerColors.length)];
-
-  return availableColor;
+    brokerColors[Math.floor(Math.random() * brokerColors.length)]
+  );
 };
+
+const createDefaultBroker = (
+  id: string,
+  displayName: string,
+  brokers: Record<string, Broker>
+): Broker => ({
+  id,
+  name: displayName,
+  displayName,
+  dataType: "str",
+  value: "",
+  componentType: "input",
+  tooltip: "",
+  defaultSource: "user_input",
+  isConnected: true,
+  ready: false,
+  isDeleted: false,
+  color: getNextAvailableColor(brokers)
+});
 
 export const useBrokersStore = create<BrokersState>((set, get) => ({
   brokers: {},
@@ -92,25 +119,15 @@ export const useBrokersStore = create<BrokersState>((set, get) => ({
   createBrokerFromText: (content) => {
     const state = get();
     const id = uuidv4();
-    const displayName =
-      content
-        .replace(/[^\w\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 15) || "New Broker";
+    const displayName = content
+      .replace(/[^\w\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 15) || "New Broker";
 
     const broker: Broker = {
-      id,
-      displayName,
-      officialName: displayName,
+      ...createDefaultBroker(id, displayName, state.brokers),
       value: content,
-      componentType: "input",
-      instructions: "",
-      defaultSource: "None",
-      isConnected: true,
-      isReady: false,
-      isDeleted: false,
-      color: getNextAvailableColor(state.brokers),
     };
 
     set((state) => ({
@@ -126,33 +143,20 @@ export const useBrokersStore = create<BrokersState>((set, get) => ({
   createNewBroker: () => {
     const state = get();
     const id = uuidv4();
+    const count = state.brokerCount + 1;
+    const displayName = `New Broker ${count}`;
 
-    set((state) => {
-      const count = state.brokerCount + 1;
-      const broker: Broker = {
-        id,
-        displayName: `New Broker ${count}`,
-        officialName: `New Broker ${count}`,
-        value: "",
-        componentType: "input",
-        instructions: "",
-        defaultSource: "None",
-        isConnected: true,
-        isReady: false,
-        isDeleted: false,
-        color: getNextAvailableColor(state.brokers),
-      };
+    const broker = createDefaultBroker(id, displayName, state.brokers);
 
-      return {
-        brokers: {
-          ...state.brokers,
-          [id]: broker,
-        },
-        brokerCount: count,
-      };
-    });
+    set((state) => ({
+      brokers: {
+        ...state.brokers,
+        [id]: broker,
+      },
+      brokerCount: count,
+    }));
 
-    return get().brokers[id];
+    return broker;
   },
 
   updateBroker: (id, data) => {
@@ -160,6 +164,23 @@ export const useBrokersStore = create<BrokersState>((set, get) => ({
       brokers: {
         ...state.brokers,
         [id]: { ...state.brokers[id], ...data },
+      },
+    }));
+  },
+
+  updateBrokerValue: <T extends BrokerDataType>(
+    id: string,
+    value: DataTypeToValueType<T>,
+    dataType: T
+  ) => {
+    set((state) => ({
+      brokers: {
+        ...state.brokers,
+        [id]: {
+          ...state.brokers[id],
+          value,
+          dataType,
+        },
       },
     }));
   },
@@ -176,6 +197,24 @@ export const useBrokersStore = create<BrokersState>((set, get) => ({
   getBroker: (id) => {
     const state = get();
     return state.brokers[id];
+  },
+
+  markBrokerAsReady: (id) => {
+    set((state) => ({
+      brokers: {
+        ...state.brokers,
+        [id]: { ...state.brokers[id], ready: true },
+      },
+    }));
+  },
+
+  markBrokerAsNotReady: (id) => {
+    set((state) => ({
+      brokers: {
+        ...state.brokers,
+        [id]: { ...state.brokers[id], ready: false },
+      },
+    }));
   },
 
   linkBrokerToEditor: (

@@ -1,13 +1,18 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Code, Settings, Play } from "lucide-react";
+import { Code, Play } from "lucide-react";
 import PlaygroundActionsDropdown from "./PlaygroundActionsDropdown";
+import PanelToggle from "@/components/matrx/PanelToggle";
+
 
 interface PlaygroundHeaderRightProps {
   isRightCollapsed?: boolean;
   onToggleSettings: () => void;
   onShowCode: () => void;
   onPlay: () => void;
+  fullScreenToggleButton?: React.ReactNode;
 }
 
 const PlaygroundHeaderRight = ({
@@ -15,9 +20,14 @@ const PlaygroundHeaderRight = ({
   onToggleSettings,
   onShowCode,
   onPlay,
+  fullScreenToggleButton,
 }: PlaygroundHeaderRightProps) => {
+  const handleSettingsToggle = (newIsCollapsed: boolean) => {
+    onToggleSettings();
+  };
+
   return (
-    <div className="flex items-center px-2 gap-1">
+    <div className="flex items-center pr-4 space-x-3">
       <Button
         size="sm"
         className="gap-2 bg-primary hover:bg-primaryHover h-8 px-4"
@@ -36,18 +46,19 @@ const PlaygroundHeaderRight = ({
         >
           <Code size={18} />
         </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleSettings}
-          className="h-8 w-8 p-0"
-          title={isRightCollapsed ? "Open Settings Panel" : "Close Settings Panel"}
-        >
-          <Settings size={18} />
-        </Button>
+        {fullScreenToggleButton}
 
         <PlaygroundActionsDropdown />
+
+        <PanelToggle
+          side="right"
+          size={24}
+          isCollapsed={isRightCollapsed}
+          onToggle={handleSettingsToggle}
+          panelName="Settings Panel"
+          useInternalState={false}
+        />
+
       </div>
     </div>
   );

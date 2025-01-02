@@ -1,4 +1,5 @@
 // /layout.tsx
+'use client';
 
 import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
 import { filteredPages, MODULE_HOME, MODULE_NAME} from './config';
@@ -18,14 +19,14 @@ export default function Layout({children}: { children: React.ReactNode }) {
             </div>
             <MatrxDynamicPanel
                 initialPosition="left"
-                defaultExpanded={true}
+                defaultExpanded={false}
                 expandButtonProps={{
                     label: 'Entity State',
                 }}
             >
                 <EnhancedEntityAnalyzer
-                    defaultExpanded={true}
-                    selectedEntityKey="aiProvider"
+                    defaultExpanded={false}
+                    selectedEntityKey="recipe"
                 />
             </MatrxDynamicPanel>
 

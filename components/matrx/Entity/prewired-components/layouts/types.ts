@@ -14,7 +14,7 @@ import {EntityError, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 import {
     SmartCrudWrapperProps
 } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
-import {QuickRefVariant} from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/quick-ref-item";
+import {QuickRefVariant} from "@/app/entities/quick-reference/dynamic-quick-ref/quick-ref-item";
 
 export interface FormFieldFiltering {
     excludeFields?: string[];    // Fields to hide

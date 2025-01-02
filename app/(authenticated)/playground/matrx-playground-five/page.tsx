@@ -1,53 +1,90 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
-import { Card } from "@/components/ui/card";
-import {
-  Panel,
-  PanelGroup,
-  PanelResizeHandle,
-  ImperativePanelHandle,
-} from "react-resizable-panels";
-import { useMeasure } from "@uidotdev/usehooks";
+import React, { useRef, useState, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
+import { ImperativePanelHandle } from "react-resizable-panels";
+import { Maximize2, Minimize2 } from "lucide-react";
 import PlaygroundHeader from "@/components/playground/header/PlaygroundHeader";
 import BrokerSidebar from "@/components/playground/brokers/BrokersSidebar";
-import { PanelManager } from "@/components/playground/panel-manager/PanelManager";
 import ModelSettingsPanel from "@/components/playground/settings/ModelSettingsPanel";
-import { ResultPanelManager } from "@/components/playground/panel-manager/ResultPanelManager";
+import DynamicPlaygroundPanels from "@/components/playground/layout/DynamicPlaygroundPanels";
+import { Button } from "@/components/ui/button";
 
 export default function DynamicPanelsPage() {
-  const leftPanelRef = useRef<ImperativePanelHandle>(null);
-  const rightPanelRef = useRef<ImperativePanelHandle>(null);
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+  const [previousStates, setPreviousStates] = useState({
+    leftCollapsed: false,
+    rightCollapsed: false,
+  });
 
-  // Panel handlers for sidebars
-  const onLeftPanelChange = () => {
-    if (leftPanelRef.current) {
-      setIsLeftCollapsed(leftPanelRef.current.isCollapsed());
-    }
-  };
+  const panelsRef = useRef<{
+    leftPanel: ImperativePanelHandle | null;
+    rightPanel: ImperativePanelHandle | null;
+  }>(null);
 
-  const onRightPanelChange = () => {
-    if (rightPanelRef.current) {
-      setIsRightCollapsed(rightPanelRef.current.isCollapsed());
-    }
-  };
+  useLayoutEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   const openLeftPanel = () => {
-    leftPanelRef.current?.resize(15);
+    if (isFullscreen) {
+      panelsRef.current?.leftPanel?.resize(11);
+    } else {
+      panelsRef.current?.leftPanel?.resize(15);
+    }
   };
 
   const openRightPanel = () => {
-    rightPanelRef.current?.resize(15);
+    if (isFullscreen) {
+      panelsRef.current?.rightPanel?.resize(11);
+    } else {
+      panelsRef.current?.rightPanel?.resize(15);
+    }
   };
 
-  // Placeholder props for PlaygroundHeader
-  const placeholderProps = {
-    onToggleBrokers: () =>
-      leftPanelRef.current?.resize(isLeftCollapsed ? 15 : 0),
-    onToggleSettings: () =>
-      rightPanelRef.current?.resize(isRightCollapsed ? 15 : 0),
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      setPreviousStates({
+        leftCollapsed: isLeftCollapsed,
+        rightCollapsed: isRightCollapsed,
+      });
+      setIsLeftCollapsed(false);
+      setIsRightCollapsed(false);
+      panelsRef.current?.leftPanel?.resize(11);
+      panelsRef.current?.rightPanel?.resize(11);
+      setIsFullscreen(true);
+    } else {
+      panelsRef.current?.leftPanel?.resize(15);
+      panelsRef.current?.rightPanel?.resize(15);
+      setIsFullscreen(false);
+    }
+  };
+
+  const fullScreenToggleButton = (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleFullscreen}
+      className="h-8 w-8 p-0"
+      title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+    >
+      {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+    </Button>
+  );
+
+  const playgroundControls = {
+    onToggleBrokers: () => {
+      const newSize = isLeftCollapsed ? (isFullscreen ? 11 : 15) : 0;
+      panelsRef.current?.leftPanel?.resize(newSize);
+    },
+    onToggleSettings: () => {
+      const newSize = isRightCollapsed ? (isFullscreen ? 11 : 15) : 0;
+      panelsRef.current?.rightPanel?.resize(newSize);
+    },
     onShowCode: () => console.log("Show code clicked"),
     currentMode: "default",
     onModeChange: (mode: string) => console.log(`Mode changed to: ${mode}`),
@@ -59,54 +96,32 @@ export default function DynamicPanelsPage() {
     isRightCollapsed,
     openLeftPanel,
     openRightPanel,
+    fullScreenToggleButton,
   };
-  const [ref, { width, height }] = useMeasure();
 
-  return (
-    <div className="flex flex-col h-full p-0 space-y-0 bg-background">
-      <PlaygroundHeader {...placeholderProps} />
-
-      <PanelGroup direction="horizontal" className="flex-1">
-        {/* Left Sidebar */}
-        <Panel
-          defaultSize={15}
-          minSize={8}
-          maxSize={40}
-          collapsible
-          ref={leftPanelRef}
-          onCollapse={onLeftPanelChange}
-          onExpand={onLeftPanelChange}
-        >
-          <Card className="h-full p-2 overflow-y-auto bg-background">
-            <BrokerSidebar />
-          </Card>
-        </Panel>
-
-        <PanelResizeHandle />
-
-        <PanelManager />
-
-        <PanelResizeHandle />
-
-        <ResultPanelManager initialPanels={2} />
-
-        <PanelResizeHandle />
-
-        {/* Right Sidebar */}
-        <Panel
-          defaultSize={15}
-          minSize={8}
-          maxSize={40}
-          collapsible
-          ref={rightPanelRef}
-          onCollapse={onRightPanelChange}
-          onExpand={onRightPanelChange}
-        >
-          <Card className="h-full w-full rounded-none overflow-y-auto overflow-x-hidden bg-background">
-            <ModelSettingsPanel />
-          </Card>
-        </Panel>
-      </PanelGroup>
+  const playgroundContent = (
+    <div
+      className={`flex flex-col ${
+        isFullscreen ? "fixed inset-0 z-50 bg-background" : "h-full"
+      }`}
+    >
+      <PlaygroundHeader {...playgroundControls} />
+      <DynamicPlaygroundPanels
+        ref={panelsRef}
+        leftComponent={BrokerSidebar}
+        rightComponent={ModelSettingsPanel}
+        onLeftCollapsedChange={setIsLeftCollapsed}
+        onRightCollapsedChange={setIsRightCollapsed}
+        initialPanelCount={2}
+      />
     </div>
   );
+
+  if (!isMounted) {
+    return playgroundContent;
+  }
+
+  return isFullscreen && isMounted
+    ? createPortal(playgroundContent, document.body)
+    : playgroundContent;
 }

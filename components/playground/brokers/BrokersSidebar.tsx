@@ -1,32 +1,48 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
-import { Button } from "@/components/ui";
+import { AnimatePresence } from "framer-motion";
+import { broker as brokerSchema } from "@/utils/schema/initialTableSchemas";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus } from "lucide-react";
 import BrokerEditor from "./BrokerEditor";
 import { useBrokers } from "@/providers/brokers/BrokersProvider";
+import QuickRefSearchableSelect, { QuickReferenceRecord } from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
+import { BrokerData } from "@/types/AutomationSchemaTypes";
 
-export default function BrokerSidebar() {
+interface BrokerSidebarProps {
+  selectedBroker?: QuickReferenceRecord;
+  onBrokerChange?: (brokerQuickRef: QuickReferenceRecord) => void;
+  initialSelectedBroker?: QuickReferenceRecord;
+}
+
+export default function BrokerSidebar({
+  selectedBroker: externalSelectedBroker,
+  onBrokerChange: externalOnBrokerChange,
+  initialSelectedBroker,
+}: BrokerSidebarProps) {
+  const [internalSelectedBroker, setInternalSelectedBroker] = React.useState<QuickReferenceRecord | undefined>(
+    initialSelectedBroker
+  );
+
+  // Use either external or internal state based on whether props were provided
+  const selectedBroker = externalSelectedBroker ?? internalSelectedBroker;
+  const handleBrokerChange = (brokerQuickRef: QuickReferenceRecord) => {
+    if (externalOnBrokerChange) {
+      externalOnBrokerChange(brokerQuickRef);
+    } else {
+      setInternalSelectedBroker(brokerQuickRef);
+    }
+  };
+
   const { brokers, createBroker, updateBroker, deleteBroker } = useBrokers();
 
   return (
     <div className="flex flex-col h-full py-3">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-0 border-b bg-background"
-      >
-        <Button
-          onClick={() => createBroker()}
-          className="w-full bg-primary hover:bg-primary/90"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Broker
-        </Button>
-      </motion.div>
+      <QuickRefSearchableSelect
+        entityKey="broker"
+        initialSelectedRecord={selectedBroker}
+        onRecordChange={handleBrokerChange}
+      />
 
       <ScrollArea className="flex-1">
         <AnimatePresence>

@@ -1,16 +1,10 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-} from "@/components/ui/select";
-import { Plus, History, TrendingUpDown } from "lucide-react";
-import QuickRefSearchableSelect from "@/app/(authenticated)/tests/forms/entity-final-test/dynamic-quick-ref/QuickRefSearchableSelect";
+import React from "react";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
+import PanelToggle from "@/components/matrx/PanelToggle";
+import { useBrokers } from "@/providers/brokers/BrokersProvider";
+import { TbVariablePlus } from "react-icons/tb";
+import IconButton from "@/components/matrx/IconButton";
+import QuickRefCommandIcon from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefCommandIcon";
 
 interface PlaygroundHeaderLeftProps {
   initialSettings?: {
@@ -27,71 +21,41 @@ const PlaygroundHeaderLeft = ({
   initialSettings = {},
   isLeftCollapsed,
   onToggleBrokers = () => {},
-  onVersionChange = () => {},
-  onHistoryOpen = () => {},
 }: PlaygroundHeaderLeftProps) => {
-  const [selectedRecipe, setSelectedRecipe] = useState<QuickReferenceRecord | undefined>(
-    initialSettings?.recipe
-  );
+  const { createBroker, addBroker } = useBrokers();
 
-  const handleRecipeChange = (record: QuickReferenceRecord) => {
-    setSelectedRecipe(record);
+  const handleToggle = (newIsCollapsed: boolean) => {
+    addBroker();
   };
 
+  const handleRecordChange = (record: QuickReferenceRecord) => {
+    createBroker();
+  }
+
   return (
-    <div className="flex items-center px-2 gap-1">
-      <Button
-        variant="ghost"
-        size="md"
-        onClick={onToggleBrokers}
-        className="h-8 w-8 p-0"
-        title={isLeftCollapsed ? "Open Brokers Panel" : "Close Brokers Panel"}
-      >
-        <TrendingUpDown size={18} />
-      </Button>
-
-      <div className="h-4 w-px bg-border mx-1" />
-
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="md" className="h-8 w-8 p-0">
-          <Plus size={16} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="md"
-          className="h-8 w-8 p-0"
-          onClick={onHistoryOpen}
-        >
-          <History size={16} />
-        </Button>
-      </div>
-
-      <QuickRefSearchableSelect
-        entityKey="recipe"
-        initialSelectedRecord={selectedRecipe}
-        onRecordChange={handleRecipeChange}
+    <div className="flex items-center pl-4 space-x-1">
+      <PanelToggle
+        size={24}
+        side="left"
+        isCollapsed={isLeftCollapsed}
+        onToggle={handleToggle}
+        panelName="Brokers Panel"
+        useInternalState={false}
       />
-
-      <Select
-        value={(initialSettings?.version ?? 1).toString()}
-        onValueChange={(v) => onVersionChange(parseInt(v))}
-      >
-        <SelectTrigger className="h-8 w-24">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Version {initialSettings?.version ?? 1}</span>
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Select Version</SelectLabel>
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
-              <SelectItem key={v} value={v.toString()}>
-                Version {v}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+      <IconButton
+        icon={TbVariablePlus}
+        onClick={createBroker}
+        size={24}
+        title="Create New Broker"
+        ariaLabel="Create new broker"
+      />
+      <QuickRefCommandIcon
+        entityKey={"broker"}
+        onRecordChange={handleRecordChange}
+        title="Add Item"
+        size={22}
+        disabled={false}
+      />
     </div>
   );
 };

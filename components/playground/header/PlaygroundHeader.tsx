@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+"use client";
+
+import React from "react";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
-import PlaygroundHistoryDialog from "./PlaygroundHistoryDialog";
 import PlaygroundHeaderLeft from "./PlaygroundHeaderLeft";
 import PlaygroundHeaderCenter from "./PlaygroundHeaderCenter";
 import PlaygroundHeaderRight from "./PlaygroundHeaderRight";
@@ -19,6 +20,7 @@ interface PlaygroundHeaderProps {
   onPlay?: () => void;
   isLeftCollapsed?: boolean;
   isRightCollapsed?: boolean;
+  fullScreenToggleButton?: React.ReactNode;
 }
 
 const PlaygroundHeader = ({
@@ -32,36 +34,44 @@ const PlaygroundHeader = ({
   onPlay = () => {},
   isLeftCollapsed,
   isRightCollapsed,
+  fullScreenToggleButton,
 }: PlaygroundHeaderProps) => {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   return (
-    <div className="flex items-center bg-elevation1 border-border h-12">
-      <PlaygroundHeaderLeft
-        initialSettings={initialSettings}
-        isLeftCollapsed={isLeftCollapsed}
-        onToggleBrokers={onToggleBrokers}
-        onVersionChange={onVersionChange}
-        onHistoryOpen={() => setIsHistoryOpen(true)}
-      />
+    <>
+      <div className="flex items-center bg-elevation1 border-border h-12">
+        {/* Left section - single row, no wrap, items centered */}
+        <div className="w-1/6 flex justify-start items-center whitespace-nowrap overflow-hidden">
+          <PlaygroundHeaderLeft
+            initialSettings={initialSettings}
+            isLeftCollapsed={isLeftCollapsed}
+            onToggleBrokers={onToggleBrokers}
+            onVersionChange={onVersionChange}
+          />
+        </div>
 
-      <PlaygroundHeaderCenter
-        currentMode={currentMode}
-        onModeChange={onModeChange}
-      />
+        {/* Center section - single row, no wrap, items centered */}
+        <div className="w-4/6 flex justify-center items-center whitespace-nowrap overflow-hidden">
+          <PlaygroundHeaderCenter
+            initialSettings={initialSettings}
+            currentMode={currentMode}
+            onModeChange={onModeChange}
+          />
+        </div>
 
-      <PlaygroundHeaderRight
-        isRightCollapsed={isRightCollapsed}
-        onToggleSettings={onToggleSettings}
-        onShowCode={onShowCode}
-        onPlay={onPlay}
-      />
+        {/* Right section - single row, no wrap, items centered */}
+        <div className="w-1/6 flex justify-end items-center whitespace-nowrap overflow-hidden">
+          <PlaygroundHeaderRight
+            isRightCollapsed={isRightCollapsed}
+            onToggleSettings={onToggleSettings}
+            onShowCode={onShowCode}
+            onPlay={onPlay}
+            fullScreenToggleButton={fullScreenToggleButton}
+          />
+        </div>
+      </div>
 
-      <PlaygroundHistoryDialog
-        isOpen={isHistoryOpen}
-        onOpenChange={setIsHistoryOpen}
-      />
-    </div>
+    </>
   );
 };
 

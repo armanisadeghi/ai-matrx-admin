@@ -56,10 +56,10 @@ export function useDynamicMeasurements(options: UseDynamicMeasurementsOptions = 
     const refs = useRef<Map<MeasurementKey, HTMLDivElement | null>>(new Map());
     const lastMeasurements = useRef<Record<string, Measurements>>({});
     const updatePending = useRef(false);
-    const animationFrame = useRef<number>();
+    const animationFrame = useRef<number | undefined>(undefined);
     const isPaused = useRef(false);
-    const pauseTimeout = useRef<NodeJS.Timeout>();
-    const initialPauseTimeout = useRef<NodeJS.Timeout>();
+    const pauseTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+    const initialPauseTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
     // Check if the change is significant enough to warrant an update
     const hasSignificantChange = (
