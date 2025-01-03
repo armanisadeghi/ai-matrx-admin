@@ -1,11 +1,10 @@
 'use client';
 
 import React from "react";
-import {ModuleHeader} from '@/components/matrx/navigation';
 import {filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
-import ModuleHeaderWithProvider from "../../../../components/matrx/navigation/ModuleHeaderWithProvider";
+import ModuleHeaderWithProvider from "@/components/matrx/navigation/ModuleHeaderWithProvider";
 
 export default function Layout(
     {
@@ -27,13 +26,13 @@ export default function Layout(
             />
             <MatrxDynamicPanel
                 initialPosition="left"
-                defaultExpanded={true}
+                defaultExpanded={false}
                 expandButtonProps={{
                     label: 'Entity State',
                 }}
             >
                 <EnhancedEntityAnalyzer
-                    defaultExpanded={true}
+                    defaultExpanded={false}
                     selectedEntityKey="emails"
                 />
             </MatrxDynamicPanel>

@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Search, Check } from "lucide-react";
 import {
   Command,
@@ -8,11 +15,6 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -47,9 +49,57 @@ const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
   const [internalSelectedValues, setInternalSelectedValues] = useState<
     string[]
   >([]);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedValues = controlledValues ?? internalSelectedValues;
   const selectedCount = selectedValues.length;
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (triggerRef.current && open) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const filteredOptions = useMemo(() => {
     if (!search.trim()) return options;
@@ -86,83 +136,87 @@ const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
 
   return (
     <div className="w-full">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              "w-full min-w-0 bg-elevation1 rounded-md p-2 text-sm inline-flex items-center justify-between border-2 border-elevation3",
-              className
-            )}
-          >
-            <span className="truncate text-sm">{displayValue}</span>
-            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] p-0 bg-elevation1 rounded-md border border-elevation3"
-          align="start"
-          sideOffset={4}
-        >
-          <Command className="bg-elevation1" shouldFilter={false}>
-            <div className="relative">
-              <Input
-                placeholder={searchPlaceholder}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="text-sm pr-8"
-              />
-              <Search className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none opacity-50" />
-            </div>
-            <CommandEmpty className="text-sm py-2 px-2">
-              {noResultsText}
-            </CommandEmpty>
-            <CommandGroup className="max-h-60 overflow-auto">
-              {filteredOptions.map((option) => {
-                const isSelected = selectedValues.includes(option.value);
+      <button
+        ref={triggerRef}
+        onClick={() => setOpen(!open)}
+        className={cn(
+          "w-full min-w-0 bg-elevation1 rounded-md p-2 text-sm inline-flex items-center justify-between border-2 border-elevation3",
+          className
+        )}
+      >
+        <span className="truncate text-sm">{displayValue}</span>
+        <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+      </button>
 
-                return (
-                  <CommandItem
-                    key={option.value}
-                    value={option.value}
-                    onSelect={(currentValue) => {
-                      currentValue === option.value && handleSelect(option);
-                    }}
-                    className={cn(
-                      "text-ellipsis overflow-hidden hover:bg-primary hover:text-primary-foreground flex items-center gap-2",
-                      isSelected && "bg-primary/10"
-                    )}
-                  >
-                    <div
-                      className="flex items-center gap-2 flex-1"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSelect(option);
-                      }}
+      {open &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            style={{
+              position: "absolute",
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+            }}
+            className="bg-elevation1 rounded-md border border-elevation3 shadow-lg z-[9999] mt-1"
+          >
+            <Command className="bg-elevation1" shouldFilter={false}>
+              <div className="relative p-2">
+                <Input
+                  placeholder={searchPlaceholder}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="text-sm pr-8"
+                />
+                <Search className="h-4 w-4 absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none opacity-50" />
+              </div>
+              <CommandEmpty className="text-sm py-2 px-2">
+                {noResultsText}
+              </CommandEmpty>
+              <CommandGroup className="max-h-60 overflow-auto">
+                {filteredOptions.map((option) => {
+                  const isSelected = selectedValues.includes(option.value);
+
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      onSelect={() => handleSelect(option)}
+                      className={cn(
+                        "text-ellipsis overflow-hidden hover:bg-primary hover:text-primary-foreground flex items-center gap-2",
+                        isSelected && "bg-primary/10"
+                      )}
                     >
                       <div
-                        className={cn(
-                          "h-4 w-4 border rounded flex items-center justify-center",
-                          isSelected
-                            ? "bg-primary border-primary"
-                            : "border-muted"
-                        )}
+                        className="flex items-center gap-2 flex-1"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSelect(option);
+                        }}
                       >
-                        {isSelected && (
-                          <Check className="h-3 w-3 text-primary-foreground" />
-                        )}
+                        <div
+                          className={cn(
+                            "h-4 w-4 border rounded flex items-center justify-center",
+                            isSelected
+                              ? "bg-primary border-primary"
+                              : "border-muted"
+                          )}
+                        >
+                          {isSelected && (
+                            <Check className="h-3 w-3 text-primary-foreground" />
+                          )}
+                        </div>
+                        <span className="truncate">{option.label}</span>
                       </div>
-                      <span className="truncate">{option.label}</span>
-                    </div>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </Command>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

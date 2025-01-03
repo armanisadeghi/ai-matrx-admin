@@ -1,120 +1,139 @@
-'use client';
+"use client";
 
 import React, { useCallback, useMemo } from "react";
-import EntityRelationshipWrapperFinal from "@/app/entities/relationships/EntityRelationshipWrapperFinal";
 import { useFieldVisibility } from "@/lib/redux/entity/hooks/useFieldVisibility";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import EntityBaseFieldFinal from "@/app/entities/fields/EntityBaseFieldFinal";
+import { getFormStyle } from "./formUtils";
+import MultiSelect from "@/components/ui/loaders/multi-select";
 
-export const filterRelFields = (relationshipFields, entitiesToHide) => {
-    const fields = relationshipFields || [];
-    const entitiesToHideList = entitiesToHide || [];
-    return {
-        filteredRelFields: fields.filter(field =>
-            !entitiesToHideList.includes(field.entityName)
-        ),
-        hiddenRelFields: fields.filter(field =>
-            entitiesToHideList.includes(field.entityName)
-        )
-    };
-};
 
 interface EntityFormMinimalAnyRecordProps extends UnifiedLayoutProps {
-    recordId: string;
+  recordId: string;
 }
 
-const EntityFormMinimalAnyRecord: React.FC<EntityFormMinimalAnyRecordProps> = ({ recordId, ...unifiedLayoutProps }) => {
-    const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { nativeFields, relationshipFields } = useAppSelector(selectors.selectFieldGroups);
-    const { filteredRelFields, hiddenRelFields } = filterRelFields(relationshipFields, unifiedLayoutProps.entitiesToHide);
+const EntityFormMinimalAnyRecord: React.FC<EntityFormMinimalAnyRecordProps> = ({
+  recordId,
+  ...unifiedLayoutProps
+}) => {
+  const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
+  const selectors = useMemo(
+    () => createEntitySelectors(entityKey),
+    [entityKey]
+  );
+  const { nativeFields } = useAppSelector(
+    selectors.selectFieldGroups
+  );
+  const density = useMemo(
+    () => unifiedLayoutProps.dynamicStyleOptions?.density || "normal",
+    [unifiedLayoutProps.dynamicStyleOptions]
+  );
 
-    const {
-        visibleFieldsInfo,
-        allowedFieldsInfo,
-        selectedFields,
-        toggleField,
-    } = useFieldVisibility(entityKey, unifiedLayoutProps);
+  const { 
+    visibleFields, 
+    visibleFieldsInfo, 
+    allowedFieldsInfo, 
+    selectedFields, 
+    toggleField 
+  } = useFieldVisibility(entityKey, unifiedLayoutProps);
 
-    const selectedValues = Array.from(selectedFields);
+  const selectOptions = useMemo(() => 
+    allowedFieldsInfo.map((field) => ({
+      value: field.name,
+      label: field.displayName || field.name,
+    })),
+    [allowedFieldsInfo]
+  );
 
-    const handleFieldSelection = (values: string[]) => {
-        values.forEach(fieldName => {
-            if (!selectedFields.has(fieldName)) {
-                toggleField(fieldName);
-            }
-        });
-        selectedValues.forEach(fieldName => {
-            if (!values.includes(fieldName)) {
-                toggleField(fieldName);
-            }
-        });
-    };
+  const selectedValues = useMemo(() => 
+    Array.from(selectedFields),
+    [selectedFields]
+  );
 
-    const renderNativeField = useCallback((field) => (
-        <div className="w-full">
-            <EntityBaseFieldFinal
-                key={field.uniqueFieldId || field.name}
-                fieldName={field.name}
-                recordId={recordId}
-                entityKey={entityKey}
-                unifiedLayoutProps={unifiedLayoutProps}
-            />
-        </div>
-    ), [entityKey, recordId, unifiedLayoutProps]);
+  const handleFieldSelection = useCallback((values: string[]) => {
+    const currentSelected = Array.from(selectedFields);
+    
+    values.forEach((fieldName) => {
+      if (!selectedFields.has(fieldName)) {
+        toggleField(fieldName);
+      }
+    });
+    
+    currentSelected
+      .filter(fieldName => !values.includes(fieldName))
+      .forEach(toggleField);
+  }, [selectedFields, toggleField]);
 
-    const renderRelationshipField = useCallback((field) => (
-        <div className="w-full">
-            <EntityRelationshipWrapperFinal
-                key={field.uniqueFieldId || field.name}
-                fieldName={field.name}
-                recordId={recordId}
-                entityKey={entityKey}
-                unifiedLayoutProps={unifiedLayoutProps}
-            />
-        </div>
-    ), [entityKey, recordId, unifiedLayoutProps]);
+  // Filter native fields based on visibility
+  const visibleNativeFields = useMemo(() => 
+    nativeFields.filter(field => 
+      visibleFields.includes(field.name)
+    ),
+    [nativeFields, visibleFields]
+  );
 
+  const renderField = useCallback((field) => {
+    const fieldKey = `${recordId}-${field.uniqueFieldId || field.name}`;
     return (
-        <div className="w-full overflow-y-auto">
-            <div className="space-y-0">
-                {nativeFields.length > 0 && (
-                    <div className="flex flex-col w-full">
-                        {nativeFields.map(renderNativeField)}
-                    </div>
-                )}
-
-                {filteredRelFields.length > 0 && (
-                    <div className="flex flex-col w-full">
-                        {filteredRelFields.map(renderRelationshipField)}
-                    </div>
-                )}
-            </div>
-        </div>
+      <div key={fieldKey} className="w-full">
+        <EntityBaseFieldFinal
+          fieldName={field.name}
+          recordId={recordId}
+          entityKey={entityKey}
+          unifiedLayoutProps={unifiedLayoutProps}
+        />
+      </div>
     );
+  }, [entityKey, recordId, unifiedLayoutProps]);
+
+  return (
+    <div className={getFormStyle("form", density)}>
+      <div className={getFormStyle("header", density)}>
+        <MultiSelect
+          options={selectOptions}
+          value={selectedValues}
+          onChange={handleFieldSelection}
+          placeholder="Select fields"
+          showSelectedInDropdown={true}
+        />
+      </div>
+      <div className={getFormStyle("fieldsWrapper", density)}>
+        {visibleNativeFields.length > 0 && (
+          <div className="grid grid-cols-1 gap-0">
+            {visibleNativeFields.map(renderField)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
-const EntityFormRecordSelections: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
-    const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
+const EntityFormRecordSelections: React.FC<UnifiedLayoutProps> = (
+  unifiedLayoutProps
+) => {
+  const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
+  const selectors = useMemo(
+    () => createEntitySelectors(entityKey),
+    [entityKey]
+  );
+  const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
 
-    if (!selectedRecordIds?.length) {
-        return null;
-    }
+  if (!selectedRecordIds?.length) {
+    return null;
+  }
 
-    return (
-        <div className="w-full space-y-4">
-            {selectedRecordIds.map(recordId => (
-                <EntityFormMinimalAnyRecord
-                    key={recordId}
-                    recordId={recordId}
-                    {...unifiedLayoutProps}
-                />
-            ))}
-        </div>
-    );
+  return (
+    <div className="w-full space-y-4">
+      {selectedRecordIds.map((recordId) => (
+        <EntityFormMinimalAnyRecord
+          key={recordId}
+          recordId={recordId}
+          {...unifiedLayoutProps}
+        />
+      ))}
+    </div>
+  );
 };
 
 export { EntityFormMinimalAnyRecord, EntityFormRecordSelections };

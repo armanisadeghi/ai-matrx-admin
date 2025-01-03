@@ -45,6 +45,7 @@ export interface InlineEntityOptions {
 
 export interface DynamicStyleOptions {
     size?: ComponentSize;
+    textSize?: TextSizeOptions;
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
     variant?: MatrxVariant;

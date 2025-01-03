@@ -6,8 +6,10 @@ import { broker as brokerSchema } from "@/utils/schema/initialTableSchemas";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import BrokerEditor from "./BrokerEditor";
 import { useBrokers } from "@/providers/brokers/BrokersProvider";
-import QuickRefSearchableSelect, { QuickReferenceRecord } from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
+import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
 import { BrokerData } from "@/types/AutomationSchemaTypes";
+import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
+import MatrxSelectFloatinglabel from "@/components/matrx/MatrxSelectFloatingLabel";
 
 interface BrokerSidebarProps {
   selectedBroker?: QuickReferenceRecord;
@@ -24,7 +26,6 @@ export default function BrokerSidebar({
     initialSelectedBroker
   );
 
-  // Use either external or internal state based on whether props were provided
   const selectedBroker = externalSelectedBroker ?? internalSelectedBroker;
   const handleBrokerChange = (brokerQuickRef: QuickReferenceRecord) => {
     if (externalOnBrokerChange) {
@@ -37,7 +38,7 @@ export default function BrokerSidebar({
   const { brokers, createBroker, updateBroker, deleteBroker } = useBrokers();
 
   return (
-    <div className="flex flex-col h-full py-3">
+    <div className="flex flex-col h-full py-3 space-y-3">
       <QuickRefSearchableSelect
         entityKey="broker"
         initialSelectedRecord={selectedBroker}

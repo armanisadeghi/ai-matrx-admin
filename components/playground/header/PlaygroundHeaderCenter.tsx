@@ -34,21 +34,30 @@ const PlaygroundHeaderCenter = ({
 }: PlaygroundHeaderCenterProps) => {
   const [version, setVersion] = useState(initialSettings?.version ?? 1);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
   const [selectedRecipe, setSelectedRecipe] = useState<
     QuickReferenceRecord | undefined
   >(initialSettings?.recipe);
+
+  const handleRecipeChange = (record: QuickReferenceRecord) => {
+    setSelectedRecipe(record);
+  };
 
   const handleVersionChange = (newVersion: number) => {
     setVersion(newVersion);
     onVersionChange(newVersion);
   };
 
-  const handleRecipeChange = (record: QuickReferenceRecord) => {
-    setSelectedRecipe(record);
-  };
 
   return (
     <div className="flex items-center w-full px-2 h-10 gap-2">
+      <PlaygroundNavContainer
+        currentMode={currentMode}
+        onModeChange={onModeChange}
+      />
+
+
+
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <div className="min-w-[160px] max-w-[320px] w-full">
           <QuickRefSearchableSelect
@@ -93,11 +102,6 @@ const PlaygroundHeaderCenter = ({
           <History size={16} />
         </Button>
       </div>
-
-      <PlaygroundNavContainer
-        currentMode={currentMode}
-        onModeChange={onModeChange}
-      />
 
       <PlaygroundHistoryDialog
         isOpen={isHistoryOpen}

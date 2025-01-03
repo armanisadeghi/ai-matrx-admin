@@ -6,7 +6,7 @@ import {
 } from "@/components/matrx/ArmaniForm/field-components/index";
 import { useRouter } from "next/router";
 import { cn } from "@nextui-org/react";
-import { EntityInputProps } from "./EntityInput";
+import { EntityInputProps } from "./field-components/EntityInput";
 
 type RelationType =
   | "foreignKey" // Single reference to another entity

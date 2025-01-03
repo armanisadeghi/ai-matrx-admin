@@ -7,7 +7,12 @@ import {
   NameFormat,
   FieldDataOptionsType,
 } from "@/types/AutomationSchemaTypes";
-import { AutomationEntity } from "@/types/entityTypes";
+import {
+  AutomationEntity,
+  EntityData,
+  EntityDataMixed,
+  EntityDataOptional,
+} from "@/types/entityTypes";
 
 export const initialAutomationTableSchema = {
   action: {
@@ -2521,7 +2526,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -4310,7 +4315,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -6198,7 +6203,7 @@ export const initialAutomationTableSchema = {
         id: null,
       },
     },
-    displayFieldMetadata: { fieldName: "displayName", databaseFieldName: "display_name" },
+    displayFieldMetadata: { fieldName: "name", databaseFieldName: "name" },
     defaultFetchStrategy: "fkIfkAndM2M",
     componentProps: {
       subComponent: "default",
@@ -6308,7 +6313,7 @@ export const initialAutomationTableSchema = {
         isArray: false,
         defaultValue: "" as const,
         isPrimaryKey: false,
-        isDisplayField: false,
+        isDisplayField: true,
         defaultGeneratorFunction: "",
         validationFunctions: [],
         exclusionRules: [],
@@ -6721,7 +6726,7 @@ export const initialAutomationTableSchema = {
         isArray: false,
         defaultValue: "" as const,
         isPrimaryKey: false,
-        isDisplayField: true,
+        isDisplayField: false,
         defaultGeneratorFunction: "",
         validationFunctions: [],
         exclusionRules: [],
@@ -8245,7 +8250,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -8495,7 +8500,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -11349,7 +11354,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -12446,7 +12451,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -12510,7 +12515,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -13522,7 +13527,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -13586,7 +13591,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -14211,7 +14216,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -14275,7 +14280,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -14817,7 +14822,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -15496,7 +15501,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -15560,7 +15565,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -16724,7 +16729,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -23286,7 +23291,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",
@@ -23350,7 +23355,7 @@ export const initialAutomationTableSchema = {
         exclusionRules: [],
         defaultComponent: "DATE_PICKER" as const,
         componentProps: {
-          subComponent: "datetime",
+          subComponent: "timestamptz",
           variant: "default",
           section: "default",
           placeholder: "default",

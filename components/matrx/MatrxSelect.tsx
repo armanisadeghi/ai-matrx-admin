@@ -23,19 +23,22 @@ interface MatrxSelectProps {
     placeholder?: string;
 }
 
-const MatrxSelect: React.FC<MatrxSelectProps> = (
-    {
-        label,
-        options,
-        value,
-        onChange,
-        className,
-        disabled = false,
-        hideLabel = false,
-        required = false,
-        placeholder = "Select an option",
-        ...props
-    }) => {
+const MatrxSelect = React.forwardRef<HTMLSelectElement, MatrxSelectProps>(
+    (
+        {
+            label,
+            options,
+            value,
+            onChange,
+            className,
+            disabled = false,
+            hideLabel = false,
+            required = false,
+            placeholder = "Select an option",
+            ...props
+        },
+        ref
+    ) => {
     // Convert string options to Option format
     const normalizedOptions = options.map((option): Option => {
         if (typeof option === 'string') {
@@ -64,8 +67,9 @@ const MatrxSelect: React.FC<MatrxSelectProps> = (
                 </label>
             )}
             <motion.select
+                ref={ref}
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => onChange?.(e.target.value)}
                 required={required}
                 whileFocus={disabled ? undefined : {scale: 1.02}}
                 disabled={disabled}
@@ -83,6 +87,8 @@ const MatrxSelect: React.FC<MatrxSelectProps> = (
             </motion.select>
         </motion.div>
     );
-};
+});
+
+MatrxSelect.displayName = "MatrxSelect";
 
 export default MatrxSelect;

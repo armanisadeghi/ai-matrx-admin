@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown, X } from "lucide-react";
 import { AdvancedTooltip } from "./Tooltip";
 
@@ -27,11 +28,37 @@ const SelectWithIconDisplay = ({
 }: SelectWithIconDisplayProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (triggerRef.current && isOpen) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node) &&
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
@@ -59,8 +86,9 @@ const SelectWithIconDisplay = ({
   return (
     <div className={`w-full space-y-3 ${className}`}>
       {/* Select Button */}
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative">
         <button
+          ref={triggerRef}
           onClick={() => setIsOpen(!isOpen)}
           className="w-full min-w-0 bg-elevation1 rounded-md p-2 text-sm 
                     flex items-center justify-between border border-elevation3"
@@ -69,11 +97,18 @@ const SelectWithIconDisplay = ({
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
 
-        {/* Dropdown Menu */}
-        {isOpen && (
+        {/* Dropdown Menu Portal */}
+        {isOpen && createPortal(
           <div
-            className={`absolute z-10 w-full mt-1 bg-elevation1 border 
-                          border-elevation3 rounded-md shadow-lg ${maxHeight} overflow-auto`}
+            ref={dropdownRef}
+            style={{
+              position: 'absolute',
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+            }}
+            className={`mt-1 bg-elevation1 border border-elevation3 rounded-md 
+                       shadow-lg ${maxHeight} overflow-auto z-[9999]`}
           >
             {items.map((item) => {
               const isSelected = selectedItems.find(
@@ -97,7 +132,8 @@ const SelectWithIconDisplay = ({
                 </button>
               );
             })}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 
@@ -115,14 +151,14 @@ const SelectWithIconDisplay = ({
                 <button
                   onClick={() => toggleItem(item)}
                   className="flex items-center justify-center p-1.5 rounded-md
-              opacity-70 hover:opacity-100 transition-all duration-200
-              group relative"
+                           opacity-70 hover:opacity-100 transition-all duration-200
+                           group relative"
                   aria-label={`Remove ${item.label}`}
                 >
                   <Icon className="w-5 h-5 group-hover:text-destructive transition-colors" />
                   <div
                     className="absolute inset-0 flex items-center justify-center 
-                opacity-0 group-hover:opacity-100 transition-opacity"
+                             opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-12 h-12 text-muted-foreground" />
                   </div>

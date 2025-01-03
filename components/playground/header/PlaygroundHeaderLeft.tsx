@@ -24,13 +24,13 @@ const PlaygroundHeaderLeft = ({
 }: PlaygroundHeaderLeftProps) => {
   const { createBroker, addBroker } = useBrokers();
 
-  const handleToggle = (newIsCollapsed: boolean) => {
-    addBroker();
+  const handlePanelToggle = (newIsCollapsed: boolean) => {
+    onToggleBrokers();
   };
 
   const handleRecordChange = (record: QuickReferenceRecord) => {
     createBroker();
-  }
+  };
 
   return (
     <div className="flex items-center pl-4 space-x-1">
@@ -38,7 +38,7 @@ const PlaygroundHeaderLeft = ({
         size={24}
         side="left"
         isCollapsed={isLeftCollapsed}
-        onToggle={handleToggle}
+        onToggle={handlePanelToggle}
         panelName="Brokers Panel"
         useInternalState={false}
       />

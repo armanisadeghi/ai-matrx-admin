@@ -57,6 +57,7 @@ export interface EditableJsonViewerProps extends React.HTMLAttributes<HTMLDivEle
     lockKeys?: boolean,
     defaultEnhancedMode?: boolean,
     readOnly?: boolean
+    sampleEntry?: object | string | null
 }
 
 export interface ValidationError {

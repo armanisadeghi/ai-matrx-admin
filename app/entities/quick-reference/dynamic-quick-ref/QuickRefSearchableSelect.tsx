@@ -1,5 +1,5 @@
 import React from "react";
-import { MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
+import { MatrxRecordId, QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
 import { useSelectQuickRef } from "@/app/entities/hooks/useSelectQuickRef";
 import { FetchMode } from "@/lib/redux/entity/actions";
@@ -8,15 +8,11 @@ import { selectEntityPrettyName, selectEntitySelectText, useAppSelector } from "
 import SearchableSelect from "@/components/matrx/SearchableSelect";
 
 
-export type QuickReferenceRecord = {
-  recordKey: MatrxRecordId;
-  displayValue: string;
-};
 
 interface QuickRefSearchableSelectProps {
   entityKey?: EntityKeys;
   initialSelectedRecord?: QuickReferenceRecord;
-  onRecordChange: (record: QuickReferenceRecord) => void;
+  onRecordChange?: (record: QuickReferenceRecord) => void;
   fetchMode?: FetchMode;
 }
 

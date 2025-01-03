@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { useAppStore } from "@/lib/redux/hooks";
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
-import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity";
 import { EntityKeys } from "@/types/entityTypes";
-import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
 
 export function useFieldVisibility<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -20,53 +18,61 @@ export function useFieldVisibility<TEntity extends EntityKeys>(
     const [searchTerm, setSearchTerm] = useState("");
     const [carouselActiveIndex, setCarouselActiveIndex] = useState(0);
 
-    const allowedFields = useMemo(() =>
-            formStyleOptions.fieldFiltering?.allowedFieldsOverride ||
-            dynamicFieldInfo.map(field => field.name),
-        [dynamicFieldInfo, formStyleOptions.fieldFiltering?.allowedFieldsOverride]
-    );
+    // First, exclude the fields that should never be shown
+    const excludeFields = new Set(formStyleOptions.fieldFiltering?.excludeFields || []);
+    
+    // Then, get all available fields minus excluded ones
+    const allowedFields = useMemo(() => {
+        const baseFields = formStyleOptions.fieldFiltering?.allowedFieldsOverride ||
+            dynamicFieldInfo.map(field => field.name);
+        return baseFields.filter(field => !excludeFields.has(field));
+    }, [dynamicFieldInfo, formStyleOptions.fieldFiltering?.allowedFieldsOverride, excludeFields]);
 
-    const finalAllowedFields = useMemo(() => {
-        const excludeFields = new Set(formStyleOptions.fieldFiltering?.excludeFields || []);
-        return allowedFields.filter(field => !excludeFields.has(field));
-    }, [allowedFields, formStyleOptions.fieldFiltering?.excludeFields]);
+    // Get the default shown fields, ensuring they're in the allowed set
+    const defaultShownFields = useMemo(() => {
+        const defaultFields = formStyleOptions.fieldFiltering?.defaultShownFields || [];
+        return defaultFields.filter(field => 
+            allowedFields.includes(field) && !excludeFields.has(field)
+        );
+    }, [allowedFields, formStyleOptions.fieldFiltering?.defaultShownFields, excludeFields]);
 
+    // Get field info for allowed fields
     const allowedFieldsInfo = useMemo(() =>
-            dynamicFieldInfo.filter(field => finalAllowedFields.includes(field.name)),
-        [dynamicFieldInfo, finalAllowedFields]
+        dynamicFieldInfo.filter(field => 
+            allowedFields.includes(field.name) && !excludeFields.has(field.name)
+        ),
+        [dynamicFieldInfo, allowedFields, excludeFields]
     );
 
-    const [fieldState, setFieldState] = useState(() => {
-        const defaultShownFields = formStyleOptions.fieldFiltering?.defaultShownFields;
-        const initialFields = defaultShownFields?.length
-                              ? defaultShownFields.filter(field => finalAllowedFields.includes(field))
-                              : finalAllowedFields;
+    // Initialize field state with default shown fields
+    const [fieldState, setFieldState] = useState(() => ({
+        visibleFields: defaultShownFields,
+        selectedFields: new Set(defaultShownFields)
+    }));
 
-        return {
-            visibleFields: initialFields,
-            selectedFields: new Set(initialFields)
-        };
-    });
-
+    // Filter fields based on search
     const filteredFields = useMemo(() => {
         const searchQuery = searchTerm.toLowerCase().trim();
 
         if (enableSearch && searchQuery) {
-            return finalAllowedFields.filter(field =>
+            return allowedFields.filter(field =>
                 field.toLowerCase().includes(searchQuery)
             );
         }
 
         return Array.from(fieldState.selectedFields);
-    }, [enableSearch, searchTerm, finalAllowedFields, fieldState.selectedFields]);
+    }, [enableSearch, searchTerm, allowedFields, fieldState.selectedFields]);
 
+    // Get visible field info
     const visibleFieldsInfo = useMemo(() =>
-            dynamicFieldInfo.filter(field => filteredFields.includes(field.name)),
-        [dynamicFieldInfo, filteredFields]
+        dynamicFieldInfo.filter(field => 
+            filteredFields.includes(field.name) && !excludeFields.has(field.name)
+        ),
+        [dynamicFieldInfo, filteredFields, excludeFields]
     );
 
     const toggleField = (fieldName: string) => {
-        if (!finalAllowedFields.includes(fieldName)) return;
+        if (!allowedFields.includes(fieldName) || excludeFields.has(fieldName)) return;
 
         setFieldState(prev => {
             const newSelected = new Set(prev.selectedFields);
@@ -85,8 +91,8 @@ export function useFieldVisibility<TEntity extends EntityKeys>(
 
     const selectAllFields = () => {
         setFieldState({
-            visibleFields: finalAllowedFields,
-            selectedFields: new Set(finalAllowedFields)
+            visibleFields: allowedFields,
+            selectedFields: new Set(allowedFields)
         });
     };
 
@@ -102,7 +108,7 @@ export function useFieldVisibility<TEntity extends EntityKeys>(
         allowedFieldsInfo,
         visibleFields: filteredFields,
         selectedFields: fieldState.selectedFields,
-        allAllowedFields: finalAllowedFields,
+        allAllowedFields: allowedFields,
         searchTerm,
         setSearchTerm,
         carouselActiveIndex,

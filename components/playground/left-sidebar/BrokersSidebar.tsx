@@ -4,9 +4,12 @@ import React from "react";
 import { AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBrokers } from "@/providers/brokers/BrokersProvider";
-import { QuickReferenceRecord } from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
 import EntityMultiSelectForms from "@/app/entities/forms/EntityMultiSelectForms";
-import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from "@/app/entities/layout/configs";
+import {
+  getUnifiedLayoutProps,
+  getUpdatedUnifiedLayoutProps,
+} from "@/app/entities/layout/configs";
+import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 
 const initialLayoutProps = getUnifiedLayoutProps({
   entityKey: "broker",
@@ -15,15 +18,27 @@ const initialLayoutProps = getUnifiedLayoutProps({
   handlers: {},
 });
 
-const layoutProps = getUpdatedUnifiedLayoutProps(
-  initialLayoutProps,
-  {
-    dynamicPanelsPage: {
-      density: "compact",
-      size: "sm",
-    },
+const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
+  dynamicStyleOptions: {
+    density: "compact",
+    size: "sm",
+  },
+  dynamicLayoutOptions: {
+    formStyleOptions: {
+      fieldFiltering: {
+        excludeFields: ["id", "otherSourceParams"],
+        defaultShownFields: [
+          "displayName",
+          "value",
+          "dataType",
+          "defaultSource",
+          "defaultDestination",
+        ],
+      }
+    }
   }
-);
+});
+
 
 interface BrokerSidebarProps {
   selectedBroker?: QuickReferenceRecord;
@@ -55,10 +70,7 @@ export default function BrokerSidebar({
     <div className="flex flex-col h-full py-3">
       <ScrollArea className="flex-1">
         <AnimatePresence>
-          <EntityMultiSelectForms
-            {...layoutProps}
-            entitiesToHide={[]}
-          />
+          <EntityMultiSelectForms {...layoutProps} entitiesToHide={[]} />
         </AnimatePresence>
       </ScrollArea>
     </div>

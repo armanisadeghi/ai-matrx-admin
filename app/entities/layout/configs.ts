@@ -10,7 +10,7 @@ import { EntityKeys } from "@/types/entityTypes";
 import {
     SmartCrudWrapperProps
 } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
-import {QuickReferenceComponentType} from "@/types";
+import {ComponentDensity, QuickReferenceComponentType} from "@/types";
 
 export const SMART_CRUD_PROP_DEFAULTS: Partial<SmartCrudWrapperProps> = {
     options: {
@@ -110,6 +110,7 @@ export function getUnifiedLayoutProps(options?: {
     entityKey?: EntityKeys;
     defaultFormComponent?: 'default' | 'ArmaniFormSmart';
     quickReferenceType?: QuickReferenceComponentType | string;
+    density?: ComponentDensity;
     isExpanded?: boolean;
     handlers?: UnifiedLayoutHandlers;
 }): UnifiedLayoutProps {
@@ -118,6 +119,7 @@ export function getUnifiedLayoutProps(options?: {
         entityKey = 'registeredFunction',
         defaultFormComponent = 'ArmaniFormSmart',
         quickReferenceType = 'CARDS',
+        density = 'normal',
         isExpanded = false,
         handlers = {}
     } = options || {};
@@ -129,11 +131,14 @@ export function getUnifiedLayoutProps(options?: {
             selectHeight: 0
         },
         handlers: handlers,
-        dynamicStyleOptions: DEFAULT_DYNAMIC_STYLE_OPTIONS,
+        dynamicStyleOptions: {
+            ...DEFAULT_DYNAMIC_STYLE_OPTIONS,
+            density: density
+        },
         dynamicLayoutOptions: {
             componentOptions: {
                 ...DEFAULT_FORM_COMPONENT_OPTIONS,
-                quickReferenceType: quickReferenceType  as QuickReferenceComponentType,
+                quickReferenceType: quickReferenceType as QuickReferenceComponentType,
             },
             formStyleOptions: DEFAULT_FORM_STYLE_OPTIONS,
             inlineEntityOptions: DEFAULT_INLINE_ENTITY_OPTIONS,

@@ -1,3 +1,5 @@
+// app\entities\fields\EntityBaseFieldFinal.tsx
+
 'use client';
 
 import React, {useCallback, useMemo} from 'react';
@@ -74,7 +76,12 @@ const EntityBaseFieldFinal = (
                                     onChange={onChange}
                                     disabled={isDisabled}
                                     className={className}
-                                    {...styleConfig}
+                                    density={styleConfig.density}
+                                    animationPreset={styleConfig.animationPreset}
+                                    size={styleConfig.size}
+                                    textSize={styleConfig.textSize}
+                                    variant={styleConfig.variant}
+                                    floatingLabel={styleConfig.floatingLabel}
                                 />
                             </FormFieldMotionWrapperFinal>
                         )}

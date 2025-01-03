@@ -13,7 +13,10 @@ const useAreArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) => {
 
 const useHasOnlyNewRecords = (selectedRecordIds: MatrxRecordId[]) => {
     return React.useMemo(
-        () => selectedRecordIds.every(recordId => recordId.startsWith('new-record-')),
+        () => selectedRecordIds.every(recordId => 
+            // Add null check before accessing startsWith
+            recordId != null && typeof recordId === 'string' && recordId.startsWith('new-record-')
+        ),
         [selectedRecordIds]
     );
 };
@@ -22,24 +25,25 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
     const { actions, selectors, dispatch } = useEntityTools(entityKey);
     const [fetchMode, setFetchMode] = React.useState<FetchMode>("native");
     const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
-    const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
+    
+    // Ensure selectedRecordIds is never null
+    const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds) ?? [];
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
     const hasOnlyNewRecords = useHasOnlyNewRecords(selectedRecordIds);
     const isEqual = useAreArraysEqual(lastProcessedIds, selectedRecordIds);
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
 
     const payload: GetOrFetchSelectedRecordsPayload = React.useMemo(
-        () => {
-            return {
-                matrxRecordIds: selectedRecordIds,
-                fetchMode,
-            };
-        },
+        () => ({
+            matrxRecordIds: selectedRecordIds,
+            fetchMode,
+        }),
         [selectedRecordIds, fetchMode]
     );
 
     React.useEffect(() => {
         if (
+            !Array.isArray(selectedRecordIds) || // Add type check
             selectedRecordIds.length === 0 ||
             hasOnlyNewRecords ||
             isEqual
@@ -48,7 +52,6 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         }
         dispatch(actions.getOrFetchSelectedRecords(payload));
         setLastProcessedIds(selectedRecordIds);
-
     }, [
         selectedRecordIds,
         hasOnlyNewRecords,
@@ -58,10 +61,17 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         actions
     ]);
 
-    const isSelected = React.useCallback((recordKey: MatrxRecordId) =>
-        selectedRecordIds.includes(recordKey), [selectedRecordIds]);
+    const isSelected = React.useCallback(
+        (recordKey: MatrxRecordId) => 
+            recordKey != null && // Add null check
+            Array.isArray(selectedRecordIds) && 
+            selectedRecordIds.includes(recordKey), 
+        [selectedRecordIds]
+    );
 
     const handleToggleSelection = React.useCallback((recordKey: MatrxRecordId) => {
+        if (!recordKey) return; // Early return if recordKey is null/undefined
+        
         if (isSelected(recordKey)) {
             dispatch(actions.removeFromSelection(recordKey));
         } else {
@@ -69,9 +79,11 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         }
     }, [dispatch, actions, isSelected]);
 
-
     const handleSingleSelection = React.useCallback(
-        (recordKey: MatrxRecordId) => dispatch(actions.setSwitchSelectedRecord(recordKey)),
+        (recordKey: MatrxRecordId) => {
+            if (!recordKey) return; // Early return if recordKey is null/undefined
+            dispatch(actions.setSwitchSelectedRecord(recordKey));
+        },
         [dispatch, actions]
     );
 
@@ -82,6 +94,8 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
 
     const handleRecordSelect = React.useCallback(
         (recordKey: MatrxRecordId) => {
+            if (!recordKey) return; // Early return if recordKey is null/undefined
+            
             if (selectionMode === 'multiple') {
                 handleToggleSelection(recordKey);
             } else {
@@ -92,19 +106,20 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         [selectionMode, handleToggleSelection, handleSingleSelection, dispatch, actions]
     );
 
-
     return React.useMemo(() => ({
         selectionMode,
         handleRecordSelect,
         toggleSelectionMode,
         setFetchMode,
-        quickReferenceRecords
+        quickReferenceRecords,
+        selectedRecordIds,
     }), [
         selectionMode,
         handleRecordSelect,
         toggleSelectionMode,
         setFetchMode,
-        quickReferenceRecords
+        quickReferenceRecords,
+        selectedRecordIds,
     ]);
 }
 

@@ -19,7 +19,7 @@ const EntityMultiSelectForms: React.FC<EntityMultiSelectFormsProps> = ({
       <div className="flex flex-col h-full py-3">
         <div className="mb-3">
           <QuickRefMultiSelect
-            entityKey={unifiedLayoutProps.layoutState.selectedEntity}
+            entityKey={"broker"}
             onRecordsChange={onRecordsChange}
           />
         </div>

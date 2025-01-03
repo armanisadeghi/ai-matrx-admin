@@ -15,7 +15,7 @@ import {
 import SearchableMultiSelect from "@/components/matrx/SearchableMultiSelect";
 
 interface QuickRefMultiSelectProps {
-  entityKey?: EntityKeys;
+  entityKey: EntityKeys;
   initialSelectedRecords?: QuickReferenceRecord[];
   onRecordsChange: (records: QuickReferenceRecord[]) => void;
   fetchMode?: FetchMode;

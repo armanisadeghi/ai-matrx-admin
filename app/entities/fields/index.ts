@@ -1,51 +1,53 @@
 // components/matrx/ArmaniForm/field-components/index.ts
 
-import EntityButton from './EntityButton';
-import EntityCheckbox from './EntityCheckbox';
-import { EntityChip, EnhancedEntityChip } from './EntityChip';
-import EntityDatePicker from './EntityDatePicker';
-import { EntityDropdownMenu } from './EntityDropdownMenu';
-import EntityImageDisplay from './EntityImageDisplay';
-import EntityInput from './EntityInput';
-import EntityJsonEditor from './EntityJsonEditor';
-import EntityNumberInput from './EntityNumberInput';
-import EntityPhoneInput from './EntityPhoneInput';
-import EntityRadioGroup from './EntityRadioGroup';
+import EntityButton from './other-components/EntityButton';
+import EntityCheckbox from './field-components/EntityCheckbox';
+import { EntityChip, EnhancedEntityChip } from './field-components/EntityChip';
+import EntityDatePicker from './field-components/concepts/EntityDatePicker';
+import { EntityDropdownMenu } from './other-components/EntityDropdownMenu';
+import EntityImageDisplay from './field-components/EntityImageDisplay';
+import EntityInput from './field-components/EntityInput';
+import EntityJsonEditor from './field-components/EntityJsonEditor';
+import EntityNumberInput from './field-components/EntityNumberInput';
+import EntityPhoneInput from './field-components/EntityPhoneInput';
+import EntityRadioGroup from './field-components/EntityRadioGroup';
 import { RelationalInput, RelationalButton } from './EntityRelationshipInput';
-import EntitySearchInput from './EntitySearchInput';
-import EntitySelect from './EntitySelect';
-import EntitySlider from './EntitySlider';
-import EntityStarRating from './EntityStarRating';
-import EntitySwitch from './EntitySwitch';
-import EntityTextarea from './EntityTextarea';
-import EntityTimePicker from './EntityTimePicker';
-import EntityUUIDArray from './EntityUUIDArray';
-import EntityUUIDField from './EntityUUIDField';
-import {FileUpload} from './file-upload';
-import ImageDisplay from './image-display';
+import EntitySearchInput from './field-components/EntitySearchInput';
+import EntitySelect from './field-components/EntitySelect';
+import EntitySlider from './field-components/EntitySlider';
+import EntityStarRating from './field-components/EntityStarRating';
+import EntitySwitch from './field-components/EntitySwitch';
+import EntityTextarea from './field-components/EntityTextarea';
+import EntityTimePicker from './field-components/EntityTimePicker';
+import EntityUUIDArray from './field-components/EntityUUIDArray';
+import EntityUUIDField from './field-components/EntityUUIDField';
+import {FileUpload} from './other-components/file-upload';
+import ImageDisplay from './other-components/image-display';
+import EntitySimpleDate from './field-components/EntitySimpleDate';
 
-export { default as EntityButton } from './EntityButton';
-export { default as EntityCheckbox } from './EntityCheckbox';
-export { EntityChip, EnhancedEntityChip } from './EntityChip';
-export { default as EntityDatePicker } from './EntityDatePicker';
-export { default as EntityDropdownMenu } from './EntityDropdownMenu';
-export { default as EntityImageDisplay } from './EntityImageDisplay';
-export { default as EntityInput } from './EntityInput';
-export { default as EntityJsonEditor } from './EntityJsonEditor';
-export { default as EntityNumberInput } from './EntityNumberInput';
-export { default as EntityPhoneInput } from './EntityPhoneInput';
-export { default as EntityRadioGroup } from './EntityRadioGroup';
-export { default as EntitySearchInput } from './EntitySearchInput';
-export { default as EntitySelect } from './EntitySelect';
-export { default as EntitySlider } from './EntitySlider';
-export { default as EntityStarRating } from './EntityStarRating';
-export { default as EntitySwitch } from './EntitySwitch';
-export { default as EntityTextarea } from './EntityTextarea';
-export { default as EntityTimePicker } from './EntityTimePicker';
-export { default as EntityUUIDArray } from './EntityUUIDArray';
-export { default as EntityUUIDField } from './EntityUUIDField';
-export { FileUpload } from './file-upload';
-export { default as ImageDisplay } from './image-display';
+export { default as EntityButton } from './other-components/EntityButton';
+export { default as EntityCheckbox } from './field-components/EntityCheckbox';
+export { EntityChip, EnhancedEntityChip } from './field-components/EntityChip';
+export { default as EntityDatePicker } from './field-components/concepts/EntityDatePicker';
+export { default as EntitySimpleDate } from './field-components/EntitySimpleDate';
+export { default as EntityDropdownMenu } from './other-components/EntityDropdownMenu';
+export { default as EntityImageDisplay } from './field-components/EntityImageDisplay';
+export { default as EntityInput } from './field-components/EntityInput';
+export { default as EntityJsonEditor } from './field-components/EntityJsonEditor';
+export { default as EntityNumberInput } from './field-components/EntityNumberInput';
+export { default as EntityPhoneInput } from './field-components/EntityPhoneInput';
+export { default as EntityRadioGroup } from './field-components/EntityRadioGroup';
+export { default as EntitySearchInput } from './field-components/EntitySearchInput';
+export { default as EntitySelect } from './field-components/EntitySelect';
+export { default as EntitySlider } from './field-components/EntitySlider';
+export { default as EntityStarRating } from './field-components/EntityStarRating';
+export { default as EntitySwitch } from './field-components/EntitySwitch';
+export { default as EntityTextarea } from './field-components/EntityTextarea';
+export { default as EntityTimePicker } from './field-components/EntityTimePicker';
+export { default as EntityUUIDArray } from './field-components/EntityUUIDArray';
+export { default as EntityUUIDField } from './field-components/EntityUUIDField';
+export { FileUpload } from './other-components/file-upload';
+export { default as ImageDisplay } from './other-components/image-display';
 import EntityFkAccordion from "@/components/matrx/ArmaniForm/field-components/wired/EntityFkAccordion";
 import RelatedEntityAccordion
     from "@/components/matrx/ArmaniForm/field-components/wired/accordion-modes/RelatedEntityAccordion";
@@ -65,7 +67,7 @@ export const ENTITY_FIELD_COMPONENTS = {
     CHECKBOX: EntityCheckbox,
     CHIP: EntityChip,
     // COLOR_PICKER: EntityColorPicker,
-    DATE_PICKER: EntityDatePicker,
+    DATE_PICKER: EntitySimpleDate,
     // DRAWER: SideDrawer,
     MENU: EntityDropdownMenu,
     // FILE_UPLOAD: EntityFileUpload,
@@ -98,7 +100,7 @@ export const ENTITY_SMART_COMPONENTS = {
     CHECKBOX: EntityCheckbox,
     CHIP: EntityChip,
     // COLOR_PICKER: EntityColorPicker,
-    DATE_PICKER: EntityDatePicker,
+    DATE_PICKER: EntitySimpleDate,
     // DRAWER: SideDrawer,
     MENU: EntityDropdownMenu,
     // FILE_UPLOAD: EntityFileUpload,
@@ -132,7 +134,7 @@ export const ENTITY_FK_COMPONENTS = {
     CHECKBOX: EntityCheckbox,
     CHIP: EntityChip,
     // COLOR_PICKER: EntityColorPicker,
-    DATE_PICKER: EntityDatePicker,
+    DATE_PICKER: EntitySimpleDate,
     // DRAWER: SideDrawer,
     MENU: EntityDropdownMenu,
     // FILE_UPLOAD: EntityFileUpload,
@@ -166,7 +168,7 @@ export const ENTITY_IFK_COMPONENTS = {
     CHECKBOX: EntityCheckbox,
     CHIP: EntityChip,
     // COLOR_PICKER: EntityColorPicker,
-    DATE_PICKER: EntityDatePicker,
+    DATE_PICKER: EntitySimpleDate,
     // DRAWER: SideDrawer,
     MENU: EntityDropdownMenu,
     // FILE_UPLOAD: EntityFileUpload,
@@ -200,7 +202,7 @@ export const ENTITY_M2M_COMPONENTS = {
     CHECKBOX: EntityCheckbox,
     CHIP: EntityChip,
     // COLOR_PICKER: EntityColorPicker,
-    DATE_PICKER: EntityDatePicker,
+    DATE_PICKER: EntitySimpleDate,
     // DRAWER: SideDrawer,
     MENU: EntityDropdownMenu,
     // FILE_UPLOAD: EntityFileUpload,
