@@ -69,8 +69,8 @@ export const SmartUpdateConfirmation = (
             confirmText="Save"
             intent="default"
         >
-            <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2 -p-3">
+                <div className="grid grid-cols-1 gap-2">
                     {comparison.fieldInfo.map(field => {
                         if (!field.hasChanged) return null;
 
@@ -78,7 +78,7 @@ export const SmartUpdateConfirmation = (
                             <div
                                 key={field.name}
                                 className={cn(
-                                    "rounded-md p-3",
+                                    "rounded-md p-1",
                                     "border border-border/50",
                                     "bg-muted"
                                 )}
@@ -93,11 +93,11 @@ export const SmartUpdateConfirmation = (
                                 </div>
                                 <div className="mt-2 grid grid-cols-2 gap-2">
                                     <div className="text-sm space-y-1">
-                                        <span className="text-xs text-muted-foreground">Original</span>
+                                        <span className="text-xs text-muted-foreground">Original Value</span>
                                         <div className="font-medium">{field.originalValue || 'BLANK'}</div>
                                     </div>
                                     <div className="text-sm space-y-1">
-                                        <span className="text-xs text-muted-foreground">New</span>
+                                        <span className="text-xs text-muted-foreground">Updated Value</span>
                                         <div className="font-medium text-primary">{field.newValue || 'BLANK'}</div>
                                     </div>
                                 </div>

@@ -313,32 +313,26 @@ export const findBestActiveRecord = (state: EntityState<EntityKeys>) => {
     return result;
 }
 
+
+// BIG CHANGE ======= ACTIVE RECORD DOES NOT CLEAR SELECTIONS NOW =================
+
 export const setNewActiveRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
+    // Early return if the record is already active
     if (state.selection.activeRecord === recordKey) {
-        utilsLogger.log('debug', 'Skipping setNewActiveRecord - record already active:', {
-            recordKey
-        });
         return;
     }
 
+    // Update active record tracking
     const oldActiveRecord = state.selection.activeRecord;
     state.selection.lastActiveRecord = oldActiveRecord;
     state.selection.activeRecord = recordKey;
-    utilsLogger.log('debug', 'Set new active record:', {
-        oldActive: oldActiveRecord,
-        newActive: recordKey,
-        newLastActive: state.selection.lastActiveRecord
-    });
 
+    // Add to selections if not already included
     if (!state.selection.selectedRecords.includes(recordKey)) {
-        const oldSelection = [...state.selection.selectedRecords];
-        state.selection.selectedRecords = [recordKey];
-        utilsLogger.log('debug', 'Updated selection for new active record:', {
-            oldSelection,
-            newSelection: state.selection.selectedRecords
-        });
+        state.selection.selectedRecords.push(recordKey);
     }
 }
+
 
 export const updateSelectionMode = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId = null) => {
     utilsLogger.log('debug', 'Updating selection mode. With or without Record Key. Got: ', {recordKey});

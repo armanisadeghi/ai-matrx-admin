@@ -3,22 +3,45 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import BrokerHeader from '../BrokerEditorHeader';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
-import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormRecordSelections';
+import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
+import BrokerCardHeader from './BrokerCardHeader';
+import { useEntitySelectionCrud } from '@/app/entities/hooks/crud/useCrudById';
 
 const BrokerRecordDisplay = <TEntity extends EntityKeys>(unifiedLayoutProps: UnifiedLayoutProps) => {
-    const { selectSelectedRecordsWithKey, handleToggleSelection, setSelectionMode } = useQuickRef('broker');
-
+    const entityName = 'broker';
+    const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
+    const { selectedRecordsOrDefaultsWithKeys, getEffectiveRecordOrDefaults } = useEntitySelectionCrud(entityName);
     const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         setSelectionMode('multiple');
     }, [setSelectionMode]);
 
-    if (!Object.keys(selectSelectedRecordsWithKey).length) {
+    useEffect(() => {
+        const currentRecordIds = Object.keys(selectedRecordsOrDefaultsWithKeys);
+        setOpenStates((prevStates) => {
+            const newStates = { ...prevStates };
+
+            currentRecordIds.forEach((recordId) => {
+                if (!(recordId in prevStates)) {
+                    newStates[recordId] = true;
+                }
+            });
+
+            Object.keys(prevStates).forEach((recordId) => {
+                if (!currentRecordIds.includes(recordId)) {
+                    delete newStates[recordId];
+                }
+            });
+
+            return newStates;
+        });
+    }, [selectedRecordsOrDefaultsWithKeys]);
+
+    if (!Object.keys(selectedRecordsOrDefaultsWithKeys).length) {
         return null;
     }
 
@@ -29,9 +52,8 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>(unifiedLayoutProps: Uni
         }));
     };
 
-    const handleDelete = (recordId: MatrxRecordId) => {
+    const handleRemove = (recordId: MatrxRecordId) => {
         handleToggleSelection(recordId);
-
         setOpenStates((prev) => {
             const newState = { ...prev };
             delete newState[recordId];
@@ -41,7 +63,7 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>(unifiedLayoutProps: Uni
 
     return (
         <div className='w-full space-y-4'>
-            {Object.entries(selectSelectedRecordsWithKey).map(([recordId, record]) => (
+            {Object.keys(selectedRecordsOrDefaultsWithKeys).map((recordId) => (
                 <motion.div
                     key={recordId}
                     initial={{ opacity: 0, y: -10 }}
@@ -50,11 +72,12 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>(unifiedLayoutProps: Uni
                     className='my-4 last:mb-0'
                 >
                     <Card className='bg-elevation2 border border-elevation3 rounded-lg'>
-                        <BrokerHeader
-                            data={record}
+                        <BrokerCardHeader
+                            recordId={recordId}
+                            getRecord={getEffectiveRecordOrDefaults}
                             isOpen={openStates[recordId] || false}
                             onToggle={() => toggleOpen(recordId)}
-                            onDelete={() => handleDelete(recordId)}
+                            onDelete={() => handleRemove(recordId)}
                         />
 
                         <AnimatePresence>

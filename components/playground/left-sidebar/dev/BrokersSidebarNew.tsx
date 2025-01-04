@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useBrokers } from '@/providers/brokers/BrokersProvider';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
-import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
-import BrokerRecordDisplay from '../brokers/EntityBrokerCard';
-import { SmartCrudButtons, SmartNewButton } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
-import SmartRefreshButton from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/core-buttons/SmartRefreshButton';
+import { EntityRecordMap, MatrxRecordId, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
+import BrokerRecordDisplay from '../../brokers/dev/EntityBrokerCardNew';
+import { SmartNewButton } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
+import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
+import { useEntitySelectionCrud } from '@/app/entities/hooks/crud/useCrudById';
 
 const initialLayoutProps = getUnifiedLayoutProps({
     entityKey: 'broker',
@@ -45,9 +46,38 @@ export default function BrokerSidebar({
     onBrokerChange: externalOnBrokerChange,
     initialSelectedBroker,
 }: BrokerSidebarProps) {
+    const entityName = 'broker';
     const [internalSelectedBroker, setInternalSelectedBroker] = React.useState<QuickReferenceRecord | undefined>(initialSelectedBroker);
-
+    const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
     const selectedBroker = externalSelectedBroker ?? internalSelectedBroker;
+
+    const { selectedRecordIds, handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
+
+    useEffect(() => {
+        setSelectionMode('multiple');
+    }, [setSelectionMode]);
+
+    const { getEffectiveRecordOrDefaults } = useEntitySelectionCrud(entityName);
+
+    // New function to get all selected records
+    const getSelectedRecordsWithKeys = () => {
+        return selectedRecordIds.reduce((acc, recordId) => {
+            const record = getEffectiveRecordOrDefaults(recordId);
+            if (record) {
+                acc[recordId] = record;
+            }
+            return acc;
+        }, {} as EntityRecordMap<typeof entityName>);
+    };
+
+    const handleRemove = (recordId: MatrxRecordId) => {
+        handleToggleSelection(recordId);
+        setOpenStates((prev) => {
+            const newState = { ...prev };
+            delete newState[recordId];
+            return newState;
+        });
+    };
 
     const handleBrokerChange = (brokerQuickRef: QuickReferenceRecord) => {
         if (externalOnBrokerChange) {
@@ -61,16 +91,14 @@ export default function BrokerSidebar({
 
     return (
         <div className='flex flex-col h-full py-3'>
-            <SmartCrudButtons
-             entityKey='broker'
-             options={{allowCreate: true, allowEdit: false, allowDelete: false, allowRefresh: true, allowCancel: true, allowSave: false}}
-             layout={{buttonLayout: 'row', buttonSize: 'icon', buttonsPosition: 'top', buttonSpacing: 'normal'}}
-             />
+            <SmartNewButton entityKey='broker' />
             <ScrollArea className='flex-1'>
                 <AnimatePresence>
                     <BrokerRecordDisplay
-                        {...layoutProps}
-                        entitiesToHide={[]}
+                        unifiedLayoutProps={layoutProps}
+                        entityName={entityName}
+                        selectedRecordsWithKeys={getSelectedRecordsWithKeys()}
+                        onRecordRemove={handleRemove}
                     />
                 </AnimatePresence>
             </ScrollArea>

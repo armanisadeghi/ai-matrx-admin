@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext } from 'react';
 import { useBrokersStore } from './useBrokersStore';
-import { Broker, BrokerDataType, DataTypeToValueType } from './types';
+import { Broker } from './types';
+import { BrokerDataType, DataTypeToValueType } from '../brokerSync/types';
 
 export type { Broker };
 

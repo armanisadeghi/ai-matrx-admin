@@ -5,6 +5,7 @@ import { useBrokers } from "@/providers/brokers/BrokersProvider";
 import { TbVariablePlus } from "react-icons/tb";
 import IconButton from "@/components/matrx/IconButton";
 import QuickRefCommandIcon from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefCommandIcon";
+import QuickRefMultiSelect from "@/app/entities/quick-reference/QuickRefMultiSelect";
 
 interface PlaygroundHeaderLeftProps {
   initialSettings?: {
@@ -32,8 +33,15 @@ const PlaygroundHeaderLeft = ({
     createBroker();
   };
 
+  const handleRecordsChange = (records: QuickReferenceRecord[]) => {
+    records.forEach((record) => {
+      console.log("Placeholder for creating or adding broker got record:", record)
+      createBroker();
+    });
+  }
+
   return (
-    <div className="flex items-center pl-4 space-x-1">
+    <div className="flex w-full items-center pl-4 space-x-1">
       <PanelToggle
         size={24}
         side="left"
@@ -55,6 +63,11 @@ const PlaygroundHeaderLeft = ({
         title="Add Item"
         size={22}
         disabled={false}
+      />
+      <QuickRefMultiSelect
+        entityKey={"broker"}
+        onRecordsChange={handleRecordsChange}
+        fetchMode="fkIfk"
       />
     </div>
   );

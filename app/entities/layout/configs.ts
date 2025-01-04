@@ -3,6 +3,7 @@ import {
     DynamicLayoutOptions,
     DynamicStyleOptions,
     FormComponentOptions,
+    FormFieldFiltering,
     FormStyleOptions, InlineEntityOptions,
     ResizableThreePaneLayoutProps, SelectComponentProps, UnifiedCrudHandlers, UnifiedLayoutHandlers, UnifiedLayoutProps
 } from "@/components/matrx/Entity/prewired-components/layouts/types";
@@ -159,6 +160,8 @@ export function getUpdatedUnifiedLayoutProps(
         isExpanded?: boolean;
         handlers?: UnifiedLayoutHandlers;
         entitiesToHide?: EntityKeys[];
+        fieldFiltering?: FormFieldFiltering;
+        density?: ComponentDensity;
         [key: string]: any;
     }
 ): UnifiedLayoutProps {
@@ -169,6 +172,8 @@ export function getUpdatedUnifiedLayoutProps(
         isExpanded = existingProps.layoutState.isExpanded,
         handlers = existingProps.handlers,
         entitiesToHide = existingProps.entitiesToHide,
+        fieldFiltering = existingProps.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
+        density = existingProps.dynamicStyleOptions?.density,
         ...otherOverrides
     } = overrides || {};
 
@@ -186,6 +191,7 @@ export function getUpdatedUnifiedLayoutProps(
             fieldFiltering: {
                 ...existingProps.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
                 ...otherOverrides?.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
+                ...fieldFiltering, // Use fieldFiltering directly here
             }
         },
         inlineEntityOptions: {

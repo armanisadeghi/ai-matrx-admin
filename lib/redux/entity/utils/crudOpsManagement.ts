@@ -5,10 +5,7 @@ import {
     addToUnsavedRecords,
     clearUnsavedRecords,
     generateTemporaryRecordId,
-    removeSelections,
     setNewActiveRecord,
-    switchToSingleSelectionMode,
-    switchToNoSelectionMode
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 
 export type ModeTransitionResult = {
@@ -72,9 +69,10 @@ export class EntityModeManager {
 
         if (activeRecord?.toString().startsWith('new-record-') && lastActiveRecord) {
             setNewActiveRecord(state, lastActiveRecord);
-            switchToSingleSelectionMode(state, lastActiveRecord);
+            // switchToSingleSelectionMode(state, lastActiveRecord);
         } else {
-            switchToNoSelectionMode(state);
+            // switchToNoSelectionMode(state);
+            console.log("eliminated selection mode change")
         }
 
         state.flags.operationMode = null;
@@ -134,7 +132,7 @@ export class EntityModeManager {
         setNewActiveRecord(state, tempId);
 
         // Then ensure we're in single selection mode with only this record
-        switchToSingleSelectionMode(state, tempId);
+        // switchToSingleSelectionMode(state, tempId);
 
         // Initialize the unsaved record
         state.unsavedRecords[tempId] = {};
@@ -157,7 +155,7 @@ export class EntityModeManager {
             addToUnsavedRecords(state, recordKey);
 
             // Ensure we're in single selection mode for the update
-            switchToSingleSelectionMode(state, recordKey);
+            // switchToSingleSelectionMode(state, recordKey);
         }
 
         state.flags.operationMode = 'update';

@@ -14,13 +14,13 @@ import { useFieldValue } from './field-hooks';
 export interface EntityBaseFieldFinalProps {
     entityKey: EntityKeys;
     fieldName: string;
-    recordId?: MatrxRecordId;
+    recordId: MatrxRecordId;
     unifiedLayoutProps?: UnifiedLayoutProps;
     className?: string;
 }
 
-const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId = null, unifiedLayoutProps, className }: EntityBaseFieldFinalProps) => {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutProps, className }: EntityBaseFieldFinalProps) => {
+    const { store, actions, selectors, dispatch } = useEntityTools(entityKey);
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
 
@@ -31,7 +31,7 @@ const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId = null, unifiedLa
             unifiedLayoutProps={unifiedLayoutProps}
         >
             {({ Component, fieldMetadata, styleConfig }) => {
-                const [currentValue, setCurrentValue] = useFieldValue(selectors, recordId, fieldName, fieldMetadata, operationMode);
+                const [currentValue, setCurrentValue] = useFieldValue(selectors, recordId, fieldName, fieldMetadata);
 
                 const onChange = useCallback(
                     (newValue: unknown) => {

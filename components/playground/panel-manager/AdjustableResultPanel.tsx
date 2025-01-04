@@ -24,7 +24,7 @@ export function AdjustableResultPanel({
 }: AdjustableResultPanelProps) {
   const panelRef = useRef<ImperativePanelHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [previousSize, setPreviousSize] = useState(10);
+  const [previousSize, setPreviousSize] = useState(50);
 
   const toggleCollapse = () => {
     if (isCollapsed) {

@@ -77,29 +77,31 @@ export const SmartCreateConfirmation = (
             confirmText="Create"
             intent="default"
         >
-            <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
+            <div>
+                {/* Table Header */}
+                <div className="grid grid-cols-3 gap-4 mb-4 px-4 py-2 bg-muted/50 rounded-md">
+                    <div className="text-sm font-medium text-muted-foreground">Field</div>
+                    <div className="text-sm font-medium text-muted-foreground">Value</div>
+                    <div className="text-sm font-medium text-muted-foreground text-right">Status</div>
+                </div>
+
+                {/* Table Content */}
+                <div className="space-y-2">
                     {comparison.fieldInfo.map(field => (
                         <div
                             key={field.name}
-                            className={cn(
-                                "rounded-md p-3",
-                                "border border-border/50",
-                                "bg-muted"
-                            )}
+                            className="grid grid-cols-3 gap-4 px-4 py-3 hover:bg-muted/50 rounded-md"
                         >
-                            <div className="flex justify-between items-start">
-                                <label className="text-sm font-medium">
-                                    {field.displayName}
-                                </label>
+                            <div className="text-sm font-medium">
+                                {field.displayName}
+                            </div>
+                            <div className="text-sm text-primary">
+                                {field.newValue ?? 'BLANK'}
+                            </div>
+                            <div className="text-right">
                                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                                     New
                                 </span>
-                            </div>
-                            <div className="mt-1">
-                                <div className="text-sm font-medium">
-                                    {field.newValue ?? 'BLANK'}
-                                </div>
                             </div>
                         </div>
                     ))}

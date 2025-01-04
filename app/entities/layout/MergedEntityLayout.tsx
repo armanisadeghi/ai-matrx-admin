@@ -73,6 +73,7 @@ const RightColumn: React.FC<{
         </div>
     ) : null;
 }
+
 const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
     const { layoutState } = props;
 

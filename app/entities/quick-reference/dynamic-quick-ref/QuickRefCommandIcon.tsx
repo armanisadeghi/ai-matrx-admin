@@ -2,10 +2,8 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
-import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';
 import { FetchMode } from '@/lib/redux/entity/actions';
 import { EntityKeys } from '@/types';
-import { selectEntityPrettyName, selectEntitySelectText, useAppSelector } from '@/lib/redux';
 import CommandIconButton from '@/components/matrx/CommandIconButton';
 import { useQuickRef } from '../../hooks/useQuickRef';
 
@@ -37,11 +35,10 @@ export const QuickRefCommandIcon: React.FC<QuickRefCommandIconProps> = ({
     disabled,
     ariaLabel,
 }) => {
-    const entityPrettyName = useAppSelector((state) => selectEntityPrettyName(state, entityKey));
 
     useFetchQuickRef(entityKey);
 
-    const { handleAddToSelection, quickReferenceRecords, setFetchMode, setSelectionMode } = useQuickRef(entityKey);
+    const { handleAddToSelection, quickReferenceRecords, setFetchMode, setSelectionMode, entityDisplayName } = useQuickRef(entityKey);
 
     React.useEffect(() => {
       setSelectionMode('multiple');
@@ -81,7 +78,7 @@ export const QuickRefCommandIcon: React.FC<QuickRefCommandIconProps> = ({
             className={className}
             disabled={disabled}
             ariaLabel={ariaLabel}
-            searchPlaceholder={`Search ${entityPrettyName?.toLowerCase()}...`}
+            searchPlaceholder={`Search ${entityDisplayName?.toLowerCase()}...`}
         />
     );
 };

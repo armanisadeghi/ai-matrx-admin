@@ -63,7 +63,7 @@ export const SmartDeleteConfirmation = (
                     Are you sure you want to delete this record? This action cannot be undone.
                 </div>
 
-                <div className="rounded-md border p-4 bg-muted/50">
+                <div className="rounded-md border p-1 bg-muted/50">
                     <div className="text-sm font-medium mb-2">Record Details:</div>
                     <div className="grid grid-cols-1 gap-2">
                         {comparison.fieldInfo.map(field => (

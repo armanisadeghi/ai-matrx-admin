@@ -64,6 +64,11 @@ const config: Config = {
                 checkerboard: 'var(--checkerboard)',
                 'matrx-card-background': 'var(--matrx-card-background)'
             },
+            containerQueries: {
+                sm: '30rem',
+                md: '45rem',
+                lg: '64rem',
+            },
             transitionTimingFunction: {
                 bounce: 'var(--animated-menu-bounce)',
                 smooth: 'var(--animated-menu-smooth)'

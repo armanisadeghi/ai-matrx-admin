@@ -3,26 +3,34 @@
 import React, { useMemo } from 'react';
 import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 import { getFormStyle } from './formUtils';
 import FieldSelectionControls from './form-helpers/FieldSelectionControls';
-import { EntityKeys } from '@/types/entityTypes';
+import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
 import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
+import { ComponentDensity } from '@/types';
 
-const EntityFormStandard = <TEntity extends EntityKeys>(unifiedLayoutProps: UnifiedLayoutProps) => {
+interface EntityFormMinimalAnyRecordProps {
+    recordId: MatrxRecordId;
+    unifiedLayoutProps: UnifiedLayoutProps;
+}
+
+const LOCAL_OVERRIDES = {
+    density: 'compact' as ComponentDensity,
+};
+
+const EntityFormAnyRecordWithRelated = <TEntity extends EntityKeys>({ recordId, unifiedLayoutProps }: EntityFormMinimalAnyRecordProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity as TEntity | null;
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
     const showRelatedFields = true;
     const density = useMemo(() => unifiedLayoutProps.dynamicStyleOptions?.density || 'normal', [unifiedLayoutProps.dynamicStyleOptions]);
     const fieldVisibility = useFieldVisibility(entityKey, unifiedLayoutProps, showRelatedFields);
     const { visibleNativeFields, visibleRelationshipFields } = fieldVisibility;
-
-    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer<TEntity>(entityKey, activeRecordId, unifiedLayoutProps);
+    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer<TEntity>(entityKey, recordId, unifiedLayoutProps);
 
     return (
-        <div className={getFormStyle('form', density)}>
+        <div
+            className={getFormStyle('form', density)}
+        >
             <div className={getFormStyle('header', density)}>
                 <SmartCrudButtons
                     entityKey={entityKey}
@@ -55,4 +63,4 @@ const EntityFormStandard = <TEntity extends EntityKeys>(unifiedLayoutProps: Unif
     );
 };
 
-export default EntityFormStandard;
+export default EntityFormAnyRecordWithRelated;

@@ -212,6 +212,9 @@ importers:
       '@tabler/icons-react':
         specifier: latest
         version: 3.24.0(react@19.0.0)
+      '@tailwindcss/container-queries':
+        specifier: ^0.1.1
+        version: 0.1.1(tailwindcss@3.4.16(ts-node@10.9.2(@types/node@22.10.2)(typescript@5.7.2)))
       '@talkjs/react':
         specifier: ^0.1.11
         version: 0.1.11(react@19.0.0)(talkjs@0.31.0)
@@ -3907,6 +3910,11 @@ packages:
 
   '@tabler/icons@3.24.0':
     resolution: {integrity: sha512-qNis9e90QcdxAGV3wNIeX0Ba2R7ktm0cnqOToKHJfC2kj3fvJwEVLsw63K0/fm7NW8rSZjDSTQRmMnSg8g/wrg==}
+
+  '@tailwindcss/container-queries@0.1.1':
+    resolution: {integrity: sha512-p18dswChx6WnTSaJCSGx6lTmrGzNNvm2FtXmiO6AuA1V4U5REyoqwmT6kgAsIMdjo07QdAfYXHJ4hnMtfHzWgA==}
+    peerDependencies:
+      tailwindcss: '>=3.2.0'
 
   '@talkjs/react@0.1.11':
     resolution: {integrity: sha512-ZJ6vL7Qz5DfPiLZZeISLDXDCpYCdsDQXxR9t8ohNuQ0m1gWqjvaYA8btBZoUYI1dADtgegyVzlu4jZkXkNP1Vg==}
@@ -14323,6 +14331,10 @@ snapshots:
       react: 19.0.0
 
   '@tabler/icons@3.24.0': {}
+
+  '@tailwindcss/container-queries@0.1.1(tailwindcss@3.4.16(ts-node@10.9.2(@types/node@22.10.2)(typescript@5.7.2)))':
+    dependencies:
+      tailwindcss: 3.4.16(ts-node@10.9.2(@types/node@22.10.2)(typescript@5.7.2))
 
   '@talkjs/react@0.1.11(react@19.0.0)(talkjs@0.31.0)':
     dependencies:

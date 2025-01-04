@@ -80,6 +80,7 @@
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@tabler/icons-react": "latest",
+    "@tailwindcss/container-queries": "^0.1.1",
     "@talkjs/react": "^0.1.11",
     "@tanstack/react-table": "latest",
     "@tanstack/react-virtual": "^3.11.1",

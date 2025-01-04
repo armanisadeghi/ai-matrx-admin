@@ -12,7 +12,7 @@ import {
 import { FloatingLabelInput } from "@/components/matrx/input";
 import FloatingLabelTextArea from "@/components/matrx/input/FloatingLabelTextArea";
 
-import BrokerHeader from "./BrokerEditorHeader";
+import BrokerHeader from "../BrokerCardHeader";
 import SelectWithIconDisplay from "@/components/matrx/SelectWithIconDisplay";
 
 // Convert the existing types to match SelectWithIconDisplay format

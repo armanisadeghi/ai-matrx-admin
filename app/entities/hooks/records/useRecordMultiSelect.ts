@@ -1,38 +1,26 @@
 import * as React from 'react';
 import { EntityKeys } from '@/types/entityTypes';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { createEntitySelectors } from '@/lib/redux/entity/selectors';
-import { SelectionMode, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
-import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { FetchMode, GetOrFetchSelectedRecordsPayload } from '@/lib/redux/entity/actions';
+import { useEntityTools } from '@/lib/redux';
 
 export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEntity) => {
-    const [fetchMode, setFetchMode] = React.useState(<FetchMode>'native');
-
-    const dispatch = useAppDispatch();
-    const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const { actions } = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
-
+    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const [fetchMode, setFetchMode] = React.useState(<FetchMode>'fkIfk');
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
     const selectSelectedRecordsWithKey = useAppSelector(selectors.selectSelectedRecordsWithKey);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
     const activeRecord = useAppSelector(selectors.selectActiveRecord);
-
-
-    const setSelectionMode = React.useCallback(
-        (mode: SelectionMode) => {
-            dispatch(actions.setSelectionMode(mode));
-        },
-        [dispatch, actions]
-    );
-
-    const summary = useAppSelector(selectors.selectSelectionSummary);
     const loadingState = useAppSelector(selectors.selectLoadingState);
     const loading = loadingState.loading;
 
-    const isSelected = React.useCallback((recordKey: MatrxRecordId) => selectedRecordIds.includes(recordKey), [selectedRecordIds]);
+    React.useEffect(() => {
+        dispatch(actions.setSelectionMode('multiple'));
+    }, [dispatch, actions]);
 
+    const isSelected = React.useCallback((recordKey: MatrxRecordId) => selectedRecordIds.includes(recordKey), [selectedRecordIds]);
     const isActive = React.useCallback((recordKey: MatrxRecordId) => activeRecordId === recordKey, [activeRecordId]);
 
     const handleAddToSelection = React.useCallback(
@@ -64,14 +52,11 @@ export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEnt
         ) {
             return;
         }
-
         const payload: GetOrFetchSelectedRecordsPayload = {
             matrxRecordIds: selectedRecordIds,
             fetchMode,
         };
-
         setLastProcessedIds(selectedRecordIds);
-
         const timeoutId = setTimeout(() => {
             dispatch(actions.getOrFetchSelectedRecords(payload));
         }, 0);
@@ -81,6 +66,13 @@ export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEnt
 
     const areArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) => a.length === b.length && a.every((val, idx) => val === b[idx]);
 
+    const updateField = React.useCallback(
+        (recordId: MatrxRecordId, field: string, value: any) => {
+            dispatch(actions.updateUnsavedField({ recordId, field, value }));
+        },
+        [dispatch, actions]
+    );
+
     return {
         // State
         selectedRecordIds,
@@ -88,7 +80,6 @@ export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEnt
         activeRecordId,
         selectSelectedRecordsWithKey,
         activeRecord,
-        summary,
 
         // Core Operations
         handleAddToSelection,
@@ -97,9 +88,6 @@ export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEnt
         // Checks
         isSelected,
         isActive,
-
-        // Mode Management
-        setSelectionMode,
 
         // Additional Operations
         clearSelection,

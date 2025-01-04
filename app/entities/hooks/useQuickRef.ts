@@ -13,7 +13,7 @@ const useHasOnlyNewRecords = (selectedRecordIds: MatrxRecordId[]) => {
 };
 
 export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const { store, actions, selectors, dispatch } = useEntityTools(entityKey);
     const [fetchMode, setFetchMode] = React.useState<FetchMode>('native');
     const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);

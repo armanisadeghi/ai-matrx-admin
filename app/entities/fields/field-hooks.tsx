@@ -1,35 +1,31 @@
 'use client';
 
-import {useEffect, useState} from 'react';
-import {createEntitySelectors} from "@/lib/redux";
-import {useAppSelector} from "@/lib/redux";
-import {EntityStateField, EntityOperationMode, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
+import { useState, useEffect } from 'react';
+import { createEntitySelectors } from "@/lib/redux";
+import { useAppSelector } from "@/lib/redux";
+import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 
 export const useFieldValue = (
     selectors: ReturnType<typeof createEntitySelectors>,
     recordId: MatrxRecordId | null,
     fieldName: string,
-    fieldMetadata: EntityStateField,
-    operationMode: EntityOperationMode | undefined
+    fieldMetadata: EntityStateField
 ) => {
-    const databaseValue = useAppSelector(
-        state => recordId ? selectors.selectFieldValue(state, recordId, fieldName) : undefined
+    const fieldValue = useAppSelector(
+        state => recordId 
+            ? selectors.selectEffectiveFieldValue(state, recordId, fieldName) 
+            : fieldMetadata?.defaultValue ?? ''
     );
 
-    const [currentValue, setCurrentValue] = useState<unknown>(() => {
-        if (operationMode === 'create') {
-            return fieldMetadata?.defaultValue ?? '';
-        }
-        return databaseValue ?? fieldMetadata?.defaultValue ?? '';
-    });
+    const [currentValue, setCurrentValue] = useState<unknown>(
+        fieldValue ?? fieldMetadata?.defaultValue ?? ''
+    );
 
     useEffect(() => {
-        if (operationMode === 'create') {
-            setCurrentValue(fieldMetadata?.defaultValue ?? '');
-        } else if (databaseValue !== undefined) {
-            setCurrentValue(databaseValue);
+        if (fieldValue !== undefined) {
+            setCurrentValue(fieldValue);
         }
-    }, [databaseValue, fieldMetadata?.defaultValue, operationMode]);
+    }, [fieldValue]);
 
     return [currentValue, setCurrentValue] as const;
 };

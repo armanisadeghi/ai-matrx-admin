@@ -1,10 +1,10 @@
 // app/entities/forms/index.ts
 
 import EntityFormMinimal from './dev/EntityFormMinimal';
-import { EntityFormRecordSelections } from './EntityFormRecordSelections';
 import EntityFormStandard from './EntityFormStandard';
 import EntityMultiSelectForms from './dev/EntityMultiSelectForms';
 import ArmaniFormFinal from './dev/ArmaniFormFinal';
+import EntityFormRecordSelections from './EntityFormRecordSelections';
 
 export const ENTITY_FORM_COMPONENTS = {
     DEFAULT: EntityFormStandard,

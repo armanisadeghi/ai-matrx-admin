@@ -3,10 +3,11 @@
 import React from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {ComponentSize} from "@/types/componentConfigTypes";
-import { EntityKeys } from "@/types/entityTypes";
+import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 
 export interface SmartButtonProps {
     entityKey?: EntityKeys;
+    recordId?: MatrxRecordId;
     children?: React.ReactNode;
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     disabled?: boolean;

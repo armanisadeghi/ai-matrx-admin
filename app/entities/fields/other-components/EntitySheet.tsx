@@ -5,6 +5,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"
 import {Cross2Icon} from "@radix-ui/react-icons"
 import {cva, type VariantProps} from "class-variance-authority"
 import {cn} from "@/lib/utils"
+import { ScrollArea } from "@/components/ui"
 
 
 // Enhanced variant definitions
@@ -71,21 +72,18 @@ interface EntitySheetProps extends SheetPrimitive.DialogProps {
     children: React.ReactNode
 }
 
-export function EntitySheet(
-    {
-        position = "right",
-        size = "md",
-        showClose = true,
-        trigger,
-        title,
-        description,
-        footer,
-        className,
-        children,
-        ...props
-    }: EntitySheetProps) {
-
-
+export function EntitySheet({
+    position = "right",
+    size = "md",
+    showClose = true,
+    trigger,
+    title,
+    description,
+    footer,
+    className,
+    children,
+    ...props
+}: EntitySheetProps) {
     return (
         <SheetPrimitive.Root {...props}>
             {trigger && <SheetPrimitive.Trigger asChild>{trigger}</SheetPrimitive.Trigger>}
@@ -103,28 +101,32 @@ export function EntitySheet(
                         </SheetPrimitive.Close>
                     )}
 
-                    {(title || description) && (
-                        <div className="mb-4">
-                            {title && (
-                                <SheetPrimitive.Title className="text-lg font-semibold">
-                                    {title}
-                                </SheetPrimitive.Title>
-                            )}
-                            {description && (
-                                <SheetPrimitive.Description className="text-sm text-muted-foreground">
-                                    {description}
-                                </SheetPrimitive.Description>
-                            )}
-                        </div>
-                    )}
+                    <div className="flex h-full flex-col">
+                        {(title || description) && (
+                            <div className="mb-4 flex-none">
+                                {title && (
+                                    <SheetPrimitive.Title className="text-lg font-semibold">
+                                        {title}
+                                    </SheetPrimitive.Title>
+                                )}
+                                {description && (
+                                    <SheetPrimitive.Description className="text-sm text-muted-foreground">
+                                        {description}
+                                    </SheetPrimitive.Description>
+                                )}
+                            </div>
+                        )}
 
-                    <div className="relative flex-1 overflow-y-auto">{children}</div>
+                        <ScrollArea className="flex-1">
+                            <div className="h-full">{children}</div>
+                        </ScrollArea>
 
-                    {footer && (
-                        <div className="mt-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                            {footer}
-                        </div>
-                    )}
+                        {footer && (
+                            <div className="mt-4 flex-none flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                                {footer}
+                            </div>
+                        )}
+                    </div>
                 </SheetPrimitive.Content>
             </SheetPrimitive.Portal>
         </SheetPrimitive.Root>

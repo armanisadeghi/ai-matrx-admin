@@ -4,7 +4,7 @@ import React from "react";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import QuickRefMultiSelect from "../../quick-reference/QuickRefMultiSelect";
-import { EntityFormRecordSelections } from "../EntityFormRecordSelections";
+import { EntityFormRecordSelections } from "../EntityFormMinimalAnyRecord";
 import { ScrollArea } from "@/components/ui";
 
 interface EntityMultiSelectFormsProps extends UnifiedLayoutProps {

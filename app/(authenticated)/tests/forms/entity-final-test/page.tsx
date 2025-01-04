@@ -8,7 +8,7 @@ export default function EntityManagementPage() {
   const entityKey = "broker";
   const layoutProps = getUnifiedLayoutProps({
     entityKey: entityKey,
-    formComponent: "ARMANI", // "STANDARD" | "MINIMAL" | "MULTI_SELECT" | ARMANI
+    formComponent: "STANDARD", // "STANDARD" | "MINIMAL" | "MULTI_SELECT" | ARMANI
     quickReferenceType: "LIST",
     density: "normal",
     isExpanded: true,

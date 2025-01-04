@@ -502,6 +502,28 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             }
                         },
 
+                        startRecordUpdateById: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<MatrxRecordId>
+                        ) => {
+                            entityLogger.log('debug', 'startRecordUpdateById');
+                            
+                            // First set the provided record as active
+                            setNewActiveRecord(state, action.payload);
+                            
+                            // Then proceed with the original update logic
+                            if (state.selection.selectedRecords.length > 0) {
+                                const result = modeManager.changeMode(state, 'update');
+                                if (!result.canProceed) {
+                                    state.loading.error = {
+                                        message: result.error || 'Cannot start update',
+                                        code: 400
+                                    };
+                                    return;
+                                }
+                            }
+                        },
+                        
                         updateRecord: (
                             state: EntityState<TEntity>,
                             action: PayloadAction<UpdateRecordPayload>

@@ -623,6 +623,15 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectEffectiveFieldValue = createSelector(
+        [
+            (state: RootState, recordKey: MatrxRecordId, _fieldName: string) => 
+                selectEffectiveRecordOrDefaults(state, recordKey),
+            (_: RootState, _recordKey: MatrxRecordId, fieldName: string) => fieldName,
+        ],
+        (effectiveRecord, fieldName) => effectiveRecord[fieldName]
+    );
+
     const selectFieldMetadata = createSelector([selectFieldInfo, (_: RootState, fieldName: string) => fieldName], (fields, fieldName) =>
         fields.find((f) => f.name === fieldName)
     );
@@ -833,6 +842,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectChangeComparison,
         selectPendingOperations,
         selectEffectiveRecordOrDefaults,
+        selectEffectiveFieldValue,
 
         selectFieldValueByRecordKey,
 

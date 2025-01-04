@@ -26,7 +26,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
             >
                 <EnhancedEntityAnalyzer
                     defaultExpanded={false}
-                    selectedEntityKey="recipe"
+                    selectedEntityKey="broker"
                 />
             </MatrxDynamicPanel>
 

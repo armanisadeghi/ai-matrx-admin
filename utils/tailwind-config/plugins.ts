@@ -23,6 +23,7 @@ export const plugins = [
     require('tailwind-scrollbar'),
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-3d'),
+    require('@tailwindcss/container-queries'),
     nextui({
         prefix: "next-",
         addCommonColors: false,

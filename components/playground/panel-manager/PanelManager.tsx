@@ -41,7 +41,7 @@ export function PanelManager({ role }: PanelManagerProps) {
   };
 
   return (
-    <Panel defaultSize={60}>
+    <Panel defaultSize={55}>
       <PanelGroup direction="vertical" className="h-full">
         {sections.map((section, index) => (
           <AdjustableEditorPanel
@@ -54,7 +54,7 @@ export function PanelManager({ role }: PanelManagerProps) {
         ))}
 
         {/* Bottom flexible panel */}
-        <Panel defaultSize={80} minSize={10} maxSize={100} order={999}>
+        <Panel defaultSize={85} minSize={10} maxSize={100} order={999}>
           <Card className="h-full p-1 overflow-hidden bg-background">
             <MatrxEditor 
               editorId="main-editor"

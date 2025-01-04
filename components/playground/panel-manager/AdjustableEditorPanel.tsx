@@ -26,7 +26,7 @@ export function AdjustableEditorPanel({
 }: AdjustableEditorPanelProps) {
   const panelRef = useRef<ImperativePanelHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [previousSize, setPreviousSize] = useState(10);
+  const [previousSize, setPreviousSize] = useState(15);
 
   const toggleCollapse = () => {
     if (isCollapsed) {

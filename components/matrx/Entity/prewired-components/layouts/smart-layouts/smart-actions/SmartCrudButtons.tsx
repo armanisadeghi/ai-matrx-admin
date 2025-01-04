@@ -10,6 +10,7 @@ interface SmartCrudButtonsProps extends Omit<SmartCrudWrapperProps, 'children'> 
 export const SmartCrudButtons = (
     {
         entityKey,
+        recordId,
         options,
         layout,
         className,
@@ -19,6 +20,7 @@ export const SmartCrudButtons = (
         <div className={cn("min-w-0 w-full", containerClassName)}>
             <SmartCrudWrapper
                 entityKey={entityKey}
+                recordId={recordId}
                 options={options}
                 layout={layout}
                 className={className}

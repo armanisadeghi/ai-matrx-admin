@@ -5,13 +5,35 @@ import { Button } from "@/components/ui";
 import { X, MessageCircleQuestion, Blocks, CheckCircle2, XCircle, ChevronUp, ChevronDown } from "lucide-react";
 import { getComponentIcon, getSourceIcon } from "@/app/(authenticated)/tests/recipe-creation/brokers-two/constants";
 import { cn } from "@/utils";
+import { MatrxRecordId } from "@/types";
 
-const BrokerHeader = ({ 
-  data, 
+// Define the structure of a broker record
+interface BrokerRecord {
+  componentType?: string;
+  displayName?: string;
+  officialName?: string;  // Keep the typo if it's intended
+  defaultSource?: string;
+  isConnected?: boolean;
+}
+
+// Define the component props
+interface BrokerCardHeaderProps {
+  recordId: MatrxRecordId;
+  getRecord: (recordId: MatrxRecordId) => BrokerRecord;
+  isOpen: boolean;
+  onToggle: () => void;
+  onDelete: () => void;
+}
+
+const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ 
+  recordId,
+  getRecord, 
   isOpen, 
   onToggle, 
   onDelete 
 }) => {
+  const data = getRecord(recordId);
+
   return (
     <div
       className="flex items-center gap-2 p-2 cursor-pointer hover:bg-elevation3/50 transition-colors"
@@ -21,7 +43,7 @@ const BrokerHeader = ({
         variant="ghost"
         size="icon"
         className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive shrink-0"
-        onClick={(e) => {
+        onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onDelete();
         }}
@@ -38,7 +60,7 @@ const BrokerHeader = ({
           )}
         </div>
         <span className="font-medium text-sm truncate">
-          {data.displayName || "Unnamed Broker"}
+          {data.displayName || data.officialName || "Unnamed Broker"}
         </span>
       </div>
 
@@ -80,4 +102,4 @@ const BrokerHeader = ({
   );
 };
 
-export default BrokerHeader;
+export default BrokerCardHeader;
