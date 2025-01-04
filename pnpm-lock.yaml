@@ -323,6 +323,9 @@ importers:
       idb:
         specifier: ^8.0.0
         version: 8.0.0
+      json5:
+        specifier: ^2.2.3
+        version: 2.2.3
       jsonlint-mod:
         specifier: latest
         version: 1.7.6

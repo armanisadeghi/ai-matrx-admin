@@ -5,9 +5,10 @@ import React from "react";
 import { getUnifiedLayoutProps } from "@/app/entities/layout/configs";
 
 export default function EntityManagementPage() {
+  const entityKey = "broker";
   const layoutProps = getUnifiedLayoutProps({
-    entityKey: "broker",
-    defaultFormComponent: "ArmaniFormSmart",
+    entityKey: entityKey,
+    formComponent: "ARMANI", // "STANDARD" | "MINIMAL" | "MULTI_SELECT" | ARMANI
     quickReferenceType: "LIST",
     density: "normal",
     isExpanded: true,

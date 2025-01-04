@@ -11,7 +11,7 @@ import {
 import { useFieldStyles } from "./add-ons/useFieldStyles";
 import FieldActionButtons from "./add-ons/FieldActionButtons";
 
-type EntityInputProps = FieldComponentProps<string>;
+export type EntityInputProps = FieldComponentProps<string>;
 
 const EntityInput = React.forwardRef<HTMLInputElement, EntityInputProps>(
   (

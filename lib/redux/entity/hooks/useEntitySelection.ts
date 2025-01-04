@@ -11,6 +11,7 @@ export interface UseEntitySelectionReturn<TEntity extends EntityKeys> {
     // Current Selection State
     selectedRecordIds: MatrxRecordId[];
     selectedRecords: EntityData<TEntity>[];
+    selectSelectedRecordsWithKey: Record<string, EntityData<TEntity>>;
     activeRecordId: MatrxRecordId | null;
     activeRecord: EntityData<TEntity> | null;
     selectionMode: SelectionMode;
@@ -59,6 +60,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
 
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
+    const selectSelectedRecordsWithKey = useAppSelector(selectors.selectSelectedRecordsWithKey);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
     const activeRecord = useAppSelector(selectors.selectActiveRecord);
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
@@ -160,6 +162,7 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
         selectedRecordIds,
         selectedRecords,
         activeRecordId,
+        selectSelectedRecordsWithKey,
         activeRecord,
         selectionMode,
         summary,

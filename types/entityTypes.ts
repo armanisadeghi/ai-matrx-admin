@@ -6,6 +6,8 @@ import {DataStructure, FetchStrategy, FieldDataOptionsType} from "@/types/Automa
 export type TypeBrand<T> = { _typeBrand: T };
 export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 
+export type MatrxRecordId = string;
+
 
 /**
  * The complete automation schema containing all applets and their configurations

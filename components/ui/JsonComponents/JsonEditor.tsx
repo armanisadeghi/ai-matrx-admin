@@ -91,7 +91,7 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = ({
   useEffect(() => {
     const initializeData = () => {
       // Check if data is valid or set to empty object
-      if (data === null || data === undefined) {
+      if (data === null || data === undefined || data === "") {
         setParsedData({});
         setBasicJsonText("");
         return;
@@ -101,7 +101,7 @@ export const EditableJsonViewer: React.FC<EditableJsonViewerProps> = ({
         console.log("Data is string:", data);
         setBasicJsonText(data);
         try {
-          const parsed = stabilizeData(data);
+          const parsed = JSON.parse(data);
           setParsedData(parsed);
           debouncedValidate(data);
         } catch (error) {

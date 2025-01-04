@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import {useAppSelector} from "@/lib/redux/hooks";
 import {RootState} from "@/lib/redux/store";
 import {cn} from '@/lib/utils';
@@ -8,9 +8,9 @@ import {ScrollArea} from '@/components/ui';
 import {EntitySelection, UnifiedLayoutProps} from "@/components/matrx/Entity";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {useWindowSize} from "@uidotdev/usehooks";
-import ArmaniFormFinal from '@/app/entities/forms/ArmaniFormFinal';
 import DynamicQuickReference from '@/app/entities/quick-reference/dynamic-quick-ref/DynamicQuickReference';
 import {EntityKeys} from '@/types/entityTypes';
+import { getEntityFormComponent } from '../forms';
 
 
 const LeftColumn: React.FC<{
@@ -43,13 +43,19 @@ const LeftColumn: React.FC<{
     </div>
 );
 
+
 const RightColumn: React.FC<{
     selectedEntity: EntityKeys | null;
     unifiedLayoutProps: UnifiedLayoutProps;
     availableHeight: number;
     updateKey: number;
-}> = ({selectedEntity, unifiedLayoutProps, availableHeight, updateKey}) => (
-    selectedEntity ? (
+}> = ({selectedEntity, unifiedLayoutProps, availableHeight, updateKey}) => {
+    const FormComponent = useMemo(() => 
+        getEntityFormComponent(unifiedLayoutProps.formComponent), 
+        [unifiedLayoutProps.formComponent]
+    );
+
+    return selectedEntity ? (
         <div
             className="flex-1"
             style={{height: availableHeight}}
@@ -58,16 +64,15 @@ const RightColumn: React.FC<{
                 className="h-full"
             >
                 <div>
-                    <ArmaniFormFinal
+                    <FormComponent
                         key={`form-${selectedEntity}-${updateKey}`}
                         {...unifiedLayoutProps}
                     />
                 </div>
             </ScrollArea>
         </div>
-    ) : null
-);
-
+    ) : null;
+}
 const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
     const { layoutState } = props;
 

@@ -11,6 +11,7 @@ import {
     SmartCrudWrapperProps
 } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
 import {ComponentDensity, QuickReferenceComponentType} from "@/types";
+import { EntityFormType } from "../forms";
 
 export const SMART_CRUD_PROP_DEFAULTS: Partial<SmartCrudWrapperProps> = {
     options: {
@@ -108,7 +109,7 @@ interface EntityRecordHeaderProps {
 
 export function getUnifiedLayoutProps(options?: {
     entityKey?: EntityKeys;
-    defaultFormComponent?: 'default' | 'ArmaniFormSmart';
+    formComponent?: EntityFormType;
     quickReferenceType?: QuickReferenceComponentType | string;
     density?: ComponentDensity;
     isExpanded?: boolean;
@@ -117,7 +118,7 @@ export function getUnifiedLayoutProps(options?: {
 
     const {
         entityKey = 'registeredFunction',
-        defaultFormComponent = 'ArmaniFormSmart',
+        formComponent = 'DEFAULT',
         quickReferenceType = 'CARDS',
         density = 'normal',
         isExpanded = false,
@@ -145,7 +146,7 @@ export function getUnifiedLayoutProps(options?: {
         },
         resizableLayoutOptions: DEFAULT_RESIZABLE_LAYOUT_OPTIONS,
         selectComponentOptions: DEFAULT_SELECT_COMPONENT_OPTIONS,
-        defaultFormComponent: defaultFormComponent,
+        formComponent: formComponent,
     };
 }
 
@@ -153,7 +154,7 @@ export function getUpdatedUnifiedLayoutProps(
     existingProps: UnifiedLayoutProps,
     overrides?: {
         entityKey?: EntityKeys;
-        defaultFormComponent?: 'default' | 'ArmaniFormSmart';
+        formComponent?: EntityFormType;
         quickReferenceType?: QuickReferenceComponentType | string;
         isExpanded?: boolean;
         handlers?: UnifiedLayoutHandlers;
@@ -163,13 +164,35 @@ export function getUpdatedUnifiedLayoutProps(
 ): UnifiedLayoutProps {
     const {
         entityKey = existingProps.layoutState.selectedEntity,
-        defaultFormComponent = existingProps.defaultFormComponent,
-        quickReferenceType = existingProps.dynamicLayoutOptions.componentOptions.quickReferenceType,
+        formComponent = existingProps.formComponent,
+        quickReferenceType = existingProps.dynamicLayoutOptions?.componentOptions?.quickReferenceType,
         isExpanded = existingProps.layoutState.isExpanded,
         handlers = existingProps.handlers,
         entitiesToHide = existingProps.entitiesToHide,
         ...otherOverrides
     } = overrides || {};
+
+    // Deep merge for dynamicLayoutOptions
+    const mergedDynamicLayoutOptions = {
+        ...existingProps.dynamicLayoutOptions,
+        componentOptions: {
+            ...existingProps.dynamicLayoutOptions?.componentOptions,
+            ...otherOverrides?.dynamicLayoutOptions?.componentOptions,
+            quickReferenceType: quickReferenceType as QuickReferenceComponentType,
+        },
+        formStyleOptions: {
+            ...existingProps.dynamicLayoutOptions?.formStyleOptions,
+            ...otherOverrides?.dynamicLayoutOptions?.formStyleOptions,
+            fieldFiltering: {
+                ...existingProps.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
+                ...otherOverrides?.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
+            }
+        },
+        inlineEntityOptions: {
+            ...existingProps.dynamicLayoutOptions?.inlineEntityOptions,
+            ...otherOverrides?.dynamicLayoutOptions?.inlineEntityOptions,
+        },
+    };
 
     return {
         ...existingProps,
@@ -181,33 +204,18 @@ export function getUpdatedUnifiedLayoutProps(
         handlers: handlers,
         dynamicStyleOptions: {
             ...existingProps.dynamicStyleOptions,
-            ...otherOverrides.dynamicStyleOptions,
+            ...otherOverrides?.dynamicStyleOptions,
         },
-        dynamicLayoutOptions: {
-            ...existingProps.dynamicLayoutOptions,
-            componentOptions: {
-                ...existingProps.dynamicLayoutOptions.componentOptions,
-                ...otherOverrides.componentOptions,
-                quickReferenceType: quickReferenceType as QuickReferenceComponentType,
-            },
-            formStyleOptions: {
-                ...existingProps.dynamicLayoutOptions.formStyleOptions,
-                ...otherOverrides.formStyleOptions,
-            },
-            inlineEntityOptions: {
-                ...existingProps.dynamicLayoutOptions.inlineEntityOptions,
-                ...otherOverrides.inlineEntityOptions,
-            },
-        },
+        dynamicLayoutOptions: mergedDynamicLayoutOptions,
         resizableLayoutOptions: {
             ...existingProps.resizableLayoutOptions,
-            ...otherOverrides.resizableLayoutOptions,
+            ...otherOverrides?.resizableLayoutOptions,
         },
         selectComponentOptions: {
             ...existingProps.selectComponentOptions,
-            ...otherOverrides.selectComponentOptions,
+            ...otherOverrides?.selectComponentOptions,
         },
-        defaultFormComponent: defaultFormComponent,
+        formComponent: formComponent,
         entitiesToHide: Array.isArray(existingProps.entitiesToHide)
             ? [...existingProps.entitiesToHide, ...(entitiesToHide || [])]
             : entitiesToHide || [],

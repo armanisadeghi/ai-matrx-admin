@@ -1,7 +1,8 @@
 // lib/redux/entity/hooks/coreHooks.ts
 import {useMemo} from 'react';
 import {EntityKeys} from '@/types/entityTypes';
-import {getEntitySelectors, getEntitySlice, useAppDispatch} from '@/lib/redux';
+import {createEntitySelectors, getEntitySlice, useAppDispatch} from '@/lib/redux';
+
 
 export const useEntityActions = (entityKey: EntityKeys) => {
     const dispatch = useAppDispatch();
@@ -16,7 +17,7 @@ export const useEntityTools = (entityKey: EntityKeys) => {
 
     return useMemo(() => ({
         actions: getEntitySlice(entityKey).actions,
-        selectors: getEntitySelectors(entityKey),
+        selectors: createEntitySelectors(entityKey),
         dispatch
     }), [entityKey]);
 };

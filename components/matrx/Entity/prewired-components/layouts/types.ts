@@ -2,24 +2,50 @@ import {
     AnimationPreset,
     ComponentDensity,
     ComponentSize,
-    FormColumnsOptions, FormDirectionOptions,
-    FormLayoutOptions, InlineEntityColumnsOptions, InlineEntityComponentStyles,
+    FormColumnsOptions,
+    FormDirectionOptions,
+    FormLayoutOptions,
+    InlineEntityColumnsOptions,
+    InlineEntityComponentStyles,
     PageLayoutOptions,
-    QuickReferenceComponentType, TextSizeOptions
-} from "@/types/componentConfigTypes";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import {EntityData, EntityKeys} from "@/types/entityTypes";
-import React from "react";
-import {EntityError, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {
-    SmartCrudWrapperProps
-} from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
-import {QuickRefVariant} from "@/app/entities/quick-reference/dynamic-quick-ref/quick-ref-item";
+    QuickReferenceComponentType,
+    TextSizeOptions,
+} from '@/types/componentConfigTypes';
+import { MatrxVariant } from '@/components/matrx/ArmaniForm/field-components/types';
+import { EntityAnyFieldKey, EntityData, EntityKeys } from '@/types/entityTypes';
+import React from 'react';
+import { EntityError, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
+import { SmartCrudWrapperProps } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper';
+import { QuickRefVariant } from '@/app/entities/quick-reference/dynamic-quick-ref/quick-ref-item';
+import { EntityFormType } from '@/app/entities/forms';
 
-export interface FormFieldFiltering {
-    excludeFields?: string[];    // Fields to hide
-    defaultShownFields?: string[];    // Only show these fields (takes precedence over exclude)
-    allowedFieldsOverride?: string[]; // Allow user to show all fields
+export interface UnifiedLayoutHandlers {
+    setIsExpanded?: (value: boolean) => void;
+    handleEntityChange?: (value: EntityKeys) => void;
+    onCreateEntityClick?: () => void;
+    handleRecordLoad?: (record: EntityData<EntityKeys>) => void;
+    handleError?: (error: EntityError) => void;
+    handleRecordLabelChange?: (label: string) => void;
+}
+
+export interface UnifiedCrudHandlers {
+    handleCreate?: (tempRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
+    handleUpdate?: (options?: { showToast?: boolean }) => void;
+    handleDelete?: (options?: { showToast?: boolean }) => void;
+    handleFieldUpdate?: (fieldName: string, value: any) => void;
+    handleFetchOne?: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
+    handleFetchOneWithFkIfk?: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
+}
+export interface UnifiedStepHandlers {
+    currentStep?: number;
+    setCurrentStep?: (step: number) => void;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
+}
+
+export interface FormFieldFiltering<TEntity extends EntityKeys = EntityKeys> {
+    excludeFields?: EntityAnyFieldKey<TEntity>[];
+    defaultShownFields?: EntityAnyFieldKey<TEntity>[];
 }
 
 export interface FormStyleOptions {
@@ -59,16 +85,6 @@ export interface UnifiedLayoutState {
     selectHeight?: number;
 }
 
-export interface UnifiedLayoutHandlers {
-    setIsExpanded?: (value: boolean) => void;
-    handleEntityChange?: (value: EntityKeys) => void;
-    onCreateEntityClick?: () => void;
-    handleRecordLoad?: (record: EntityData<EntityKeys>) => void;
-    handleError?: (error: EntityError) => void;
-    handleRecordLabelChange?: (label: string) => void;
-}
-
-
 export interface ResizableThreePaneLayoutProps {
     leftColumnWidth?: number; // This will determine both left and right column widths
     topLeftHeight?: number; // This will determine both top and bottom heights
@@ -94,29 +110,12 @@ export interface SelectComponentProps {
     selectContentPosition?: 'default' | 'sideBySide' | 'popper' | 'item-aligned';
 }
 
-export interface UnifiedCrudHandlers {
-    handleCreate?: (tempRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
-    handleUpdate?: (options?: { showToast?: boolean }) => void;
-    handleDelete?: (options?: { showToast?: boolean }) => void;
-    handleFieldUpdate?: (fieldName: string, value: any) => void;
-    handleFetchOne?: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
-    handleFetchOneWithFkIfk?: (matrxRecordId: MatrxRecordId, options?: { showToast?: boolean }) => void;
-}
-export interface UnifiedStepHandlers {
-    currentStep?: number;
-    setCurrentStep?: (step: number) => void;
-    onNextStep?: () => void;
-    onPrevStep?: () => void;
-}
-
 export interface FormComponentOptions {
     entitySelectionComponent?: any;
     quickReferenceType?: QuickReferenceComponentType;
     quickReferenceCrudWrapperProps?: SmartCrudWrapperProps | Partial<SmartCrudWrapperProps>;
     formLayoutType?: PageLayoutOptions;
 }
-
-
 
 export interface QuickRefOptions {
     mainComponent?: QuickReferenceComponentType;
@@ -134,13 +133,18 @@ export interface UnifiedLayoutProps {
     activeRecordId?: MatrxRecordId;
     layoutState: UnifiedLayoutState;
     handlers: UnifiedLayoutHandlers;
+
     dynamicStyleOptions: DynamicStyleOptions;
     dynamicLayoutOptions: DynamicLayoutOptions;
+
     quickReferenceComponentName?: QuickReferenceComponentType;
     QuickReferenceComponent?: React.ReactNode;
+
     resizableLayoutOptions?: ResizableThreePaneLayoutProps;
     selectComponentOptions?: SelectComponentProps;
-    defaultFormComponent?: 'default' | 'ArmaniFormSmart';
+
+    formComponent: EntityFormType;
+    
     unifiedCrudHandlers?: UnifiedCrudHandlers;
     unifiedStepHandlers?: UnifiedStepHandlers;
     className?: string;
@@ -148,7 +152,3 @@ export interface UnifiedLayoutProps {
     smartCrudOptions?: SmartCrudWrapperProps;
     quickRefOptions?: QuickRefOptions;
 }
-
-
-
-

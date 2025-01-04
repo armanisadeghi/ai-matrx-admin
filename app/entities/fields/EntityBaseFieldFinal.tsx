@@ -2,14 +2,14 @@
 
 'use client';
 
-import React, {useCallback, useMemo} from 'react';
-import {EntityKeys} from "@/types/entityTypes";
-import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {UnifiedLayoutProps} from "@/components/matrx/Entity";
-import {createEntitySelectors, getEntitySlice, useAppDispatch, useAppSelector,} from "@/lib/redux";
-import FormFieldMotionWrapperFinal from "./FormFieldMotionWrapperFinal";
-import {StaticFieldConfig, FieldDisableLogic} from './field-management';
-import {useFieldValue} from './field-hooks';
+import React, { useCallback, useMemo } from 'react';
+import { EntityKeys } from '@/types/entityTypes';
+import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { useAppSelector, useEntityTools } from '@/lib/redux';
+import FormFieldMotionWrapperFinal from './FormFieldMotionWrapperFinal';
+import { StaticFieldConfig, FieldDisableLogic } from './field-management';
+import { useFieldValue } from './field-hooks';
 
 export interface EntityBaseFieldFinalProps {
     entityKey: EntityKeys;
@@ -19,17 +19,8 @@ export interface EntityBaseFieldFinalProps {
     className?: string;
 }
 
-const EntityBaseFieldFinal = (
-    {
-        entityKey,
-        fieldName,
-        recordId = null,
-        unifiedLayoutProps,
-        className,
-    }: EntityBaseFieldFinalProps) => {
-    const dispatch = useAppDispatch();
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
+const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId = null, unifiedLayoutProps, className }: EntityBaseFieldFinalProps) => {
+    const { actions, selectors, dispatch } = useEntityTools(entityKey);
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
 
@@ -39,25 +30,24 @@ const EntityBaseFieldFinal = (
             fieldName={fieldName}
             unifiedLayoutProps={unifiedLayoutProps}
         >
-            {({Component, fieldMetadata, styleConfig}) => {
-                const [currentValue, setCurrentValue] = useFieldValue(
-                    selectors,
-                    recordId,
-                    fieldName,
-                    fieldMetadata,
-                    operationMode
-                );
+            {({ Component, fieldMetadata, styleConfig }) => {
+                const [currentValue, setCurrentValue] = useFieldValue(selectors, recordId, fieldName, fieldMetadata, operationMode);
 
-                const onChange = useCallback((newValue: unknown) => {
-                    setCurrentValue(newValue);
-                    if (recordId && (operationMode === 'create' || operationMode === 'update')) {
-                        dispatch(actions.updateUnsavedField({
-                            recordId,
-                            field: fieldName,
-                            value: newValue
-                        }));
-                    }
-                }, [dispatch, actions, recordId, fieldName, operationMode]);
+                const onChange = useCallback(
+                    (newValue: unknown) => {
+                        setCurrentValue(newValue);
+                        if (recordId && (operationMode === 'create' || operationMode === 'update')) {
+                            dispatch(
+                                actions.updateUnsavedField({
+                                    recordId,
+                                    field: fieldName,
+                                    value: newValue,
+                                })
+                            );
+                        }
+                    },
+                    [dispatch, actions, recordId, fieldName, operationMode]
+                );
 
                 return (
                     <FieldDisableLogic
