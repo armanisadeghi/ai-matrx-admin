@@ -107,6 +107,7 @@ type argInverseField = EntityFieldWithValue<"registeredFunction">['argInverse'];
 
 
 export interface EntityMetadata {
+    entityName: EntityKeys;
     displayName: string;
     schemaType: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
@@ -317,7 +318,7 @@ export interface EntityOperationFlags {
 }
 
 export interface FlexibleQueryOptions {
-    entityNameAnyFormat: AllEntityNameVariations;
+    entityNameAnyFormat: AllEntityNameVariations | EntityKeys
     callback?: string;
     recordKeys?: MatrxRecordId[];
     matrxRecordId?: MatrxRecordId;

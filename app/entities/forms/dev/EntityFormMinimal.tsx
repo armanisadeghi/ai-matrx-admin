@@ -5,7 +5,6 @@ import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layo
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 import { getFormStyle } from '../formUtils';
-import FieldSelectionControls from '../form-helpers/FieldSelectionControls';
 import { EntityKeys } from '@/types/entityTypes';
 import { useFieldVisibility } from '../../hooks/form-related/useFieldVisibility';
 import { useFieldRenderer } from '../../hooks/form-related/useFieldRenderer';

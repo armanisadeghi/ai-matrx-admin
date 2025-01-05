@@ -11,7 +11,7 @@ import BrokerCardHeader from './BrokerCardHeader';
 import { useEntitySelectionCrud } from '@/app/entities/hooks/crud/useCrudById';
 
 const BrokerRecordDisplay = <TEntity extends EntityKeys>(unifiedLayoutProps: UnifiedLayoutProps) => {
-    const entityName = 'broker';
+    const entityName = 'broker' as EntityKeys;
     const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
     const { selectedRecordsOrDefaultsWithKeys, getEffectiveRecordOrDefaults } = useEntitySelectionCrud(entityName);
     const [openStates, setOpenStates] = useState<Record<string, boolean>>({});

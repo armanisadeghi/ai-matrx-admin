@@ -476,6 +476,9 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
 
 export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
+    entityName: TEntity;
+    uniqueTableId: string;
+    uniqueEntityId: string;
     primaryKey: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
     displayFieldMetadata: DisplayFieldMetadata;

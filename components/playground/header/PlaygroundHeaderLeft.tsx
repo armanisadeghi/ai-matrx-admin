@@ -1,7 +1,6 @@
 import React from "react";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import PanelToggle from "@/components/matrx/PanelToggle";
-import { useBrokers } from "@/providers/brokers/BrokersProvider";
 import { TbVariablePlus } from "react-icons/tb";
 import IconButton from "@/components/matrx/IconButton";
 import QuickRefCommandIcon from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefCommandIcon";
@@ -23,20 +22,24 @@ const PlaygroundHeaderLeft = ({
   isLeftCollapsed,
   onToggleBrokers = () => {},
 }: PlaygroundHeaderLeftProps) => {
-  const { createBroker, addBroker } = useBrokers();
 
   const handlePanelToggle = (newIsCollapsed: boolean) => {
     onToggleBrokers();
   };
 
   const handleRecordChange = (record: QuickReferenceRecord) => {
-    createBroker();
+    // createBroker();
+  };
+
+  const createBroker = () => {
+    console.log("Placeholder for creating or adding broker");
+    // createBroker();
   };
 
   const handleRecordsChange = (records: QuickReferenceRecord[]) => {
     records.forEach((record) => {
       console.log("Placeholder for creating or adding broker got record:", record)
-      createBroker();
+      // createBroker();
     });
   }
 

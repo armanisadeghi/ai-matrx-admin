@@ -17,7 +17,6 @@ export interface SmartCrudWrapperProps {
     options?: {
         allowCreate?: boolean;
         allowEdit?: boolean;
-        allowSave?: boolean;
         allowCancel?: boolean;
         allowDelete?: boolean;
         allowRefresh?: boolean;
@@ -39,7 +38,6 @@ export const SmartCrudWrapper = ({
     options = {
         allowCreate: true,
         allowEdit: true,
-        allowSave: true,
         allowCancel: true,
         allowDelete: true,
         allowRefresh: true,
@@ -71,15 +69,13 @@ export const SmartCrudWrapper = ({
                     hideText={hideText}
                 />
             )}
-            {options.allowSave && (
-                <SmartSaveButton
-                    entityKey={entityKey}
-                    recordId={recordId}
-                    size={hideText ? 'icon' : layout.buttonSize}
-                    hideText={hideText}
-                    showConfirmation={options.showConfirmation}
-                />
-            )}
+            <SmartSaveButton
+                entityKey={entityKey}
+                recordId={recordId}
+                size={hideText ? 'icon' : layout.buttonSize}
+                hideText={hideText}
+                showConfirmation={options.showConfirmation}
+            />
             {options.allowCancel && (
                 <SmartCancelButton
                     entityKey={entityKey}

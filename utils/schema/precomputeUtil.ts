@@ -1,5 +1,4 @@
-import {initialAutomationTableSchema} from "@/utils/schema/initialSchemas";
-
+import { initialAutomationTableSchema } from '@/utils/schema/initialSchemas';
 
 import {
     AllEntityNameVariations,
@@ -8,35 +7,31 @@ import {
     AutomationEntity,
     AutomationSchema,
     createFormattedRecord,
-    DataFormat, EntityComponentProps, EntityDefaultFetchStrategy,
+    DataFormat,
+    EntityComponentProps,
+    EntityDefaultFetchStrategy,
     EntityField,
     EntityFieldKeys,
     EntityKeys,
     EntityNameFormat,
     EntityNameFormats,
-    EntityRecord, EntityRelationships, EntitySchemaType,
+    EntityRecord,
+    EntityRelationships,
+    EntitySchemaType,
     FieldNameFormat,
     FieldNameFormats,
     isFetchStrategy,
-    UnifiedSchemaCache
-} from "@/types/entityTypes";
-import {
-    entityNameFormats,
-    entityNameToCanonical,
-    fieldNameFormats,
-    fieldNameToCanonical
-} from "@/utils/schema/lookupSchema";
-import {NameFormat, TypeBrand} from "@/types/AutomationSchemaTypes";
-import {createFieldId, EntityNameOfficial, relationships, SchemaEntity} from "@/types/schema";
-import {asEntityRelationships, entityRelationships} from "./fullRelationships";
-
+    UnifiedSchemaCache,
+} from '@/types/entityTypes';
+import { entityNameFormats, entityNameToCanonical, fieldNameFormats, fieldNameToCanonical } from '@/utils/schema/lookupSchema';
+import { NameFormat, TypeBrand } from '@/types/AutomationSchemaTypes';
+import { createFieldId, EntityNameOfficial, relationships, SchemaEntity } from '@/types/schema';
+import { asEntityRelationships, entityRelationships } from './fullRelationships';
 
 /**
  * Initializes and processes the schema for client-side use
  */
-function initializeAutomationSchema<TEntity extends EntityKeys>(
-    initialSchema: AutomationSchema
-): AutomationEntities {
+function initializeAutomationSchema<TEntity extends EntityKeys>(initialSchema: AutomationSchema): AutomationEntities {
     const processedSchema = {} as Record<EntityKeys, AutomationEntity<EntityKeys>>;
 
     for (const [entityKey, entity] of Object.entries(initialSchema)) {
@@ -45,7 +40,7 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
         // Process fields
         const processedFields: Record<string, EntityField<TEntity, any>> = {};
         for (const [fieldKey, field] of Object.entries(entity.entityFields)) {
-            processedFields[fieldKey] = {...field};
+            processedFields[fieldKey] = { ...field };
         }
 
         // Validate fetch strategy
@@ -63,7 +58,7 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
             componentProps: entity.componentProps,
             entityNameFormats: entity.entityNameFormats,
             relationships: entity.relationships,
-            entityFields: processedFields
+            entityFields: processedFields,
         };
         // @ts-ignore
         processedSchema[typedEntityKey] = processedEntity;
@@ -71,7 +66,6 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
 
     return processedSchema as AutomationEntities;
 }
-
 
 // function normalizeSchema(originalSchema: AutomationEntities) {
 //     const entityNames: EntityNameOfficial[] = [];
@@ -119,14 +113,11 @@ function initializeAutomationSchema<TEntity extends EntityKeys>(
 //     };
 // }
 
-
 /**
  * Generates the client-side schema bundle
  */
 export function generateClientGlobalCache(): UnifiedSchemaCache {
-
-    if (!globalCache)
-        initializeSchemaSystem();
+    if (!globalCache) initializeSchemaSystem();
 
     if (!globalCache) throw new Error('Schema system not initialized');
     logSchemaCacheReport(globalCache);
@@ -134,7 +125,6 @@ export function generateClientGlobalCache(): UnifiedSchemaCache {
 
     return globalCache;
 }
-
 
 /**
  * Type guard to ensure schema is properly initialized
@@ -149,14 +139,13 @@ function isInitializedSchema(schema: unknown): schema is AutomationEntities {
     return true;
 }
 
-
 function deepCopy<T>(data: T): T {
     if (data === null || typeof data !== 'object') {
         return data;
     }
 
     if (Array.isArray(data)) {
-        return data.map(item => deepCopy(item)) as unknown as T;
+        return data.map((item) => deepCopy(item)) as unknown as T;
     }
 
     const result: Record<string, unknown> = {};
@@ -171,9 +160,7 @@ function deepCopy<T>(data: T): T {
 
 let globalCache: UnifiedSchemaCache | null = null;
 
-export function initializeSchemaSystem<TEntity extends EntityKeys>(
-    trace: string[] = ['unknownCaller']
-): UnifiedSchemaCache {
+export function initializeSchemaSystem<TEntity extends EntityKeys>(trace: string[] = ['unknownCaller']): UnifiedSchemaCache {
     trace = [...trace, 'initializeSchemaSystem'];
 
     if (globalCache) {
@@ -221,10 +208,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             fieldsByEntity[typedEntityName] = [];
 
             // Process fields with proper typing
-            const processedFields: Record<
-                EntityFieldKeys<TEntity>,
-                EntityField<TEntity, EntityFieldKeys<TEntity>>
-            > = {};
+            const processedFields: Record<EntityFieldKeys<TEntity>, EntityField<TEntity, EntityFieldKeys<TEntity>>> = {};
 
             // Process entity fields
             Object.entries(entityDef.entityFields).forEach(([fieldName, fieldDef]) => {
@@ -235,7 +219,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                     ...fieldDef,
                     fieldNameFormats: fieldDef.fieldNameFormats as FieldNameFormats<TEntity, typeof typedFieldName>,
                     validationFunctions: Array.from(fieldDef.validationFunctions),
-                    exclusionRules: Array.from(fieldDef.exclusionRules)
+                    exclusionRules: Array.from(fieldDef.exclusionRules),
                 } as EntityField<TEntity, typeof typedFieldName>;
 
                 // Create and store normalized field structure
@@ -245,7 +229,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                     entityName: typedEntityName,
                     ...fieldDef,
                     validationFunctions: Array.from(fieldDef.validationFunctions),
-                    exclusionRules: Array.from(fieldDef.exclusionRules)
+                    exclusionRules: Array.from(fieldDef.exclusionRules),
                 };
 
                 fieldsByEntity[typedEntityName]?.push(fieldId);
@@ -261,7 +245,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                 displayFieldMetadata: entityDef.displayFieldMetadata,
                 defaultFetchStrategy: entityDef.defaultFetchStrategy as EntityDefaultFetchStrategy<TEntity>,
                 componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
-                relationships: entityDef.relationships as EntityRelationships<TEntity>
+                relationships: entityDef.relationships as EntityRelationships<TEntity>,
             };
 
             // @ts-ignore Store processed entity with complete typing
@@ -274,7 +258,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
                 componentProps: entityDef.componentProps as EntityComponentProps<TEntity>,
                 entityNameFormats: entityDef.entityNameFormats as EntityNameFormats<TEntity>,
                 relationships: entityDef.relationships as EntityRelationships<TEntity>,
-                entityFields: processedFields
+                entityFields: processedFields,
             } as AutomationEntity<TEntity>;
         });
 
@@ -285,15 +269,15 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             entities,
             fields,
             fieldsByEntity,
-            entityNameToCanonical: {...entityNameToCanonical},
-            fieldNameToCanonical: {...fieldNameToCanonical},
+            entityNameToCanonical: { ...entityNameToCanonical },
+            fieldNameToCanonical: { ...fieldNameToCanonical },
             entityNameFormats, // No deep copy
-            fieldNameFormats,  // No deep copy
+            fieldNameFormats, // No deep copy
             entityNameToDatabase,
             entityNameToBackend,
             fieldNameToDatabase,
             fieldNameToBackend,
-            fullEntityRelationships: asEntityRelationships(entityRelationships)
+            fullEntityRelationships: asEntityRelationships(entityRelationships),
         };
 
         schemaLogger.logResolution({
@@ -302,11 +286,10 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             resolved: 'globalCache',
             message: 'Schema system initialized successfully',
             level: 'info',
-            trace
+            trace,
         });
 
         return globalCache;
-
     } catch (error) {
         schemaLogger.logResolution({
             resolutionType: 'cache',
@@ -314,12 +297,11 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(
             resolved: 'error',
             message: `Schema initialization failed: ${error instanceof Error ? error.message : String(error)}`,
             level: 'error',
-            trace
+            trace,
         });
         throw error;
     }
 }
-
 
 /**
  * Force resets the entire cache system (useful for testing)
@@ -328,13 +310,11 @@ export function resetCache(): void {
     globalCache = null;
 }
 
-
 /**
  * Retrieves the global cache, ensuring no errors are thrown.
  * Logs a warning if the cache is not initialized.
  */
 export function getGlobalCache(trace: string[] = ['unknownCaller']): UnifiedSchemaCache | null {
-
     trace = [...trace, 'getGlobalCache'];
 
     if (!globalCache) {
@@ -344,7 +324,7 @@ export function getGlobalCache(trace: string[] = ['unknownCaller']): UnifiedSche
             resolved: 'null',
             message: 'Schema system not initialized. Access to global cache failed.',
             level: 'warn',
-            trace
+            trace,
         });
         console.warn('Global cache is not initialized. Returning null.');
         return null;
@@ -354,26 +334,21 @@ export function getGlobalCache(trace: string[] = ['unknownCaller']): UnifiedSche
 }
 
 
+
 /**
  * Type utilities for field keys and variations
  */
-export type StringFieldKey<TEntity extends EntityKeys> =
-    Extract<EntityFieldKeys<TEntity>, string>;
+export type StringFieldKey<TEntity extends EntityKeys> = Extract<EntityFieldKeys<TEntity>, string>;
 
 /**
  * Field name variant type ensuring string keys
  */
-export type FieldNameVariant<TEntity extends EntityKeys> =
-    | StringFieldKey<TEntity>
-    | AllFieldNameVariations<TEntity, StringFieldKey<TEntity>>;
+export type FieldNameVariant<TEntity extends EntityKeys> = StringFieldKey<TEntity> | AllFieldNameVariations<TEntity, StringFieldKey<TEntity>>;
 
 /**
  * Resolve table/entity name with logging
  */
-export function resolveEntityName(
-    entityNameVariant: AllEntityNameVariations,
-    trace: string[] = ['unknownCaller']
-): EntityKeys {
+export function resolveEntityName(entityNameVariant: AllEntityNameVariations, trace: string[] = ['unknownCaller']): EntityKeys {
     trace = [...trace, 'resolveEntityName'];
 
     if (!globalCache) {
@@ -383,7 +358,7 @@ export function resolveEntityName(
             resolved: String(entityNameVariant),
             message: `Global cache is not initialized when resolving entity name: '${String(entityNameVariant)}'`,
             level: 'warn',
-            trace
+            trace,
         });
         return entityNameVariant as EntityKeys;
     }
@@ -398,7 +373,7 @@ export function resolveEntityName(
             resolved: resolvedEntityName,
             message: `Entity name resolution failed for: '${String(entityNameVariant)}'`,
             level: 'warn',
-            trace
+            trace,
         });
     } else {
         schemaLogger.logResolution({
@@ -407,7 +382,7 @@ export function resolveEntityName(
             resolved: resolvedEntityName,
             message: `Successfully resolved entity name: '${String(entityNameVariant)}' to '${resolvedEntityName}'`,
             level: 'info',
-            trace
+            trace,
         });
     }
 
@@ -432,7 +407,7 @@ export function resolveFieldName<TEntity extends EntityKeys>(
             resolved: fieldNameString,
             message: `Global cache is not initialized when resolving field name: '${fieldNameString}'`,
             level: 'warn',
-            trace
+            trace,
         });
         return fieldNameString as StringFieldKey<TEntity>;
     }
@@ -447,7 +422,7 @@ export function resolveFieldName<TEntity extends EntityKeys>(
             resolved: resolvedFieldString,
             message: `Field name resolution failed for: '${fieldNameString}' in entity '${entityKey}'`,
             level: 'warn',
-            trace
+            trace,
         });
     } else {
         schemaLogger.logResolution({
@@ -456,7 +431,7 @@ export function resolveFieldName<TEntity extends EntityKeys>(
             resolved: resolvedFieldString,
             message: `Successfully resolved field name: '${fieldNameString}' to '${resolvedFieldString}'`,
             level: 'info',
-            trace
+            trace,
         });
     }
 
@@ -486,17 +461,14 @@ export function resolveFieldNameSafe<TEntity extends EntityKeys>(
     return {
         original,
         resolved,
-        entityKey
+        entityKey,
     };
 }
 
 /**
  * Get entity key with resolution fallback
  */
-export function getEntityKey(
-    entityNameVariant: AllEntityNameVariations,
-    trace: string[] = ['unknownCaller']
-): EntityKeys {
+export function getEntityKey(entityNameVariant: AllEntityNameVariations, trace: string[] = ['unknownCaller']): EntityKeys {
     trace = [...trace, 'getEntityKey'];
 
     if (!globalCache) {
@@ -506,7 +478,7 @@ export function getEntityKey(
             resolved: entityNameVariant,
             message: `Global cache is not initialized when trying to resolve entity name: '${entityNameVariant}'`,
             level: 'warn',
-            trace
+            trace,
         });
         return entityNameVariant as EntityKeys;
     }
@@ -527,7 +499,6 @@ export function getEntityKey(
  */
 export type UnknownNameString = string;
 
-
 /**
  * Type guards and conversion utilities
  */
@@ -535,9 +506,7 @@ export type UnknownNameString = string;
 /**
  * Type guard for unknown entity name
  */
-export function isKnownEntityVariant(
-    unknownEntity: unknown
-): unknownEntity is AllEntityNameVariations {
+export function isKnownEntityVariant(unknownEntity: unknown): unknownEntity is AllEntityNameVariations {
     if (typeof unknownEntity !== 'string') return false;
     if (!globalCache) return false;
 
@@ -587,7 +556,6 @@ export function isKnownEntityAndFieldVariant<TEntity extends EntityKeys>(
     return unknownField in entityFields;
 }
 
-
 export type NestedObject = { [key: string]: any };
 
 /**
@@ -617,7 +585,7 @@ export function getFieldKey<TEntity extends EntityKeys>(
             resolved: String(anyFieldNameVariation),
             message: `Global cache not initialized when resolving field: '${String(anyFieldNameVariation)}'`,
             level: 'warn',
-            trace
+            trace,
         });
         return String(anyFieldNameVariation) as StringFieldKey<TEntity>;
     }
@@ -634,10 +602,7 @@ export function getFieldKey<TEntity extends EntityKeys>(
 /**
  * Get entity key from unknown string
  */
-export function getEntityKeyFromUnknown(
-    entityNameVariant: UnknownNameString,
-    trace: string[] = ['unknownCaller']
-): EntityKeys {
+export function getEntityKeyFromUnknown(entityNameVariant: UnknownNameString, trace: string[] = ['unknownCaller']): EntityKeys {
     trace = [...trace, 'getEntityKeyFromUnknown'];
 
     if (isKnownEntityVariant(entityNameVariant)) {
@@ -676,11 +641,7 @@ export function getFieldKeyFromUnknown(
 
     const entityKey = getEntityKeyFromUnknown(entityNameVariant, trace) as EntityKeys;
 
-    return getUnknownFieldWithKnownEntityKey(
-        entityKey,
-        anyFieldNameVariation,
-        trace
-    );
+    return getUnknownFieldWithKnownEntityKey(entityKey, anyFieldNameVariation, trace);
 }
 
 /**
@@ -689,9 +650,8 @@ export function getFieldKeyFromUnknown(
 export function createSafeFieldResolver<TEntity extends EntityKeys>() {
     return {
         forEntity: (entityKey: TEntity) => ({
-            resolveField: (fieldName: UnknownNameString) =>
-                getUnknownFieldWithKnownEntityKey(entityKey, fieldName)
-        })
+            resolveField: (fieldName: UnknownNameString) => getUnknownFieldWithKnownEntityKey(entityKey, fieldName),
+        }),
     };
 }
 
@@ -700,13 +660,10 @@ export function createSafeFieldResolver<TEntity extends EntityKeys>() {
  */
 export function createFieldResolver() {
     return {
-        resolveField: <TEntity extends EntityKeys>(
-            entity: TEntity | UnknownNameString,
-            field: UnknownNameString
-        ) => {
+        resolveField: <TEntity extends EntityKeys>(entity: TEntity | UnknownNameString, field: UnknownNameString) => {
             const resolvedEntity = getEntityKeyFromUnknown(String(entity));
             return getUnknownFieldWithKnownEntityKey(resolvedEntity, field);
-        }
+        },
     };
 }
 
@@ -730,9 +687,7 @@ export function convertEntityAndFieldsInObject<TEntity extends EntityKeys>(
 
     // Handle arrays
     if (Array.isArray(inputObject)) {
-        return inputObject.map(item =>
-            convertEntityAndFieldsInObject<TEntity>(item, entityNameVariant, trace)
-        );
+        return inputObject.map((item) => convertEntityAndFieldsInObject<TEntity>(item, entityNameVariant, trace));
     }
 
     // Handle objects
@@ -740,17 +695,9 @@ export function convertEntityAndFieldsInObject<TEntity extends EntityKeys>(
 
     for (const key in inputObject) {
         if (Object.prototype.hasOwnProperty.call(inputObject, key)) {
-            const fieldKey = getFieldKey<TEntity>(
-                entityKey,
-                key as UnknownNameString,
-                trace
-            );
+            const fieldKey = getFieldKey<TEntity>(entityKey, key as UnknownNameString, trace);
 
-            result[fieldKey] = convertFieldsInNestedObject<TEntity>(
-                (inputObject as Record<string, unknown>)[key],
-                entityKey,
-                trace
-            );
+            result[fieldKey] = convertFieldsInNestedObject<TEntity>((inputObject as Record<string, unknown>)[key], entityKey, trace);
         }
     }
 
@@ -774,9 +721,7 @@ export function convertFieldsInNestedObject<TEntity extends EntityKeys>(
 
     // Handle arrays
     if (Array.isArray(inputObject)) {
-        return inputObject.map(item =>
-            convertFieldsInNestedObject<TEntity>(item, entityKey, trace)
-        );
+        return inputObject.map((item) => convertFieldsInNestedObject<TEntity>(item, entityKey, trace));
     }
 
     // Handle objects
@@ -784,23 +729,14 @@ export function convertFieldsInNestedObject<TEntity extends EntityKeys>(
 
     for (const key in inputObject) {
         if (Object.prototype.hasOwnProperty.call(inputObject, key)) {
-            const fieldKey = getFieldKey<TEntity>(
-                entityKey,
-                key as UnknownNameString,
-                trace
-            );
+            const fieldKey = getFieldKey<TEntity>(entityKey, key as UnknownNameString, trace);
 
-            result[fieldKey] = convertFieldsInNestedObject<TEntity>(
-                (inputObject as Record<string, unknown>)[key],
-                entityKey,
-                trace
-            );
+            result[fieldKey] = convertFieldsInNestedObject<TEntity>((inputObject as Record<string, unknown>)[key], entityKey, trace);
         }
     }
 
     return result;
 }
-
 
 // ----------------------------
 /**
@@ -839,17 +775,14 @@ export function trackFieldConversion<TEntity extends EntityKeys>(
     return {
         originalKey,
         resolvedKey,
-        value
+        value,
     };
 }
 
 /**
  * Gets the standardized key for any field name variant
  */
-export function resolveFieldKey<TEntity extends EntityKeys>(
-    entityKey: TEntity,
-    fieldNameVariant: UnknownNameString
-): StringFieldKey<TEntity> {
+export function resolveFieldKey<TEntity extends EntityKeys>(entityKey: TEntity, fieldNameVariant: UnknownNameString): StringFieldKey<TEntity> {
     if (!globalCache) throw new Error('Schema system not initialized');
 
     const entityFields = globalCache.fieldNameToCanonical[entityKey];
@@ -861,10 +794,7 @@ export function resolveFieldKey<TEntity extends EntityKeys>(
 /**
  * Gets an entity's name in a specific format
  */
-export function getEntityName(
-    entityNameVariant: AllEntityNameVariations,
-    format: keyof EntityNameFormats<EntityKeys> = 'frontend'
-): string {
+export function getEntityName(entityNameVariant: AllEntityNameVariations, format: keyof EntityNameFormats<EntityKeys> = 'frontend'): string {
     if (!globalCache) throw new Error('Schema system not initialized');
 
     const entityKey = resolveEntityKey(entityNameVariant);
@@ -887,7 +817,6 @@ export function getEntityName(
 //     return globalCache.fieldNameFormats[entityKey]?.[fieldKey]?.[format] || fieldNameVariant;
 // }
 
-
 /**
  * Strictly typed field name resolution
  */
@@ -907,7 +836,7 @@ export function getEntityName(
 //     return globalCache.fieldNameFormats[entityKey]?.[fieldKey]?.[format] || fieldNameVariant;
 // }
 
-``
+``;
 
 /**
  * Helper function to safely access field name mappings
@@ -926,18 +855,14 @@ export function getFieldNameMapping<TEntity extends EntityKeys>(
 /**
  * Type guard to check if an entity exists in the schema
  */
-export function isValidEntity(
-    entityKey: string
-): entityKey is EntityKeys {
+export function isValidEntity(entityKey: string): entityKey is EntityKeys {
     return entityKey in (globalCache?.schema ?? {});
 }
 
 /**
  * Safe wrapper around resolveEntityKey
  */
-export function resolveEntityKeyStrict(
-    entityNameVariant: AllEntityNameVariations
-): EntityKeys {
+export function resolveEntityKeyStrict(entityNameVariant: AllEntityNameVariations): EntityKeys {
     const resolved = resolveEntityKey(entityNameVariant);
     if (!isValidEntity(resolved)) {
         throw new Error(`Invalid entity name: ${entityNameVariant}`);
@@ -945,24 +870,17 @@ export function resolveEntityKeyStrict(
     return resolved;
 }
 
-
-export function getEntitySchema<TEntity extends EntityKeys>(
-    entityName: EntityKeys
-): AutomationEntity<TEntity> | null {
+export function getEntitySchema<TEntity extends EntityKeys>(entityName: EntityKeys): AutomationEntity<TEntity> | null {
     const globalCache = getGlobalCache();
     if (!globalCache) return null;
     const entityKey = resolveEntityKey(entityName) as TEntity;
     return globalCache.schema[entityKey] || null;
 }
 
-
 /**
  * Get entity schema with optional format conversion
  */
-export function getEntitySchemaFromFormat<
-    TEntity extends EntityKeys,
-    TFormat extends DataFormat = 'frontend'
->(
+export function getEntitySchemaFromFormat<TEntity extends EntityKeys, TFormat extends DataFormat = 'frontend'>(
     entityNameVariant: AllEntityNameVariations,
     format: TFormat = 'frontend' as TFormat,
     trace: string[] = ['unknownCaller']
@@ -985,7 +903,7 @@ export function getEntitySchemaFromFormat<
                 resolved: '',
                 message: `Entity schema not found: ${entityNameVariant}`,
                 level: 'error',
-                trace
+                trace,
             });
             return null;
         }
@@ -998,7 +916,7 @@ export function getEntitySchemaFromFormat<
             resolved: '',
             message: `Error getting entity schema: ${error}`,
             level: 'error',
-            trace
+            trace,
         });
         return null;
     }
@@ -1007,10 +925,7 @@ export function getEntitySchemaFromFormat<
 /**
  * Convert data to specified format
  */
-export function convertData<
-    TEntity extends EntityKeys,
-    TFormat extends DataFormat = 'frontend'
->(
+export function convertData<TEntity extends EntityKeys, TFormat extends DataFormat = 'frontend'>(
     data: unknown,
     entityKey: TEntity,
     format: TFormat = 'frontend' as TFormat,
@@ -1025,25 +940,14 @@ export function convertData<
 
         // Handle arrays
         if (Array.isArray(data)) {
-            return data.map(item =>
-                convertData(item, entityKey, format, trace)
-            );
+            return data.map((item) => convertData(item, entityKey, format, trace));
         }
 
         // Convert to formatted record
-        const formattedRecord = createFormattedRecord(
-            entityKey,
-            data as Record<string, unknown>,
-            format
-        );
+        const formattedRecord = createFormattedRecord(entityKey, data as Record<string, unknown>, format);
 
         // Convert nested fields
-        return convertEntityAndFieldsInObject<TEntity>(
-            formattedRecord,
-            entityKey,
-            trace
-        );
-
+        return convertEntityAndFieldsInObject<TEntity>(formattedRecord, entityKey, trace);
     } catch (error) {
         schemaLogger.logResolution({
             resolutionType: 'entity',
@@ -1051,7 +955,7 @@ export function convertData<
             resolved: '',
             message: `Error converting data: ${error}`,
             level: 'error',
-            trace
+            trace,
         });
         return null;
     }
@@ -1060,8 +964,8 @@ export function convertData<
 /**
  * Type definitions for type references
  */
-type BasicTypeReference = "bool" | "dict" | "float" | "int" | "list" | "str" | "url";
-type ExtendedTypeReference = BasicTypeReference | "string" | "number" | "boolean" | "Date" | undefined;
+type BasicTypeReference = 'bool' | 'dict' | 'float' | 'int' | 'list' | 'str' | 'url';
+type ExtendedTypeReference = BasicTypeReference | 'string' | 'number' | 'boolean' | 'Date' | undefined;
 
 /**
  * Validate and convert field value based on type reference
@@ -1073,7 +977,7 @@ export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
 ): { isValid: boolean; convertedValue: unknown } {
     try {
         if (!typeRef || !('_typeBrand' in typeRef)) {
-            return {isValid: true, convertedValue: value};
+            return { isValid: true, convertedValue: value };
         }
 
         const type = typeRef._typeBrand;
@@ -1083,7 +987,7 @@ export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
             case 'boolean':
                 return {
                     isValid: typeof value === 'boolean' || ['true', 'false', '0', '1'].includes(String(value)),
-                    convertedValue: Boolean(value)
+                    convertedValue: Boolean(value),
                 };
 
             case 'int':
@@ -1091,21 +995,21 @@ export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
                 const intValue = Number(value);
                 return {
                     isValid: Number.isInteger(intValue),
-                    convertedValue: Number.isInteger(intValue) ? intValue : null
+                    convertedValue: Number.isInteger(intValue) ? intValue : null,
                 };
 
             case 'float':
                 const floatValue = Number(value);
                 return {
                     isValid: !isNaN(floatValue),
-                    convertedValue: !isNaN(floatValue) ? floatValue : null
+                    convertedValue: !isNaN(floatValue) ? floatValue : null,
                 };
 
             case 'str':
             case 'string':
                 return {
                     isValid: true,
-                    convertedValue: String(value)
+                    convertedValue: String(value),
                 };
 
             case 'url':
@@ -1113,38 +1017,38 @@ export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
                     new URL(String(value));
                     return {
                         isValid: true,
-                        convertedValue: String(value)
+                        convertedValue: String(value),
                     };
                 } catch {
                     return {
                         isValid: false,
-                        convertedValue: null
+                        convertedValue: null,
                     };
                 }
 
             case 'list':
                 return {
                     isValid: Array.isArray(value),
-                    convertedValue: Array.isArray(value) ? value : [value]
+                    convertedValue: Array.isArray(value) ? value : [value],
                 };
 
             case 'dict':
                 return {
                     isValid: typeof value === 'object' && value !== null,
-                    convertedValue: typeof value === 'object' && value !== null ? value : {}
+                    convertedValue: typeof value === 'object' && value !== null ? value : {},
                 };
 
             case 'Date':
                 const date = new Date(value as string | number | Date);
                 return {
                     isValid: !isNaN(date.getTime()),
-                    convertedValue: !isNaN(date.getTime()) ? date : null
+                    convertedValue: !isNaN(date.getTime()) ? date : null,
                 };
 
             default:
                 return {
                     isValid: true,
-                    convertedValue: value
+                    convertedValue: value,
                 };
         }
     } catch (error) {
@@ -1154,11 +1058,11 @@ export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
             resolved: '',
             message: `Type validation failed: ${error}`,
             level: 'error',
-            trace
+            trace,
         });
         return {
             isValid: false,
-            convertedValue: value
+            convertedValue: value,
         };
     }
 }
@@ -1166,10 +1070,7 @@ export function validateAndConvertFieldType<T extends ExtendedTypeReference>(
 /**
  * Convert type with validation
  */
-export function convertType<
-    TEntity extends EntityKeys,
-    TField extends EntityFieldKeys<TEntity>
->(
+export function convertType<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>>(
     value: unknown,
     entityKey: TEntity,
     fieldKey: TField,
@@ -1184,22 +1085,16 @@ export function convertType<
         const field = entitySchema.entityFields[fieldKey];
         if (!field) return value;
 
-        const {isValid, convertedValue} = validateAndConvertFieldType(
-            value,
-            field.typeReference as TypeBrand<ExtendedTypeReference>,
-            trace
-        );
+        const { isValid, convertedValue } = validateAndConvertFieldType(value, field.typeReference as TypeBrand<ExtendedTypeReference>, trace);
 
         if (!isValid) {
             schemaLogger.logResolution({
                 resolutionType: 'field',
                 original: String(value),
                 resolved: String(convertedValue),
-                message: `Invalid value for field type ${
-                    field.typeReference
-                }`,
+                message: `Invalid value for field type ${field.typeReference}`,
                 level: 'warn',
-                trace
+                trace,
             });
         }
 
@@ -1211,7 +1106,7 @@ export function convertType<
             resolved: '',
             message: `Type conversion failed: ${error}`,
             level: 'error',
-            trace
+            trace,
         });
         return value;
     }
@@ -1229,12 +1124,8 @@ export function batchResolveFields<TEntity extends EntityKeys>(
 
     try {
         return Object.fromEntries(
-            fieldVariants.map(variant => [
-                variant,
-                resolveFieldKey(entityKey, variant as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>)
-            ])
+            fieldVariants.map((variant) => [variant, resolveFieldKey(entityKey, variant as AllFieldNameVariations<TEntity, EntityFieldKeys<TEntity>>)])
         ) as Record<string, EntityFieldKeys<TEntity>>;
-
     } catch (error) {
         schemaLogger.logResolution({
             resolutionType: 'field',
@@ -1242,12 +1133,11 @@ export function batchResolveFields<TEntity extends EntityKeys>(
             resolved: '',
             message: `Error batch resolving fields: ${error}`,
             level: 'error',
-            trace
+            trace,
         });
         return {};
     }
 }
-
 
 /**
  * Entity name validation
@@ -1263,10 +1153,7 @@ export function ensureEntityName(entityName: AllEntityNameVariations): EntityKey
 /**
  * Field name validation
  */
-export function ensureFieldName<TEntity extends EntityKeys>(
-    entity: TEntity,
-    field: string
-): StringFieldKey<TEntity> {
+export function ensureFieldName<TEntity extends EntityKeys>(entity: TEntity, field: string): StringFieldKey<TEntity> {
     const resolved = resolveFieldKey(entity, field);
     if (!globalCache?.schema[entity]?.entityFields[resolved]) {
         throw new Error(`Invalid field name: ${field} for entity ${entity}`);
@@ -1283,21 +1170,10 @@ export function createBatchOperations<TEntity extends EntityKeys>(entityKey: TEn
             return batchResolveFields(entityKey, fieldVariants);
         },
 
-        convertTypes(
-            fields: Record<string, unknown>,
-            trace: string[] = ['unknownCaller']
-        ): Record<string, unknown> {
+        convertTypes(fields: Record<string, unknown>, trace: string[] = ['unknownCaller']): Record<string, unknown> {
             try {
                 return Object.fromEntries(
-                    Object.entries(fields).map(([field, value]) => [
-                        field,
-                        convertType(
-                            value,
-                            entityKey,
-                            field as EntityFieldKeys<TEntity>,
-                            trace
-                        )
-                    ])
+                    Object.entries(fields).map(([field, value]) => [field, convertType(value, entityKey, field as EntityFieldKeys<TEntity>, trace)])
                 );
             } catch (error) {
                 schemaLogger.logResolution({
@@ -1306,21 +1182,18 @@ export function createBatchOperations<TEntity extends EntityKeys>(entityKey: TEn
                     resolved: '',
                     message: `Batch conversion failed: ${error}`,
                     level: 'error',
-                    trace
+                    trace,
                 });
                 return fields;
             }
-        }
+        },
     };
 }
 
 /**
  * Get frontend entity name
  */
-export function getFrontendEntityName(
-    entityName: AllEntityNameVariations,
-    trace: string[] = ['unknownCaller']
-): string {
+export function getFrontendEntityName(entityName: AllEntityNameVariations, trace: string[] = ['unknownCaller']): string {
     trace = [...trace, 'getFrontendEntityName'];
 
     const globalCache = getGlobalCache(trace);
@@ -1338,11 +1211,7 @@ export function getFrontendEntityName(
 /**
  * Get entity name by format
  */
-export function getEntityNameByFormat(
-    entityName: AllEntityNameVariations,
-    format: NameFormat,
-    trace: string[] = ['unknownCaller']
-): string {
+export function getEntityNameByFormat(entityName: AllEntityNameVariations, format: NameFormat, trace: string[] = ['unknownCaller']): string {
     trace = [...trace, 'getEntityNameByFormat'];
 
     const globalCache = getGlobalCache(trace);
@@ -1370,7 +1239,7 @@ export function getEntity<TEntity extends EntityKeys>(
     if (!globalCache) return null;
 
     const entityKey = getEntityKey(entityName, trace);
-    return globalCache.schema[entityKey] as AutomationEntity<TEntity> || null;
+    return (globalCache.schema[entityKey] as AutomationEntity<TEntity>) || null;
 }
 
 /**
@@ -1394,7 +1263,7 @@ export function getField<TEntity extends EntityKeys>(
     if (!entity) return null;
 
     const fieldKey = getFieldKey(entityKey, fieldName, trace);
-    return entity.entityFields[fieldKey] as EntityField<TEntity, EntityFieldKeys<TEntity>> || null;
+    return (entity.entityFields[fieldKey] as EntityField<TEntity, EntityFieldKeys<TEntity>>) || null;
 }
 
 /**
@@ -1419,11 +1288,7 @@ export function getField<TEntity extends EntityKeys>(
 /**
  * Check if field exists
  */
-export function fieldExists(
-    entityName: AllEntityNameVariations,
-    fieldName: string,
-    trace: string[] = ['unknownCaller']
-): boolean {
+export function fieldExists(entityName: AllEntityNameVariations, fieldName: string, trace: string[] = ['unknownCaller']): boolean {
     trace = [...trace, 'fieldExists'];
 
     const globalCache = getGlobalCache(trace);
@@ -1440,10 +1305,7 @@ export function fieldExists(
 /**
  * Check if entity exists
  */
-export function entityExists(
-    entityName: AllEntityNameVariations,
-    trace: string[] = ['unknownCaller']
-): boolean {
+export function entityExists(entityName: AllEntityNameVariations, trace: string[] = ['unknownCaller']): boolean {
     trace = [...trace, 'entityExists'];
 
     const globalCache = getGlobalCache(trace);
@@ -1495,7 +1357,6 @@ export function getDisplayFields<TEntity extends EntityKeys>(
         .map(([fieldName]) => fieldName as EntityFieldKeys<TEntity>);
 }
 
-
 export function removeEmptyFields(obj: Record<string, any>): Record<string, any> {
     return Object.fromEntries(
         Object.entries(obj).filter(([_, value]) => {
@@ -1526,17 +1387,17 @@ function handleRelationshipField(
             // Simple scalar value, treat it as a regular FK reference
             return {
                 type: 'fk',
-                data: {[fieldName]: value},
-                appData: {[`${fieldName}Fk`]: value}, // App-specific field
-                table: relatedTable
+                data: { [fieldName]: value },
+                appData: { [`${fieldName}Fk`]: value }, // App-specific field
+                table: relatedTable,
             };
         } else if (typeof value === 'object' && value.id) {
             // It's an object with an ID field
             return {
                 type: 'fk',
-                data: {[fieldName]: value.id},
-                appData: {[`${fieldName}Object`]: value},
-                table: relatedTable
+                data: { [fieldName]: value.id },
+                appData: { [`${fieldName}Object`]: value },
+                table: relatedTable,
             };
         } else {
             throw new Error(`Invalid value for foreign key field: ${fieldName}`);
@@ -1546,7 +1407,7 @@ function handleRelationshipField(
             type: 'ifk',
             table: relatedTable,
             data: value,
-            related_column: `${fieldName}_id`
+            related_column: `${fieldName}_id`,
         };
     }
 
@@ -1578,20 +1439,16 @@ export function processDataForInsert<TEntity extends EntityKeys>(
                 resolved: '',
                 message: `No schema found for entity: ${entityNameVariant}`,
                 level: 'warn',
-                trace
+                trace,
             });
             return {
                 callMethod: 'simple',
-                processedData: frontendData as Record<string, unknown>
+                processedData: frontendData as Record<string, unknown>,
             };
         }
 
         // Convert frontend data to database format
-        const dbData = convertEntityAndFieldsInObject<TEntity>(
-            removeEmptyFields(frontendData),
-            entityKey,
-            trace
-        );
+        const dbData = convertEntityAndFieldsInObject<TEntity>(removeEmptyFields(frontendData), entityKey, trace);
 
         const result: Record<string, unknown> = {};
         const relatedTables: Array<{
@@ -1606,34 +1463,15 @@ export function processDataForInsert<TEntity extends EntityKeys>(
         // Process each field
         for (const fieldKey in entitySchema.entityFields) {
             const field = entitySchema.entityFields[fieldKey as EntityFieldKeys<TEntity>];
-            const dbFieldName = getFieldNameInFormat(
-                entityKey,
-                fieldKey as EntityFieldKeys<TEntity>,
-                'database'
-            );
+            const dbFieldName = getFieldNameInFormat(entityKey, fieldKey as EntityFieldKeys<TEntity>, 'database');
 
             if (dbFieldName in dbData) {
                 const value = dbData[dbFieldName];
 
                 if (field.structure === 'single') {
-                    result[dbFieldName] = convertType(
-                        entityKey,
-                        fieldKey as EntityFieldKeys<TEntity>,
-                        value,
-                        trace
-                    );
-                } else if (
-                    field.structure === 'foreignKey' ||
-                    field.structure === 'inverseForeignKey'
-                ) {
-                    const relationship = handleRelationshipField(
-                        dbFieldName,
-                        value,
-                        field.structure,
-                        entityKey,
-                        field,
-                        trace
-                    );
+                    result[dbFieldName] = convertType(entityKey, fieldKey as EntityFieldKeys<TEntity>, value, trace);
+                } else if (field.structure === 'foreignKey' || field.structure === 'inverseForeignKey') {
+                    const relationship = handleRelationshipField(dbFieldName, value, field.structure, entityKey, field, trace);
 
                     if (relationship.type === 'fk') {
                         hasForeignKey = true;
@@ -1644,7 +1482,7 @@ export function processDataForInsert<TEntity extends EntityKeys>(
                         relatedTables.push({
                             table: relationship.table,
                             data: relationship.data,
-                            related_column: relationship.related_column
+                            related_column: relationship.related_column,
                         });
                     }
                 } else {
@@ -1654,20 +1492,21 @@ export function processDataForInsert<TEntity extends EntityKeys>(
                         resolved: '',
                         message: `Unknown structure type for field ${fieldKey}`,
                         level: 'warn',
-                        trace
+                        trace,
                     });
                 }
             }
         }
 
         // Determine call method based on relationship types
-        const callMethod = !hasForeignKey && !hasInverseForeignKey
-                           ? 'simple'
-                           : hasForeignKey && !hasInverseForeignKey
-                             ? 'fk'
-                             : !hasForeignKey && hasInverseForeignKey
-                               ? 'ifk'
-                               : 'fkAndIfk';
+        const callMethod =
+            !hasForeignKey && !hasInverseForeignKey
+                ? 'simple'
+                : hasForeignKey && !hasInverseForeignKey
+                ? 'fk'
+                : !hasForeignKey && hasInverseForeignKey
+                ? 'ifk'
+                : 'fkAndIfk';
 
         if (relatedTables.length > 0) {
             result.relatedTables = relatedTables;
@@ -1675,9 +1514,8 @@ export function processDataForInsert<TEntity extends EntityKeys>(
 
         return {
             callMethod,
-            processedData: result
+            processedData: result,
         };
-
     } catch (error) {
         schemaLogger.logResolution({
             resolutionType: 'entity',
@@ -1685,12 +1523,12 @@ export function processDataForInsert<TEntity extends EntityKeys>(
             resolved: '',
             message: `Error processing data for insert: ${error}`,
             level: 'error',
-            trace
+            trace,
         });
 
         return {
             callMethod: 'simple',
-            processedData: frontendData as Record<string, unknown>
+            processedData: frontendData as Record<string, unknown>,
         };
     }
 }
@@ -1744,25 +1582,19 @@ export async function getRelationships(
 /**
  * Get list of all entity names in specified format
  */
-export function getEntityListInFormat(
-    format: keyof EntityNameFormats<EntityKeys> = 'database',
-    trace: string[] = ['unknownCaller']
-): Array<string> {
+export function getEntityListInFormat(format: keyof EntityNameFormats<EntityKeys> = 'database', trace: string[] = ['unknownCaller']): Array<string> {
     trace = [...trace, 'getRegisteredSchemaNames'];
 
     const globalCache = getGlobalCache(trace);
     if (!globalCache) return [];
 
-    return Object.keys(globalCache.schema).map(entityKey => {
+    return Object.keys(globalCache.schema).map((entityKey) => {
         const entity = globalCache.schema[entityKey];
         return getEntityNameInFormat(entityKey as EntityKeys, format);
     });
 }
 
-function getEntityNameInFormat<
-    TEntity extends EntityKeys,
-    TFormat extends keyof EntityNameFormats<TEntity>
->(
+function getEntityNameInFormat<TEntity extends EntityKeys, TFormat extends keyof EntityNameFormats<TEntity>>(
     entityKey: TEntity,
     format: TFormat,
     trace: string[] = ['unknownCaller']
@@ -1789,11 +1621,7 @@ function getEntityNameInFormat<
 /**
  * Get field name in specific format
  */
-function getFieldNameInFormat<
-    TEntity extends EntityKeys,
-    TField extends EntityFieldKeys<TEntity>,
-    TFormat extends keyof FieldNameFormats<TEntity, TField>
->(
+function getFieldNameInFormat<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>, TFormat extends keyof FieldNameFormats<TEntity, TField>>(
     entityKey: TEntity,
     fieldKey: TField,
     format: TFormat,
@@ -1840,15 +1668,8 @@ export function getEntityFieldListInFormat<TEntity extends EntityKeys>(
     const entity = globalCache.schema[entityKey];
     if (!entity) return [];
 
-    return Object.keys(entity.entityFields).map(fieldKey =>
-        getFieldNameInFormat(
-            entityKey,
-            fieldKey as EntityFieldKeys<TEntity>,
-            format
-        )
-    );
+    return Object.keys(entity.entityFields).map((fieldKey) => getFieldNameInFormat(entityKey, fieldKey as EntityFieldKeys<TEntity>, format));
 }
-
 
 export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
     // Flags to control the output sections
@@ -1901,11 +1722,11 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
             if (showFields && entity.entityFields) {
                 const fieldNames = Object.keys(entity.entityFields);
                 if (fieldNames.length > 0) {
-                    const prettyFieldNames = fieldNames.map(fieldName => {
+                    const prettyFieldNames = fieldNames.map((fieldName) => {
                         const field = entity.entityFields[fieldName];
                         return `   - ${field.fieldNameFormats.pretty} [${fieldName}]`;
                     });
-                    prettyFieldNames.forEach(prettyFieldName => console.log(prettyFieldName));
+                    prettyFieldNames.forEach((prettyFieldName) => console.log(prettyFieldName));
                 } else {
                     console.log('   No fields available');
                 }
@@ -1979,8 +1800,8 @@ export function logSchemaCacheReport(globalCache: UnifiedSchemaCache) {
 }
 
 import fs from 'fs';
-import { SchemaField } from "@/lib/redux/schema/concepts/types";
-import { schemaLogger } from "../logger";
+import { SchemaField } from '@/lib/redux/schema/concepts/types';
+import { schemaLogger } from '../logger';
 
 export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
     // Enable all output sections
@@ -2032,11 +1853,11 @@ export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
             if (showFields && entity.entityFields) {
                 const fieldNames = Object.keys(entity.entityFields);
                 if (fieldNames.length > 0) {
-                    const prettyFieldNames = fieldNames.map(fieldName => {
+                    const prettyFieldNames = fieldNames.map((fieldName) => {
                         const field = entity.entityFields[fieldName];
                         return `   - ${field.fieldNameFormats.pretty} [${fieldName}]\n`;
                     });
-                    prettyFieldNames.forEach(prettyFieldName => (report += prettyFieldName));
+                    prettyFieldNames.forEach((prettyFieldName) => (report += prettyFieldName));
                 } else {
                     report += '   No fields available\n';
                 }
@@ -2068,12 +1889,18 @@ export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
 
     if (showEntityNameToCanonicalSample) {
         const firstEntityNameToCanonical = Object.entries(globalCache.entityNameToCanonical)[0];
-        report += '\nSample Entity Name to Canonical Mapping (Detailed):\n' + JSON.stringify({ [firstEntityNameToCanonical[0]]: firstEntityNameToCanonical[1] }, null, 2) + '\n';
+        report +=
+            '\nSample Entity Name to Canonical Mapping (Detailed):\n' +
+            JSON.stringify({ [firstEntityNameToCanonical[0]]: firstEntityNameToCanonical[1] }, null, 2) +
+            '\n';
     }
 
     if (showFieldNameToCanonicalSample) {
         const firstFieldNameToCanonical = Object.entries(globalCache.fieldNameToCanonical)[0];
-        report += '\nSample Field Name to Canonical Mapping (Detailed):\n' + JSON.stringify({ [firstFieldNameToCanonical[0]]: firstFieldNameToCanonical[1] }, null, 2) + '\n';
+        report +=
+            '\nSample Field Name to Canonical Mapping (Detailed):\n' +
+            JSON.stringify({ [firstFieldNameToCanonical[0]]: firstFieldNameToCanonical[1] }, null, 2) +
+            '\n';
     }
 
     if (showEntityNameFormatsSample) {
@@ -2088,22 +1915,34 @@ export function logSchemaCacheReportFile(globalCache: UnifiedSchemaCache) {
 
     if (showEntityNameToDatabaseSample) {
         const firstEntityNameToDatabase = Object.entries(globalCache.entityNameToDatabase)[0];
-        report += '\nSample Entity Name to Database Mapping (Detailed):\n' + JSON.stringify({ [firstEntityNameToDatabase[0]]: firstEntityNameToDatabase[1] }, null, 2) + '\n';
+        report +=
+            '\nSample Entity Name to Database Mapping (Detailed):\n' +
+            JSON.stringify({ [firstEntityNameToDatabase[0]]: firstEntityNameToDatabase[1] }, null, 2) +
+            '\n';
     }
 
     if (showEntityNameToBackendSample) {
         const firstEntityNameToBackend = Object.entries(globalCache.entityNameToBackend)[0];
-        report += '\nSample Entity Name to Backend Mapping (Detailed):\n' + JSON.stringify({ [firstEntityNameToBackend[0]]: firstEntityNameToBackend[1] }, null, 2) + '\n';
+        report +=
+            '\nSample Entity Name to Backend Mapping (Detailed):\n' +
+            JSON.stringify({ [firstEntityNameToBackend[0]]: firstEntityNameToBackend[1] }, null, 2) +
+            '\n';
     }
 
     if (showFieldNameToDatabaseSample) {
         const firstFieldNameToDatabase = Object.entries(globalCache.fieldNameToDatabase)[0];
-        report += '\nSample Field Name to Database Mapping (Detailed):\n' + JSON.stringify({ [firstFieldNameToDatabase[0]]: firstFieldNameToDatabase[1] }, null, 2) + '\n';
+        report +=
+            '\nSample Field Name to Database Mapping (Detailed):\n' +
+            JSON.stringify({ [firstFieldNameToDatabase[0]]: firstFieldNameToDatabase[1] }, null, 2) +
+            '\n';
     }
 
     if (showFieldNameToBackendSample) {
         const firstFieldNameToBackend = Object.entries(globalCache.fieldNameToBackend)[0];
-        report += '\nSample Field Name to Backend Mapping (Detailed):\n' + JSON.stringify({ [firstFieldNameToBackend[0]]: firstFieldNameToBackend[1] }, null, 2) + '\n';
+        report +=
+            '\nSample Field Name to Backend Mapping (Detailed):\n' +
+            JSON.stringify({ [firstFieldNameToBackend[0]]: firstFieldNameToBackend[1] }, null, 2) +
+            '\n';
     }
 
     // Full detailed outputs

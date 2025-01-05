@@ -1,9 +1,10 @@
-import React, {useState} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
-import {cn} from "@/lib/utils";
-import {ChevronDown, ChevronRight, Edit, Save, X, Plus, Trash} from 'lucide-react';
-import {Input} from "@/components/ui/input";
-import {ValidationError} from "./types";
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronRight, Edit, Save, X, Plus, Trash } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { ValidationError } from "./types";
+import { jsonUtils } from './newUitls';
 
 interface JsonEditorItemProps {
     keyName: string;
@@ -20,51 +21,58 @@ interface JsonEditorItemProps {
     index: number;
 }
 
-const JsonEditorItem: React.FC<JsonEditorItemProps> = (
-    {
-        keyName,
-        value,
-        depth,
-        isExpanded,
-        onToggle,
-        onEdit,
-        onAdd,
-        onDelete,
-        error,
-        lockKeys,
-        readOnly,
-        index,
-    }) => {
+const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
+    keyName,
+    value,
+    depth,
+    isExpanded,
+    onToggle,
+    onEdit,
+    onAdd,
+    onDelete,
+    error,
+    lockKeys,
+    readOnly,
+    index,
+}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedKey, setEditedKey] = useState(keyName);
-    const [editedValue, setEditedValue] = useState(() =>
-        typeof value === 'object' ? '' : JSON.stringify(value)
+    const [editedValue, setEditedValue] = useState(() => 
+        typeof value === 'object' ? '' : jsonUtils.stringify(value, false)
     );
 
     const isObject = typeof value === 'object' && value !== null;
-    const indent = depth * 12; // Reduced indentation
+    const indent = depth * 12;
 
     const handleEdit = () => {
         if (readOnly) return;
         setIsEditing(true);
         setEditedKey(keyName);
-        setEditedValue(typeof value === 'object' ? '' : JSON.stringify(value));
+        setEditedValue(typeof value === 'object' ? '' : jsonUtils.stringify(value, false));
     };
 
     const handleSave = () => {
-        try {
-            const parsedValue = typeof value === 'object' ? value : JSON.parse(editedValue);
-            onEdit(editedKey, parsedValue);
+        if (typeof value === 'object') {
+            onEdit(editedKey, value);
             setIsEditing(false);
-        } catch (error) {
-            console.error('Invalid JSON:', error);
+            return;
         }
+
+        const { data: parsedValue, error } = jsonUtils.parse(editedValue);
+        
+        if (error) {
+            console.error('Invalid JSON:', error);
+            return;
+        }
+
+        onEdit(editedKey, parsedValue);
+        setIsEditing(false);
     };
 
     const handleCancel = () => {
         setIsEditing(false);
         setEditedKey(keyName);
-        setEditedValue(typeof value === 'object' ? '' : JSON.stringify(value));
+        setEditedValue(typeof value === 'object' ? '' : jsonUtils.stringify(value, false));
     };
 
     const getValueColor = (val: any) => {
@@ -74,12 +82,28 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = (
         return "text-foreground";
     };
 
+    const handleNestedEdit = (k: string, newKey: string, newValue: any) => {
+        const newObj = jsonUtils.transform(value, 'edit', [k], { [newKey]: newValue });
+        onEdit(keyName, newObj);
+    };
+
+    const handleNestedAdd = (k: string, newKey: string, newValue: any, index: number) => {
+        const newObj = jsonUtils.transform(value, 'add', [String(index)], { [newKey]: newValue });
+        onEdit(keyName, newObj);
+    };
+
+    const handleNestedDelete = (k: string) => {
+        const newObj = jsonUtils.transform(value, 'delete', [k]);
+        onEdit(keyName, newObj);
+    };
+
+    // IconButton component remains the same
     const IconButton = ({
-                            icon: Icon,
-                            onClick,
-                            color = "text-muted-foreground",
-                            hoverColor = "hover:text-foreground"
-                        }) => (
+        icon: Icon,
+        onClick,
+        color = "text-muted-foreground",
+        hoverColor = "hover:text-foreground"
+    }) => (
         <button
             onClick={onClick}
             className={cn(
@@ -94,6 +118,13 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = (
         </button>
     );
 
+    const renderValue = (val: any) => {
+        if (typeof val === 'string') return `"${val}"`;
+        if (val === null) return 'null';
+        if (val === undefined) return 'undefined';
+        return String(val);
+    };
+
     return (
         <div
             className={cn(
@@ -102,15 +133,16 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = (
             )}
             style={{marginLeft: `${indent}px`}}
         >
+            {/* Rest of the JSX remains largely the same */}
             <div className="flex items-center py-0.5 hover:bg-muted/50 rounded-sm -ml-1 pl-1">
                 {isObject && (
                     <button
                         onClick={onToggle}
                         className="p-0.5 text-muted-foreground hover:text-foreground"
                     >
-                        {isExpanded ?
-                         <ChevronDown className="h-3 w-3"/> :
-                         <ChevronRight className="h-3 w-3"/>
+                        {isExpanded ? 
+                            <ChevronDown className="h-3 w-3"/> : 
+                            <ChevronRight className="h-3 w-3"/>
                         }
                     </button>
                 )}
@@ -145,43 +177,43 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = (
                         />
                     </div>
                 ) : (
-                     <div className="flex items-center gap-1 flex-1">
-                         <span className="font-medium">{keyName}</span>
-                         <span>:</span>
-                         {!isObject && (
-                             <span
-                                 className={cn(
-                                     "cursor-text px-1 rounded-sm",
-                                     getValueColor(value),
-                                     !readOnly && "hover:bg-muted"
-                                 )}
-                                 onClick={handleEdit}
-                             >
-                {typeof value === 'string' ? `"${value}"` : String(value)}
-              </span>
-                         )}
-                         <div className="flex items-center gap-0.5 ml-auto">
-                             <IconButton
-                                 icon={Edit}
-                                 onClick={handleEdit}
-                                 color="text-blue-600 dark:text-blue-400"
-                                 hoverColor="hover:text-blue-700 dark:hover:text-blue-300"
-                             />
-                             <IconButton
-                                 icon={Plus}
-                                 onClick={() => onAdd("newKey", null, index + 1)}
-                                 color="text-green-600 dark:text-green-400"
-                                 hoverColor="hover:text-green-700 dark:hover:text-green-300"
-                             />
-                             <IconButton
-                                 icon={Trash}
-                                 onClick={onDelete}
-                                 color="text-red-600 dark:text-red-400"
-                                 hoverColor="hover:text-red-700 dark:hover:text-red-300"
-                             />
-                         </div>
-                     </div>
-                 )}
+                    <div className="flex items-center gap-1 flex-1">
+                        <span className="font-medium">{keyName}</span>
+                        <span>:</span>
+                        {!isObject && (
+                            <span
+                                className={cn(
+                                    "cursor-text px-1 rounded-sm",
+                                    getValueColor(value),
+                                    !readOnly && "hover:bg-muted"
+                                )}
+                                onClick={handleEdit}
+                            >
+                                {renderValue(value)}
+                            </span>
+                        )}
+                        <div className="flex items-center gap-0.5 ml-auto">
+                            <IconButton
+                                icon={Edit}
+                                onClick={handleEdit}
+                                color="text-blue-600 dark:text-blue-400"
+                                hoverColor="hover:text-blue-700 dark:hover:text-blue-300"
+                            />
+                            <IconButton
+                                icon={Plus}
+                                onClick={() => onAdd("newKey", null, index + 1)}
+                                color="text-green-600 dark:text-green-400"
+                                hoverColor="hover:text-green-700 dark:hover:text-green-300"
+                            />
+                            <IconButton
+                                icon={Trash}
+                                onClick={onDelete}
+                                color="text-red-600 dark:text-red-400"
+                                hoverColor="hover:text-red-700 dark:hover:text-red-300"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {error && (
@@ -203,24 +235,10 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = (
                                 value={v}
                                 depth={depth + 1}
                                 isExpanded={false}
-                                onToggle={() => {
-                                }}
-                                onEdit={(newKey, newValue) => {
-                                    const newObj = {...value};
-                                    delete newObj[k];
-                                    newObj[newKey] = newValue;
-                                    onEdit(keyName, newObj);
-                                }}
-                                onAdd={(newKey, newValue, index) => {
-                                    const entries = Object.entries(value);
-                                    entries.splice(index, 0, [newKey, newValue]);
-                                    onEdit(keyName, Object.fromEntries(entries));
-                                }}
-                                onDelete={() => {
-                                    const newObj = {...value};
-                                    delete newObj[k];
-                                    onEdit(keyName, newObj);
-                                }}
+                                onToggle={() => {}}
+                                onEdit={(newKey, newValue) => handleNestedEdit(k, newKey, newValue)}
+                                onAdd={(newKey, newValue, index) => handleNestedAdd(k, newKey, newValue, index)}
+                                onDelete={() => handleNestedDelete(k)}
                                 error={error}
                                 lockKeys={lockKeys}
                                 readOnly={readOnly}
@@ -235,173 +253,3 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = (
 };
 
 export default JsonEditorItem;
-
-/*
-
-const JsonEditorItem: React.FC<JsonEditorItemProps> = (
-    {
-        keyName,
-        value,
-        depth,
-        isExpanded,
-        onToggle,
-        onEdit,
-        onAdd,
-        onDelete,
-        error,
-        lockKeys,
-        readOnly,
-        index
-    }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedKey, setEditedKey] = useState(keyName);
-    const [editedValue, setEditedValue] = useState(() =>
-        typeof value === 'object' ? '' : String(value)
-    );
-
-    const handleSubmit = () => {
-        if (readOnly) return;
-        onEdit(editedKey,
-            typeof value === 'object'
-            ? value
-            : tryParseValue(editedValue)
-        );
-        setIsEditing(false);
-    };
-
-    const tryParseValue = (val: string) => {
-        try {
-            return JSON.parse(val);
-        } catch {
-            return val;
-        }
-    };
-
-    const isObject = typeof value === 'object' && value !== null;
-    const indent = depth * 16;
-
-    return (
-        <div
-            className={cn(
-                "flex items-start text-sm",
-                error && "bg-destructive/10"
-            )}
-            style={{paddingLeft: `${indent}px`}}
-        >
-            {isEditing ? (
-                <div className="flex items-center space-x-1 py-0.5">
-                    {!lockKeys && (
-                        <input
-                            value={editedKey}
-                            onChange={e => setEditedKey(e.target.value)}
-                            className="px-1 py-0.5 text-sm bg-muted rounded-sm w-auto"
-                            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                            autoFocus
-                        />
-                    )}
-                    {!isObject && (
-                        <>
-                            <span>:</span>
-                            <input
-                                value={editedValue}
-                                onChange={e => setEditedValue(e.target.value)}
-                                className="px-1 py-0.5 text-sm bg-muted rounded-sm w-auto"
-                                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                            />
-                        </>
-                    )}
-                    <button
-                        onClick={handleSubmit}
-                        className="text-primary hover:text-primary/80"
-                    >
-                        ✓
-                    </button>
-                    <button
-                        onClick={() => setIsEditing(false)}
-                        className="text-destructive hover:text-destructive/80"
-                    >
-                        ✕
-                    </button>
-                </div>
-            ) : (
-                 <div className="flex items-center space-x-1 py-0.5 group">
-                     {isObject && (
-                         <button
-                             onClick={onToggle}
-                             className="w-4 text-center"
-                         >
-                             {isExpanded ? '▼' : '▶'}
-                         </button>
-                     )}
-                     <span
-                         className={cn(
-                             "cursor-text",
-                             !readOnly && "hover:bg-muted px-1 rounded-sm"
-                         )}
-                         onClick={() => !readOnly && setIsEditing(true)}
-                     >
-            {keyName}
-          </span>
-                     <span>:</span>
-                     {!isObject && (
-                         <span
-                             className={cn(
-                                 "cursor-text",
-                                 !readOnly && "hover:bg-muted px-1 rounded-sm"
-                             )}
-                             onClick={() => !readOnly && setIsEditing(true)}
-                         >
-              {typeof value === 'string' ? `"${value}"` : String(value)}
-            </span>
-                     )}
-                     {!readOnly && (
-                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button
-                                 onClick={onDelete}
-                                 className="text-destructive hover:text-destructive/80 px-1"
-                             >
-                                 ✕
-                             </button>
-                         </div>
-                     )}
-                 </div>
-             )}
-            {isObject && isExpanded && (
-                <div className="w-full">
-                    {Object.entries(value).map(([k, v], i) => (
-                        <JsonEditorItem
-                            key={k}
-                            keyName={k}
-                            value={v}
-                            depth={depth + 1}
-                            isExpanded={false}
-                            onToggle={() => {
-                            }}
-                            onEdit={(newKey, newValue) => {
-                                const newObj = {...value};
-                                delete newObj[k];
-                                newObj[newKey] = newValue;
-                                onEdit(keyName, newObj);
-                            }}
-                            onAdd={(newKey, newValue, index) => {
-                                const entries = Object.entries(value);
-                                entries.splice(index, 0, [newKey, newValue]);
-                                onEdit(keyName, Object.fromEntries(entries));
-                            }}
-                            onDelete={() => {
-                                const newObj = {...value};
-                                delete newObj[k];
-                                onEdit(keyName, newObj);
-                            }}
-                            error={error}
-                            lockKeys={lockKeys}
-                            readOnly={readOnly}
-                            index={i}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-*/

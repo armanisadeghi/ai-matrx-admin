@@ -1,4 +1,5 @@
-import { BrokerData, DataTypeToValueType } from "../brokerSync/types";
+import { BrokerData } from "@/types";
+import { DataTypeToValueType } from "../brokerSync/types";
 
 // Broker interface that extends BrokerData with value type based on dataType
 export interface Broker extends Omit<BrokerData, 'value'> {

@@ -1,10 +1,11 @@
-import React, {useCallback, useMemo} from "react";
-import {EntityKeys} from "@/types/entityTypes";
+// SmartDeleteConfirmation.tsx
+import React from "react";
+import { EntityKeys } from "@/types/entityTypes";
 import ConfirmationDialog from "./ConfirmationDialog";
-import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
-import {getEntitySlice} from "@/lib/redux";
-import {Callback, callbackManager} from "@/utils/callbackManager";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { useEntityTools } from "@/lib/redux";
+import { useCallback } from "react";
+import { useDeleteRecord } from "@/app/entities/hooks/crud/useDeleteRecord";
 
 interface SmartDeleteConfirmationProps {
     entityKey: EntityKeys;
@@ -13,40 +14,29 @@ interface SmartDeleteConfirmationProps {
     onComplete?: (success: boolean) => void;
 }
 
-export const SmartDeleteConfirmation = (
-    {
-        entityKey,
-        open,
-        onOpenChange,
-        onComplete
-    }: SmartDeleteConfirmationProps) => {
-    const dispatch = useAppDispatch();
-    const {actions} = useMemo(() => getEntitySlice(entityKey), [entityKey]);
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-
+export const SmartDeleteConfirmation = ({
+    entityKey,
+    open,
+    onOpenChange,
+    onComplete
+}: SmartDeleteConfirmationProps) => {
+    const { selectors } = useEntityTools(entityKey);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
     const comparison = useAppSelector(selectors.selectChangeComparison);
 
-    const handleComplete = useCallback<Callback<boolean>>((success) => {
-        if (!activeRecordId) return;
-
-        dispatch(actions.removePendingOperation(activeRecordId));
+    const handleComplete = useCallback((success: boolean) => {
         if (success) {
             onOpenChange(false);
         }
         onComplete?.(success);
-    }, [activeRecordId, actions, dispatch, onOpenChange, onComplete]);
+    }, [onOpenChange, onComplete]);
+
+    const { deleteRecord } = useDeleteRecord(entityKey, handleComplete);
 
     const handleConfirm = useCallback(() => {
         if (!activeRecordId) return;
-
-        dispatch(actions.addPendingOperation(activeRecordId));
-
-        dispatch(actions.deleteRecord({
-            matrxRecordId: activeRecordId,
-            callbackId: callbackManager.register(handleComplete)
-        }));
-    }, [activeRecordId, actions, dispatch, handleComplete]);
+        deleteRecord(activeRecordId);
+    }, [activeRecordId, deleteRecord]);
 
     return (
         <ConfirmationDialog

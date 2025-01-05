@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useBrokers } from '@/providers/brokers/BrokersProvider';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 import { EntityRecordMap, MatrxRecordId, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import BrokerRecordDisplay from '../../brokers/dev/EntityBrokerCardNew';
@@ -87,7 +86,6 @@ export default function BrokerSidebar({
         }
     };
 
-    const { brokers, createBroker, updateBroker, deleteBroker } = useBrokers();
 
     return (
         <div className='flex flex-col h-full py-3'>

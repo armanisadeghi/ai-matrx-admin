@@ -1,5 +1,5 @@
 // editorUtils.ts
-import type { ContentBlock, DocumentState } from "../types";
+import { toBrokerChip, type ContentBlock, type DocumentState, type EditorBroker } from "../types";
 
 import {
   createTextNode,
@@ -8,16 +8,35 @@ import {
   createCursorNode,
 } from "./core-dom-utils";
 import { renderBrokerChipInContainer } from "../broker/BrokerChipRender";
-import { useBrokers } from '@/providers/brokers/BrokersProvider';
-import { Broker } from "@/providers/brokers/types";
+
 import { getCursorPosition, setCursorPosition } from "./cursorPosition";
+import { useBrokerSync } from "@/providers/brokerSync/BrokerSyncProvider";
 
 export const generateId = () => Math.random().toString(36).substring(2, 11);
 
-const reconstructBrokerFromBlock = (block: ContentBlock): Broker | null => {
+const reconstructBrokerFromBlock = (
+  block: ContentBlock, 
+  editorId: string
+): EditorBroker | null => {
   if (block.type !== "chip") return null;
-  const { getBroker } = useBrokers();
-  return getBroker(block.id);
+
+  const { brokerData, getConnectionStatus } = useBrokerSync();
+  const broker = brokerData.selectedBrokers[block.id];
+  
+  if (!broker) {
+    console.warn(`No broker found for block ${block.id}`);
+    return null;
+  }
+
+  // Get connection info for this broker
+  const connectionStatus = getConnectionStatus(block.id);
+  
+  // Convert to EditorBroker with connection info
+  return toBrokerChip(broker, {
+    color: connectionStatus?.color,
+    isTemporary: false,
+    editorId
+  });
 };
 
 export const setEditorContent = (
@@ -26,6 +45,7 @@ export const setEditorContent = (
   setDocumentState: (state: DocumentState) => void
 ) => {
   if (!editorRef.current) return;
+  const editorId = editorRef.current.dataset.editorId || '';
 
   editorRef.current.innerHTML = "";
   let currentDiv = createLineBreakNode().node as HTMLElement;
@@ -50,12 +70,12 @@ export const setEditorContent = (
       }
 
       case "chip": {
-        const broker = reconstructBrokerFromBlock(block);
+        const broker = reconstructBrokerFromBlock(block, editorId);
         if (!broker) {
           console.warn(`Skipping chip reconstruction for block ${block.id}`);
           break;
         }
-
+    
         const onProcessContent = () => {
           const blocks = captureEditorContent(editorRef);
           processEditorContent(

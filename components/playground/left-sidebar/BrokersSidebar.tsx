@@ -3,12 +3,10 @@
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useBrokers } from '@/providers/brokers/BrokersProvider';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import BrokerRecordDisplay from '../brokers/EntityBrokerCard';
 import { SmartCrudButtons, SmartNewButton } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
-import SmartRefreshButton from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/core-buttons/SmartRefreshButton';
 
 const initialLayoutProps = getUnifiedLayoutProps({
     entityKey: 'broker',
@@ -28,7 +26,7 @@ const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
         formStyleOptions: {
             fieldFiltering: {
                 excludeFields: ['id', 'otherSourceParams'],
-                defaultShownFields: ['displayName', 'value', 'dataType', 'defaultSource', 'defaultDestination'],
+                defaultShownFields: ['displayName', 'value', 'stringValue', 'dataType', 'defaultSource', 'defaultDestination'],
             },
         },
     },
@@ -57,15 +55,14 @@ export default function BrokerSidebar({
         }
     };
 
-    const { brokers, createBroker, updateBroker, deleteBroker } = useBrokers();
 
     return (
         <div className='flex flex-col h-full py-3'>
             <SmartCrudButtons
-             entityKey='broker'
-             options={{allowCreate: true, allowEdit: false, allowDelete: false, allowRefresh: true, allowCancel: true, allowSave: false}}
-             layout={{buttonLayout: 'row', buttonSize: 'icon', buttonsPosition: 'top', buttonSpacing: 'normal'}}
-             />
+                entityKey='broker'
+                options={{ allowCreate: true, allowEdit: false, allowDelete: false, allowRefresh: true, allowCancel: true }}
+                layout={{ buttonLayout: 'row', buttonSize: 'icon', buttonsPosition: 'top', buttonSpacing: 'normal' }}
+            />
             <ScrollArea className='flex-1'>
                 <AnimatePresence>
                     <BrokerRecordDisplay

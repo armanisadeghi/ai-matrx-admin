@@ -5,7 +5,6 @@ import { AnimatePresence } from "framer-motion";
 import { broker as brokerSchema } from "@/utils/schema/initialTableSchemas";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import BrokerEditor from "./BrokerEditor";
-import { useBrokers } from "@/providers/brokers/BrokersProvider";
 import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
 import { BrokerData } from "@/types/AutomationSchemaTypes";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
@@ -35,7 +34,6 @@ export default function BrokerSidebar({
     }
   };
 
-  const { brokers, createBroker, updateBroker, deleteBroker } = useBrokers();
 
   return (
     <div className="flex flex-col h-full py-3 space-y-3">

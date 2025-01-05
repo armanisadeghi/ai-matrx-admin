@@ -15,6 +15,7 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(entityKey: TEn
         throw new Error(`Schema not provided for entity: ${entityKey}`);
     }
     const metadata: EntityMetadata = {
+        entityName: entityKey,
         displayName: schema.entityNameFormats.pretty || entityKey,
         schemaType: schema.schemaType,
         primaryKeyMetadata: schema.primaryKeyMetadata,
