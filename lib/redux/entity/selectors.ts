@@ -579,6 +579,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         })
     );
 
+    const selectIsLoading = createSelector([selectDataState], (dataState) => dataState.isLoading);
+
+
     // Pagination with additional computed properties
     const selectPaginationExtended = createSelector([selectPaginationInfo, selectFilteredRecords], (pagination, filteredRecords) => ({
         ...pagination,
@@ -824,6 +827,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordWithDisplay,
         selectMetadataSummary,
         selectDataState,
+        selectIsLoading,
         selectPaginationExtended,
         selectHistoryState,
         // Newly added selectors

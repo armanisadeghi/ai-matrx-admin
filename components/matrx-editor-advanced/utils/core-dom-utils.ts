@@ -41,27 +41,10 @@ export const createBrokerNode = (broker: EditorBroker): DOMNodeCreationResult =>
     chipContainer.setAttribute('data-type', 'chip');
     chipContainer.setAttribute('data-chip', '');
     chipContainer.setAttribute('data-chip-content', broker.displayName);
-    chipContainer.setAttribute('data-original-text', broker.stringValue || '');
+    chipContainer.setAttribute('data-original-text', broker.stringValue);
+    chipContainer.setAttribute('data-editor-id', broker.editorId);
+    chipContainer.setAttribute('data-progress-step', broker.progressStep);
     chipContainer.contentEditable = 'false';
-
-    // Additional tracking attributes
-    chipContainer.setAttribute('data-broker-name', broker.name);
-    chipContainer.setAttribute('data-broker-datatype', broker.dataType);
-
-    // Connection tracking
-    if (broker.editorId) {
-        chipContainer.setAttribute('data-editor-id', broker.editorId);
-    }
-    if (broker.isTemporary) {
-        chipContainer.setAttribute('data-temporary', 'true');
-    }
-    if (broker.color) {
-        chipContainer.setAttribute('data-color', broker.color);
-    }
-
-    // Store value in a way that doesn't affect rendering
-    const valueStr = JSON.stringify(broker.value);
-    chipContainer.setAttribute('data-value', valueStr);
 
     return {
         node: chipContainer,

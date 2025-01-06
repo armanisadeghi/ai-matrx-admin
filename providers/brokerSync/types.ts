@@ -1,26 +1,28 @@
-import { InitialTableSchema } from '@/utils/schema/initialSchemas';
-import { v4 as uuidv4 } from 'uuid';
+// providers/brokerSync/types.ts
 
-// Constants for color management
-export const TAILWIND_COLORS = ['blue', 'green', 'yellow', 'red', 'purple', 'pink', 'indigo', 'teal'] as const;
+import { EditorBroker } from "@/components/matrx-editor-advanced/types";
 
-// Connection status to track broker state
+// Constants
+
+// Core Types
+export type BrokerDataType = 'str' | 'bool' | 'dict' | 'float' | 'int' | 'list' | 'url';
 export type ConnectionStatus = 'active' | 'modified' | 'pending' | 'unlinked';
+
+// Instance and Connection Types
+export interface BrokerInstance {
+    blockId: string;
+    editorId: string;
+    content?: string;
+    status?: ConnectionStatus;
+}
 
 export interface BrokerConnection {
     brokerId: string;
     editorId: string;
-    blockIds: string[]; // Multiple blocks can reference the same broker
+    blockIds: string[];
     color: string;
-    isTemporary: boolean;
-    pendingContent?: string; // Content waiting to be saved
-    status: ConnectionStatus; // Add status field
-}
-
-export interface SyncState {
-    connections: BrokerConnection[];
-    unlinkedBlocks: UnlinkedBlock[];
-    activeEditors: Set<string>;
+    isTemporary?: boolean;
+    status?: ConnectionStatus;
 }
 
 export interface EditorInstance {
@@ -29,56 +31,112 @@ export interface EditorInstance {
     ref: React.RefObject<HTMLDivElement>;
 }
 
-// Types
+// State Types
 export interface BrokerSyncState {
-    connections: BrokerConnection[];
-    unlinkedBlocks: UnlinkedBlock[];
-    editorInstances: Map<string, EditorInstance>;
+    trackedBrokers: Map<string, TrackedBroker>;
+    orphanedInstances: Map<string, BrokerInstance>;
+    colorAssignments: Map<string, string>;
 }
 
-export interface UnlinkedBlock {
-    blockId: string;
-    editorId: string;
-    content: string;
-    status?: ConnectionStatus; // Optional status for unlinked blocks
+export interface TrackedBroker {
+    id: string;
+    displayName: string;
+    instances: BrokerInstance[];
+    color: string;
+    isTemporary: boolean;
+    originalContent?: string;
 }
 
-// Define the possible data types
-export type BrokerDataType = 'str' | 'bool' | 'dict' | 'float' | 'int' | 'list' | 'url';
+// Actions
+export type BrokerSyncAction =
+    // Broker tracking
+    // Existing actions
+    | { type: 'TRACK_BROKER'; payload: { 
+        id: string; 
+        displayName: string;
+        stringValue: string;
+        editorId: string;
+        isConnected: boolean;
+        progressStep: 'tempRequested';
+        color: string;
+    }}
+    | { type: 'UNTRACK_BROKER'; payload: string }
+    | { type: 'UPDATE_BROKER_NAME'; payload: { id: string; displayName: string }}
+    | { type: 'UPDATE_BROKER_PROGRESS'; payload: { 
+        id: string; 
+        progressStep: EditorBroker['progressStep'] 
+    }}
+    | { type: 'UPDATE_BROKER_CONNECTION'; payload: { 
+        id: string; 
+        isConnected: boolean 
+    }}
+    | { type: 'ADD_BROKER_INSTANCE'; payload: { 
+        brokerId: string; 
+        instance: BrokerInstance 
+    }}
+    | { type: 'REMOVE_BROKER_INSTANCE'; payload: { 
+        brokerId: string; 
+        editorId: string 
+    }}
+    | { type: 'UNLINK_BROKER'; payload: { 
+        brokerId: string; 
+        editorId: string 
+    }}    
+    // Orphaned instance management
+    | { type: 'ADD_ORPHANED_INSTANCE'; payload: { blockId: string; editorId: string; content?: string; originalBrokerId?: string } }
+    | { type: 'UPDATE_ORPHANED_CONTENT'; payload: { blockId: string; content: string } }
+    
+    // Instance movement
+    | { type: 'MOVE_INSTANCE'; payload: { blockId: string; fromOrphaned?: boolean; fromBrokerId?: string; toBrokerId: string } }
+    
+    // Content updates
+    | { type: 'UPDATE_INSTANCE_CONTENT'; payload: { brokerId: string; blockId: string; content: string } }
+    
+    // Editor management
+    | { type: 'REGISTER_EDITOR'; payload: { id: string; ref: React.RefObject<HTMLDivElement> } }
+    | { type: 'UNREGISTER_EDITOR'; payload: string };
+    
+    
+    // Context Value Type
+export interface BrokerSyncContextValue {
+    initializeBroker: (editorId: string, displayName: string, stringValue: string) => Promise<string>;
+    addBrokerInstance: (brokerId: string, editorId: string, blockId: string, stringValue?: string) => void;
+    updateBrokerName: (brokerId: string, displayName: string) => void;
+    unlinkBroker: (brokerId: string, editorId: string) => void;
+    removeBroker: (brokerId: string, editorId: string) => void;
+    handleOrphanedInstance: (blockId: string, action: 'create-new' | 'connect-existing', targetBrokerId?: string) => Promise<void>;
+    changeBrokerRelationship: (sourceBlockId: string, targetBrokerId: string, shouldMergeContent?: boolean) => Promise<void>;
+    handleEditorRegistration: (editorId: string, editorRef: React.RefObject<HTMLDivElement>) => void;
+    handleEditorCleanup: (editorId: string) => void;
+    trackContentUpdate: (blockId: string, stringValue: string, editorId: string) => Promise<void>;
+    getBrokerInstances: (brokerId: string) => BrokerInstance[];
+    getOrphanedInstances: () => [string, BrokerInstance][];
+    getBrokerColor: (brokerId: string) => string | undefined;
+}
 
-// Map data types to their TypeScript equivalents
-export type DataTypeToValueType<T extends BrokerDataType> = {
-    str: string;
-    bool: boolean;
-    dict: Record<string, unknown>;
-    float: number;
-    int: number;
-    list: unknown[];
-    url: string;
-}[T];
-
-// Base BrokerData type
-export type BrokerData = {
+// Base BrokerData type (for Redux/Entity system)
+export interface BrokerData {
     id: string;
     name: string;
     dataType: BrokerDataType;
-    stringValue?: string; // Add stringValue for text representation
-    value?: Record<string, unknown> | null; // Make value optional and nullable
+    stringValue?: string;
+    value?: Record<string, unknown> | null;
+    displayName?: string;
     description?: string;
     ready?: boolean;
-    displayName?: string;
     defaultSource?: 'function' | 'api' | 'chance' | 'database' | 'environment' | 'file' | 'generated_data' | 'none' | 'user_input';
+    defaultDestination?: 'function' | 'database' | 'file' | 'api_response' | 'user_output';
+    // Optional metadata
     tooltip?: string;
     validationRules?: Record<string, unknown>;
     sampleEntries?: string;
     customSourceComponent?: string;
     additionalParams?: Record<string, unknown>;
     otherSourceParams?: Record<string, unknown>;
-    defaultDestination?: 'function' | 'database' | 'file' | 'api_response' | 'user_output';
     outputComponent?: string;
-};
+}
 
-// Type guard for BrokerData
+// Type Guards
 export function isBrokerData(obj: unknown): obj is BrokerData {
     if (!obj || typeof obj !== 'object') return false;
     const broker = obj as BrokerData;

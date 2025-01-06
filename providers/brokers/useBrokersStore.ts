@@ -1,43 +1,6 @@
 // hooks/useBrokersStore.ts
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { Broker, BrokerDataType, DataTypeToValueType } from "./types";
-
-interface EditorInstance {
-  id: string;
-  brokers: Set<string>;
-  ref: React.RefObject<HTMLDivElement>;
-}
-
-interface BrokersState {
-  brokers: Record<string, Broker>;
-  brokerCount: number;
-  linkedEditors: Record<string, EditorInstance>;
-  // Core broker management
-  addExistingBroker: (broker: Broker) => void;
-  createBrokerFromText: (content: string) => Broker;
-  createNewBroker: () => Broker;
-  updateBroker: (id: string, data: Partial<Broker>) => void;
-  deleteBroker: (id: string) => void;
-  getBroker: (id: string) => Broker | undefined;
-  // Editor linking
-  linkBrokerToEditor: (
-    brokerId: string,
-    editorId: string,
-    editorRef: React.RefObject<HTMLDivElement>
-  ) => void;
-  unlinkBrokerFromEditor: (brokerId: string, editorId: string) => void;
-  getLinkedEditors: (brokerId: string) => string[];
-  // Data type management
-  updateBrokerValue: <T extends BrokerDataType>(
-    id: string,
-    value: DataTypeToValueType<T>,
-    dataType: T
-  ) => void;
-  // Sync state
-  markBrokerAsReady: (id: string) => void;
-  markBrokerAsNotReady: (id: string) => void;
-}
 
 
 const brokerColors = [

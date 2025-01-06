@@ -1,12 +1,7 @@
-import EntityLogger from "./entityLogger";
-import {EntityOperationMode, EntityState} from "@/lib/redux/entity/types/stateTypes";
-import {EntityKeys} from "@/types/entityTypes";
-import {
-    addToUnsavedRecords,
-    clearUnsavedRecords,
-    generateTemporaryRecordId,
-    setNewActiveRecord,
-} from "@/lib/redux/entity/utils/stateHelpUtils";
+import EntityLogger from './entityLogger';
+import { EntityOperationMode, EntityState } from '@/lib/redux/entity/types/stateTypes';
+import { EntityKeys } from '@/types/entityTypes';
+import { addToUnsavedRecords, clearUnsavedRecords, generateTemporaryRecordId, setNewActiveRecord } from '@/lib/redux/entity/utils/stateHelpUtils';
 
 export type ModeTransitionResult = {
     error?: string;
@@ -22,16 +17,12 @@ export class EntityModeManager {
         this.logger = EntityLogger.createLoggerWithDefaults(`EntityModeManager-${entityKey}`, entityKey);
     }
 
-    private validateTransition(
-        currentMode: EntityOperationMode | null,
-        targetMode: EntityOperationMode,
-        state: EntityState<EntityKeys>
-    ): ModeTransitionResult {
+    private validateTransition(currentMode: EntityOperationMode | null, targetMode: EntityOperationMode, state: EntityState<EntityKeys>): ModeTransitionResult {
         // TODO: This is a temporary workaround because it comes back that we have an operation when we dont
         if (state.pendingOperations.length > 0) {
             this.logger.log('warn', 'There are pending operations', {
                 pendingOperations: state.pendingOperations,
-                pendingOperationsCount: state.pendingOperations.length
+                pendingOperationsCount: state.pendingOperations.length,
             });
             //
             // return {
@@ -46,7 +37,7 @@ export class EntityModeManager {
             if (unsavedCount > 1) {
                 this.logger.log('warn', 'Multiple records have unsaved changes', {
                     unsavedCount: unsavedCount,
-                    hasUnsavedChanges: state.flags.hasUnsavedChanges
+                    hasUnsavedChanges: state.flags.hasUnsavedChanges,
                 });
 
                 // return {
@@ -60,7 +51,7 @@ export class EntityModeManager {
             // };
         }
 
-        return {canProceed: true};
+        return { canProceed: true };
     }
 
     private exitCreateMode(state: EntityState<EntityKeys>): void {
@@ -72,7 +63,7 @@ export class EntityModeManager {
             // switchToSingleSelectionMode(state, lastActiveRecord);
         } else {
             // switchToNoSelectionMode(state);
-            console.log("eliminated selection mode change")
+            console.log('eliminated selection mode change');
         }
 
         state.flags.operationMode = null;
@@ -97,16 +88,13 @@ export class EntityModeManager {
         state.flags.isValidated = false;
     }
 
-    private exitCurrentMode(
-        state: EntityState<EntityKeys>,
-        currentMode: EntityOperationMode | null
-    ): void {
+    private exitCurrentMode(state: EntityState<EntityKeys>, currentMode: EntityOperationMode | null): void {
         if (!currentMode) return;
 
         this.logger.log('debug', 'Exiting current mode', {
             mode: currentMode,
             activeRecord: state.selection.activeRecord,
-            lastActiveRecord: state.selection.lastActiveRecord
+            lastActiveRecord: state.selection.lastActiveRecord,
         });
 
         switch (currentMode) {
@@ -125,8 +113,8 @@ export class EntityModeManager {
         }
     }
 
-    private enterCreateMode(state: EntityState<EntityKeys>): void {
-        const tempId = generateTemporaryRecordId(state);
+    private enterCreateMode(state: EntityState<EntityKeys>, context?: string): void {
+        const tempId = context || generateTemporaryRecordId(state);
 
         // First set the new active record to preserve last active
         setNewActiveRecord(state, tempId);
@@ -181,19 +169,17 @@ export class EntityModeManager {
         state.flags.operationFlags.DELETE_STATUS = 'IDLE';
     }
 
-    private enterNewMode(
-        state: EntityState<EntityKeys>,
-        targetMode: EntityOperationMode
-    ): void {
+    private enterNewMode(state: EntityState<EntityKeys>, targetMode: EntityOperationMode, context?: any): void {
         this.logger.log('debug', 'Entering new mode', {
             mode: targetMode,
             activeRecord: state.selection.activeRecord,
-            selectedRecords: state.selection.selectedRecords
+            selectedRecords: state.selection.selectedRecords,
+            context,
         });
 
         switch (targetMode) {
             case 'create':
-                this.enterCreateMode(state);
+                this.enterCreateMode(state, context);
                 break;
             case 'update':
                 this.enterUpdateMode(state);
@@ -207,10 +193,7 @@ export class EntityModeManager {
         }
     }
 
-    changeMode(
-        state: EntityState<EntityKeys>,
-        targetMode: EntityOperationMode
-    ): ModeTransitionResult {
+    changeMode(state: EntityState<EntityKeys>, targetMode: EntityOperationMode, context?: any): ModeTransitionResult {
         const currentMode = state.flags.operationMode;
 
         this.logger.log('info', 'Attempting mode change', {
@@ -219,7 +202,7 @@ export class EntityModeManager {
             to: targetMode,
             hasUnsavedChanges: state.flags.hasUnsavedChanges,
             pendingOperations: state.pendingOperations,
-            pendingOperationsCount: state.pendingOperations.length
+            pendingOperationsCount: state.pendingOperations.length,
         });
 
         const validationResult = this.validateTransition(currentMode, targetMode, state);
@@ -232,8 +215,8 @@ export class EntityModeManager {
         }
 
         this.exitCurrentMode(state, currentMode);
-        this.enterNewMode(state, targetMode);
+        this.enterNewMode(state, targetMode, context);
 
-        return {canProceed: true};
+        return { canProceed: true };
     }
 }

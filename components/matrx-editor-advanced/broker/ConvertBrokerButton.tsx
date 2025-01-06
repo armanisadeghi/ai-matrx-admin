@@ -8,26 +8,44 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { useBrokers, type Broker } from "@/providers/brokers/BrokersProvider";
+import { EditorBroker } from "../types";
+import { useBrokerSync } from '@/providers/brokerSync/BrokerSyncProvider';
+import { useRefManager } from '@/lib/refs';
+import { generateBrokerName } from '../utils/generateBrokerName';
 
 interface ConvertBrokerButtonProps {
+  editorId: string;
   selectedText: string | null;
-  onBrokerConvert?: (broker: Broker) => void;
+  onBrokerConvert?: (broker: EditorBroker) => void;
 }
 
 export const ConvertBrokerButton: React.FC<ConvertBrokerButtonProps> = ({
+  editorId,
   selectedText,
   onBrokerConvert,
 }) => {
-  const { convertSelectionToBroker } = useBrokers();
+  const refManager = useRefManager();
+  const { initializeBroker } = useBrokerSync();
 
-  const handleClick = useCallback(() => {
-    if (selectedText) {
-      const broker = convertSelectionToBroker(selectedText);
-      onBrokerConvert?.(broker);
-    }
-  }, [convertSelectionToBroker, selectedText, onBrokerConvert]);
+  const handleClick = useCallback(async () => {
+    if (!selectedText) return;
+
+    const displayName = generateBrokerName(selectedText);
+    const stringValue = selectedText;
+    const brokerId = await initializeBroker(editorId, displayName, stringValue);
+
+    const broker: EditorBroker = {
+      id: brokerId,
+      displayName,
+      stringValue,
+      editorId,
+      isConnected: false,
+      progressStep: 'tempRequested' as const,
+    };
+
+    refManager.call(editorId, 'convertToBroker', { ...broker, id: brokerId });
+    onBrokerConvert?.(broker);
+  }, [editorId, selectedText, initializeBroker, refManager, onBrokerConvert]);
 
   return (
     <Tooltip>
@@ -35,14 +53,14 @@ export const ConvertBrokerButton: React.FC<ConvertBrokerButtonProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-8 w-8", !selectedText && "opacity-50")}
+          className="h-8 w-8"
           onClick={handleClick}
           disabled={!selectedText}
         >
-         <Highlighter  className="h-4 w-4" />
+          <Highlighter className="h-4 w-4" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Convert To Broker</TooltipContent>
+      <TooltipContent>Convert Selection to Broker</TooltipContent>
     </Tooltip>
   );
 };

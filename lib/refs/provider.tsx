@@ -12,7 +12,7 @@ export const RefProvider: React.FC<RefProviderProps> = ({ children }) => {
 
     const manager = useMemo<RefManagerMethods>(() => ({
         call: (componentId, methodName, ...args) => {
-            refsRef.current[componentId]?.[methodName]?.(...args);
+            return refsRef.current[componentId]?.[methodName]?.(...args);  // Added return
         },
 
         broadcast: (methodName, ...args) => {

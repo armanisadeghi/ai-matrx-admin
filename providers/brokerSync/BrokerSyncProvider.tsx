@@ -1,278 +1,423 @@
-import React, { createContext, useContext, useReducer, useRef, useCallback, useMemo } from 'react';
-import { useEntityTools } from '@/lib/redux';
-import { v4 as uuidv4 } from 'uuid';
-import { BrokerConnection, BrokerDataType, BrokerSyncState, EditorInstance, TAILWIND_COLORS, UnlinkedBlock } from './types';
-import { BrokerChipEvent } from '@/components/matrx-editor/types';
-import { BrokerData, EntityKeys, MatrxRecordId } from '@/types';
 import { useEntitySelectionCrud } from '@/app/entities/hooks/crud/useCrudById';
-import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
+import useTrackedCreateRecord from '@/app/entities/hooks/crud/useTrackedCreateRecord';
 import { useUpdateFields } from '@/app/entities/hooks/crud/useUpdateFields';
-import { useCreateRecord } from '@/app/entities/hooks/crud/useCreateRecord';
-import { useBrokerValue } from '@/components/matrx-editor-advanced/broker/useBrokerValue';
-import { generateBrokerName } from '@/components/matrx-editor-advanced/utils/generateBrokerName';
-import { EditorBroker } from '@/components/matrx-editor-advanced/types';
-
-const entityName = 'broker' as EntityKeys;
-
-// Context
-interface BrokerSyncContextValue {
-    state: BrokerSyncState;
-    brokerData: {
-        selectedBrokers: Record<string, BrokerData>;
-        selectedIds: string[];
-        isLoading: boolean;
-        hasUnsavedChanges: boolean;
-    };
-    registerEditor: (editor: EditorInstance) => void;
-    unregisterEditor: (editorId: string) => void;
-    handleTextToBroker: (text: string, editorId: string, existingBrokerId?: string) => Promise<string>;
-    handleChipEvent: (event: BrokerChipEvent, editorId: string) => void;
-    handleUnlinkedBlock: (blockId: string, editorId: string, content: string) => void;
-    linkBlockToBroker: (blockId: string, brokerId: string, editorId: string) => void;
-    getConnectionStatus: (brokerId: string) => {
-        isConnected: boolean;
-        connectedEditors: string[];
-        color: string | undefined;
-    };
-    extractBrokerFromNode: (node: HTMLElement) => Partial<EditorBroker> | null;
-    findBrokerNodesInEditor: (editorId: string) => HTMLElement[];
-    
-}
+import { useRefManager } from '@/lib/refs/hooks';
+import React, { createContext, useContext, useReducer, useRef, useCallback, useEffect } from 'react';
+import { BrokerSyncContextValue } from './types';
+import { brokerSyncReducer, getNextAvailableColor } from './brokerSyncReducer';
 
 const BrokerSyncContext = createContext<BrokerSyncContextValue | null>(null);
 
-// Provider Component
 export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { actions, dispatch, selectors } = useEntityTools(entityName);
-    const { selectedRecordsOrDefaultsWithKeys, selectedRecordIds, isLoading, hasUnsavedChanges, startCreateMode } = useEntitySelectionCrud(entityName);
-    const { handleAddToSelection } = useQuickRef(entityName);
+    const entityName = 'broker';
+    // Core hooks for state management
+    const { selectedRecordsOrDefaultsWithKeys, selectedRecordIds } = useEntitySelectionCrud(entityName);
     const { updateFields } = useUpdateFields(entityName);
-    const { createRecord } = useCreateRecord(entityName);
-    const { updateBrokerValue } = useBrokerValue();
+    const refManager = useRefManager();
+    const { startCreate, createRecord, getProgress, getFinalId } = useTrackedCreateRecord(entityName);
 
-    // Local state management
-    const [state, syncDispatch] = useReducer(brokerSyncReducer, {
-        connections: [],
-        unlinkedBlocks: [],
-        editorInstances: new Map(),
+    // Enhanced broker tracking state
+    interface BrokerInstance {
+        blockId: string;
+        editorId: string;
+        content?: string;
+    }
+
+    interface TrackedBroker {
+        id: string;
+        instances: BrokerInstance[];
+        color: string;
+        isTemporary: boolean;
+        originalContent?: string; // Track initial content for temp brokers
+    }
+
+    const [state, dispatch] = useReducer(brokerSyncReducer, {
+        trackedBrokers: new Map<string, TrackedBroker>(),
+        orphanedInstances: new Map<string, BrokerInstance>(),
+        colorAssignments: new Map<string, string>(),
     });
 
-    const usedColors = useRef(new Set<string>());
-
-    const getNextColor = useCallback(() => {
-        const availableColors = TAILWIND_COLORS.filter((color) => !usedColors.current.has(color));
-        const selectedColor = availableColors[0] || TAILWIND_COLORS[0];
-        usedColors.current.add(selectedColor);
-        return selectedColor;
-    }, []);
-
-    // Memoized broker data with proper typing
-    const brokerData = useMemo(
-        () => ({
-            selectedBrokers: selectedRecordsOrDefaultsWithKeys as unknown as Record<string, BrokerData>,
-            selectedIds: selectedRecordIds,
-            isLoading,
-            hasUnsavedChanges,
-        }),
-        [selectedRecordsOrDefaultsWithKeys, selectedRecordIds, isLoading, hasUnsavedChanges]
-    );
-
-    // Editor registration
-    const registerEditor = useCallback((editor: EditorInstance) => {
-        syncDispatch({ type: 'REGISTER_EDITOR', payload: editor });
-    }, []);
-
-    const unregisterEditor = useCallback((editorId: string) => {
-        syncDispatch({ type: 'UNREGISTER_EDITOR', payload: editorId });
-    }, []);
-
-    // Main broker handling logic
-    const handleTextToBroker = useCallback(
-        async (text: string, editorId: string, existingBrokerId?: MatrxRecordId) => {
-            // Generate new ID if not provided
-            const brokerId = existingBrokerId || (uuidv4() as MatrxRecordId);
-            const color = getNextColor();
-
-            if (!existingBrokerId) {
-                // Start create mode to prepare the entity system
-                startCreateMode(1);
-
-                // Update the broker fields
-                updateFields(brokerId, {
-                    name: generateBrokerName(text),
-                    dataType: 'str',
+    // Watch selections for sync
+    useEffect(() => {
+        // Handle new selections
+        selectedRecordIds.forEach((id) => {
+            const broker = selectedRecordsOrDefaultsWithKeys[id];
+            if (!state.trackedBrokers.has(id)) {
+                // New broker selected - track it
+                dispatch({
+                    type: 'TRACK_BROKER',
+                    payload: {
+                        id,
+                        isTemporary: false,
+                        color: getNextAvailableColor(state.colorAssignments),
+                    },
                 });
-
-                // Update the broker value using specialized hook
-                updateBrokerValue(brokerId, text);
-
-                // Create the record in the entity system
-                createRecord(brokerId);
-
-                // Add to selections to ensure it's tracked
-                handleAddToSelection(brokerId);
             }
+        });
 
-            // Add or update connection in local state
-            syncDispatch({
-                type: 'ADD_CONNECTION',
+        // Handle removals from selection
+        state.trackedBrokers.forEach((broker, id) => {
+            if (!selectedRecordIds.includes(id)) {
+                // Check if this broker has instances
+                if (broker.instances.length > 0) {
+                    // Move instances to orphaned state
+                    broker.instances.forEach((instance) => {
+                        dispatch({
+                            type: 'ADD_ORPHANED_INSTANCE',
+                            payload: {
+                                ...instance,
+                                originalBrokerId: id,
+                            },
+                        });
+                    });
+                }
+
+                dispatch({
+                    type: 'UNTRACK_BROKER',
+                    payload: id,
+                });
+            }
+        });
+    }, [selectedRecordIds, selectedRecordsOrDefaultsWithKeys]);
+
+    // Track creation lifecycle
+    useEffect(() => {
+        state.trackedBrokers.forEach((broker) => {
+            if (broker.isTemporary) {
+                const progress = getProgress(broker.id);
+                if (progress?.step === 'complete') {
+                    const finalId = getFinalId(broker.id);
+                    if (finalId) {
+                        // Update all references to this broker
+                        dispatch({
+                            type: 'UPDATE_BROKER_ID',
+                            payload: {
+                                oldId: broker.id,
+                                newId: finalId,
+                            },
+                        });
+
+                        // Update refs in all editors
+                        broker.instances.forEach((instance) => {
+                            refManager.call(instance.editorId, 'updateBrokerId', broker.id, finalId);
+                        });
+                    }
+                }
+            }
+        });
+    }, [state.trackedBrokers]);
+
+    const initializeBroker = useCallback(
+        async (editorId: string, displayName: string, stringValue: string) => {
+            // Get a temp ID from our tracking system
+            const tempId = startCreate();
+
+            // Update redux state with initial values
+            updateFields(tempId, {
+                name: displayName, // both name and displayName for consistency
+                displayName: displayName,
+                value: { broker_value: stringValue }, // match our expected format
+            });
+
+            // Track in our local state
+            dispatch({
+                type: 'TRACK_BROKER',
                 payload: {
-                    brokerId,
+                    id: tempId,
+                    displayName,
+                    stringValue,
                     editorId,
-                    blockIds: [],
-                    color,
-                    isTemporary: !existingBrokerId,
-                    pendingContent: text,
-                    status: 'active',
+                    isConnected: false,
+                    progressStep: 'tempRequested',
+                    color: getNextAvailableColor(state.colorAssignments),
                 },
             });
 
-            return brokerId;
+            return tempId;
         },
-        [startCreateMode, updateFields, updateBrokerValue, createRecord, handleAddToSelection, getNextColor]
+        [startCreate, updateFields]
     );
 
-    // Handle chip events
-    const handleChipEvent = useCallback(
-        async (event: BrokerChipEvent, editorId: string) => {
-            switch (event.type) {
-                case 'remove': {
-                    // Remove connection but keep broker in system
-                    syncDispatch({
-                        type: 'REMOVE_CONNECTION',
-                        payload: { brokerId: event.brokerId, editorId },
-                    });
-                    break;
-                }
-                case 'edit': {
-                    if (event.content) {
-                        // Update the broker value
-                        updateBrokerValue(event.brokerId as MatrxRecordId, event.content);
-
-                        // Update connection state to reflect new content
-                        const connection = state.connections.find((conn) => conn.brokerId === event.brokerId && conn.editorId === editorId);
-                        if (connection) {
-                            syncDispatch({
-                                type: 'UPDATE_CONNECTION',
-                                payload: {
-                                    ...connection,
-                                    pendingContent: event.content,
-                                    status: 'modified',
-                                },
-                            });
-                        }
-                    }
-                    break;
-                }
-                case 'toggle': {
-                    // Add to selections and ensure it's tracked
-                    handleAddToSelection(event.brokerId as MatrxRecordId);
-                    break;
-                }
-            }
-        },
-        [updateBrokerValue, handleAddToSelection, state.connections]
-    );
-
-    // Handle unlinked blocks
-    const handleUnlinkedBlock = useCallback((blockId: string, editorId: string, content: string) => {
-        syncDispatch({
-            type: 'ADD_UNLINKED_BLOCK',
-            payload: { blockId, editorId, content },
+    // Update addBrokerInstance to match our new patterns
+    const addBrokerInstance = useCallback((brokerId: string, editorId: string, blockId: string, stringValue?: string) => {
+        dispatch({
+            type: 'ADD_BROKER_INSTANCE',
+            payload: {
+                brokerId,
+                instance: {
+                    editorId,
+                    blockId,
+                    stringValue,
+                    status: 'active',
+                },
+            },
         });
     }, []);
 
-    // Link blocks to brokers
-    const linkBlockToBroker = useCallback(
-        (blockId: string, brokerId: string, editorId: string) => {
-            // Remove from unlinked blocks
-            syncDispatch({ type: 'REMOVE_UNLINKED_BLOCK', payload: blockId });
+    // Handle orphaned instances and relationship changes
+    const handleOrphanedInstance = useCallback(
+        async (blockId: string, action: 'create-new' | 'connect-existing', targetBrokerId?: string) => {
+            const orphanedInstance = state.orphanedInstances.get(blockId);
+            if (!orphanedInstance) return;
 
-            // Find existing connection
-            const connection = state.connections.find((conn) => conn.brokerId === brokerId && conn.editorId === editorId);
+            if (action === 'create-new') {
+                const newBrokerId = await initializeBroker(orphanedInstance.editorId, orphanedInstance.content);
 
-            if (connection) {
-                // Update existing connection
-                syncDispatch({
-                    type: 'UPDATE_CONNECTION',
+                dispatch({
+                    type: 'MOVE_INSTANCE',
                     payload: {
-                        ...connection,
-                        blockIds: [...connection.blockIds, blockId],
-                        status: 'active',
+                        blockId,
+                        fromOrphaned: true,
+                        toBrokerId: newBrokerId,
                     },
                 });
-            } else {
-                // Create new connection if none exists
-                syncDispatch({
-                    type: 'ADD_CONNECTION',
+
+                // Update editor reference
+                refManager.call(orphanedInstance.editorId, 'updateBrokerReference', blockId, newBrokerId);
+            } else if (targetBrokerId) {
+                // Connect to existing broker
+                dispatch({
+                    type: 'MOVE_INSTANCE',
+                    payload: {
+                        blockId,
+                        fromOrphaned: true,
+                        toBrokerId: targetBrokerId,
+                    },
+                });
+
+                // Update editor reference
+                refManager.call(orphanedInstance.editorId, 'updateBrokerReference', blockId, targetBrokerId);
+            }
+        },
+        [state.orphanedInstances, initializeBroker, refManager]
+    );
+
+    // Handle broker relationship changes
+    const changeBrokerRelationship = useCallback(
+        async (sourceBlockId: string, targetBrokerId: string, shouldMergeContent: boolean = false) => {
+            // Find the instance
+            let instance: BrokerInstance | undefined;
+            let sourceBrokerId: string | undefined;
+
+            // Check tracked brokers
+            for (const [brokerId, broker] of state.trackedBrokers) {
+                const found = broker.instances.find((i) => i.blockId === sourceBlockId);
+                if (found) {
+                    instance = found;
+                    sourceBrokerId = brokerId;
+                    break;
+                }
+            }
+
+            // Check orphaned instances
+            if (!instance) {
+                const orphaned = state.orphanedInstances.get(sourceBlockId);
+                if (orphaned) {
+                    instance = orphaned;
+                }
+            }
+
+            if (!instance) return;
+
+            // If merging content, update target broker's content
+            if (shouldMergeContent && instance.content) {
+                await updateFields(targetBrokerId, {
+                    value: instance.content,
+                });
+            }
+
+            // Move instance to target broker
+            dispatch({
+                type: 'MOVE_INSTANCE',
+                payload: {
+                    blockId: sourceBlockId,
+                    fromBrokerId: sourceBrokerId,
+                    toBrokerId: targetBrokerId,
+                },
+            });
+
+            // Update editor reference
+            refManager.call(instance.editorId, 'updateBrokerReference', sourceBlockId, targetBrokerId);
+
+            // Check if source broker should be removed
+            if (sourceBrokerId) {
+                const sourceBroker = state.trackedBrokers.get(sourceBrokerId);
+                if (sourceBroker && sourceBroker.instances.length === 0) {
+                    dispatch({
+                        type: 'UNTRACK_BROKER',
+                        payload: sourceBrokerId,
+                    });
+                }
+            }
+        },
+        [state.trackedBrokers, state.orphanedInstances, updateFields, refManager]
+    );
+
+    // Editor management
+    const handleEditorRegistration = useCallback(
+        (editorId: string, editorRef: React.RefObject<HTMLDivElement>) => {
+            dispatch({
+                type: 'REGISTER_EDITOR',
+                payload: {
+                    id: editorId,
+                    ref: editorRef,
+                },
+            });
+
+            // Check for brokers that should be in this editor
+            selectedRecordIds.forEach((brokerId) => {
+                const broker = selectedRecordsOrDefaultsWithKeys[brokerId];
+                if (broker) {
+                    refManager.call(editorId, 'syncBroker', broker);
+                }
+            });
+        },
+        [selectedRecordIds, selectedRecordsOrDefaultsWithKeys, refManager]
+    );
+
+    const handleEditorCleanup = useCallback(
+        (editorId: string) => {
+            // Track any unsaved changes before cleanup
+            const editorsWithUnsavedChanges = new Set<string>();
+
+            state.trackedBrokers.forEach((broker, brokerId) => {
+                const editorInstances = broker.instances.filter((i) => i.editorId === editorId);
+
+                editorInstances.forEach((instance) => {
+                    if (instance.content) {
+                        editorsWithUnsavedChanges.add(editorId);
+                    }
+                });
+            });
+
+            if (editorsWithUnsavedChanges.size > 0) {
+                console.warn(`Editor ${editorId} has unsaved changes in brokers`);
+                // Could trigger a confirmation dialog here
+            }
+
+            dispatch({
+                type: 'UNREGISTER_EDITOR',
+                payload: editorId,
+            });
+        },
+        [state.trackedBrokers]
+    );
+
+    // Content update tracking
+    const trackContentUpdate = useCallback(
+        async (blockId: string, content: string, editorId: string) => {
+            // Find which broker this belongs to
+            let brokerId: string | undefined;
+
+            // Check tracked brokers
+            for (const [id, broker] of state.trackedBrokers) {
+                if (broker.instances.some((i) => i.blockId === blockId)) {
+                    brokerId = id;
+                    break;
+                }
+            }
+
+            if (brokerId) {
+                // Update content in our tracking
+                dispatch({
+                    type: 'UPDATE_INSTANCE_CONTENT',
                     payload: {
                         brokerId,
-                        editorId,
-                        blockIds: [blockId],
-                        color: getNextColor(),
-                        isTemporary: false,
-                        status: 'active',
+                        blockId,
+                        content,
+                    },
+                });
+
+                // Update broker field
+                await updateFields(brokerId, {
+                    value: content,
+                });
+            } else {
+                // Must be an orphaned instance
+                dispatch({
+                    type: 'UPDATE_ORPHANED_CONTENT',
+                    payload: {
+                        blockId,
+                        content,
                     },
                 });
             }
         },
-        [state.connections, getNextColor]
+        [state.trackedBrokers, updateFields]
     );
 
-    // New methods to add to our useBrokerSync hook
-    const extractBrokerFromNode = (node: HTMLElement): Partial<EditorBroker> | null => {
-        if (!node.hasAttribute('data-chip')) return null;
+    // Add to context and implement in provider
+    const updateBrokerName = useCallback(
+        (brokerId: string, displayName: string) => {
+            // Update redux
+            updateFields(brokerId, {
+                name: displayName,
+                displayName,
+            });
 
-        return {
-            id: node.getAttribute('data-id') || '',
-            name: node.getAttribute('data-broker-name') || '',
-            displayName: node.getAttribute('data-chip-content') || '',
-            dataType: node.getAttribute('data-broker-datatype') as BrokerDataType,
-            stringValue: node.getAttribute('data-original-text') || '',
-            value: JSON.parse(node.getAttribute('data-value') || '{}'),
-            editorId: node.getAttribute('data-editor-id') || undefined,
-            isTemporary: node.hasAttribute('data-temporary'),
-            color: node.getAttribute('data-color') || undefined,
-        };
-    };
-
-    const findBrokerNodesInEditor = (editorId: string): HTMLElement[] => {
-        const editor = document.querySelector(`[data-editor-id="${editorId}"]`);
-        if (!editor) return [];
-
-        return Array.from(editor.querySelectorAll('[data-chip]'));
-    };
-    // Get connection status
-    const getConnectionStatus = useCallback(
-        (brokerId: string) => {
-            const relevantConnections = state.connections.filter((conn) => conn.brokerId === brokerId);
-            return {
-                isConnected: relevantConnections.length > 0,
-                connectedEditors: relevantConnections.map((conn) => conn.editorId),
-                color: relevantConnections[0]?.color,
-            };
+            // Update our tracking
+            dispatch({
+                type: 'UPDATE_BROKER_NAME',
+                payload: {
+                    id: brokerId,
+                    displayName,
+                },
+            });
         },
-        [state.connections]
+        [updateFields]
     );
 
-    const value: BrokerSyncContextValue = {
-        state,
-        brokerData,
-        registerEditor,
-        unregisterEditor,
-        handleTextToBroker,
-        handleChipEvent,
-        handleUnlinkedBlock,
-        linkBlockToBroker,
-        getConnectionStatus,
-        extractBrokerFromNode,
-        findBrokerNodesInEditor,
+    const unlinkBroker = useCallback((brokerId: string, editorId: string) => {
+        dispatch({
+            type: 'UNLINK_BROKER',
+            payload: {
+                brokerId,
+                editorId,
+            },
+        });
+    }, []);
+
+    const removeBroker = useCallback(
+        (brokerId: string, editorId: string) => {
+            // Check if this is the last instance
+            const brokerInstances = getBrokerInstances(brokerId);
+            if (brokerInstances.length <= 1) {
+                // Last instance - untrack completely
+                dispatch({
+                    type: 'UNTRACK_BROKER',
+                    payload: brokerId,
+                });
+            } else {
+                // Just remove this instance
+                dispatch({
+                    type: 'REMOVE_BROKER_INSTANCE',
+                    payload: {
+                        brokerId,
+                        editorId,
+                    },
+                });
+            }
+        },
+        [getBrokerInstances]
+    );
+
+    // Expose the context
+    const value = {
+        initializeBroker,
+        addBrokerInstance,
+        handleOrphanedInstance,
+        changeBrokerRelationship,
+        handleEditorRegistration,
+        handleEditorCleanup,
+        trackContentUpdate,
+        getBrokerInstances: (brokerId: string) => state.trackedBrokers.get(brokerId)?.instances || [],
+        getOrphanedInstances: () => Array.from(state.orphanedInstances.entries()),
+        getBrokerColor: (brokerId: string) => state.trackedBrokers.get(brokerId)?.color,
     };
 
     return <BrokerSyncContext.Provider value={value}>{children}</BrokerSyncContext.Provider>;
 };
 
-// Hook for consuming the context
 export const useBrokerSync = () => {
     const context = useContext(BrokerSyncContext);
     if (!context) {
@@ -280,70 +425,3 @@ export const useBrokerSync = () => {
     }
     return context;
 };
-
-// Action types for the reducer
-type BrokerSyncAction =
-    | { type: 'REGISTER_EDITOR'; payload: EditorInstance }
-    | { type: 'UNREGISTER_EDITOR'; payload: string }
-    | { type: 'ADD_CONNECTION'; payload: BrokerConnection }
-    | { type: 'REMOVE_CONNECTION'; payload: { brokerId: string; editorId: string } }
-    | { type: 'UPDATE_CONNECTION'; payload: BrokerConnection }
-    | { type: 'ADD_UNLINKED_BLOCK'; payload: UnlinkedBlock }
-    | { type: 'REMOVE_UNLINKED_BLOCK'; payload: string };
-
-// Reducer implementation
-function brokerSyncReducer(state: BrokerSyncState, action: BrokerSyncAction): BrokerSyncState {
-    switch (action.type) {
-        case 'REGISTER_EDITOR':
-            return {
-                ...state,
-                editorInstances: new Map(state.editorInstances).set(action.payload.id, action.payload),
-            };
-
-        case 'UNREGISTER_EDITOR': {
-            const newInstances = new Map(state.editorInstances);
-            newInstances.delete(action.payload);
-            return {
-                ...state,
-                editorInstances: newInstances,
-                connections: state.connections.filter((conn) => conn.editorId !== action.payload),
-                unlinkedBlocks: state.unlinkedBlocks.filter((block) => block.editorId !== action.payload),
-            };
-        }
-
-        case 'ADD_CONNECTION':
-            return {
-                ...state,
-                connections: [...state.connections, action.payload],
-            };
-
-        case 'REMOVE_CONNECTION':
-            return {
-                ...state,
-                connections: state.connections.filter((conn) => !(conn.brokerId === action.payload.brokerId && conn.editorId === action.payload.editorId)),
-            };
-
-        case 'UPDATE_CONNECTION':
-            return {
-                ...state,
-                connections: state.connections.map((conn) =>
-                    conn.brokerId === action.payload.brokerId && conn.editorId === action.payload.editorId ? action.payload : conn
-                ),
-            };
-
-        case 'ADD_UNLINKED_BLOCK':
-            return {
-                ...state,
-                unlinkedBlocks: [...state.unlinkedBlocks, action.payload],
-            };
-
-        case 'REMOVE_UNLINKED_BLOCK':
-            return {
-                ...state,
-                unlinkedBlocks: state.unlinkedBlocks.filter((block) => block.blockId !== action.payload),
-            };
-
-        default:
-            return state;
-    }
-}

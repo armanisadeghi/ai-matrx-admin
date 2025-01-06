@@ -33,35 +33,9 @@ export interface BrokerChipEvent {
 export interface EditorBroker {
   id: MatrxRecordId;
   displayName: string;
-  name: string;
-  value: Record<string, unknown>;
-  stringValue?: string;
-  dataType: BrokerDataType;
+  progressStep: "tempRequested" | "tempConfirmed" | "penmanent" | "error";
+  stringValue: string;
   color?: string;
-  isTemporary?: boolean;
   editorId?: string;
-  // Add these required fields
-  componentType?: string;
   isConnected?: boolean;
-  isDeleted?: boolean;
-}
-
-
-export function toBrokerChip(
-  broker: BrokerData,
-  editorState?: {
-    color?: string;
-    isTemporary?: boolean;
-    editorId?: string;
-  }
-): EditorBroker {
-  return {
-    id: broker.id,
-    displayName: broker.displayName ?? broker.name,
-    name: broker.name ?? broker.displayName,
-    value: broker.value,
-    stringValue: broker.stringValue,
-    dataType: broker.dataType,
-    ...editorState,
-  };
 }

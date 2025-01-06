@@ -17,11 +17,13 @@ export const useEntityActions = (entityKey: EntityKeys) => {
 export const useEntityTools = (entityKey: EntityKeys) => {
     const dispatch = useAppDispatch();
     const store = useAppStore();
+    const entityState = store.getState()[entityKey];
 
     return useMemo(
         () => ({
             actions: getEntitySlice(entityKey).actions,
             selectors: createEntitySelectors(entityKey),
+            entityState,
             dispatch,
             store,
         }),

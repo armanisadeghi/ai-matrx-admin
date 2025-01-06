@@ -4,97 +4,82 @@ import React, { useCallback } from 'react';
 import { Variable, Highlighter } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useBrokerSync } from '@/providers/brokerSync/BrokerSyncProvider';
-import { useCreateRecord } from '@/app/entities/hooks/crud/useCreateRecord';
-import { useUpdateFields } from '@/app/entities/hooks/crud/useUpdateFields';
+import { useRefManager } from '@/lib/refs';
 import { generateBrokerName } from '../utils/generateBrokerName';
-import { useBrokerValue } from './useBrokerValue';
 import { EditorBroker } from '../types';
 
 interface SmartBrokerButtonProps {
+    editorId: string;
     onBrokerCreate: (broker: EditorBroker) => void;
     onBrokerConvert: (broker: EditorBroker) => void;
-    getSelectedText: () => string | null;
-    editorId: string;
 }
 
-export const SmartBrokerButton: React.FC<SmartBrokerButtonProps> = ({ onBrokerCreate, onBrokerConvert, getSelectedText, editorId }) => {
-    const { updateFields } = useUpdateFields('broker');
-    const { updateBrokerValue } = useBrokerValue();
-    const { createRecord } = useCreateRecord('broker');
-    const { handleTextToBroker } = useBrokerSync();
+export const SmartBrokerButton: React.FC<SmartBrokerButtonProps> = ({ editorId, onBrokerCreate, onBrokerConvert }) => {
+    const refManager = useRefManager();
+    const { initializeBroker } = useBrokerSync();
 
-    const selectedText = getSelectedText?.();
+    const selectedText = refManager.call(editorId, 'getSelectedText');
     const hasSelection = Boolean(selectedText);
 
     const handleClick = useCallback(async () => {
         if (hasSelection) {
-            const text = getSelectedText?.() || window.getSelection()?.toString();
-            if (text) {
-                const displayName = generateBrokerName(text);
-                const temporaryId = await handleTextToBroker(text, editorId);
+            const displayName = generateBrokerName(selectedText);
+            const stringValue = selectedText || '';
+            const brokerId = await initializeBroker(editorId, displayName, stringValue);
 
-                // Update name and dataType
-                updateFields(temporaryId, {
-                    displayName: displayName,
-                    name: displayName,
-                });
+            const broker: EditorBroker = {
+                id: brokerId,
+                displayName,
+                stringValue: selectedText,
+                editorId,
+                isConnected: false,
+                progressStep: 'tempRequested' as const,
+            };
 
-                // Update broker value using the specialized hook
-                updateBrokerValue(temporaryId, text);
+            // Convert selected text to a broker
+            refManager.call(editorId, 'convertToBroker', { ...broker, id: brokerId });
 
-                createRecord(temporaryId);
-
-                onBrokerConvert({
-                    id: temporaryId,
-                    displayName: displayName,
-                    name: displayName,
-                    stringValue: text,
-                    value: { broker_value: text }, // This matches what updateBrokerValue does
-                    dataType: 'str',
-                });
-            }
+            // Invoke the parent's onBrokerConvert
+            onBrokerConvert(broker);
         } else {
-            const temporaryId = await handleTextToBroker('', editorId);
-            const displayName = `New Broker`;
+            const stringValue = '';
+            const displayName = 'New Broker';
+            const brokerId = await initializeBroker(editorId, displayName, stringValue);
+            const broker: EditorBroker = {
+                id: brokerId,
+                displayName,
+                stringValue,
+                editorId,
+                isConnected: false,
+                progressStep: 'tempRequested' as const,
+            };
 
-            updateFields(temporaryId, {
-                name: displayName,
-                dataType: 'str',
-            });
+            // Insert a new broker
+            refManager.call(editorId, 'insertBroker', { ...broker, id: brokerId });
 
-            // Update broker value with empty string
-            updateBrokerValue(temporaryId, '');
-
-            createRecord(temporaryId);
-
-            onBrokerCreate({
-                id: temporaryId,
-                displayName: displayName,
-                name: displayName,
-                stringValue: '',
-                value: { broker_value: null }, // This matches what updateBrokerValue does
-                dataType: 'str',
-            });
+            // Invoke the parent's onBrokerCreate
+            onBrokerCreate(broker);
         }
-    }, [handleTextToBroker, updateFields, updateBrokerValue, createRecord, hasSelection, getSelectedText, editorId, onBrokerCreate, onBrokerConvert]);
+    }, [editorId, selectedText, hasSelection, initializeBroker, refManager, onBrokerCreate, onBrokerConvert]);
 
     return (
         <Tooltip>
             <TooltipTrigger asChild>
                 <div
-                    className='h-10 w-10 flex items-center justify-center cursor-pointer rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors'
+                    className="h-10 w-10 flex items-center justify-center cursor-pointer rounded-md 
+                              text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     onClick={handleClick}
                 >
                     {hasSelection ? (
-                        <Highlighter className='h-6 w-6 transition-transform hover:scale-110' />
+                        <Highlighter className="h-6 w-6 transition-transform hover:scale-110" />
                     ) : (
-                        <Variable className='h-6 w-6 transition-transform hover:scale-110' />
+                        <Variable className="h-6 w-6 transition-transform hover:scale-110" />
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent>{hasSelection ? 'Convert Selection to Broker' : 'Insert New Broker'}</TooltipContent>
+            <TooltipContent>
+                {hasSelection ? 'Convert Selection to Broker' : 'Insert New Broker'}
+            </TooltipContent>
         </Tooltip>
     );
 };
-
-export default SmartBrokerButton;

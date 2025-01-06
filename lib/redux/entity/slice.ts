@@ -415,10 +415,10 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
 
                         startRecordCreation: (
                             state: EntityState<TEntity>,
-                            action: PayloadAction<{ count?: number }>
+                            action: PayloadAction<{ count?: number, tempId?: string }>
                         ) => {
                             entityLogger.log('debug', 'startRecordCreation', action.payload);
-                            const result = modeManager.changeMode(state, 'create');
+                            const result = modeManager.changeMode(state, 'create', action.payload.tempId);
                             if (!result.canProceed) {
                                 state.loading.error = {
                                     message: result.error || 'Cannot start creation',

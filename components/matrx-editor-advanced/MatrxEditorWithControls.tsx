@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
-import { MatrxEditor, MatrxEditorRef } from './MatrxEditor';
+import React, { useCallback, useState } from 'react';
+import { MatrxEditor } from './MatrxEditor';
 import type { DocumentState, EditorBroker } from './types';
 import EditorToolbar from './components/EditorToolbar';
 import { InsertBrokerButton } from './broker/InsertBrokerButton';
 import { ConvertBrokerButton } from './broker/ConvertBrokerButton';
-import SmartBrokerButton from './broker/SmartBrokerButton';
+import { useRefManager } from '@/lib/refs';
+import { SmartBrokerButton } from './broker/SmartBrokerButton';
 
 interface MatrxEditorWithControlsProps {
     editorId: string;
@@ -14,17 +15,21 @@ interface MatrxEditorWithControlsProps {
     showDebugControls?: boolean;
 }
 
-export const MatrxEditorWithControls: React.FC<MatrxEditorWithControlsProps> = ({ editorId, onStateChange, showDebugControls = false }) => {
-    const editorRef = useRef<MatrxEditorRef>(null);
+export const MatrxEditorWithControls: React.FC<MatrxEditorWithControlsProps> = ({ 
+    editorId, 
+    onStateChange, 
+    showDebugControls = false 
+}) => {
+    const refManager = useRefManager();
     const [selectedText, setSelectedText] = useState<string | null>(null);
 
     const handleBrokerCreate = useCallback((broker: EditorBroker) => {
-        editorRef.current?.insertBroker(broker);
-    }, []);
+        refManager.call(editorId, 'insertBroker', broker);
+    }, [editorId, refManager]);
 
     const handleBrokerConvert = useCallback((broker: EditorBroker) => {
-        editorRef.current?.convertToBroker(broker);
-    }, []);
+        refManager.call(editorId, 'convertToBroker', broker);
+    }, [editorId, refManager]);
 
     const handleSelectionChange = useCallback((selection: string | null) => {
         setSelectedText(selection);
@@ -35,22 +40,25 @@ export const MatrxEditorWithControls: React.FC<MatrxEditorWithControlsProps> = (
             <div className='flex items-center gap-2'>
                 <SmartBrokerButton
                     editorId={editorId}
-                    getSelectedText={() => selectedText}
                     onBrokerCreate={handleBrokerCreate}
                     onBrokerConvert={handleBrokerConvert}
                 />
-
-                <InsertBrokerButton onBrokerCreate={handleBrokerCreate} />
+                <InsertBrokerButton 
+                    editorId={editorId}
+                    onBrokerCreate={handleBrokerCreate} 
+                />
                 <ConvertBrokerButton
                     editorId={editorId}
                     selectedText={selectedText}
                     onBrokerConvert={handleBrokerConvert}
                 />
-                <EditorToolbar editorRef={editorRef} />
+                <EditorToolbar 
+                    editorId={editorId}
+                    refManager={refManager}
+                />
             </div>
             <div className='flex-1 min-h-0'>
                 <MatrxEditor
-                    ref={editorRef}
                     editorId={editorId}
                     onStateChange={onStateChange}
                     onSelectionChange={handleSelectionChange}

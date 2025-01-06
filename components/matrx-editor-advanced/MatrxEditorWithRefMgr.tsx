@@ -1,15 +1,16 @@
-// MatrxEditor.tsx
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import type { ContentBlock, DocumentState, EditorBroker, TextStyle } from './types';
 import { captureEditorContent, generateId, setEditorContent } from './utils/editorUtils';
 import { handleEditorPaste } from './utils/pasteUtils';
-import { insertBrokerChipAtSelection } from './broker/BrokerChipRender';
-import { createLineBreakNode, createTextNode } from './utils/core-dom-utils';
+import { BrokerChipCreationOptions, insertBrokerChipAtSelection, renderBrokerChipInContainer } from './broker/BrokerChipRender';
+import { createLineBreakNode, createBrokerNode, createTextNode, insertNodesWithRollback, type InsertNodesOptions } from './utils/core-dom-utils';
+import { analyzeSelection } from './utils/selection';
 import { useBrokerSync } from '@/providers/brokerSync/BrokerSyncProvider';
-import { useSelectionToBroker } from './utils/useSelectionToBroker';
+import { useBrokerValue } from './broker/useBrokerValue';
 import { useComponentRef } from '@/lib/refs';
+import { useSelectionToBroker } from './utils/useSelectionToBroker';
 import { SmartBrokerButton } from './broker/SmartBrokerButton';
 
 interface MatrxEditorProps {
@@ -19,9 +20,7 @@ interface MatrxEditorProps {
 }
 
 export const MatrxEditor = ({ onStateChange, editorId, onSelectionChange }: MatrxEditorProps) => {
-    const { convertSelectionToBrokerChip } = useSelectionToBroker(); // New hook usage
     const { handleEditorRegistration, handleEditorCleanup } = useBrokerSync();
-
     const [isClient, setIsClient] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
     const [selectedText, setSelectedText] = useState<string | null>(null);
@@ -53,6 +52,7 @@ export const MatrxEditor = ({ onStateChange, editorId, onSelectionChange }: Matr
         };
     }, [editorId, handleEditorRegistration, handleEditorCleanup]);
 
+    // Initialize editor structure
     useEffect(() => {
         if (editorRef.current) {
             editorRef.current.innerHTML = '';
@@ -95,6 +95,117 @@ export const MatrxEditor = ({ onStateChange, editorId, onSelectionChange }: Matr
             lastUpdate: Date.now(),
         }));
     }, []);
+
+    const convertSelectionToBrokerChip = useCallback(
+        async ({ editorRef, broker, onProcessContent }: BrokerChipCreationOptions) => {
+            if (!editorRef.current) return;
+
+            const selectionResult = analyzeSelection(editorRef);
+            if (!selectionResult) return;
+
+            const { type, content, range, insertionInfo } = selectionResult;
+            const { updateBrokerValue } = useBrokerValue();
+            const stringValue = content;
+            try {
+                updateBrokerValue(broker.id, stringValue);
+
+                // Keep all the existing editor logic exactly as is
+                const updatedBroker = { ...broker, value: content };
+                const { node: chipContainer } = createBrokerNode(updatedBroker);
+
+                // Handle different selection types
+                if (type === 'line') {
+                    const lineDiv = insertionInfo.container as HTMLElement;
+                    const originalContent = lineDiv.innerHTML;
+
+                    try {
+                        const success = insertNodesWithRollback({
+                            nodes: [chipContainer],
+                            target: lineDiv,
+                            position: 'append',
+                            rollbackNodes: Array.from(lineDiv.childNodes) as HTMLElement[],
+                        });
+
+                        if (!success) throw new Error('Failed to insert chip');
+
+                        renderBrokerChipInContainer(chipContainer, updatedBroker, onProcessContent);
+                    } catch (error) {
+                        lineDiv.innerHTML = originalContent;
+                        throw error;
+                    }
+                } else if (type === 'multi') {
+                    const { node: beforeNode } = createTextNode(' ');
+                    const { node: afterNode } = createTextNode(' ');
+                    const originalNodes = Array.from(range.cloneContents().childNodes);
+
+                    try {
+                        range.deleteContents();
+
+                        const nodes = [beforeNode, chipContainer, afterNode];
+                        const insertOptions: InsertNodesOptions = {
+                            nodes,
+                            target: insertionInfo.isTextNode
+                                ? (insertionInfo.container.parentElement as HTMLElement)
+                                : (insertionInfo.container as HTMLElement),
+                            position: insertionInfo.isTextNode ? 'replaceWith' : 'append',
+                        };
+
+                        const success = insertNodesWithRollback(insertOptions);
+                        if (!success) throw new Error('Failed to insert nodes');
+
+                        renderBrokerChipInContainer(chipContainer, updatedBroker, onProcessContent);
+                    } catch (error) {
+                        try {
+                            range.deleteContents();
+                            originalNodes.forEach((node) => range.insertNode(node.cloneNode(true)));
+                        } catch (rollbackError) {
+                            console.error('Failed to rollback DOM changes:', rollbackError);
+                        }
+                        throw error;
+                    }
+                } else {
+                    // Single node case
+                    const { node: beforeNode } = createTextNode(insertionInfo.beforeText || '');
+                    const { node: afterNode } = createTextNode(insertionInfo.afterText || '');
+                    const container = insertionInfo.container as HTMLElement;
+                    const originalNode = container.cloneNode(true);
+
+                    try {
+                        const nodes = [beforeNode, chipContainer, afterNode];
+                        const success = insertNodesWithRollback({
+                            nodes,
+                            target: container,
+                            position: 'replaceWith',
+                            rollbackNodes: [originalNode as HTMLElement],
+                        });
+
+                        if (!success) throw new Error('Failed to insert nodes');
+
+                        renderBrokerChipInContainer(chipContainer, updatedBroker, onProcessContent);
+                    } catch (error) {
+                        try {
+                            beforeNode.parentElement?.replaceChild(originalNode, beforeNode);
+                            chipContainer.remove();
+                            afterNode.remove();
+                        } catch (rollbackError) {
+                            console.error('Failed to rollback DOM changes:', rollbackError);
+                        }
+                        throw error;
+                    }
+                }
+
+                setTimeout(() => onProcessContent(), 0);
+            } catch (error) {
+                console.error('Error converting selection to broker chip:', error);
+                try {
+                    updateBrokerValue(broker.id, broker.stringValue);
+                } catch (revertError) {
+                    console.error('Failed to revert broker update:', revertError);
+                }
+            }
+        },
+        [useBrokerValue, useBrokerSync]
+    );
 
     const handleBlur = useCallback(() => {
         if (!editorRef.current) return;
@@ -160,61 +271,27 @@ export const MatrxEditor = ({ onStateChange, editorId, onSelectionChange }: Matr
         [handleBlur, convertSelectionToBrokerChip]
     );
 
+    // Register ref methods
     useComponentRef(editorId, {
-        updateContent: handleContentUpdate,
-        formatSelection,
-
-        // New methods
-        getState: () => documentState,
-        getSelectedText: () => {
-            const selection = window.getSelection();
-            if (!selection || !editorRef.current?.contains(selection.anchorNode)) return null;
-            return selection.toString() || null;
+        insertBroker: (broker: EditorBroker) => {
+            if (!editorRef.current) return;
+            insertBrokerChipAtSelection({
+                broker,
+                editorRef,
+                onProcessContent: handleBlur,
+            });
+            console.log('🔄 Inserting broker chip at selection');
         },
-        getActiveStyles: () => {
-            const selection = window.getSelection();
-            if (!selection || !selection.rangeCount) return {};
-
-            const range = selection.getRangeAt(0);
-            const container = range.commonAncestorContainer as HTMLElement;
-
-            // Get computed styles
-            const styles = window.getComputedStyle(container);
-
-            return {
-                bold: styles.fontWeight === 'bold' || parseInt(styles.fontWeight) >= 700,
-                italic: styles.fontStyle === 'italic',
-                underline: styles.textDecoration.includes('underline'),
-                color: styles.color,
-                backgroundColor: styles.backgroundColor,
-            };
-        },
-        resetStyles: () => {
-            const selection = window.getSelection();
-            if (!selection || !selection.rangeCount) return;
-
-            formatSelection({
-                bold: false,
-                italic: false,
-                underline: false,
-                color: undefined,
-                backgroundColor: undefined,
+        convertToBroker: (broker: EditorBroker) => {
+            if (!editorRef.current) return;
+            convertSelectionToBrokerChip({
+                broker,
+                editorRef,
+                onProcessContent: handleBlur,
             });
         },
-        insertContent: (content: string) => {
-            if (!editorRef.current) return;
-
-            const selection = window.getSelection();
-            if (!selection || !selection.rangeCount) return;
-
-            const range = selection.getRangeAt(0);
-            const textNode = document.createTextNode(content);
-            range.deleteContents();
-            range.insertNode(textNode);
-
-            // Update state after insertion
-            handleBlur();
-        },
+        updateContent: handleContentUpdate,
+        formatSelection,
     });
 
     if (!isClient) {
