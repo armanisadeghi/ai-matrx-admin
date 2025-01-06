@@ -6,8 +6,7 @@ import { EntityKeys, AutomationEntities, AutomationEntity, Relationship } from '
 import { EntityMetadata, EntityStateField } from '@/lib/redux/entity/types/stateTypes';
 import { createInitialState, extractFieldsFromSchema } from '@/lib/redux/entity/utils/initialize';
 import { createEntitySelectors } from './selectors';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { RootState } from '@/lib/redux/store';
+import { useAppDispatch } from '@/lib/redux/hooks';
 import { PayloadAction } from '@reduxjs/toolkit';
 
 export const initializeEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity, schema: AutomationEntity<TEntity>) => {

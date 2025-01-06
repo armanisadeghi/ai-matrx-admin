@@ -9,7 +9,6 @@ export class SchemaLogger extends BaseLogger {
     private static instance: SchemaLogger;
 
     private constructor() {
-        // Provide a unique identifier for this logger type
         super('schema-logger');
     }
 
@@ -20,17 +19,26 @@ export class SchemaLogger extends BaseLogger {
         return SchemaLogger.instance;
     }
 
-    /**
-     * Logs schema resolution events
-     * @param {Object} logDetails
-     */
+    static setLogLevel(level: LogLevel) {
+        BaseLogger.setModuleLogLevel('schema', level);
+        console.log(`\x1b[36m✅ Schema Logger Level Set: ${level}\x1b[0m`);
+    }
+
+    static disableLogging() {
+        this.setLogLevel('none');
+    }
+
+    static enableLogging(level: LogLevel = 'info') {
+        this.setLogLevel(level);
+    }
+
     logResolution(
         {
             resolutionType,
             original,
             resolved,
             message,
-            level,
+            level = 'debug',  // Default to most verbose
             trace,
             tableMetrics = undefined,
         }: {
@@ -38,7 +46,7 @@ export class SchemaLogger extends BaseLogger {
             original: string;
             resolved: string;
             message: string;
-            level: LogLevel;
+            level?: LogLevel;
             trace: string[];
             tableMetrics?: {
                 fieldCount?: number;
@@ -46,6 +54,7 @@ export class SchemaLogger extends BaseLogger {
                 size?: number;
             };
         }): void {
+        // Check if we should log at this level for schema operations
         if (!this.shouldLog(level, 'schema', resolutionType)) {
             return;
         }
@@ -64,32 +73,42 @@ export class SchemaLogger extends BaseLogger {
                 environment: logConfig.environment,
                 component: 'SchemaLogger',
                 action: 'Resolution',
+                feature: resolutionType  // Use resolutionType as feature for filtering
             },
+            ...(tableMetrics && { tableMetrics })
         };
 
-        // Store in base logger's storage
         this.addLog(log);
-
-        // Store schema logs separately in the schema log storage
         LogStorage.saveSchemaLogs([log]);
-
-        // Handle console output
         this.consoleOutput(log, 'SchemaLogger');
-
-        // Process log (includes DataDog handling)
+        
         this.processLog(log).catch(error => {
-            console.error('Failed to process log:', error);
+            console.error('Failed to process schema log:', error);
         });
     }
 
-    /**
-     * Process the log: store it and optionally send it to external services
-     * @param {SchemaResolutionLog} log
-     */
     protected async processLog(log: SchemaResolutionLog): Promise<void> {
         await super.processLog(log);
     }
 }
 
-// Export the singleton instance
+// Add window controls for console debugging
+declare global {
+    interface Window {
+        schemaLogger: {
+            setLogLevel: (level: LogLevel) => void;
+            disableLogging: () => void;
+            enableLogging: (level?: LogLevel) => void;
+        };
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.schemaLogger = {
+        setLogLevel: SchemaLogger.setLogLevel,
+        disableLogging: SchemaLogger.disableLogging,
+        enableLogging: SchemaLogger.enableLogging
+    };
+}
+
 export const schemaLogger = SchemaLogger.getInstance();

@@ -80,6 +80,7 @@ const DEFAULT_FIELD_VALUES = {
     databaseTable: null,
     foreignKeyReference: {},
     description: "",
+    name: "",
 } as const;
 
 /**
@@ -112,7 +113,6 @@ export function extractFieldsFromSchema<TEntity extends EntityKeys>(
         return {
             name: key as AllEntityFieldKeys,
             displayName: field.fieldNameFormats.pretty,
-            entityName: entityKey,
             ...field,
         } as EntityStateField;
     });

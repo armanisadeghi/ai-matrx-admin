@@ -138,7 +138,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<FetchOneWithFkIfkPayload>
                         ) => {
-                            entityLogger.log('info', 'fetchOneWithFkIfk set to loading', action.payload);
+                            entityLogger.log('debug', 'fetchOneWithFkIfk set to loading', action.payload);
                             setLoading(state, 'FETCH_ONE_WITH_FK_IFK');
                         },
 
@@ -150,13 +150,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, record);
                             state.records[recordKey] = record;
                             setSuccess(state, 'FETCH_ONE_WITH_FK_IFK');
-                            entityLogger.log('info', 'fetchOneWithFkIfkSuccess set to success', action.payload);
+                            entityLogger.log('debug', 'fetchOneWithFkIfkSuccess set to success', action.payload);
                             state.cache.stale = false;
                         },
 
                         resetFetchOneWithFkIfkStatus: (state) => {
                             resetFlag(state, 'FETCH_ONE_WITH_FK_IFK');
-                            entityLogger.log('info', 'resetFetchOneWithFkIfkStatus flag reset.');
+                            entityLogger.log('debug', 'resetFetchOneWithFkIfkStatus flag reset.');
                         },
 
                         fetchedAsRelatedSuccess: (
@@ -164,19 +164,19 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<EntityData<TEntity>[]>
                         ) => {
                             const {primaryKeyMetadata} = state.entityMetadata;
-                            entityLogger.log('info', 'fetchedAsRelatedSuccess triggerd', action.payload);
+                            entityLogger.log('debug', 'fetchedAsRelatedSuccess triggerd', action.payload);
 
                             removeSelections(state);
-                            entityLogger.log('info', 'Removed all selections');
+                            entityLogger.log('debug', 'Removed all selections');
 
                             action.payload.forEach(record => {
                                 const recordKey = createRecordKey(primaryKeyMetadata, record);
-                                entityLogger.log('info', 'Adding record to selection', recordKey);
+                                entityLogger.log('debug', 'Adding record to selection', recordKey);
                                 state.records[recordKey] = record;
                                 addRecordToSelection(state, entityKey, recordKey);
                             });
                             setSuccess(state, 'FETCHED_AS_RELATED');
-                            entityLogger.log('info', 'fetchedAsRelatedSuccess set to success');
+                            entityLogger.log('debug', 'fetchedAsRelatedSuccess set to success');
                             state.cache.stale = false;
                         },
 
@@ -234,7 +234,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<FetchQuickReferencePayload>
                         ) => {
-                            entityLogger.log('info', 'fetchQuickReference', action.payload);
+                            entityLogger.log('debug', 'fetchQuickReference', action.payload);
                             setLoading(state, 'FETCH_QUICK_REFERENCE');
                         },
                         fetchQuickReferenceSuccess: (
@@ -253,7 +253,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state,
                             action: PayloadAction<QuickReferenceRecord[]>
                         ) => {
-                            entityLogger.log('info', 'setQuickReference', action.payload);
+                            entityLogger.log('debug', 'setQuickReference', action.payload);
 
                             state.quickReference.records = action.payload;
                             state.quickReference.lastUpdated = new Date().toISOString();
@@ -263,17 +263,17 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state,
                             action: PayloadAction<QuickReferenceRecord[]>
                         ) => {
-                            entityLogger.log('debug', 'addQuickReferenceRecord', action.payload);
+                            entityLogger.log('info', 'addQuickReferenceRecord', action.payload);
                             action.payload.forEach(newRecord => {
                                 const existingIndex = state.quickReference.records.findIndex(
                                     record => record.recordKey === newRecord.recordKey
                                 );
                                 if (existingIndex !== -1) {
                                     state.quickReference.records[existingIndex] = newRecord;
-                                    entityLogger.log('debug', 'Replaced existing quick reference record', newRecord);
+                                    entityLogger.log('info', 'Replaced existing quick reference record', newRecord);
                                 } else {
                                     state.quickReference.records.push(newRecord);
-                                    entityLogger.log('debug', 'Added new quick reference record', newRecord);
+                                    entityLogger.log('info', 'Added new quick reference record', newRecord);
                                 }
                             });
                             state.quickReference.lastUpdated = new Date().toISOString();
@@ -361,7 +361,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
                         ) => {
-
                             if (isMatrxRecordId(action.payload)) {
                                 addRecordToSelection(state, entityKey, action.payload);
                             } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
@@ -371,7 +370,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 entityLogger.log('error', 'Invalid Record in addToSelection', action.payload);
                             }
                         },
-
+                                                                        
                         removeFromSelection: (
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>
@@ -436,7 +435,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<CreateRecordPayload>
                         ) => {
-                            entityLogger.log('info', 'createRecord', action.payload);
+                            entityLogger.log('debug', 'createRecord', action.payload);
                             const tempRecordId = action.payload.tempRecordId;
                             const recordData = state.unsavedRecords[tempRecordId];
 
@@ -450,13 +449,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<createRecordSuccessPayload>
                         ) => {
-                            entityLogger.log('info', 'createRecordSuccess', action.payload);
+                            entityLogger.log('debug', 'createRecordSuccess', action.payload);
                             const preDebugData = {
                                 pendingOperations: state.pendingOperations,
                                 unsavedRecords: state.unsavedRecords,
                                 payload: action.payload
                             }
-                            entityLogger.log('info','createRecordSuccess debugData:', preDebugData);
+                            entityLogger.log('debug','createRecordSuccess debugData:', preDebugData);
 
                             const tempId = action.payload.tempRecordId;
                             const data = action.payload.data;
@@ -474,7 +473,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 unsavedRecords: state.unsavedRecords,
                                 payload: action.payload
                             }
-                            entityLogger.log('info','createRecordSuccess postDebugData:', postDebugData);
+                            entityLogger.log('debug','createRecordSuccess postDebugData:', postDebugData);
 
 
                             const result = modeManager.changeMode(state, 'view');
@@ -528,7 +527,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             state: EntityState<TEntity>,
                             action: PayloadAction<UpdateRecordPayload>
                         ) => {
-                            entityLogger.log('info', 'slice - updateRecord', action.payload);
+                            entityLogger.log('debug', 'slice - updateRecord', action.payload);
                             const matrxRecordId = action.payload.matrxRecordId;
                             const unsavedData = state.unsavedRecords[matrxRecordId];
                             if (!unsavedData) {
@@ -650,7 +649,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             action: PayloadAction<{ matrxRecordId: MatrxRecordId }>
                         ) => {
                             const recordKey = action.payload.matrxRecordId;
-                            entityLogger.log('info', 'deleteRecordSuccess', {recordKey});
+                            entityLogger.log('debug', 'deleteRecordSuccess', {recordKey});
                             delete state.records[recordKey];
                             handleSelectionForDeletedRecord(state, recordKey);
 

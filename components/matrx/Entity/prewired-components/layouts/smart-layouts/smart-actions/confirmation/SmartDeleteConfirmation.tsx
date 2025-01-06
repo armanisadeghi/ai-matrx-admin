@@ -1,4 +1,3 @@
-// SmartDeleteConfirmation.tsx
 import React from "react";
 import { EntityKeys } from "@/types/entityTypes";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -6,6 +5,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux";
 import { useCallback } from "react";
 import { useDeleteRecord } from "@/app/entities/hooks/crud/useDeleteRecord";
+import { formatFieldValue } from "./utils";
+
 
 interface SmartDeleteConfirmationProps {
     entityKey: EntityKeys;
@@ -62,7 +63,9 @@ export const SmartDeleteConfirmation = ({
                                     {field.displayName}:
                                 </span>
                                 {' '}
-                                <span>{comparison.originalRecord?.[field.name] || '-'}</span>
+                                <span className="whitespace-pre-wrap font-mono text-xs">
+                                    {formatFieldValue(comparison.originalRecord?.[field.name])}
+                                </span>
                             </div>
                         ))}
                     </div>

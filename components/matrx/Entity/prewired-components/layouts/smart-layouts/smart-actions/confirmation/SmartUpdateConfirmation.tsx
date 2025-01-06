@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useEntityTools } from "@/lib/redux";
 import { useCallback } from "react";
 import { useUpdateRecord } from "@/app/entities/hooks/crud/useUpdateRecord";
+import { formatFieldValue } from "./utils";
 
 interface SmartUpdateConfirmationProps {
     entityKey: EntityKeys;
@@ -66,11 +67,15 @@ export const SmartUpdateConfirmation = ({
                                 <div className="mt-2 grid grid-cols-2 gap-2">
                                     <div className="text-sm space-y-1">
                                         <span className="text-xs text-muted-foreground">Original Value</span>
-                                        <div className="font-medium">{field.originalValue || 'BLANK'}</div>
+                                        <div className="font-medium whitespace-pre-wrap font-mono text-xs">
+                                            {formatFieldValue(field.originalValue)}
+                                        </div>
                                     </div>
                                     <div className="text-sm space-y-1">
                                         <span className="text-xs text-muted-foreground">Updated Value</span>
-                                        <div className="font-medium text-primary">{field.newValue || 'BLANK'}</div>
+                                        <div className="font-medium text-primary whitespace-pre-wrap font-mono text-xs">
+                                            {formatFieldValue(field.newValue)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -1,6 +1,6 @@
 // lib/logger/server-logger.ts
 import { BaseLogger } from './base-logger';
-import { LogEntry, ApplicationLog } from './types';
+import { LogEntry, ApplicationLog, LogLevel } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { logConfig } from './config';
 
@@ -14,17 +14,37 @@ class ServerLogger extends BaseLogger {
     static getInstance(): ServerLogger {
         if (!ServerLogger.instance) {
             ServerLogger.instance = new ServerLogger();
+            console.log(`\x1b[36m✅ Server Logger Active | Level: ${logConfig.logLevel}\x1b[0m`);
         }
         return ServerLogger.instance;
     }
 
+    static setLogLevel(level: LogLevel) {
+        BaseLogger.setModuleLogLevel('server', level);
+        console.log(`\x1b[36m✅ Server Logger Level Set: ${level}\x1b[0m`);
+    }
+
+    static disableLogging() {
+        this.setLogLevel('none');
+    }
+
+    static enableLogging(level: LogLevel = 'info') {
+        this.setLogLevel(level);
+    }
+
     log(entry: Omit<ApplicationLog, 'id' | 'context' | 'category'>): void {
+        // Check if we should log at this level
+        if (!this.shouldLog(entry.level, 'server')) {
+            return;
+        }
+
         const enhancedEntry: ApplicationLog = {
             ...entry,
             id: uuidv4(),
             context: {
                 timestamp: new Date().toISOString(),
                 environment: logConfig.environment,
+                component: 'Server'
             },
             category: 'application'
         };
@@ -35,6 +55,11 @@ class ServerLogger extends BaseLogger {
     }
 
     error(error: Error, metadata?: Record<string, unknown>): void {
+        // Errors always log unless explicitly disabled
+        if (!this.shouldLog('error', 'server')) {
+            return;
+        }
+
         const errorLog: LogEntry = {
             id: uuidv4(),
             category: 'error',
@@ -42,7 +67,8 @@ class ServerLogger extends BaseLogger {
             message: error.message,
             context: {
                 timestamp: new Date().toISOString(),
-                environment: logConfig.environment
+                environment: logConfig.environment,
+                component: 'Server'
             },
             error: {
                 name: error.name,
@@ -56,6 +82,27 @@ class ServerLogger extends BaseLogger {
         this.consoleOutput(errorLog);
         this.processLog(errorLog);
     }
+}
+
+// Add global controls for Node environment
+declare global {
+    namespace NodeJS {
+        interface Global {
+            serverLogger: {
+                setLogLevel: (level: LogLevel) => void;
+                disableLogging: () => void;
+                enableLogging: (level?: LogLevel) => void;
+            };
+        }
+    }
+}
+
+if (typeof global !== 'undefined') {
+    (global as any).serverLogger = {
+        setLogLevel: ServerLogger.setLogLevel,
+        disableLogging: ServerLogger.disableLogging,
+        enableLogging: ServerLogger.enableLogging
+    };
 }
 
 export const serverLogger = ServerLogger.getInstance();

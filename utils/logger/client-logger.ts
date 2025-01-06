@@ -1,22 +1,33 @@
-// lib/logger/client-logger.ts
 'use client';
 
 import { BaseLogger } from './base-logger';
 import { v4 as uuidv4 } from 'uuid';
 import { LogStorage } from './storage';
-import { LogEntry, LogContext, ApplicationLog } from './types';
-import { logConfig } from './config';
+import { LogEntry, LogContext, ApplicationLog, LogLevel } from './types';
+import { logConfig, runtimeState } from './config';
 
 class ClientLogger extends BaseLogger {
+    private static instance: ClientLogger;
     private logQueue: LogEntry[] = [];
     private flushTimeout: NodeJS.Timeout | null = null;
 
-    constructor() {
+    private constructor() {
         super('client-logger');
         if (typeof window !== 'undefined') {
             this.flushTimeout = setInterval(() => this.flush(), logConfig.flushInterval);
             window.addEventListener('beforeunload', () => this.flush());
         }
+    }
+
+    static getInstance(): ClientLogger {
+        if (!ClientLogger.instance) {
+            ClientLogger.instance = new ClientLogger();
+        }
+        return ClientLogger.instance;
+    }
+
+    static setLogLevel(level: LogLevel) {
+        BaseLogger.setModuleLogLevel('client', level);
     }
 
     private async flush(): Promise<void> {
@@ -40,7 +51,12 @@ class ClientLogger extends BaseLogger {
         }
     }
 
-    log(entry: Omit<ApplicationLog, 'id' | 'context' | 'category'>): void {
+    log(entry: Omit<ApplicationLog, 'id' | 'context' | 'category'> & { level: LogLevel }): void {
+        // Check if we should log at this level
+        if (!this.shouldLog(entry.level, 'client')) {
+            return;
+        }
+
         const context: LogContext = {
             timestamp: new Date().toISOString(),
             environment: logConfig.environment,
@@ -67,6 +83,11 @@ class ClientLogger extends BaseLogger {
     }
 
     error(error: Error, metadata?: Record<string, unknown>): void {
+        // Errors always log unless explicitly disabled
+        if (!this.shouldLog('error', 'client')) {
+            return;
+        }
+
         const context: LogContext = {
             timestamp: new Date().toISOString(),
             environment: logConfig.environment,
@@ -104,4 +125,23 @@ class ClientLogger extends BaseLogger {
     }
 }
 
-export const clientLogger = new ClientLogger();
+// Add window controls for console debugging
+declare global {
+    interface Window {
+        clientLogger: {
+            setLogLevel: (level: LogLevel) => void;
+            disableLogging: () => void;
+            enableLogging: () => void;
+        };
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.clientLogger = {
+        setLogLevel: ClientLogger.setLogLevel,
+        disableLogging: () => ClientLogger.setLogLevel('none'),
+        enableLogging: () => ClientLogger.setLogLevel('info')
+    };
+}
+
+export const clientLogger = ClientLogger.getInstance();

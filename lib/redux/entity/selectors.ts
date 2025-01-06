@@ -167,7 +167,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     };
 
     const selectIsRecordSelected = createSelector([selectSelectedRecordIds, (_: RootState, recordId: MatrxRecordId) => recordId], (selectedIds, recordId) => {
-        console.log('Checking if selected:', { recordId, selectedIds });
         return selectedIds.includes(recordId);
     });
 

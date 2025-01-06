@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FieldComponentProps } from "../types";
-import { EditableJsonViewer } from "@/components/ui";
 import {
   FloatingFieldLabel,
   StandardFieldLabel,
 } from "./add-ons/FloatingFieldLabel";
 import { useFieldStyles } from "./add-ons/useFieldStyles";
+import FieldActionButtons from "./add-ons/FieldActionButtons";
+import ControlledTooltip from "./add-ons/ControlledTooltip";
+import JsonEditor from "./add-ons/JsonEditor";
 
-type JsonValue = object | string | null;
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
-const EntityJsonEditor = React.forwardRef<
-  HTMLInputElement,
-  FieldComponentProps<JsonValue>
->(
+const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentProps<JsonValue>>(
   (
     {
       entityKey,
@@ -22,38 +21,24 @@ const EntityJsonEditor = React.forwardRef<
       value,
       onChange,
       disabled,
+      className,
       density,
+      animationPreset,
       size,
+      textSize,
       variant,
       floatingLabel,
     },
     ref
   ) => {
     const [isFocused, setIsFocused] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [contentHeight, setContentHeight] = useState<number>(150);
+    const [tooltipText, setTooltipText] = useState("");
+    const [showTooltip, setShowTooltip] = useState(false);
 
+    const safeValue = value ?? "";
     const isEmpty = !value || value === "" || (typeof value === "object" && Object.keys(value).length === 0);
 
-    useEffect(() => {
-      const observer = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const newHeight = entry.contentRect.height;
-          if (newHeight > 0) {
-            setContentHeight(Math.max(150, floatingLabel ? newHeight + 24 : newHeight));
-          }
-        }
-      });
-
-      if (contentRef.current) {
-        observer.observe(contentRef.current);
-      }
-
-      return () => observer.disconnect();
-    }, [floatingLabel]);
-
-    const { getInputStyles } = useFieldStyles({
+    const { getTextareaStyles } = useFieldStyles({
       variant,
       size,
       density,
@@ -61,27 +46,52 @@ const EntityJsonEditor = React.forwardRef<
       focused: isFocused,
       hasValue: !isEmpty,
       isFloating: floatingLabel,
+      customStates: {
+        "min-h-[80px]": true,
+        "h-auto": true,
+        "resize-vertical": true,
+        "pr-24": true,
+      },
     });
 
     const renderEditor = () => (
-      <div
-        ref={containerRef}
-        className={`${getInputStyles} relative border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 hover:bg-accent/50 min-h-[150px] transition-all duration-200`}
-        style={{ maxHeight: `${contentHeight}px`, height: 'auto' }}
-      >
-        <div ref={contentRef} className="w-full overflow-visible">
-          <EditableJsonViewer
-            data={value}
+      <div className="relative">
+        {showTooltip && (
+          <ControlledTooltip
+            text={tooltipText}
+            show={true}
+            onHide={() => setShowTooltip(false)}
+          />
+        )}
+
+        <JsonEditor
+          ref={ref}
+          id={dynamicFieldInfo.name}
+          value={safeValue}
+          onChange={onChange}
+          required={dynamicFieldInfo.isRequired}
+          disabled={disabled}
+          rows={3}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className={getTextareaStyles}
+        />
+
+        <div className="absolute right-2 top-2">
+          <FieldActionButtons
+            value={typeof safeValue === 'string' ? safeValue : JSON.stringify(safeValue)}
             onChange={onChange}
-            readOnly={disabled}
-            defaultEnhancedMode={true}
+            disabled={disabled}
+            onShowTooltip={setTooltipText}
+            onHideTooltip={() => setShowTooltip(false)}
+            allowClear={true}
           />
         </div>
       </div>
     );
 
     return (
-      <div className="relative w-full">
+      <div className="relative">
         {floatingLabel ? (
           <div className="relative mt-1">
             {renderEditor()}
@@ -114,3 +124,5 @@ const EntityJsonEditor = React.forwardRef<
 EntityJsonEditor.displayName = "EntityJsonEditor";
 
 export default React.memo(EntityJsonEditor);
+
+

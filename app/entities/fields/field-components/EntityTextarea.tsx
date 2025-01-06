@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { EntityComponentBaseProps } from "../types";
 import ControlledTooltip from "./add-ons/ControlledTooltip";
 import {

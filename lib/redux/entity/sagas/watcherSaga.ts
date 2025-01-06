@@ -93,7 +93,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 takeLatest(
                     actions.fetchRecords.type,
                     function* (action: SagaAction<{ page: number; pageSize: number }>) {
-                        sagaLogger.log('info', 'Handling fetchRecords', action.payload);
+                        sagaLogger.log('debug', 'Handling fetchRecords', action.payload);
                         if (shouldSkip(actions.fetchRecords.type, action.payload)) return;
                         yield call(withConversion, handleFetchPaginated, entityKey, actions, action);
                         setCache(actions.fetchRecords.type, action.payload);
@@ -120,7 +120,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 takeLatest(
                     actions.createRecord.type,
                     function* (action: SagaAction<CreateRecordPayload>) {
-                        sagaLogger.log('info', 'Handling createRecord', action.payload);
+                        sagaLogger.log('debug', 'Handling createRecord', action.payload);
                         if (shouldSkip(actions.createRecord.type, action.payload)) return;
                         yield call(withFullConversion, handleCreate, entityKey, actions, action);
                         setCache(actions.createRecord.type, action.payload);

@@ -8,16 +8,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useBrokers, type Broker } from "@/providers/brokers/BrokersProvider";
+import { EditorBroker } from "../types";
 
 interface InsertBrokerButtonProps {
-  onBrokerCreate?: (broker: Broker) => void;
+  onBrokerCreate?: (broker: EditorBroker) => void;
 }
 
 export const InsertBrokerButton: React.FC<InsertBrokerButtonProps> = ({
   onBrokerCreate,
 }) => {
-  const { createBroker } = useBrokers();
 
   const handleClick = useCallback(() => {
     const broker = createBroker();

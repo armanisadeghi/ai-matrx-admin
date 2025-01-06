@@ -1,9 +1,8 @@
-// lib/logger/nextjs-logger.ts
 'use client';
 
 import { BaseLogger } from './base-logger';
 import { v4 as uuidv4 } from 'uuid';
-import { ApplicationLog, ErrorLog, LogEntry } from './types';
+import { ApplicationLog, ErrorLog, LogEntry, LogLevel } from './types';
 import { logConfig } from './config';
 
 interface NextJsLogEvent {
@@ -20,8 +19,13 @@ class NextJsLogger extends BaseLogger {
     private constructor() {
         super('nextjs-logger');
         this.originalConsole = { ...console };
-        this.interceptConsoleLogs();
-        this.interceptNextJsLogs();
+        
+        // Only intercept logs if we're in development and logging is enabled
+        if (logConfig.environment === 'development' && logConfig.console) {
+            this.interceptConsoleLogs();
+            this.interceptNextJsLogs();
+            console.log(`\x1b[36m✅ NextJS Logger Active | Level: ${logConfig.consoleLogLevel}\x1b[0m`);
+        }
     }
 
     static getInstance(): NextJsLogger {
@@ -31,114 +35,162 @@ class NextJsLogger extends BaseLogger {
         return NextJsLogger.instance;
     }
 
+    static setLogLevel(level: LogLevel) {
+        BaseLogger.setModuleLogLevel('nextjs', level);
+        console.log(`\x1b[36m✅ NextJS Logger Level Set: ${level}\x1b[0m`);
+    }
+
+    static disableLogging() {
+        this.setLogLevel('none');
+    }
+
+    static enableLogging(level: LogLevel = 'info') {
+        this.setLogLevel(level);
+    }
+
     private interceptConsoleLogs() {
+        const nextJsFilter = (args: any[]) => {
+            // Only intercept Next.js related logs
+            const message = args.join(' ');
+            return message.includes('Next.js') || 
+                   message.includes('[webpack]') ||
+                   message.includes('HMR') ||
+                   message.includes('Fast Refresh');
+        };
+    
+        const originalLog = console.log;
+        
         console.log = (...args) => {
-            this.originalConsole.log(...args);
-            const logEntry: ApplicationLog = {
-                id: uuidv4(),
-                level: 'info',
-                message: args.map(arg => this.stringify(arg)).join(' '),
-                category: 'application',
-                subCategory: 'console',
-                context: {
-                    timestamp: new Date().toISOString(),
-                    environment: logConfig.environment,
-                },
-                metadata: { type: 'log', args }
-            };
-            this.addLog(logEntry);
-            this.processLog(logEntry);
+            originalLog.apply(console, args);
+            if (nextJsFilter(args) && this.shouldLog('debug', 'nextjs')) {
+                this.logConsoleMessage('debug', args);
+            }
+        };
+    
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            if (nextJsFilter(args) && this.shouldLog('info', 'nextjs')) {
+                this.logConsoleMessage('info', args);
+            }
         };
 
-        console.error = (...args) => {
-            this.originalConsole.error(...args);
-            const errorEntry: ErrorLog = {
-                id: uuidv4(),
-                level: 'error',
-                message: args.map(arg => this.stringify(arg)).join(' '),
-                category: 'error',
-                context: {
-                    timestamp: new Date().toISOString(),
-                    environment: logConfig.environment,
-                },
-                error: {
-                    name: 'ConsoleError',
-                    message: args.map(arg => this.stringify(arg)).join(' '),
-                }
-            };
-            this.addLog(errorEntry);
-            this.processLog(errorEntry);
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            if (nextJsFilter(args) && this.shouldLog('warn', 'nextjs')) {
+                this.logConsoleMessage('warn', args);
+            }
         };
 
-        console.warn = (...args) => {
-            this.originalConsole.warn(...args);
-            const logEntry: ApplicationLog = {
-                id: uuidv4(),
-                level: 'warn',
-                message: args.map(arg => this.stringify(arg)).join(' '),
-                category: 'application',
-                subCategory: 'console',
-                context: {
-                    timestamp: new Date().toISOString(),
-                    environment: logConfig.environment,
-                },
-                metadata: { type: 'warn', args }
-            };
-            this.addLog(logEntry);
-            this.processLog(logEntry);
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            if (nextJsFilter(args) && this.shouldLog('error', 'nextjs')) {
+                this.logConsoleMessage('error', args);
+            }
         };
     }
 
+    private logConsoleMessage(level: LogLevel, args: any[]) {
+        const logEntry: ApplicationLog = {
+            id: uuidv4(),
+            level,
+            message: args.map(arg => this.stringify(arg)).join(' '),
+            category: 'application',
+            subCategory: 'nextjs',
+            context: {
+                timestamp: new Date().toISOString(),
+                environment: logConfig.environment,
+                component: 'NextJS'
+            },
+            metadata: { args }
+        };
+        this.addLog(logEntry);
+        this.processLog(logEntry);
+    }
+
+    private logErrorMessage(args: any[]) {
+        const errorEntry: ErrorLog = {
+            id: uuidv4(),
+            level: 'error',
+            message: args.map(arg => this.stringify(arg)).join(' '),
+            category: 'error',
+            context: {
+                timestamp: new Date().toISOString(),
+                environment: logConfig.environment,
+                component: 'NextJS'
+            },
+            error: {
+                name: 'NextJSError',
+                message: args.map(arg => this.stringify(arg)).join(' '),
+                stack: new Error().stack
+            }
+        };
+        this.addLog(errorEntry);
+        this.processLog(errorEntry);
+    }
+
     private interceptNextJsLogs() {
-        if (typeof window !== 'undefined') {
-            window.addEventListener('unhandledrejection', (event) => {
-                const errorEntry: ErrorLog = {
-                    id: uuidv4(),
-                    level: 'error',
-                    message: `Unhandled Promise Rejection: ${event.reason}`,
-                    category: 'error',
-                    context: {
-                        timestamp: new Date().toISOString(),
-                        environment: logConfig.environment,
-                    },
-                    error: {
-                        name: 'UnhandledRejection',
-                        message: String(event.reason),
-                        stack: event.reason?.stack
-                    }
-                };
-                this.addLog(errorEntry);
-                this.processLog(errorEntry);
-            });
+        if (typeof window === 'undefined') return;
 
-            const observer = new PerformanceObserver((list) => {
-                list.getEntries().forEach((entry) => {
-                    if (entry.name.startsWith('Next.js')) {
-                        const logEntry: ApplicationLog = {
-                            id: uuidv4(),
-                            level: 'info',
-                            message: `Next.js Performance: ${entry.name}`,
-                            category: 'application',
-                            subCategory: 'nextjs',
-                            context: {
-                                timestamp: new Date().toISOString(),
-                                environment: logConfig.environment,
-                            },
-                            metadata: {
-                                type: 'performance',
-                                duration: entry.duration,
-                                startTime: entry.startTime,
-                                entryType: entry.entryType
-                            }
-                        };
-                        this.addLog(logEntry);
-                        this.processLog(logEntry);
-                    }
-                });
-            });
+        // Handle unhandled rejections
+        window.addEventListener('unhandledrejection', this.handleUnhandledRejection.bind(this));
 
-            observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
-        }
+        // Monitor Next.js performance
+        this.setupPerformanceMonitoring();
+    }
+
+    private handleUnhandledRejection(event: PromiseRejectionEvent) {
+        if (!this.shouldLog('error', 'nextjs')) return;
+
+        const errorEntry: ErrorLog = {
+            id: uuidv4(),
+            level: 'error',
+            message: `Unhandled Promise Rejection: ${event.reason}`,
+            category: 'error',
+            context: {
+                timestamp: new Date().toISOString(),
+                environment: logConfig.environment,
+                component: 'NextJS'
+            },
+            error: {
+                name: 'UnhandledRejection',
+                message: String(event.reason),
+                stack: event.reason?.stack
+            }
+        };
+        this.addLog(errorEntry);
+        this.processLog(errorEntry);
+    }
+
+    private setupPerformanceMonitoring() {
+        const observer = new PerformanceObserver((list) => {
+            list.getEntries().forEach(this.handlePerformanceEntry.bind(this));
+        });
+
+        observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
+    }
+
+    private handlePerformanceEntry(entry: PerformanceEntry) {
+        if (!entry.name.startsWith('Next.js') || !this.shouldLog('info', 'nextjs')) return;
+
+        const logEntry: ApplicationLog = {
+            id: uuidv4(),
+            level: 'info',
+            message: `Next.js Performance: ${entry.name}`,
+            category: 'application',
+            subCategory: 'nextjs',
+            context: {
+                timestamp: new Date().toISOString(),
+                environment: logConfig.environment,
+                component: 'Performance'
+            },
+            metadata: {
+                duration: entry.duration,
+                startTime: entry.startTime,
+                entryType: entry.entryType
+            }
+        };
+        this.addLog(logEntry);
+        this.processLog(logEntry);
     }
 
     private stringify(arg: any): string {
@@ -153,10 +205,27 @@ class NextJsLogger extends BaseLogger {
     public restoreConsole() {
         Object.assign(console, this.originalConsole);
     }
+}
 
-    protected async processLog(log: LogEntry): Promise<void> {
-        await super.processLog(log);
+// Add window controls for console debugging
+declare global {
+    interface Window {
+        nextJsLogger: {
+            setLogLevel: (level: LogLevel) => void;
+            disableLogging: () => void;
+            enableLogging: (level?: LogLevel) => void;
+            restore: () => void;
+        };
     }
+}
+
+if (typeof window !== 'undefined') {
+    window.nextJsLogger = {
+        setLogLevel: NextJsLogger.setLogLevel,
+        disableLogging: NextJsLogger.disableLogging,
+        enableLogging: NextJsLogger.enableLogging,
+        restore: () => NextJsLogger.getInstance().restoreConsole()
+    };
 }
 
 export const nextJsLogger = NextJsLogger.getInstance();

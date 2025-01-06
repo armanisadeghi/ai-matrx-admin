@@ -1,31 +1,33 @@
 // lib/redux/selectors/globalCacheSelectors.ts
-import {RootState} from "@/lib/redux/store";
-import {createSelector} from "@reduxjs/toolkit";
+import { RootState } from '@/lib/redux/store';
+import { createSelector } from '@reduxjs/toolkit';
 import {
     AnyEntityDatabaseTable,
     EntityFieldKeys,
     EntityKeys,
     AllEntityNameVariations,
     EntitySelectOption,
-    PrettyEntityName, AllEntityFieldKeys
-} from "@/types/entityTypes";
-import {SchemaEntity} from "@/types/schema";
-import {NameFormat} from "@/types/AutomationSchemaTypes";
+    PrettyEntityName,
+    AllEntityFieldKeys,
+} from '@/types/entityTypes';
+import { SchemaEntity } from '@/types/schema';
+import { NameFormat } from '@/types/AutomationSchemaTypes';
 
-import {GlobalCacheState} from "@/lib/redux";
+import { GlobalCacheState } from '@/lib/redux';
 import {
     DisplayFieldMetadata,
     EntityStateField,
     FlexibleQueryOptions,
     PrimaryKeyMetadata,
-    QueryOptions, QueryOptionsReturn, UnifiedDatabaseObject
-} from "../entity/types/stateTypes";
-import {parseMatrxRecordId, parseRecordKeys} from "@/lib/redux/entity/utils/stateHelpUtils";
-import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
+    QueryOptions,
+    QueryOptionsReturn,
+    UnifiedDatabaseObject,
+} from '../entity/types/stateTypes';
+import { parseMatrxRecordId, parseRecordKeys } from '@/lib/redux/entity/utils/stateHelpUtils';
+import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
 
 const trace = 'GLOBAL CACHE SELECTORS';
 const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
-
 
 // ----------------
 // BATCH 1: Direct State Access Selectors
@@ -35,88 +37,42 @@ const logger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 const selectGlobalCache = (state: RootState): GlobalCacheState => state.globalCache;
 
 // Basic state access selectors
-export const selectSchema = createSelector(
-    [selectGlobalCache],
-    cache => cache.schema
-);
+export const selectSchema = createSelector([selectGlobalCache], (cache) => cache.schema);
 
-export const selectEntityNames = createSelector(
-    [selectGlobalCache],
-    cache => cache.entityNames
-);
+export const selectEntityNames = createSelector([selectGlobalCache], (cache) => cache.entityNames);
 
-export const selectEntities = createSelector(
-    [selectGlobalCache],
-    cache => cache.entities
-);
+export const selectEntities = createSelector([selectGlobalCache], (cache) => cache.entitiesWithoutFields);
 
-export const selectFields = createSelector(
-    [selectGlobalCache],
-    cache => cache.fields
-);
+// export const selectFields = createSelector([selectGlobalCache], (cache) => cache.fields);
 
-export const selectFieldsByEntity = createSelector(
-    [selectGlobalCache],
-    cache => cache.fieldsByEntity
-);
+// export const selectFieldsByEntity = createSelector([selectGlobalCache], (cache) => cache.entities);
 
-export const selectIsInitialized = createSelector(
-    [selectGlobalCache],
-    cache => cache.isInitialized
-);
+export const selectIsInitialized = createSelector([selectGlobalCache], (cache) => cache.isInitialized);
 
 // Direct conversion map selectors
-export const selectEntityNameToCanonical = createSelector(
-    [selectGlobalCache],
-    cache => cache.entityNameToCanonical
-);
+export const selectEntityNameToCanonical = createSelector([selectGlobalCache], (cache) => cache.entityNameToCanonical);
 
-export const selectFieldNameToCanonical = createSelector(
-    [selectGlobalCache],
-    cache => cache.fieldNameToCanonical
-);
+export const selectFieldNameToCanonical = createSelector([selectGlobalCache], (cache) => cache.fieldNameToCanonical);
 
-export const selectEntityNameFormats = createSelector(
-    [selectGlobalCache],
-    cache => cache.entityNameFormats
-);
+export const selectEntityNameFormats = createSelector([selectGlobalCache], (cache) => cache.entityNameFormats);
 
 export const makeSelectEntityNameByFormat = (entityName: EntityKeys, format: NameFormat) =>
-    createSelector(
-        [selectEntityNameFormats],
-        entityNameFormats => {
-            if (!entityNameFormats || !entityNameFormats[entityName]) {
-                return null;
-            }
-            return entityNameFormats[entityName][format] as AllEntityNameVariations || null;
+    createSelector([selectEntityNameFormats], (entityNameFormats) => {
+        if (!entityNameFormats || !entityNameFormats[entityName]) {
+            return null;
         }
-    );
+        return (entityNameFormats[entityName][format] as AllEntityNameVariations) || null;
+    });
 
+export const selectFieldNameFormats = createSelector([selectGlobalCache], (cache) => cache.fieldNameFormats);
 
-export const selectFieldNameFormats = createSelector(
-    [selectGlobalCache],
-    cache => cache.fieldNameFormats
-);
+export const selectEntityNameToDatabase = createSelector([selectGlobalCache], (cache) => cache.entityNameToDatabase);
 
-export const selectEntityNameToDatabase = createSelector(
-    [selectGlobalCache],
-    cache => cache.entityNameToDatabase
-);
+export const selectEntityNameToBackend = createSelector([selectGlobalCache], (cache) => cache.entityNameToBackend);
 
-export const selectEntityNameToBackend = createSelector(
-    [selectGlobalCache],
-    cache => cache.entityNameToBackend
-);
+export const selectFieldNameToDatabase = createSelector([selectGlobalCache], (cache) => cache.fieldNameToDatabase);
 
-export const selectFieldNameToDatabase = createSelector(
-    [selectGlobalCache],
-    cache => cache.fieldNameToDatabase
-);
-
-export const selectFieldNameToBackend = createSelector(
-    [selectGlobalCache],
-    cache => cache.fieldNameToBackend
-);
+export const selectFieldNameToBackend = createSelector([selectGlobalCache], (cache) => cache.fieldNameToBackend);
 
 // ----------------
 // BATCH 2: Core Derived Selectors
@@ -130,93 +86,91 @@ export const selectEntity = createSelector(
 
 // Field selectors
 export const selectEntityFields = createSelector(
-    [selectFields, selectFieldsByEntity, (_: RootState, entityName: EntityKeys) => entityName],
-    (fields, fieldsByEntity, entityName): EntityStateField[] => {
-        const fieldIds = fieldsByEntity[entityName] || [];
-        if (fieldIds.length === 0) return [];
-        return fieldIds.map(id => fields[id]).filter(Boolean);
+    [selectSchema, (_: RootState, entityName: EntityKeys) => entityName],
+    (entities, entityName): EntityStateField[] => {
+        const entity = entities[entityName];
+        if (!entity) return [];
+        
+        return Object.values(entity.entityFields);
     }
 );
 
 export const selectField = createSelector(
-    [
-        selectFields,
-        (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
-    ],
-    (fields, params) => {
-        const fieldId = `${params.entityName}__${params.fieldName}`;
-        return fields[fieldId] || {};
+    [selectSchema, (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params],
+    (entities, params) => {
+        const { entityName, fieldName } = params;
+        const entity = entities[entityName];
+        if (!entity) return {};
+        
+        const fieldId = `${entityName}__${fieldName}`;
+        return entity.entityFields[fieldId] || {};
     }
 );
-
 
 // Primary key and display field selectors
 export const selectEntityPrimaryKeyField = createSelector(
-    [selectEntityFields],
+    [(state: RootState, entityName: EntityKeys) => selectEntityFields(state, entityName)],
     (fields): string | undefined => {
-        const primaryKeyField = fields.find(field => field.isPrimaryKey);
-        return primaryKeyField ? primaryKeyField.displayName : undefined;
+        const primaryKeyField = fields.find((field) => field.isPrimaryKey);
+        return primaryKeyField ? primaryKeyField.fieldName : undefined;
     }
 );
 
-// get the display field, if there is one
+// Display field selector - needs correction
 export const selectEntityDisplayField = createSelector(
-    [selectEntityFields],
+    [
+        (state: RootState, entityName: EntityKeys) => {
+            console.log('selectEntityDisplayField input - entityName:', entityName);
+            const fields = selectEntityFields(state, entityName);
+            console.log('selectEntityDisplayField - retrieved fields:', fields);
+            return fields;
+        },
+    ],
     (fields): string | undefined => {
-        const displayField = fields.find(field => field.isDisplayField);
-        return displayField ? displayField.displayName : undefined;
+        console.log('selectEntityDisplayField - searching for display field in:', fields);
+        const displayField = fields.find((field) => field.isDisplayField);
+        console.log('selectEntityDisplayField - found display field:', displayField);
+        const result = displayField ? displayField.name : undefined;
+        console.log('selectEntityDisplayField - returning:', result);
+        return result;
     }
 );
 
 // Selector for primaryKeyMetadata
-export const selectEntityPrimaryKeyMetadata = createSelector(
-    [selectEntity],
-    (entity): PrimaryKeyMetadata | undefined => entity?.primaryKeyMetadata
-);
+export const selectEntityPrimaryKeyMetadata = createSelector([selectEntity], (entity): PrimaryKeyMetadata | undefined => entity?.primaryKeyMetadata);
 
 // Selector for displayFieldMetadata
-export const selectEntityDisplayFieldMetadata = createSelector(
-    [selectEntity],
-    (entity): DisplayFieldMetadata | undefined => entity?.displayFieldMetadata
-);
+export const selectEntityDisplayFieldMetadata = createSelector([selectEntity], (entity): DisplayFieldMetadata | undefined => entity?.displayFieldMetadata);
 
 // Combined selector to get both primaryKeyMetadata and displayFieldMetadata
 export const selectEntityMetadata = createSelector(
     [selectEntity],
     (entity): { primaryKeyMetadata?: PrimaryKeyMetadata; displayFieldMetadata?: DisplayFieldMetadata } => {
-        if (!entity) return {primaryKeyMetadata: undefined, displayFieldMetadata: undefined};
+        if (!entity) return { primaryKeyMetadata: undefined, displayFieldMetadata: undefined };
 
         // Extract metadata fields directly from the entity
-        const {primaryKeyMetadata, displayFieldMetadata} = entity;
-        return {primaryKeyMetadata, displayFieldMetadata} as {
+        const { primaryKeyMetadata, displayFieldMetadata } = entity;
+        return { primaryKeyMetadata, displayFieldMetadata } as {
             primaryKeyMetadata?: PrimaryKeyMetadata;
-            displayFieldMetadata?: DisplayFieldMetadata
+            displayFieldMetadata?: DisplayFieldMetadata;
         };
     }
 );
-
 
 export const selectEntityFieldNameToDatabaseMap = createSelector(
     [selectFieldNameToDatabase, (_: RootState, entityName: EntityKeys) => entityName],
     (fieldNameToDatabase, entityName) => fieldNameToDatabase[entityName] || {}
 );
 
-
 // Relationship selectors
-export const selectEntityRelationships = createSelector(
-    [selectEntity],
-    (entity) => entity?.relationships || []
-);
+export const selectEntityRelationships = createSelector([selectEntity], (entity) => entity?.relationships || []);
 
-export const selectRelatedEntities = createSelector(
-    [selectEntityRelationships, selectEntityNames],
-    (relationships, entityNames) =>
-        relationships.map(rel => ({
-            ...rel,
-            relatedEntity: entityNames.find(name => name === rel.relatedTable)
-        }))
+export const selectRelatedEntities = createSelector([selectEntityRelationships, selectEntityNames], (relationships, entityNames) =>
+    relationships.map((rel) => ({
+        ...rel,
+        relatedEntity: entityNames.find((name) => name === rel.relatedTable),
+    }))
 );
-
 
 export const selectEntityDatabaseName = createSelector(
     [selectEntityNameToDatabase, (_: RootState, entityName: EntityKeys) => entityName],
@@ -231,7 +185,7 @@ export const selectEntityBackendName = createSelector(
 // This converts FROM any format TO canonical
 export const selectEntityCanonicalName = createSelector(
     [selectEntityNameToCanonical, (_: RootState, entityName: AllEntityNameVariations) => entityName],
-    (toCanonicalMap, entityName): EntityKeys => toCanonicalMap[entityName] || entityName as EntityKeys
+    (toCanonicalMap, entityName): EntityKeys => toCanonicalMap[entityName] || (entityName as EntityKeys)
 );
 
 export const selectEntityFrontendName = selectEntityCanonicalName;
@@ -247,88 +201,60 @@ const startsWithVowelSound = (word: string): boolean => {
     return vowelRegex.test(word);
 };
 
-export const selectEntitySelectText = createSelector(
-    [selectEntityPrettyName],
-    (prettyName) => {
-        if (!prettyName) return 'Select a Record';
-        const article = startsWithVowelSound(prettyName) ? 'an' : 'a';
-        return `Select ${article} ${prettyName}`;
-    }
-);
+export const selectEntitySelectText = createSelector([selectEntityPrettyName], (prettyName) => {
+    if (!prettyName) return 'Select a Record';
+    const article = startsWithVowelSound(prettyName) ? 'an' : 'a';
+    return `Select ${article} ${prettyName}`;
+});
 
 export const selectFormattedEntityOptions = createSelector(
     [(state: RootState) => state, selectEntityNames],
     (state, entityNames): EntitySelectOption<EntityKeys>[] => {
         return entityNames.map((entityName) => ({
             value: entityName,
-            label: selectEntityPrettyName(state, entityName)
+            label: selectEntityPrettyName(state, entityName),
         }));
     }
 );
 
-
 export const selectEntityAnyName = createSelector(
     [selectEntityNameFormats, (_: RootState, params: { entityName: EntityKeys; format: NameFormat }) => params],
-    (entityNameFormats, {entityName, format}) => entityNameFormats[entityName]?.[format] || entityName
+    (entityNameFormats, { entityName, format }) => entityNameFormats[entityName]?.[format] || entityName
 );
 
 // FIELD NAME CONVERSION SELECTORS
 export const selectFieldDatabaseName = createSelector(
-    [
-        selectFieldNameToDatabase,
-        (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
-    ],
-    (fieldToDatabase, {entityName, fieldName}): string =>
-        fieldToDatabase[entityName]?.[fieldName] || fieldName
+    [selectFieldNameToDatabase, (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params],
+    (fieldToDatabase, { entityName, fieldName }): string => fieldToDatabase[entityName]?.[fieldName] || fieldName
 );
 
 export const selectFieldBackendName = createSelector(
-    [
-        selectFieldNameToBackend,
-        (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
-    ],
-    (fieldToBackend, {entityName, fieldName}): string =>
-        fieldToBackend[entityName]?.[fieldName] || fieldName
+    [selectFieldNameToBackend, (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params],
+    (fieldToBackend, { entityName, fieldName }): string => fieldToBackend[entityName]?.[fieldName] || fieldName
 );
 
 // This converts FROM any format TO canonical
 export const selectFieldFrontendName = createSelector(
-    [
-        selectFieldNameToCanonical,
-        (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
-    ],
-    (toCanonicalMap, {entityName, fieldName}): string =>
-        toCanonicalMap[entityName]?.[fieldName] || fieldName
+    [selectFieldNameToCanonical, (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params],
+    (toCanonicalMap, { entityName, fieldName }): string => toCanonicalMap[entityName]?.[fieldName] || fieldName
 );
 
 export const selectFieldNameMappingForEntity = createSelector(
-    [
-        selectFieldNameFormats,
-        (_: RootState, entityName: EntityKeys) => entityName
-    ],
+    [selectFieldNameFormats, (_: RootState, entityName: EntityKeys) => entityName],
     (fieldFormats, entityName) => {
         return fieldFormats[entityName] || {};
     }
 );
 
-
 // Returns the nae of the field in a Pretty Format for display, such as a column header
 export const selectFieldPrettyName = createSelector(
-    [
-        selectFieldNameFormats,
-        (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params
-    ],
-    (fieldFormats, {entityName, fieldName}) =>
-        fieldFormats[entityName]?.[fieldName]?.['pretty'] || fieldName
+    [selectFieldNameFormats, (_: RootState, params: { entityName: EntityKeys; fieldName: string }) => params],
+    (fieldFormats, { entityName, fieldName }) => fieldFormats[entityName]?.[fieldName]?.['pretty'] || fieldName
 );
 
 export const selectAllFieldPrettyNames = createSelector(
-    [
-        selectFieldNameFormats,
-        (_: RootState, params: { entityName: EntityKeys }) => params,
-    ],
-    (fieldFormats, {entityName}) => {
-
+    [selectFieldNameFormats, (_: RootState, params: { entityName: EntityKeys }) => params],
+    (fieldFormats, { entityName }) => {
         const entityFields = fieldFormats[entityName];
         if (!entityFields) {
             return {};
@@ -343,44 +269,27 @@ export const selectAllFieldPrettyNames = createSelector(
     }
 );
 
-
 export const selectFieldAnyName = createSelector(
-    [
-        selectFieldNameFormats,
-        (_: RootState, params: { entityName: EntityKeys; fieldName: string; format: NameFormat }) => params
-    ],
-    (fieldFormats, {entityName, fieldName, format}) =>
-        fieldFormats[entityName]?.[fieldName]?.[format] || fieldName
+    [selectFieldNameFormats, (_: RootState, params: { entityName: EntityKeys; fieldName: string; format: NameFormat }) => params],
+    (fieldFormats, { entityName, fieldName, format }) => fieldFormats[entityName]?.[fieldName]?.[format] || fieldName
 );
-
 
 // SCHEMA SELECTORS
 export const selectEntitySchema = createSelector(
-    [
-        selectEntities,
-        (_: RootState, payload: { entityName: EntityKeys }) => payload
-    ],
-    (entities, {entityName}) => entities[entityName]
+    [selectEntities, (_: RootState, payload: { entityName: EntityKeys }) => payload],
+    (entities, { entityName }) => entities[entityName]
 );
 
 export const selectFieldSchema = createSelector(
-    [
-        selectEntitySchema,
-        (_: RootState, payload: { entityName: EntityKeys; fieldName: EntityFieldKeys<EntityKeys> }) => payload
-    ],
-    (entitySchema, {fieldName}) => entitySchema?.entityFields?.[fieldName]
+    [selectEntitySchema, (_: RootState, payload: { entityName: EntityKeys; fieldName: EntityFieldKeys<EntityKeys> }) => payload],
+    (entitySchema, { fieldName }) => entitySchema?.entityFields?.[fieldName]
 );
-
 
 export type KeyMapping = { [oldKey: string]: string };
 
-
 // Existing selector with console logs added
 export const selectReplaceKeysInObject = createSelector(
-    [
-        (_: RootState, data: Record<string, any> | Record<string, any>[] | string) => data,
-        (_: RootState, _data: any, keyMapping: KeyMapping) => keyMapping
-    ],
+    [(_: RootState, data: Record<string, any> | Record<string, any>[] | string) => data, (_: RootState, _data: any, keyMapping: KeyMapping) => keyMapping],
     (data, keyMapping) => {
         // console.log("Received data:", data);
         // console.log("Received keyMapping:", keyMapping);
@@ -394,7 +303,7 @@ export const selectReplaceKeysInObject = createSelector(
             // console.log("Replacing keys in object:", obj);
             const keys = Object.keys(obj);
             // Return same object if no keys need mapping
-            if (keys.every(key => !keyMapping?.[key])) return obj;
+            if (keys.every((key) => !keyMapping?.[key])) return obj;
 
             return keys.reduce((acc, key) => {
                 const newKey = keyMapping?.[key] || key;
@@ -420,7 +329,7 @@ export const selectReplaceKeysInObject = createSelector(
 export const safeSelectReplaceKeysInObjectWithErrorControl = createSelector(
     [
         (_: RootState, data: Record<string, any> | Record<string, any>[] | string) => data,
-        (_: RootState, _data: any, keyMapping: KeyMapping) => keyMapping || {}  // Default to empty object if keyMapping is undefined
+        (_: RootState, _data: any, keyMapping: KeyMapping) => keyMapping || {}, // Default to empty object if keyMapping is undefined
     ],
     (data, keyMapping) => {
         // console.log("Received data:", data);
@@ -428,14 +337,14 @@ export const safeSelectReplaceKeysInObjectWithErrorControl = createSelector(
 
         if (typeof data === 'string') {
             // console.log("Data is a string, performing direct key mapping.");
-            return keyMapping[data] || data;  // Safe access
+            return keyMapping[data] || data; // Safe access
         }
 
         const replaceKeys = (obj: Record<string, any> = {}): Record<string, any> => {
             // console.log("Replacing keys in object:", obj);
             const keys = Object.keys(obj);
             // Return same object if no keys need mapping
-            if (keys.every(key => !keyMapping[key])) return obj;
+            if (keys.every((key) => !keyMapping[key])) return obj;
 
             return keys.reduce((acc, key) => {
                 const newKey = keyMapping[key] || key;
@@ -461,7 +370,7 @@ export const selectConvertDataFormat = createSelector(
     [
         (_: RootState, data: Record<string, any> | Record<string, any>[] | string) => data,
         (_: RootState, _data: any, entityNameMapping: KeyMapping) => entityNameMapping,
-        (_: RootState, _data: any, _entityNameMapping: any, fieldNameMapping: KeyMapping) => fieldNameMapping
+        (_: RootState, _data: any, _entityNameMapping: any, fieldNameMapping: KeyMapping) => fieldNameMapping,
     ],
     (data, entityNameMapping, fieldNameMapping) => {
         // If data is a string, process it through both mappings in sequence
@@ -470,97 +379,57 @@ export const selectConvertDataFormat = createSelector(
             return fieldNameMapping[entityConverted] || entityConverted;
         }
 
-        const entityConverted = selectReplaceKeysInObject(
-            {} as RootState,
-            data,
-            entityNameMapping
-        );
+        const entityConverted = selectReplaceKeysInObject({} as RootState, data, entityNameMapping);
 
-        return selectReplaceKeysInObject(
-            {} as RootState,
-            entityConverted,
-            fieldNameMapping
-        );
+        return selectReplaceKeysInObject({} as RootState, entityConverted, fieldNameMapping);
     }
 );
 
 // Then update the conversion selectors to use the memoized version
 export const selectDatabaseConversion = createSelector(
-    [
-        selectEntityNameToDatabase,
-        selectFieldNameToDatabase,
-        (_: RootState, payload: { entityName: EntityKeys; data: any }) => payload
-    ],
-    (entityMap, fieldMap, {entityName, data}) =>
-        selectConvertDataFormat({} as RootState, data, entityMap, fieldMap[entityName] || {})
+    [selectEntityNameToDatabase, selectFieldNameToDatabase, (_: RootState, payload: { entityName: EntityKeys; data: any }) => payload],
+    (entityMap, fieldMap, { entityName, data }) => selectConvertDataFormat({} as RootState, data, entityMap, fieldMap[entityName] || {})
 );
 
 export const selectBackendConversion = createSelector(
-    [
-        selectEntityNameToBackend,
-        selectFieldNameToBackend,
-        (_: RootState, payload: { entityName: EntityKeys; data: any }) => payload
-    ],
-    (entityMap, fieldMap, {entityName, data}) =>
-        selectConvertDataFormat({} as RootState, data, entityMap, fieldMap[entityName] || {})
+    [selectEntityNameToBackend, selectFieldNameToBackend, (_: RootState, payload: { entityName: EntityKeys; data: any }) => payload],
+    (entityMap, fieldMap, { entityName, data }) => selectConvertDataFormat({} as RootState, data, entityMap, fieldMap[entityName] || {})
 );
 
-
 // Mapping selectors - these are basic and don't need to change
-export const selectPrettyEntityMapping = createSelector(
-    [
-        selectEntityNameFormats
-    ],
-    (entityNameFormats) =>
-        Object.entries(entityNameFormats).reduce((acc, [entity, formats]) => {
-            acc[entity] = formats['pretty'] || entity;
-            return acc;
-        }, {} as Record<string, string>)
+export const selectPrettyEntityMapping = createSelector([selectEntityNameFormats], (entityNameFormats) =>
+    Object.entries(entityNameFormats).reduce((acc, [entity, formats]) => {
+        acc[entity] = formats['pretty'] || entity;
+        return acc;
+    }, {} as Record<string, string>)
 );
 
 export const selectPrettyFieldMapping = createSelector(
-    [
-        selectFieldNameFormats,
-        (_: RootState, entityName: EntityKeys) => entityName
-    ],
+    [selectFieldNameFormats, (_: RootState, entityName: EntityKeys) => entityName],
     (fieldFormats, entityName) =>
-        Object.entries(fieldFormats[entityName] || {}).reduce(
-            (acc, [field, formats]) => {
-                acc[field] = formats['pretty'] || field;
-                return acc;
-            },
-            {} as Record<string, string>
-        )
+        Object.entries(fieldFormats[entityName] || {}).reduce((acc, [field, formats]) => {
+            acc[field] = formats['pretty'] || field;
+            return acc;
+        }, {} as Record<string, string>)
 );
-
 
 // Main conversion selectors
 export const selectPrettyConversion = createSelector(
     [
         (_: RootState, payload: { entityName: EntityKeys; data: any }) => payload.data,
         selectPrettyEntityMapping,
-        (state: RootState, payload: { entityName: EntityKeys; data: any }) =>
-            selectPrettyFieldMapping(state, payload.entityName)
+        (state: RootState, payload: { entityName: EntityKeys; data: any }) => selectPrettyFieldMapping(state, payload.entityName),
     ],
-    (data, entityMap, fieldMap) => selectReplaceKeysInObject(
-        {} as RootState,
-        selectReplaceKeysInObject({} as RootState, data, entityMap),
-        fieldMap
-    )
+    (data, entityMap, fieldMap) => selectReplaceKeysInObject({} as RootState, selectReplaceKeysInObject({} as RootState, data, entityMap), fieldMap)
 );
 
 // =========================
 // Mapping selectors - these are basic and don't need to change
-export const selectAnyEntityMapping = createSelector(
-    [
-        selectEntityNameFormats,
-        (_: RootState, format: NameFormat) => format,
-    ],
-    (entityNameFormats, format) =>
-        Object.entries(entityNameFormats).reduce((acc, [entity, formats]) => {
-            acc[entity] = formats[format] || entity;
-            return acc;
-        }, {} as Record<string, string>)
+export const selectAnyEntityMapping = createSelector([selectEntityNameFormats, (_: RootState, format: NameFormat) => format], (entityNameFormats, format) =>
+    Object.entries(entityNameFormats).reduce((acc, [entity, formats]) => {
+        acc[entity] = formats[format] || entity;
+        return acc;
+    }, {} as Record<string, string>)
 );
 
 export const selectAnyFieldMapping = createSelector(
@@ -570,65 +439,35 @@ export const selectAnyFieldMapping = createSelector(
         (_: RootState, entityName: EntityKeys, format: NameFormat) => format,
     ],
     (fieldFormats, entityName, format) =>
-        Object.entries(fieldFormats[entityName] || {}).reduce(
-            (acc, [field, formats]) => {
-                acc[field] = formats[format] || field;
-                return acc;
-            },
-            {} as Record<string, string>
-        )
+        Object.entries(fieldFormats[entityName] || {}).reduce((acc, [field, formats]) => {
+            acc[field] = formats[format] || field;
+            return acc;
+        }, {} as Record<string, string>)
 );
-
 
 export const selectAnyObjectFormatConversion = createSelector(
     [
-        (
-            _: RootState,
-            payload: { entityName: EntityKeys; data: any; format: NameFormat }
-        ) => payload.data,
-        (
-            state: RootState,
-            payload: { entityName: EntityKeys; data: any; format: NameFormat }
-        ) => selectAnyEntityMapping(state, payload.format),
-        (
-            state: RootState,
-            payload: { entityName: EntityKeys; data: any; format: NameFormat }
-        ) =>
+        (_: RootState, payload: { entityName: EntityKeys; data: any; format: NameFormat }) => payload.data,
+        (state: RootState, payload: { entityName: EntityKeys; data: any; format: NameFormat }) => selectAnyEntityMapping(state, payload.format),
+        (state: RootState, payload: { entityName: EntityKeys; data: any; format: NameFormat }) =>
             selectAnyFieldMapping(state, payload.entityName, payload.format),
     ],
-    (data, entityMap, fieldMap) =>
-        selectReplaceKeysInObject(
-            {} as RootState,
-            selectReplaceKeysInObject({} as RootState, data, entityMap),
-            fieldMap
-        )
+    (data, entityMap, fieldMap) => selectReplaceKeysInObject({} as RootState, selectReplaceKeysInObject({} as RootState, data, entityMap), fieldMap)
 );
 
 //==============================
 
-
 export const selectUnknownToAnyObjectFormatConversion = createSelector(
     [
-        (
-            _: RootState,
-            payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }
-        ) => payload.data,
-        (
-            state: RootState,
-            payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }
-        ) => selectEntityCanonicalName(state, payload.entityAlias),
-        (
-            state: RootState,
-            payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }
-        ) => state,
-        (
-            _: RootState,
-            payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }
-        ) => payload.targetFormat,
+        (_: RootState, payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }) => payload.data,
+        (state: RootState, payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }) =>
+            selectEntityCanonicalName(state, payload.entityAlias),
+        (state: RootState, payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }) => state,
+        (_: RootState, payload: { entityAlias: AllEntityNameVariations; data: any; targetFormat: NameFormat }) => payload.targetFormat,
     ],
     (data, entityName, state, targetFormat) => {
-        const canonicalData = selectCanonicalConversion(state, {entityName, data});
-        return selectAnyObjectFormatConversion(state, {entityName, data: canonicalData, format: targetFormat});
+        const canonicalData = selectCanonicalConversion(state, { entityName, data });
+        return selectAnyObjectFormatConversion(state, { entityName, data: canonicalData, format: targetFormat });
     }
 );
 
@@ -638,11 +477,8 @@ interface ResponseConversionPayload {
 }
 
 export const selectFrontendConversion = createSelector(
-    [
-        selectFieldNameToCanonical,
-        (_: RootState, payload: ResponseConversionPayload) => payload
-    ],
-    (fieldToCanonical: Record<EntityKeys, Record<string, string>>, {entityName, data}) => {
+    [selectFieldNameToCanonical, (_: RootState, payload: ResponseConversionPayload) => payload],
+    (fieldToCanonical: Record<EntityKeys, Record<string, string>>, { entityName, data }) => {
         if (!data) {
             return data;
         }
@@ -653,13 +489,9 @@ export const selectFrontendConversion = createSelector(
     }
 );
 
-
 export const selectCanonicalConversion = createSelector(
-    [
-        selectFieldNameToCanonical,
-        (_: RootState, payload: ResponseConversionPayload) => payload
-    ],
-    (fieldToCanonical: Record<EntityKeys, Record<string, string>>, {entityName, data}) => {
+    [selectFieldNameToCanonical, (_: RootState, payload: ResponseConversionPayload) => payload],
+    (fieldToCanonical: Record<EntityKeys, Record<string, string>>, { entityName, data }) => {
         if (!data) {
             return data;
         }
@@ -673,15 +505,12 @@ export interface QueryConversionPayload<T extends EntityKeys> {
     options?: QueryOptions<T>;
 }
 
-
 export const selectQueryDatabaseConversion = createSelector(
     [
-        (state: RootState, payload: QueryConversionPayload<EntityKeys>) =>
-            selectEntityDatabaseName(state, payload.entityName),
-        (state: RootState, payload: QueryConversionPayload<EntityKeys>) =>
-            selectEntityFieldNameToDatabaseMap(state, payload.entityName),
+        (state: RootState, payload: QueryConversionPayload<EntityKeys>) => selectEntityDatabaseName(state, payload.entityName),
+        (state: RootState, payload: QueryConversionPayload<EntityKeys>) => selectEntityFieldNameToDatabaseMap(state, payload.entityName),
         (_: RootState, payload: QueryConversionPayload<EntityKeys>) => payload.entityName,
-        (_: RootState, payload: QueryConversionPayload<EntityKeys>) => payload.options
+        (_: RootState, payload: QueryConversionPayload<EntityKeys>) => payload.options,
     ],
     (databaseTableName: AnyEntityDatabaseTable, fieldMap, entityName, options) => {
         if (!options) {
@@ -690,31 +519,31 @@ export const selectQueryDatabaseConversion = createSelector(
 
         const completeFieldMap = {
             ...fieldMap,
-            [options.tableName]: databaseTableName as AnyEntityDatabaseTable
+            [options.tableName]: databaseTableName as AnyEntityDatabaseTable,
         };
 
         const processedFilters = options.filters
-                                 ? selectReplaceKeysInObject({} as RootState, options.filters, completeFieldMap) as Partial<Record<string, any>>
-                                 : undefined;
+            ? (selectReplaceKeysInObject({} as RootState, options.filters, completeFieldMap) as Partial<Record<string, any>>)
+            : undefined;
 
         const result: QueryOptionsReturn<typeof entityName> = {
             tableName: databaseTableName,
 
-            ...(processedFilters && {filters: processedFilters}),
+            ...(processedFilters && { filters: processedFilters }),
 
             ...(options.sorts && {
-                sorts: options.sorts.map(sort => ({
+                sorts: options.sorts.map((sort) => ({
                     column: fieldMap[sort.column] || sort.column,
-                    ascending: sort.ascending
-                }))
+                    ascending: sort.ascending,
+                })),
             }),
 
             ...(options.columns && {
-                columns: options.columns.map(column => fieldMap[column] || column)
+                columns: options.columns.map((column) => fieldMap[column] || column),
             }),
 
-            ...(typeof options.limit !== 'undefined' && {limit: options.limit}),
-            ...(typeof options.offset !== 'undefined' && {offset: options.offset})
+            ...(typeof options.limit !== 'undefined' && { limit: options.limit }),
+            ...(typeof options.offset !== 'undefined' && { offset: options.offset }),
         };
 
         return result;
@@ -728,12 +557,10 @@ interface PayloadOptionsConversionPayload<T extends EntityKeys> {
 
 export const selectPayloadOptionsDatabaseConversion = createSelector(
     [
-        (state: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) =>
-            selectEntityFieldNameToDatabaseMap(state, payload.entityName),
-        (state: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) =>
-            selectEntityDatabaseName(state, payload.entityName),
+        (state: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => selectEntityFieldNameToDatabaseMap(state, payload.entityName),
+        (state: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => selectEntityDatabaseName(state, payload.entityName),
         (_: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => payload.entityName,
-        (_: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => payload.options
+        (_: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => payload.options,
     ],
     (fieldMap, databaseTableName: AnyEntityDatabaseTable, entityName, options) => {
         if (!options) {
@@ -743,36 +570,33 @@ export const selectPayloadOptionsDatabaseConversion = createSelector(
             tableName: options.tableName ? databaseTableName : options.tableName,
 
             ...(options.filters && {
-                filters: selectReplaceKeysInObject({} as RootState, options.filters, fieldMap) as Partial<Record<string, any>>
+                filters: selectReplaceKeysInObject({} as RootState, options.filters, fieldMap) as Partial<Record<string, any>>,
             }),
 
             ...(options.sorts && {
-                sorts: options.sorts.map(sort => ({
+                sorts: options.sorts.map((sort) => ({
                     column: fieldMap[sort.column] || sort.column,
-                    ascending: sort.ascending
-                }))
+                    ascending: sort.ascending,
+                })),
             }),
 
             ...(options.columns && {
-                columns: options.columns.map(column => fieldMap[column] || column)
+                columns: options.columns.map((column) => fieldMap[column] || column),
             }),
 
-            ...(typeof options.limit !== 'undefined' && {limit: options.limit}),
-            ...(typeof options.offset !== 'undefined' && {offset: options.offset})
+            ...(typeof options.limit !== 'undefined' && { limit: options.limit }),
+            ...(typeof options.offset !== 'undefined' && { offset: options.offset }),
         };
 
         return result;
     }
 );
 
-
 export const selectUnifiedDatabaseObjectConversion = createSelector(
     [
-        (state: RootState, options: FlexibleQueryOptions) =>
-            selectEntityCanonicalName(state, options.entityNameAnyFormat),
+        (state: RootState, options: FlexibleQueryOptions) => selectEntityCanonicalName(state, options.entityNameAnyFormat),
 
-        (state: RootState, options: FlexibleQueryOptions) =>
-            selectEntityDatabaseName(state, selectEntityCanonicalName(state, options.entityNameAnyFormat)),
+        (state: RootState, options: FlexibleQueryOptions) => selectEntityDatabaseName(state, selectEntityCanonicalName(state, options.entityNameAnyFormat)),
 
         (state: RootState, options: FlexibleQueryOptions) =>
             selectEntityFieldNameToDatabaseMap(state, selectEntityCanonicalName(state, options.entityNameAnyFormat)),
@@ -780,10 +604,13 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
         (state: RootState, options: FlexibleQueryOptions) =>
             selectEntityPrimaryKeyMetadata(state, selectEntityCanonicalName(state, options.entityNameAnyFormat)),
 
-        (state: RootState, options: FlexibleQueryOptions) =>
-            selectEntityDisplayField(state, selectEntityCanonicalName(state, options.entityNameAnyFormat)),
+        (state: RootState, options: FlexibleQueryOptions) => {
+            const canonicalName = selectEntityCanonicalName(state, options.entityNameAnyFormat);
+            const displayField = selectEntityDisplayField(state, canonicalName);
+            return displayField;
+        },
 
-        (_: RootState, options: FlexibleQueryOptions) => options
+        (_: RootState, options: FlexibleQueryOptions) => options,
     ],
     (
         entityName: EntityKeys,
@@ -801,17 +628,16 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             databasePks: primaryKeyMetadata.database_fields,
             frontendDisplayField,
             databaseDisplayField: fieldMap[frontendDisplayField] || frontendDisplayField,
+            entityNameAnyFormat: options.entityNameAnyFormat,
         };
-
-        logger.log('debug', 'Starting conversion with options:', options);
 
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
-            // @ts-ignore
-            result.parsedFrontendRecords = parseRecordKeys(options.recordKeys);
+            // Add type assertion for parsedFrontendRecords
+            result.parsedFrontendRecords = parseRecordKeys(options.recordKeys) as Record<AllEntityFieldKeys, string>[];
 
             if (result.parsedFrontendRecords) {
-                result.parsedDatabaseRecords = result.parsedFrontendRecords.map(record => {
+                result.parsedDatabaseRecords = result.parsedFrontendRecords.map((record) => {
                     const databaseRecord: Record<string, string> = {};
                     Object.entries(record).forEach(([key, value]) => {
                         databaseRecord[fieldMap[key] || key] = value;
@@ -824,28 +650,21 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
         logger.log('debug', 'Record keys processed:', result.recordKeys);
 
         if (options.filters) {
-            result.filters = selectReplaceKeysInObject(
-                {} as RootState,
-                options.filters,
-                fieldMap
-            ) as Partial<Record<string, unknown>>;
+            result.filters = selectReplaceKeysInObject({} as RootState, options.filters, fieldMap) as Partial<Record<string, unknown>>;
         }
 
         logger.log('debug', 'Filters processed:', result.filters);
 
         if (options.sorts) {
-            result.sorts = options.sorts.map(sort => ({
-                column: fieldMap[sort.column] || sort.column,
-                ascending: sort.ascending
+            result.sorts = options.sorts.map((sort) => ({
+                column: (fieldMap[sort.column] || sort.column) as AllEntityFieldKeys,
+                ascending: sort.ascending,
             }));
         }
-
         logger.log('debug', 'Sorts processed:', result.sorts);
 
         if (options.columns) {
-            result.columns = options.columns.map(
-                column => fieldMap[column] || column
-            );
+            result.columns = options.columns.map((column) => fieldMap[column] || column);
         }
 
         logger.log('debug', 'Columns processed:', result.columns);
@@ -862,7 +681,6 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
 
         logger.log('debug', 'Offset processed:', result.offset);
 
-
         if (options.data) {
             result.data = convertToDatabase(options.data, fieldMap);
         }
@@ -873,7 +691,7 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
             pksAndValues = parseMatrxRecordId(options.matrxRecordId);
         }
 
-        const {primaryKeysAndValues, recordKeys} = result.databasePks.reduce(
+        const { primaryKeysAndValues, recordKeys } = result.databasePks.reduce(
             (acc, pk, index) => {
                 const value = result.data?.[pk] ?? pksAndValues[pk];
                 if (value !== undefined) {
@@ -901,16 +719,12 @@ export const selectUnifiedDatabaseObjectConversion = createSelector(
 
         logger.log('debug', 'Data processed:', result.data);
         logger.log('debug', 'Primary keys and values extracted:', primaryKeysAndValues);
-        logger.log('debug', 'selectUnifiedDatabaseObjectConversion Conversion complete:', result);
 
         return result;
     }
 );
 
-const convertToDatabase = (
-    data: unknown,
-    fieldMap: Record<string, string>
-): Record<string, unknown> | Record<string, unknown>[] => {
+const convertToDatabase = (data: unknown, fieldMap: Record<string, string>): Record<string, unknown> | Record<string, unknown>[] => {
     const isValuePresent = (value: unknown): boolean => {
         if (value === null || value === undefined) {
             return false;
@@ -942,19 +756,17 @@ const convertToDatabase = (
     };
 
     if (Array.isArray(data)) {
-        return data.map(item => convertSingleObject(item as Record<string, unknown>));
+        return data.map((item) => convertSingleObject(item as Record<string, unknown>));
     }
 
     return convertSingleObject(data as Record<string, unknown>);
 };
 
-
 export const selectUnifiedDatabaseObjectConversion2 = createSelector(
     [
-        (state: RootState, options: FlexibleQueryOptions) =>
-            selectEntityCanonicalName(state, options.entityNameAnyFormat),
+        (state: RootState, options: FlexibleQueryOptions) => selectEntityCanonicalName(state, options.entityNameAnyFormat),
         (state: RootState, options: FlexibleQueryOptions) => options,
-        (state: RootState) => state
+        (state: RootState) => state,
     ],
     (entityName: EntityKeys, options: FlexibleQueryOptions, state: RootState): UnifiedDatabaseObject => {
         // Get all our dependencies using state and entityName
@@ -971,13 +783,14 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
             databasePks: primaryKeyMetadata.database_fields,
             frontendDisplayField: frontendDisplayField,
             databaseDisplayField: fieldMap[frontendDisplayField] || frontendDisplayField,
+            entityNameAnyFormat: options.entityNameAnyFormat,
+
         };
 
         if (options.recordKeys) {
             result.recordKeys = options.recordKeys;
-            // @ts-ignore
-            result.parsedFrontendRecords = parseRecordKeys(options.recordKeys);
-
+            result.parsedFrontendRecords = parseRecordKeys(options.recordKeys) as Record<AllEntityFieldKeys, string>[];
+        
             if (result.parsedFrontendRecords) {
                 result.parsedDatabaseRecords = result.parsedFrontendRecords.map(record => {
                     const databaseRecord: Record<string, string> = {};
@@ -988,26 +801,19 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
                 });
             }
         }
-
+        
         if (options.filters) {
-            result.filters = selectReplaceKeysInObject(
-                state,
-                options.filters,
-                fieldMap
-            ) as Partial<Record<string, unknown>>;
+            result.filters = selectReplaceKeysInObject(state, options.filters, fieldMap) as Partial<Record<string, unknown>>;
         }
 
         if (options.sorts) {
             result.sorts = options.sorts.map(sort => ({
-                column: fieldMap[sort.column] || sort.column,
+                column: (fieldMap[sort.column] || sort.column) as AllEntityFieldKeys,
                 ascending: sort.ascending
             }));
         }
-
         if (options.columns) {
-            result.columns = options.columns.map(
-                column => fieldMap[column] || column
-            );
+            result.columns = options.columns.map((column) => fieldMap[column] || column);
         }
 
         if (typeof options.limit !== 'undefined') {
@@ -1019,10 +825,7 @@ export const selectUnifiedDatabaseObjectConversion2 = createSelector(
         }
 
         if (options.data) {
-            result.data = selectFrontendConversion(
-                state,
-                {entityName, data: options.data}
-            );
+            result.data = selectFrontendConversion(state, { entityName, data: options.data });
         }
 
         return result;
@@ -1065,7 +868,6 @@ export type UnifiedQueryOptions<TEntity extends EntityKeys> = Partial<{
     upsertConflictColumns: Array<string>; // Columns to identify conflicts during upserts
 }>;
 
-
 export const selectUnifiedQueryDatabaseConversion = createSelector(
     [
         (state: RootState, payload: { entityName: EntityKeys; options?: UnifiedQueryOptions<EntityKeys> }) =>
@@ -1074,39 +876,36 @@ export const selectUnifiedQueryDatabaseConversion = createSelector(
             selectEntityFieldNameToDatabaseMap(state, payload.entityName),
         selectEntityNameToDatabase,
         selectFieldNameToDatabase,
-        (_: RootState, payload: { entityName: EntityKeys; options?: UnifiedQueryOptions<EntityKeys> }) =>
-            payload.entityName,
-        (_: RootState, payload: { entityName: EntityKeys; options?: UnifiedQueryOptions<EntityKeys> }) =>
-            payload.options
+        (_: RootState, payload: { entityName: EntityKeys; options?: UnifiedQueryOptions<EntityKeys> }) => payload.entityName,
+        (_: RootState, payload: { entityName: EntityKeys; options?: UnifiedQueryOptions<EntityKeys> }) => payload.options,
     ],
     (databaseTableName, mainFieldMap, entityNameToDatabase, fieldNameToDatabase, entityName, options) => {
         if (!options) {
             return undefined;
         }
 
-        const processJoinTables = (joins?: Array<{
-            table: string;
-            on: string;
-            columns?: Array<string>;
-        }>) => {
+        const processJoinTables = (
+            joins?: Array<{
+                table: string;
+                on: string;
+                columns?: Array<string>;
+            }>
+        ) => {
             if (!joins) return undefined;
 
-            return joins.map(join => {
+            return joins.map((join) => {
                 const joinedTableName = entityNameToDatabase[join.table] || join.table;
                 const joinedTableFieldMap = fieldNameToDatabase[join.table] || {};
 
                 return {
                     table: joinedTableName,
                     on: Object.entries(joinedTableFieldMap).reduce<string>(
-                        (clause: string, [key, value]: [string, string]) =>
-                            clause.replace(new RegExp(`\\b${key}\\b`, 'g'), value),
+                        (clause: string, [key, value]: [string, string]) => clause.replace(new RegExp(`\\b${key}\\b`, 'g'), value),
                         join.on
                     ),
                     ...(join.columns && {
-                        columns: join.columns.map(column =>
-                            joinedTableFieldMap[column] || column
-                        )
-                    })
+                        columns: join.columns.map((column) => joinedTableFieldMap[column] || column),
+                    }),
                 };
             });
         };
@@ -1115,7 +914,7 @@ export const selectUnifiedQueryDatabaseConversion = createSelector(
             if (!fts) return undefined;
             return {
                 column: mainFieldMap[fts.column] || fts.column,
-                query: fts.query
+                query: fts.query,
             };
         };
 
@@ -1123,89 +922,47 @@ export const selectUnifiedQueryDatabaseConversion = createSelector(
             tableName: databaseTableName as typeof entityName,
 
             ...(options.filters && {
-                filters: selectReplaceKeysInObject({} as RootState, options.filters, mainFieldMap) as Partial<Record<string, any>>
+                filters: selectReplaceKeysInObject({} as RootState, options.filters, mainFieldMap) as Partial<Record<string, any>>,
             }),
 
             ...(options.sorts && {
-                sorts: options.sorts.map(sort => ({
+                sorts: options.sorts.map((sort) => ({
                     column: mainFieldMap[sort.column] || sort.column,
-                    ascending: sort.ascending
-                }))
+                    ascending: sort.ascending,
+                })),
             }),
 
             ...(options.columns && {
-                columns: options.columns.map(column => mainFieldMap[column] || column)
+                columns: options.columns.map((column) => mainFieldMap[column] || column),
             }),
 
-            ...(typeof options.limit !== 'undefined' && {limit: options.limit}),
-            ...(typeof options.offset !== 'undefined' && {offset: options.offset}),
-            ...(typeof options.distinct !== 'undefined' && {distinct: options.distinct}),
-            ...(options.range && {range: options.range}),
+            ...(typeof options.limit !== 'undefined' && { limit: options.limit }),
+            ...(typeof options.offset !== 'undefined' && { offset: options.offset }),
+            ...(typeof options.distinct !== 'undefined' && { distinct: options.distinct }),
+            ...(options.range && { range: options.range }),
 
             ...(options.fullTextSearch && {
-                fullTextSearch: processFullTextSearch(options.fullTextSearch)
+                fullTextSearch: processFullTextSearch(options.fullTextSearch),
             }),
 
             ...(options.joinTables && {
-                joinTables: processJoinTables(options.joinTables)
+                joinTables: processJoinTables(options.joinTables),
             }),
 
             ...(options.groupBy && {
-                groupBy: options.groupBy.map(field => mainFieldMap[field] || field)
+                groupBy: options.groupBy.map((field) => mainFieldMap[field] || field),
             }),
 
             ...(options.having && {
-                having: selectReplaceKeysInObject({} as RootState, options.having, mainFieldMap) as Partial<Record<string, any>>
+                having: selectReplaceKeysInObject({} as RootState, options.having, mainFieldMap) as Partial<Record<string, any>>,
             }),
 
             ...(options.upsertConflictColumns && {
-                upsertConflictColumns: options.upsertConflictColumns.map(
-                    column => mainFieldMap[column] || column
-                )
-            })
+                upsertConflictColumns: options.upsertConflictColumns.map((column) => mainFieldMap[column] || column),
+            }),
         };
 
         return result;
     }
 );
 
-// ============= Convenience Selectors =============
-
-
-/*
-export const selectPayloadOptionsDatabaseConversion = createSelector(
-    [
-        selectFieldNameToDatabase,
-        selectEntityNameToDatabase,
-        (_: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) => payload,
-        (state: RootState, payload: PayloadOptionsConversionPayload<EntityKeys>) =>
-            selectReplaceKeysInObject(state, payload.options?.filters || {}, {}), // Pass RootState and filters to selectReplaceKeysInObject
-    ],
-    (fieldMappings, tableNameMappings, payload, convertedFilters) => {
-        const { entityName, options } = payload;
-        if (!options) return options;
-
-        const fieldMap = fieldMappings[entityName] || {};
-
-        const convertedOptions = {
-            ...options,
-            ...(options.tableName && {
-                tableName: tableNameMappings[options.tableName] || options.tableName,
-            }),
-            ...(options.filters && { filters: convertedFilters }), // Use convertedFilters instead of calling selectReplaceKeysInObject directly
-            ...(options.sorts && {
-                sorts: options.sorts.map((sort) => ({
-                    ...sort,
-                    column: fieldMap[sort.column] || sort.column,
-                })),
-            }),
-            ...(options.columns && {
-                columns: options.columns.map((column) => fieldMap[column] || column),
-            }),
-        };
-
-        return convertedOptions;
-    }
-);
-
- */

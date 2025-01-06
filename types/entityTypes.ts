@@ -37,6 +37,10 @@ export type EntityKeys = keyof AutomationSchema;
 export type EntityNameFormats<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['entityNameFormats'];
 
+export type userTable = typeof initialAutomationTableSchema['userPreferences'];
+
+export type anyTable = typeof initialAutomationTableSchema[EntityKeys];
+
 /**
  * Gets a specific format variation for an entity
  * @example EntityNameFormat<'registeredFunction', 'database'> might return 'registered_function'
@@ -324,30 +328,29 @@ export type ForeignKeyReference = {
 
 
 export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>> = {
-    fieldNameFormats: FieldNameFormats<TEntity, TField>;
-    value: any;
     uniqueColumnId: string;
     uniqueFieldId: string;
     dataType: FieldDataType<TEntity, TField>;
-    isArray: FieldIsArray<TEntity, TField>;
-    structure: FieldStructure<TEntity, TField>;
-    isNative: FieldIsNative<TEntity, TField>;
-    typeReference: FieldTypeReference<TEntity, TField>;
-    defaultComponent?: FieldDefaultComponent<TEntity, TField>;
-    componentProps?: FieldComponentProps<TEntity, TField>;
     isRequired: FieldIsRequired<TEntity, TField>;
     maxLength: FieldMaxLength<TEntity, TField>;
+    isArray: FieldIsArray<TEntity, TField>;
     defaultValue: FieldDefaultValue<TEntity, TField>;
     isPrimaryKey: FieldIsPrimaryKey<TEntity, TField>;
     isDisplayField: FieldIsDisplayField<TEntity, TField>;
     defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
     validationFunctions: FieldValidationFunctions<TEntity, TField>;
     exclusionRules: FieldExclusionRules<TEntity, TField>;
+    defaultComponent?: FieldDefaultComponent<TEntity, TField>;
+    componentProps?: FieldComponentProps<TEntity, TField>;
+    structure: FieldStructure<TEntity, TField>;
+    isNative: FieldIsNative<TEntity, TField>;
+    typeReference: FieldTypeReference<TEntity, TField>;
     enumValues: FieldEnumValues<TEntity, TField>;
     entityName: EntityKeys;
     databaseTable: FieldDatabaseTable<TEntity, TField>;
     foreignKeyReference: ForeignKeyReference | null;
     description: string;
+    fieldNameFormats: FieldNameFormats<TEntity, TField>;
 };
 
 // name: string;
@@ -436,33 +439,41 @@ type test15 = EntityRelationships<'registeredFunction'>; // Shows default fetch 
 
 export type SchemaCombined<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
+    entityName: TEntity;
+    uniqueTableId: string;
+    uniqueEntityId: string;
+    primaryKey: string;
+    primaryKeyMetadata: PrimaryKeyMetadata;
+    displayFieldMetadata: DisplayFieldMetadata;
     defaultFetchStrategy: FetchStrategy;
     componentProps: EntityComponentProps<TEntity>;
     entityNameFormats: EntityNameFormats<TEntity>;
     relationships: EntityRelationships<TEntity>;
     entityFields: {
         [TField in EntityFieldKeys<TEntity>]: {
-            value: any;
+            uniqueColumnId: string;
+            uniqueFieldId: string;
             dataType: FieldDataType<TEntity, TField>;
-            isArray: FieldIsArray<TEntity, TField>;
-            structure: FieldStructure<TEntity, TField>;
-            isNative: FieldIsNative<TEntity, TField>;
-            typeReference: FieldTypeReference<TEntity, TField>;
-            defaultComponent?: FieldDefaultComponent<TEntity, TField>;
-            componentProps?: FieldComponentProps<TEntity, TField>;
             isRequired: FieldIsRequired<TEntity, TField>;
             maxLength: FieldMaxLength<TEntity, TField>;
+            isArray: FieldIsArray<TEntity, TField>;
             defaultValue: FieldDefaultValue<TEntity, TField>;
             isPrimaryKey: FieldIsPrimaryKey<TEntity, TField>;
             isDisplayField: FieldIsDisplayField<TEntity, TField>;
+            defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
             validationFunctions: FieldValidationFunctions<TEntity, TField>;
             exclusionRules: FieldExclusionRules<TEntity, TField>;
-            fieldNameFormats: FieldNameFormats<TEntity, TField>;
-            defaultGeneratorFunction: FieldDefaultGeneratorFunction<TEntity, TField>;
+            defaultComponent?: FieldDefaultComponent<TEntity, TField>;
+            componentProps?: FieldComponentProps<TEntity, TField>;
+            structure: FieldStructure<TEntity, TField>;
+            isNative: FieldIsNative<TEntity, TField>;
+            typeReference: FieldTypeReference<TEntity, TField>;
             enumValues: FieldEnumValues<TEntity, TField>;
             entityName: EntityKeys;
             databaseTable: FieldDatabaseTable<TEntity, TField>;
+            foreignKeyReference: ForeignKeyReference | null;
             description: string;
+            fieldNameFormats: FieldNameFormats<TEntity, TField>;
         };
     };
 };
@@ -515,9 +526,9 @@ export type FieldNameBackendMap = Record<EntityNameOfficial, Record<string, stri
 export interface UnifiedSchemaCache {
     schema: AutomationEntities;
     entityNames: EntityKeys[];
-    entities: Partial<Record<EntityKeys, SchemaEntity>>;
-    fields: Record<string, SchemaField>;
-    fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
+    entitiesWithoutFields: Partial<Record<EntityKeys, SchemaEntity>>;
+    // fields: Record<string, SchemaField>;
+    // fieldsByEntity: Partial<Record<EntityKeys, string[]>>;
     entityNameToCanonical: Record<string, EntityKeys>;
     fieldNameToCanonical: Record<EntityKeys, Record<string, string>>;
     entityNameFormats: Record<EntityKeys, Record<string, string>>;

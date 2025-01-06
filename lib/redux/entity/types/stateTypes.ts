@@ -58,8 +58,8 @@ export type ComponentProps = {
 };
 
 export interface EntityStateField {
-    name: AllEntityFieldKeys;
-    displayName: string;
+    fieldName: AllEntityFieldKeys;
+    fieldNameFormats: Record<string, AllEntityNameVariations>;    
     uniqueColumnId: string;
     uniqueFieldId: string;
     dataType: FieldDataOptionsType;
@@ -82,7 +82,10 @@ export interface EntityStateField {
     databaseTable: AnyEntityDatabaseTable;
     foreignKeyReference: ForeignKeyReference | null;
     description: string;
+    name: string;
+    displayName: string;
 }
+
 
 export interface EntityStateFieldWithValue extends EntityStateField {
     value: any;

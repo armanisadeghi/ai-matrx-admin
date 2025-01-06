@@ -21,7 +21,7 @@ export type LogContext = {
     entityKey?: string;
 };
 
-export interface BaseLogEntry {
+export interface BaseLogEntry { // BAD!
     id: string;
     level: LogLevel;
     message: string;
@@ -30,18 +30,35 @@ export interface BaseLogEntry {
     trace?: string[];  // Include this for stack tracing
 }
 
+export interface AccurateLogEntry {
+    id: string;
+    level: LogLevel;
+    message: string;
+    data: any;
+    trace?: string[];
+    module?: string;
+    feature?: string;
+    category: string;
+    subCategory?: string;
+    context: LogContext;
+    metadata?: Record<string, unknown>;
+}
+
+
+
+// In types.ts
 export interface SchemaResolutionLog extends BaseLogEntry {
     category: 'schema_resolution';
     resolutionType: 'table' | 'field' | 'cache' | 'database' | 'entity';
     original: string;
     resolved: string;
-    trace: string[];
     tableMetrics?: {
-        fieldCount: number;
-        variantCount: number;
-        size: number;
+        fieldCount?: number;  // Make optional
+        variantCount?: number;  // Make optional
+        size?: number;  // Make optional
     };
 }
+
 
 export interface ErrorLog extends BaseLogEntry {
     category: 'error';
@@ -69,6 +86,11 @@ export interface ReduxLog extends BaseLogEntry {
 
 export interface NetworkLog extends BaseLogEntry {
     category: 'network';
+    // Level should be mapped as follows:
+    // - 500+ status: error
+    // - 400-499 status: warn
+    // - 300-399 status: info
+    // - 200-299 status: debug
     request: {
         method: string;
         url: string;
@@ -91,12 +113,21 @@ export interface NetworkLog extends BaseLogEntry {
 
 export interface PerformanceLog extends BaseLogEntry {
     category: 'performance';
+    // Level should be determined as:
+    // - Above critical threshold: error
+    // - Above warning threshold: warn
+    // - Above info threshold: info
+    // - Below all thresholds: debug
     metric: {
         name: string;
         value: number;
         unit: string;
     };
-    threshold?: number;
+    threshold?: {
+        critical?: number;
+        warning?: number;
+        info?: number;
+    };
     source: 'nextjs' | 'react' | 'browser' | 'custom';
 }
 
@@ -123,10 +154,11 @@ export interface SchemaMetricsLog extends BaseLogEntry {
 
 export interface ConsoleLog extends BaseLogEntry {
     category: 'console';
-    type: 'log' | 'info' | 'warn' | 'error' | 'debug';
+    type: LogLevel;  // Change from 'log' | 'info' | 'warn' | 'error' | 'debug' to reuse LogLevel
     args: unknown[];
     stack?: string;
 }
+
 
 export interface ApplicationLog extends BaseLogEntry {
     category: 'application';

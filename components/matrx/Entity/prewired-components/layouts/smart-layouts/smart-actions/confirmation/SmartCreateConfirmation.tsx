@@ -4,6 +4,7 @@ import ConfirmationDialog from './ConfirmationDialog';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { useEntityTools } from '@/lib/redux';
 import { useCreateRecord } from '@/app/entities/hooks/crud/useCreateRecord';
+import { formatFieldValue } from './utils';
 
 interface SmartCreateConfirmationProps {
     entityKey: EntityKeys;
@@ -51,7 +52,9 @@ export const SmartCreateConfirmation = ({ entityKey, open, onOpenChange }: Smart
                             className='grid grid-cols-3 gap-4 px-4 py-3 hover:bg-muted/50 rounded-md'
                         >
                             <div className='text-sm font-medium'>{field.displayName}</div>
-                            <div className='text-sm text-primary'>{field.newValue ?? 'BLANK'}</div>
+                            <div className='text-sm text-primary whitespace-pre-wrap font-mono text-xs'>
+                                {formatFieldValue(field.newValue)}
+                            </div>
                             <div className='text-right'>
                                 <span className='text-xs bg-primary/10 text-primary px-2 py-0.5 rounded'>New</span>
                             </div>

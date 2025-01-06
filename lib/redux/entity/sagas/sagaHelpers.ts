@@ -160,7 +160,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
             flexibleQueryOptions
         );
 
-        entityLogger.log('info', 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
+        entityLogger.log('debug', 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
 
         const api = yield call(initializeDatabaseApi, unifiedDatabaseObject.tableName);
         entityLogger.log('debug', 'Database API initialized', entityKey);
@@ -191,7 +191,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
         }
 
     } catch (error: any) {
-        entityLogger.log('error', 'withFullConversion Error in conversion', entityKey, error);
+        entityLogger.log('error', 'withFullConversion Error in conversion', entityKey, error, payload);
 
         yield put(actions.setError(createStructuredError({
             error,
@@ -278,14 +278,14 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             flexibleQueryOptions.columns = payload.columns || payload.fields;
         }
 
-        entityLogger.log('info', 'Flexible Query Options with columns', flexibleQueryOptions);
+        entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
 
         const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(
             selectUnifiedDatabaseObjectConversion,
             flexibleQueryOptions
         );
 
-        entityLogger.log('info', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
+        entityLogger.log('debug', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
 
         const rpcArgs = {
             p_table_name: unifiedDatabaseObject.tableName,
@@ -302,11 +302,11 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             throw error;
         }
 
-        entityLogger.log('info', 'Full response data:', data);
+        entityLogger.log('debug', 'Full response data:', data);
 
 
         const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: data});
-        entityLogger.log('info', 'Frontend Conversion', frontendResponse);
+        entityLogger.log('debug', 'Frontend Conversion', frontendResponse);
         yield put(actions.fetchOneWithFkIfkSuccess(frontendResponse));
 
         const transformed = transformDatabaseResponse(data);
@@ -316,7 +316,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 
         for (const relatedEntity of transformed.relatedEntities) {
             const frontendEntityName: EntityKeys = yield select(selectEntityFrontendName, relatedEntity.tableName);
-            entityLogger.log('info', 'Related Entity Frontend Entity Name', frontendEntityName);
+            entityLogger.log('debug', 'Related Entity Frontend Entity Name', frontendEntityName);
 
             // Initialize array if this is the first record for this entity
             if (!groupedEntities[frontendEntityName]) {
@@ -343,7 +343,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             const relatedActions = getSliceActions(frontendEntityName as EntityKeys);
             if (relatedActions) {
                 yield put(relatedActions.fetchedAsRelatedSuccess(records));
-                entityLogger.log('info', `Updated ${records.length} records for entity:`, frontendEntityName);
+                entityLogger.log('debug', `Updated ${records.length} records for entity:`, frontendEntityName);
             } else {
                 console.warn(`No actions found for entity key: ${frontendEntityName}`);
             }
@@ -352,7 +352,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
         if (action.payload.callbackId) {
             callbackManager.trigger(action.payload.callbackId, {success: true});
         } else {
-            console.log("No callbackId provided in action payload:", payload);
+            entityLogger.log('debug', "No callbackId provided in action payload:", payload);
         }
     } catch (error: any) {
         yield put(
