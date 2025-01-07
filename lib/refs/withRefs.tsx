@@ -1,6 +1,5 @@
 // lib/refs/withRefs.tsx
-import React, {useMemo} from 'react';
-import { useComponentRef } from './hooks';
+import React from 'react';
 import { RefMethod } from './types';
 
 export interface WithRefsProps {
@@ -8,7 +7,6 @@ export interface WithRefsProps {
     refMethods?: { [key: string]: RefMethod };
 }
 
-// lib/refs/withRefs.tsx
 export function withRefs<P extends WithRefsProps>(
     WrappedComponent: React.ComponentType<P>
 ) {

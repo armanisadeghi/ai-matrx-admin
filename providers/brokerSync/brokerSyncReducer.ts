@@ -1,4 +1,4 @@
-import { BrokerSyncState, BrokerSyncAction } from './types';
+import { BrokerInstance, BrokerSyncAction, TrackedBroker } from './types';
 
 export const TAILWIND_COLORS = ['blue', 'green', 'yellow', 'red', 'purple', 'pink', 'indigo', 'teal'] as const;
 
@@ -6,6 +6,14 @@ export function getNextAvailableColor(colorAssignments: Map<string, string>): st
     const usedColors = new Set(colorAssignments.values());
     return TAILWIND_COLORS.find((color) => !usedColors.has(color)) || TAILWIND_COLORS[0];
 }
+
+interface BrokerSyncState {
+    trackedBrokers: Map<string, TrackedBroker>;
+    orphanedInstances: Map<string, BrokerInstance>;
+    colorAssignments: Map<string, string>;
+    callbacks: Map<string, Set<Function>>;
+}
+
 
 const initialState: BrokerSyncState = {
     trackedBrokers: new Map(),
@@ -16,6 +24,7 @@ const initialState: BrokerSyncState = {
 // Now the reducer
 export function brokerSyncReducer(state: BrokerSyncState, action: BrokerSyncAction): BrokerSyncState {
     switch (action.type) {
+        
         case 'TRACK_BROKER': {
             const newTrackedBrokers = new Map(state.trackedBrokers);
             newTrackedBrokers.set(action.payload.id, {

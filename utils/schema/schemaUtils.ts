@@ -2,7 +2,6 @@
 
 import {v4 as uuidv4} from "uuid";
 import {AutomationTableName, FieldDataOptionsType, NameFormat} from "@/types/AutomationSchemaTypes";
-import {getGlobalCache} from "@/utils/schema/precomputeUtil";
 
 import {FieldDataType} from "@/types/entityTypes";
 import {
@@ -11,6 +10,7 @@ import {
     fieldNameFormats,
     fieldNameToCanonical
 } from "@/utils/schema/lookupSchema";
+import { getGlobalCache } from "./schema-processing/processSchema";
 // Types for the transformation system
 export type DataValue = any;
 export type DataObject = Record<string, DataValue>;

@@ -1,7 +1,11 @@
 // lib/refs/provider.tsx
-import React, { useCallback, useRef, useMemo } from 'react';
-import { RefContext, RefManagerContext } from './context';
-import { RefCollection, RefManagerMethods, RefMethod } from './types';
+import React, { useRef, useMemo } from 'react';
+import { createContext } from 'react';
+import { RefCollection, RefManagerMethods } from './types';
+
+export const RefContext = createContext<RefCollection>({});
+export const RefManagerContext = createContext<RefManagerMethods | null>(null);
+
 
 interface RefProviderProps {
     children: React.ReactNode;

@@ -1,41 +1,67 @@
-import { BrokerDataType } from "@/providers/brokerSync/types";
-import { BrokerData, MatrxRecordId } from "@/types";
-
-// types.ts
+// Style definitions
 export interface TextStyle {
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  color?: string;
-  backgroundColor?: string;
-}
-
-export interface ContentBlock {
+  text?: {
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    strikethrough?: boolean;
+    color?: string;
+    fontSize?: string;
+    fontFamily?: string;
+    alignment?: 'left' | 'center' | 'right' | 'justify';
+    lineHeight?: string | number;
+  };
+  spacing?: {
+    letterSpacing?: string;
+    wordSpacing?: string;
+    indent?: string | number;
+  };
+  background?: {
+    color?: string;
+  };
+  special?: {
+    link?: string;
+    codeLanguage?: string;
+    quotation?: boolean;
+  };
+ }
+ 
+ // Block types
+ export interface BaseBlock {
   id: string;
-  type: "text" | "chip" | "lineBreak";
-  content: string;
   position: number;
-  style?: TextStyle;  // Add style property
-}
-
-export interface DocumentState {
+  type: "text" | "chip" | "lineBreak";
+ }
+ 
+ export interface TextBlock extends BaseBlock {
+  type: "text";
+  content: string;
+  style?: TextStyle;
+ }
+ 
+ export interface ChipBlock extends BaseBlock {
+  type: "chip";
+  content: string;
+  label?: string;
+  brokerId?: string;
+  style?: TextStyle;
+ }
+ 
+ export interface LineBreakBlock extends BaseBlock {
+  type: "lineBreak";
+  content: "";
+ }
+ 
+ export type ContentBlock = TextBlock | ChipBlock | LineBreakBlock;
+ 
+ export interface DocumentState {
   blocks: ContentBlock[];
   version: number;
   lastUpdate: number;
-}
-
-export interface BrokerChipEvent {
+ }
+ 
+ export interface BrokerChipEvent {
   type: "remove" | "edit" | "toggle";
   brokerId: string;
   content?: string;
-}
-
-export interface EditorBroker {
-  id: MatrxRecordId;
-  displayName: string;
-  progressStep: "tempRequested" | "tempConfirmed" | "penmanent" | "error";
-  stringValue: string;
-  color?: string;
-  editorId?: string;
-  isConnected?: boolean;
-}
+ }

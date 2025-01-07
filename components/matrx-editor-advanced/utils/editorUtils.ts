@@ -1,5 +1,4 @@
 // editorUtils.ts
-import { toBrokerChip, type ContentBlock, type DocumentState, type EditorBroker } from "../types";
 
 import {
   createTextNode,
@@ -11,6 +10,7 @@ import { renderBrokerChipInContainer } from "../broker/BrokerChipRender";
 
 import { getCursorPosition, setCursorPosition } from "./cursorPosition";
 import { useBrokerSync } from "@/providers/brokerSync/BrokerSyncProvider";
+import { ContentBlock, DocumentState } from "../types";
 
 export const generateId = () => Math.random().toString(36).substring(2, 11);
 

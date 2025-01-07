@@ -19,6 +19,7 @@ import {v4 as uuidv4} from 'uuid';
 
 
 import type {AutomationTableName, NameFormat} from '@/types/AutomationSchemaTypes';
+import { AutomationTable } from '@/types/junk/automationTableTypes';
 
 interface FormattedSchema extends AutomationTable {
     formattedNames: Record<string, string>;

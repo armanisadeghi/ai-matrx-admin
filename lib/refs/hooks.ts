@@ -1,7 +1,7 @@
 // lib/refs/hooks.ts
 import {useContext, useEffect, useMemo, useRef} from 'react';
-import { RefManagerContext, RefContext } from './context';
 import { RefMethod } from './types';
+import { RefManagerContext } from './provider';
 
 export const useRefManager = () => {
     const manager = useContext(RefManagerContext);
@@ -37,5 +37,5 @@ export const useComponentRef = (
             console.log(`Unregistering methods for ${componentId}`);
             manager.unregister(componentId);
         };
-    }, [componentId, manager]); // Remove methods dependency
+    }, [componentId, manager]);
 };

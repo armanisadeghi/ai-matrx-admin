@@ -12,8 +12,6 @@ import {
     selectSchema,
     selectEntityNames,
     selectEntities,
-    selectFields,
-    selectFieldsByEntity,
     selectIsInitialized,
     selectEntityNameToCanonical,
     selectFieldNameToCanonical,
@@ -65,16 +63,12 @@ import {
     selectFieldNameMappingForEntity,
 } from './globalCacheSelectors';
 import { KeyMapping, UnifiedQueryOptions } from './globalCacheSelectors';
-import { QueryOptions } from '@/lib/redux/entity/sagas/watcherSaga';
-import {SchemaEntity, SchemaField} from "@/types/schema";
 
 export const useSchema = () => {
     // Direct State Access Selectors
     const schema = useAppSelector(selectSchema);
     const entityNames = useAppSelector(selectEntityNames);
     const entities = useAppSelector(selectEntities);
-    const fields = useAppSelector(selectFields);
-    const fieldsByEntity = useAppSelector(selectFieldsByEntity);
     const isInitialized = useAppSelector(selectIsInitialized);
 
     // Direct conversion map selectors

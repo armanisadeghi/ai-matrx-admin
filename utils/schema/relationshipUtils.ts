@@ -9,7 +9,7 @@ import {
     entityRelationships,
     asEntityRelationships,
 } from "@/utils/schema/fullRelationships";
-import {getGlobalCache} from "@/utils/schema/precomputeUtil";
+import { getGlobalCache } from "./schema-processing/processSchema";
 
 type DirectRelationship = {
     entity: EntityKeys;

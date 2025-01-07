@@ -3,10 +3,17 @@ import useTrackedCreateRecord from '@/app/entities/hooks/crud/useTrackedCreateRe
 import { useUpdateFields } from '@/app/entities/hooks/crud/useUpdateFields';
 import { useRefManager } from '@/lib/refs/hooks';
 import React, { createContext, useContext, useReducer, useRef, useCallback, useEffect } from 'react';
-import { BrokerSyncContextValue } from './types';
+import { BrokerInstance, BrokerSyncContextValue, TrackedBroker } from './types';
 import { brokerSyncReducer, getNextAvailableColor } from './brokerSyncReducer';
 
 const BrokerSyncContext = createContext<BrokerSyncContextValue | null>(null);
+
+interface BrokerSyncState {
+    trackedBrokers: Map<string, TrackedBroker>;
+    orphanedInstances: Map<string, BrokerInstance>;
+    colorAssignments: Map<string, string>;
+    callbacks: Map<string, Set<Function>>; // Track callbacks by broker ID
+}
 
 export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const entityName = 'broker';
@@ -17,27 +24,12 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const { startCreate, createRecord, getProgress, getFinalId } = useTrackedCreateRecord(entityName);
 
     // Enhanced broker tracking state
-    interface BrokerInstance {
-        blockId: string;
-        editorId: string;
-        content?: string;
-    }
-
-    interface TrackedBroker {
-        id: string;
-        instances: BrokerInstance[];
-        color: string;
-        isTemporary: boolean;
-        originalContent?: string; // Track initial content for temp brokers
-    }
-
     const [state, dispatch] = useReducer(brokerSyncReducer, {
         trackedBrokers: new Map<string, TrackedBroker>(),
         orphanedInstances: new Map<string, BrokerInstance>(),
         colorAssignments: new Map<string, string>(),
     });
 
-    // Watch selections for sync
     useEffect(() => {
         // Handle new selections
         selectedRecordIds.forEach((id) => {
@@ -48,6 +40,8 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     type: 'TRACK_BROKER',
                     payload: {
                         id,
+                        displayName: broker.displayName || broker.name,
+                        stringValue: broker.stringValue,
                         isTemporary: false,
                         color: getNextAvailableColor(state.colorAssignments),
                     },
@@ -65,7 +59,9 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         dispatch({
                             type: 'ADD_ORPHANED_INSTANCE',
                             payload: {
-                                ...instance,
+                                blockId: instance.blockId,
+                                editorId: instance.editorId,
+                                content: instance.content,
                                 originalBrokerId: id,
                             },
                         });
@@ -109,26 +105,21 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const initializeBroker = useCallback(
         async (editorId: string, displayName: string, stringValue: string) => {
-            // Get a temp ID from our tracking system
             const tempId = startCreate();
 
             // Update redux state with initial values
             updateFields(tempId, {
-                name: displayName, // both name and displayName for consistency
-                displayName: displayName,
-                value: { broker_value: stringValue }, // match our expected format
+                name: displayName,
+                displayName,
+                value: { broker_value: stringValue },
             });
 
-            // Track in our local state
+            // Track the minimal required info
             dispatch({
                 type: 'TRACK_BROKER',
                 payload: {
                     id: tempId,
-                    displayName,
-                    stringValue,
-                    editorId,
-                    isConnected: false,
-                    progressStep: 'tempRequested',
+                    isTemporary: true,
                     color: getNextAvailableColor(state.colorAssignments),
                 },
             });
@@ -137,7 +128,6 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         },
         [startCreate, updateFields]
     );
-
     // Update addBrokerInstance to match our new patterns
     const addBrokerInstance = useCallback((brokerId: string, editorId: string, blockId: string, stringValue?: string) => {
         dispatch({
@@ -160,22 +150,21 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const orphanedInstance = state.orphanedInstances.get(blockId);
             if (!orphanedInstance) return;
 
-            if (action === 'create-new') {
-                const newBrokerId = await initializeBroker(orphanedInstance.editorId, orphanedInstance.content);
-
+            if (action === 'create-new' && orphanedInstance.originalBrokerId) {
+                // We have the original broker ID, reconnect to it
                 dispatch({
                     type: 'MOVE_INSTANCE',
                     payload: {
                         blockId,
                         fromOrphaned: true,
-                        toBrokerId: newBrokerId,
+                        toBrokerId: orphanedInstance.originalBrokerId,
                     },
                 });
 
                 // Update editor reference
-                refManager.call(orphanedInstance.editorId, 'updateBrokerReference', blockId, newBrokerId);
+                refManager.call(orphanedInstance.editorId, 'updateBrokerReference', blockId, orphanedInstance.originalBrokerId);
             } else if (targetBrokerId) {
-                // Connect to existing broker
+                // Connect to specified broker
                 dispatch({
                     type: 'MOVE_INSTANCE',
                     payload: {
@@ -189,7 +178,7 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 refManager.call(orphanedInstance.editorId, 'updateBrokerReference', blockId, targetBrokerId);
             }
         },
-        [state.orphanedInstances, initializeBroker, refManager]
+        [state.orphanedInstances, refManager]
     );
 
     // Handle broker relationship changes
@@ -305,11 +294,9 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     // Content update tracking
     const trackContentUpdate = useCallback(
-        async (blockId: string, content: string, editorId: string) => {
-            // Find which broker this belongs to
+        async (blockId: string, stringValue: string, editorId: string) => {
             let brokerId: string | undefined;
 
-            // Check tracked brokers
             for (const [id, broker] of state.trackedBrokers) {
                 if (broker.instances.some((i) => i.blockId === blockId)) {
                     brokerId = id;
@@ -318,34 +305,30 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }
 
             if (brokerId) {
-                // Update content in our tracking
+                updateFields(brokerId, {
+                    value: { broker_value: stringValue },
+                });
+
                 dispatch({
                     type: 'UPDATE_INSTANCE_CONTENT',
                     payload: {
                         brokerId,
                         blockId,
-                        content,
+                        content: stringValue, // Fixed: using content instead of stringValue
                     },
                 });
-
-                // Update broker field
-                await updateFields(brokerId, {
-                    value: content,
-                });
             } else {
-                // Must be an orphaned instance
                 dispatch({
                     type: 'UPDATE_ORPHANED_CONTENT',
                     payload: {
                         blockId,
-                        content,
+                        content: stringValue, // Fixed: using content instead of stringValue
                     },
                 });
             }
         },
         [state.trackedBrokers, updateFields]
     );
-
     // Add to context and implement in provider
     const updateBrokerName = useCallback(
         (brokerId: string, displayName: string) => {
@@ -379,9 +362,12 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const removeBroker = useCallback(
         (brokerId: string, editorId: string) => {
+            const broker = state.trackedBrokers.get(brokerId);
+            if (!broker) return;
+
             // Check if this is the last instance
-            const brokerInstances = getBrokerInstances(brokerId);
-            if (brokerInstances.length <= 1) {
+            const currentInstances = broker.instances;
+            if (currentInstances.length <= 1) {
                 // Last instance - untrack completely
                 dispatch({
                     type: 'UNTRACK_BROKER',
@@ -398,8 +384,27 @@ export const BrokerSyncProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 });
             }
         },
-        [getBrokerInstances]
+        [state.trackedBrokers]
     );
+    const registerCallback = useCallback((brokerId: string, callback: Function) => {
+        dispatch({
+            type: 'REGISTER_CALLBACK',
+            payload: {
+                brokerId,
+                callback,
+            },
+        });
+    }, []);
+
+    const unregisterCallback = useCallback((brokerId: string, callback: Function) => {
+        dispatch({
+            type: 'UNREGISTER_CALLBACK',
+            payload: {
+                brokerId,
+                callback,
+            },
+        });
+    }, []);
 
     // Expose the context
     const value = {
