@@ -11,33 +11,16 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChipButtons } from './ChipButtons';
-import { ToolbarProps, TextStyle, ToolbarConfig } from '../types';
+import { TOOLBAR_CONFIG } from '../constants/styling';
+import { useEditorContext } from '../provider/EditorProvider';
+import { TextStyle } from '../types/editor.types';
 
-const TOOLBAR_CONFIG: ToolbarConfig = {
-    colors: {
-        text: [
-            { label: 'Default', value: 'inherit' },
-            { label: 'Gray', value: '#6B7280' },
-            { label: 'Red', value: '#EF4444' },
-            { label: 'Blue', value: '#3B82F6' },
-            { label: 'Green', value: '#10B981' },
-        ],
-        background: [
-            { label: 'None', value: 'transparent' },
-            { label: 'Gray', value: '#F3F4F6' },
-            { label: 'Red', value: '#FEE2E2' },
-            { label: 'Blue', value: '#DBEAFE' },
-            { label: 'Green', value: '#D1FAE5' },
-        ],
-    },
-    fontSizes: [
-        { label: 'Small', value: '1' },
-        { label: 'Normal', value: '2' },
-        { label: 'Large', value: '3' },
-        { label: 'Larger', value: '4' },
-        { label: 'XL', value: '5' },
-    ],
-};
+interface ToolbarProps {
+    editorId: string;  // Add editorId to props
+    onApplyStyle: (style: TextStyle) => void;
+    onInsertChip: () => void;
+    onConvertToChip: () => void;
+}
 
 const ToolbarButton: React.FC<{
     onClick: () => void;
@@ -65,13 +48,17 @@ const ToolbarDivider: React.FC = () => (
     <div className="w-px h-6 bg-neutral-300 dark:bg-neutral-600" />
 );
 
-const Toolbar: React.FC<ToolbarProps> = ({ onApplyStyle, onInsertChip, onConvertToChip }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ editorId, onApplyStyle, onInsertChip, onConvertToChip }) => {
+    const context = useEditorContext();
+    const editorState = context.getEditorState(editorId);
+
     const handleStyleChange = (style: TextStyle) => {
         onApplyStyle(style);
     };
 
     return (
         <div className="flex items-center gap-2 p-2 border-b border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900">
+            {/* Rest of the JSX remains the same */}
             {/* Basic Formatting */}
             <div className="flex items-center gap-1">
                 <ToolbarButton

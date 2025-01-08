@@ -9,7 +9,10 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Expand, Minimize2 } from "lucide-react";
-import { MatrxEditor } from "@/components/matrx-editor-advanced/MatrxEditor";
+import RichTextEditor from "@/features/rich-text-editor/RichTextEditor";
+import { useEditor } from "@/features/rich-text-editor/hooks/useEditor";
+import { useRefManager } from "@/lib/refs";
+
 
 interface AdjustableEditorPanelProps {
   id: string;
@@ -27,6 +30,11 @@ export function AdjustableEditorPanel({
   const panelRef = useRef<ImperativePanelHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [previousSize, setPreviousSize] = useState(15);
+    const editorRef = useRef<HTMLDivElement>(null);
+    const refManager = useRefManager();
+    const [currentText, setCurrentText] = useState('');
+
+    const { insertChip, handleDragOver, handleDrop, handleStyleChange, convertSelectionToChip, normalizeContent } = useEditor(editorRef, id);
 
   const toggleCollapse = () => {
     if (isCollapsed) {
@@ -73,11 +81,14 @@ export function AdjustableEditorPanel({
           </Button>
           <div className="h-full flex flex-col">
             <div className="text-sm text-muted-foreground px-1">{role.toUpperCase()}</div>
-            <div className="flex-1">
-              <MatrxEditor 
-                editorId={id}
-                onStateChange={onStateChange}
-              />
+            <div className='flex w-full h-full min-h-96 border border-blue-500'>
+            <RichTextEditor
+                id={id}
+                ref={editorRef}
+                className='w-full border border-gray-300 dark:border-red-700 rounded-md'
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+            />
             </div>
           </div>
         </Card>

@@ -1,6 +1,5 @@
-import { ChipData, TextStyle } from '../types';
-import { getColorClassName } from './colorUitls';
-import { cn } from '@/lib/utils';
+import { TextStyle } from "../types";
+
 
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
     if (!editor.firstChild) {
@@ -19,6 +18,20 @@ export const ensureValidContainer = (editor: HTMLDivElement, selection: Selectio
     let range: Range;
     try {
         range = selection.getRangeAt(0);
+        
+        // If we're at the root editor level, we need to adjust the range
+        if (range.startContainer.nodeType === Node.ELEMENT_NODE && 
+            (range.startContainer as Element).hasAttribute('data-editor-root')) {
+            // Find the appropriate text node and adjust the range
+            const firstSpan = editor.querySelector('span');
+            if (firstSpan?.firstChild) {
+                range = document.createRange();
+                range.setStart(firstSpan.firstChild, firstSpan.firstChild.textContent?.length || 0);
+                range.setEnd(firstSpan.firstChild, firstSpan.firstChild.textContent?.length || 0);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
     } catch {
         range = document.createRange();
         range.setStart(editor.firstChild.firstChild || editor.firstChild, 0);
@@ -140,4 +153,11 @@ export const getSelectedText = (): { text: string; range: Range | null } => {
 
 export const isValidChipText = (text: string): boolean => {
     return text.length > 0 && text.length <= 1000;
+};
+
+export const initializeEditor = (editor: HTMLDivElement, id: string) => {
+    editor.setAttribute('role', 'textbox');
+    editor.setAttribute('aria-multiline', 'true');
+    editor.setAttribute('spellcheck', 'true');
+    editor.setAttribute('data-editor-id', id);
 };

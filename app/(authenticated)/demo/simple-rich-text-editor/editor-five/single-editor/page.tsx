@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
-import EditorTestPage from './EditorTestPage ';
 import { MatrxTableLoading } from '@/components/matrx/LoadingComponents';
+import EditorDisplayWrapper from './EditorDisplayWrapper';
 
-const EDITOR_ID = 'main-editor';
+const EDITOR_ID: string = 'main-editor';
 
 const Page: React.FC = () => {
     const [isRegistered, setIsRegistered] = useState(false);
@@ -22,7 +22,7 @@ const Page: React.FC = () => {
         return <MatrxTableLoading />;
     }
 
-    return <EditorTestPage />;
+    return <EditorDisplayWrapper editorId={EDITOR_ID} />;
 };
 
 export default Page;

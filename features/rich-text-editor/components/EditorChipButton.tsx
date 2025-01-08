@@ -1,4 +1,3 @@
-// EditorContextButton.tsx
 import React, { useEffect, useState } from 'react';
 import { Plus, ArrowRightToLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,14 +5,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
     DialogTrigger
 } from '@/components/ui/dialog';
+import ChipSelectionContent from './ChipSelectionContent';
 
 interface EditorChipButtonProps {
     editorId: string;
     onInsertChip: () => void;
     onConvertToChip: () => void;
-    children?: React.ReactNode; // For dialog content
+    children?: React.ReactNode;
 }
 
 export const EditorChipButton: React.FC<EditorChipButtonProps> = ({
@@ -49,6 +50,16 @@ export const EditorChipButton: React.FC<EditorChipButtonProps> = ({
         }
     };
 
+    const handleSave = (records: any[]) => {
+        // Implement your save logic here
+        console.log('Saving records:', records);
+        setIsOpen(false);
+    };
+
+    const handleCancel = () => {
+        setIsOpen(false);
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <TooltipProvider>
@@ -76,16 +87,19 @@ export const EditorChipButton: React.FC<EditorChipButtonProps> = ({
                 </Tooltip>
             </TooltipProvider>
             
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-7xl">
+                <DialogTitle>
+                    {hasSelection ? 'Convert Selection to Chip' : 'Insert New Chip'}
+                </DialogTitle>
                 {children || (
-                    <div className="p-4">
-                        <h2 className="text-lg font-semibold mb-4">
-                            {hasSelection ? 'Convert Selection to Chip' : 'Insert New Chip'}
-                        </h2>
-                        {/* Default dialog content */}
-                    </div>
+                    <ChipSelectionContent
+                        onSave={handleSave}
+                        onCancel={handleCancel}
+                    />
                 )}
             </DialogContent>
         </Dialog>
     );
 };
+
+export default EditorChipButton;

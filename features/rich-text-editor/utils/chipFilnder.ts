@@ -1,8 +1,7 @@
+import { MatrxRecordId } from '@/types';
 import { ChipData } from '../types';
 
-type MatrxRecordId = string;
-
-interface ChipSearchResult extends Omit<ChipData, 'color'> {
+export interface ChipSearchResult extends Omit<ChipData, 'color'> {
     editorId?: string;
 }
 
@@ -155,7 +154,7 @@ export const getChipCount = (editorElement?: HTMLDivElement): number => {
     return chips.length;
 };
 
-interface ChipDistribution {
+export interface ChipDistribution {
     brokerId: string;
     totalChips: number;
     editorDistribution: {
@@ -191,7 +190,7 @@ export const analyzeChipDistribution = (): ChipDistribution[] => {
     return Array.from(distribution.values());
 };
 
-interface RecoveredContent {
+export interface RecoveredContent {
     originalContent: string;
     contentType: 'plaintext' | 'code' | 'markdown' | 'unknown';
     metadata: {
@@ -232,4 +231,93 @@ export const recoverChipContent = (chipId: string): RecoveredContent | null => {
             editorId: chip.editorId,
         },
     };
+};
+
+/**
+ * Gets all unique editor IDs from the page
+ * @returns Array of editor IDs and their labels
+ */
+export const getAllEditors = (): Array<{ id: string; label: string }> => {
+    const editors = document.querySelectorAll('[data-editor-id]');
+    return Array.from(editors).map(editor => ({
+        id: editor.getAttribute('data-editor-id') || '',
+        label: editor.getAttribute('data-editor-label') || editor.getAttribute('data-editor-id') || ''
+    }));
+};
+
+/**
+ * Gets all text content for chips associated with a broker ID
+ * @param brokerId The broker ID to get content for
+ * @returns Formatted text content with metadata
+ */
+export interface FormattedBrokerContent {
+    brokerId: string;
+    chips: Array<{
+        chipId: string;
+        editorId?: string;
+        content: string;
+        formattedContent: string;
+    }>;
+    combinedContent: string;
+}
+
+export const getBrokerContent = (brokerId: string): FormattedBrokerContent => {
+    const chips = findChipsByBrokerIdGlobal(brokerId);
+    
+    const processedChips = chips.map(chip => {
+        const content = chip.stringValue || '';
+        const formattedContent = formatContent(content);
+        
+        return {
+            chipId: chip.id,
+            editorId: chip.editorId,
+            content,
+            formattedContent
+        };
+    });
+
+    return {
+        brokerId,
+        chips: processedChips,
+        combinedContent: processedChips.map(chip => chip.formattedContent).join('\n\n')
+    };
+};
+
+/**
+ * Formats content with proper line breaks and basic formatting
+ * @param content The raw content string
+ * @returns Formatted content string
+ */
+export const formatContent = (content: string): string => {
+    if (!content) return '';
+    
+    // Replace escaped newlines with actual newlines
+    let formatted = content.replace(/\\n/g, '\n');
+    
+    // Handle code blocks
+    formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
+        return `\n${code.trim()}\n`;
+    });
+    
+    // Handle line breaks in markdown
+    formatted = formatted.replace(/\n{3,}/g, '\n\n'); // Normalize multiple line breaks
+    
+    // Handle basic markdown without modifying the content
+    formatted = formatted.replace(/\r\n/g, '\n');
+    
+    return formatted.trim();
+};
+
+/**
+ * Gets filtered chips based on selected editor
+ * @param editorId The editor ID to filter by, or 'all' for global
+ * @returns Filtered chip data
+ */
+export const getFilteredChips = (editorId: string | 'all'): ChipSearchResult[] => {
+    if (editorId === 'all') {
+        return getAllChipsGlobal();
+    }
+    
+    const editor = document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement;
+    return editor ? getAllChipsInEditor(editor) : [];
 };

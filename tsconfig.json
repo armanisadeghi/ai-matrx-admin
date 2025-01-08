@@ -54,7 +54,7 @@
     "node_modules/flowbite-react/lib/esm/index.d.ts",
     "global.d.ts",
     "cartesia.d.ts"
-  ],
+, "components/FileManager/FilePreview/pdf-preview/PDFPreview.tsx"  ],
   "exclude": [
     "node_modules",
     "_armani",

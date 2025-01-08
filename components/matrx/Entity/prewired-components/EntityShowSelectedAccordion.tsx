@@ -11,9 +11,10 @@ interface EntityAccordionProps {
     entityKey: EntityKeys;
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
+    columnsClassName?: string;
 }
 
-function EntityShowSelectedAccordion({ entityKey }: EntityAccordionProps) {
+function EntityShowSelectedAccordion({ entityKey, columnsClassName }: EntityAccordionProps) {
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const { records, fieldInfo, displayField } = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
     const [expandedFields, setExpandedFields] = React.useState<Record<string, boolean>>({});
@@ -62,7 +63,10 @@ function EntityShowSelectedAccordion({ entityKey }: EntityAccordionProps) {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                        <div className="bg-background grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
+                        <div className={cn(
+                            "bg-background grid gap-2 p-2",
+                            columnsClassName || "grid-cols-1 md:grid-cols-2"
+                        )}>
                             {fieldInfo.map(field => {
                                 if (field.isPrimaryKey) return null;
                                 const fieldId = `${recordId}-${field.name}`;

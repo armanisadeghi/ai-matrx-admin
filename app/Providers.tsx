@@ -25,6 +25,7 @@ import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
 import { BrokersProvider } from '@/providers/brokers/BrokersProvider';
 import { BrokerSyncProvider } from '@/providers/brokerSync/BrokerSyncProvider';
+import { EditorProvider } from '@/features/rich-text-editor/provider/EditorProvider';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
 
@@ -49,7 +50,7 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                                 >
                                                     <OldFileSystemProvider>
                                                         <FileSystemDialogs />
-                                                        <BrokerSyncProvider>
+                                                        <EditorProvider>
                                                             <NextUIProvider>
                                                                 <TooltipProvider delayDuration={200}>
                                                                     <AudioModalProvider>
@@ -62,7 +63,7 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                                                     </AudioModalProvider>
                                                                 </TooltipProvider>
                                                             </NextUIProvider>
-                                                        </BrokerSyncProvider>
+                                                        </EditorProvider>
                                                     </OldFileSystemProvider>
                                                 </FileSystemProvider>
                                             </RefProvider>

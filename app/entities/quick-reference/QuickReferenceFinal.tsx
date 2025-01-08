@@ -20,16 +20,20 @@ interface EntityQuickReferenceCardsProps<TEntity extends EntityKeys> {
     onSelectionChange?: (recordId: string | string[]) => void;
     smartCrudProps?: Partial<SmartCrudWrapperProps>;
     className?: string;
+    selectionOptions?: 'singleOnly' | 'multipleOnly' | 'both';
 }
 
 const SMART_CRUD_PROP_DEFAULTS: Partial<SmartCrudWrapperProps> = {
     options: {
         allowCreate: true,
         allowEdit: true,
+        allowCancel: true,
         allowDelete: true,
+        allowRefresh: true,
         showConfirmation: true
     },
     layout: {
+        buttonsPosition: 'top' as const,
         buttonLayout: 'row' as const,
         buttonSize: 'icon' as const,
         buttonSpacing: 'normal' as const
@@ -49,7 +53,7 @@ const EntityQuickRefCardItem = memo(function EntityQuickRefCardItem(
         entityKey,
         recordKey,
         displayValue,
-        onSelect
+        onSelect,
     }: EntityQuickRefCardItemProps) {
 
     const { selectors } = useEntityTools(entityKey);
@@ -83,6 +87,7 @@ function EntityQuickReferenceFinal<TEntity extends EntityKeys>(
         entityKey,
         className = '',
         smartCrudProps = SMART_CRUD_PROP_DEFAULTS,
+        selectionOptions = 'both'
     }: EntityQuickReferenceCardsProps<TEntity>) {
     const {quickReferenceRecords} = useFetchQuickRef(entityKey);
 

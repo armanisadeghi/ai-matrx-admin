@@ -1,4 +1,4 @@
-import { ChipData, ChipRequestOptions } from "../types";
+import { ChipData, ChipRequestOptions } from "../_dev/types";
 
 // utils/brokerNameUtils.ts
 interface LabelGeneratorOptions {

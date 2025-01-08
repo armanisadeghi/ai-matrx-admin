@@ -11,7 +11,7 @@ import { MatrxRecordId } from "@/types";
 interface BrokerRecord {
   componentType?: string;
   displayName?: string;
-  officialName?: string;  // Keep the typo if it's intended
+  officialName?: string;
   defaultSource?: string;
   isConnected?: boolean;
 }

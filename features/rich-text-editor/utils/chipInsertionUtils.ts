@@ -1,6 +1,6 @@
 // insertionUtils.ts
 
-import { ChipData } from "../types";
+import { ChipData } from "../_dev/types";
 import { createChipElement } from "./chipService";
 
 export interface InsertionContext {
