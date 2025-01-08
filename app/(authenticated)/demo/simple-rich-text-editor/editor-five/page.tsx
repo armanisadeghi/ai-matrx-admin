@@ -5,7 +5,9 @@ import { useEditorContext } from '@/features/rich-text-editor/provider/EditorPro
 import EditorTestPage from './EditorTestPage ';
 import { MatrxTableLoading } from '@/components/matrx/LoadingComponents';
 
-const EDITOR_ID = 'main-editor';
+const EDITOR_ID: string = 'editor-five';
+
+const SAMPLE_TEXT: string = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`;
 
 const Page: React.FC = () => {
     const [isRegistered, setIsRegistered] = useState(false);
@@ -22,7 +24,7 @@ const Page: React.FC = () => {
         return <MatrxTableLoading />;
     }
 
-    return <EditorTestPage />;
+    return <EditorTestPage editorId={EDITOR_ID} initialContent={SAMPLE_TEXT} />;
 };
 
 export default Page;

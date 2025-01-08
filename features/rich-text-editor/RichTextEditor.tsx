@@ -1,18 +1,30 @@
 // RichTextEditor.tsx
-import React, { useEffect, forwardRef, RefObject } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
+import { WithRefsProps, withRefs } from '@/lib/refs';
+import { setupEditorAttributes } from './utils/editorUtils';
 
-interface RichTextEditorProps {
-    id: string;
+interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
     className?: string;
     onDragOver?: (e: React.DragEvent<HTMLElement>) => void;
     onDrop?: (e: React.DragEvent<HTMLElement>) => void;
+    initialContent?: string;
 }
 
-const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ id, onChange, className = '', onDragOver, onDrop }, ref) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
+    componentId,
+    onChange, 
+    className = '', 
+    onDragOver, 
+    onDrop,
+    initialContent = ''
+}) => {
+    const editorRef = useRef<HTMLDivElement>(null);
+    const initializedRef = useRef(false);
+
     const {
         // Internal methods
         updatePlainTextContent,
@@ -36,10 +48,10 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ id, on
         handleNativeDragEnd,
         handleDragOver: handleDragOverInternal,
         handleDrop: handleDropInternal,
-    } = useEditor(ref as RefObject<HTMLDivElement>, id);
+    } = useEditor(componentId);
 
     // Register methods with the Ref Manager
-    useComponentRef(id, {
+    useComponentRef(componentId, {
         getText,
         updateContent,
         applyStyle,
@@ -47,18 +59,30 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ id, on
         insertChip,
         convertSelectionToChip,
         focus,
+        // Add method to set content programmatically
+        setContent: (content: string) => {
+            const editor = editorRef.current;
+            if (!editor) return;
+            editor.textContent = content;
+            updatePlainTextContent();
+        }
     });
 
+    // Handle initial setup and content
     useEffect(() => {
-        const editor = (ref as React.RefObject<HTMLDivElement>).current;
-        if (!editor) return;
+        const editor = editorRef.current;
+        if (!editor || initializedRef.current) return;
 
-        editor.setAttribute('role', 'textbox');
-        editor.setAttribute('aria-multiline', 'true');
-        editor.setAttribute('spellcheck', 'true');
-        editor.setAttribute('data-editor-root', 'true');
-        editor.setAttribute('data-editor-id', id);
+        setupEditorAttributes(editor, componentId);
 
+        // Set initial content if provided
+        if (initialContent && !initializedRef.current) {
+            editor.textContent = initialContent;
+            updatePlainTextContent();
+            initializedRef.current = true;
+        }
+
+        // Set up event listeners
         const handlePaste = (e: ClipboardEvent) => {
             e.preventDefault();
             const text = e.clipboardData?.getData('text/plain');
@@ -68,31 +92,17 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ id, on
         };
 
         editor.addEventListener('paste', handlePaste);
-
-        // Use our new drag event handlers from the hook
-        editor.addEventListener('dragstart', (e: DragEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.hasAttribute('data-chip')) {
-                e.stopPropagation();
-                handleNativeDragStart(e);
-            }
-        });
-
-        editor.addEventListener('dragend', (e: DragEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.hasAttribute('data-chip')) {
-                e.stopPropagation();
-                handleNativeDragEnd(e);
-            }
-        });
+        editor.addEventListener('dragstart', handleNativeDragStart);
+        editor.addEventListener('dragend', handleNativeDragEnd);
 
         return () => {
             editor.removeEventListener('paste', handlePaste);
             editor.removeEventListener('dragstart', handleNativeDragStart);
             editor.removeEventListener('dragend', handleNativeDragEnd);
         };
-    }, [ref, id, handleNativeDragStart, handleNativeDragEnd]);
+    }, [componentId, initialContent, handleNativeDragStart, handleNativeDragEnd, updatePlainTextContent]);
 
+    // Handle content changes
     useEffect(() => {
         onChange?.(plainTextContent);
     }, [onChange, plainTextContent]);
@@ -109,8 +119,7 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ id, on
     return (
         <div className='relative group w-full h-full flex flex-col'>
             <div
-                ref={ref}
-                data-editor-id={id}
+                ref={editorRef}
                 className={`w-full h-full min-h-48 p-4 focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
                 contentEditable
                 onInput={handleInput}
@@ -119,14 +128,12 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ id, on
                 onDrop={onDrop || handleDropInternal}
             />
             <EditorChipButton
-                editorId={id}
+                editorId={componentId}
                 onInsertChip={insertChip}
                 onConvertToChip={handleConvertToChip}
             />
         </div>
     );
-});
+};
 
-RichTextEditor.displayName = 'RichTextEditor';
-
-export default RichTextEditor;
+export default withRefs(RichTextEditor);

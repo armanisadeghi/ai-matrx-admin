@@ -3,32 +3,27 @@
 import { useRefManager } from '@/lib/refs';
 import React, { useRef, useEffect, useState } from 'react';
 import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
-import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import Toolbar from '@/features/rich-text-editor/components/Toolbar';
 import { TextStyle } from '@/features/rich-text-editor/types/editor.types';
 import ChipSearchUtility from '@/features/rich-text-editor/components/ChipSearchUtility';
 import { DebugStats } from '@/components/debug/debug-stats';
 import { InspectHtmlUtil } from '@/features/rich-text-editor/components/InspectionComponents';
+import { useMeasure } from "@uidotdev/usehooks";
 
-const EDITOR_ID = 'main-editor';
+interface EditorTestPageProps {
+    editorId: string;
+    initialContent?: string;
+}
 
-const EditorTestPage: React.FC = () => {
+const EditorTestPage: React.FC<EditorTestPageProps> = ({ editorId, initialContent }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const refManager = useRefManager();
     const [currentText, setCurrentText] = useState('');
-
-    const {
-        insertChip,
-        handleDragOver,
-        handleDrop,
-        handleStyleChange,
-        convertSelectionToChip,
-        normalizeContent,
-    } = useEditor(editorRef, EDITOR_ID);
+    const [containerRef, { width, height }] = useMeasure();
 
     useEffect(() => {
         const updateText = () => {
-            const text = refManager.call(EDITOR_ID, 'getText');
+            const text = refManager.call(editorId, 'getText');
             setCurrentText(text || '');
         };
 
@@ -38,12 +33,12 @@ const EditorTestPage: React.FC = () => {
     }, [refManager]);
 
     const handleApplyStyle = (style: TextStyle) => {
-        handleStyleChange(style);
+        refManager.call(editorId, 'applyStyle', style);
         editorRef.current?.focus();
     };
 
     const handleConvertToChip = () => {
-        const success = convertSelectionToChip();
+        const success = refManager.call(editorId, 'convertSelectionToChip');
         if (!success) {
             console.warn('Please select some text to convert to a chip');
         }
@@ -51,36 +46,32 @@ const EditorTestPage: React.FC = () => {
     };
 
     const handleInsertChip = () => {
-        normalizeContent();
-        insertChip();
+        refManager.call(editorId, 'insertChip');
+        editorRef.current?.focus();
     };
 
     return (
-        <div className="flex w-full gap-4">
-            <div className="flex-1 space-y-4">
-                <div className="border border-gray-300 dark:border-gray-700 rounded-lg">
+        <div ref={containerRef} className='flex w-full gap-4'>
+            <div className='flex-1 space-y-4'>
+                <div className='border border-gray-300 dark:border-gray-700 rounded-lg'>
                     <Toolbar
-                        editorId={EDITOR_ID}
+                        editorId={editorId}
                         onApplyStyle={handleApplyStyle}
                         onInsertChip={handleInsertChip}
                         onConvertToChip={handleConvertToChip}
                     />
                     <RichTextEditor
-                        id={EDITOR_ID}
-                        ref={editorRef}
-                        className="border-t border-gray-300 dark:border-gray-700"
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
+                        componentId={editorId}
+                        className='w-full border border-gray-300 dark:border-gray-700 rounded-md'
+                        initialContent={initialContent}
                     />
                 </div>
 
-                <div className="space-y-4">
+                <div className='space-y-4'>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Text Representation
-                        </label>
+                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>Text Representation</label>
                         <textarea
-                            className="w-full h-48 p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            className='w-full h-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                             value={currentText}
                             readOnly
                         />
@@ -90,8 +81,11 @@ const EditorTestPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="w-1/3 h-[85vh] overflow-auto">
-                <InspectHtmlUtil editorId={EDITOR_ID} ref={editorRef} />
+            <div className='w-1/3 overflow-auto' style={{ height: height ? height - 16 : undefined }}>
+                <InspectHtmlUtil
+                    editorId={editorId}
+                    ref={editorRef}
+                />
             </div>
         </div>
     );

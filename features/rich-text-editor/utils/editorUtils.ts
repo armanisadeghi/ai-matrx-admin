@@ -196,3 +196,19 @@ export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Rang
     range.deleteContents();
     range.insertNode(insertionWrapper);
 }
+
+
+export const DEBUG_MODE = false;
+
+// Helper to get editor element by ID
+export const getEditorElement = (editorId: string): HTMLDivElement | null => {
+    return document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement | null;
+};
+
+export const setupEditorAttributes = (editor: HTMLDivElement, componentId: string) => {
+    editor.setAttribute('role', 'textbox');
+    editor.setAttribute('aria-multiline', 'true');
+    editor.setAttribute('spellcheck', 'true');
+    editor.setAttribute('data-editor-root', 'true');
+    editor.setAttribute('data-editor-id', componentId);
+};

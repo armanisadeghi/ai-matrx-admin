@@ -3,12 +3,23 @@ import { useCallback, useEffect } from 'react';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 import { ChipData, ChipRequestOptions } from '../types/editor.types';
 import { MatrxRecordId } from '@/types';
+import { getEditorElement } from '../utils/editorUtils';
 
 export const useEditorChips = (editorId: string) => {
     const context = useEditorContext();
 
-    // Initialize editor if it doesn't exist
+    // Validate editor exists when hook is used
     useEffect(() => {
+        if (!editorId) {
+            throw new Error('useEditorChips requires an editorId');
+        }
+        
+        // Verify the editor element exists in the DOM
+        const editor = getEditorElement(editorId);
+        if (!editor) {
+            console.warn(`Editor element with id ${editorId} not found in DOM`);
+        }
+
         context.registerEditor(editorId);
         return () => context.unregisterEditor(editorId);
     }, [editorId]);
@@ -20,33 +31,41 @@ export const useEditorChips = (editorId: string) => {
         (requestOptions: ChipRequestOptions = {}): ChipData => {
             return context.createNewChipData(editorId, requestOptions);
         },
-        [editorId]
+        [editorId, context]
     );
 
     const addChipData = useCallback(
         (data: ChipData) => {
             context.addChipData(editorId, data);
         },
-        [editorId]
+        [editorId, context]
     );
 
     const removeChipData = useCallback(
         (chipId: string) => {
             context.removeChipData(editorId, chipId);
         },
-        [editorId]
+        [editorId, context]
     );
 
     const updateChip = useCallback(
         (chipId: string, updates: Partial<ChipData>) => {
             context.updateChipData(editorId, chipId, updates);
         },
-        [editorId]
+        [editorId, context]
     );
 
     const getBrokerChips = useCallback(
         (brokerId: MatrxRecordId) => {
             return chipData.filter(chip => chip.brokerId === brokerId);
+        },
+        [chipData]
+    );
+
+    // Add a helper method to check if a chip exists
+    const hasChip = useCallback(
+        (chipId: string) => {
+            return chipData.some(chip => chip.id === chipId);
         },
         [chipData]
     );
@@ -58,6 +77,7 @@ export const useEditorChips = (editorId: string) => {
         removeChipData,
         updateChip,
         getBrokerChips,
+        hasChip,           // New utility method
         colorAssignments,
     };
 };

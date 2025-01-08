@@ -7,6 +7,8 @@ import EditorDisplayWrapper from './EditorDisplayWrapper';
 
 const EDITOR_ID: string = 'main-editor';
 
+const SAMPLE_TEXT: string = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`;
+
 const Page: React.FC = () => {
     const [isRegistered, setIsRegistered] = useState(false);
     const context = useEditorContext();
@@ -22,7 +24,7 @@ const Page: React.FC = () => {
         return <MatrxTableLoading />;
     }
 
-    return <EditorDisplayWrapper editorId={EDITOR_ID} />;
+    return <EditorDisplayWrapper editorId={EDITOR_ID} initialContent={SAMPLE_TEXT} />;
 };
 
 export default Page;

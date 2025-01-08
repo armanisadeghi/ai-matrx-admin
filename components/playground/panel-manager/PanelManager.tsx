@@ -1,73 +1,90 @@
 'use client';
 
-import React, { useState } from "react";
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { Button, Card } from "@/components/ui";
-import { Plus } from "lucide-react";
-import { AdjustableEditorPanel } from "./AdjustableEditorPanel";
-import { MatrxEditor } from "@/components/matrx-editor-advanced/MatrxEditor";
+import React, { useState } from 'react';
+import { Panel, PanelGroup } from 'react-resizable-panels';
+import { Button, Card } from '@/components/ui';
+import { Plus } from 'lucide-react';
+import { AdjustableEditorPanel } from './AdjustableEditorPanel';
+import { MatrxEditor } from '@/components/matrx-editor-advanced/MatrxEditor';
+import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
 
 interface PanelManagerProps {
-  role?: "system" | "user" | "assistant";
+    role?: 'system' | 'user' | 'assistant';
 }
 
 type Section = {
-  id: string;
-  role: "system" | "user" | "assistant";
+    id: string;
+    role: 'system' | 'user' | 'assistant';
 };
 
 export function PanelManager({ role }: PanelManagerProps) {
-  const [sections, setSections] = useState<Section[]>([
-    { id: 'system-1', role: 'system' },
-  ]);
+    const [sections, setSections] = useState<Section[]>([{ id: 'system-1', role: 'system' }]);
 
-  const addSection = () => {
-    const nextRole = sections.length % 2 === 1 ? 'user' : 'assistant';
-    const roleCount = sections.filter(s => s.role === nextRole).length + 1;
-    const newId = `${nextRole}-${roleCount}`;
-    
-    setSections([...sections, { 
-      id: newId, 
-      role: nextRole,
-    }]);
-  };
+    const addSection = () => {
+        const nextRole = sections.length % 2 === 1 ? 'user' : 'assistant';
+        const roleCount = sections.filter((s) => s.role === nextRole).length + 1;
+        const newId = `${nextRole}-${roleCount}`;
 
-  const handleStateChange = (state: any) => {
-    console.log(state);
-  };
+        setSections([
+            ...sections,
+            {
+                id: newId,
+                role: nextRole,
+            },
+        ]);
+    };
 
-  const getButtonText = () => {
-    return `Add ${sections.length % 2 === 1 ? 'User' : 'Assistant'} Message`;
-  };
+    const handleStateChange = (state: any) => {
+        console.log(state);
+    };
 
-  return (
-    <Panel defaultSize={55}>
-      <PanelGroup direction="vertical" className="h-full">
-        {sections.map((section, index) => (
-          <AdjustableEditorPanel
-            key={section.id}
-            id={section.id}
-            order={index + 1}
-            role={section.role}
-            onStateChange={handleStateChange}
-          />
-        ))}
+    const getButtonText = () => {
+        return `Add ${sections.length % 2 === 1 ? 'User' : 'Assistant'} Message`;
+    };
 
-        {/* Bottom flexible panel */}
-        <Panel defaultSize={85} minSize={10} maxSize={100} order={999}>
-          <Card className="h-full p-1 overflow-hidden bg-background">
-            <MatrxEditor 
-              editorId="main-editor"
-              onStateChange={handleStateChange} 
-            />
-          </Card>
+    return (
+        <Panel defaultSize={55}>
+            <PanelGroup
+                direction='vertical'
+                className='h-full'
+            >
+                {sections.map((section, index) => (
+                    <AdjustableEditorPanel
+                        key={section.id}
+                        id={section.id}
+                        order={index + 1}
+                        role={section.role}
+                        onStateChange={handleStateChange}
+                        initialContent=''
+                    />
+                ))}
+
+                {/* Bottom flexible panel */}
+                <Panel
+                    defaultSize={85}
+                    minSize={10}
+                    maxSize={100}
+                    order={999}
+                >
+                    <Card className='h-full p-1 overflow-hidden bg-background'>
+                        <RichTextEditor
+                            componentId={'bottom-section'} 
+                            className='w-full h-full border border-gray-300 dark:border-red-700 rounded-md'
+                            onChange={(text) => handleStateChange(text)}
+                            initialContent={''}
+                        />
+                    </Card>
+                </Panel>
+
+                <Button
+                    variant='ghost'
+                    className='w-full mt-2'
+                    onClick={addSection}
+                >
+                    <Plus className='h-4 w-4 mr-2' />
+                    {getButtonText()}
+                </Button>
+            </PanelGroup>
         </Panel>
-
-        <Button variant="ghost" className="w-full mt-2" onClick={addSection}>
-          <Plus className="h-4 w-4 mr-2" />
-          {getButtonText()}
-        </Button>
-      </PanelGroup>
-    </Panel>
-  );
+    );
 }

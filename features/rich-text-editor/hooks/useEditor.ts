@@ -1,8 +1,9 @@
-// useEditor.ts
-import { useCallback, RefObject, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
+    DEBUG_MODE,
     ensureValidContainer,
     extractTextContent,
+    getEditorElement,
     getSelectedText,
     insertWithRangeMethod,
     insertWithStructurePreservation,
@@ -15,12 +16,12 @@ import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
 import { ChipRequestOptions } from '../types/editor.types';
 
-const DEBUG_MODE = false;
-
-export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string) => {
+export const useEditor = (editorId: string) => {
     const context = useEditorContext();
     const editorState = context.getEditorState(editorId);
-    const editor = editorRef.current;
+
+    // Get editor element when needed instead of using a ref
+    const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
 
     useEffect(() => {
         context.registerEditor(editorId);
@@ -32,18 +33,21 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
     }, [editorState.plainTextContent]);
 
     const focus = useCallback(() => {
+        const editor = getEditor();
         if (editor) {
             editor.focus();
         }
-    }, [editorRef]);
+    }, [getEditor]);
 
     const updatePlainTextContent = useCallback(() => {
+        const editor = getEditor();
         if (!editor) return;
         const text = extractTextContent(editor);
         context.setPlainTextContent(editorId, text);
-    }, [editorRef, editorId]);
+    }, [getEditor, editorId]);
 
     const normalizeContent = useCallback(() => {
+        const editor = getEditor();
         if (!editor) return;
         console.log('Normalizing content');
         const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
@@ -56,18 +60,20 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
                 span.appendChild(node);
             }
         }
-    }, [editorRef]);
+    }, [getEditor]);
 
-    const { handleNativeDragStart, handleNativeDragEnd, handleDragOver, handleDrop, dragConfig } = useDragAndDrop(editorRef, editorId, {
+    // Update hook calls to use editorId instead of ref
+    const { handleNativeDragStart, handleNativeDragEnd, handleDragOver, handleDrop, dragConfig } = useDragAndDrop(editorId, {
         normalizeContent,
         updatePlainTextContent,
     });
 
-    const { handleStyleChange } = useEditorStyles(editorRef, editorId, {
+    const { handleStyleChange } = useEditorStyles(editorId, {
         updatePlainTextContent,
     });
 
     const insertChip = useCallback(() => {
+        const editor = getEditor();
         const chipData = context.createNewChipData(editorId);
         const beforeState = debugEditorState(editor);
         const selection = window.getSelection();
@@ -118,9 +124,10 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
         context.incrementChipCounter(editorId);
         context.addChipData(editorId, chipData);
         updatePlainTextContent();
-    }, [editorId, editorRef, context, dragConfig, updatePlainTextContent]);
+    }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
 
     const convertSelectionToChip = useCallback(() => {
+        const editor = getEditor();
         const { text, range } = getSelectedText();
         const chipData = context.createNewChipData(editorId, { stringValue: text });
 
@@ -136,7 +143,7 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
         context.addChipData(editorId, chipData);
         updatePlainTextContent();
         return true;
-    }, [editorId, editorRef, context, dragConfig, updatePlainTextContent]);
+    }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
 
     return {
         // State from editorState

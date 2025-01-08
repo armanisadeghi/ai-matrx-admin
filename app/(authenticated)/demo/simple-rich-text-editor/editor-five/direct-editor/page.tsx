@@ -1,24 +1,35 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
+import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { MatrxTableLoading } from '@/components/matrx/LoadingComponents';
 import { useRefManager } from '@/lib/refs';
-import React, { useEffect, useState } from 'react';
 import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
 
-interface EditorDisplayWrapperProps {
-    editorId: string;
-    initialContent?: string;
-}
+const EDITOR_ID: string = 'main-editor';
 
-const EditorDisplayWrapper: React.FC<EditorDisplayWrapperProps> = ({ editorId, initialContent }) => {
+const SAMPLE_TEXT: string = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`;
+
+const Page: React.FC = () => {
+    const initialContent = SAMPLE_TEXT;
+    const editorId = EDITOR_ID;
+    const [isRegistered, setIsRegistered] = useState(false);
+    const context = useEditorContext();
     const refManager = useRefManager();
     const [currentText, setCurrentText] = useState('');
+
+    useEffect(() => {
+        if (!isRegistered) {
+            context.registerEditor(EDITOR_ID);
+            setIsRegistered(true);
+        }
+    }, [context, isRegistered]);
 
     useEffect(() => {
         if (initialContent) {
             refManager.call(editorId, 'updateContent', initialContent);
         }
-    }
-    , [initialContent, editorId, refManager]);
+    }, [initialContent, editorId, refManager]);
 
     useEffect(() => {
         const updateText = () => {
@@ -31,6 +42,10 @@ const EditorDisplayWrapper: React.FC<EditorDisplayWrapperProps> = ({ editorId, i
         return () => clearInterval(interval);
     }, [refManager, editorId]);
 
+    if (!isRegistered) {
+        return <MatrxTableLoading />;
+    }
+
     return (
         <div className='flex w-full h-full min-h-96 border border-blue-500'>
             <RichTextEditor
@@ -42,4 +57,4 @@ const EditorDisplayWrapper: React.FC<EditorDisplayWrapperProps> = ({ editorId, i
     );
 };
 
-export default EditorDisplayWrapper;
+export default Page;

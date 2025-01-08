@@ -1,10 +1,10 @@
 // useDragAndDrop.ts
-import { useCallback, RefObject } from 'react';
+import { useCallback } from 'react';
 import { getDropRange, isValidDropTarget } from '../utils/editorUtils';
 import { useEditorContext } from '../provider/EditorProvider';
+import { getEditorElement } from '../utils/editorUtils';
 
 export const useDragAndDrop = (
-    editorRef: RefObject<HTMLDivElement>,
     editorId: string,
     { normalizeContent, updatePlainTextContent }: {
         normalizeContent: () => void;
@@ -15,6 +15,7 @@ export const useDragAndDrop = (
     const editorState = context.getEditorState(editorId);
     const { draggedChip } = editorState;
 
+    // These handlers don't need editor element, so they remain largely unchanged
     const handleNativeDragStart = useCallback((e: DragEvent) => {
         const chip = e.target as HTMLElement;
         context.setDraggedChip(editorId, chip);
@@ -31,32 +32,34 @@ export const useDragAndDrop = (
 
     const handleDragOver = useCallback(
         (e: React.DragEvent<HTMLElement>) => {
-            if (!draggedChip || !editorRef.current) return;
+            const editor = getEditorElement(editorId);
+            if (!draggedChip || !editor) return;
             e.preventDefault();
 
-            const range = getDropRange(e.clientX, e.clientY, editorRef.current);
+            const range = getDropRange(e.clientX, e.clientY, editor);
 
-            const oldIndicator = editorRef.current.querySelector('.drop-indicator');
+            const oldIndicator = editor.querySelector('.drop-indicator');
             oldIndicator?.remove();
 
-            if (range && isValidDropTarget(range.commonAncestorContainer, editorRef.current)) {
+            if (range && isValidDropTarget(range.commonAncestorContainer, editor)) {
                 const indicator = document.createElement('span');
                 indicator.className = 'drop-indicator inline-block w-2 h-4 bg-blue-500 mx-0.5';
                 range.insertNode(indicator);
             }
         },
-        [draggedChip, editorRef]
+        [draggedChip, editorId]
     );
 
     const handleDrop = useCallback(
         (e: React.DragEvent<HTMLElement>) => {
             e.preventDefault();
-            if (!draggedChip || !editorRef.current) return;
+            const editor = getEditorElement(editorId);
+            if (!draggedChip || !editor) return;
 
-            const range = getDropRange(e.clientX, e.clientY, editorRef.current);
-            if (!range || !isValidDropTarget(range.commonAncestorContainer, editorRef.current)) return;
+            const range = getDropRange(e.clientX, e.clientY, editor);
+            if (!range || !isValidDropTarget(range.commonAncestorContainer, editor)) return;
 
-            const indicator = editorRef.current.querySelector('.drop-indicator');
+            const indicator = editor.querySelector('.drop-indicator');
             indicator?.remove();
 
             const chipWrapper = draggedChip.parentNode as HTMLElement;
@@ -74,7 +77,7 @@ export const useDragAndDrop = (
             updatePlainTextContent();
             context.setDraggedChip(editorId, null);
         },
-        [draggedChip, editorRef, normalizeContent, updatePlainTextContent, editorId]
+        [draggedChip, editorId, normalizeContent, updatePlainTextContent]
     );
 
     const dragConfig = {

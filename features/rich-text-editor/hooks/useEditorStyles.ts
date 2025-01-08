@@ -1,11 +1,11 @@
 // useEditorStyles.ts
-import { useCallback, RefObject } from 'react';
+import { useCallback } from 'react';
 import { TextStyle } from '../types/editor.types';
 import { applyTextStyle } from '../utils/editorUtils';
 import { useEditorContext } from '../provider/EditorProvider';
+import { getEditorElement } from '../utils/editorUtils';
 
 export const useEditorStyles = (
-    editorRef: RefObject<HTMLDivElement>,
     editorId: string,
     { updatePlainTextContent }: {
         updatePlainTextContent: () => void;
@@ -16,12 +16,14 @@ export const useEditorStyles = (
 
     const handleStyleChange = useCallback(
         (style: TextStyle) => {
-            if (!editorRef.current) return;
+            const editor = getEditorElement(editorId);
+            if (!editor) return;
+            
             applyTextStyle(style);
-            editorRef.current.focus();
+            editor.focus();
             updatePlainTextContent();
         },
-        [editorRef, updatePlainTextContent]
+        [editorId, updatePlainTextContent]
     );
 
     return {

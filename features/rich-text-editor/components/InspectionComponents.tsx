@@ -71,8 +71,9 @@ export const InspectHtmlUtil = forwardRef<HTMLDivElement, { editorId: string }>(
     );
 
     return (
-        <div className='space-y-2'>
+        <div className='flex flex-col h-full w-full space-y-2'>
             <div className='flex justify-between items-center'>
+                {/* Toolbar content remains the same */}
                 <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>HTML Inspector</label>
                 <div className='flex space-x-2'>
                     <ViewButton
@@ -108,7 +109,8 @@ export const InspectHtmlUtil = forwardRef<HTMLDivElement, { editorId: string }>(
             </div>
 
             {viewMode === 'formatted' && (
-                <div className='flex space-x-4 mb-2'>
+                <div className='w-full'>
+                    {/* Formatting options remain the same */}
                     <label className='flex items-center space-x-2'>
                         <input
                             type='checkbox'
@@ -155,7 +157,7 @@ export const InspectHtmlUtil = forwardRef<HTMLDivElement, { editorId: string }>(
             )}
 
             <textarea
-                className='w-full h-64 p-2 font-mono text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                className='flex-1 w-full p-2 font-mono text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                 value={html[viewMode]}
                 readOnly
             />
