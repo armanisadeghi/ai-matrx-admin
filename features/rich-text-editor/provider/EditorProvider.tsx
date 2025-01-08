@@ -22,6 +22,7 @@ interface EditorContextValue {
     // State operations
     registerEditor: (editorId: string) => void;
     unregisterEditor: (editorId: string) => void;
+    isEditorRegistered: (editorId: string) => boolean;  // New method
 
     // Editor-specific operations
     setChipCounter: (editorId: string, value: number) => void;
@@ -56,16 +57,22 @@ const EditorContext = createContext<EditorContextValue | null>(null);
 export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [editors, setEditors] = useState<EditorStates>(new Map());
 
+    const isEditorRegistered = useCallback(
+        (editorId: string) => editors.has(editorId),
+        [editors]
+    );
+
     const getEditorState = useCallback(
         (editorId: string) => {
             const state = editors.get(editorId);
             if (!state) {
-                throw new Error(`Editor with ID ${editorId} not found`);
+                return getInitialEditorState();
             }
             return state;
         },
         [editors]
     );
+
 
     const registerEditor = useCallback((editorId: string) => {
         console.log('Registering editor:', editorId);
@@ -264,6 +271,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const value: EditorContextValue = {
         getEditorState,
         registerEditor,
+        isEditorRegistered,
         unregisterEditor,
         setChipCounter,
         incrementChipCounter,
