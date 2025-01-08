@@ -1,5 +1,4 @@
-import { TextStyle } from "../types";
-
+import { TextStyle } from '../types';
 
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
     if (!editor.firstChild) {
@@ -18,10 +17,9 @@ export const ensureValidContainer = (editor: HTMLDivElement, selection: Selectio
     let range: Range;
     try {
         range = selection.getRangeAt(0);
-        
+
         // If we're at the root editor level, we need to adjust the range
-        if (range.startContainer.nodeType === Node.ELEMENT_NODE && 
-            (range.startContainer as Element).hasAttribute('data-editor-root')) {
+        if (range.startContainer.nodeType === Node.ELEMENT_NODE && (range.startContainer as Element).hasAttribute('data-editor-root')) {
             // Find the appropriate text node and adjust the range
             const firstSpan = editor.querySelector('span');
             if (firstSpan?.firstChild) {
@@ -43,25 +41,17 @@ export const ensureValidContainer = (editor: HTMLDivElement, selection: Selectio
     return range;
 };
 
-
-export const safeInsertBefore = (
-    parent: Node | null | undefined,
-    newNode: Node,
-    referenceNode: Node | null | undefined
-): void => {
+export const safeInsertBefore = (parent: Node | null | undefined, newNode: Node, referenceNode: Node | null | undefined): void => {
     if (!parent) return;
-    
+
     // If no reference node or it's not a child of parent, append to end
     if (!referenceNode || referenceNode.parentNode !== parent) {
         parent.appendChild(newNode);
         return;
     }
-    
+
     parent.insertBefore(newNode, referenceNode);
 };
-
-
-
 
 export const getDropRange = (x: number, y: number, editor: HTMLDivElement): Range | null => {
     if (!editor) return null;
@@ -161,3 +151,48 @@ export const initializeEditor = (editor: HTMLDivElement, id: string) => {
     editor.setAttribute('spellcheck', 'true');
     editor.setAttribute('data-editor-id', id);
 };
+
+export function insertWithStructurePreservation(insertionWrapper: HTMLElement, currentRange: Range, parent: Node | null | undefined, container: Node): boolean {
+    try {
+        // Store our conditions for clarity
+        const isRangeCollapsed = currentRange.collapsed;
+        const insertPosition = currentRange.startContainer;
+        const isTextNode = insertPosition.nodeType === Node.TEXT_NODE;
+
+        switch (true) {
+            case isRangeCollapsed && isTextNode: {
+                const textNode = insertPosition as Text;
+                const afterText = textNode.splitText(currentRange.startOffset);
+                parent?.insertBefore(insertionWrapper, afterText.parentNode?.nextSibling || null);
+                break;
+            }
+
+            case isRangeCollapsed: {
+                parent?.insertBefore(insertionWrapper, container.nextSibling);
+                break;
+            }
+
+            default: {
+                currentRange.deleteContents();
+                currentRange.insertNode(insertionWrapper);
+            }
+        }
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+export function positionCursorAfterChip(anchorNode: Text, selection: Selection) {
+    const finalRange = document.createRange();
+    finalRange.setStart(anchorNode, 0);
+    finalRange.setEnd(anchorNode, 0);
+    selection.removeAllRanges();
+    selection.addRange(finalRange);
+}
+
+export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Range) {
+    range.deleteContents();
+    range.insertNode(insertionWrapper);
+}

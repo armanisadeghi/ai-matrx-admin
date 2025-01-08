@@ -1,17 +1,26 @@
 // useEditor.ts
 import { useCallback, RefObject, useEffect } from 'react';
-import { ensureValidContainer, extractTextContent, getSelectedText } from '../utils/editorUtils';
+import {
+    ensureValidContainer,
+    extractTextContent,
+    getSelectedText,
+    insertWithRangeMethod,
+    insertWithStructurePreservation,
+    positionCursorAfterChip,
+} from '../utils/editorUtils';
 import { debugEditorState } from '../utils/debugUtils';
-import { createChipElement, createCompleteChipStructure } from '../utils/chipService';
+import { createCompleteChipStructure } from '../utils/chipService';
 import { useEditorContext } from '../provider/EditorProvider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
+import { ChipRequestOptions } from '../types/editor.types';
 
 const DEBUG_MODE = false;
 
 export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string) => {
     const context = useEditorContext();
     const editorState = context.getEditorState(editorId);
+    const editor = editorRef.current;
 
     useEffect(() => {
         context.registerEditor(editorId);
@@ -23,25 +32,25 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
     }, [editorState.plainTextContent]);
 
     const focus = useCallback(() => {
-        if (editorRef.current) {
-            editorRef.current.focus();
+        if (editor) {
+            editor.focus();
         }
     }, [editorRef]);
 
     const updatePlainTextContent = useCallback(() => {
-        if (!editorRef.current) return;
-        const text = extractTextContent(editorRef.current);
+        if (!editor) return;
+        const text = extractTextContent(editor);
         context.setPlainTextContent(editorId, text);
     }, [editorRef, editorId]);
 
     const normalizeContent = useCallback(() => {
-        if (!editorRef.current) return;
+        if (!editor) return;
         console.log('Normalizing content');
-        const walker = document.createTreeWalker(editorRef.current, NodeFilter.SHOW_TEXT, null);
+        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
 
         let node;
         while ((node = walker.nextNode())) {
-            if (node.parentNode === editorRef.current) {
+            if (node.parentNode === editor) {
                 const span = document.createElement('span');
                 node.parentNode.insertBefore(span, node);
                 span.appendChild(node);
@@ -58,56 +67,8 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
         updatePlainTextContent,
     });
 
-    function positionCursorAfterChip(anchorNode: Text, selection: Selection) {
-        const finalRange = document.createRange();
-        finalRange.setStart(anchorNode, 0);
-        finalRange.setEnd(anchorNode, 0);
-        selection.removeAllRanges();
-        selection.addRange(finalRange);
-    }
-
-    // Insertion strategies
-    function insertWithStructurePreservation(insertionWrapper: HTMLElement, currentRange: Range, parent: Node | null | undefined, container: Node): boolean {
-        try {
-            // Store our conditions for clarity
-            const isRangeCollapsed = currentRange.collapsed;
-            const insertPosition = currentRange.startContainer;
-            const isTextNode = insertPosition.nodeType === Node.TEXT_NODE;
-
-            switch (true) {
-                case isRangeCollapsed && isTextNode: {
-                    const textNode = insertPosition as Text;
-                    const afterText = textNode.splitText(currentRange.startOffset);
-                    parent?.insertBefore(insertionWrapper, afterText.parentNode?.nextSibling || null);
-                    break;
-                }
-
-                case isRangeCollapsed: {
-                    parent?.insertBefore(insertionWrapper, container.nextSibling);
-                    break;
-                }
-
-                default: {
-                    currentRange.deleteContents();
-                    currentRange.insertNode(insertionWrapper);
-                }
-            }
-
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Range) {
-        range.deleteContents();
-        range.insertNode(insertionWrapper);
-    }
-
-    // Main component functions
     const insertChip = useCallback(() => {
         const chipData = context.createNewChipData(editorId);
-        const editor = editorRef.current;
         const beforeState = debugEditorState(editor);
         const selection = window.getSelection();
 
@@ -162,7 +123,6 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
     const convertSelectionToChip = useCallback(() => {
         const { text, range } = getSelectedText();
         const chipData = context.createNewChipData(editorId, { stringValue: text });
-        const editor = editorRef.current;
 
         if (!editor) return;
 
@@ -204,7 +164,7 @@ export const useEditor = (editorRef: RefObject<HTMLDivElement>, editorId: string
         updatePlainTextContent,
         normalizeContent,
         removeChipData: (chipId: string) => context.removeChipData(editorId, chipId),
-        createNewChipData: (options) => context.createNewChipData(editorId, options),
+        createNewChipData: (options: ChipRequestOptions) => context.createNewChipData(editorId, options),
     };
 };
 
