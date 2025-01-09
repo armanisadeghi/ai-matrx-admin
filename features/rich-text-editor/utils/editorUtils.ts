@@ -1,4 +1,4 @@
-import { TextStyle } from '../types';
+import { ChipData, ChipRequestOptions, TextStyle } from '../types';
 
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
     if (!editor.firstChild) {
@@ -211,4 +211,22 @@ export const setupEditorAttributes = (editor: HTMLDivElement, componentId: strin
     editor.setAttribute('spellcheck', 'true');
     editor.setAttribute('data-editor-root', 'true');
     editor.setAttribute('data-editor-id', componentId);
+};
+
+
+export const prepareChipRequestOptions = (
+    existingChipData?: ChipData,
+    selectedText?: string
+): ChipRequestOptions => {
+    if (!existingChipData) {
+        return selectedText ? { stringValue: selectedText } : {};
+    }
+
+    return {
+        id: existingChipData.id,
+        label: existingChipData.label,
+        color: existingChipData.color,
+        brokerId: existingChipData.brokerId,
+        stringValue: existingChipData.stringValue
+    };
 };

@@ -93,5 +93,7 @@ export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEnt
         clearSelection,
         fetchMode,
         setFetchMode,
+
+        updateField,
     };
 };

@@ -1,10 +1,11 @@
 // RichTextEditor.tsx
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
 import { WithRefsProps, withRefs } from '@/lib/refs';
 import { setupEditorAttributes } from './utils/editorUtils';
+import { getEditorSelection, SelectionState } from './utils/selectionUtils';
 
 interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
@@ -24,6 +25,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);
+    const [selectionState, setSelectionState] = useState<SelectionState>({
+        hasSelection: false,
+        selectedText: '',
+        range: null
+    });
 
     const {
         // Internal methods
@@ -59,7 +65,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         insertChip,
         convertSelectionToChip,
         focus,
-        // Add method to set content programmatically
         setContent: (content: string) => {
             const editor = editorRef.current;
             if (!editor) return;
@@ -68,6 +73,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         }
     });
 
+    // Handle selection changes
+    useEffect(() => {
+        const editor = editorRef.current;
+        if (!editor) return;
+
+        const handleSelectionChange = () => {
+            const newState = getEditorSelection(editor);
+            setSelectionState(newState);
+        };
+
+        document.addEventListener('selectionchange', handleSelectionChange);
+        editor.addEventListener('mouseup', handleSelectionChange);
+
+        return () => {
+            document.removeEventListener('selectionchange', handleSelectionChange);
+            editor.removeEventListener('mouseup', handleSelectionChange);
+        };
+    }, []);
+
     // Handle initial setup and content
     useEffect(() => {
         const editor = editorRef.current;
@@ -75,14 +99,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         setupEditorAttributes(editor, componentId);
 
-        // Set initial content if provided
         if (initialContent && !initializedRef.current) {
             editor.textContent = initialContent;
             updatePlainTextContent();
             initializedRef.current = true;
         }
 
-        // Set up event listeners
         const handlePaste = (e: ClipboardEvent) => {
             e.preventDefault();
             const text = e.clipboardData?.getData('text/plain');
@@ -113,7 +135,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     };
 
     const handleConvertToChip = () => {
-        convertSelectionToChip();
+        if (selectionState.hasSelection) {
+            convertSelectionToChip();
+        }
     };
 
     return (
@@ -131,6 +155,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 editorId={componentId}
                 onInsertChip={insertChip}
                 onConvertToChip={handleConvertToChip}
+                hasSelection={selectionState.hasSelection}
             />
         </div>
     );

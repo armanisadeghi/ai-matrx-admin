@@ -15,12 +15,12 @@ import { useEditorContext } from '../provider/EditorProvider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
 import { ChipRequestOptions } from '../types/editor.types';
+import { useChipMenu } from '../components/ChipContextMenu';
 
 export const useEditor = (editorId: string) => {
     const context = useEditorContext();
+    const { showMenu } = useChipMenu();
     const editorState = context.getEditorState(editorId);
-
-    // Get editor element when needed instead of using a ref
     const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
 
     useEffect(() => {
@@ -82,7 +82,7 @@ export const useEditor = (editorId: string) => {
 
         const currentRange = ensureValidContainer(editor, selection);
 
-        const { insertionWrapper, anchorNode } = createCompleteChipStructure(chipData, dragConfig, DEBUG_MODE);
+        const { insertionWrapper, anchorNode } = createCompleteChipStructure(chipData, dragConfig, DEBUG_MODE, chipHandlers);
 
         // Handle container setup
         let container = currentRange.commonAncestorContainer;
@@ -126,6 +126,25 @@ export const useEditor = (editorId: string) => {
         updatePlainTextContent();
     }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
 
+    const chipHandlers = {
+        onDragStart: (event) => console.log('Drag started:', event),
+        onDragEnd: (event) => console.log('Drag ended:', event),
+        onClick: (event) => console.log('Chip clicked:', event),
+        onDoubleClick: (event) => console.log('Chip double-clicked:', event),
+        onMouseEnter: (event) => console.log('Mouse entered:', event),
+        onMouseLeave: (event) => console.log('Mouse left:', event),
+        onContextMenu: (event: MouseEvent) => {
+            event.preventDefault();
+            const chip = (event.target as HTMLElement).closest('[data-chip]');
+            if (!chip) return;
+            
+            const chipId = chip.getAttribute('data-chip-id');
+            if (!chipId) return;
+    
+            showMenu(editorId, chipId, event.clientX, event.clientY);
+        },
+    };
+
     const convertSelectionToChip = useCallback(() => {
         const editor = getEditor();
         const { text, range } = getSelectedText();
@@ -133,7 +152,8 @@ export const useEditor = (editorId: string) => {
 
         if (!editor) return;
 
-        const { insertionWrapper, anchorNode } = createCompleteChipStructure(chipData, dragConfig, DEBUG_MODE);
+        // Pass chipHandlers to createCompleteChipStructure
+        const { insertionWrapper, anchorNode } = createCompleteChipStructure(chipData, dragConfig, DEBUG_MODE, chipHandlers);
 
         insertWithRangeMethod(insertionWrapper, range);
 

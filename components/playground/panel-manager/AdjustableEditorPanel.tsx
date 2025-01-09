@@ -5,8 +5,8 @@ import { Panel, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Expand, Minimize2 } from 'lucide-react';
-import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
 import { useRefManager } from '@/lib/refs';
+import { EditorWithProviders } from '@/features/rich-text-editor/withManagedEditor';
 
 interface AdjustableEditorPanelProps {
     id: string;
@@ -69,10 +69,9 @@ export function AdjustableEditorPanel({ id, order, role, onStateChange, initialC
                     <div className='h-full flex flex-col'>
                         <div className='text-sm text-muted-foreground px-1'>{role.toUpperCase()}</div>
                         <div className='flex w-full h-full min-h-96 border border-blue-500'>
-                            <RichTextEditor
-                                componentId={id}
+                            <EditorWithProviders
+                                id={id}
                                 className='w-full h-full border border-gray-300 dark:border-red-700 rounded-md'
-                                onChange={(text) => setCurrentText(text)}
                                 initialContent={initialContent}
                             />
                         </div>

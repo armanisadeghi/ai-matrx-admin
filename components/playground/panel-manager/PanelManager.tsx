@@ -1,12 +1,9 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Panel, PanelGroup } from 'react-resizable-panels';
 import { Button, Card } from '@/components/ui';
 import { Plus } from 'lucide-react';
-import { AdjustableEditorPanel } from './AdjustableEditorPanel';
-import { MatrxEditor } from '@/components/matrx-editor-advanced/MatrxEditor';
-import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
+import { AdjustableEditorPanel } from './AdjustablePanel';
+import { EditorWithProviders } from '@/features/rich-text-editor/withManagedEditor';
 
 interface PanelManagerProps {
     role?: 'system' | 'user' | 'assistant';
@@ -34,10 +31,6 @@ export function PanelManager({ role }: PanelManagerProps) {
         ]);
     };
 
-    const handleStateChange = (state: any) => {
-        console.log(state);
-    };
-
     const getButtonText = () => {
         return `Add ${sections.length % 2 === 1 ? 'User' : 'Assistant'} Message`;
     };
@@ -54,7 +47,6 @@ export function PanelManager({ role }: PanelManagerProps) {
                         id={section.id}
                         order={index + 1}
                         role={section.role}
-                        onStateChange={handleStateChange}
                         initialContent=''
                     />
                 ))}
@@ -67,11 +59,10 @@ export function PanelManager({ role }: PanelManagerProps) {
                     order={999}
                 >
                     <Card className='h-full p-1 overflow-hidden bg-background'>
-                        <RichTextEditor
-                            componentId={'bottom-section'} 
-                            className='w-full h-full border border-gray-300 dark:border-red-700 rounded-md'
-                            onChange={(text) => handleStateChange(text)}
-                            initialContent={''}
+                        <EditorWithProviders
+                            id='bottom-section'
+                            className='w-full h-full border border-gray-300 dark:border-gray-700 rounded-md'
+                            initialContent=''
                         />
                     </Card>
                 </Panel>

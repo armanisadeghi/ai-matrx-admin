@@ -1,15 +1,17 @@
 // chipService.ts
 
 import { cn } from '@/utils';
-import { ChipData } from '../_dev/types';
 import { getColorClassName } from './colorUitls';
+import { ChipData, DOMSnapshot } from '../types';
+import { CHIP_BASE_CLASS } from '../constants';
+
 
 export const createChipElementWorkingTwo = (chipData: ChipData, { onDragStart, onDragEnd }): HTMLSpanElement => {
     const chip = document.createElement('span');
     const colorClassName = getColorClassName(chipData.color);
 
     chip.contentEditable = 'false';
-    chip.className = cn('inline-flex items-center px-2 py-1 mx-1 rounded-md cursor-move', colorClassName);
+    chip.className = cn(CHIP_BASE_CLASS, colorClassName);
     chip.setAttribute('data-chip', 'true');
     chip.setAttribute('data-chip-id', chipData.id);
     chip.setAttribute('data-chip-label', chipData.label);
@@ -24,7 +26,7 @@ export const createChipElementWorkingTwo = (chipData: ChipData, { onDragStart, o
     return chip;
 };
 
-export const createChipElement = (chipData: ChipData, { onDragStart, onDragEnd }): HTMLSpanElement => {
+export const createChipElementOld = (chipData: ChipData, { onDragStart, onDragEnd }): HTMLSpanElement => {
     // Create the outer container that will be draggable and hold spaces
     const chipContainer = document.createElement('span');
     chipContainer.contentEditable = 'false';
@@ -34,7 +36,7 @@ export const createChipElement = (chipData: ChipData, { onDragStart, onDragEnd }
     // Create the actual chip with its styling and data
     const chip = document.createElement('span');
     const colorClassName = getColorClassName(chipData.color);
-    chip.className = cn('inline-flex items-center px-2 py-1 mx-1 rounded-md cursor-move', colorClassName);
+    chip.className = cn(CHIP_BASE_CLASS, colorClassName);
     chip.setAttribute('data-chip', 'true');
     chip.setAttribute('data-chip-id', chipData.id);
     chip.setAttribute('data-chip-label', chipData.label);
@@ -53,6 +55,64 @@ export const createChipElement = (chipData: ChipData, { onDragStart, onDragEnd }
 
     return chipContainer;
 };
+
+
+export const createChipElement = (
+    chipData: ChipData,
+    {
+        onDragStart,
+        onDragEnd,
+        onClick,
+        onDoubleClick,
+        onMouseEnter,
+        onMouseLeave,
+        onContextMenu,
+    }: {
+        onDragStart?: (event: DragEvent) => void;
+        onDragEnd?: (event: DragEvent) => void;
+        onClick?: (event: MouseEvent) => void;
+        onDoubleClick?: (event: MouseEvent) => void;
+        onMouseEnter?: (event: MouseEvent) => void;
+        onMouseLeave?: (event: MouseEvent) => void;
+        onContextMenu?: (event: MouseEvent) => void;
+    }
+): HTMLSpanElement => {
+    // Create the outer container that will be draggable and hold spaces
+    const chipContainer = document.createElement('span');
+    chipContainer.contentEditable = 'false';
+    chipContainer.setAttribute('draggable', 'true');
+    chipContainer.setAttribute('data-chip-container', 'true');
+
+    // Create the actual chip with its styling and data
+    const chip = document.createElement('span');
+    const colorClassName = getColorClassName(chipData.color);
+    chip.className = cn(CHIP_BASE_CLASS, colorClassName);
+    chip.setAttribute('data-chip', 'true');
+    chip.setAttribute('data-chip-id', chipData.id);
+    chip.setAttribute('data-chip-label', chipData.label);
+    chip.setAttribute('data-chip-original-content', chipData.stringValue);
+    chip.setAttribute('data-broker-id', chipData.brokerId);
+    chip.textContent = chipData.label;
+
+    // Attach event handlers to the container
+    if (onDragStart) chipContainer.addEventListener('dragstart', onDragStart);
+    if (onDragEnd) chipContainer.addEventListener('dragend', onDragEnd);
+    if (onClick) chipContainer.addEventListener('click', onClick);
+    if (onDoubleClick) chipContainer.addEventListener('dblclick', onDoubleClick);
+    if (onMouseEnter) chipContainer.addEventListener('mouseenter', onMouseEnter);
+    if (onMouseLeave) chipContainer.addEventListener('mouseleave', onMouseLeave);
+    if (onContextMenu) chipContainer.addEventListener('contextmenu', onContextMenu);
+
+    // Assemble the structure with spaces
+    chipContainer.appendChild(document.createTextNode('\u00A0\u00A0')); // Two spaces before
+    chipContainer.appendChild(chip);
+    chipContainer.appendChild(document.createTextNode('\u00A0\u00A0')); // Two spaces after
+
+    return chipContainer;
+};
+
+
+
 
 export const createFragmentChipStructure = (
     chipData: ChipData,
@@ -198,27 +258,7 @@ export function positionCursorInBuffer(fragment: DocumentFragment) {
     }
 }
 
-// function insertWithStructurePreservation(content: DocumentFragment, currentRange: Range, parent: Node | null | undefined, container: Node): boolean {
-//     try {
-//         const isRangeCollapsed = currentRange.collapsed;
-//         const insertPosition = currentRange.startContainer;
-//         const isTextNode = insertPosition.nodeType === Node.TEXT_NODE;
 
-//         if (isRangeCollapsed && isTextNode) {
-//             const textNode = insertPosition as Text;
-//             const afterText = textNode.splitText(currentRange.startOffset);
-//             insertFragmentWithoutNesting(content, parent!, afterText);
-//         } else {
-//             currentRange.deleteContents();
-//             insertFragmentWithoutNesting(content, container, null);
-//         }
-
-//         positionCursorInBuffer(content);
-//         return true;
-//     } catch (error) {
-//         return false;
-//     }
-// }
 
 export const createChipWithStructure = (
     chipData: ChipData,
@@ -241,15 +281,29 @@ export const createChipWithStructure = (
     };
 };
 
-export function createCompleteChipStructure(chipData: ChipData, dragConfig, debugMode = false) {
+
+
+export function createCompleteChipStructure(
+    chipData: ChipData,
+    dragConfig,
+    debugMode = false,
+    chipHandlers: {
+        onDragStart?: (event: DragEvent) => void;
+        onDragEnd?: (event: DragEvent) => void;
+        onClick?: (event: MouseEvent) => void;
+        onDoubleClick?: (event: MouseEvent) => void;
+        onMouseEnter?: (event: MouseEvent) => void;
+        onMouseLeave?: (event: MouseEvent) => void;
+    } = {}
+) {
     // Create wrapper
     const chipWrapper = document.createElement('span');
-    const debbugWrapperClass = `chip-wrapper border border-${chipData.color}-500`;
-    chipWrapper.className = debugMode ? debbugWrapperClass : 'chip-wrapper';
+    const debugWrapperClass = `chip-wrapper border border-${chipData.color}-500`;
+    chipWrapper.className = debugMode ? debugWrapperClass : 'chip-wrapper';
     chipWrapper.setAttribute('data-chip-wrapper', 'true');
 
-    // Create chip with drag handlers
-    const chip = createChipElement(chipData, dragConfig);
+    // Create chip with drag handlers and optional additional handlers
+    const chip = createChipElement(chipData, { ...dragConfig, ...chipHandlers });
 
     // Create unique identifier for this structure
     const structureId = `chip-structure-${chipData.id}`;
@@ -296,11 +350,12 @@ export function createCompleteChipStructure(chipData: ChipData, dragConfig, debu
     };
 }
 
+
 export const createChipElementWorking = (chipData: ChipData): HTMLSpanElement => {
     const chip = document.createElement('span');
     const colorClassName = getColorClassName(chipData.color);
     chip.contentEditable = 'false';
-    chip.className = cn('inline-flex items-center px-2 py-1 mx-1 rounded-md cursor-move', colorClassName);
+    chip.className = cn(CHIP_BASE_CLASS, colorClassName);
     chip.setAttribute('data-chip', 'true');
     chip.setAttribute('data-chip-id', chipData.id);
     chip.setAttribute('data-chip-label', chipData.label);
@@ -340,5 +395,18 @@ export const createChipElements = (
     return {
         insertionWrapper,
         anchorNode,
+    };
+};
+
+export const getSelectedTextFromSnapshot = (
+    snapshot: DOMSnapshot
+): { text: string; range: Range } => {
+    const range = document.createRange();
+    range.setStart(snapshot.range.startContainer, snapshot.range.startOffset);
+    range.setEnd(snapshot.range.endContainer, snapshot.range.endOffset);
+    
+    return {
+        text: range.toString().trim(),
+        range
     };
 };

@@ -1,6 +1,7 @@
 // features/rich-text-editor/types/editor.types.ts
 import { MatrxRecordId } from '@/types';
 import { RefObject } from 'react';
+import { TailwindColor } from '../constants';
 
 // Base Types
 export interface ChipRequestOptions {
@@ -133,6 +134,11 @@ export interface UseEditorResult {
     normalize: () => void;
 }
 
+export interface ColorOption {
+    color: TailwindColor;
+    className: string;
+}
+
 export interface UseEditorChipsResult {
     chips: ChipData[];
     insertChip: (options: ChipRequestOptions) => void;
@@ -143,6 +149,8 @@ export interface UseEditorChipsResult {
     createNewChipData: (editorId: string, options: ChipRequestOptions) => ChipData;
 
 }
+
+
 
 export interface UseEditorStylesResult {
     applyStyle: (style: TextStyle) => void;
@@ -159,5 +167,27 @@ export interface RichTextEditorProps {
     onDrop?: (e: React.DragEvent<HTMLElement>) => void;
 }
 
+export interface DOMSnapshot {
+    selection: {
+        anchorNode: Node | null;
+        focusNode: Node | null;
+        anchorOffset: number;
+        focusOffset: number;
+        isCollapsed: boolean;
+    };
+    range: {
+        startOffset: number;
+        endOffset: number;
+        startContainer: Node;
+        endContainer: Node;
+        commonAncestorContainer: Node;
+    };
+    editor: {
+        activeElement: Element | null;
+        editorNode: HTMLElement;
+        currentContainer: Node;
+        caretPosition: number;
+    };
+}
 
 

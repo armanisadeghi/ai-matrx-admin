@@ -4,9 +4,18 @@ import { useEditorContext } from '@/features/rich-text-editor/provider/EditorPro
 import { ChipData, ChipRequestOptions } from '../types/editor.types';
 import { MatrxRecordId } from '@/types';
 import { getEditorElement } from '../utils/editorUtils';
+import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
+
+interface QuickReferenceRecord {
+    recordKey: MatrxRecordId;
+    displayValue: string;
+    metadata?: any;
+}
 
 export const useEditorChips = (editorId: string) => {
+    const entityKey = 'broker';
     const context = useEditorContext();
+    const {quickReferenceRecords} = useFetchQuickRef(entityKey);
 
     // Validate editor exists when hook is used
     useEffect(() => {
