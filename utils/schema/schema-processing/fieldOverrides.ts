@@ -33,6 +33,76 @@ const brokerFieldOverrides: AllFieldOverrides = {
     },
 };
 
+const messageTemplateFieldOverrides: AllFieldOverrides = {
+    role: {
+        isDisplayField: true,
+    },
+    type: {
+        isDisplayField: false,
+    },
+};
+
+const dataInputComponentFieldOverrides: AllFieldOverrides = {
+    options: {
+        componentProps: {
+            subComponent: 'optionsManager',
+            variant: 'default',
+            section: 'default',
+            placeholder: 'default',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 'default',
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'default',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 'default',
+            max: 'default',
+            step: 'default',
+            numberType: 'default',
+            options: 'default',
+            required: false,
+        },
+    },
+};
+
+const recipeFieldOverrides: AllFieldOverrides = {
+    tags: {
+        componentProps: {
+            subComponent: 'tagsManager',
+            variant: 'default',
+            section: 'default',
+            placeholder: 'default',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 'default',
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'default',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 'default',
+            max: 'default',
+            step: 'default',
+            numberType: 'default',
+            options: 'default',
+            required: false,
+        },
+    },
+};
+
+
 const actionFieldOverrides: AllFieldOverrides = {};
 const aiEndpointFieldOverrides: AllFieldOverrides = {};
 const aiModelFieldOverrides: AllFieldOverrides = {};
@@ -44,7 +114,6 @@ const automationBoundaryBrokerFieldOverrides: AllFieldOverrides = {};
 const automationMatrixFieldOverrides: AllFieldOverrides = {};
 const bucketStructuresFieldOverrides: AllFieldOverrides = {};
 const bucketTreeStructuresFieldOverrides: AllFieldOverrides = {};
-const dataInputComponentFieldOverrides: AllFieldOverrides = {};
 const dataOutputComponentFieldOverrides: AllFieldOverrides = {};
 const displayOptionFieldOverrides: AllFieldOverrides = {};
 const emailsFieldOverrides: AllFieldOverrides = {};
@@ -56,9 +125,7 @@ const flashcardImagesFieldOverrides: AllFieldOverrides = {};
 const flashcardSetRelationsFieldOverrides: AllFieldOverrides = {};
 const flashcardSetsFieldOverrides: AllFieldOverrides = {};
 const messageBrokerFieldOverrides: AllFieldOverrides = {};
-const messageTemplateFieldOverrides: AllFieldOverrides = {};
 const processorFieldOverrides: AllFieldOverrides = {};
-const recipeFieldOverrides: AllFieldOverrides = {};
 const recipeBrokerFieldOverrides: AllFieldOverrides = {};
 const recipeDisplayFieldOverrides: AllFieldOverrides = {};
 const recipeFunctionFieldOverrides: AllFieldOverrides = {};
@@ -70,9 +137,6 @@ const systemFunctionFieldOverrides: AllFieldOverrides = {};
 const toolFieldOverrides: AllFieldOverrides = {};
 const transformerFieldOverrides: AllFieldOverrides = {};
 const userPreferencesFieldOverrides: AllFieldOverrides = {};
-
-
-
 
 export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     action: actionFieldOverrides,
@@ -112,5 +176,5 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     systemFunction: systemFunctionFieldOverrides,
     tool: toolFieldOverrides,
     transformer: transformerFieldOverrides,
-    userPreferences: userPreferencesFieldOverrides
+    userPreferences: userPreferencesFieldOverrides,
 };

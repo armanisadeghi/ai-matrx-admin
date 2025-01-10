@@ -58,6 +58,7 @@ export type AutomationCustomName = 'flashcard' | 'mathTutor' | 'scraper';
 
 export type AutomationTableName =
     | 'action'
+    | 'aiAgent'
     | 'aiEndpoint'
     | 'aiModel'
     | 'aiModelEndpoint'
@@ -69,6 +70,7 @@ export type AutomationTableName =
     | 'broker'
     | 'bucketStructures'
     | 'bucketTreeStructures'
+    | 'dataBroker'
     | 'dataInputComponent'
     | 'dataOutputComponent'
     | 'displayOption'
@@ -87,6 +89,7 @@ export type AutomationTableName =
     | 'recipeBroker'
     | 'recipeDisplay'
     | 'recipeFunction'
+    | 'recipeMessage'
     | 'recipeModel'
     | 'recipeProcessor'
     | 'recipeTool'
@@ -110,6 +113,11 @@ export type ActionType = AutomationEntity<'action'>;
 export type ActionDataRequired = EntityData<'action'>;
 export type ActionDataOptional = EntityDataOptional<'action'>;
 export type ActionData = EntityDataMixed<'action'>;
+
+export type AiAgentType = AutomationEntity<'aiAgent'>;
+export type AiAgentDataRequired = EntityData<'aiAgent'>;
+export type AiAgentDataOptional = EntityDataOptional<'aiAgent'>;
+export type AiAgentData = EntityDataMixed<'aiAgent'>;
 
 export type AiEndpointType = AutomationEntity<'aiEndpoint'>;
 export type AiEndpointDataRequired = EntityData<'aiEndpoint'>;
@@ -165,6 +173,11 @@ export type BucketTreeStructuresType = AutomationEntity<'bucketTreeStructures'>;
 export type BucketTreeStructuresDataRequired = EntityData<'bucketTreeStructures'>;
 export type BucketTreeStructuresDataOptional = EntityDataOptional<'bucketTreeStructures'>;
 export type BucketTreeStructuresData = EntityDataMixed<'bucketTreeStructures'>;
+
+export type DataBrokerType = AutomationEntity<'dataBroker'>;
+export type DataBrokerDataRequired = EntityData<'dataBroker'>;
+export type DataBrokerDataOptional = EntityDataOptional<'dataBroker'>;
+export type DataBrokerData = EntityDataMixed<'dataBroker'>;
 
 export type DataInputComponentType = AutomationEntity<'dataInputComponent'>;
 export type DataInputComponentDataRequired = EntityData<'dataInputComponent'>;
@@ -255,6 +268,11 @@ export type RecipeFunctionType = AutomationEntity<'recipeFunction'>;
 export type RecipeFunctionDataRequired = EntityData<'recipeFunction'>;
 export type RecipeFunctionDataOptional = EntityDataOptional<'recipeFunction'>;
 export type RecipeFunctionData = EntityDataMixed<'recipeFunction'>;
+
+export type RecipeMessageType = AutomationEntity<'recipeMessage'>;
+export type RecipeMessageDataRequired = EntityData<'recipeMessage'>;
+export type RecipeMessageDataOptional = EntityDataOptional<'recipeMessage'>;
+export type RecipeMessageData = EntityDataMixed<'recipeMessage'>;
 
 export type RecipeModelType = AutomationEntity<'recipeModel'>;
 export type RecipeModelDataRequired = EntityData<'recipeModel'>;

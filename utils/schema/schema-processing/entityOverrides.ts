@@ -17,6 +17,21 @@ const brokerEntityOverrides: EntityOverrides<'broker'> = {
     entityFields: null
 };
 
+const recipeMessageEntityOverrides: EntityOverrides<'recipe'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
 
 const actionEntityOverrides: EntityOverrides<'action'> = {
     schemaType: null,
@@ -370,7 +385,7 @@ const messageTemplateEntityOverrides: EntityOverrides<'messageTemplate'> = {
     uniqueEntityId: null,
     primaryKey: null,
     primaryKeyMetadata: null,
-    displayFieldMetadata: null,
+    displayFieldMetadata: { fieldName: 'role', databaseFieldName: 'role' },
     defaultFetchStrategy: null,
     componentProps: null,
     entityNameFormats: null,
@@ -604,5 +619,6 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     systemFunction: systemFunctionEntityOverrides,
     tool: toolEntityOverrides,
     transformer: transformerEntityOverrides,
-    userPreferences: userPreferencesEntityOverrides
+    userPreferences: userPreferencesEntityOverrides,
+    recipeMessage: recipeMessageEntityOverrides
 };

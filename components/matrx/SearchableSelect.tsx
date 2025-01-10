@@ -4,7 +4,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
 } from '@/components/ui/command';
 import {
@@ -29,7 +28,6 @@ interface SearchableSelectProps {
   className?: string;
 }
 
-// Version 1: With explicit border
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
   options,
   value,
@@ -88,13 +86,19 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 <CommandItem
                   key={option.value}
                   value={option.value}
-                  onSelect={() => {
-                    onChange(option);
-                    setOpen(false);
-                  }}
                   className="text-ellipsis overflow-hidden hover:bg-primary hover:text-primary-foreground"
                 >
-                  <span className="truncate">{option.label}</span>
+                  <div 
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onChange(option);
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="truncate">{option.label}</span>
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>

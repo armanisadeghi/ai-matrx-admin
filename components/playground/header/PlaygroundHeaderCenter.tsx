@@ -11,7 +11,7 @@ import {
   SelectLabel,
   SelectTrigger,
 } from "@/components/ui/select";
-import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
+import QuickRefSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSelect";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import PlaygroundHistoryDialog from "./PlaygroundHistoryDialog";
 import PlaygroundNavContainer from "./PlaygroundNavContainer";
@@ -60,7 +60,7 @@ const PlaygroundHeaderCenter = ({
 
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <div className="min-w-[160px] max-w-[320px] w-full">
-          <QuickRefSearchableSelect
+          <QuickRefSelect
             entityKey="recipe"
             initialSelectedRecord={selectedRecipe}
             onRecordChange={handleRecipeChange}

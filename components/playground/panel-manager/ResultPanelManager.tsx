@@ -42,7 +42,6 @@ export function ResultPanelManager({
   };
 
   return (
-    <Panel defaultSize={15}>
       <PanelGroup direction="vertical" className="h-full">
         {sections.map((section, index) => (
           <AdjustableResultPanel
@@ -62,7 +61,6 @@ export function ResultPanelManager({
           Add Result
         </Button>
       </PanelGroup>
-    </Panel>
   );
 }
 

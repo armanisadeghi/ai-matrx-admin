@@ -55,7 +55,7 @@ const ModelSelectionWithInfo: React.FC<ModelSelectionWithInfoProps> = ({
       <div className="space-y-4">
         {/* Recipe Selection */}
         <div className="w-full min-w-0">
-          <QuickRefSearchableSelect
+          <QuickRefSelect
             entityKey="recipe"
             initialSelectedRecord={selectedRecipe}
             onRecordChange={handleRecipeChange}
@@ -72,7 +72,7 @@ const ModelSelectionWithInfo: React.FC<ModelSelectionWithInfoProps> = ({
 
         {/* Model Selection */}
         <div className="w-full min-w-0">
-          <QuickRefSearchableSelect
+          <QuickRefSelect
             entityKey="aiModel"
             initialSelectedRecord={selectedModel}
             onRecordChange={handleModelChange}

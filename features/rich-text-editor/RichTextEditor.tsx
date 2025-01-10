@@ -141,16 +141,21 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     };
 
     return (
-        <div className='relative group w-full h-full flex flex-col'>
-            <div
-                ref={editorRef}
-                className={`w-full h-full min-h-48 p-4 focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
-                contentEditable
-                onInput={handleInput}
-                onBlur={normalizeContent}
-                onDragOver={onDragOver || handleDragOverInternal}
-                onDrop={onDrop || handleDropInternal}
-            />
+        <div className="relative group w-full h-full flex flex-col">
+            <div className="flex-1 overflow-hidden">
+                <div
+                    ref={editorRef}
+                    className={`w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 
+                        dark:scrollbar-thumb-neutral-600 scrollbar-track-transparent px-4 py-2
+                        focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
+                    contentEditable
+                    onInput={handleInput}
+                    onBlur={normalizeContent}
+                    onDragOver={onDragOver || handleDragOverInternal}
+                    onDrop={onDrop || handleDropInternal}
+                />
+            </div>
+
             <EditorChipButton
                 editorId={componentId}
                 onInsertChip={insertChip}

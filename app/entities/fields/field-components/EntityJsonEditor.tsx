@@ -9,7 +9,7 @@ import {
 import { useFieldStyles } from "./add-ons/useFieldStyles";
 import FieldActionButtons from "./add-ons/FieldActionButtons";
 import ControlledTooltip from "./add-ons/ControlledTooltip";
-import JsonEditor from "./add-ons/JsonEditor";
+import JsonEditorWrapper from "./json-data-components/JsonEditorWrapper";
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
@@ -34,6 +34,8 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
     const [isFocused, setIsFocused] = useState(false);
     const [tooltipText, setTooltipText] = useState("");
     const [showTooltip, setShowTooltip] = useState(false);
+    const customProps = dynamicFieldInfo.componentProps as Record<string, unknown> || {};
+    const subComponent = customProps?.subComponent as string | undefined;
 
     const safeValue = value ?? "";
     const isEmpty = !value || value === "" || (typeof value === "object" && Object.keys(value).length === 0);
@@ -47,10 +49,10 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
       hasValue: !isEmpty,
       isFloating: floatingLabel,
       customStates: {
-        "min-h-[80px]": true,
+        "min-h-[80px]": subComponent === undefined,
         "h-auto": true,
-        "resize-vertical": true,
-        "pr-24": true,
+        "resize-vertical": subComponent === undefined,
+        "pr-24": subComponent === undefined || subComponent === 'default',
       },
     });
 
@@ -64,7 +66,7 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
           />
         )}
 
-        <JsonEditor
+        <JsonEditorWrapper
           ref={ref}
           id={dynamicFieldInfo.name}
           value={safeValue}
@@ -75,18 +77,21 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={getTextareaStyles}
+          subComponent={subComponent}
         />
 
-        <div className="absolute right-2 top-2">
-          <FieldActionButtons
-            value={typeof safeValue === 'string' ? safeValue : JSON.stringify(safeValue)}
-            onChange={onChange}
-            disabled={disabled}
-            onShowTooltip={setTooltipText}
-            onHideTooltip={() => setShowTooltip(false)}
-            allowClear={true}
-          />
-        </div>
+        {(subComponent === undefined || subComponent === 'default') && (
+          <div className="absolute right-2 top-2">
+            <FieldActionButtons
+              value={typeof safeValue === 'string' ? safeValue : JSON.stringify(safeValue)}
+              onChange={onChange}
+              disabled={disabled}
+              onShowTooltip={setTooltipText}
+              onHideTooltip={() => setShowTooltip(false)}
+              allowClear={true}
+            />
+          </div>
+        )}
       </div>
     );
 
@@ -124,5 +129,3 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
 EntityJsonEditor.displayName = "EntityJsonEditor";
 
 export default React.memo(EntityJsonEditor);
-
-

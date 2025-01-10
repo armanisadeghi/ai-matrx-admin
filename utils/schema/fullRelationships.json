@@ -163,6 +163,21 @@
             "referencedBy": {}
         }
     },
+    "aiAgent": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "aiAgent",
+            "table_name": "ai_agent",
+            "foreignKeys": {},
+            "referencedBy": {}
+        }
+    },
     "aiSettings": {
         "selfReferential": [],
         "manyToMany": ["aiEndpoint", "aiModel", "aiProvider"],
@@ -216,7 +231,7 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["messageBroker"],
+        "inverseReferences": ["messageBroker", "recipeMessage"],
         "relationshipDetails": {
             "entityName": "messageTemplate",
             "table_name": "message_template",
@@ -230,6 +245,15 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "message_broker_message_id_fkey"
+                },
+                "recipeMessage": {
+                    "foreign_table": "recipe_message",
+                    "foreign_entity": "recipeMessage",
+                    "field": "message_id",
+                    "column": "message_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "recipe_message_message_id_fkey"
                 }
             }
         }
@@ -385,7 +409,7 @@
     },
     "messageBroker": {
         "selfReferential": [],
-        "manyToMany": ["broker", "messageTemplate"],
+        "manyToMany": ["dataBroker", "dataInputComponent", "messageTemplate"],
         "oneToOne": [],
         "manyToOne": [],
         "oneToMany": [],
@@ -395,15 +419,25 @@
             "entityName": "messageBroker",
             "table_name": "message_broker",
             "foreignKeys": {
-                "broker": {
-                    "foreign_table": "broker",
-                    "foreign_entity": "broker",
+                "dataBroker": {
+                    "foreign_table": "data_broker",
+                    "foreign_entity": "dataBroker",
                     "column": "broker_id",
                     "fieldName": "broker_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
                     "constraint_name": "message_broker_broker_id_fkey"
+                },
+                "dataInputComponent": {
+                    "foreign_table": "data_input_component",
+                    "foreign_entity": "dataInputComponent",
+                    "column": "default_component",
+                    "fieldName": "default_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "message_broker_default_component_fkey"
                 },
                 "messageTemplate": {
                     "foreign_table": "message_template",
@@ -599,12 +633,21 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["broker"],
+        "inverseReferences": ["messageBroker", "broker", "dataBroker"],
         "relationshipDetails": {
             "entityName": "dataInputComponent",
             "table_name": "data_input_component",
             "foreignKeys": {},
             "referencedBy": {
+                "messageBroker": {
+                    "foreign_table": "message_broker",
+                    "foreign_entity": "messageBroker",
+                    "field": "default_component",
+                    "column": "default_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "message_broker_default_component_fkey"
+                },
                 "broker": {
                     "foreign_table": "broker",
                     "foreign_entity": "broker",
@@ -613,6 +656,15 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "broker_custom_component_fkey"
+                },
+                "dataBroker": {
+                    "foreign_table": "data_broker",
+                    "foreign_entity": "dataBroker",
+                    "field": "default_component",
+                    "column": "default_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "data_broker_default_component_fkey"
                 }
             }
         }
@@ -654,7 +706,7 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["recipeDisplay", "recipeProcessor", "recipeModel", "recipeBroker", "recipeTool", "recipeFunction"],
+        "inverseReferences": ["recipeDisplay", "recipeProcessor", "recipeModel", "recipeBroker", "recipeTool", "recipeFunction", "recipeMessage"],
         "relationshipDetails": {
             "entityName": "recipe",
             "table_name": "recipe",
@@ -713,6 +765,15 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "recipe_function_recipe_fkey"
+                },
+                "recipeMessage": {
+                    "foreign_table": "recipe_message",
+                    "foreign_entity": "recipeMessage",
+                    "field": "recipe_id",
+                    "column": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "recipe_message_recipe_id_fkey"
                 }
             }
         }
@@ -999,7 +1060,7 @@
         "manyToOne": ["dataInputComponent"],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["messageBroker", "recipeBroker", "registeredFunction", "automationBoundaryBroker"],
+        "inverseReferences": ["recipeBroker", "registeredFunction", "automationBoundaryBroker"],
         "relationshipDetails": {
             "entityName": "broker",
             "table_name": "broker",
@@ -1016,15 +1077,6 @@
                 }
             },
             "referencedBy": {
-                "messageBroker": {
-                    "foreign_table": "message_broker",
-                    "foreign_entity": "messageBroker",
-                    "field": "broker_id",
-                    "column": "broker_id",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "constraint_name": "message_broker_broker_id_fkey"
-                },
                 "recipeBroker": {
                     "foreign_table": "recipe_broker",
                     "foreign_entity": "recipeBroker",
@@ -1241,6 +1293,78 @@
             "table_name": "user_preferences",
             "foreignKeys": {},
             "referencedBy": {}
+        }
+    },
+    "recipeMessage": {
+        "selfReferential": [],
+        "manyToMany": ["messageTemplate", "recipe"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "recipeMessage",
+            "table_name": "recipe_message",
+            "foreignKeys": {
+                "messageTemplate": {
+                    "foreign_table": "message_template",
+                    "foreign_entity": "messageTemplate",
+                    "column": "message_id",
+                    "fieldName": "message_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "recipe_message_message_id_fkey"
+                },
+                "recipe": {
+                    "foreign_table": "recipe",
+                    "foreign_entity": "recipe",
+                    "column": "recipe_id",
+                    "fieldName": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "recipe_message_recipe_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "dataBroker": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": ["dataInputComponent"],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["messageBroker"],
+        "relationshipDetails": {
+            "entityName": "dataBroker",
+            "table_name": "data_broker",
+            "foreignKeys": {
+                "dataInputComponent": {
+                    "foreign_table": "data_input_component",
+                    "foreign_entity": "dataInputComponent",
+                    "column": "default_component",
+                    "fieldName": "default_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-one",
+                    "constraint_name": "data_broker_default_component_fkey"
+                }
+            },
+            "referencedBy": {
+                "messageBroker": {
+                    "foreign_table": "message_broker",
+                    "foreign_entity": "messageBroker",
+                    "field": "broker_id",
+                    "column": "broker_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "message_broker_broker_id_fkey"
+                }
+            }
         }
     }
 }

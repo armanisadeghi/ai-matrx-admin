@@ -130,11 +130,7 @@ export const useEditor = (editorId: string) => {
         onDragStart: (event) => console.log('Drag started:', event),
         onDragEnd: (event) => console.log('Drag ended:', event),
         onClick: (event) => console.log('Chip clicked:', event),
-        onDoubleClick: (event) => console.log('Chip double-clicked:', event),
-        onMouseEnter: (event) => console.log('Mouse entered:', event),
-        onMouseLeave: (event) => console.log('Mouse left:', event),
-        onContextMenu: (event: MouseEvent) => {
-            event.preventDefault();
+        onDoubleClick: (event) => {
             const chip = (event.target as HTMLElement).closest('[data-chip]');
             if (!chip) return;
             
@@ -142,9 +138,27 @@ export const useEditor = (editorId: string) => {
             if (!chipId) return;
     
             showMenu(editorId, chipId, event.clientX, event.clientY);
+            console.log('Chip double-clicked:', event);
+        },
+        onMouseEnter: (event) => console.log('Mouse entered:', event),
+        onMouseLeave: (event) => console.log('Mouse left:', event),
+        onContextMenu: (event: MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const chip = (event.target as HTMLElement).closest('[data-chip]');
+            if (!chip) return;
+            
+            const chipId = chip.getAttribute('data-chip-id');
+            if (!chipId) return;
+    
+            showMenu(editorId, chipId, event.clientX, event.clientY);
+            console.log('Right-clicked:', event);
         },
     };
 
+
+    
     const convertSelectionToChip = useCallback(() => {
         const editor = getEditor();
         const { text, range } = getSelectedText();

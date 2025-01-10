@@ -498,6 +498,377 @@
             }
         ]
     },
+    "aiAgent": {
+        "schemaType": "table",
+        "entityName": "aiAgent",
+        "uniqueTableId": "supabase_automation_matrix:public:ai_agent",
+        "uniqueEntityId": "supabase_automation_matrix:aiAgent",
+        "primaryKey": "id",
+        "primaryKeyMetadata": {
+            "type": "single",
+            "fields": ["id"],
+            "database_fields": ["id"],
+            "where_template": {
+                "id": null
+            }
+        },
+        "displayFieldMetadata": {
+            "fieldName": "name",
+            "databaseFieldName": "name"
+        },
+        "defaultFetchStrategy": "simple",
+        "componentProps": {
+            "subComponent": "default",
+            "variant": "default",
+            "placeholder": "default",
+            "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default",
+            "onBlur": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default",
+            "numberType": "default"
+        },
+        "entityFields": {
+            "id": {
+                "fieldNameFormats": {
+                    "frontend": "id",
+                    "backend": "id",
+                    "database": "id",
+                    "pretty": "Id",
+                    "component": "Id",
+                    "kebab": "id",
+                    "sqlFunctionRef": "p_id",
+                    "RestAPI": "id",
+                    "GraphQL": "id",
+                    "custom": "id"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:ai_agent:id",
+                "uniqueFieldId": "supabase_automation_matrix:aiAgent:id",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": true,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "aiAgent",
+                "databaseTable": "ai_agent",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Id\" field for aiAgent. This is a required field. Your entry must be an uuid data type.",
+                    "backend": "\"Id\" field for the ai_agent table. This is a required field. Your entry must be an uuid data type."
+                }
+            },
+            "name": {
+                "fieldNameFormats": {
+                    "frontend": "name",
+                    "backend": "name",
+                    "database": "name",
+                    "pretty": "Name",
+                    "component": "Name",
+                    "kebab": "name",
+                    "sqlFunctionRef": "p_name",
+                    "RestAPI": "name",
+                    "GraphQL": "name",
+                    "custom": "name"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:ai_agent:name",
+                "uniqueFieldId": "supabase_automation_matrix:aiAgent:name",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "aiAgent",
+                "databaseTable": "ai_agent",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Name\" field for aiAgent. This is a required field. Your entry must be an string data type. This must be a unique value.",
+                    "backend": "\"Name\" field for the ai_agent table. This is a required field. Your entry must be an string data type. This must be a unique value."
+                }
+            },
+            "recipeId": {
+                "fieldNameFormats": {
+                    "frontend": "recipeId",
+                    "backend": "recipe_id",
+                    "database": "recipe_id",
+                    "pretty": "Recipe Id",
+                    "component": "RecipeId",
+                    "kebab": "recipe-id",
+                    "sqlFunctionRef": "p_recipe_id",
+                    "RestAPI": "recipeId",
+                    "GraphQL": "recipeId",
+                    "custom": "recipeId"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:ai_agent:recipe_id",
+                "uniqueFieldId": "supabase_automation_matrix:aiAgent:recipeId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "aiAgent",
+                "databaseTable": "ai_agent",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Recipe Id\" field for aiAgent. This is an optional field. Your entry must be an uuid data type.",
+                    "backend": "\"Recipe Id\" field for the ai_agent table. This is an optional field. Your entry must be an uuid data type."
+                }
+            },
+            "aiSettingsId": {
+                "fieldNameFormats": {
+                    "frontend": "aiSettingsId",
+                    "backend": "ai_settings_id",
+                    "database": "ai_settings_id",
+                    "pretty": "Ai Settings Id",
+                    "component": "AiSettingsId",
+                    "kebab": "ai-settings-id",
+                    "sqlFunctionRef": "p_ai_settings_id",
+                    "RestAPI": "aiSettingsId",
+                    "GraphQL": "aiSettingsId",
+                    "custom": "aiSettingsId"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:ai_agent:ai_settings_id",
+                "uniqueFieldId": "supabase_automation_matrix:aiAgent:aiSettingsId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "aiAgent",
+                "databaseTable": "ai_agent",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Ai Settings Id\" field for aiAgent. This is an optional field. Your entry must be an uuid data type.",
+                    "backend": "\"Ai Settings Id\" field for the ai_agent table. This is an optional field. Your entry must be an uuid data type."
+                }
+            },
+            "systemMessageOverride": {
+                "fieldNameFormats": {
+                    "frontend": "systemMessageOverride",
+                    "backend": "system_message_override",
+                    "database": "system_message_override",
+                    "pretty": "System Message Override",
+                    "component": "SystemMessageOverride",
+                    "kebab": "system-message-override",
+                    "sqlFunctionRef": "p_system_message_override",
+                    "RestAPI": "systemMessageOverride",
+                    "GraphQL": "systemMessageOverride",
+                    "custom": "systemMessageOverride"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:ai_agent:system_message_override",
+                "uniqueFieldId": "supabase_automation_matrix:aiAgent:systemMessageOverride",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "TEXTAREA",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "aiAgent",
+                "databaseTable": "ai_agent",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"System Message Override\" field for aiAgent. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"System Message Override\" field for the ai_agent table. This is an optional field. Your entry must be an string data type."
+                }
+            }
+        },
+        "entityNameFormats": {
+            "frontend": "aiAgent",
+            "backend": "ai_agent",
+            "database": "ai_agent",
+            "pretty": "Ai Agent",
+            "component": "AiAgent",
+            "kebab": "ai-agent",
+            "sqlFunctionRef": "p_ai_agent",
+            "RestAPI": "aiAgent",
+            "GraphQL": "aiAgent",
+            "custom": "aiAgent"
+        },
+        "relationships": []
+    },
     "aiEndpoint": {
         "schemaType": "table",
         "entityName": "aiEndpoint",
@@ -6102,7 +6473,7 @@
                 "isRequired": false,
                 "maxLength": "null",
                 "isArray": false,
-                "defaultValue": "null",
+                "defaultValue": "{'broker_value': None}",
                 "isPrimaryKey": false,
                 "isDisplayField": false,
                 "defaultGeneratorFunction": null,
@@ -7517,6 +7888,69 @@
                     "backend": "\"Tags\" field for the broker table. This is an optional field. Your entry must be an object data type."
                 }
             },
+            "stringValue": {
+                "fieldNameFormats": {
+                    "frontend": "stringValue",
+                    "backend": "string_value",
+                    "database": "string_value",
+                    "pretty": "String Value",
+                    "component": "StringValue",
+                    "kebab": "string-value",
+                    "sqlFunctionRef": "p_string_value",
+                    "RestAPI": "stringValue",
+                    "GraphQL": "stringValue",
+                    "custom": "stringValue"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:broker:string_value",
+                "uniqueFieldId": "supabase_automation_matrix:broker:stringValue",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "TEXTAREA",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "broker",
+                "databaseTable": "broker",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"String Value\" field for broker. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"String Value\" field for the broker table. This is an optional field. Your entry must be an string data type."
+                }
+            },
             "dataInputComponentReference": {
                 "fieldNameFormats": {
                     "frontend": "dataInputComponentReference",
@@ -7539,31 +7973,6 @@
                     "structure": "foreignKey",
                     "databaseTable": "data_input_component",
                     "typeReference": "TypeBrand<AutomationEntity<'dataInputComponent'>[]>"
-                }
-            },
-            "messageBrokerInverse": {
-                "fieldNameFormats": {
-                    "frontend": "messageBrokerInverse",
-                    "backend": "message_broker_Inverse",
-                    "database": "ifk_message_broker",
-                    "pretty": "Message Broker Inverse",
-                    "component": "MessageBrokerInverse",
-                    "kebab": "message-brokerInverse",
-                    "sqlFunctionRef": "p_ifk_message_broker",
-                    "RestAPI": "messageBrokerInverse",
-                    "GraphQL": "messageBrokerInverse",
-                    "custom": "messageBrokerInverse"
-                },
-                "uniqueTableId": "supabase_automation_matrix:message_broker",
-                "uniqueEntityId": "supabase_automation_matrix:messageBroker",
-                "type": "array",
-                "format": "array",
-                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
-                "structure": {
-                    "structure": "inverseForeignKey",
-                    "entityName": "messageBroker",
-                    "databaseTable": "message_broker",
-                    "typeReference": "TypeBrand<AutomationEntity<'messageBroker'>[]>"
                 }
             },
             "recipeBrokerInverse": {
@@ -7659,11 +8068,6 @@
                 "column": "custom_source_component",
                 "relatedTable": "data_input_component",
                 "relatedColumn": "id"
-            },
-            {
-                "relatedTable": "message_broker",
-                "relatedColumn": "broker_id",
-                "mainTableColumn": "id"
             },
             {
                 "relatedTable": "recipe_broker",
@@ -8172,6 +8576,469 @@
         },
         "relationships": []
     },
+    "dataBroker": {
+        "schemaType": "table",
+        "entityName": "dataBroker",
+        "uniqueTableId": "supabase_automation_matrix:public:data_broker",
+        "uniqueEntityId": "supabase_automation_matrix:dataBroker",
+        "primaryKey": "id",
+        "primaryKeyMetadata": {
+            "type": "single",
+            "fields": ["id"],
+            "database_fields": ["id"],
+            "where_template": {
+                "id": null
+            }
+        },
+        "displayFieldMetadata": {
+            "fieldName": "name",
+            "databaseFieldName": "name"
+        },
+        "defaultFetchStrategy": "fkAndIfk",
+        "componentProps": {
+            "subComponent": "default",
+            "variant": "default",
+            "placeholder": "default",
+            "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default",
+            "onBlur": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default",
+            "numberType": "default"
+        },
+        "entityFields": {
+            "id": {
+                "fieldNameFormats": {
+                    "frontend": "id",
+                    "backend": "id",
+                    "database": "id",
+                    "pretty": "Id",
+                    "component": "Id",
+                    "kebab": "id",
+                    "sqlFunctionRef": "p_id",
+                    "RestAPI": "id",
+                    "GraphQL": "id",
+                    "custom": "id"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:data_broker:id",
+                "uniqueFieldId": "supabase_automation_matrix:dataBroker:id",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": true,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "dataBroker",
+                "databaseTable": "data_broker",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Id\" field for dataBroker. This is a required field. Your entry must be an uuid data type.",
+                    "backend": "\"Id\" field for the data_broker table. This is a required field. Your entry must be an uuid data type."
+                }
+            },
+            "name": {
+                "fieldNameFormats": {
+                    "frontend": "name",
+                    "backend": "name",
+                    "database": "name",
+                    "pretty": "Name",
+                    "component": "Name",
+                    "kebab": "name",
+                    "sqlFunctionRef": "p_name",
+                    "RestAPI": "name",
+                    "GraphQL": "name",
+                    "custom": "name"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:data_broker:name",
+                "uniqueFieldId": "supabase_automation_matrix:dataBroker:name",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "dataBroker",
+                "databaseTable": "data_broker",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Name\" field for dataBroker. This is a required field. Your entry must be an string data type.",
+                    "backend": "\"Name\" field for the data_broker table. This is a required field. Your entry must be an string data type."
+                }
+            },
+            "dataType": {
+                "fieldNameFormats": {
+                    "frontend": "dataType",
+                    "backend": "data_type",
+                    "database": "data_type",
+                    "pretty": "Data Type",
+                    "component": "DataType",
+                    "kebab": "data-type",
+                    "sqlFunctionRef": "p_data_type",
+                    "RestAPI": "dataType",
+                    "GraphQL": "dataType",
+                    "custom": "dataType"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:data_broker:data_type",
+                "uniqueFieldId": "supabase_automation_matrix:dataBroker:dataType",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "str",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "SELECT",
+                "componentProps": {
+                    "subComponent": "enumSelect",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": [
+                        {
+                            "label": "Bool",
+                            "value": "bool"
+                        },
+                        {
+                            "label": "Dict",
+                            "value": "dict"
+                        },
+                        {
+                            "label": "Float",
+                            "value": "float"
+                        },
+                        {
+                            "label": "Int",
+                            "value": "int"
+                        },
+                        {
+                            "label": "List",
+                            "value": "list"
+                        },
+                        {
+                            "label": "Str",
+                            "value": "str"
+                        },
+                        {
+                            "label": "Url",
+                            "value": "url"
+                        }
+                    ],
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "entityName": "dataBroker",
+                "databaseTable": "data_broker",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Data Type\" field for dataBroker. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Data Type\" field for the data_broker table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "defaultValue": {
+                "fieldNameFormats": {
+                    "frontend": "defaultValue",
+                    "backend": "default_value",
+                    "database": "default_value",
+                    "pretty": "Default Value",
+                    "component": "DefaultValue",
+                    "kebab": "default-value",
+                    "sqlFunctionRef": "p_default_value",
+                    "RestAPI": "defaultValue",
+                    "GraphQL": "defaultValue",
+                    "custom": "defaultValue"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:data_broker:default_value",
+                "uniqueFieldId": "supabase_automation_matrix:dataBroker:defaultValue",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "TEXTAREA",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "dataBroker",
+                "databaseTable": "data_broker",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Default Value\" field for dataBroker. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Default Value\" field for the data_broker table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "defaultComponent": {
+                "fieldNameFormats": {
+                    "frontend": "defaultComponent",
+                    "backend": "default_component",
+                    "database": "default_component",
+                    "pretty": "Default Component",
+                    "component": "DefaultComponent",
+                    "kebab": "default-component",
+                    "sqlFunctionRef": "p_default_component",
+                    "RestAPI": "defaultComponent",
+                    "GraphQL": "defaultComponent",
+                    "custom": "defaultComponent"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:data_broker:default_component",
+                "uniqueFieldId": "supabase_automation_matrix:dataBroker:defaultComponent",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "dataBroker",
+                "databaseTable": "data_broker",
+                "foreignKeyReference": {
+                    "table": "data_input_component",
+                    "column": "id"
+                },
+                "description": {
+                    "frontend": "\"Default Component\" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.",
+                    "backend": "\"Default Component\" field for the data_broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the data_input_component table."
+                }
+            },
+            "dataInputComponentReference": {
+                "fieldNameFormats": {
+                    "frontend": "dataInputComponentReference",
+                    "backend": "data_input_component_reference",
+                    "database": "ref_data_input_component",
+                    "pretty": "Data Input Component Reference",
+                    "component": "DataInputComponentReference",
+                    "kebab": "data-input-componentReference",
+                    "sqlFunctionRef": "p_ref_data_input_component",
+                    "RestAPI": "dataInputComponentReference",
+                    "GraphQL": "dataInputComponentReference",
+                    "custom": "dataInputComponentReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:data_input_component:id",
+                "uniqueFieldId": "supabase_automation_matrix:dataInputComponent:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "data_input_component",
+                    "typeReference": "TypeBrand<AutomationEntity<'dataInputComponent'>[]>"
+                }
+            },
+            "messageBrokerInverse": {
+                "fieldNameFormats": {
+                    "frontend": "messageBrokerInverse",
+                    "backend": "message_broker_Inverse",
+                    "database": "ifk_message_broker",
+                    "pretty": "Message Broker Inverse",
+                    "component": "MessageBrokerInverse",
+                    "kebab": "message-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_message_broker",
+                    "RestAPI": "messageBrokerInverse",
+                    "GraphQL": "messageBrokerInverse",
+                    "custom": "messageBrokerInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:message_broker",
+                "uniqueEntityId": "supabase_automation_matrix:messageBroker",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "messageBroker",
+                    "databaseTable": "message_broker",
+                    "typeReference": "TypeBrand<AutomationEntity<'messageBroker'>[]>"
+                }
+            }
+        },
+        "entityNameFormats": {
+            "frontend": "dataBroker",
+            "backend": "data_broker",
+            "database": "data_broker",
+            "pretty": "Data Broker",
+            "component": "DataBroker",
+            "kebab": "data-broker",
+            "sqlFunctionRef": "p_data_broker",
+            "RestAPI": "dataBroker",
+            "GraphQL": "dataBroker",
+            "custom": "dataBroker"
+        },
+        "relationships": [
+            {
+                "column": "default_component",
+                "relatedTable": "data_input_component",
+                "relatedColumn": "id"
+            },
+            {
+                "relatedTable": "message_broker",
+                "relatedColumn": "broker_id",
+                "mainTableColumn": "id"
+            }
+        ]
+    },
     "dataInputComponent": {
         "schemaType": "table",
         "entityName": "dataInputComponent",
@@ -8187,8 +9054,8 @@
             }
         },
         "displayFieldMetadata": {
-            "fieldName": "id",
-            "databaseFieldName": "id"
+            "fieldName": "name",
+            "databaseFieldName": "name"
         },
         "defaultFetchStrategy": "ifk",
         "componentProps": {
@@ -8234,7 +9101,7 @@
                 "isArray": false,
                 "defaultValue": "",
                 "isPrimaryKey": true,
-                "isDisplayField": true,
+                "isDisplayField": false,
                 "defaultGeneratorFunction": null,
                 "validationFunctions": [],
                 "exclusionRules": [],
@@ -9335,6 +10202,94 @@
                     "backend": "\"Component\" field for the data_input_component table. This is a required field. Your entry must be an string data type."
                 }
             },
+            "name": {
+                "fieldNameFormats": {
+                    "frontend": "name",
+                    "backend": "name",
+                    "database": "name",
+                    "pretty": "Name",
+                    "component": "Name",
+                    "kebab": "name",
+                    "sqlFunctionRef": "p_name",
+                    "RestAPI": "name",
+                    "GraphQL": "name",
+                    "custom": "name"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:data_input_component:name",
+                "uniqueFieldId": "supabase_automation_matrix:dataInputComponent:name",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "dataInputComponent",
+                "databaseTable": "data_input_component",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Name\" field for dataInputComponent. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Name\" field for the data_input_component table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "messageBrokerInverse": {
+                "fieldNameFormats": {
+                    "frontend": "messageBrokerInverse",
+                    "backend": "message_broker_Inverse",
+                    "database": "ifk_message_broker",
+                    "pretty": "Message Broker Inverse",
+                    "component": "MessageBrokerInverse",
+                    "kebab": "message-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_message_broker",
+                    "RestAPI": "messageBrokerInverse",
+                    "GraphQL": "messageBrokerInverse",
+                    "custom": "messageBrokerInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:message_broker",
+                "uniqueEntityId": "supabase_automation_matrix:messageBroker",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "messageBroker",
+                    "databaseTable": "message_broker",
+                    "typeReference": "TypeBrand<AutomationEntity<'messageBroker'>[]>"
+                }
+            },
             "brokerInverse": {
                 "fieldNameFormats": {
                     "frontend": "brokerInverse",
@@ -9359,6 +10314,31 @@
                     "databaseTable": "broker",
                     "typeReference": "TypeBrand<AutomationEntity<'broker'>[]>"
                 }
+            },
+            "dataBrokerInverse": {
+                "fieldNameFormats": {
+                    "frontend": "dataBrokerInverse",
+                    "backend": "data_broker_Inverse",
+                    "database": "ifk_data_broker",
+                    "pretty": "Data Broker Inverse",
+                    "component": "DataBrokerInverse",
+                    "kebab": "data-brokerInverse",
+                    "sqlFunctionRef": "p_ifk_data_broker",
+                    "RestAPI": "dataBrokerInverse",
+                    "GraphQL": "dataBrokerInverse",
+                    "custom": "dataBrokerInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:data_broker",
+                "uniqueEntityId": "supabase_automation_matrix:dataBroker",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "dataBroker",
+                    "databaseTable": "data_broker",
+                    "typeReference": "TypeBrand<AutomationEntity<'dataBroker'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -9375,8 +10355,18 @@
         },
         "relationships": [
             {
+                "relatedTable": "message_broker",
+                "relatedColumn": "default_component",
+                "mainTableColumn": "id"
+            },
+            {
                 "relatedTable": "broker",
                 "relatedColumn": "custom_source_component",
+                "mainTableColumn": "id"
+            },
+            {
+                "relatedTable": "data_broker",
+                "relatedColumn": "default_component",
                 "mainTableColumn": "id"
             }
         ]
@@ -15532,7 +16522,7 @@
             "fieldName": "id",
             "databaseFieldName": "id"
         },
-        "defaultFetchStrategy": "m2mAndFk",
+        "defaultFetchStrategy": "fk",
         "componentProps": {
             "subComponent": "default",
             "variant": "default",
@@ -15742,12 +16732,12 @@
                 "entityName": "messageBroker",
                 "databaseTable": "message_broker",
                 "foreignKeyReference": {
-                    "table": "broker",
+                    "table": "data_broker",
                     "column": "id"
                 },
                 "description": {
-                    "frontend": "\"Broker Id\" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Broker.",
-                    "backend": "\"Broker Id\" field for the message_broker table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the broker table."
+                    "frontend": "\"Broker Id\" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a DataBroker.",
+                    "backend": "\"Broker Id\" field for the message_broker table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the data_broker table."
                 }
             },
             "defaultValue": {
@@ -15813,28 +16803,118 @@
                     "backend": "\"Default Value\" field for the message_broker table. This is an optional field. Your entry must be an string data type."
                 }
             },
-            "brokerReference": {
+            "defaultComponent": {
                 "fieldNameFormats": {
-                    "frontend": "brokerReference",
-                    "backend": "broker_reference",
-                    "database": "ref_broker",
-                    "pretty": "Broker Reference",
-                    "component": "BrokerReference",
-                    "kebab": "brokerReference",
-                    "sqlFunctionRef": "p_ref_broker",
-                    "RestAPI": "brokerReference",
-                    "GraphQL": "brokerReference",
-                    "custom": "brokerReference"
+                    "frontend": "defaultComponent",
+                    "backend": "default_component",
+                    "database": "default_component",
+                    "pretty": "Default Component",
+                    "component": "DefaultComponent",
+                    "kebab": "default-component",
+                    "sqlFunctionRef": "p_default_component",
+                    "RestAPI": "defaultComponent",
+                    "GraphQL": "defaultComponent",
+                    "custom": "defaultComponent"
                 },
-                "uniqueColumnId": "supabase_automation_matrix:broker:id",
-                "uniqueFieldId": "supabase_automation_matrix:broker:id",
+                "uniqueColumnId": "supabase_automation_matrix:public:message_broker:default_component",
+                "uniqueFieldId": "supabase_automation_matrix:messageBroker:defaultComponent",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "messageBroker",
+                "databaseTable": "message_broker",
+                "foreignKeyReference": {
+                    "table": "data_input_component",
+                    "column": "id"
+                },
+                "description": {
+                    "frontend": "\"Default Component\" field for messageBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.",
+                    "backend": "\"Default Component\" field for the message_broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the data_input_component table."
+                }
+            },
+            "dataBrokerReference": {
+                "fieldNameFormats": {
+                    "frontend": "dataBrokerReference",
+                    "backend": "data_broker_reference",
+                    "database": "ref_data_broker",
+                    "pretty": "Data Broker Reference",
+                    "component": "DataBrokerReference",
+                    "kebab": "data-brokerReference",
+                    "sqlFunctionRef": "p_ref_data_broker",
+                    "RestAPI": "dataBrokerReference",
+                    "GraphQL": "dataBrokerReference",
+                    "custom": "dataBrokerReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:data_broker:id",
+                "uniqueFieldId": "supabase_automation_matrix:dataBroker:id",
                 "type": "object",
                 "format": "single",
                 "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
                 "structure": {
                     "structure": "foreignKey",
-                    "databaseTable": "broker",
-                    "typeReference": "TypeBrand<AutomationEntity<'broker'>[]>"
+                    "databaseTable": "data_broker",
+                    "typeReference": "TypeBrand<AutomationEntity<'dataBroker'>[]>"
+                }
+            },
+            "dataInputComponentReference": {
+                "fieldNameFormats": {
+                    "frontend": "dataInputComponentReference",
+                    "backend": "data_input_component_reference",
+                    "database": "ref_data_input_component",
+                    "pretty": "Data Input Component Reference",
+                    "component": "DataInputComponentReference",
+                    "kebab": "data-input-componentReference",
+                    "sqlFunctionRef": "p_ref_data_input_component",
+                    "RestAPI": "dataInputComponentReference",
+                    "GraphQL": "dataInputComponentReference",
+                    "custom": "dataInputComponentReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:data_input_component:id",
+                "uniqueFieldId": "supabase_automation_matrix:dataInputComponent:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "data_input_component",
+                    "typeReference": "TypeBrand<AutomationEntity<'dataInputComponent'>[]>"
                 }
             },
             "messageTemplateReference": {
@@ -15877,7 +16957,12 @@
         "relationships": [
             {
                 "column": "broker_id",
-                "relatedTable": "broker",
+                "relatedTable": "data_broker",
+                "relatedColumn": "id"
+            },
+            {
+                "column": "default_component",
+                "relatedTable": "data_input_component",
                 "relatedColumn": "id"
             },
             {
@@ -16301,6 +17386,31 @@
                     "databaseTable": "message_broker",
                     "typeReference": "TypeBrand<AutomationEntity<'messageBroker'>[]>"
                 }
+            },
+            "recipeMessageInverse": {
+                "fieldNameFormats": {
+                    "frontend": "recipeMessageInverse",
+                    "backend": "recipe_message_Inverse",
+                    "database": "ifk_recipe_message",
+                    "pretty": "Recipe Message Inverse",
+                    "component": "RecipeMessageInverse",
+                    "kebab": "recipe-messageInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_message",
+                    "RestAPI": "recipeMessageInverse",
+                    "GraphQL": "recipeMessageInverse",
+                    "custom": "recipeMessageInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:recipe_message",
+                "uniqueEntityId": "supabase_automation_matrix:recipeMessage",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "recipeMessage",
+                    "databaseTable": "recipe_message",
+                    "typeReference": "TypeBrand<AutomationEntity<'recipeMessage'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -16318,6 +17428,11 @@
         "relationships": [
             {
                 "relatedTable": "message_broker",
+                "relatedColumn": "message_id",
+                "mainTableColumn": "id"
+            },
+            {
+                "relatedTable": "recipe_message",
                 "relatedColumn": "message_id",
                 "mainTableColumn": "id"
             }
@@ -17602,6 +18717,31 @@
                     "databaseTable": "recipe_function",
                     "typeReference": "TypeBrand<AutomationEntity<'recipeFunction'>[]>"
                 }
+            },
+            "recipeMessageInverse": {
+                "fieldNameFormats": {
+                    "frontend": "recipeMessageInverse",
+                    "backend": "recipe_message_Inverse",
+                    "database": "ifk_recipe_message",
+                    "pretty": "Recipe Message Inverse",
+                    "component": "RecipeMessageInverse",
+                    "kebab": "recipe-messageInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_message",
+                    "RestAPI": "recipeMessageInverse",
+                    "GraphQL": "recipeMessageInverse",
+                    "custom": "recipeMessageInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:recipe_message",
+                "uniqueEntityId": "supabase_automation_matrix:recipeMessage",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "recipeMessage",
+                    "databaseTable": "recipe_message",
+                    "typeReference": "TypeBrand<AutomationEntity<'recipeMessage'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -17645,6 +18785,11 @@
             {
                 "relatedTable": "recipe_function",
                 "relatedColumn": "recipe",
+                "mainTableColumn": "id"
+            },
+            {
+                "relatedTable": "recipe_message",
+                "relatedColumn": "recipe_id",
                 "mainTableColumn": "id"
             }
         ]
@@ -18994,6 +20139,379 @@
             },
             {
                 "column": "recipe",
+                "relatedTable": "recipe",
+                "relatedColumn": "id"
+            }
+        ]
+    },
+    "recipeMessage": {
+        "schemaType": "table",
+        "entityName": "recipeMessage",
+        "uniqueTableId": "supabase_automation_matrix:public:recipe_message",
+        "uniqueEntityId": "supabase_automation_matrix:recipeMessage",
+        "primaryKey": "id",
+        "primaryKeyMetadata": {
+            "type": "single",
+            "fields": ["id"],
+            "database_fields": ["id"],
+            "where_template": {
+                "id": null
+            }
+        },
+        "displayFieldMetadata": {
+            "fieldName": "id",
+            "databaseFieldName": "id"
+        },
+        "defaultFetchStrategy": "m2mAndFk",
+        "componentProps": {
+            "subComponent": "default",
+            "variant": "default",
+            "placeholder": "default",
+            "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default",
+            "onBlur": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default",
+            "numberType": "default"
+        },
+        "entityFields": {
+            "id": {
+                "fieldNameFormats": {
+                    "frontend": "id",
+                    "backend": "id",
+                    "database": "id",
+                    "pretty": "Id",
+                    "component": "Id",
+                    "kebab": "id",
+                    "sqlFunctionRef": "p_id",
+                    "RestAPI": "id",
+                    "GraphQL": "id",
+                    "custom": "id"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:recipe_message:id",
+                "uniqueFieldId": "supabase_automation_matrix:recipeMessage:id",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": true,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "recipeMessage",
+                "databaseTable": "recipe_message",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Id\" field for recipeMessage. This is a required field. Your entry must be an uuid data type.",
+                    "backend": "\"Id\" field for the recipe_message table. This is a required field. Your entry must be an uuid data type."
+                }
+            },
+            "messageId": {
+                "fieldNameFormats": {
+                    "frontend": "messageId",
+                    "backend": "message_id",
+                    "database": "message_id",
+                    "pretty": "Message Id",
+                    "component": "MessageId",
+                    "kebab": "message-id",
+                    "sqlFunctionRef": "p_message_id",
+                    "RestAPI": "messageId",
+                    "GraphQL": "messageId",
+                    "custom": "messageId"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:recipe_message:message_id",
+                "uniqueFieldId": "supabase_automation_matrix:recipeMessage:messageId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "recipeMessage",
+                "databaseTable": "recipe_message",
+                "foreignKeyReference": {
+                    "table": "message_template",
+                    "column": "id"
+                },
+                "description": {
+                    "frontend": "\"Message Id\" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a MessageTemplate.",
+                    "backend": "\"Message Id\" field for the recipe_message table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the message_template table."
+                }
+            },
+            "recipeId": {
+                "fieldNameFormats": {
+                    "frontend": "recipeId",
+                    "backend": "recipe_id",
+                    "database": "recipe_id",
+                    "pretty": "Recipe Id",
+                    "component": "RecipeId",
+                    "kebab": "recipe-id",
+                    "sqlFunctionRef": "p_recipe_id",
+                    "RestAPI": "recipeId",
+                    "GraphQL": "recipeId",
+                    "custom": "recipeId"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:recipe_message:recipe_id",
+                "uniqueFieldId": "supabase_automation_matrix:recipeMessage:recipeId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "recipeMessage",
+                "databaseTable": "recipe_message",
+                "foreignKeyReference": {
+                    "table": "recipe",
+                    "column": "id"
+                },
+                "description": {
+                    "frontend": "\"Recipe Id\" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "backend": "\"Recipe Id\" field for the recipe_message table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
+                }
+            },
+            "order": {
+                "fieldNameFormats": {
+                    "frontend": "order",
+                    "backend": "order",
+                    "database": "order",
+                    "pretty": "Order",
+                    "component": "Order",
+                    "kebab": "order",
+                    "sqlFunctionRef": "p_order",
+                    "RestAPI": "order",
+                    "GraphQL": "order",
+                    "custom": "order"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:public:recipe_message:order",
+                "uniqueFieldId": "supabase_automation_matrix:recipeMessage:order",
+                "dataType": "number",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "NUMBER_INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "smallint",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "number",
+                "enumValues": null,
+                "entityName": "recipeMessage",
+                "databaseTable": "recipe_message",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Order\" field for recipeMessage. This is an optional field. Your entry must be an number data type.",
+                    "backend": "\"Order\" field for the recipe_message table. This is an optional field. Your entry must be an number data type."
+                }
+            },
+            "messageTemplateReference": {
+                "fieldNameFormats": {
+                    "frontend": "messageTemplateReference",
+                    "backend": "message_template_reference",
+                    "database": "ref_message_template",
+                    "pretty": "Message Template Reference",
+                    "component": "MessageTemplateReference",
+                    "kebab": "message-templateReference",
+                    "sqlFunctionRef": "p_ref_message_template",
+                    "RestAPI": "messageTemplateReference",
+                    "GraphQL": "messageTemplateReference",
+                    "custom": "messageTemplateReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:message_template:id",
+                "uniqueFieldId": "supabase_automation_matrix:messageTemplate:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "message_template",
+                    "typeReference": "TypeBrand<AutomationEntity<'messageTemplate'>[]>"
+                }
+            },
+            "recipeReference": {
+                "fieldNameFormats": {
+                    "frontend": "recipeReference",
+                    "backend": "recipe_reference",
+                    "database": "ref_recipe",
+                    "pretty": "Recipe Reference",
+                    "component": "RecipeReference",
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:recipe:id",
+                "uniqueFieldId": "supabase_automation_matrix:recipe:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "recipe",
+                    "typeReference": "TypeBrand<AutomationEntity<'recipe'>[]>"
+                }
+            }
+        },
+        "entityNameFormats": {
+            "frontend": "recipeMessage",
+            "backend": "recipe_message",
+            "database": "recipe_message",
+            "pretty": "Recipe Message",
+            "component": "RecipeMessage",
+            "kebab": "recipe-message",
+            "sqlFunctionRef": "p_recipe_message",
+            "RestAPI": "recipeMessage",
+            "GraphQL": "recipeMessage",
+            "custom": "recipeMessage"
+        },
+        "relationships": [
+            {
+                "column": "message_id",
+                "relatedTable": "message_template",
+                "relatedColumn": "id"
+            },
+            {
+                "column": "recipe_id",
                 "relatedTable": "recipe",
                 "relatedColumn": "id"
             }

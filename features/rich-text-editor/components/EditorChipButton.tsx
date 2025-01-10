@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, ArrowRightToLine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Atom } from 'lucide-react';
 
 interface EditorChipButtonProps {
     editorId: string;
@@ -11,12 +10,12 @@ interface EditorChipButtonProps {
     hasSelection: boolean;
 }
 
-export const EditorChipButton: React.FC<EditorChipButtonProps> = ({
-    onInsertChip,
-    onConvertToChip,
-    hasSelection
-}) => {
-    const handleAction = () => {
+export const EditorChipButton: React.FC<EditorChipButtonProps> = ({ onInsertChip, onConvertToChip, hasSelection }) => {
+    const handleAction = (e: React.MouseEvent) => {
+        // Stop the event from bubbling up to the editor
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (hasSelection) {
             onConvertToChip();
         } else {
@@ -25,18 +24,21 @@ export const EditorChipButton: React.FC<EditorChipButtonProps> = ({
     };
 
     return (
-        <Button
-            variant='ghost'
-            size='sm'
+        <div 
+            role="button"
             onClick={handleAction}
-            className='absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100
-                      hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            onMouseDown={(e) => e.preventDefault()} // Prevent editor from losing focus
+            className="absolute top-2 right-3 cursor-pointer opacity-0 group-hover:opacity-100"
         >
-            {hasSelection ? (
-                <ArrowRightToLine className='h-4 w-4 text-neutral-950 dark:text-neutral-50' />
-            ) : (
-                <Plus className='h-4 w-4 text-neutral-950 dark:text-neutral-50' />
-            )}
-        </Button>
+            <Atom 
+                className="h-5 w-5 text-primary hover:text-primary/80 
+                          transition-all duration-300 ease-in-out
+                          hover:rotate-180 hover:scale-110 hover:h-6 hover:w-6
+                          hover:drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]
+                          active:scale-90 active:rotate-[170deg]" 
+            />
+        </div>
     );
 };
+
+

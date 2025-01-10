@@ -26,12 +26,11 @@ export const QuickRefSearchableSelect: React.FC<QuickRefSearchableSelectProps> =
 
     useFetchQuickRef(entityKey);
 
-    const { handleAddToSelection, quickReferenceRecords, setFetchMode, setSelectionMode, entityDisplayName } = useQuickRef(entityKey);
+    const { handleAddToSelection, quickReferenceRecords, setFetchMode, setSelectionMode, activeRecord, entityDisplayName } = useQuickRef(entityKey);
 
-    
     React.useEffect(() => {
-      setSelectionMode('multiple');
-  }, [setSelectionMode]);
+        setSelectionMode('multiple');
+    }, [setSelectionMode]);
 
     React.useEffect(() => {
         setFetchMode(fetchMode);
@@ -39,7 +38,7 @@ export const QuickRefSearchableSelect: React.FC<QuickRefSearchableSelectProps> =
 
     React.useEffect(() => {
         if (initialSelectedRecord) {
-          handleAddToSelection(initialSelectedRecord.recordKey);
+            handleAddToSelection(initialSelectedRecord.recordKey);
         }
     }, [initialSelectedRecord, onRecordChange, handleAddToSelection]);
 
@@ -57,12 +56,12 @@ export const QuickRefSearchableSelect: React.FC<QuickRefSearchableSelectProps> =
             options={options}
             value={initialSelectedRecord?.recordKey}
             onChange={(option) => {
-              const record = quickReferenceRecords?.find((r) => r.recordKey === option.value);
-              if (record) {
-                handleAddToSelection(record.recordKey);
-              }
-          }}
-          placeholder={selectText}
+                const record = quickReferenceRecords?.find((r) => r.recordKey === option.value);
+                if (record) {
+                    handleAddToSelection(record.recordKey);
+                }
+            }}
+            placeholder={selectText}
             searchPlaceholder={`Search ${entityPrettyName} Records...`}
         />
     );
