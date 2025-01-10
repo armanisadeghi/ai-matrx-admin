@@ -66,8 +66,7 @@ export default function BrokerSidebar({
             <ScrollArea className='flex-1'>
                 <AnimatePresence>
                     <BrokerRecordDisplay
-                        {...layoutProps}
-                        entitiesToHide={[]}
+                        unifiedLayoutProps={layoutProps}
                     />
                 </AnimatePresence>
             </ScrollArea>

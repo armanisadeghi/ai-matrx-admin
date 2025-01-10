@@ -466,9 +466,6 @@ export const parseMultipleMatrxRecordIds = (keys: MatrxRecordId[]): Record<AllEn
 };
 
 export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): MatrxRecordId => {
-    utilsLogger.log('debug', 'createRecordKey called', { record }, undefined, 'recordKey');
-    utilsLogger.log('debug', 'Metadata:', { metadata }, undefined, 'recordKey');
-
     const key = metadata.database_fields
         .map((field, index) => {
             const frontendField = metadata.fields[index];

@@ -1,38 +1,37 @@
 import React from 'react';
 import { useRecipe } from './useRecipe';
-
-interface MessageTemplate {
-    id: string;
-    role: 'system' | 'user' | 'assistant';
-    type: 'text' | 'image' | 'video';
-    content: string;
-}
+import { MessageTemplateDataOptional } from '@/types';
 
 export function useMessageTemplates() {
     const { 
-        selectedRecipeMessages,
-        selectedMessages 
+        recipeMessages,
+        messages 
     } = useRecipe();
 
-    const orderedMessages = React.useMemo(() => {
-        const messageMap = new Map(
-            selectedMessages.map(message => [message.id, message])
-        );
+    console.log('Templates Hook:', { recipeMessages, messages }); // Let's see what we're getting
 
-        return selectedRecipeMessages
-            .map(recipeMessage => ({
-                message: messageMap.get(recipeMessage.messageId),
-                order: recipeMessage.order
-            }))
-            .filter(item => item.message)
+    const orderedMessages = React.useMemo(() => {
+        if (!recipeMessages?.length || !messages?.length) {
+            return [];
+        }
+
+        return recipeMessages
             .sort((a, b) => a.order - b.order)
-            .map(item => ({
-                id: item.message!.id,
-                role: item.message!.role,
-                type: item.message!.type,
-                content: item.message!.content
-            })) as MessageTemplate[];
-    }, [selectedRecipeMessages, selectedMessages]);
+            .map(recipeMessage => {
+                const message = messages.find(m => m.id === recipeMessage.messageId);
+                if (!message) return null;
+                
+                return {
+                    id: message.id,
+                    role: message.role,
+                    type: message.type,
+                    content: message.content
+                };
+            })
+            .filter(Boolean) as MessageTemplateDataOptional[];
+    }, [recipeMessages, messages]);
+
+    console.log('Ordered Messages:', orderedMessages); // Let's see what we're producing
 
     return {
         messages: orderedMessages

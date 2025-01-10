@@ -3,7 +3,17 @@
 import { createSelector, Selector } from '@reduxjs/toolkit';
 import { EntityKeys, EntityData, EntityAnyFieldKey } from '@/types/entityTypes';
 import { RootState } from '@/lib/redux/store';
-import { EntityDataWithId, EntityOperationMode, EntityState, EntityStatus, FlexibleQueryOptions, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
+import {
+    EntityDataWithId,
+    EntityOperationMode,
+    EntityRecordArray,
+    EntityRecordMap,
+    EntityState,
+    EntityStateField,
+    EntityStatus,
+    FlexibleQueryOptions,
+    MatrxRecordId,
+} from '@/lib/redux/entity/types/stateTypes';
 import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from '@/lib/redux/entity/utils/stateHelpUtils';
 import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
 import { mapFieldDataToFormField } from '@/lib/redux/entity/utils/tempFormHelper';
@@ -23,7 +33,14 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return state.entities[entityKey] || ({} as EntityState<TEntity>);
     };
 
-    const selectAllRecords = createSelector([selectEntity], (entity) => entity?.records || {});
+    const selectAllRecords = createSelector([selectEntity], (entity): EntityRecordMap<TEntity> => entity?.records || ({} as EntityRecordMap<TEntity>));
+
+    const selectRecordsByFieldValue = (fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any) =>
+        createSelector([selectAllRecords], (records): EntityRecordArray<TEntity> => {
+            const matchingRecords = Object.values(records).filter((record) => record[fieldName] === fieldValue);
+
+            return matchingRecords;
+        });
 
     const selectEntityDisplayName = createSelector([selectEntity], (entity) => {
         return entity.entityMetadata.displayName;
@@ -32,6 +49,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectRecordByKey = createSelector([selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey], (entity, recordKey) => {
         return entity.records[recordKey] || null;
     });
+
+    const selectRecordsByKeys = createSelector(
+        [
+            selectEntity,
+            (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys
+        ],
+        (entity, recordKeys) => {
+            return recordKeys.map(recordKey => entity.records[recordKey] || null)
+                .filter(Boolean); // Ensure stable reference and remove nulls
+        }
+    );
 
     const selectFieldByKey = createSelector(
         [selectEntity, (_: RootState, recordKey: MatrxRecordId, field: string) => ({ recordKey, field })],
@@ -89,6 +117,19 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
         }
     );
+    
+    const selectMatrxRecordIdsBySimpleKeys = createSelector(
+        [
+            selectEntity,
+            (_: RootState, ids: MatrxRecordId[]) => ids
+        ],
+        (entity, ids): MatrxRecordId[] => {
+            return ids.map(id => 
+                createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id })
+            );
+        }
+    );
+
     const selectMatrxRecordIdFromValue = createSelector([selectEntity, (_: RootState, value: any) => value], (entity, value): MatrxRecordId | null => {
         if (value === undefined || value === null) {
             return null;
@@ -452,13 +493,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectCreatePayload = createSelector(
-        [
-            (state: RootState, recordId: MatrxRecordId) => selectChangeComparisonById(state, recordId),
-            (_: RootState, recordId: MatrxRecordId) => recordId
-        ],
+        [(state: RootState, recordId: MatrxRecordId) => selectChangeComparisonById(state, recordId), (_: RootState, recordId: MatrxRecordId) => recordId],
         (changeComparison, recordId) => {
             const { entityName, changedFieldData } = changeComparison;
-            
+
             return {
                 entityNameAnyFormat: entityName,
                 entityName: entityName,
@@ -466,7 +504,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                 data: changedFieldData,
             } as FlexibleQueryOptions;
         }
-    );    // const selectCreatePayload = createSelector(
+    ); // const selectCreatePayload = createSelector(
     //     [selectEntity, (_: RootState, recordId: MatrxRecordId) => recordId, (state: RootState) => state],
     //     (entity, recordId, state) => {
     //         const changedFieldData = selectChangedFieldData(state, recordId);
@@ -580,7 +618,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectIsLoading = createSelector([selectDataState], (dataState) => dataState.isLoading);
-
 
     // Pagination with additional computed properties
     const selectPaginationExtended = createSelector([selectPaginationInfo, selectFilteredRecords], (pagination, filteredRecords) => ({
@@ -926,5 +963,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectFieldDisplayNames,
 
         selectFieldNameGroupsWithHidden,
+
+        selectRecordsByFieldValue,
+        selectMatrxRecordIdsBySimpleKeys,
+        selectRecordsByKeys,
     };
 };

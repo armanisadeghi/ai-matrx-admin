@@ -3,35 +3,18 @@ import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, Imper
 import { Button, Card } from '@/components/ui';
 import { Plus, Expand, Minimize2 } from 'lucide-react';
 import { EditorWithProviders } from '@/features/rich-text-editor/withManagedEditor';
+import { MessageTemplateDataOptional } from '@/types';
+import { useMessageTemplates } from '../hooks/useMessageTemplates';
 
-interface MessageTemplate {
-    id: string;
-    role: 'system' | 'user' | 'assistant';
-    type: 'text' | 'image' | 'video';
-    content: string;
-}
-
-const INITIAL_PANELS: MessageTemplate[] = [
+const INITIAL_PANELS: MessageTemplateDataOptional[] = [
     {
         id: 'system-1',
         role: 'system',
         type: 'text',
-        content: 'Welcome to the chat! How can I help you today?',
+        content: '',
     },
     {
         id: 'user-1',
-        role: 'user',
-        type: 'text',
-        content: 'I need help with my order.',
-    },
-    {
-        id: 'assistant-1',
-        role: 'assistant',
-        type: 'text',
-        content: 'Sure! What is your order number?',
-    },
-    {
-        id: 'user-2',
         role: 'user',
         type: 'text',
         content: '',
@@ -39,14 +22,15 @@ const INITIAL_PANELS: MessageTemplate[] = [
 ];
 
 interface EditorContainerProps {
-    messages?: MessageTemplate[];
-    onMessageAdd?: (message: MessageTemplate) => void;
+    onMessageAdd?: (message: MessageTemplateDataOptional) => void;
 }
 
-function EditorContainer({ messages = INITIAL_PANELS, onMessageAdd }: EditorContainerProps) {
+function EditorContainer({ onMessageAdd }: EditorContainerProps) {
+    const { messages } = useMessageTemplates();
+    const displayMessages = messages.length ? messages : INITIAL_PANELS;
+    
     const [collapsedPanels, setCollapsedPanels] = useState<Set<string>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<string>>(new Set());
-    const [sections, setSections] = useState<MessageTemplate[]>(messages);
     const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
     const panelRefs = useRef<Map<string, ImperativePanelHandle>>(new Map());
 
@@ -96,19 +80,18 @@ function EditorContainer({ messages = INITIAL_PANELS, onMessageAdd }: EditorCont
     };
 
     const addNewSection = () => {
-        const lastSection = sections[sections.length - 1];
+        const lastSection = displayMessages[displayMessages.length - 1];
         const lastRole = lastSection.role;
         const nextRole = lastRole === 'user' ? 'assistant' : 'user';
-        const roleCount = sections.filter((s) => s.role === nextRole).length + 1;
+        const roleCount = displayMessages.filter((s) => s.role === nextRole).length + 1;
 
-        const newSection: MessageTemplate = {
+        const newSection: MessageTemplateDataOptional = {
             id: `${nextRole}-${roleCount}`,
             role: nextRole,
             type: 'text',
             content: '',
         };
 
-        setSections([...sections, newSection]);
         onMessageAdd?.(newSection);
     };
 
@@ -118,9 +101,9 @@ function EditorContainer({ messages = INITIAL_PANELS, onMessageAdd }: EditorCont
             className="h-full"
             ref={panelGroupRef}
         >
-            {sections.map((section, index) => {
-                const isLastPanel = index === sections.length - 1;
-                const remainingSize = 100 - (sections.length - 1) * 10;
+            {displayMessages.map((section, index) => {
+                const isLastPanel = index === displayMessages.length - 1;
+                const remainingSize = 100 - (displayMessages.length - 1) * 10;
                 const isCollapsed = collapsedPanels.has(section.id);
 
                 return (
@@ -173,7 +156,7 @@ function EditorContainer({ messages = INITIAL_PANELS, onMessageAdd }: EditorCont
                 onClick={addNewSection}
             >
                 <Plus className="h-4 w-4 mr-2" />
-                Add {sections[sections.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
+                Add {displayMessages[displayMessages.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
             </Button>
         </PanelGroup>
     );
