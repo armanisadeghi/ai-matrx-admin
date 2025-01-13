@@ -24,6 +24,12 @@ const trace = "SAGA HANDLERS";
 const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
 
+
+
+
+
+
+
 function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>(
     {
         entityKey,
@@ -33,6 +39,11 @@ function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>(
         unifiedDatabaseObject
     }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneWithFkIfk', entityKey);
+
+
+    // ============ See withFullRelationConversion ============
+
+
 
     try {
         const {data, error} = yield api
@@ -73,6 +84,13 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOne', entityKey);
     entityLogger.log('debug', 'Starting fetchOne', action.payload);
+
+
+    // ============ See withFullRelationConversion ============
+
+
+
+
 
     // const relationships = yield select(selectEntityRelationships, entityKey);
 
@@ -245,7 +263,7 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     action: PayloadAction<GetOrFetchSelectedRecordsPayload>,
     unifiedDatabaseObject?: UnifiedDatabaseObject,
 ) {
-    const entityLogger = EntityLogger.createLoggerWithDefaults('handleGetOrFetchSelectedRecords', entityKey);
+    const entityLogger = EntityLogger.createLoggerWithDefaults('HANDLE GET OR FETCH SELECTED RECORDS', entityKey);
     const entitySelectors = createEntitySelectors(entityKey);
 
     // This is a function, not an action.
@@ -257,7 +275,7 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
 
 
     try {
-        entityLogger.log('debug', 'Starting', action.payload);
+        entityLogger.log('info', 'Starting', action.payload);
 
         const {existingRecords, recordIdsNotInState, primaryKeysToFetch} = yield select(
             entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
@@ -293,11 +311,11 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
                     const payload: FetchOneWithFkIfkPayload = {
                         matrxRecordId: recordId,
                     };
-                    entityLogger.log('debug', 'fetchMode is fkIfk. Triggering fetchOneWithFkIfk with Payload:', payload);
+                    entityLogger.log('info', 'fetchMode is fkIfk. Triggering fetchOneWithFkIfk with Payload:', payload);
                     yield put(actions.fetchOneWithFkIfk(payload));
                 }
             } else {
-                entityLogger.log('debug', 'fetchMode is not fkIfk. Using fetchSelectedRecords');
+                entityLogger.log('info', 'fetchMode is not fkIfk. Using fetchSelectedRecords');
                 yield put(actions.fetchSelectedRecords(queryOptions));
             }
         }

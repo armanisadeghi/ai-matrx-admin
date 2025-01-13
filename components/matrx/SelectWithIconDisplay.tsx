@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, X } from "lucide-react";
 import { AdvancedTooltip } from "./Tooltip";
+import { cn } from "@/utils";
 
 type Item = {
   icon: React.ElementType;
@@ -13,24 +14,30 @@ type Item = {
 
 type SelectWithIconDisplayProps = {
   items: Item[];
+  value?: Item[];
   onChange?: (selectedItems: Item[]) => void;
   placeholder?: string;
   maxHeight?: string;
   className?: string;
+  disabled?: boolean;
 };
 
-const SelectWithIconDisplay = ({
+const SelectWithIconDisplay = forwardRef<HTMLElement, SelectWithIconDisplayProps>(({
   items,
+  value,
   onChange,
   placeholder = "Select items...",
   maxHeight = "max-h-60",
   className = "",
-}: SelectWithIconDisplayProps) => {
+  disabled = false,
+}, ref) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+  const [internalSelectedItems, setInternalSelectedItems] = useState<Item[]>([]);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedItems = value !== undefined ? value : internalSelectedItems;
 
   useEffect(() => {
     const updatePosition = () => {
@@ -73,32 +80,36 @@ const SelectWithIconDisplay = ({
   }, []);
 
   const toggleItem = (item: Item) => {
-    setSelectedItems((prev) => {
-      const newItems = prev.find((i) => i.value === item.value)
-        ? prev.filter((i) => i.value !== item.value)
-        : [...prev, item];
+    if (disabled) return;
+    const newItems = selectedItems.find((i) => i.value === item.value)
+      ? selectedItems.filter((i) => i.value !== item.value)
+      : [...selectedItems, item];
 
-      onChange?.(newItems);
-      return newItems;
-    });
+    if (value === undefined) {
+      setInternalSelectedItems(newItems);
+    }
+    onChange?.(newItems);
   };
 
   return (
-    <div className={`w-full space-y-3 ${className}`}>
+    <div ref={ref as React.Ref<HTMLDivElement>} className={`w-full space-y-3 ${className}`}>
       {/* Select Button */}
       <div className="relative">
         <button
           ref={triggerRef}
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full min-w-0 bg-elevation1 rounded-md p-2 text-sm 
-                    flex items-center justify-between border border-elevation3"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          className={cn(
+            "w-full min-w-0 bg-elevation1 rounded-md p-2 text-sm flex items-center justify-between border border-elevation3",
+            disabled && "opacity-50 cursor-not-allowed"
+          )}
         >
           <span className="truncate text-sm">{placeholder}</span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
         </button>
 
         {/* Dropdown Menu Portal */}
-        {isOpen && createPortal(
+        {isOpen && !disabled && createPortal(
           <div
             ref={dropdownRef}
             style={{
@@ -120,6 +131,7 @@ const SelectWithIconDisplay = ({
                 <button
                   key={item.value}
                   onClick={() => toggleItem(item)}
+                  disabled={disabled}
                   className="w-full px-3 py-2 text-left text-sm
                            hover:bg-elevation3/50 flex items-center justify-between
                            first:rounded-t-md last:rounded-b-md"
@@ -150,9 +162,11 @@ const SelectWithIconDisplay = ({
               >
                 <button
                   onClick={() => toggleItem(item)}
-                  className="flex items-center justify-center p-1.5 rounded-md
-                           opacity-70 hover:opacity-100 transition-all duration-200
-                           group relative"
+                  disabled={disabled}
+                  className={cn(
+                    "flex items-center justify-center p-1.5 rounded-md opacity-70 hover:opacity-100 transition-all duration-200 group relative",
+                    disabled && "cursor-not-allowed"
+                  )}
                   aria-label={`Remove ${item.label}`}
                 >
                   <Icon className="w-5 h-5 group-hover:text-destructive transition-colors" />
@@ -170,6 +184,8 @@ const SelectWithIconDisplay = ({
       )}
     </div>
   );
-};
+});
+
+SelectWithIconDisplay.displayName = 'SelectWithIconDisplay';
 
 export default SelectWithIconDisplay;

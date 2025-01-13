@@ -32,6 +32,8 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
     const hasOnlyNewRecords = useHasOnlyNewRecords(selectedRecordIds);
     const isEqual = useAreArraysEqual(lastProcessedIds, selectedRecordIds);
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
+    const activeRecord = useAppSelector(selectors.selectActiveRecord);
+    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
 
     const payload: GetOrFetchSelectedRecordsPayload = React.useMemo(
         () => ({
@@ -113,6 +115,8 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         setFetchMode,
         quickReferenceRecords,
         selectedRecordIds,
+        activeRecord,
+        activeRecordId,
     }), [
         selectionMode,
         handleRecordSelect,
@@ -120,6 +124,8 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         setFetchMode,
         quickReferenceRecords,
         selectedRecordIds,
+        activeRecord,
+        activeRecordId,
     ]);
 }
 

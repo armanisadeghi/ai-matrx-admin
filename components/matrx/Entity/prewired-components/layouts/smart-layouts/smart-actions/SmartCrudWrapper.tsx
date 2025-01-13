@@ -31,72 +31,88 @@ export interface SmartCrudWrapperProps {
     className?: string;
 }
 
+const defaultOptions = {
+    allowCreate: true,
+    allowEdit: true,
+    allowCancel: true,
+    allowDelete: true,
+    allowRefresh: true,
+    showConfirmation: true,
+};
+
+const defaultLayout = {
+    buttonsPosition: 'top' as const,
+    buttonLayout: 'row' as const,
+    buttonSize: 'default' as ComponentSize,
+    buttonSpacing: 'normal' as ComponentDensity,
+};
+
 export const SmartCrudWrapper = ({
     entityKey,
     recordId,
     children,
-    options = {
-        allowCreate: true,
-        allowEdit: true,
-        allowCancel: true,
-        allowDelete: true,
-        allowRefresh: true,
-        showConfirmation: true,
-    },
-    layout = {
-        buttonsPosition: 'top',
-        buttonLayout: 'row',
-        buttonSize: 'default',
-        buttonSpacing: 'normal',
-    },
+    options,
+    layout,
     className,
 }: SmartCrudWrapperProps) => {
+    // Merge provided options with defaults
+    const mergedOptions = {
+        ...defaultOptions,
+        ...(options || {}),
+    };
+
+    // Merge provided layout with defaults
+    const mergedLayout = {
+        ...defaultLayout,
+        ...(layout || {}),
+    };
+
     const getButtonsWithProps = (hideText: boolean = false) => (
         <>
-            {options.allowCreate && (
+            {mergedOptions.allowCreate && (
                 <SmartNewButton
                     entityKey={entityKey}
                     recordId={recordId}
-                    size={hideText ? 'icon' : layout.buttonSize}
+                    size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
                 />
             )}
-            {options.allowEdit && (
+            {mergedOptions.allowEdit && (
                 <SmartEditButton
                     entityKey={entityKey}
                     recordId={recordId}
-                    size={hideText ? 'icon' : layout.buttonSize}
+                    size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
                 />
             )}
             <SmartSaveButton
                 entityKey={entityKey}
                 recordId={recordId}
-                size={hideText ? 'icon' : layout.buttonSize}
+                size={hideText ? 'icon' : mergedLayout.buttonSize}
                 hideText={hideText}
-                showConfirmation={options.showConfirmation}
+                showConfirmation={mergedOptions.showConfirmation}
             />
-            {options.allowCancel && (
+            {mergedOptions.allowCancel && (
                 <SmartCancelButton
                     entityKey={entityKey}
                     recordId={recordId}
-                    size={hideText ? 'icon' : layout.buttonSize}
+                    size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
                 />
             )}
-            {options.allowDelete && (
+            {mergedOptions.allowDelete && (
                 <SmartDeleteButton
                     entityKey={entityKey}
                     recordId={recordId}
-                    size={hideText ? 'icon' : layout.buttonSize}
+                    size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
                 />
             )}
-            {options.allowRefresh && (
+            {mergedOptions.allowRefresh && (
                 <SmartRefreshButton
                     entityKey={entityKey}
                     recordId={recordId}
-                    size={hideText ? 'icon' : layout.buttonSize}
+                    size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
                 />
             )}
@@ -104,7 +120,7 @@ export const SmartCrudWrapper = ({
     );
 
     const space = () => {
-        const baseSpace = layout.buttonSpacing === 'compact' ? 1 : layout.buttonSpacing === 'comfortable' ? 4 : 2;
+        const baseSpace = mergedLayout.buttonSpacing === 'compact' ? 1 : mergedLayout.buttonSpacing === 'comfortable' ? 4 : 2;
 
         return {
             padding: baseSpace,
@@ -118,7 +134,7 @@ export const SmartCrudWrapper = ({
         return (
             <div className={cn(`p-${spacing.padding}`, 'touch-none')}>
                 <LoadingButtonGroup
-                    className={cn(layout.buttonLayout === 'column' && 'flex-col', 'gap-2')}
+                    className={cn(mergedLayout.buttonLayout === 'column' && 'flex-col', 'gap-2')}
                     gap={spacing.gap}
                 >
                     {getButtonsWithProps()}
@@ -136,17 +152,17 @@ export const SmartCrudWrapper = ({
             className={cn(
                 'flex min-w-0',
                 {
-                    'flex-row gap-4': layout.buttonsPosition === 'left',
-                    'flex-row-reverse gap-4': layout.buttonsPosition === 'right',
-                    'flex-col-reverse gap-2': layout.buttonsPosition === 'bottom',
-                    'flex-col gap-2': layout.buttonsPosition === 'top',
+                    'flex-row gap-4': mergedLayout.buttonsPosition === 'left',
+                    'flex-row-reverse gap-4': mergedLayout.buttonsPosition === 'right',
+                    'flex-col-reverse gap-2': mergedLayout.buttonsPosition === 'bottom',
+                    'flex-col gap-2': mergedLayout.buttonsPosition === 'top',
                 },
                 className
             )}
         >
-            {['top', 'left'].includes(layout.buttonsPosition) && <ButtonContainer />}
+            {['top', 'left'].includes(mergedLayout.buttonsPosition) && <ButtonContainer />}
             <div className='min-w-0 flex-1'>{children}</div>
-            {['bottom', 'right'].includes(layout.buttonsPosition) && <ButtonContainer />}
+            {['bottom', 'right'].includes(mergedLayout.buttonsPosition) && <ButtonContainer />}
         </div>
     );
 };

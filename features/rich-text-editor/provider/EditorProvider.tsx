@@ -6,10 +6,12 @@ import { getAllColorOptions, getNextAvailableColor } from '../utils/colorUitls';
 import { v4 as uuidv4 } from 'uuid';
 import { replaceChipsWithStringValues } from '../utils/editorStateUtils';
 import { chipSyncManager } from '../utils/ChipUpdater';
+import { useEditorLayout } from './hooks/useEditorLayout';
+import { useEditorRegistration } from './hooks/useEditorRegistration';
 
 export interface LayoutMetadata {
-    position: string | number; // Generic position identifier (could be order, location, etc)
-    type?: string; // Generic type identifier (could be role, purpose, etc)
+    position: string | number;
+    type?: string;
     isVisible: boolean;
 }
 
@@ -19,10 +21,10 @@ export interface EditorState {
     plainTextContent: string;
     chipData: ChipData[];
     colorAssignments: Map<string, string>;
-    layout?: LayoutMetadata; // New optional layout field
+    layout?: LayoutMetadata;
 }
 
-type EditorStates = Map<string, EditorState>;
+export type EditorStates = Map<string, EditorState>;
 
 export interface EditorContextValue {
     // State getters
@@ -34,25 +36,28 @@ export interface EditorContextValue {
     isEditorRegistered: (editorId: string) => boolean; // New method
 
     // Editor-specific operations
+    plainTextContent: (editorId: string) => string;
+    setPlainTextContent: (editorId: string, content: string) => void;
+
+    // Chip operations
     setChipCounter: (editorId: string, value: number) => void;
     incrementChipCounter: (editorId: string) => void;
     decrementChipCounter: (editorId: string) => void;
     setDraggedChip: (editorId: string, chip: HTMLElement | null) => void;
-    setPlainTextContent: (editorId: string, content: string) => void;
     setChipData: (editorId: string, data: ChipData[]) => void;
-    setColorAssignments: (editorId: string, assignments: Map<string, string>) => void;
-
-    // Chip operations
     createNewChipData: (editorId: string, requestOptions?: ChipRequestOptions) => ChipData;
     addChipData: (editorId: string, data: ChipData) => void;
     removeChipData: (editorId: string, chipId: string) => void;
     updateChipData: (editorId: string, chipId: string, updates: Partial<ChipData>) => void;
     getTextWithChipsReplaced: (editorId: string, showTokenIds?: boolean) => string;
+    generateLabel: (editorId: string, requestOptions?: ChipRequestOptions) => string;
 
-    // Color operations
+    // Chip Color operations
     getColorForChip: (editorId: string, chipId: string) => string | undefined;
     getColorOptions: () => ColorOption[];
     assignColorToChip: (editorId: string, chipId: string, color: string) => void;
+    setColorAssignments: (editorId: string, assignments: Map<string, string>) => void;
+    getNextColor: (editorId: string) => string;
 
     // New layout management methods
     setEditorLayout: (editorId: string, layout: LayoutMetadata) => void;
@@ -61,11 +66,10 @@ export interface EditorContextValue {
     getVisibleEditors: () => string[];
     getEditorsByPosition: () => Array<{ id: string; layout: LayoutMetadata }>;
     setEditorVisibility: (editorId: string, isVisible: boolean) => void;
-    getNextColor: (editorId: string) => string;
-    generateLabel: (editorId: string, requestOptions?: ChipRequestOptions) => string;
+    moveEditor: (fromIndex: number, toIndex: number) => void;
 }
 
-const getInitialEditorState = (): EditorState => ({
+export const getInitialEditorState = (): EditorState => ({
     chipCounter: 0,
     draggedChip: null,
     plainTextContent: '',
@@ -73,71 +77,16 @@ const getInitialEditorState = (): EditorState => ({
     colorAssignments: new Map(),
 });
 
-
-const useEditorRegistration = (editors: EditorStates, setEditors: (updater: (prev: EditorStates) => EditorStates) => void) => {
-    const registrationRef = useRef(new Set<string>());
-    
-    const registerEditor = useCallback((editorId: string, initialLayout?: LayoutMetadata) => {
-        if (registrationRef.current.has(editorId)) {
-            console.log('Skipping duplicate registration:', editorId);
-            return;
-        }
-
-        console.log('Registering editor:', editorId);
-        registrationRef.current.add(editorId);
-        
-        setEditors(prev => {
-            if (prev.has(editorId)) return prev;
-            const next = new Map(prev);
-            const initialState = getInitialEditorState();
-            if (initialLayout) {
-                initialState.layout = initialLayout;
-            }
-            next.set(editorId, initialState);
-            return next;
-        });
-    }, [setEditors]);
-
-    const unregisterEditor = useCallback((editorId: string) => {
-        if (!registrationRef.current.has(editorId)) {
-            console.log('Skipping unregistration of unknown editor:', editorId);
-            return;
-        }
-
-        console.log('Unregistering editor:', editorId);
-        registrationRef.current.delete(editorId);
-        
-        setEditors(prev => {
-            const next = new Map(prev);
-            next.delete(editorId);
-            return next;
-        });
-    }, [setEditors]);
-
-    const isEditorRegistered = useCallback((editorId: string) => {
-        return registrationRef.current.has(editorId);
-    }, []);
-
-    return {
-        registerEditor,
-        unregisterEditor,
-        isEditorRegistered
-    };
-};
-
-
-
 const EditorContext = createContext<EditorContextValue | null>(null);
 
 export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [editors, setEditors] = useState<EditorStates>(new Map());
-    const { 
-        registerEditor, 
-        unregisterEditor, 
-        isEditorRegistered 
-    } = useEditorRegistration(editors, setEditors);
+    const { registerEditor, unregisterEditor, isEditorRegistered } = useEditorRegistration(editors, setEditors);
 
-    // const isEditorRegistered = useCallback((editorId: string) => editors.has(editorId), [editors]);
+    const { setEditorLayout, updateEditorLayout, getEditorLayout, getVisibleEditors, getEditorsByPosition, setEditorVisibility, moveEditor } = useEditorLayout(
+        editors,
+        setEditors
+    );
 
     const getEditorState = useCallback(
         (editorId: string) => {
@@ -149,100 +98,6 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         },
         [editors]
     );
-
-    const setEditorLayout = useCallback((editorId: string, layout: LayoutMetadata) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, { ...current, layout });
-            return next;
-        });
-    }, []);
-
-    const updateEditorLayout = useCallback((editorId: string, updates: Partial<LayoutMetadata>) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current || !current.layout) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, {
-                ...current,
-                layout: { ...current.layout, ...updates },
-            });
-            return next;
-        });
-    }, []);
-
-    const getEditorLayout = useCallback(
-        (editorId: string) => {
-            return editors.get(editorId)?.layout;
-        },
-        [editors]
-    );
-
-    const getVisibleEditors = useCallback(() => {
-        return Array.from(editors.entries())
-            .filter(([_, state]) => state.layout?.isVisible)
-            .map(([id]) => id);
-    }, [editors]);
-
-    const getEditorsByPosition = useCallback(() => {
-        return Array.from(editors.entries())
-            .filter(([_, state]) => state.layout)
-            .map(([id, state]) => ({
-                id,
-                layout: state.layout!,
-            }))
-            .sort((a, b) => {
-                // Handle different position types
-                const posA = a.layout.position;
-                const posB = b.layout.position;
-
-                if (typeof posA === 'number' && typeof posB === 'number') {
-                    return posA - posB;
-                }
-                return String(posA).localeCompare(String(posB));
-            });
-    }, [editors]);
-
-    const setEditorVisibility = useCallback(
-        (editorId: string, isVisible: boolean) => {
-            updateEditorLayout(editorId, { isVisible });
-        },
-        [updateEditorLayout]
-    );
-
-    // // Enhanced registerEditor to optionally accept initial layout
-    // const registerEditor = useCallback((editorId: string, initialLayout?: LayoutMetadata) => {
-    //     console.log('Registering editor:', editorId);
-    //     setEditors((prev) => {
-    //         if (prev.has(editorId)) {
-    //             console.log('Editor already registered:', editorId);
-    //             return prev;
-    //         }
-    //         console.log('Creating new editor state for:', editorId);
-    //         const next = new Map(prev);
-    //         const initialState = getInitialEditorState();
-    //         if (initialLayout) {
-    //             initialState.layout = initialLayout;
-    //         }
-    //         next.set(editorId, initialState);
-    //         console.log('Current editors after registration:', Array.from(next.keys()));
-    //         return next;
-    //     });
-    // }, []);
-
-    // const unregisterEditor = useCallback((editorId: string) => {
-    //     console.log('Unregistering editor:', editorId);
-    //     setEditors((prev) => {
-    //         const next = new Map(prev);
-    //         next.delete(editorId);
-    //         console.log('Current editors after unregistration:', Array.from(next.keys()));
-    //         return next;
-    //     });
-    // }, []);
 
     const updateEditorState = useCallback((editorId: string, updates: Partial<EditorState>) => {
         setEditors((prev) => {
@@ -290,6 +145,14 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             updateEditorState(editorId, { draggedChip: chip });
         },
         [updateEditorState]
+    );
+
+    const plainTextContent = useCallback(
+        (editorId: string) => {
+            const state = getEditorState(editorId);
+            return state.plainTextContent;
+        },
+        [getEditorState]
     );
 
     const setPlainTextContent = useCallback(
@@ -482,6 +345,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         incrementChipCounter,
         decrementChipCounter,
         setDraggedChip,
+
+        plainTextContent,
         setPlainTextContent,
         setChipData,
         setColorAssignments,
@@ -505,6 +370,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         getVisibleEditors,
         getEditorsByPosition,
         setEditorVisibility,
+        moveEditor,
     };
 
     return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
@@ -517,3 +383,6 @@ export const useEditorContext = () => {
     }
     return context;
 };
+
+// This might have been a great idea that wasn't finished.
+// https://claude.ai/chat/61703be2-4230-4ce9-9f44-5317640ddf5a

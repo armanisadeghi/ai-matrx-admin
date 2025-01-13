@@ -34,7 +34,7 @@ export { default as EntityDropdownMenu } from './other-components/EntityDropdown
 export { default as EntityImageDisplay } from './field-components/EntityImageDisplay';
 export { default as EntityInput } from './field-components/EntityInput';
 export { default as EntityJsonEditor } from './field-components/EntityJsonEditor';
-export { default as EntityNumberInput } from './field-components/EntityNumberInput';
+export { default as EntityNumberInput } from './field-components/concepts/number-inputs/EntityNumberInput';
 export { default as EntityPhoneInput } from './field-components/EntityPhoneInput';
 export { default as EntityRadioGroup } from './field-components/EntityRadioGroup';
 export { default as EntitySearchInput } from './field-components/EntitySearchInput';

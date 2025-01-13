@@ -9,6 +9,7 @@ import ChipSearchUtility from '@/features/rich-text-editor/components/ChipSearch
 import { DebugStats } from '@/components/debug/debug-stats';
 import { InspectHtmlUtil } from '@/features/rich-text-editor/components/InspectionComponents';
 import { useMeasure } from "@uidotdev/usehooks";
+import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 
 interface EditorTestPageProps {
     editorId: string;
@@ -60,8 +61,8 @@ const EditorTestPage: React.FC<EditorTestPageProps> = ({ editorId, initialConten
                         onInsertChip={handleInsertChip}
                         onConvertToChip={handleConvertToChip}
                     />
-                    <RichTextEditor
-                        componentId={editorId}
+                    <EditorWithProviders
+                        id={editorId}
                         className='w-full border border-gray-300 dark:border-gray-700 rounded-md'
                         initialContent={initialContent}
                     />

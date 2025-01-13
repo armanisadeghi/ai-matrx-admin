@@ -223,9 +223,9 @@ export const action = {
             enumValues: null,
             entityName: 'action',
             databaseTable: 'action',
-            foreignKeyReference: { table: 'automation_matrix', column: 'id' },
+            foreignKeyReference: { table: 'automation_matrix', column: 'id', entity: 'automationMatrix', field: 'id' },
             description:
-                '"Matrix" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
+                '"Matrix" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a automationMatrix.',
         },
         transformer: {
             fieldNameFormats: {
@@ -286,9 +286,9 @@ export const action = {
             enumValues: null,
             entityName: 'action',
             databaseTable: 'action',
-            foreignKeyReference: { table: 'transformer', column: 'id' },
+            foreignKeyReference: { table: 'transformer', column: 'id', entity: 'transformer', field: 'id' },
             description:
-                '"Transformer" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Transformer.',
+                '"Transformer" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a transformer.',
         },
         nodeType: {
             fieldNameFormats: {
@@ -512,7 +512,7 @@ export const aiAgent = {
         },
     },
     displayFieldMetadata: { fieldName: 'name', databaseFieldName: 'name' },
-    defaultFetchStrategy: 'simple',
+    defaultFetchStrategy: 'm2mAndFk',
     componentProps: {
         subComponent: 'default',
         variant: 'default',
@@ -718,8 +718,9 @@ export const aiAgent = {
             enumValues: null,
             entityName: 'aiAgent',
             databaseTable: 'ai_agent',
-            foreignKeyReference: null,
-            description: '"Recipe Id" field for aiAgent. This is an optional field. Your entry must be an uuid data type.',
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
+            description:
+                '"Recipe Id" field for aiAgent. This is an optional field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         aiSettingsId: {
             fieldNameFormats: {
@@ -780,8 +781,9 @@ export const aiAgent = {
             enumValues: null,
             entityName: 'aiAgent',
             databaseTable: 'ai_agent',
-            foreignKeyReference: null,
-            description: '"Ai Settings Id" field for aiAgent. This is an optional field. Your entry must be an uuid data type.',
+            foreignKeyReference: { table: 'ai_settings', column: 'id', entity: 'aiSettings', field: 'id' },
+            description:
+                '"Ai Settings Id" field for aiAgent. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiSettings.',
         },
         systemMessageOverride: {
             fieldNameFormats: {
@@ -845,6 +847,70 @@ export const aiAgent = {
             foreignKeyReference: null,
             description: '"System Message Override" field for aiAgent. This is an optional field. Your entry must be an string data type.',
         },
+        aiSettingsReference: {
+            fieldNameFormats: {
+                frontend: 'aiSettingsReference',
+                backend: 'ai_settings_reference',
+                database: 'ref_ai_settings',
+                pretty: 'Ai Settings Reference',
+                component: 'AiSettingsReference',
+                kebab: 'ai-settingsReference',
+                sqlFunctionRef: 'p_ref_ai_settings',
+                RestAPI: 'aiSettingsReference',
+                GraphQL: 'aiSettingsReference',
+                custom: 'aiSettingsReference',
+            } as const,
+            uniqueColumnId: 'supabase_automation_matrix:ai_settings:id',
+            uniqueFieldId: 'supabase_automation_matrix:aiSettings:id',
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: true,
+            defaultValue: [],
+            isPrimaryKey: false,
+            defaultGeneratorFunction: null,
+            validationFunctions: ['isValidDatabaseEntry'],
+            exclusionRules: ['notCoreField'],
+            defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+            structure: 'foreignKey' as const,
+            isNative: false,
+            typeReference: {} as TypeBrand<AutomationEntity<'aiSettings'>[]>,
+            entityName: 'aiSettings',
+            databaseTable: 'ai_settings',
+            relationshipMap: { ai_settings: 'id', recipe: 'id' },
+        },
+        recipeReference: {
+            fieldNameFormats: {
+                frontend: 'recipeReference',
+                backend: 'recipe_reference',
+                database: 'ref_recipe',
+                pretty: 'Recipe Reference',
+                component: 'RecipeReference',
+                kebab: 'recipeReference',
+                sqlFunctionRef: 'p_ref_recipe',
+                RestAPI: 'recipeReference',
+                GraphQL: 'recipeReference',
+                custom: 'recipeReference',
+            } as const,
+            uniqueColumnId: 'supabase_automation_matrix:recipe:id',
+            uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: true,
+            defaultValue: [],
+            isPrimaryKey: false,
+            defaultGeneratorFunction: null,
+            validationFunctions: ['isValidDatabaseEntry'],
+            exclusionRules: ['notCoreField'],
+            defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+            structure: 'foreignKey' as const,
+            isNative: false,
+            typeReference: {} as TypeBrand<AutomationEntity<'recipe'>[]>,
+            entityName: 'recipe',
+            databaseTable: 'recipe',
+            relationshipMap: { ai_settings: 'id', recipe: 'id' },
+        },
     },
     entityNameFormats: {
         frontend: 'aiAgent',
@@ -858,7 +924,10 @@ export const aiAgent = {
         GraphQL: 'aiAgent',
         custom: 'aiAgent',
     },
-    relationships: [],
+    relationships: [
+        { relationshipType: 'foreignKey', column: 'ai_settings_id', relatedTable: 'ai_settings', relatedColumn: 'id', junctionTable: null },
+        { relationshipType: 'foreignKey', column: 'recipe_id', relatedTable: 'recipe', relatedColumn: 'id', junctionTable: null },
+    ],
 } as const;
 
 export const aiEndpoint = {
@@ -2131,9 +2200,9 @@ export const aiModel = {
             enumValues: null,
             entityName: 'aiModel',
             databaseTable: 'ai_model',
-            foreignKeyReference: { table: 'ai_provider', column: 'id' },
+            foreignKeyReference: { table: 'ai_provider', column: 'id', entity: 'aiProvider', field: 'id' },
             description:
-                '"Model Provider" field for aiModel. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiProvider.',
+                '"Model Provider" field for aiModel. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiProvider.',
         },
         aiProviderReference: {
             fieldNameFormats: {
@@ -2440,9 +2509,9 @@ export const aiModelEndpoint = {
             enumValues: null,
             entityName: 'aiModelEndpoint',
             databaseTable: 'ai_model_endpoint',
-            foreignKeyReference: { table: 'ai_model', column: 'id' },
+            foreignKeyReference: { table: 'ai_model', column: 'id', entity: 'aiModel', field: 'id' },
             description:
-                '"Ai Model Id" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiModel.',
+                '"Ai Model Id" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiModel.',
         },
         aiEndpointId: {
             fieldNameFormats: {
@@ -2503,9 +2572,9 @@ export const aiModelEndpoint = {
             enumValues: null,
             entityName: 'aiModelEndpoint',
             databaseTable: 'ai_model_endpoint',
-            foreignKeyReference: { table: 'ai_endpoint', column: 'id' },
+            foreignKeyReference: { table: 'ai_endpoint', column: 'id', entity: 'aiEndpoint', field: 'id' },
             description:
-                '"Ai Endpoint Id" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiEndpoint.',
+                '"Ai Endpoint Id" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiEndpoint.',
         },
         available: {
             fieldNameFormats: {
@@ -3343,8 +3412,8 @@ export const aiSettings = {
             id: null,
         },
     },
-    displayFieldMetadata: { fieldName: 'id', databaseFieldName: 'id' },
-    defaultFetchStrategy: 'fk',
+    displayFieldMetadata: { fieldName: 'presetName', databaseFieldName: 'preset_name' },
+    defaultFetchStrategy: 'fkIfkAndM2M',
     componentProps: {
         subComponent: 'default',
         variant: 'default',
@@ -3390,7 +3459,7 @@ export const aiSettings = {
             isArray: false,
             defaultValue: '' as const,
             isPrimaryKey: true,
-            isDisplayField: true,
+            isDisplayField: false,
             defaultGeneratorFunction: 'getUUID()',
             validationFunctions: [],
             exclusionRules: [],
@@ -3488,9 +3557,9 @@ export const aiSettings = {
             enumValues: null,
             entityName: 'aiSettings',
             databaseTable: 'ai_settings',
-            foreignKeyReference: { table: 'ai_endpoint', column: 'id' },
+            foreignKeyReference: { table: 'ai_endpoint', column: 'id', entity: 'aiEndpoint', field: 'id' },
             description:
-                '"Ai Endpoint" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiEndpoint.',
+                '"Ai Endpoint" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiEndpoint.',
         },
         aiProvider: {
             fieldNameFormats: {
@@ -3513,7 +3582,7 @@ export const aiSettings = {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: '4bedf336-b274-4cdb-8202-59fd282ae6a0' as const,
+            defaultValue: '99fa34b1-4c36-427f-ab73-cc56f1d5c4a0' as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: '',
@@ -3551,9 +3620,9 @@ export const aiSettings = {
             enumValues: null,
             entityName: 'aiSettings',
             databaseTable: 'ai_settings',
-            foreignKeyReference: { table: 'ai_provider', column: 'id' },
+            foreignKeyReference: { table: 'ai_provider', column: 'id', entity: 'aiProvider', field: 'id' },
             description:
-                '"Ai Provider" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiProvider.',
+                '"Ai Provider" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiProvider.',
         },
         aiModel: {
             fieldNameFormats: {
@@ -3614,9 +3683,9 @@ export const aiSettings = {
             enumValues: null,
             entityName: 'aiSettings',
             databaseTable: 'ai_settings',
-            foreignKeyReference: { table: 'ai_model', column: 'id' },
+            foreignKeyReference: { table: 'ai_model', column: 'id', entity: 'aiModel', field: 'id' },
             description:
-                '"Ai Model" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiModel.',
+                '"Ai Model" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiModel.',
         },
         temperature: {
             fieldNameFormats: {
@@ -4486,43 +4555,43 @@ export const aiSettings = {
             foreignKeyReference: null,
             description: '"Tools" field for aiSettings. This is an optional field. Your entry must be an object data type.',
         },
-        createdAt: {
+        presetName: {
             fieldNameFormats: {
-                frontend: 'createdAt',
-                backend: 'created_at',
-                database: 'created_at',
-                pretty: 'Created At',
-                component: 'CreatedAt',
-                kebab: 'created-at',
-                sqlFunctionRef: 'p_created_at',
-                RestAPI: 'createdAt',
-                GraphQL: 'createdAt',
-                custom: 'createdAt',
+                frontend: 'presetName',
+                backend: 'preset_name',
+                database: 'preset_name',
+                pretty: 'Preset Name',
+                component: 'PresetName',
+                kebab: 'preset-name',
+                sqlFunctionRef: 'p_preset_name',
+                RestAPI: 'presetName',
+                GraphQL: 'presetName',
+                custom: 'presetName',
             } as const,
 
-            uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:created_at',
-            uniqueFieldId: 'supabase_automation_matrix:aiSettings:createdAt',
+            uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:preset_name',
+            uniqueFieldId: 'supabase_automation_matrix:aiSettings:presetName',
 
-            dataType: 'date' as const,
-            isRequired: true,
+            dataType: 'string' as const,
+            isRequired: false,
             maxLength: null,
             isArray: false,
             defaultValue: '' as const,
             isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: 'getCurrentTime()',
+            isDisplayField: true,
+            defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'DATE_PICKER' as const,
+            defaultComponent: 'INPUT' as const,
             componentProps: {
-                subComponent: 'timestamptz',
+                subComponent: 'default',
                 variant: 'default',
                 section: 'default',
                 placeholder: 'default',
                 size: 'default',
                 textSize: 'default',
                 textColor: 'default',
-                rows: 'default',
+                rows: 5,
                 animation: 'default',
                 fullWidthValue: 'default',
                 fullWidth: 'default',
@@ -4537,16 +4606,16 @@ export const aiSettings = {
                 step: 'default',
                 numberType: 'default',
                 options: 'default',
-                required: true,
+                required: false,
             },
             structure: 'single' as const,
             isNative: true,
-            typeReference: {} as TypeBrand<Date>,
+            typeReference: {} as TypeBrand<string>,
             enumValues: null,
             entityName: 'aiSettings',
             databaseTable: 'ai_settings',
             foreignKeyReference: null,
-            description: '"Created At" field for aiSettings. This is a required field. Your entry must be an date data type.',
+            description: '"Preset Name" field for aiSettings. This is an optional field. Your entry must be an string data type.',
         },
         aiEndpointReference: {
             fieldNameFormats: {
@@ -4644,6 +4713,37 @@ export const aiSettings = {
             databaseTable: 'ai_provider',
             relationshipMap: { ai_endpoint: 'id', ai_model: 'id', ai_provider: 'id' },
         },
+        aiAgentInverse: {
+            fieldNameFormats: {
+                frontend: 'aiAgentInverse',
+                backend: 'ai_agent_Inverse',
+                database: 'ifk_ai_agent',
+                pretty: 'Ai Agent Inverse',
+                component: 'AiAgentInverse',
+                kebab: 'ai-agentInverse',
+                sqlFunctionRef: 'p_ifk_ai_agent',
+                RestAPI: 'aiAgentInverse',
+                GraphQL: 'aiAgentInverse',
+                custom: 'aiAgentInverse',
+            } as const,
+            uniqueTableId: 'supabase_automation_matrix:ai_agent',
+            uniqueEntityId: 'supabase_automation_matrix:aiAgent',
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: true,
+            defaultValue: [],
+            isPrimaryKey: false,
+            defaultGeneratorFunction: null,
+            validationFunctions: ['isValidDatabaseEntry'],
+            exclusionRules: ['notCoreField'],
+            defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+            structure: 'inverseForeignKey' as const,
+            isNative: false,
+            typeReference: {} as TypeBrand<AutomationEntity<'aiAgent'>[]>,
+            entityName: 'aiAgent',
+            databaseTable: 'ai_agent',
+        },
     },
     entityNameFormats: {
         frontend: 'aiSettings',
@@ -4661,6 +4761,7 @@ export const aiSettings = {
         { relationshipType: 'foreignKey', column: 'ai_endpoint', relatedTable: 'ai_endpoint', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'ai_model', relatedTable: 'ai_model', relatedColumn: 'id', junctionTable: null },
         { relationshipType: 'foreignKey', column: 'ai_provider', relatedTable: 'ai_provider', relatedColumn: 'id', junctionTable: null },
+        { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_agent', relatedColumn: 'ai_settings_id', junctionTable: null },
     ],
 } as const;
 
@@ -5162,9 +5263,9 @@ export const arg = {
             enumValues: null,
             entityName: 'arg',
             databaseTable: 'arg',
-            foreignKeyReference: { table: 'registered_function', column: 'id' },
+            foreignKeyReference: { table: 'registered_function', column: 'id', entity: 'registeredFunction', field: 'id' },
             description:
-                '"Registered Function" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
+                '"Registered Function" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
         },
         registeredFunctionReference: {
             fieldNameFormats: {
@@ -5375,9 +5476,9 @@ export const automationBoundaryBroker = {
             enumValues: null,
             entityName: 'automationBoundaryBroker',
             databaseTable: 'automation_boundary_broker',
-            foreignKeyReference: { table: 'automation_matrix', column: 'id' },
+            foreignKeyReference: { table: 'automation_matrix', column: 'id', entity: 'automationMatrix', field: 'id' },
             description:
-                '"Matrix" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.',
+                '"Matrix" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a automationMatrix.',
         },
         broker: {
             fieldNameFormats: {
@@ -5438,9 +5539,9 @@ export const automationBoundaryBroker = {
             enumValues: null,
             entityName: 'automationBoundaryBroker',
             databaseTable: 'automation_boundary_broker',
-            foreignKeyReference: { table: 'broker', column: 'id' },
+            foreignKeyReference: { table: 'broker', column: 'id', entity: 'broker', field: 'id' },
             description:
-                '"Broker" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
+                '"Broker" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a broker.',
         },
         sparkSource: {
             fieldNameFormats: {
@@ -7082,9 +7183,9 @@ export const broker = {
             enumValues: null,
             entityName: 'broker',
             databaseTable: 'broker',
-            foreignKeyReference: { table: 'data_input_component', column: 'id' },
+            foreignKeyReference: { table: 'data_input_component', column: 'id', entity: 'dataInputComponent', field: 'id' },
             description:
-                '"Custom Source Component" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.',
+                '"Custom Source Component" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.',
         },
         additionalParams: {
             fieldNameFormats: {
@@ -8879,9 +8980,9 @@ export const dataBroker = {
             enumValues: null,
             entityName: 'dataBroker',
             databaseTable: 'data_broker',
-            foreignKeyReference: { table: 'data_input_component', column: 'id' },
+            foreignKeyReference: { table: 'data_input_component', column: 'id', entity: 'dataInputComponent', field: 'id' },
             description:
-                '"Default Component" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.',
+                '"Default Component" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.',
         },
         dataInputComponentReference: {
             fieldNameFormats: {
@@ -13159,9 +13260,9 @@ export const flashcardData = {
             enumValues: null,
             entityName: 'flashcardData',
             databaseTable: 'flashcard_data',
-            foreignKeyReference: { table: 'users', column: 'id' },
+            foreignKeyReference: { table: 'users', column: 'id', entity: 'users', field: 'id' },
             description:
-                '"User Id" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
+                '"User Id" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.',
         },
         topic: {
             fieldNameFormats: {
@@ -14304,9 +14405,9 @@ export const flashcardHistory = {
             enumValues: null,
             entityName: 'flashcardHistory',
             databaseTable: 'flashcard_history',
-            foreignKeyReference: { table: 'flashcard_data', column: 'id' },
+            foreignKeyReference: { table: 'flashcard_data', column: 'id', entity: 'flashcardData', field: 'id' },
             description:
-                '"Flashcard Id" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
+                '"Flashcard Id" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a flashcardData.',
         },
         userId: {
             fieldNameFormats: {
@@ -14367,9 +14468,9 @@ export const flashcardHistory = {
             enumValues: null,
             entityName: 'flashcardHistory',
             databaseTable: 'flashcard_history',
-            foreignKeyReference: { table: 'users', column: 'id' },
+            foreignKeyReference: { table: 'users', column: 'id', entity: 'users', field: 'id' },
             description:
-                '"User Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
+                '"User Id" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.',
         },
         reviewCount: {
             fieldNameFormats: {
@@ -14888,9 +14989,9 @@ export const flashcardImages = {
             enumValues: null,
             entityName: 'flashcardImages',
             databaseTable: 'flashcard_images',
-            foreignKeyReference: { table: 'flashcard_data', column: 'id' },
+            foreignKeyReference: { table: 'flashcard_data', column: 'id', entity: 'flashcardData', field: 'id' },
             description:
-                '"Flashcard Id" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
+                '"Flashcard Id" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a flashcardData.',
         },
         filePath: {
             fieldNameFormats: {
@@ -15348,9 +15449,9 @@ export const flashcardSetRelations = {
             enumValues: null,
             entityName: 'flashcardSetRelations',
             databaseTable: 'flashcard_set_relations',
-            foreignKeyReference: { table: 'flashcard_data', column: 'id' },
+            foreignKeyReference: { table: 'flashcard_data', column: 'id', entity: 'flashcardData', field: 'id' },
             description:
-                '"Flashcard Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.',
+                '"Flashcard Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a flashcardData.',
         },
         setId: {
             fieldNameFormats: {
@@ -15411,9 +15512,9 @@ export const flashcardSetRelations = {
             enumValues: null,
             entityName: 'flashcardSetRelations',
             databaseTable: 'flashcard_set_relations',
-            foreignKeyReference: { table: 'flashcard_sets', column: 'set_id' },
+            foreignKeyReference: { table: 'flashcard_sets', column: 'set_id', entity: 'flashcardSets', field: 'setId' },
             description:
-                '"Set Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardSets.',
+                '"Set Id" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a flashcardSets.',
         },
         order: {
             fieldNameFormats: {
@@ -15719,9 +15820,9 @@ export const flashcardSets = {
             enumValues: null,
             entityName: 'flashcardSets',
             databaseTable: 'flashcard_sets',
-            foreignKeyReference: { table: 'users', column: 'id' },
+            foreignKeyReference: { table: 'users', column: 'id', entity: 'users', field: 'id' },
             description:
-                '"User Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
+                '"User Id" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.',
         },
         name: {
             fieldNameFormats: {
@@ -16490,9 +16591,9 @@ export const messageBroker = {
             enumValues: null,
             entityName: 'messageBroker',
             databaseTable: 'message_broker',
-            foreignKeyReference: { table: 'message_template', column: 'id' },
+            foreignKeyReference: { table: 'message_template', column: 'id', entity: 'messageTemplate', field: 'id' },
             description:
-                '"Message Id" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a MessageTemplate.',
+                '"Message Id" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a messageTemplate.',
         },
         brokerId: {
             fieldNameFormats: {
@@ -16553,9 +16654,9 @@ export const messageBroker = {
             enumValues: null,
             entityName: 'messageBroker',
             databaseTable: 'message_broker',
-            foreignKeyReference: { table: 'data_broker', column: 'id' },
+            foreignKeyReference: { table: 'data_broker', column: 'id', entity: 'dataBroker', field: 'id' },
             description:
-                '"Broker Id" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a DataBroker.',
+                '"Broker Id" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a dataBroker.',
         },
         defaultValue: {
             fieldNameFormats: {
@@ -16678,9 +16779,9 @@ export const messageBroker = {
             enumValues: null,
             entityName: 'messageBroker',
             databaseTable: 'message_broker',
-            foreignKeyReference: { table: 'data_input_component', column: 'id' },
+            foreignKeyReference: { table: 'data_input_component', column: 'id', entity: 'dataInputComponent', field: 'id' },
             description:
-                '"Default Component" field for messageBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.',
+                '"Default Component" field for messageBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.',
         },
         dataBrokerReference: {
             fieldNameFormats: {
@@ -17482,9 +17583,9 @@ export const processor = {
             enumValues: null,
             entityName: 'processor',
             databaseTable: 'processor',
-            foreignKeyReference: { table: 'processor', column: 'id' },
+            foreignKeyReference: { table: 'processor', column: 'id', entity: 'processor', field: 'id' },
             description:
-                '"Depends Default" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Processor.',
+                '"Depends Default" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a processor.',
         },
         defaultExtractors: {
             fieldNameFormats: {
@@ -18375,6 +18476,37 @@ export const recipe = {
             foreignKeyReference: null,
             description: '"Post Result Options" field for recipe. This is an optional field. Your entry must be an object data type.',
         },
+        aiAgentInverse: {
+            fieldNameFormats: {
+                frontend: 'aiAgentInverse',
+                backend: 'ai_agent_Inverse',
+                database: 'ifk_ai_agent',
+                pretty: 'Ai Agent Inverse',
+                component: 'AiAgentInverse',
+                kebab: 'ai-agentInverse',
+                sqlFunctionRef: 'p_ifk_ai_agent',
+                RestAPI: 'aiAgentInverse',
+                GraphQL: 'aiAgentInverse',
+                custom: 'aiAgentInverse',
+            } as const,
+            uniqueTableId: 'supabase_automation_matrix:ai_agent',
+            uniqueEntityId: 'supabase_automation_matrix:aiAgent',
+            dataType: 'object' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: true,
+            defaultValue: [],
+            isPrimaryKey: false,
+            defaultGeneratorFunction: null,
+            validationFunctions: ['isValidDatabaseEntry'],
+            exclusionRules: ['notCoreField'],
+            defaultComponent: 'ACCORDION_VIEW_ADD_EDIT' as const,
+            structure: 'inverseForeignKey' as const,
+            isNative: false,
+            typeReference: {} as TypeBrand<AutomationEntity<'aiAgent'>[]>,
+            entityName: 'aiAgent',
+            databaseTable: 'ai_agent',
+        },
         recipeDisplayInverse: {
             fieldNameFormats: {
                 frontend: 'recipeDisplayInverse',
@@ -18606,6 +18738,7 @@ export const recipe = {
         custom: 'recipe',
     },
     relationships: [
+        { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'ai_agent', relatedColumn: 'recipe_id', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_display', relatedColumn: 'recipe', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_processor', relatedColumn: 'recipe', junctionTable: null },
         { relationshipType: 'inverseForeignKey', column: 'id', relatedTable: 'recipe_model', relatedColumn: 'recipe', junctionTable: null },
@@ -18775,9 +18908,9 @@ export const recipeBroker = {
             enumValues: null,
             entityName: 'recipeBroker',
             databaseTable: 'recipe_broker',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         broker: {
             fieldNameFormats: {
@@ -18838,9 +18971,9 @@ export const recipeBroker = {
             enumValues: null,
             entityName: 'recipeBroker',
             databaseTable: 'recipe_broker',
-            foreignKeyReference: { table: 'broker', column: 'id' },
+            foreignKeyReference: { table: 'broker', column: 'id', entity: 'broker', field: 'id' },
             description:
-                '"Broker" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Broker.',
+                '"Broker" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a broker.',
         },
         brokerRole: {
             fieldNameFormats: {
@@ -19217,9 +19350,9 @@ export const recipeDisplay = {
             enumValues: null,
             entityName: 'recipeDisplay',
             databaseTable: 'recipe_display',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         display: {
             fieldNameFormats: {
@@ -19280,9 +19413,9 @@ export const recipeDisplay = {
             enumValues: null,
             entityName: 'recipeDisplay',
             databaseTable: 'recipe_display',
-            foreignKeyReference: { table: 'display_option', column: 'id' },
+            foreignKeyReference: { table: 'display_option', column: 'id', entity: 'displayOption', field: 'id' },
             description:
-                '"Display" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a DisplayOption.',
+                '"Display" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a displayOption.',
         },
         priority: {
             fieldNameFormats: {
@@ -19650,9 +19783,9 @@ export const recipeFunction = {
             enumValues: null,
             entityName: 'recipeFunction',
             databaseTable: 'recipe_function',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         function: {
             fieldNameFormats: {
@@ -19713,9 +19846,9 @@ export const recipeFunction = {
             enumValues: null,
             entityName: 'recipeFunction',
             databaseTable: 'recipe_function',
-            foreignKeyReference: { table: 'system_function', column: 'id' },
+            foreignKeyReference: { table: 'system_function', column: 'id', entity: 'systemFunction', field: 'id' },
             description:
-                '"Function" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
+                '"Function" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a systemFunction.',
         },
         role: {
             fieldNameFormats: {
@@ -20118,9 +20251,9 @@ export const recipeMessage = {
             enumValues: null,
             entityName: 'recipeMessage',
             databaseTable: 'recipe_message',
-            foreignKeyReference: { table: 'message_template', column: 'id' },
+            foreignKeyReference: { table: 'message_template', column: 'id', entity: 'messageTemplate', field: 'id' },
             description:
-                '"Message Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a MessageTemplate.',
+                '"Message Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a messageTemplate.',
         },
         recipeId: {
             fieldNameFormats: {
@@ -20181,9 +20314,9 @@ export const recipeMessage = {
             enumValues: null,
             entityName: 'recipeMessage',
             databaseTable: 'recipe_message',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         order: {
             fieldNameFormats: {
@@ -20489,9 +20622,9 @@ export const recipeModel = {
             enumValues: null,
             entityName: 'recipeModel',
             databaseTable: 'recipe_model',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         aiModel: {
             fieldNameFormats: {
@@ -20552,9 +20685,9 @@ export const recipeModel = {
             enumValues: null,
             entityName: 'recipeModel',
             databaseTable: 'recipe_model',
-            foreignKeyReference: { table: 'ai_model', column: 'id' },
+            foreignKeyReference: { table: 'ai_model', column: 'id', entity: 'aiModel', field: 'id' },
             description:
-                '"Ai Model" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a AiModel.',
+                '"Ai Model" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a aiModel.',
         },
         role: {
             fieldNameFormats: {
@@ -20935,9 +21068,9 @@ export const recipeProcessor = {
             enumValues: null,
             entityName: 'recipeProcessor',
             databaseTable: 'recipe_processor',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         processor: {
             fieldNameFormats: {
@@ -20998,9 +21131,9 @@ export const recipeProcessor = {
             enumValues: null,
             entityName: 'recipeProcessor',
             databaseTable: 'recipe_processor',
-            foreignKeyReference: { table: 'processor', column: 'id' },
+            foreignKeyReference: { table: 'processor', column: 'id', entity: 'processor', field: 'id' },
             description:
-                '"Processor" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Processor.',
+                '"Processor" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a processor.',
         },
         params: {
             fieldNameFormats: {
@@ -21306,9 +21439,9 @@ export const recipeTool = {
             enumValues: null,
             entityName: 'recipeTool',
             databaseTable: 'recipe_tool',
-            foreignKeyReference: { table: 'recipe', column: 'id' },
+            foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.',
+                '"Recipe" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.',
         },
         tool: {
             fieldNameFormats: {
@@ -21369,8 +21502,8 @@ export const recipeTool = {
             enumValues: null,
             entityName: 'recipeTool',
             databaseTable: 'recipe_tool',
-            foreignKeyReference: { table: 'tool', column: 'id' },
-            description: '"Tool" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Tool.',
+            foreignKeyReference: { table: 'tool', column: 'id', entity: 'tool', field: 'id' },
+            description: '"Tool" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a tool.',
         },
         params: {
             fieldNameFormats: {
@@ -21924,9 +22057,9 @@ export const registeredFunction = {
             enumValues: null,
             entityName: 'registeredFunction',
             databaseTable: 'registered_function',
-            foreignKeyReference: { table: 'broker', column: 'id' },
+            foreignKeyReference: { table: 'broker', column: 'id', entity: 'broker', field: 'id' },
             description:
-                '"Return Broker" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.',
+                '"Return Broker" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a broker.',
         },
         brokerReference: {
             fieldNameFormats: {
@@ -22511,9 +22644,9 @@ export const systemFunction = {
             enumValues: null,
             entityName: 'systemFunction',
             databaseTable: 'system_function',
-            foreignKeyReference: { table: 'registered_function', column: 'id' },
+            foreignKeyReference: { table: 'registered_function', column: 'id', entity: 'registeredFunction', field: 'id' },
             description:
-                '"Rf Id" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.',
+                '"Rf Id" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
         },
         registeredFunctionReference: {
             fieldNameFormats: {
@@ -23098,9 +23231,9 @@ export const tool = {
             enumValues: null,
             entityName: 'tool',
             databaseTable: 'tool',
-            foreignKeyReference: { table: 'system_function', column: 'id' },
+            foreignKeyReference: { table: 'system_function', column: 'id', entity: 'systemFunction', field: 'id' },
             description:
-                '"System Function" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.',
+                '"System Function" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a systemFunction.',
         },
         additionalParams: {
             fieldNameFormats: {
@@ -23676,9 +23809,9 @@ export const userPreferences = {
             enumValues: null,
             entityName: 'userPreferences',
             databaseTable: 'user_preferences',
-            foreignKeyReference: { table: 'users', column: 'id' },
+            foreignKeyReference: { table: 'users', column: 'id', entity: 'users', field: 'id' },
             description:
-                '"User Id" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.',
+                '"User Id" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.',
         },
         preferences: {
             fieldNameFormats: {

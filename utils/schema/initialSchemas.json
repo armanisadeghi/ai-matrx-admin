@@ -225,10 +225,12 @@
                 "databaseTable": "action",
                 "foreignKeyReference": {
                     "table": "automation_matrix",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "automationMatrix",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Matrix\" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.",
+                    "frontend": "\"Matrix\" field for action. This is a required field. Your entry must be an uuid data type. This field is a reference to a automationMatrix.",
                     "backend": "\"Matrix\" field for the action table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the automation_matrix table."
                 }
             },
@@ -291,10 +293,12 @@
                 "databaseTable": "action",
                 "foreignKeyReference": {
                     "table": "transformer",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "transformer",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Transformer\" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Transformer.",
+                    "frontend": "\"Transformer\" field for action. This is an optional field. Your entry must be an uuid data type. This field is a reference to a transformer.",
                     "backend": "\"Transformer\" field for the action table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the transformer table."
                 }
             },
@@ -516,7 +520,7 @@
             "fieldName": "name",
             "databaseFieldName": "name"
         },
-        "defaultFetchStrategy": "simple",
+        "defaultFetchStrategy": "m2mAndFk",
         "componentProps": {
             "subComponent": "default",
             "variant": "default",
@@ -722,10 +726,15 @@
                 "enumValues": null,
                 "entityName": "aiAgent",
                 "databaseTable": "ai_agent",
-                "foreignKeyReference": null,
+                "foreignKeyReference": {
+                    "table": "recipe",
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
+                },
                 "description": {
-                    "frontend": "\"Recipe Id\" field for aiAgent. This is an optional field. Your entry must be an uuid data type.",
-                    "backend": "\"Recipe Id\" field for the ai_agent table. This is an optional field. Your entry must be an uuid data type."
+                    "frontend": "\"Recipe Id\" field for aiAgent. This is an optional field. Your entry must be an uuid data type. This field is a reference to a recipe.",
+                    "backend": "\"Recipe Id\" field for the ai_agent table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
             "aiSettingsId": {
@@ -785,10 +794,15 @@
                 "enumValues": null,
                 "entityName": "aiAgent",
                 "databaseTable": "ai_agent",
-                "foreignKeyReference": null,
+                "foreignKeyReference": {
+                    "table": "ai_settings",
+                    "column": "id",
+                    "entity": "aiSettings",
+                    "field": "id"
+                },
                 "description": {
-                    "frontend": "\"Ai Settings Id\" field for aiAgent. This is an optional field. Your entry must be an uuid data type.",
-                    "backend": "\"Ai Settings Id\" field for the ai_agent table. This is an optional field. Your entry must be an uuid data type."
+                    "frontend": "\"Ai Settings Id\" field for aiAgent. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiSettings.",
+                    "backend": "\"Ai Settings Id\" field for the ai_agent table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_settings table."
                 }
             },
             "systemMessageOverride": {
@@ -853,6 +867,54 @@
                     "frontend": "\"System Message Override\" field for aiAgent. This is an optional field. Your entry must be an string data type.",
                     "backend": "\"System Message Override\" field for the ai_agent table. This is an optional field. Your entry must be an string data type."
                 }
+            },
+            "aiSettingsReference": {
+                "fieldNameFormats": {
+                    "frontend": "aiSettingsReference",
+                    "backend": "ai_settings_reference",
+                    "database": "ref_ai_settings",
+                    "pretty": "Ai Settings Reference",
+                    "component": "AiSettingsReference",
+                    "kebab": "ai-settingsReference",
+                    "sqlFunctionRef": "p_ref_ai_settings",
+                    "RestAPI": "aiSettingsReference",
+                    "GraphQL": "aiSettingsReference",
+                    "custom": "aiSettingsReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:ai_settings:id",
+                "uniqueFieldId": "supabase_automation_matrix:aiSettings:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "ai_settings",
+                    "typeReference": "TypeBrand<AutomationEntity<'aiSettings'>[]>"
+                }
+            },
+            "recipeReference": {
+                "fieldNameFormats": {
+                    "frontend": "recipeReference",
+                    "backend": "recipe_reference",
+                    "database": "ref_recipe",
+                    "pretty": "Recipe Reference",
+                    "component": "RecipeReference",
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:recipe:id",
+                "uniqueFieldId": "supabase_automation_matrix:recipe:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "recipe",
+                    "typeReference": "TypeBrand<AutomationEntity<'recipe'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -867,7 +929,18 @@
             "GraphQL": "aiAgent",
             "custom": "aiAgent"
         },
-        "relationships": []
+        "relationships": [
+            {
+                "column": "ai_settings_id",
+                "relatedTable": "ai_settings",
+                "relatedColumn": "id"
+            },
+            {
+                "column": "recipe_id",
+                "relatedTable": "recipe",
+                "relatedColumn": "id"
+            }
+        ]
     },
     "aiEndpoint": {
         "schemaType": "table",
@@ -2157,10 +2230,12 @@
                 "databaseTable": "ai_model",
                 "foreignKeyReference": {
                     "table": "ai_provider",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiProvider",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Model Provider\" field for aiModel. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiProvider.",
+                    "frontend": "\"Model Provider\" field for aiModel. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiProvider.",
                     "backend": "\"Model Provider\" field for the ai_model table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_provider table."
                 }
             },
@@ -2462,10 +2537,12 @@
                 "databaseTable": "ai_model_endpoint",
                 "foreignKeyReference": {
                     "table": "ai_model",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiModel",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Ai Model Id\" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiModel.",
+                    "frontend": "\"Ai Model Id\" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiModel.",
                     "backend": "\"Ai Model Id\" field for the ai_model_endpoint table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_model table."
                 }
             },
@@ -2528,10 +2605,12 @@
                 "databaseTable": "ai_model_endpoint",
                 "foreignKeyReference": {
                     "table": "ai_endpoint",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiEndpoint",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Ai Endpoint Id\" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiEndpoint.",
+                    "frontend": "\"Ai Endpoint Id\" field for aiModelEndpoint. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiEndpoint.",
                     "backend": "\"Ai Endpoint Id\" field for the ai_model_endpoint table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_endpoint table."
                 }
             },
@@ -3371,10 +3450,10 @@
             }
         },
         "displayFieldMetadata": {
-            "fieldName": "id",
-            "databaseFieldName": "id"
+            "fieldName": "presetName",
+            "databaseFieldName": "preset_name"
         },
-        "defaultFetchStrategy": "fk",
+        "defaultFetchStrategy": "fkIfkAndM2M",
         "componentProps": {
             "subComponent": "default",
             "variant": "default",
@@ -3418,7 +3497,7 @@
                 "isArray": false,
                 "defaultValue": "",
                 "isPrimaryKey": true,
-                "isDisplayField": true,
+                "isDisplayField": false,
                 "defaultGeneratorFunction": null,
                 "validationFunctions": [],
                 "exclusionRules": [],
@@ -3519,10 +3598,12 @@
                 "databaseTable": "ai_settings",
                 "foreignKeyReference": {
                     "table": "ai_endpoint",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiEndpoint",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Ai Endpoint\" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiEndpoint.",
+                    "frontend": "\"Ai Endpoint\" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiEndpoint.",
                     "backend": "\"Ai Endpoint\" field for the ai_settings table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_endpoint table."
                 }
             },
@@ -3545,7 +3626,7 @@
                 "isRequired": false,
                 "maxLength": "null",
                 "isArray": false,
-                "defaultValue": "4bedf336-b274-4cdb-8202-59fd282ae6a0",
+                "defaultValue": "99fa34b1-4c36-427f-ab73-cc56f1d5c4a0",
                 "isPrimaryKey": false,
                 "isDisplayField": false,
                 "defaultGeneratorFunction": null,
@@ -3585,10 +3666,12 @@
                 "databaseTable": "ai_settings",
                 "foreignKeyReference": {
                     "table": "ai_provider",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiProvider",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Ai Provider\" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiProvider.",
+                    "frontend": "\"Ai Provider\" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiProvider.",
                     "backend": "\"Ai Provider\" field for the ai_settings table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_provider table."
                 }
             },
@@ -3651,10 +3734,12 @@
                 "databaseTable": "ai_settings",
                 "foreignKeyReference": {
                     "table": "ai_model",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiModel",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Ai Model\" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AiModel.",
+                    "frontend": "\"Ai Model\" field for aiSettings. This is an optional field. Your entry must be an uuid data type. This field is a reference to a aiModel.",
                     "backend": "\"Ai Model\" field for the ai_settings table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_model table."
                 }
             },
@@ -4540,41 +4625,41 @@
                     "backend": "\"Tools\" field for the ai_settings table. This is an optional field. Your entry must be an object data type."
                 }
             },
-            "createdAt": {
+            "presetName": {
                 "fieldNameFormats": {
-                    "frontend": "createdAt",
-                    "backend": "created_at",
-                    "database": "created_at",
-                    "pretty": "Created At",
-                    "component": "CreatedAt",
-                    "kebab": "created-at",
-                    "sqlFunctionRef": "p_created_at",
-                    "RestAPI": "createdAt",
-                    "GraphQL": "createdAt",
-                    "custom": "createdAt"
+                    "frontend": "presetName",
+                    "backend": "preset_name",
+                    "database": "preset_name",
+                    "pretty": "Preset Name",
+                    "component": "PresetName",
+                    "kebab": "preset-name",
+                    "sqlFunctionRef": "p_preset_name",
+                    "RestAPI": "presetName",
+                    "GraphQL": "presetName",
+                    "custom": "presetName"
                 },
-                "uniqueColumnId": "supabase_automation_matrix:public:ai_settings:created_at",
-                "uniqueFieldId": "supabase_automation_matrix:aiSettings:createdAt",
-                "dataType": "date",
-                "isRequired": true,
+                "uniqueColumnId": "supabase_automation_matrix:public:ai_settings:preset_name",
+                "uniqueFieldId": "supabase_automation_matrix:aiSettings:presetName",
+                "dataType": "string",
+                "isRequired": false,
                 "maxLength": "null",
                 "isArray": false,
-                "defaultValue": "",
+                "defaultValue": "null",
                 "isPrimaryKey": false,
-                "isDisplayField": false,
+                "isDisplayField": true,
                 "defaultGeneratorFunction": null,
                 "validationFunctions": [],
                 "exclusionRules": [],
-                "defaultComponent": "DATE_PICKER",
+                "defaultComponent": "INPUT",
                 "componentProps": {
-                    "subComponent": "timestamptz",
+                    "subComponent": "default",
                     "variant": "default",
                     "section": "default",
                     "placeholder": "default",
                     "size": "default",
                     "textSize": "default",
                     "textColor": "default",
-                    "rows": "default",
+                    "rows": 5,
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
@@ -4589,18 +4674,18 @@
                     "step": "default",
                     "numberType": "default",
                     "options": "default",
-                    "required": true
+                    "required": false
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": "Date",
+                "typeReference": "string",
                 "enumValues": null,
                 "entityName": "aiSettings",
                 "databaseTable": "ai_settings",
                 "foreignKeyReference": null,
                 "description": {
-                    "frontend": "\"Created At\" field for aiSettings. This is a required field. Your entry must be an date data type.",
-                    "backend": "\"Created At\" field for the ai_settings table. This is a required field. Your entry must be an date data type."
+                    "frontend": "\"Preset Name\" field for aiSettings. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Preset Name\" field for the ai_settings table. This is an optional field. Your entry must be an string data type."
                 }
             },
             "aiEndpointReference": {
@@ -4674,6 +4759,31 @@
                     "databaseTable": "ai_provider",
                     "typeReference": "TypeBrand<AutomationEntity<'aiProvider'>[]>"
                 }
+            },
+            "aiAgentInverse": {
+                "fieldNameFormats": {
+                    "frontend": "aiAgentInverse",
+                    "backend": "ai_agent_Inverse",
+                    "database": "ifk_ai_agent",
+                    "pretty": "Ai Agent Inverse",
+                    "component": "AiAgentInverse",
+                    "kebab": "ai-agentInverse",
+                    "sqlFunctionRef": "p_ifk_ai_agent",
+                    "RestAPI": "aiAgentInverse",
+                    "GraphQL": "aiAgentInverse",
+                    "custom": "aiAgentInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:ai_agent",
+                "uniqueEntityId": "supabase_automation_matrix:aiAgent",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "aiAgent",
+                    "databaseTable": "ai_agent",
+                    "typeReference": "TypeBrand<AutomationEntity<'aiAgent'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -4703,6 +4813,11 @@
                 "column": "ai_provider",
                 "relatedTable": "ai_provider",
                 "relatedColumn": "id"
+            },
+            {
+                "relatedTable": "ai_agent",
+                "relatedColumn": "ai_settings_id",
+                "mainTableColumn": "id"
             }
         ]
     },
@@ -5213,10 +5328,12 @@
                 "databaseTable": "arg",
                 "foreignKeyReference": {
                     "table": "registered_function",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "registeredFunction",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Registered Function\" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.",
+                    "frontend": "\"Registered Function\" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.",
                     "backend": "\"Registered Function\" field for the arg table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the registered_function table."
                 }
             },
@@ -5428,10 +5545,12 @@
                 "databaseTable": "automation_boundary_broker",
                 "foreignKeyReference": {
                     "table": "automation_matrix",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "automationMatrix",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Matrix\" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a AutomationMatrix.",
+                    "frontend": "\"Matrix\" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a automationMatrix.",
                     "backend": "\"Matrix\" field for the automation_boundary_broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the automation_matrix table."
                 }
             },
@@ -5494,10 +5613,12 @@
                 "databaseTable": "automation_boundary_broker",
                 "foreignKeyReference": {
                     "table": "broker",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "broker",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Broker\" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.",
+                    "frontend": "\"Broker\" field for automationBoundaryBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a broker.",
                     "backend": "\"Broker\" field for the automation_boundary_broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the broker table."
                 }
             },
@@ -7146,10 +7267,12 @@
                 "databaseTable": "broker",
                 "foreignKeyReference": {
                     "table": "data_input_component",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "dataInputComponent",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Custom Source Component\" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.",
+                    "frontend": "\"Custom Source Component\" field for broker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.",
                     "backend": "\"Custom Source Component\" field for the broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the data_input_component table."
                 }
             },
@@ -8957,10 +9080,12 @@
                 "databaseTable": "data_broker",
                 "foreignKeyReference": {
                     "table": "data_input_component",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "dataInputComponent",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Default Component\" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.",
+                    "frontend": "\"Default Component\" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.",
                     "backend": "\"Default Component\" field for the data_broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the data_input_component table."
                 }
             },
@@ -13289,10 +13414,12 @@
                 "databaseTable": "flashcard_data",
                 "foreignKeyReference": {
                     "table": "users",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "users",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"User Id\" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.",
+                    "frontend": "\"User Id\" field for flashcardData. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.",
                     "backend": "\"User Id\" field for the flashcard_data table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the users table."
                 }
             },
@@ -14447,10 +14574,12 @@
                 "databaseTable": "flashcard_history",
                 "foreignKeyReference": {
                     "table": "flashcard_data",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "flashcardData",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Flashcard Id\" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.",
+                    "frontend": "\"Flashcard Id\" field for flashcardHistory. This is an optional field. Your entry must be an uuid data type. This field is a reference to a flashcardData.",
                     "backend": "\"Flashcard Id\" field for the flashcard_history table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the flashcard_data table."
                 }
             },
@@ -14513,10 +14642,12 @@
                 "databaseTable": "flashcard_history",
                 "foreignKeyReference": {
                     "table": "users",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "users",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"User Id\" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.",
+                    "frontend": "\"User Id\" field for flashcardHistory. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.",
                     "backend": "\"User Id\" field for the flashcard_history table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the users table."
                 }
             },
@@ -15043,10 +15174,12 @@
                 "databaseTable": "flashcard_images",
                 "foreignKeyReference": {
                     "table": "flashcard_data",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "flashcardData",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Flashcard Id\" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.",
+                    "frontend": "\"Flashcard Id\" field for flashcardImages. This is an optional field. Your entry must be an uuid data type. This field is a reference to a flashcardData.",
                     "backend": "\"Flashcard Id\" field for the flashcard_images table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the flashcard_data table."
                 }
             },
@@ -15511,10 +15644,12 @@
                 "databaseTable": "flashcard_set_relations",
                 "foreignKeyReference": {
                     "table": "flashcard_data",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "flashcardData",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Flashcard Id\" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardData.",
+                    "frontend": "\"Flashcard Id\" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a flashcardData.",
                     "backend": "\"Flashcard Id\" field for the flashcard_set_relations table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the flashcard_data table."
                 }
             },
@@ -15577,10 +15712,12 @@
                 "databaseTable": "flashcard_set_relations",
                 "foreignKeyReference": {
                     "table": "flashcard_sets",
-                    "column": "set_id"
+                    "column": "set_id",
+                    "entity": "flashcardSets",
+                    "field": "setId"
                 },
                 "description": {
-                    "frontend": "\"Set Id\" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a FlashcardSets.",
+                    "frontend": "\"Set Id\" field for flashcardSetRelations. This is a required field. Your entry must be an uuid data type. This field is a reference to a flashcardSets.",
                     "backend": "\"Set Id\" field for the flashcard_set_relations table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the flashcard_sets table."
                 }
             },
@@ -15884,10 +16021,12 @@
                 "databaseTable": "flashcard_sets",
                 "foreignKeyReference": {
                     "table": "users",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "users",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"User Id\" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.",
+                    "frontend": "\"User Id\" field for flashcardSets. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.",
                     "backend": "\"User Id\" field for the flashcard_sets table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the users table."
                 }
             },
@@ -16667,10 +16806,12 @@
                 "databaseTable": "message_broker",
                 "foreignKeyReference": {
                     "table": "message_template",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "messageTemplate",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Message Id\" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a MessageTemplate.",
+                    "frontend": "\"Message Id\" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a messageTemplate.",
                     "backend": "\"Message Id\" field for the message_broker table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the message_template table."
                 }
             },
@@ -16733,10 +16874,12 @@
                 "databaseTable": "message_broker",
                 "foreignKeyReference": {
                     "table": "data_broker",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "dataBroker",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Broker Id\" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a DataBroker.",
+                    "frontend": "\"Broker Id\" field for messageBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a dataBroker.",
                     "backend": "\"Broker Id\" field for the message_broker table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the data_broker table."
                 }
             },
@@ -16862,10 +17005,12 @@
                 "databaseTable": "message_broker",
                 "foreignKeyReference": {
                     "table": "data_input_component",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "dataInputComponent",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Default Component\" field for messageBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a DataInputComponent.",
+                    "frontend": "\"Default Component\" field for messageBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.",
                     "backend": "\"Default Component\" field for the message_broker table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the data_input_component table."
                 }
             },
@@ -17664,10 +17809,12 @@
                 "databaseTable": "processor",
                 "foreignKeyReference": {
                     "table": "processor",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "processor",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Depends Default\" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Processor.",
+                    "frontend": "\"Depends Default\" field for processor. This is an optional field. Your entry must be an uuid data type. This field is a reference to a processor.",
                     "backend": "\"Depends Default\" field for the processor table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the processor table."
                 }
             },
@@ -18568,6 +18715,31 @@
                     "backend": "\"Post Result Options\" field for the recipe table. This is an optional field. Your entry must be an object data type."
                 }
             },
+            "aiAgentInverse": {
+                "fieldNameFormats": {
+                    "frontend": "aiAgentInverse",
+                    "backend": "ai_agent_Inverse",
+                    "database": "ifk_ai_agent",
+                    "pretty": "Ai Agent Inverse",
+                    "component": "AiAgentInverse",
+                    "kebab": "ai-agentInverse",
+                    "sqlFunctionRef": "p_ifk_ai_agent",
+                    "RestAPI": "aiAgentInverse",
+                    "GraphQL": "aiAgentInverse",
+                    "custom": "aiAgentInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:ai_agent",
+                "uniqueEntityId": "supabase_automation_matrix:aiAgent",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "aiAgent",
+                    "databaseTable": "ai_agent",
+                    "typeReference": "TypeBrand<AutomationEntity<'aiAgent'>[]>"
+                }
+            },
             "recipeDisplayInverse": {
                 "fieldNameFormats": {
                     "frontend": "recipeDisplayInverse",
@@ -18757,6 +18929,11 @@
             "custom": "recipe"
         },
         "relationships": [
+            {
+                "relatedTable": "ai_agent",
+                "relatedColumn": "recipe_id",
+                "mainTableColumn": "id"
+            },
             {
                 "relatedTable": "recipe_display",
                 "relatedColumn": "recipe",
@@ -18957,10 +19134,12 @@
                 "databaseTable": "recipe_broker",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe\" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe\" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe\" field for the recipe_broker table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -19023,10 +19202,12 @@
                 "databaseTable": "recipe_broker",
                 "foreignKeyReference": {
                     "table": "broker",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "broker",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Broker\" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a Broker.",
+                    "frontend": "\"Broker\" field for recipeBroker. This is a required field. Your entry must be an uuid data type. This field is a reference to a broker.",
                     "backend": "\"Broker\" field for the recipe_broker table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the broker table."
                 }
             },
@@ -19402,10 +19583,12 @@
                 "databaseTable": "recipe_display",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe\" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe\" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe\" field for the recipe_display table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -19468,10 +19651,12 @@
                 "databaseTable": "recipe_display",
                 "foreignKeyReference": {
                     "table": "display_option",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "displayOption",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Display\" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a DisplayOption.",
+                    "frontend": "\"Display\" field for recipeDisplay. This is a required field. Your entry must be an uuid data type. This field is a reference to a displayOption.",
                     "backend": "\"Display\" field for the recipe_display table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the display_option table."
                 }
             },
@@ -19838,10 +20023,12 @@
                 "databaseTable": "recipe_function",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe\" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe\" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe\" field for the recipe_function table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -19904,10 +20091,12 @@
                 "databaseTable": "recipe_function",
                 "foreignKeyReference": {
                     "table": "system_function",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "systemFunction",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Function\" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.",
+                    "frontend": "\"Function\" field for recipeFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a systemFunction.",
                     "backend": "\"Function\" field for the recipe_function table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the system_function table."
                 }
             },
@@ -20307,10 +20496,12 @@
                 "databaseTable": "recipe_message",
                 "foreignKeyReference": {
                     "table": "message_template",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "messageTemplate",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Message Id\" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a MessageTemplate.",
+                    "frontend": "\"Message Id\" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a messageTemplate.",
                     "backend": "\"Message Id\" field for the recipe_message table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the message_template table."
                 }
             },
@@ -20373,10 +20564,12 @@
                 "databaseTable": "recipe_message",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe Id\" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe Id\" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe Id\" field for the recipe_message table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -20680,10 +20873,12 @@
                 "databaseTable": "recipe_model",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe\" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe\" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe\" field for the recipe_model table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -20746,10 +20941,12 @@
                 "databaseTable": "recipe_model",
                 "foreignKeyReference": {
                     "table": "ai_model",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "aiModel",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Ai Model\" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a AiModel.",
+                    "frontend": "\"Ai Model\" field for recipeModel. This is a required field. Your entry must be an uuid data type. This field is a reference to a aiModel.",
                     "backend": "\"Ai Model\" field for the recipe_model table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the ai_model table."
                 }
             },
@@ -21129,10 +21326,12 @@
                 "databaseTable": "recipe_processor",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe\" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe\" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe\" field for the recipe_processor table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -21195,10 +21394,12 @@
                 "databaseTable": "recipe_processor",
                 "foreignKeyReference": {
                     "table": "processor",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "processor",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Processor\" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a Processor.",
+                    "frontend": "\"Processor\" field for recipeProcessor. This is a required field. Your entry must be an uuid data type. This field is a reference to a processor.",
                     "backend": "\"Processor\" field for the recipe_processor table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the processor table."
                 }
             },
@@ -21502,10 +21703,12 @@
                 "databaseTable": "recipe_tool",
                 "foreignKeyReference": {
                     "table": "recipe",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe\" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Recipe.",
+                    "frontend": "\"Recipe\" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
                     "backend": "\"Recipe\" field for the recipe_tool table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
                 }
             },
@@ -21568,10 +21771,12 @@
                 "databaseTable": "recipe_tool",
                 "foreignKeyReference": {
                     "table": "tool",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "tool",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Tool\" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a Tool.",
+                    "frontend": "\"Tool\" field for recipeTool. This is a required field. Your entry must be an uuid data type. This field is a reference to a tool.",
                     "backend": "\"Tool\" field for the recipe_tool table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the tool table."
                 }
             },
@@ -22127,10 +22332,12 @@
                 "databaseTable": "registered_function",
                 "foreignKeyReference": {
                     "table": "broker",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "broker",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Return Broker\" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a Broker.",
+                    "frontend": "\"Return Broker\" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a broker.",
                     "backend": "\"Return Broker\" field for the registered_function table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the broker table."
                 }
             },
@@ -22717,10 +22924,12 @@
                 "databaseTable": "system_function",
                 "foreignKeyReference": {
                     "table": "registered_function",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "registeredFunction",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Rf Id\" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a RegisteredFunction.",
+                    "frontend": "\"Rf Id\" field for systemFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.",
                     "backend": "\"Rf Id\" field for the system_function table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the registered_function table."
                 }
             },
@@ -23307,10 +23516,12 @@
                 "databaseTable": "tool",
                 "foreignKeyReference": {
                     "table": "system_function",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "systemFunction",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"System Function\" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a SystemFunction.",
+                    "frontend": "\"System Function\" field for tool. This is an optional field. Your entry must be an uuid data type. This field is a reference to a systemFunction.",
                     "backend": "\"System Function\" field for the tool table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the system_function table."
                 }
             },
@@ -23891,10 +24102,12 @@
                 "databaseTable": "user_preferences",
                 "foreignKeyReference": {
                     "table": "users",
-                    "column": "id"
+                    "column": "id",
+                    "entity": "users",
+                    "field": "id"
                 },
                 "description": {
-                    "frontend": "\"User Id\" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a Users.",
+                    "frontend": "\"User Id\" field for userPreferences. This is a required field. Your entry must be an uuid data type. This field is a reference to a users.",
                     "backend": "\"User Id\" field for the user_preferences table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the users table."
                 }
             },

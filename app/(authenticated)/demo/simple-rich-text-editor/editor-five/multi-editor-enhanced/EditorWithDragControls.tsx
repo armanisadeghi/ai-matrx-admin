@@ -1,6 +1,6 @@
 'use client';
 
-import { EditorWithProviders } from "@/features/rich-text-editor/withManagedEditor";
+import { EditorWithProviders } from "@/features/rich-text-editor/provider/withManagedEditor";
 import { GripVertical, X } from "lucide-react";
 
 const Editor = ({

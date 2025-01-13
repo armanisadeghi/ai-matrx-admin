@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { cn } from "@/lib/utils";
 import { noErrors } from '@/utils';
 import {
@@ -18,6 +18,7 @@ const defaultSizes = {
 interface MultiSwitchToggleProps {
     variant?: 'rounded' | 'geometric' | string;
     defaultValue?: number;
+    value?: string | number;
     states: Array<{
         label?: string;
         icon?: React.ReactNode;
@@ -30,22 +31,29 @@ interface MultiSwitchToggleProps {
     className?: string;
 }
 
-const MultiSwitchToggle = ({
+const MultiSwitchToggle = forwardRef<any, MultiSwitchToggleProps>(({
     variant = 'geometric',
     defaultValue = 0,
+    value,
     states,
     onChange,
     width,
     height,
     disabled = false,
     className,
-}: MultiSwitchToggleProps) => {
-    const [activeState, setActiveState] = useState(defaultValue);
+}: MultiSwitchToggleProps, ref) => {
+    const [internalState, setInternalState] = useState(defaultValue);
     const validVariant = noErrors(variant, 'rounded', ['rounded', 'geometric']);
+
+    const activeState = value !== undefined 
+        ? states.findIndex(state => state.value === value)
+        : internalState;
 
     const handleToggle = (index: number) => {
         if (disabled) return;
-        setActiveState(index);
+        if (value === undefined) {
+            setInternalState(index);
+        }
         onChange?.(states[index].value);
     };
 
@@ -67,7 +75,7 @@ const MultiSwitchToggle = ({
     return (
         <TooltipProvider>
             <div className="flex items-center justify-center">
-                <div className={containerClasses}>
+                <div ref={ref} className={containerClasses}>
                     {states.map((state, index) => {
                         const button = (
                             <button
@@ -143,6 +151,8 @@ const MultiSwitchToggle = ({
             </div>
         </TooltipProvider>
     );
-};
+});
+
+MultiSwitchToggle.displayName = 'MultiSwitchToggle';
 
 export default MultiSwitchToggle;

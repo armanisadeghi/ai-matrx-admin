@@ -1,28 +1,19 @@
 'use client';
 
 import React, { useRef, useState, useLayoutEffect } from "react";
-import { createPortal } from "react-dom";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { Maximize2, Minimize2 } from "lucide-react";
 import PlaygroundHeader from "@/components/playground/header/PlaygroundHeader";
 import ModelSettingsPanel from "@/components/playground/settings/ModelSettingsPanel";
 import DynamicPlaygroundPanels from "@/components/playground/layout/DynamicPlaygroundPanels";
 import { Button } from "@/components/ui/button";
-
-// import BrokerSidebar from "@/components/playground/brokers/BrokersSidebar";
-
 import BrokerSidebar from "@/components/playground/left-sidebar/BrokersSidebar";
-
 
 export default function DynamicPanelsPage() {
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
-  const [previousStates, setPreviousStates] = useState({
-    leftCollapsed: false,
-    rightCollapsed: false,
-  });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const panelsRef = useRef<{
     leftPanel: ImperativePanelHandle | null;
@@ -30,8 +21,14 @@ export default function DynamicPanelsPage() {
   }>(null);
 
   useLayoutEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
   }, []);
 
   const openLeftPanel = () => {
@@ -50,21 +47,15 @@ export default function DynamicPanelsPage() {
     }
   };
 
-  const toggleFullscreen = () => {
-    if (!isFullscreen) {
-      setPreviousStates({
-        leftCollapsed: isLeftCollapsed,
-        rightCollapsed: isRightCollapsed,
-      });
-      setIsLeftCollapsed(false);
-      setIsRightCollapsed(false);
-      panelsRef.current?.leftPanel?.resize(11);
-      panelsRef.current?.rightPanel?.resize(11);
-      setIsFullscreen(true);
-    } else {
-      panelsRef.current?.leftPanel?.resize(15);
-      panelsRef.current?.rightPanel?.resize(15);
-      setIsFullscreen(false);
+  const toggleFullscreen = async () => {
+    try {
+      if (!isFullscreen) {
+        await containerRef.current?.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
     }
   };
 
@@ -103,8 +94,9 @@ export default function DynamicPanelsPage() {
     fullScreenToggleButton,
   };
 
-  const playgroundContent = (
+  return (
     <div
+      ref={containerRef}
       className={`flex flex-col ${
         isFullscreen ? "fixed inset-0 z-50 bg-background" : "h-full"
       }`}
@@ -120,12 +112,4 @@ export default function DynamicPanelsPage() {
       />
     </div>
   );
-
-  if (!isMounted) {
-    return playgroundContent;
-  }
-
-  return isFullscreen && isMounted
-    ? createPortal(playgroundContent, document.body)
-    : playgroundContent;
 }

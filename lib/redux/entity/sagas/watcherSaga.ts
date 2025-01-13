@@ -35,42 +35,43 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
     const { actions } = getEntitySlice(entityKey);
     const sagaLogger = EntityLogger.createLoggerWithDefaults('SAGA WATCHER', entityKey);
 
-    const requestCache = new Map<string, { timestamp: number; count: number }>();
-    const CACHE_EXPIRATION_TIME = 5000;
-    const ALLOWED_DUPLICATE_REQUESTS = 2;
+    // Simplified cache that just stores timestamps for each unique request
+    const requestCache = new Map<string, number>();
+    const CACHE_WINDOW = 1000; // 1 second window to catch duplicate requests in a render cycle
 
     function shouldSkip(actionType: string, payload: any): boolean {
         const cacheKey = `${actionType}-${JSON.stringify(payload)}`;
         const currentTime = Date.now();
-        const cacheEntry = requestCache.get(cacheKey);
+        const lastRequestTime = requestCache.get(cacheKey);
 
-        if (cacheEntry && currentTime - cacheEntry.timestamp < CACHE_EXPIRATION_TIME) {
-            if (cacheEntry.count >= ALLOWED_DUPLICATE_REQUESTS) {
-                sagaLogger.log('warn', `Skipping fetch after ${ALLOWED_DUPLICATE_REQUESTS} duplicate requests for cacheKey: ${cacheKey}`);
-                return true;
-            }
+        // Only block if we've seen this exact request within our cache window
+        if (lastRequestTime && currentTime - lastRequestTime < CACHE_WINDOW) {
+            sagaLogger.log('warn', `Skipping duplicate request for ${cacheKey} within ${CACHE_WINDOW}ms window`);
+            return true;
         }
         return false;
     }
 
     function setCache(actionType: string, payload: any) {
         const cacheKey = `${actionType}-${JSON.stringify(payload)}`;
-        const currentTime = Date.now();
+        requestCache.set(cacheKey, Date.now());
 
-        const cacheEntry = requestCache.get(cacheKey);
-        if (cacheEntry) {
-            cacheEntry.count += 1;
-            cacheEntry.timestamp = currentTime;
-        } else {
-            requestCache.set(cacheKey, {timestamp: currentTime, count: 1});
+        // Optional: Clean up old cache entries
+        // This prevents the cache from growing indefinitely
+        for (const [key, timestamp] of requestCache.entries()) {
+            if (Date.now() - timestamp > CACHE_WINDOW) {
+                requestCache.delete(key);
+            }
         }
     }
+
+
     // handleFetchAllFkIfk
     return function* saga() {
         try {
             yield all([
 
-                takeLatest(
+                takeEvery(
                     actions.fetchOneWithFkIfk.type,
                     function* (action: SagaAction<{ matrxRecordId: MatrxRecordId }>) {
                         if (shouldSkip(actions.fetchOne.type, action.payload)) return;
@@ -80,7 +81,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         yield put(actions.resetFetchOneWithFkIfkStatus());
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.fetchOne.type,
                     function* (action: SagaAction<FetchOneWithFkIfkPayload>) {
                         if (shouldSkip(actions.fetchOne.type, action.payload)) return;
@@ -90,7 +91,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         yield put(actions.resetFetchOneStatus());
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.fetchRecords.type,
                     function* (action: SagaAction<{ page: number; pageSize: number }>) {
                         sagaLogger.log('debug', 'Handling fetchRecords', action.payload);
@@ -117,7 +118,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         setCache(actions.fetchQuickReference.type, action.payload);
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.createRecord.type,
                     function* (action: SagaAction<CreateRecordPayload>) {
                         sagaLogger.log('debug', 'Handling createRecord', action.payload);
@@ -126,7 +127,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         setCache(actions.createRecord.type, action.payload);
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.updateRecord.type,
                     function* (action: SagaAction<{
                         primaryKeyValues: Record<string, MatrxRecordId>;
@@ -138,7 +139,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         setCache(actions.updateRecord.type, action.payload);
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.deleteRecord.type,
                     function* (action: PayloadAction<DeleteRecordPayload>) {
                         sagaLogger.log('debug', 'Handling deleteRecord', action.payload);
@@ -165,7 +166,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         setCache(actions.fetchMetrics.type, action.payload);
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.getOrFetchSelectedRecords.type,
                     function* (action: SagaAction<GetOrFetchSelectedRecordsPayload>) {
                         sagaLogger.log('debug', 'Handling getOrFetchSelectedRecords', action.payload);
@@ -174,7 +175,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                         setCache(actions.getOrFetchSelectedRecords.type, action.payload);
                     }
                 ),
-                takeLatest(
+                takeEvery(
                     actions.fetchSelectedRecords.type,
                     function* (action: SagaAction) {
                         sagaLogger.log('debug', 'Handling fetchSelectedRecords', action.payload);

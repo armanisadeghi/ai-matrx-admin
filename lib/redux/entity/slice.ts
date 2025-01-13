@@ -392,6 +392,34 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                             }
                         },
 
+                        setActiveRecordSmart: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<string>
+                        ) => {
+                            let recordKey: MatrxRecordId;
+                            
+                            // Check if the payload is already a record key (contains a colon)
+                            if (action.payload.includes(':')) {
+                                recordKey = action.payload;
+                            } else {
+                                // If it's a simple ID, create a record key using the state's metadata
+                                recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, { id: action.payload });
+                            }
+                        
+                            console.log("Entity Slice Smart Set Active Record: ", { 
+                                originalPayload: action.payload, 
+                                generatedKey: recordKey 
+                            });
+                            
+                            state.selection.lastActiveRecord = state.selection.activeRecord;
+                            state.selection.activeRecord = recordKey;
+                        
+                            if (!state.selection.selectedRecords.includes(recordKey)) {
+                                console.log("Adding Active Record to Selection: ", recordKey);
+                                addRecordToSelection(state, entityKey, recordKey);
+                            }
+                        },
+                        
                         clearActiveRecord: (state) => {
                             entityLogger.log('debug', 'clearActiveRecord');
                             state.selection.activeRecord = null;
@@ -604,7 +632,32 @@ export const createEntitySlice = <TEntity extends EntityKeys>(
                                 }
                             }
                         },
-
+                        updateUnsavedFields: (
+                            state: EntityState<TEntity>,
+                            action: PayloadAction<{
+                                updates: Array<{
+                                    recordId: MatrxRecordId,
+                                    field: string,
+                                    value: any
+                                }>
+                            }>
+                        ) => {
+                            action.payload.updates.forEach(({recordId, field, value}) => {
+                                const existingRecord = state.unsavedRecords[recordId];
+                                if (existingRecord?.[field] !== value) {
+                                    state.unsavedRecords[recordId] = {
+                                        ...existingRecord,
+                                        [field]: value
+                                    };
+                                    if (!state.flags.hasUnsavedChanges) {
+                                        state.flags.hasUnsavedChanges = true;
+                                        if (state.flags.operationMode !== 'create') {
+                                            state.flags.operationMode = 'update';
+                                        }
+                                    }
+                                }
+                            });
+                        },
                         addPendingOperation: (
                             state: EntityState<TEntity>,
                             action: PayloadAction<MatrxRecordId>

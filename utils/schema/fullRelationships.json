@@ -165,7 +165,7 @@
     },
     "aiAgent": {
         "selfReferential": [],
-        "manyToMany": [],
+        "manyToMany": ["aiSettings", "recipe"],
         "oneToOne": [],
         "manyToOne": [],
         "oneToMany": [],
@@ -174,7 +174,28 @@
         "relationshipDetails": {
             "entityName": "aiAgent",
             "table_name": "ai_agent",
-            "foreignKeys": {},
+            "foreignKeys": {
+                "aiSettings": {
+                    "foreign_table": "ai_settings",
+                    "foreign_entity": "aiSettings",
+                    "column": "ai_settings_id",
+                    "fieldName": "ai_settings_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "ai_agent_ai_settings_id_fkey"
+                },
+                "recipe": {
+                    "foreign_table": "recipe",
+                    "foreign_entity": "recipe",
+                    "column": "recipe_id",
+                    "fieldName": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "ai_agent_recipe_id_fkey"
+                }
+            },
             "referencedBy": {}
         }
     },
@@ -185,7 +206,7 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": [],
+        "inverseReferences": ["aiAgent"],
         "relationshipDetails": {
             "entityName": "aiSettings",
             "table_name": "ai_settings",
@@ -221,7 +242,17 @@
                     "constraint_name": "ai_settings_ai_provider_fkey"
                 }
             },
-            "referencedBy": {}
+            "referencedBy": {
+                "aiAgent": {
+                    "foreign_table": "ai_agent",
+                    "foreign_entity": "aiAgent",
+                    "field": "ai_settings_id",
+                    "column": "ai_settings_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "ai_agent_ai_settings_id_fkey"
+                }
+            }
         }
     },
     "messageTemplate": {
@@ -706,12 +737,21 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["recipeDisplay", "recipeProcessor", "recipeModel", "recipeBroker", "recipeTool", "recipeFunction", "recipeMessage"],
+        "inverseReferences": ["aiAgent", "recipeDisplay", "recipeProcessor", "recipeModel", "recipeBroker", "recipeTool", "recipeFunction", "recipeMessage"],
         "relationshipDetails": {
             "entityName": "recipe",
             "table_name": "recipe",
             "foreignKeys": {},
             "referencedBy": {
+                "aiAgent": {
+                    "foreign_table": "ai_agent",
+                    "foreign_entity": "aiAgent",
+                    "field": "recipe_id",
+                    "column": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "ai_agent_recipe_id_fkey"
+                },
                 "recipeDisplay": {
                     "foreign_table": "recipe_display",
                     "foreign_entity": "recipeDisplay",

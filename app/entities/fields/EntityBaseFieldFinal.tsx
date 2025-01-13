@@ -48,7 +48,7 @@ const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutPro
                     },
                     [dispatch, actions, recordId, fieldName, operationMode]
                 );
-
+        
                 return (
                     <FieldDisableLogic
                         entityStatus={entityStatus}

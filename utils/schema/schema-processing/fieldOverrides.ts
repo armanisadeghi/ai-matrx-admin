@@ -42,6 +42,164 @@ const messageTemplateFieldOverrides: AllFieldOverrides = {
     },
 };
 
+const aiSettingsFieldOverrides: AllFieldOverrides = {
+    temperature: {
+        defaultComponent: 'SPECIAL' as const,
+        componentProps: {
+            subComponent: 'SLIDER',
+            variant: 'default',
+            section: 'default',
+            placeholder: 'default',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 'default',
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'w-full',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 0, // Added with sensible default
+            max: 2, // Updated to match
+            step: 0.01, // Updated to match
+            numberType: 'real',
+            options: 'default',
+            required: false,
+        },
+    },
+    maxTokens: {
+        defaultComponent: 'SPECIAL' as const,
+        componentProps: {
+            subComponent: 'SLIDER',
+            variant: 'default',
+            section: 'default',
+            placeholder: 'default',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 'default',
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'w-full',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 0, // Added with sensible default
+            max: 5000, // Updated to match
+            step: 1, // Updated to match
+            numberType: 'smallint',
+            options: 'default',
+            required: false,
+        },
+    },
+    stream: {
+        defaultComponent: 'SPECIAL' as const,
+        componentProps: {
+            subComponent: 'SWITCH',
+            variant: 'geometric',
+            width: 'w-28',
+            height: 'h-7',
+            section: 'default',
+            placeholder: 'default',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 'default',
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'default',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 'default',
+            max: 'default',
+            step: 'default',
+            numberType: 'default',
+            options: 'default',
+            required: false,
+            labels: {
+                // Added labels configuration
+                on: 'Steam',
+                off: 'Direct',
+            },
+        },
+    },
+    responseFormat: {
+        defaultComponent: 'SPECIAL' as const,
+        componentProps: {
+            subComponent: 'MULTI_SWITCH',
+            variant: 'geometric',
+            preset: 'RESPONSE_FORMATS',
+            width: 'w-24',
+            height: 'h-7',
+            section: 'default',
+            placeholder: 'default',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 5,
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'default',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 'default',
+            max: 'default',
+            step: 'default',
+            numberType: 'default',
+            options: 'default',
+            required: false,
+        },
+    },
+    tools: {
+        defaultComponent: 'SPECIAL' as const,
+        componentProps: {
+            subComponent: 'TOOL_CONTROL',
+            variant: 'geometric',
+            width: 'w-48',
+            height: 'h-7',
+            section: 'default',
+            placeholder: 'Select tools...',
+            size: 'default',
+            textSize: 'default',
+            textColor: 'default',
+            rows: 'default',
+            animation: 'default',
+            fullWidthValue: 'default',
+            fullWidth: 'default',
+            disabled: 'default',
+            className: 'default',
+            type: 'default',
+            onChange: 'default',
+            onBlur: 'default',
+            formatString: 'default',
+            min: 'default',
+            max: 'default',
+            step: 'default',
+            numberType: 'default',
+            options: 'default',
+            required: false,
+            // Let the component handle these internally
+            primaryControlOptions: 'toolAssistOptions',
+            toolOptions: 'aiTools',
+        },
+    },
+};
+
 const dataInputComponentFieldOverrides: AllFieldOverrides = {
     options: {
         componentProps: {
@@ -102,13 +260,11 @@ const recipeFieldOverrides: AllFieldOverrides = {
     },
 };
 
-
 const actionFieldOverrides: AllFieldOverrides = {};
 const aiEndpointFieldOverrides: AllFieldOverrides = {};
 const aiModelFieldOverrides: AllFieldOverrides = {};
 const aiModelEndpointFieldOverrides: AllFieldOverrides = {};
 const aiProviderFieldOverrides: AllFieldOverrides = {};
-const aiSettingsFieldOverrides: AllFieldOverrides = {};
 const argFieldOverrides: AllFieldOverrides = {};
 const automationBoundaryBrokerFieldOverrides: AllFieldOverrides = {};
 const automationMatrixFieldOverrides: AllFieldOverrides = {};

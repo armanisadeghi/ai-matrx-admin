@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { EditorWithProviders } from "@/features/rich-text-editor/withManagedEditor";
+import { EditorWithProviders } from "@/features/rich-text-editor/provider/withManagedEditor";
 import { GripVertical } from 'lucide-react';
 
 const MultiEditorPage = () => {

@@ -1,59 +1,51 @@
-import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import {
-    RecipeMessageDataRequired,
-    AiAgentDataRequired,
-    MessageBrokerDataRequired,
-    MessageTemplateDataRequired,
-    AiSettingsDataRequired,
-    DataBrokerDataRequired,
-    RecipeDataRequired,
-} from '@/types';
+import { createRecordKey, GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { RecipeMessageDataRequired, AiAgentDataRequired, MessageTemplateDataRequired, AiSettingsDataRequired, RecipeDataRequired } from '@/types';
 import React, { useEffect, useCallback } from 'react';
 
 export function useRecipe() {
     const dispatch = useAppDispatch();
 
-    const recipe = useEntityTools('recipe');
-    const recipeMessage = useEntityTools('recipeMessage');
-    const message = useEntityTools('messageTemplate');
-    const messageBroker = useEntityTools('messageBroker');
-    const dataBroker = useEntityTools('dataBroker');
-    const aiAgent = useEntityTools('aiAgent');
-    const aiSettings = useEntityTools('aiSettings');
+    const recipeEntity = useEntityTools('recipe');
+    const recipeMessageEntity = useEntityTools('recipeMessage');
+    const messageTemplateEntity = useEntityTools('messageTemplate');
+    const aiAgentEntity = useEntityTools('aiAgent');
+    const aiSettingsEntity = useEntityTools('aiSettings');
 
-    const activeRecipeRecord = useAppSelector(recipe.selectors.selectActiveRecord) as RecipeDataRequired;
-    const activeRecipeId = activeRecipeRecord?.id;
+    const activeRecipeRecord = useAppSelector(recipeEntity.selectors.selectActiveRecord) as RecipeDataRequired;
+    const activeRecipeFieldId = activeRecipeRecord?.id;
 
-    const recipeMessages = useAppSelector(recipeMessage.selectors.selectRecordsByFieldValue('recipeId', activeRecipeId)) as RecipeMessageDataRequired[];
+    // Messages
+    const recipeMessageRecords = useAppSelector(
+        recipeMessageEntity.selectors.selectRecordsByFieldValue('recipeId', activeRecipeFieldId)
+    ) as RecipeMessageDataRequired[];
 
-    // Message Templates
     const matchingMessageIds = React.useMemo(
-        () => recipeMessages.filter((message) => message?.messageId != null).map((message) => message.messageId),
-        [recipeMessages]
+        () => recipeMessageRecords.filter((message) => message?.messageId != null).map((message) => message.messageId),
+        [recipeMessageRecords]
     );
-    const messageMatrxIds = useAppSelector((state) => message.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingMessageIds));
-    const matchingMessages = useAppSelector((state) => message.selectors.selectRecordsByKeys(state, messageMatrxIds)) as MessageTemplateDataRequired[];
+    const messageMatrxIds = useAppSelector((state) => messageTemplateEntity.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingMessageIds));
+    const matchingMessages = useAppSelector((state) =>
+        messageTemplateEntity.selectors.selectRecordsByKeys(state, messageMatrxIds)
+    ) as MessageTemplateDataRequired[];
 
-    // AI Agents
-    const aiAgents = useAppSelector(aiAgent.selectors.selectRecordsByFieldValue('recipeId', activeRecipeId)) as AiAgentDataRequired[];
+    // AI Agents & Settings
+    const aiAgentRecords = useAppSelector(aiAgentEntity.selectors.selectRecordsByFieldValue('recipeId', activeRecipeFieldId)) as AiAgentDataRequired[];
 
-    // AI Settings
-    const matchingAiSettingsIds = React.useMemo(
-        () => aiAgents.filter((agent) => agent?.aiSettingsId != null).map((agent) => agent.aiSettingsId),
-        [aiAgents]
-    );
-    const settingsMatrxIds = useAppSelector((state) => aiSettings.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingAiSettingsIds));
-    const matchingAiSettings = useAppSelector((state) => aiSettings.selectors.selectRecordsByKeys(state, settingsMatrxIds)) as AiSettingsDataRequired[];
+    const aiAgentMetadata = useAppSelector(aiAgentEntity.selectors.selectEntityMetadata);
 
-    // Message Brokers and Data Brokers
-    const messageBrokers = useAppSelector(messageBroker.selectors.selectRecordsByFieldValue('messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
-    
-    const matchingBrokerIds = React.useMemo(
-        () => messageBrokers.filter((broker) => broker?.brokerId != null).map((broker) => broker.brokerId),
-        [messageBrokers]
-    );
-    const brokerMatrxIds = useAppSelector((state) => dataBroker.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingBrokerIds));
-    const matchingBrokers = useAppSelector((state) => dataBroker.selectors.selectRecordsByKeys(state, brokerMatrxIds)) as DataBrokerDataRequired[];
+    const firstAgentRecordKey = React.useMemo(() => {
+        if (aiAgentRecords.length > 0) {
+            return createRecordKey(aiAgentMetadata.primaryKeyMetadata, { id: aiAgentRecords[0].id });
+        }
+        return null;
+    }, [aiAgentRecords, aiAgentMetadata]);
+
+    // Set first agent as active whenever it changes
+    useEffect(() => {
+        if (firstAgentRecordKey) {
+            dispatch(aiAgentEntity.actions.setActiveRecord(firstAgentRecordKey));
+        }
+    }, [firstAgentRecordKey, activeRecipeRecord, dispatch]);
 
     const fetchMessagesPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
         () => ({
@@ -63,62 +55,23 @@ export function useRecipe() {
         [messageMatrxIds]
     );
 
-    const fetchSettingsPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
-        () => ({
-            matrxRecordIds: settingsMatrxIds,
-            fetchMode: 'fkIfk',
-        }),
-        [settingsMatrxIds]
-    );
-
-    const fetchBrokersPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
-        () => ({
-            matrxRecordIds: brokerMatrxIds,
-            fetchMode: 'fkIfk',
-        }),
-        [brokerMatrxIds]
-    );
-
     const fetchDependentRecords = useCallback(() => {
-        if (activeRecipeId && messageMatrxIds.length > 0) {
-            dispatch(message.actions.getOrFetchSelectedRecords(fetchMessagesPayload));
+        if (activeRecipeFieldId && messageMatrxIds.length > 0) {
+            dispatch(messageTemplateEntity.actions.getOrFetchSelectedRecords(fetchMessagesPayload));
         }
-        if (settingsMatrxIds.length > 0) {
-            dispatch(aiSettings.actions.getOrFetchSelectedRecords(fetchSettingsPayload));
-        }
-        if (brokerMatrxIds.length > 0) {
-            dispatch(dataBroker.actions.getOrFetchSelectedRecords(fetchBrokersPayload));
-        }
-    }, [
-        dispatch,
-        activeRecipeId,
-        message.actions,
-        aiSettings.actions,
-        dataBroker.actions,
-        messageMatrxIds,
-        settingsMatrxIds,
-        brokerMatrxIds,
-        fetchMessagesPayload,
-        fetchSettingsPayload,
-        fetchBrokersPayload,
-    ]);
+    }, [dispatch, activeRecipeFieldId, messageTemplateEntity.actions, aiSettingsEntity.actions, messageMatrxIds, fetchMessagesPayload]);
 
     useEffect(() => {
-        if (activeRecipeId) {
+        if (activeRecipeFieldId) {
             fetchDependentRecords();
         }
-    }, [fetchDependentRecords, activeRecipeId, recipeMessages]);
+    }, [fetchDependentRecords, activeRecipeFieldId, recipeMessageRecords]);
 
     return {
-        activeRecipeId,
-        recipeMessages,
-        messages: matchingMessages,
-        aiAgents,
-        aiSettings: matchingAiSettings,
-        messageBrokers,
-        brokers: matchingBrokers,
+        recipeMessageRecords,
+        matchingMessages,
+        aiAgentRecords,
         matchingMessageIds,
-        matchingAiSettingsIds,
-        matchingBrokerIds,
+        activeRecipeFieldId,
     };
 }

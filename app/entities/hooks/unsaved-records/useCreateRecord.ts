@@ -9,12 +9,12 @@ interface UseCreateRecordResult {
 }
 
 export const useCreateRecord = (entityKey: EntityKeys): UseCreateRecordResult => {
-    const { store, actions, dispatch, selectors } = useEntityTools(entityKey);
+    const { actions, dispatch, selectors, store } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
 
     const createRecord = useCallback((matrxRecordId: MatrxRecordId) => {
-        const state = store.getState();
-        const createPayload = selectors.selectCreatePayload(state, matrxRecordId);
+        // Get fresh state at time of callback execution
+        const createPayload = selectors.selectCreatePayload(store.getState(), matrxRecordId);
 
         dispatch(actions.addPendingOperation(matrxRecordId));
 
@@ -29,7 +29,7 @@ export const useCreateRecord = (entityKey: EntityKeys): UseCreateRecordResult =>
                 }
             })
         }));
-    }, [dispatch, actions, selectors, entityToasts]);
+    }, [dispatch, actions, selectors, entityToasts, store, entityKey]);
 
     return { createRecord };
 };

@@ -120,18 +120,13 @@ export const selectEntityPrimaryKeyField = createSelector(
 export const selectEntityDisplayField = createSelector(
     [
         (state: RootState, entityName: EntityKeys) => {
-            console.log('selectEntityDisplayField input - entityName:', entityName);
             const fields = selectEntityFields(state, entityName);
-            console.log('selectEntityDisplayField - retrieved fields:', fields);
             return fields;
         },
     ],
     (fields): string | undefined => {
-        console.log('selectEntityDisplayField - searching for display field in:', fields);
         const displayField = fields.find((field) => field.isDisplayField);
-        console.log('selectEntityDisplayField - found display field:', displayField);
         const result = displayField ? displayField.name : undefined;
-        console.log('selectEntityDisplayField - returning:', result);
         return result;
     }
 );

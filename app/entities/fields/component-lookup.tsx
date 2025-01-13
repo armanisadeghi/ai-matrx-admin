@@ -29,6 +29,7 @@ import EntityFileUpload from "./other-components/EntityFileUpload";
 import EntitySheet from "./other-components/EntitySheet";
 import EntityShowSelectedAccordion from "../relationships/EntityShowSelectedAccordion";
 import EntitySelectSpecial from "./field-components/EntitySelectSpecial";
+import EntitySpecialField from "./field-components/custom-fields/EntitySpecialField";
 
 
 export const ENTITY_FIELD_COMPONENTS = {
@@ -44,6 +45,7 @@ export const ENTITY_FIELD_COMPONENTS = {
     UUID_FIELD: EntityUUIDField,
     UUID_ARRAY: EntityUUIDArray,
     RELATIONAL_INPUT: RelationalInput,
+    SPECIAL: EntitySpecialField,
 
 
     SLIDER: EntitySlider,    

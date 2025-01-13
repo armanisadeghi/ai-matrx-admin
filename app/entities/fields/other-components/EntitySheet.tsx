@@ -117,7 +117,7 @@ export function EntitySheet({
                             </div>
                         )}
 
-                        <ScrollArea className="flex-1">
+                        <ScrollArea className="flex-1 scrollbar-none">
                             <div className="h-full">{children}</div>
                         </ScrollArea>
 

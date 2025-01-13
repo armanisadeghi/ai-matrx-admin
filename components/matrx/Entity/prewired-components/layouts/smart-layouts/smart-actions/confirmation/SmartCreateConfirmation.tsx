@@ -3,7 +3,7 @@ import { EntityKeys } from '@/types/entityTypes';
 import ConfirmationDialog from './ConfirmationDialog';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { useEntityTools } from '@/lib/redux';
-import { useCreateRecord } from '@/app/entities/hooks/crud/useCreateRecord';
+import { useCreateRecord } from '@/app/entities/hooks/unsaved-records/useCreateRecord';
 import { formatFieldValue } from './utils';
 
 interface SmartCreateConfirmationProps {

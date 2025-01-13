@@ -2,6 +2,16 @@ const webpack = require('webpack');
 
 exports.configureWebpack = (config, { isServer }) => {
     // Add support for WebAssembly
+
+    // if (dev) {
+    //     config.cache = {
+    //         type: 'filesystem',
+    //         buildDependencies: {
+    //             config: [__filename],
+    //         },
+    //     };
+    // };
+
     config.experiments = {
         ...config.experiments,
         asyncWebAssembly: true,

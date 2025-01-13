@@ -57,6 +57,7 @@ export function AdjustableResultPanel({
     <>
       <Panel
         ref={panelRef}
+        id={id}
         order={order}
         defaultSize={previousSize}
         minSize={10}

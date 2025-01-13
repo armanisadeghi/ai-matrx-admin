@@ -1,6 +1,6 @@
 import { useEntitySelectionCrud } from '@/app/entities/hooks/crud/useCrudById';
-import useTrackedCreateRecord from '@/app/entities/hooks/crud/useTrackedCreateRecord';
-import { useUpdateFields } from '@/app/entities/hooks/crud/useUpdateFields';
+import useTrackedCreateRecord from '@/app/entities/hooks/unsaved-records/useTrackedCreateRecord';
+import { useUpdateFields } from '@/app/entities/hooks/unsaved-records/useUpdateFields';
 import { useRefManager } from '@/lib/refs/hooks';
 import React, { createContext, useContext, useReducer, useRef, useCallback, useEffect } from 'react';
 import { BrokerInstance, BrokerSyncContextValue, TrackedBroker } from './types';

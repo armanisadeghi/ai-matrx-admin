@@ -258,12 +258,14 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL RELATION CONVERSION', entityKey);
     const payload = action.payload;
 
+    entityLogger.log('info', 'Starting with payload:', payload);
+
     try {
         const flexibleQueryOptions: FlexibleQueryOptions = {
             entityNameAnyFormat: entityKey,
         };
 
-        entityLogger.log('debug', 'Flexible Query Options', flexibleQueryOptions);
+        entityLogger.log('info', 'Flexible Query Options', flexibleQueryOptions);
 
         optionalActionKeys.forEach((key) => {
             if (key in payload && payload[key] !== undefined) {
@@ -285,7 +287,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             flexibleQueryOptions
         );
 
-        entityLogger.log('debug', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
+        entityLogger.log('info', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
 
         const rpcArgs = {
             p_table_name: unifiedDatabaseObject.tableName,
@@ -302,7 +304,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             throw error;
         }
 
-        entityLogger.log('debug', 'Full response data:', data);
+        entityLogger.log('info', 'Full response data:', data);
 
 
         const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: data});

@@ -41,7 +41,7 @@ interface EntityFormFooterProps {
 const EntityFormFooter = ({
     entityKey,
     recordId,
-    density = "compact",
+    density = 'compact',
     crudOptions = {
         allowCreate: false,
         allowEdit: true,
@@ -66,35 +66,36 @@ const EntityFormFooter = ({
     };
 
     return (
-        <>
+        <div className="flex flex-col items-center gap-4">
             <SmartCrudButtons
                 entityKey={entityKey}
                 recordId={recordId}
                 options={crudOptions}
                 layout={crudLayout}
             />
-
+    
             <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 onClick={() => toggleSheet(recordId)}
-                className='text-xs'
+                className="text-xs"
             >
-                <Settings className='w-3 h-3' />
+                <Settings className="w-3 h-3 mr-2" />
                 Advanced
             </Button>
-
+    
             <EntityRecordSheet
+                className="w-full"
                 selectedEntity={entityKey}
                 recordId={recordId}
                 unifiedLayoutProps={getSheetLayoutProps(unifiedLayoutProps)}
                 updateKey={0}
                 open={sheetStates[recordId]}
                 onOpenChange={(open) => setSheetStates((prev) => ({ ...prev, [recordId]: open }))}
-                title={`Advanced Settings`}
-                size='lg'
+                title="Advanced Settings"
+                size="xl"
             />
-        </>
+        </div>
     );
 };
 

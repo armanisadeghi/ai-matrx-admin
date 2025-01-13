@@ -23,7 +23,7 @@ export const useComponentRef = (
     }, [methods]);
 
     useEffect(() => {
-        console.log(`Registering methods for ${componentId}:`, Object.keys(methods));
+        // console.log(`Registering methods for ${componentId}:`, Object.keys(methods));
         manager.register(componentId, {
             ...methods,
             // Wrap methods to always use latest version
@@ -34,7 +34,7 @@ export const useComponentRef = (
         });
 
         return () => {
-            console.log(`Unregistering methods for ${componentId}`);
+            // console.log(`Unregistering methods for ${componentId}`);
             manager.unregister(componentId);
         };
     }, [componentId, manager]);

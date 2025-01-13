@@ -1,104 +1,100 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import ModelCard from "./ModelCard";
-import QuickRefSearchableSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSearchableSelect";
-import QuickRefSelect from "@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSelect";
-import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
+import React, { useEffect, useState } from 'react';
+import ModelCard from './ModelCard';
+import QuickRefSelect from '@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSelect';
+import { MatrxRecordId, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
+import { useAiSettings } from '../hooks/useAiSettings';
+import QuickRefActiveRecordSelect from '@/app/entities/quick-reference/dynamic-quick-ref/QuickRefActiveRecordSelect';
 
 interface ModelSelectionWithInfoProps {
-  initialSettings?: {
-    recipe?: QuickReferenceRecord;
-    provider?: QuickReferenceRecord;
-    model?: QuickReferenceRecord;
-    endpoint?: QuickReferenceRecord;
-  };
+    initialSettings?: {
+        recipe?: MatrxRecordId;
+        aiAgent?: MatrxRecordId;
+        provider?: MatrxRecordId;
+        model?: MatrxRecordId;
+        endpoint?: MatrxRecordId;
+    };
 }
 
-const ModelSelectionWithInfo: React.FC<ModelSelectionWithInfoProps> = ({
-  initialSettings,
-}) => {
-  const [selectedRecipe, setSelectedRecipe] = useState<
-    QuickReferenceRecord | undefined
-  >(initialSettings?.recipe);
-  const [selectedProvider, setSelectedProvider] = useState<
-    QuickReferenceRecord | undefined
-  >(initialSettings?.provider);
-  const [selectedModel, setSelectedModel] = useState<
-    QuickReferenceRecord | undefined
-  >(initialSettings?.model);
-  const [selectedEndpoint, setSelectedEndpoint] = useState<
-    QuickReferenceRecord | undefined
-  >(initialSettings?.endpoint);
+const ModelSelectionWithInfo: React.FC<ModelSelectionWithInfoProps> = ({ initialSettings }) => {
+    const { activeRecipeId } = useAiSettings();
 
-  const handleProviderChange = (record: QuickReferenceRecord) => {
-    setSelectedProvider(record);
-    setSelectedModel(undefined);
-    setSelectedEndpoint(undefined);
-  };
+    const [selectedRecipe, setSelectedRecipe] = useState<MatrxRecordId | undefined>(initialSettings?.recipe);
+    const [selectedAgent, setSelectedAgent] = useState<MatrxRecordId | undefined>(initialSettings?.aiAgent);
+    const [selectedProvider, setSelectedProvider] = useState<MatrxRecordId | undefined>(initialSettings?.provider);
+    const [selectedModel, setSelectedModel] = useState<MatrxRecordId | undefined>(initialSettings?.model);
+    const [selectedEndpoint, setSelectedEndpoint] = useState<MatrxRecordId | undefined>(initialSettings?.endpoint);
 
-  const handleModelChange = (record: QuickReferenceRecord) => {
-    setSelectedModel(record);
-    setSelectedEndpoint(undefined);
-  };
 
-  const handleEndpointChange = (record: QuickReferenceRecord) => {
-    setSelectedEndpoint(record);
-  };
+    const handleProviderChange = (record: QuickReferenceRecord) => {
+        setSelectedProvider(record.recordKey);
+        setSelectedModel(undefined);
+        setSelectedEndpoint(undefined);
+    };
 
-  const handleRecipeChange = (record: QuickReferenceRecord) => {
-    setSelectedRecipe(record);
-  };
+    const handleModelChange = (record: QuickReferenceRecord) => {
+        setSelectedModel(record.recordKey);
+        setSelectedEndpoint(undefined);
+    };
 
-  return (
-    <div className="flex flex-col gap-4 w-full min-w-0">
-      <div className="space-y-4">
-        {/* Recipe Selection */}
-        <div className="w-full min-w-0">
-          <QuickRefSelect
-            entityKey="recipe"
-            initialSelectedRecord={selectedRecipe}
-            onRecordChange={handleRecipeChange}
-          />
+    const handleEndpointChange = (record: QuickReferenceRecord) => {
+        setSelectedEndpoint(record.recordKey);
+    };
+
+    const handleRecipeChange = (record: QuickReferenceRecord) => {
+        setSelectedRecipe(record.recordKey);
+    };
+
+    const handleAgentChange = (record: QuickReferenceRecord) => {
+        setSelectedAgent(record.recordKey);
+    };
+
+    return (
+        <div className='flex flex-col gap-4 w-full min-w-0'>
+            <div className='space-y-4'>
+                {/* Agent Selection */}
+                <div className='w-full min-w-0'>
+                    <QuickRefActiveRecordSelect
+                        entityKey='aiAgent'
+                        onRecordChange={handleAgentChange}
+                    />
+                </div>
+                {/* Provider Selection */}
+                <div className='w-full min-w-0'>
+                    <QuickRefActiveRecordSelect
+                        entityKey='aiProvider'
+                        onRecordChange={handleProviderChange}
+                    />
+                </div>
+
+                {/* Model Selection */}
+                <div className='w-full min-w-0'>
+                    <QuickRefActiveRecordSelect
+                        entityKey='aiModel'
+                        onRecordChange={handleModelChange}
+                    />
+                </div>
+
+                {/* Endpoint Selection */}
+                <div className='w-full min-w-0'>
+                    <QuickRefActiveRecordSelect
+                        entityKey='aiEndpoint'
+                        onRecordChange={handleEndpointChange}
+                    />
+                </div>
+
+                {/* Model Info Card */}
+                <div className='w-full min-w-0'>
+                    <ModelCard
+                        model={selectedModel}
+                        provider={selectedProvider}
+                        endpoint={selectedEndpoint}
+                    />
+                </div>
+            </div>
         </div>
-        {/* Provider Selection */}
-        <div className="w-full min-w-0">
-          <QuickRefSelect
-            entityKey="aiProvider"
-            initialSelectedRecord={selectedProvider}
-            onRecordChange={handleProviderChange}
-          />
-        </div>
-
-        {/* Model Selection */}
-        <div className="w-full min-w-0">
-          <QuickRefSelect
-            entityKey="aiModel"
-            initialSelectedRecord={selectedModel}
-            onRecordChange={handleModelChange}
-          />
-        </div>
-
-        {/* Endpoint Selection */}
-        <div className="w-full min-w-0">
-          <QuickRefSelect
-            entityKey="aiEndpoint"
-            initialSelectedRecord={selectedEndpoint}
-            onRecordChange={handleEndpointChange}
-          />
-        </div>
-
-        {/* Model Info Card */}
-        <div className="w-full min-w-0">
-          <ModelCard
-            model={selectedModel?.recordKey}
-            provider={selectedProvider?.recordKey}
-            endpoint={selectedEndpoint?.recordKey}
-          />
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ModelSelectionWithInfo;

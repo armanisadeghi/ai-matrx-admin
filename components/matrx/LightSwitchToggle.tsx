@@ -1,7 +1,7 @@
 'use client';
 
-import React, {useState} from 'react';
-import {cn} from "@/lib/utils";
+import React, { useState, forwardRef } from 'react';
+import { cn } from "@/lib/utils";
 import { noErrors } from '@/utils';
 
 const defaultSizes = {
@@ -12,6 +12,7 @@ const defaultSizes = {
 interface LightSwitchToggleProps {
     variant?: 'rounded' | 'geometric' | string;
     defaultValue?: boolean;
+    value?: boolean;
     onChange?: (value: boolean) => void;
     width?: string;
     height?: string;
@@ -23,28 +24,33 @@ interface LightSwitchToggleProps {
     className?: string;
 }
 
-const LightSwitchToggle = (
+const LightSwitchToggle = forwardRef<any, LightSwitchToggleProps>((
     {
         variant,
         defaultValue = false,
+        value,
         onChange,
         width,
         height,
         labels = {on: 'ON', off: 'OFF'},
         disabled = false,
         className,
-    }: LightSwitchToggleProps) => {
-    const [isOn, setIsOn] = useState(defaultValue);
-
+    }: LightSwitchToggleProps,
+    ref
+) => {
+    const [internalState, setInternalState] = useState(defaultValue);
     const validVariant = noErrors(variant, 'rounded', ['rounded', 'geometric']);
+
+    const isOn = value !== undefined ? value : internalState;
 
     const handleToggle = (newState: boolean) => {
         if (disabled) return;
-        setIsOn(newState);
+        if (value === undefined) {
+            setInternalState(newState);
+        }
         onChange?.(newState);
     };
 
-    // Use custom dimensions if provided, fall back to defaults if not
     const containerClasses = cn(
         "relative flex bg-muted shadow-inner overflow-hidden",
         width || defaultSizes.width,
@@ -60,7 +66,7 @@ const LightSwitchToggle = (
 
     return (
         <div className="flex items-center justify-center">
-            <div className={containerClasses}>
+            <div ref={ref} className={containerClasses}>
                 {/* Center Line */}
                 <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-border transform -translate-x-1/2 z-10"/>
 
@@ -114,7 +120,7 @@ const LightSwitchToggle = (
                     />
                     <span
                         className={cn(
-                            "relative z-20 font-medium truncate px-2",  // Added truncate and padding
+                            "relative z-20 font-medium truncate px-2",
                             isOn ? "text-primary-foreground" : "text-muted-foreground"
                         )}
                     >
@@ -124,6 +130,8 @@ const LightSwitchToggle = (
             </div>
         </div>
     );
-};
+});
+
+LightSwitchToggle.displayName = 'LightSwitchToggle';
 
 export default LightSwitchToggle;

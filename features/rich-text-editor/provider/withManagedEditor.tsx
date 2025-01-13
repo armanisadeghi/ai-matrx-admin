@@ -1,9 +1,9 @@
 // withManagedEditor.tsx
 import React, { useEffect } from 'react';
 import { WithRefsProps, withRefs } from '@/lib/refs';
-import RichTextEditor from './RichTextEditor';
-import { useEditorContext } from './provider/EditorProvider';
-import { ChipMenuProvider } from './components/ChipContextMenu';
+import RichTextEditor from '../RichTextEditor';
+import { useEditorContext } from './EditorProvider';
+import { ChipMenuProvider } from '../components/ChipContextMenu';
 
 interface ManagedEditorProps extends WithRefsProps {
     initialContent?: string;

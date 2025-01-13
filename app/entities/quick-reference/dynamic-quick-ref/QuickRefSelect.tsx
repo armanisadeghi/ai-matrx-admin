@@ -18,13 +18,15 @@ interface QuickRefSelectProps {
 
 export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({ entityKey, initialSelectedRecord, onRecordChange, fetchMode = 'fkIfk' }) => {
     const selectText = useAppSelector((state) => selectEntitySelectText(state, entityKey));
+    
+    
 
     const [selectedRecordKey, setSelectedRecordKey] = useState<MatrxRecordId>(initialSelectedRecord?.recordKey || '');
 
     // Fetch quick references
     useFetchQuickRef(entityKey);
 
-    const { handleRecordSelect, quickReferenceRecords, setFetchMode } = useSelectQuickRef(entityKey);
+    const { handleRecordSelect, quickReferenceRecords, setFetchMode, activeRecord, activeRecordId } = useSelectQuickRef(entityKey);
 
     // Set fetch mode when it changes
     useEffect(() => {

@@ -43,7 +43,7 @@ const ModelSettingsPanel = (initialSettings) => {
       </Tabs>
 
       <div className="p-2 space-y-4">
-        <ModelSettings initialSettings={initialSettings} />
+        <ModelSettings />
       </div>
 
       <div className="mt-auto">

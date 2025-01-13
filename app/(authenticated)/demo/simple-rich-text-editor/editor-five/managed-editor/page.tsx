@@ -2,7 +2,7 @@
 'use client';
 
 import { useManagedEditor } from "@/features/rich-text-editor/hooks/useManagedEditor";
-import { EditorWithProviders } from "@/features/rich-text-editor/withManagedEditor";
+import { EditorWithProviders } from "@/features/rich-text-editor/provider/withManagedEditor";
 
 const EditorController = () => {
     const editor = useManagedEditor('main-editor');

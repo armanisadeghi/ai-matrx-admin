@@ -118,18 +118,33 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
     
+    const selectMatrxRecordIdBySimpleKey = createSelector(
+        [
+            selectEntity,
+            (_: RootState, id: MatrxRecordId) => id
+        ],
+        (entity, id): MatrxRecordId => {
+            // Return early if no id or if id is empty string
+            if (!id) return '';
+            
+            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id });
+        }
+    );
+    
     const selectMatrxRecordIdsBySimpleKeys = createSelector(
         [
             selectEntity,
             (_: RootState, ids: MatrxRecordId[]) => ids
         ],
         (entity, ids): MatrxRecordId[] => {
-            return ids.map(id => 
-                createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id })
-            );
+            // Filter out any falsy values before mapping
+            return ids
+                .filter(Boolean)
+                .map(id => createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id }));
         }
     );
 
+    
     const selectMatrxRecordIdFromValue = createSelector([selectEntity, (_: RootState, value: any) => value], (entity, value): MatrxRecordId | null => {
         if (value === undefined || value === null) {
             return null;
@@ -275,6 +290,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         getRecordIdByRecord(entityState, record)
     );
 
+    const selectRecordIdsByRecords = createSelector(
+        [selectEntity, (_: RootState, records: EntityData<TEntity>[]) => records],
+        (entityState, records) => records.map(record => getRecordIdByRecord(entityState, record))
+      );
+      
     // Pagination Selectors
     const selectPaginationInfo = createSelector([selectEntity], (entity) => entity.pagination);
 
@@ -902,6 +922,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectQuickReferenceState,
 
         selectRecordIdByRecord,
+        selectRecordIdsByRecords,
 
         selectSelectedRecordsWithKey,
         selectCombinedRecordsWithFieldInfo,
@@ -966,6 +987,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
         selectRecordsByFieldValue,
         selectMatrxRecordIdsBySimpleKeys,
+        selectMatrxRecordIdBySimpleKey,
         selectRecordsByKeys,
     };
 };

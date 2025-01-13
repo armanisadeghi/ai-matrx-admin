@@ -2,7 +2,7 @@
 import { BrokerData, MatrxRecordId } from '@/types';
 import { useCallback } from 'react';
 import { useEntityTools } from '@/lib/redux';
-import { useUpdateFields } from '@/app/entities/hooks/crud/useUpdateFields';
+import { useUpdateFields } from '@/app/entities/hooks/unsaved-records/useUpdateFields';
 
 type BrokerDataType = "str" | "bool" | "dict" | "float" | "int" | "list" | "url";
 

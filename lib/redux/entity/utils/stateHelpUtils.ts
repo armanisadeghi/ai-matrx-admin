@@ -12,6 +12,7 @@ import {
     PrimaryKeyMetadata,
 } from '@/lib/redux/entity/types/stateTypes';
 import EntityLogger from './entityLogger';
+import { utils } from 'xlsx';
 
 // EntityLogger.addFeatureToFilter("utils");
 
@@ -208,14 +209,37 @@ export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntitySta
 
 export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
     const prefix = 'new-record-';
-    const existingTempIds = Object.keys(state.unsavedRecords)
+    const existingTempIds = Object.keys(state.unsavedRecords || {})
         .filter((id) => id.startsWith(prefix))
         .map((id) => parseInt(id.replace(prefix, '')))
         .sort((a, b) => b - a);
 
-    const nextNumber = (existingTempIds[0] || 0) + 1;
-    return `${prefix}${nextNumber}`;
+    const highestExistingNumber = existingTempIds.length > 0 ? existingTempIds[0] : 0;
+    return `${prefix}${highestExistingNumber + 1}`;
 };
+
+
+export const generateTempRecordIdFromFutureId = (state: EntityState<EntityKeys>, permanentId: string) => {
+    const prefix = 'new-record-';
+    // Ensure the permanent ID isn't already used as a temp ID
+    const existingTempId = Object.keys(state.unsavedRecords)
+        .find(id => id.replace(prefix, '') === permanentId);
+    
+    if (existingTempId) {
+        throw new Error(`ID ${permanentId} is already in use as a temporary ID`);
+    }
+
+    return `${prefix}${permanentId}`;
+};
+
+export const getPermanentId = (temporaryId: string) => {
+    const prefix = 'new-record-';
+    if (!temporaryId.startsWith(prefix)) {
+        return temporaryId; // If it's not a temp ID, return as is
+    }
+    return temporaryId.replace(prefix, '');
+};
+
 
 export const updateUnsavedRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId, changes: Partial<EntityData<EntityKeys>>) => {
     if (state.unsavedRecords[recordKey]) {
@@ -337,7 +361,8 @@ export const switchToSingleSelectionMode = (state: EntityState<EntityKeys>, reco
 
 export const switchToMultipleSelectionMode = (state: EntityState<EntityKeys>) => {
     state.selection.selectionMode = 'multiple';
-    console.log('switchToMultipleSelectionMode called');
+    utilsLogger.log('debug', 'switchToMultipleSelectionMode called');
+
     removeActiveRecord(state);
 };
 
@@ -466,6 +491,8 @@ export const parseMultipleMatrxRecordIds = (keys: MatrxRecordId[]): Record<AllEn
 };
 
 export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): MatrxRecordId => {
+    utilsLogger.log('debug', 'Creating record key:', { record }, undefined, 'recordKey');
+
     const key = metadata.database_fields
         .map((field, index) => {
             const frontendField = metadata.fields[index];

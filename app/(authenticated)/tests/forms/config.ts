@@ -33,8 +33,8 @@ export const pages: ModulePage[] = [
     },
 
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Form Custom Fields Test With AI Settings',
+        path: 'form-custom-fields',
         relative: true,
         description: ''
     },

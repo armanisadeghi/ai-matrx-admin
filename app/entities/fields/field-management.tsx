@@ -80,6 +80,7 @@ export const StaticFieldConfig = React.memo((props: StaticFieldConfigProps) => {
                 'NUMBER_INPUT',
                 'DATE_PICKER',
                 'JSON_EDITOR',
+                'SPECIAL',
             ]),
         [fieldMetadata]
     );

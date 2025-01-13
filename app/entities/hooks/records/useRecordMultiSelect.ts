@@ -13,7 +13,7 @@ export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEnt
     const selectSelectedRecordsWithKey = useAppSelector(selectors.selectSelectedRecordsWithKey);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
     const activeRecord = useAppSelector(selectors.selectActiveRecord);
-    const loadingState = useAppSelector(selectors.selectLoadingState);
+    const loadingState = useAppSelector(selectors.selectLoadingState)
     const loading = loadingState.loading;
 
     React.useEffect(() => {

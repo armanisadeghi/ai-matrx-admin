@@ -33,17 +33,18 @@ export const useUpdateFields = (entityKey: EntityKeys): UseUpdateFieldsResult =>
 
     const updateFields = useCallback(
         (recordId: MatrxRecordId, updates: FieldUpdates) => {
-            Object.entries(updates).forEach(([fieldName, value]) => {
-                if (fieldSchema.some((field) => field.name === fieldName)) {
-                    dispatch(
-                        actions.updateUnsavedField({
-                            recordId,
-                            field: fieldName,
-                            value,
-                        })
-                    );
-                }
-            });
+            // Convert updates object to array format and filter valid fields
+            const validUpdates = Object.entries(updates)
+                .filter(([fieldName]) => fieldSchema.some((field) => field.name === fieldName))
+                .map(([fieldName, value]) => ({
+                    recordId,
+                    field: fieldName,
+                    value,
+                }));
+
+            if (validUpdates.length > 0) {
+                dispatch(actions.updateUnsavedFields({ updates: validUpdates }));
+            }
         },
         [dispatch, actions, fieldSchema]
     );

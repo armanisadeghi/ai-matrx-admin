@@ -1,39 +1,68 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { DataBrokerDataRequired, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
+import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useRecipe } from './useRecipe';
-import { MessageTemplateDataOptional } from '@/types';
 
 export function useMessageTemplates() {
-    const { 
-        recipeMessages,
-        messages 
-    } = useRecipe();
+    const dispatch = useAppDispatch();
 
-    console.log('Templates Hook:', { recipeMessages, messages }); // Let's see what we're getting
+    const messageBrokerEntity = useEntityTools('messageBroker');
+    const dataBrokerEntity = useEntityTools('dataBroker');
+    const messageTemplateEntity = useEntityTools('messageTemplate');
+    const recipeMessageEntity = useEntityTools('recipeMessage');
+
+    const { recipeMessageRecords, matchingMessages, matchingMessageIds, aiAgentRecords, activeRecipeFieldId } = useRecipe();
 
     const orderedMessages = React.useMemo(() => {
-        if (!recipeMessages?.length || !messages?.length) {
+        if (!recipeMessageRecords?.length || !matchingMessages?.length) {
             return [];
         }
 
-        return recipeMessages
+        return recipeMessageRecords
             .sort((a, b) => a.order - b.order)
-            .map(recipeMessage => {
-                const message = messages.find(m => m.id === recipeMessage.messageId);
+            .map((recipeMessage) => {
+                const message = matchingMessages.find((m) => m.id === recipeMessage.messageId);
                 if (!message) return null;
-                
+
                 return {
                     id: message.id,
                     role: message.role,
                     type: message.type,
-                    content: message.content
+                    content: message.content,
                 };
             })
             .filter(Boolean) as MessageTemplateDataOptional[];
-    }, [recipeMessages, messages]);
+    }, [recipeMessageRecords, matchingMessages]);
 
-    console.log('Ordered Messages:', orderedMessages); // Let's see what we're producing
+    // Message Brokers and Data Brokers
+    const messageBrokers = useAppSelector(messageBrokerEntity.selectors.selectRecordsByFieldValue('messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
+
+    const matchingBrokerIds = React.useMemo(
+        () => messageBrokers.filter((broker) => broker?.brokerId != null).map((broker) => broker.brokerId),
+        [messageBrokers]
+    );
+    const brokerMatrxIds = useAppSelector((state) => dataBrokerEntity.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingBrokerIds));
+    const matchingBrokers = useAppSelector((state) => dataBrokerEntity.selectors.selectRecordsByKeys(state, brokerMatrxIds)) as DataBrokerDataRequired[];
+
+    const fetchBrokersPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
+        () => ({
+            matrxRecordIds: brokerMatrxIds,
+            fetchMode: 'fkIfk',
+        }),
+        [brokerMatrxIds]
+    );
+
+    const fetchDependentRecords = useCallback(() => {
+        if (brokerMatrxIds.length > 0) {
+            dispatch(dataBrokerEntity.actions.getOrFetchSelectedRecords(fetchBrokersPayload));
+        }
+    }, [dispatch, dataBrokerEntity.actions, brokerMatrxIds, fetchBrokersPayload]);
+
 
     return {
-        messages: orderedMessages
+        messages: orderedMessages,
+        brokers: matchingBrokers,
+        fetchDependentRecords,
+        activeRecipeFieldId,
     };
 }
