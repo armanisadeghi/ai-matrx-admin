@@ -7,17 +7,21 @@ import { RelationshipDefinition, createRelationshipData, filterJoinForChild } fr
 import React from 'react';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
 import useUnsavedJoinedWithParent from '../unsaved-records/useUnsavedJoinedWithParent';
-import { toMatrxIdBatch, toMatrxId, toPkId, toPkIdBatch, toPkValues, toPkValue, toMatrxIdFromValueBatch } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { toMatrxId, toPkValues, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useRelationshipMapper } from './useRelationshipMapper';
 
 export function useJoinedRecords(relationshipDefinition: RelationshipDefinition, parentId: string) {
     const dispatch = useAppDispatch();
 
     const parentEntity = relationshipDefinition.parentEntity.entityKey;
+    const joiningEntity = relationshipDefinition.joiningEntity.entityKey;
+
+    const mapper = useRelationshipMapper(joiningEntity, parentEntity);
+    mapper.setParentId(parentId);
+
     const parentReferencedField = relationshipDefinition.parentEntity.referenceField;
     const parentRecordId = toMatrxId(parentEntity, { [parentReferencedField]: parentId });
     const childEntity = relationshipDefinition.childEntity.entityKey;
-    const joiningEntity = relationshipDefinition.joiningEntity.entityKey;
 
     const { selectors: parentSelectors, actions: parentActions } = useEntityTools(parentEntity);
     const { selectors: childSelectors, actions: childActions } = useEntityTools(childEntity);
@@ -26,7 +30,6 @@ export function useJoinedRecords(relationshipDefinition: RelationshipDefinition,
     // Parent Record
     const parentRecord = useAppSelector((state) => parentSelectors.selectRecordByKey(state, parentRecordId)) as EntityData<EntityKeys>;
 
-    const mapper = useRelationshipMapper(joiningEntity, parentEntity);
     const JoiningEntityRecords = mapper.getJoinRecords();
     const joiningMatrxIds = mapper.getJoinMatrxIds();
     const childMatrxIds = mapper.getChildMatrxIds();

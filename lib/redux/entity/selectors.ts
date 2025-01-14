@@ -60,6 +60,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             .filter(Boolean);
     });
 
+    const selectEffectiveRecordsByKeys = createSelector(
+        [
+            selectEntity,
+            (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys
+        ],
+        (entity, recordKeys): TEntity[] => {
+            if (!recordKeys) return [];
+            if (!entity) return [];
+    
+            const validKeys = recordKeys.filter((key): key is MatrxRecordId => key != null);
+            
+            if (validKeys.length === 0) return [];
+    
+            return validKeys
+                .map(recordKey => {
+                    const unsavedRecord = (entity.unsavedRecords?.[recordKey]);
+                    if (unsavedRecord) return unsavedRecord;
+    
+                    return (entity.records?.[recordKey] as TEntity) || null;
+                })
+                .filter((record): record is TEntity => record !== null);
+        }
+    );
+
     const selectFieldByKey = createSelector(
         [
             selectEntity,
@@ -684,6 +708,22 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (unsavedRecords, recordId) => unsavedRecords[recordId]
     );
 
+    const selectAllEffectiveRecords = createSelector(
+        [selectAllRecords, selectUnsavedRecords],
+        (records, unsavedRecords): EntityRecordMap<TEntity> => {
+            // If both are undefined/null, return empty object to maintain type consistency
+            if (!records && !unsavedRecords) {
+                return {} as EntityRecordMap<TEntity>;
+            }
+            
+            return {
+                ...(records || {}),
+                ...(unsavedRecords || {})
+            };
+        }
+    );
+
+
     const selectEffectiveRecordById = createSelector(
         [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
         (unsavedRecords, records, recordId) => {
@@ -975,5 +1015,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectMatrxRecordIdsBySimpleKeys,
         selectMatrxRecordIdBySimpleKey,
         selectRecordsByKeys,
+
+
+        selectAllEffectiveRecords,
+        selectEffectiveRecordsByKeys,
     };
 };

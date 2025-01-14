@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { Button, Card } from '@/components/ui';
 import { Plus } from 'lucide-react';
@@ -8,7 +8,8 @@ import { MessageTemplateDataOptional } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
 import MessageTemplateHeader from './MessageTemplateHeader';
 import MessageEditor from '@/features/rich-text-editor/provider/withMessageEditor';
-import { useMessageTemplates } from '../hooks/dev/useMessageWithNew';
+import { useMessageTemplatesWithNew } from '../hooks/dev/useMessageWithNew';
+import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
 
 const INITIAL_PANELS: MessageTemplateDataOptional[] = [
     {
@@ -30,17 +31,8 @@ interface EditorContainerProps {
 }
 
 function EditorContainer({ onMessageAdd }: EditorContainerProps) {
-    const {
-        messages,
-        brokers,
-        deleteMessageById,
-        addMessage,
-        updateMessage,
-        saveUnsavedMessage,
-        unsavedMessageIds,
-        hasUnsavedMessages
-    } = useMessageTemplates();
-    
+    const { messages, deleteMessageById } = useMessageTemplatesWithNew();
+
     const displayMessages = messages.length ? messages : INITIAL_PANELS;
     const [collapsedPanels, setCollapsedPanels] = useState<Set<string>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<string>>(new Set());
@@ -52,6 +44,24 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
     const [dialogType, setDialogType] = useState<DialogType>('delete');
     const [activeEditorId, setActiveEditorId] = useState<string | null>(null);
 
+    const { addMessage } = useAddMessage();
+
+    const addNewSection = useCallback(() => {
+        const lastSection = displayMessages[displayMessages.length - 1];
+        const lastRole = lastSection.role;
+        const nextRole = lastRole === 'user' ? 'assistant' : 'user';
+
+        const newSection: AddMessagePayload = {
+            role: nextRole,
+            type: 'text',
+            content: '',
+            order: displayMessages.length,
+        };
+
+        addMessage(newSection);
+    }, [displayMessages, addMessage]);
+
+    
     const registerPanelRef = (id: string, ref: ImperativePanelHandle | null) => {
         if (ref) {
             panelRefs.current.set(id, ref);
@@ -143,28 +153,11 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
         openDialog('linkBroker', id);
     };
 
-    const addNewSection = () => {
-        const lastSection = displayMessages[displayMessages.length - 1];
-        const lastRole = lastSection.role;
-        const nextRole = lastRole === 'user' ? 'assistant' : 'user';
-        const roleCount = displayMessages.filter((s) => s.role === nextRole).length + 1;
-
-        const newSection: MessageTemplateDataOptional = {
-            id: `${nextRole}-${roleCount}`, // This will be replaced with proper temp ID
-            role: nextRole,
-            type: 'text',
-            content: '',
-        };
-
-        addMessage(newSection);
-    };
-
-
     return (
         <>
             <PanelGroup
-                direction="vertical"
-                className="h-full"
+                direction='vertical'
+                className='h-full'
                 ref={panelGroupRef}
             >
                 {displayMessages.map((message, index) => {
@@ -186,7 +179,7 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
                                 onExpand={() => handlePanelExpand(message.id)}
                                 order={index + 1}
                             >
-                                <Card className="h-full p-0 overflow-hidden bg-background border-elevation2">
+                                <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
                                     <MessageTemplateHeader
                                         id={message.id}
                                         role={message.role}
@@ -198,14 +191,14 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
                                         onToggleCollapse={toggleEditor}
                                     />
 
-                                    <div className={`transition-all duration-200 ${
-                                        hiddenEditors.has(message.id) 
-                                            ? 'h-0 overflow-hidden' 
-                                            : 'h-[calc(100%-2rem)]'
-                                    }`}>
+                                    <div
+                                        className={`transition-all duration-200 ${
+                                            hiddenEditors.has(message.id) ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'
+                                        }`}
+                                    >
                                         <MessageEditor
                                             id={message.id}
-                                            className="w-full h-full border rounded-md"
+                                            className='w-full h-full border rounded-md'
                                             initialContent={message.content}
                                         />
                                     </div>
@@ -217,11 +210,11 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
                 })}
 
                 <Button
-                    variant="ghost"
-                    className="w-full mt-2"
+                    variant='ghost'
+                    className='w-full mt-2'
                     onClick={addNewSection}
                 >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className='h-4 w-4 mr-2' />
                     Add {displayMessages[displayMessages.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
                 </Button>
             </PanelGroup>

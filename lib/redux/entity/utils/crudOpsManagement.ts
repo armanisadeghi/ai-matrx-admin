@@ -196,7 +196,7 @@ export class EntityModeManager {
     changeMode(state: EntityState<EntityKeys>, targetMode: EntityOperationMode, context?: any): ModeTransitionResult {
         const currentMode = state.flags.operationMode;
 
-        this.logger.log('info', 'Attempting mode change', {
+        this.logger.log('debug', 'Attempting mode change', {
             entity: this.entityKey,
             from: currentMode,
             to: targetMode,
@@ -207,7 +207,7 @@ export class EntityModeManager {
 
         const validationResult = this.validateTransition(currentMode, targetMode, state);
 
-        this.logger.log('info', 'Mode change validation result', validationResult);
+        this.logger.log('debug', 'Mode change validation result', validationResult);
 
         if (!validationResult.canProceed) {
             this.logger.log('warn', 'Mode change validation failed', validationResult);

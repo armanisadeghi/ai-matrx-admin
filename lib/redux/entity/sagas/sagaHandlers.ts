@@ -1015,7 +1015,7 @@ function* handleCreate<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleCreate', entityKey);
 
     const dataForInsert = unifiedDatabaseObject.data
-    entityLogger.log('debug', 'Data for insert:', dataForInsert);
+    entityLogger.log('info', 'Data for insert:', dataForInsert);
 
     try {
 
@@ -1026,12 +1026,11 @@ function* handleCreate<TEntity extends EntityKeys>(
 
         if (error) throw error;
 
-        entityLogger.log('debug', 'Database response', {data});
+        entityLogger.log('info', 'Database response', {data});
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        console.log("--tempRecordId--", unifiedDatabaseObject.tempRecordId);
 
         const successPayload = {
             tempRecordId: unifiedDatabaseObject.tempRecordId,

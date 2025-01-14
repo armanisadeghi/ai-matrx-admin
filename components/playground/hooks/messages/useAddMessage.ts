@@ -1,14 +1,50 @@
-import useStartCreateRecord from "@/app/entities/hooks/unsaved-records/useStartCreateRecord";
-import { useEntityTools } from "@/lib/redux";
-import { MessageTemplateDataOptional, MatrxRecordId } from "@/types";
-import { useCallback } from "react";
+'use client';
+
+import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
+import { useAppStore, useEntityTools } from '@/lib/redux';
+import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { MessageTemplateDataOptional, MatrxRecordId } from '@/types';
+import { useCallback, useMemo } from 'react';
 
 interface MessageOperationState {
     recipeStatus: 'initializing' | 'loading' | 'idle';
     mode: 'existingRecipe' | 'newRecipe' | null;
 }
 
-// Hook specific types
+export interface AddMessagePayload {
+    content: string;
+    order: number;
+    role: 'user' | 'system' | 'assistant';
+    type: 'other' | 'text' | 'base64_image' | 'blob' | 'image_url';
+}
+
+export function useAddMessage() {
+    const store = useAppStore();
+    const parentEntity = 'recipe';
+    const joiningEntity = 'recipeMessage';
+    const childEntity = 'messageTemplate';
+    const { selectors: parentSelectors } = useEntityTools(parentEntity);
+
+    const activeParentRecordId = parentSelectors.selectActiveRecordId(store.getState());
+    const parentId = useMemo(() => toPkValue(activeParentRecordId), [activeParentRecordId]);
+
+    const createRelationship = useRelationshipCreate(joiningEntity, childEntity, parentId);
+
+    const addMessage = useCallback(
+        (payload: AddMessagePayload) => {
+            const rawPayload = {
+                joining: { order: payload.order },
+                child: { content: payload.content, type: payload.type, role: payload.role },
+            };
+
+            return createRelationship(rawPayload);
+        },
+        [createRelationship]
+    );
+
+    return { addMessage };
+}
+
 interface UseAddMessageResult {
     addMessage: (message: MessageTemplateDataOptional, order: number) => MatrxRecordId | null;
 }
@@ -18,49 +54,4 @@ interface UseUpdateMessageResult {
     saveMessageContent: (recordId: MatrxRecordId) => void;
     updateRecipeMessageOrder: (recordId: MatrxRecordId, order: number) => void;
     saveRecipeMessage: (recordId: MatrxRecordId) => void;
-}
-
-
-
-
-export function useAddMessage(state: MessageOperationState) {
-    const { actions: messageTemplateActions, dispatch } = useEntityTools('messageTemplate');
-    const { actions: recipeMessageActions } = useEntityTools('recipeMessage');
-    const startCreateMessageTemplate = useStartCreateRecord({ entityKey: 'messageTemplate' });
-    const startCreateRecipeMessage = useStartCreateRecord({ entityKey: 'recipeMessage' });
-
-    const addMessage = useCallback((message: MessageTemplateDataOptional, order: number): MatrxRecordId | null => {
-        if (state.recipeStatus !== 'idle') return null;
-
-        // Start message template creation
-        const messageRecordKey = startCreateMessageTemplate();
-        if (!messageRecordKey) return null;
-
-        // Initialize message template data
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'type',
-                value: message.type,
-            })
-        );
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'role',
-                value: message.role,
-            })
-        );
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'content',
-                value: message.content || '',
-            })
-        );
-
-        return messageRecordKey;
-    }, [state.recipeStatus, startCreateMessageTemplate, dispatch, messageTemplateActions]);
-
-    return { addMessage };
 }

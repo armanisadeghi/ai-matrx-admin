@@ -45,7 +45,7 @@ type JoinedMessageData = MessageTemplateDataOptional & {
     recipeId?: string; // Optional since components might not need this
 };
 
-export function useMessageTemplates() {
+export function useMessageTemplatesWithNew() {
     // Keep all existing relationship management
     const {
         matchingChildRecords: messages,
