@@ -4,7 +4,7 @@ import React, { useRef, useState, useLayoutEffect } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { Maximize2, Minimize2 } from "lucide-react";
 import PlaygroundHeader from "@/components/playground/header/PlaygroundHeader";
-import ModelSettingsPanel from "@/components/playground/settings/ModelSettingsPanel";
+import ModelSettingsPanel from "@/components/playground/right-sidebar/ModelSettingsPanel";
 import DynamicPlaygroundPanels from "@/components/playground/layout/DynamicPlaygroundPanels";
 import { Button } from "@/components/ui/button";
 import BrokerSidebar from "@/components/playground/left-sidebar/BrokersSidebar";

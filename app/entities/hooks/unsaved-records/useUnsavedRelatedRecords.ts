@@ -8,8 +8,6 @@ import { EntityKeys, MatrxRecordId } from '@/types';
 import { useCreateRecord } from './useCreateRecord';
 import useStartCreateRecord from './useStartCreateRecord';
 import { useUpdateFields } from './useUpdateFields';
-import { recipe } from '@/utils/schema/initialTableSchemas';
-import { join } from 'path';
 
 interface RelatedRecordsConfig {
     primary: {

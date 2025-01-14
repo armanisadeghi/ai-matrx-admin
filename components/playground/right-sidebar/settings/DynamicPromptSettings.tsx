@@ -26,6 +26,13 @@ const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
     },
 });
 
+// Displays the active Record ID for settings
+// If we added different settings to Selection, then we could have each tab # display a different setting and the active tab would become the activve record ID
+// Running 1 test would run the active settings record Id with the recipe
+// Running multiple at once would trigger a separate run for each one in selections.
+
+
+
 export const DynamicPromptSettings = () => {
     const { selectors } = useEntityTools('aiSettings');
     const activeRecordid = useAppSelector(selectors.selectActiveRecordId);

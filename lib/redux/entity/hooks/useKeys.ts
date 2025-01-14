@@ -1,147 +1,78 @@
-import { EntityKeys, MatrxRecordId } from "@/types";
-import { useMemo } from "react";
-import { useAppStore } from "../../hooks";
-import { createEntitySelectors } from "../selectors";
-import { createRecordKey, parseRecordKey } from "../utils/stateHelpUtils";
+import { EntityKeys, MatrxRecordId } from '@/types';
+import { useMemo } from 'react';
+import { useAppStore } from '../../hooks';
+import { createEntitySelectors } from '../selectors';
+import { createRecordKey, parseRecordKey } from '../utils/stateHelpUtils';
 
-type EntityKeysInput = {
+export const useEntityKeys = ({
+    entityKey,
+    recordId,
+    primaryKeyValues,
+}: {
     entityKey: EntityKeys;
     recordId?: MatrxRecordId;
     primaryKeyValues?: Record<string, unknown>;
-    primaryKeyValue?: string;
-};
-
-export const useEntityKeys = ({ entityKey, recordId, primaryKeyValues, primaryKeyValue }: EntityKeysInput) => {
+}) => {
     const store = useAppStore();
     const selectors = createEntitySelectors(entityKey);
     const metadata = selectors.selectPrimaryKeyMetadata(store.getState());
 
     return useMemo(() => {
-        if (primaryKeyValue) {
-            // Convert single value to primaryKeyValues format
-            const pkValues = { [metadata.fields[0]]: primaryKeyValue };
-            const rid = createRecordKey(metadata, pkValues);
-            return { recordId: rid, primaryKeyValues: pkValues, primaryKeyValue };
-        }
-
         if (recordId) {
-            const pkValues = parseRecordKey(recordId);
-            const pkValue = pkValues[metadata.fields[0]] as string;
-            return { recordId, primaryKeyValues: pkValues, primaryKeyValue: pkValue };
+            return { recordId, primaryKeyValues: parseRecordKey(recordId) };
         }
 
         if (primaryKeyValues) {
-            const rid = createRecordKey(metadata, primaryKeyValues);
-            const pkValue = primaryKeyValues[metadata.fields[0]] as string;
-            return { recordId: rid, primaryKeyValues, primaryKeyValue: pkValue };
+            return { recordId: createRecordKey(metadata, primaryKeyValues), primaryKeyValues };
         }
 
-        return { recordId: undefined, primaryKeyValues: undefined, primaryKeyValue: undefined };
-    }, [recordId, primaryKeyValues, primaryKeyValue, metadata]);
+        return { recordId: undefined, primaryKeyValues: undefined };
+    }, [recordId, primaryKeyValues, metadata]);
 };
 
-export const usePkToRecordId = (entityKey: EntityKeys, primaryKeyValue: string) => {
-    const { recordId } = useEntityKeys({ entityKey, primaryKeyValue });
+export const usePkToRecordId = (entityKey: EntityKeys, primaryKeyValues: Record<string, unknown>) => {
+    const { recordId } = useEntityKeys({ entityKey, primaryKeyValues });
     return recordId;
 };
 
-export const useRecordIdToPk = (entityKey: EntityKeys, recordId: MatrxRecordId) => {
-    const { primaryKeyValue } = useEntityKeys({ entityKey, recordId });
-    return primaryKeyValue;
+export const useRecordIdToPks = (entityKey: EntityKeys, recordId: MatrxRecordId) => {
+    const { primaryKeyValues } = useEntityKeys({ entityKey, recordId });
+    return primaryKeyValues;
 };
 
-export const usePksToRecordIds = (entityKey: EntityKeys, primaryKeyValues: string[]) => {
-    const results = useMemo(() => {
-        return primaryKeyValues.map((pkValue) => {
-            const { recordId } = useEntityKeys({ entityKey, primaryKeyValue: pkValue });
-            return recordId;
-        });
-    }, [entityKey, primaryKeyValues]);
-
-    return results;
-};
-
-export const useRecordIdsToPks = (entityKey: EntityKeys, recordIds: MatrxRecordId[]) => {
-    const results = useMemo(() => {
-        return recordIds.map((rid) => {
-            const { primaryKeyValue } = useEntityKeys({ entityKey, recordId: rid });
-            return primaryKeyValue;
-        });
-    }, [entityKey, recordIds]);
-
-    return results;
-};
-
-type EntityKeysBatchInput = {
-    entityKey: EntityKeys;
-    recordIdList?: MatrxRecordId[];
-    primaryKeyValuesList?: Record<string, unknown>[];
-    primaryKeyValueList?: string[];
-};
-
-export const useEntityKeysBatch = ({ 
+export const useEntityKeysBatch = ({
     entityKey,
     recordIdList,
     primaryKeyValuesList,
-    primaryKeyValueList 
-}: EntityKeysBatchInput) => {
+}: {
+    entityKey: EntityKeys;
+    recordIdList?: MatrxRecordId[];
+    primaryKeyValuesList?: Record<string, unknown>[];
+}) => {
     const store = useAppStore();
     const selectors = createEntitySelectors(entityKey);
     const metadata = selectors.selectPrimaryKeyMetadata(store.getState());
 
     return useMemo(() => {
-        if (primaryKeyValueList) {
-            // Convert array of single values to arrays of other formats
-            const pkValuesList = primaryKeyValueList.map(value => ({ 
-                [metadata.fields[0]]: value 
-            }));
-            const recordIds = pkValuesList.map(pkv => createRecordKey(metadata, pkv));
-            return { 
-                recordIdList: recordIds, 
-                primaryKeyValuesList: pkValuesList, 
-                primaryKeyValueList 
-            };
-        }
-
         if (recordIdList) {
-            const pkValuesList = recordIdList.map(rid => parseRecordKey(rid));
-            const pkValues = pkValuesList.map(pkv => pkv[metadata.fields[0]] as string);
-            return { 
-                recordIdList, 
-                primaryKeyValuesList: pkValuesList, 
-                primaryKeyValueList: pkValues 
+            return {
+                recordIdList,
+                primaryKeyValuesList: recordIdList.map((id) => parseRecordKey(id)),
             };
         }
 
         if (primaryKeyValuesList) {
-            const recordIds = primaryKeyValuesList.map(pkv => createRecordKey(metadata, pkv));
-            const pkValues = primaryKeyValuesList.map(pkv => pkv[metadata.fields[0]] as string);
-            return { 
-                recordIdList: recordIds, 
-                primaryKeyValuesList, 
-                primaryKeyValueList: pkValues 
+            return {
+                recordIdList: primaryKeyValuesList.map((pkValues) => createRecordKey(metadata, pkValues)),
+                primaryKeyValuesList,
             };
         }
 
-        return { 
-            recordIdList: undefined, 
-            primaryKeyValuesList: undefined, 
-            primaryKeyValueList: undefined 
-        };
-    }, [recordIdList, primaryKeyValuesList, primaryKeyValueList, metadata]);
+        return { recordIdList: [], primaryKeyValuesList: [] };
+    }, [recordIdList, primaryKeyValuesList, metadata]);
 };
 
-export const useBatchPksToRecordIds = (entityKey: EntityKeys, primaryKeyValueList: string[]) => {
-    const { recordIdList } = useEntityKeysBatch({ entityKey, primaryKeyValueList });
-    return recordIdList;
-};
-
-export const useBatchRecordIdsToPks = (entityKey: EntityKeys, recordIdList: MatrxRecordId[]) => {
-    const { primaryKeyValueList } = useEntityKeysBatch({ entityKey, recordIdList });
-    return primaryKeyValueList;
-};
-
-export const useBatchPkValuesToRecordIds = (
+export const usePkToRecordIdBatch = (
     entityKey: EntityKeys,
     primaryKeyValuesList: Record<string, unknown>[]
 ) => {
@@ -149,10 +80,7 @@ export const useBatchPkValuesToRecordIds = (
     return recordIdList;
 };
 
-export const useBatchRecordIdsToPkValues = (
-    entityKey: EntityKeys,
-    recordIdList: MatrxRecordId[]
-) => {
+export const useRecordIdToPksBatch = (entityKey: EntityKeys, recordIdList: MatrxRecordId[]) => {
     const { primaryKeyValuesList } = useEntityKeysBatch({ entityKey, recordIdList });
     return primaryKeyValuesList;
 };

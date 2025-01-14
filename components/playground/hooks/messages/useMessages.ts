@@ -48,6 +48,7 @@ export function useMessageTemplates() {
         JoiningEntityRecords: recipeMessages,
         deletePkWithChild: deleteMessageById,
         deleteMatrxIdWithChild: deleteMessageByMatrxId,
+        createRelatedRecords: createMessageTemplates,
     } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
 
     // Process messages with joining data
@@ -98,5 +99,6 @@ export function useMessageTemplates() {
         fetchDependentRecords,
         deleteMessageById,
         deleteMessageByMatrxId,
+        createMessageTemplates,
     };
 }

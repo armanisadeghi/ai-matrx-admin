@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+'use client';
+
+import React, { useRef, useState } from 'react';
 import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { Button, Card } from '@/components/ui';
 import { Plus } from 'lucide-react';
-import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { MessageTemplateDataOptional } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
 import MessageTemplateHeader from './MessageTemplateHeader';
-import { useMessageTemplates } from '../hooks/messages/useMessages';
-import { useRefManager } from '@/lib/refs';
 import MessageEditor from '@/features/rich-text-editor/provider/withMessageEditor';
+import { useMessageTemplates } from '../hooks/dev/useMessageWithNew';
 
 const INITIAL_PANELS: MessageTemplateDataOptional[] = [
     {
@@ -30,7 +30,17 @@ interface EditorContainerProps {
 }
 
 function EditorContainer({ onMessageAdd }: EditorContainerProps) {
-    const { messages, brokers, deleteMessageById } = useMessageTemplates();
+    const {
+        messages,
+        brokers,
+        deleteMessageById,
+        addMessage,
+        updateMessage,
+        saveUnsavedMessage,
+        unsavedMessageIds,
+        hasUnsavedMessages
+    } = useMessageTemplates();
+    
     const displayMessages = messages.length ? messages : INITIAL_PANELS;
     const [collapsedPanels, setCollapsedPanels] = useState<Set<string>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<string>>(new Set());
@@ -140,14 +150,15 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
         const roleCount = displayMessages.filter((s) => s.role === nextRole).length + 1;
 
         const newSection: MessageTemplateDataOptional = {
-            id: `${nextRole}-${roleCount}`,
+            id: `${nextRole}-${roleCount}`, // This will be replaced with proper temp ID
             role: nextRole,
             type: 'text',
             content: '',
         };
 
-        onMessageAdd?.(newSection);
+        addMessage(newSection);
     };
+
 
     return (
         <>

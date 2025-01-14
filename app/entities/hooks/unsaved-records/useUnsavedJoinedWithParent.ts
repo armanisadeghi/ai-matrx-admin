@@ -1,29 +1,13 @@
 import { useCallback } from 'react';
-import { generateTemporaryRecordId, useEntityTools, useAppSelector } from '@/lib/redux';
+import { useEntityTools, useAppSelector, useAppDispatch, useAppStore } from '@/lib/redux';
 import { EntityAnyFieldKey, EntityKeys, MatrxRecordId } from '@/types';
 import { useStartCreateRecord } from './useStartCreateRecord';
 import { useUpdateFields } from './useUpdateFields';
 import { useCreateRecord } from './useCreateRecord';
 import { callbackManager } from '@/utils/callbackManager';
 import { createRelationshipData } from '../relationships/utils';
+import { v4 as uuidv4 } from 'uuid';
 
-interface JoinedWithParentConfig {
-    parentEntity: {
-        entityKey: EntityKeys;
-        recordId: MatrxRecordId;
-        referenceField: string;
-    };
-    childEntity: {
-        entityKey: EntityKeys;
-        referenceField: string;
-        value: string;
-    };
-    joiningEntity: {
-        entityKey: EntityKeys;
-        parentField: string;
-        childField: string;
-    };
-}
 export type RelationshipDefinition = {
     parentEntity: {
         entityKey: EntityKeys;
@@ -37,6 +21,8 @@ export type RelationshipDefinition = {
         entityKey: EntityKeys;
         parentField: EntityAnyFieldKey<EntityKeys>;
         childField: EntityAnyFieldKey<EntityKeys>;
+
+        // Additional data for sorting and filtering logic (Unrelated to this hook)
         nameField?: EntityAnyFieldKey<EntityKeys> | null;
         orderPositionField?: EntityAnyFieldKey<EntityKeys> | null;
         defaultValueField?: EntityAnyFieldKey<EntityKeys> | null;
@@ -52,49 +38,50 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
     relationshipDefinition: RelationshipDefinition,
     parentRecordId: MatrxRecordId
 ) => {
+    const dispatch = useAppDispatch();
+    const store = useAppStore();
 
     const config = createRelationshipData(relationshipDefinition, parentRecordId);
-    // Initialize entity tools
-    const parentTools = useEntityTools(config.parentEntity.entityKey);
-    const childTools = useEntityTools(config.childEntity.entityKey);
-    const joinTools = useEntityTools(config.joiningEntity.entityKey);
 
-    // Initialize hooks for child and join entities
-    const childRecord = useStartCreateRecord<C>({ entityKey: config.childEntity.entityKey });
-    const joinRecord = useStartCreateRecord<J>({ entityKey: config.joiningEntity.entityKey });
+    // Parent Entity
+    const parentEntity = config.parentEntity.entityKey;
+    const parentReferenceField = config.parentEntity.referenceField;
+    const { selectors: parentSelectors, actions: parentActions } = useEntityTools(parentEntity);
+    const isParentLoading = useAppSelector(parentSelectors.selectIsLoading);
+    const parentRecord = useAppSelector((state) => parentSelectors.selectRecordByKey(state, parentRecordId));
+    const parentFieldValue = useAppSelector((state) => parentSelectors.selectFieldByKey(state, parentRecordId, parentReferenceField));
 
-    const childUpdates = useUpdateFields(config.childEntity.entityKey);
-    const joinUpdates = useUpdateFields(config.joiningEntity.entityKey);
+    // Child Entity
+    const childEntity = config.childEntity.entityKey;
+    const { selectors: childSelectors, actions: childActions } = useEntityTools(childEntity);
+    const childRecord = useStartCreateRecord<C>({ entityKey: childEntity });
+    const childUpdates = useUpdateFields(childEntity);
+    const childCreate = useCreateRecord(childEntity);
 
-    const childCreate = useCreateRecord(config.childEntity.entityKey);
-    const joinCreate = useCreateRecord(config.joiningEntity.entityKey);
+    // Joining Entity
+    const joiningEntity = config.joiningEntity.entityKey;
+    const joingParentField = config.joiningEntity.parentField;
+    const joinChildField = config.joiningEntity.childField;
+    const { selectors: joiningSelectors, actions: joiningActions } = useEntityTools(joiningEntity);
+    const joinRecord = useStartCreateRecord<J>({ entityKey: joiningEntity });
+    const joinUpdates = useUpdateFields(joiningEntity);
+    const joinCreate = useCreateRecord(joiningEntity);
 
-    // Parent record loading and fetching
-    const isParentLoading = useAppSelector(parentTools.selectors.selectIsLoading);
-    const parentRecord = useAppSelector((state) => parentTools.selectors.selectRecordByKey(state, parentRecordId));
-    const parentFieldValue = useAppSelector((state) =>
-        parentTools.selectors.selectFieldByKey(state, parentRecordId, config.parentEntity.referenceField)
-    );
 
+    
     const getOrFetchParentRecord = useCallback(() => {
-        parentTools.dispatch(
-            parentTools.actions.getOrFetchSelectedRecords({
+        dispatch(
+            parentActions.getOrFetchSelectedRecords({
                 matrxRecordIds: [parentRecordId],
                 fetchMode: 'fkIfk',
             })
         );
-    }, [parentTools.dispatch, parentTools.actions, parentRecordId]);
+    }, [parentActions, parentRecordId]);
 
-    // Get temporary IDs for child and join entities
-    const getChildTempId = useCallback(() => {
-        const childState = childTools.store.getState()[config.childEntity.entityKey];
-        return generateTemporaryRecordId(childState);
-    }, [childTools.store, config.childEntity.entityKey]);
-
-    const getJoinTempId = useCallback(() => {
-        const joinState = joinTools.store.getState()[config.joiningEntity.entityKey];
-        return generateTemporaryRecordId(joinState);
-    }, [joinTools.store, config.joiningEntity.entityKey]);
+    const getNewTempUUID = useCallback(() => {
+        const prefix = 'new-record-';
+        return prefix + uuidv4();
+    }, []);
 
     // Start creation process
     const start = useCallback(() => {
@@ -103,8 +90,8 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
             return null;
         }
 
-        const childTempId = getChildTempId();
-        const joinTempId = getJoinTempId();
+        const childTempId = getNewTempUUID();
+        const joinTempId = getNewTempUUID();
 
         // Create records
         childRecord.create();
@@ -115,8 +102,8 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
 
         // Set up join references
         joinUpdates.updateFields(joinTempId, {
-            [config.joiningEntity.parentField]: parentFieldValue,
-            [config.joiningEntity.childField]: config.childEntity.value,
+            [joingParentField]: parentFieldValue,
+            [joinChildField]: config.childEntity.value,
         });
 
         return joinTempId;
@@ -129,12 +116,12 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
             if (!joinTempId) return null;
 
             // Update child record
-            childUpdates.updateFields(getChildTempId(), childData);
+            childUpdates.updateFields(getNewTempUUID(), childData);
 
             // Update join record, excluding reference fields
             const safeJoinData = { ...joinData };
-            delete safeJoinData[config.joiningEntity.parentField];
-            delete safeJoinData[config.joiningEntity.childField];
+            delete safeJoinData[joingParentField];
+            delete safeJoinData[joinChildField];
 
             if (Object.keys(safeJoinData).length > 0) {
                 joinUpdates.updateFields(joinTempId, safeJoinData);
@@ -146,41 +133,41 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
     );
 
     // Update methods
-    const updateChild = useCallback(
+    const updateChildField = useCallback(
         (fieldName: string, value: any) => {
-            childUpdates.updateField(getChildTempId(), fieldName, value);
+            childUpdates.updateField(getNewTempUUID(), fieldName, value);
         },
-        [childUpdates, getChildTempId]
+        [childUpdates, getNewTempUUID]
     );
 
-    const updateJoined = useCallback(
+    const updateJoinedField = useCallback(
         (fieldName: string, value: any) => {
-            if (fieldName !== config.joiningEntity.parentField && fieldName !== config.joiningEntity.childField) {
-                joinUpdates.updateField(getJoinTempId(), fieldName, value);
+            if (fieldName !== joingParentField && fieldName !== joinChildField) {
+                joinUpdates.updateField(getNewTempUUID(), fieldName, value);
             }
         },
-        [joinUpdates, getJoinTempId]
+        [joinUpdates, getNewTempUUID]
     );
 
     // Batch update methods
     const updateChildFields = useCallback(
         (updates: Partial<C>) => {
-            childUpdates.updateFields(getChildTempId(), updates);
+            childUpdates.updateFields(getNewTempUUID(), updates);
         },
-        [childUpdates, getChildTempId]
+        [childUpdates, getNewTempUUID]
     );
 
     const updateJoinedFields = useCallback(
         (updates: Partial<J>) => {
             const safeUpdates = { ...updates };
-            delete safeUpdates[config.joiningEntity.parentField];
-            delete safeUpdates[config.joiningEntity.childField];
+            delete safeUpdates[joingParentField];
+            delete safeUpdates[joinChildField];
 
             if (Object.keys(safeUpdates).length > 0) {
-                joinUpdates.updateFields(getJoinTempId(), safeUpdates);
+                joinUpdates.updateFields(getNewTempUUID(), safeUpdates);
             }
         },
-        [joinUpdates, getJoinTempId]
+        [joinUpdates, getNewTempUUID]
     );
 
     // Combined update method
@@ -200,15 +187,15 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
     const create = useCallback(() => {
         if (!parentFieldValue) return;
 
-        const childTempId = getChildTempId();
-        const joinTempId = getJoinTempId();
+        const childTempId = getNewTempUUID();
+        const joinTempId = getNewTempUUID();
 
         childCreate.createRecord(childTempId);
 
         // Listen for the child creation to complete before creating the join
-        childTools.dispatch(
-            childTools.actions.createRecord({
-                ...childTools.selectors.selectCreatePayload(childTools.store.getState(), childTempId),
+        dispatch(
+            childActions.createRecord({
+                ...childSelectors.selectCreatePayload(store.getState(), childTempId),
                 callbackId: callbackManager.register(({ success }) => {
                     if (success) {
                         joinCreate.createRecord(joinTempId);
@@ -216,17 +203,28 @@ export const useUnsavedJoinedWithParent = <P extends Record<string, any>, C exte
                 }),
             })
         );
-    }, [childCreate, joinCreate, getChildTempId, getJoinTempId, parentFieldValue, childTools]);
+    }, [childCreate, joinCreate, getNewTempUUID, getNewTempUUID, parentFieldValue, childActions, dispatch]);
 
     return {
+        // Start methods
         start,
         startWithData,
-        updateChild,
-        updateJoined,
+
+        // Update child fields (Single or Batch)
+        updateChildField,
         updateChildFields,
+
+        // Update joined fields (Single or Batch)
+        updateJoinedField,
         updateJoinedFields,
+
+        // Full Batch Update (Multiple Child & Joined Fields)
         updateBoth,
+
+        // Finalize & Create Database Records
         create,
+
+        // Watching Parent
         isParentLoading,
         parentRecord,
         parentFieldValue,

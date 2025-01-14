@@ -15,8 +15,7 @@ export const useStartCreateRecord = <T extends Record<string, any>>({
   entityKey 
 }: UseTemporaryRecordOptions<T>) => {
   const { actions, dispatch, store } = useEntityTools(entityKey);
-  const entityState = store.getState()[entityKey];
-  
+  const entityState = store.getState().entities[entityKey];  
   // Simple creation that just returns the tempId
   const create = useCallback(() => {
     const tempId = generateTemporaryRecordId(entityState);

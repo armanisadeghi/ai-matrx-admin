@@ -50,25 +50,27 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return entity.records[recordKey] || null;
     });
 
-    const selectRecordsByKeys = createSelector(
-        [
-            selectEntity,
-            (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys
-        ],
-        (entity, recordKeys) => {
-            return recordKeys.map(recordKey => entity.records[recordKey] || null)
-                .filter(Boolean); // Ensure stable reference and remove nulls
-        }
-    );
+    const selectRecordsByKeys = createSelector([selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (entity, recordKeys) => {
+        if (!recordKeys) return [];
+        if (!entity?.records) return [];
+
+        return recordKeys
+            .filter((key): key is MatrxRecordId => key != null) // Type guard to remove null/undefined keys
+            .map((recordKey) => entity.records[recordKey] || null)
+            .filter(Boolean);
+    });
 
     const selectFieldByKey = createSelector(
-        [selectEntity, (_: RootState, recordKey: MatrxRecordId, field: string) => ({ recordKey, field })],
-        (entity, { recordKey, field }) => {
+        [
+            selectEntity,
+            (_: RootState, recordKey: MatrxRecordId) => recordKey,
+            (_: RootState, _recordKey: MatrxRecordId, field: string) => field,
+        ],
+        (entity, recordKey, field) => {
             const record = entity.records[recordKey];
             return record ? record[field] || null : null;
         }
     );
-
     const selectFieldValueByRecordKey = createSelector(
         [selectEntity, (_: RootState, recordKey: MatrxRecordId, field: string) => ({ recordKey, field })],
         (entity, { recordKey, field }) => {
@@ -117,34 +119,19 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
         }
     );
-    
-    const selectMatrxRecordIdBySimpleKey = createSelector(
-        [
-            selectEntity,
-            (_: RootState, id: MatrxRecordId) => id
-        ],
-        (entity, id): MatrxRecordId => {
-            // Return early if no id or if id is empty string
-            if (!id) return '';
-            
-            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id });
-        }
-    );
-    
-    const selectMatrxRecordIdsBySimpleKeys = createSelector(
-        [
-            selectEntity,
-            (_: RootState, ids: MatrxRecordId[]) => ids
-        ],
-        (entity, ids): MatrxRecordId[] => {
-            // Filter out any falsy values before mapping
-            return ids
-                .filter(Boolean)
-                .map(id => createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id }));
-        }
-    );
 
-    
+    const selectMatrxRecordIdBySimpleKey = createSelector([selectEntity, (_: RootState, id: MatrxRecordId) => id], (entity, id): MatrxRecordId => {
+        // Return early if no id or if id is empty string
+        if (!id) return '';
+
+        return createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id });
+    });
+
+    const selectMatrxRecordIdsBySimpleKeys = createSelector([selectEntity, (_: RootState, ids: MatrxRecordId[]) => ids], (entity, ids): MatrxRecordId[] => {
+        // Filter out any falsy values before mapping
+        return ids.filter(Boolean).map((id) => createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id }));
+    });
+
     const selectMatrxRecordIdFromValue = createSelector([selectEntity, (_: RootState, value: any) => value], (entity, value): MatrxRecordId | null => {
         if (value === undefined || value === null) {
             return null;
@@ -290,11 +277,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         getRecordIdByRecord(entityState, record)
     );
 
-    const selectRecordIdsByRecords = createSelector(
-        [selectEntity, (_: RootState, records: EntityData<TEntity>[]) => records],
-        (entityState, records) => records.map(record => getRecordIdByRecord(entityState, record))
-      );
-      
+    const selectRecordIdsByRecords = createSelector([selectEntity, (_: RootState, records: EntityData<TEntity>[]) => records], (entityState, records) =>
+        records.map((record) => getRecordIdByRecord(entityState, record))
+    );
+
     // Pagination Selectors
     const selectPaginationInfo = createSelector([selectEntity], (entity) => entity.pagination);
 

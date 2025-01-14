@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DynamicPromptSettings from '@/components/playground/settings/DynamicPromptSettings';
+import DynamicPromptSettings from '@/components/playground/right-sidebar/settings/DynamicPromptSettings';
 
 export default function DynamicPromptSettingsPage() {
   return (

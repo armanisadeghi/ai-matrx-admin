@@ -16,7 +16,7 @@ const aiSettingsRelationshipDefinition: RelationshipDefinition = {
         entityKey: 'aiAgent',
         parentField: 'recipeId',
         childField: 'aiSettingsId',
-        nameField: 'name',           // Assuming aiAgent might have a name field
+        nameField: 'name',
     },
 };
 
