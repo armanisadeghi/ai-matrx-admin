@@ -2,50 +2,57 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from 'react-resizable-panels';
-import { Button, Card } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { Plus } from 'lucide-react';
-import { MessageTemplateDataOptional } from '@/types';
+import { MatrxRecordId, MessageTemplateDataOptional } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
-import MessageTemplateHeader from './MessageTemplateHeader';
-import MessageEditor from '@/features/rich-text-editor/provider/withMessageEditor';
 import { useMessageTemplatesWithNew } from '../hooks/dev/useMessageWithNew';
-import { AddMessagePayload, useAddMessage, useUpdateMessage } from '../hooks/messages/useAddMessage';
+import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
+import ManagedMessageEditor from './CardWithProvider';
+import { useAppSelector, useEntityTools } from '@/lib/redux';
+import MessageEditor from '@/features/rich-text-editor/provider/withMessageEditor';
 
-const INITIAL_PANELS: MessageTemplateDataOptional[] = [
+const INITIAL_PANELS: ExtendedMessageData[] = [
     {
         id: 'system-1',
+        matrxRecordId: 'system-1',
         role: 'system',
         type: 'text',
         content: '',
     },
     {
         id: 'user-1',
+        matrxRecordId: 'user-1',
         role: 'user',
         type: 'text',
         content: '',
     },
 ];
 
-interface EditorContainerProps {
-    onMessageAdd?: (message: MessageTemplateDataOptional) => void;
-}
+type ExtendedMessageData = MessageTemplateDataOptional & {
+    matrxRecordId: MatrxRecordId;
+};
 
-function EditorContainer({ onMessageAdd }: EditorContainerProps) {
-    const { messages, deleteMessageById } = useMessageTemplatesWithNew();
+function EditorContainer() {
+    const { messageMatrxIds, deleteMessageById } = useMessageTemplatesWithNew();
+    const { addMessage } = useAddMessage();
 
-    const displayMessages = messages.length ? messages : INITIAL_PANELS;
-    const [collapsedPanels, setCollapsedPanels] = useState<Set<string>>(new Set());
-    const [hiddenEditors, setHiddenEditors] = useState<Set<string>>(new Set());
+    const selectors = useEntityTools('messageTemplate').selectors;
+    const matchingChildRecords = useAppSelector((state) => selectors.selectRecordsWithKeys(state, messageMatrxIds)) as Array<ExtendedMessageData>;
+
+    const messages = matchingChildRecords;
+    const hasRealData = matchingChildRecords.length > 0;
+    const displayMessages = hasRealData ? matchingChildRecords : INITIAL_PANELS;
+
+    const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
+    const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
     const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
-    const panelRefs = useRef<Map<string, ImperativePanelHandle>>(new Map());
+    const panelRefs = useRef<Map<MatrxRecordId, ImperativePanelHandle>>(new Map());
 
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState<DialogType>('delete');
-    const [activeEditorId, setActiveEditorId] = useState<string | null>(null);
-    const { updateMessageContent, saveMessage } = useUpdateMessage();
-
-    const { addMessage } = useAddMessage();
+    const [activeEditorId, setActiveEditorId] = useState<MatrxRecordId | null>(null);
 
     const addNewSection = useCallback(() => {
         const lastSection = displayMessages[displayMessages.length - 1];
@@ -62,7 +69,6 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
         addMessage(newSection);
     }, [displayMessages, addMessage]);
 
-    
     const registerPanelRef = (id: string, ref: ImperativePanelHandle | null) => {
         if (ref) {
             panelRefs.current.set(id, ref);
@@ -97,31 +103,33 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
         });
     };
 
-    const toggleEditor = (id: string) => {
-        const panelRef = panelRefs.current.get(id);
-        const isCurrentlyCollapsed = collapsedPanels.has(id);
+    const toggleEditor = useCallback(
+        (id: string) => {
+            const panelRef = panelRefs.current.get(id);
+            const isCurrentlyCollapsed = collapsedPanels.has(id);
 
-        if (isCurrentlyCollapsed) {
-            panelRef?.resize(10);
-        } else {
-            panelRef?.resize(3);
-        }
-    };
+            if (isCurrentlyCollapsed) {
+                panelRef?.resize(10);
+                handlePanelExpand(id);
+            } else {
+                panelRef?.resize(3);
+                handlePanelCollapse(id);
+            }
+        },
+        [handlePanelExpand, handlePanelCollapse]
+    );
 
     const handleDialogConfirm = () => {
         if (!activeEditorId) return;
 
         switch (dialogType) {
             case 'delete':
-                // Placeholder for delete logic
                 deleteMessageById(activeEditorId);
                 break;
             case 'unsaved':
-                // Placeholder for handling unsaved changes
                 console.log('Confirming exit with unsaved changes for:', activeEditorId);
                 break;
             case 'linkBroker':
-                // Placeholder for broker linking logic
                 console.log('Confirming broker link for:', activeEditorId);
                 break;
         }
@@ -130,28 +138,10 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
         setActiveEditorId(null);
     };
 
-    const openDialog = (type: DialogType, editorId: string) => {
+    const openDialog = (type: DialogType, id: string) => {
         setDialogType(type);
-        setActiveEditorId(editorId);
+        setActiveEditorId(id);
         setDialogOpen(true);
-    };
-
-    const handleDelete = (id: string) => {
-        openDialog('delete', id);
-    };
-
-    const handleSave = (id: string) => {
-        // Placeholder for save functionality
-        console.log('Saving editor:', id);
-    };
-
-    const handleAddMedia = (id: string) => {
-        // Placeholder for media functionality
-        console.log('Adding media to editor:', id);
-    };
-
-    const handleLinkBroker = (id: string) => {
-        openDialog('linkBroker', id);
     };
 
     return (
@@ -164,7 +154,7 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
                 {displayMessages.map((message, index) => {
                     const isLastPanel = index === displayMessages.length - 1;
                     const remainingSize = 100 - (displayMessages.length - 1) * 10;
-                    const isCollapsed = collapsedPanels.has(message.id);
+                    const isCollapsed = collapsedPanels.has(message.matrxRecordId);
 
                     return (
                         <React.Fragment key={message.id}>
@@ -180,30 +170,20 @@ function EditorContainer({ onMessageAdd }: EditorContainerProps) {
                                 onExpand={() => handlePanelExpand(message.id)}
                                 order={index + 1}
                             >
-                                <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
-                                    <MessageTemplateHeader
-                                        id={message.id}
-                                        role={message.role}
+                                {hasRealData ? (
+                                    <ManagedMessageEditor
+                                        matrxRecordId={message.matrxRecordId}
+                                        deleteMessageById={deleteMessageById}
                                         isCollapsed={isCollapsed}
-                                        onAddMedia={handleAddMedia}
-                                        onLinkBroker={handleLinkBroker}
-                                        onDelete={handleDelete}
-                                        onSave={handleSave}
-                                        onToggleCollapse={toggleEditor}
+                                        onToggleEditor={() => toggleEditor(message.matrxRecordId)}
                                     />
-
-                                    <div
-                                        className={`transition-all duration-200 ${
-                                            hiddenEditors.has(message.id) ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'
-                                        }`}
-                                    >
-                                        <MessageEditor
-                                            id={message.id}
-                                            className='w-full h-full border rounded-md'
-                                            initialContent={message.content}
-                                        />
-                                    </div>
-                                </Card>
+                                ) : (
+                                    <MessageEditor
+                                        id={message.id}
+                                        className='w-full h-full border rounded-md'
+                                        initialContent={message.content}
+                                    />
+                                )}
                             </Panel>
                             {!isLastPanel && <PanelResizeHandle />}
                         </React.Fragment>

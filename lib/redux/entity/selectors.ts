@@ -60,24 +60,60 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             .filter(Boolean);
     });
 
+    const selectRecordsKeyPairs = createSelector(
+        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
+        (entity, recordKeys) => {
+            if (!recordKeys) return [];
+            if (!entity?.records) return [];
+    
+            return recordKeys
+                .filter((key): key is MatrxRecordId => key != null)
+                .map((recordKey) => {
+                    const record = entity.records[recordKey];
+                    return record ? { key: recordKey, record } : null;
+                })
+                .filter(Boolean);
+        }
+    );
+    
+    const selectRecordsWithKeys = createSelector(
+        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
+        (entity, recordKeys) => {
+            if (!recordKeys) return [];
+            if (!entity?.records) return [];
+    
+            return recordKeys
+                .filter((recordKey): recordKey is MatrxRecordId => recordKey != null)
+                .map((recordKey) => {
+                    const record = entity.records[recordKey];
+                    if (record) {
+                        return {
+                            ...record,
+                            matrxRecordId: recordKey
+                        };
+                    }
+                    return null;
+                })
+                .filter(Boolean);
+        }
+    );
+    
+    
     const selectEffectiveRecordsByKeys = createSelector(
-        [
-            selectEntity,
-            (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys
-        ],
+        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
         (entity, recordKeys): TEntity[] => {
             if (!recordKeys) return [];
             if (!entity) return [];
-    
+
             const validKeys = recordKeys.filter((key): key is MatrxRecordId => key != null);
-            
+
             if (validKeys.length === 0) return [];
-    
+
             return validKeys
-                .map(recordKey => {
-                    const unsavedRecord = (entity.unsavedRecords?.[recordKey]);
+                .map((recordKey) => {
+                    const unsavedRecord = entity.unsavedRecords?.[recordKey];
                     if (unsavedRecord) return unsavedRecord;
-    
+
                     return (entity.records?.[recordKey] as TEntity) || null;
                 })
                 .filter((record): record is TEntity => record !== null);
@@ -85,11 +121,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectFieldByKey = createSelector(
-        [
-            selectEntity,
-            (_: RootState, recordKey: MatrxRecordId) => recordKey,
-            (_: RootState, _recordKey: MatrxRecordId, field: string) => field,
-        ],
+        [selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey, (_: RootState, _recordKey: MatrxRecordId, field: string) => field],
         (entity, recordKey, field) => {
             const record = entity.records[recordKey];
             return record ? record[field] || null : null;
@@ -708,21 +740,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (unsavedRecords, recordId) => unsavedRecords[recordId]
     );
 
-    const selectAllEffectiveRecords = createSelector(
-        [selectAllRecords, selectUnsavedRecords],
-        (records, unsavedRecords): EntityRecordMap<TEntity> => {
-            // If both are undefined/null, return empty object to maintain type consistency
-            if (!records && !unsavedRecords) {
-                return {} as EntityRecordMap<TEntity>;
-            }
-            
-            return {
-                ...(records || {}),
-                ...(unsavedRecords || {})
-            };
+    const selectAllEffectiveRecords = createSelector([selectAllRecords, selectUnsavedRecords], (records, unsavedRecords): EntityRecordMap<TEntity> => {
+        // If both are undefined/null, return empty object to maintain type consistency
+        if (!records && !unsavedRecords) {
+            return {} as EntityRecordMap<TEntity>;
         }
-    );
 
+        return {
+            ...(records || {}),
+            ...(unsavedRecords || {}),
+        };
+    });
 
     const selectEffectiveRecordById = createSelector(
         [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
@@ -1016,8 +1044,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectMatrxRecordIdBySimpleKey,
         selectRecordsByKeys,
 
-
         selectAllEffectiveRecords,
         selectEffectiveRecordsByKeys,
+
+        selectRecordsKeyPairs,
+        selectRecordsWithKeys,
     };
 };

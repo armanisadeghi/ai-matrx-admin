@@ -1,16 +1,10 @@
-// withMessageEditor.tsx
-import React, { useEffect, useState } from 'react';
-import { EditorWithProviders } from './withManagedEditor'; // This is our base that handles registration
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { EditorWithProviders } from './withManagedEditor';
 import { useEditorContext } from './EditorProvider';
 import { ChipData } from '../types/editor.types';
-
-interface MessageEditorProps {
-    id: string;
-    initialContent?: string;
-    className?: string;
-    onMessageUpdate?: (messageData: MessageData) => void;
-    onChipUpdate?: (chipData: ChipChangeData) => void;
-}
+import { useEntityTools } from '@/lib/redux';
+import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 
 interface MessageData {
     id: string;
@@ -26,20 +20,42 @@ interface ChipChangeData {
     data: Partial<ChipData>;
 }
 
-// We're wrapping the EditorWithProviders which already handles registration
-const MessageEditor: React.FC<MessageEditorProps> = ({
-    id,
-    initialContent = '',
-    className,
-    onMessageUpdate,
+interface MessageEditorProps {
+    id: string;
+    initialContent?: string;
+    className?: string;
+    onMessageUpdate?: (messageData: MessageData) => void;
+    onChipUpdate?: (chipData: ChipChangeData) => void;
+    handleSave?: () => void;
+}
+
+export const MessageEditor: React.FC<MessageEditorProps> = ({ 
+    id, 
+    initialContent = '', 
+    className, 
+    onMessageUpdate, 
     onChipUpdate,
-    ...props
+    handleSave,
+    ...props 
 }) => {
     const context = useEditorContext();
     const [lastEditorState, setLastEditorState] = useState<string>('');
     const [lastChipState, setLastChipState] = useState<string>('');
+    const { actions, dispatch } = useEntityTools('messageTemplate');
+    const { updateRecord } = useUpdateRecord('messageTemplate');
+    const recordId = useMemo(() => toMatrxIdFromValue('messageTemplate', id), [id]);
 
-    // Watch for changes in editor state and content
+    const updateMessageContent = useCallback(
+        (content: string) => {
+            dispatch(actions.updateUnsavedField({
+                recordId,
+                field: 'content',
+                value: content,
+            }));
+        },
+        [actions, dispatch, recordId]
+    );
+
     useEffect(() => {
         const interval = setInterval(() => {
             if (!context.isEditorRegistered(id)) return;
@@ -48,14 +64,12 @@ const MessageEditor: React.FC<MessageEditorProps> = ({
             const processedContent = context.getTextWithChipsReplaced(id, true);
             const rawContent = context.getTextWithChipsReplaced(id, false);
 
-            // Create current state snapshot
             const currentState = JSON.stringify({
                 content: rawContent,
                 processedContent,
-                chips: state.chipData
+                chips: state.chipData,
             });
 
-            // Check if state has changed
             if (currentState !== lastEditorState) {
                 const messageData: MessageData = {
                     id,
@@ -63,82 +77,90 @@ const MessageEditor: React.FC<MessageEditorProps> = ({
                     processedContent,
                     chips: state.chipData,
                 };
-
+                updateMessageContent(processedContent);
                 onMessageUpdate?.(messageData);
                 setLastEditorState(currentState);
             }
 
-            // Monitor chip changes separately
             const currentChipState = JSON.stringify(state.chipData);
             if (currentChipState !== lastChipState) {
-                // Find what changed by comparing with previous state
                 if (lastChipState) {
                     const prevChips: ChipData[] = JSON.parse(lastChipState);
                     const currentChips = state.chipData;
 
-                    // Check for added chips
-                    const addedChips = currentChips.filter(
-                        current => !prevChips.find(prev => prev.id === current.id)
-                    );
-
-                    // Check for removed chips
-                    const removedChips = prevChips.filter(
-                        prev => !currentChips.find(current => current.id === prev.id)
-                    );
-
-                    // Check for updated chips
-                    const updatedChips = currentChips.filter(current => {
-                        const prev = prevChips.find(p => p.id === current.id);
+                    const addedChips = currentChips.filter((current) => !prevChips.find((prev) => prev.id === current.id));
+                    const removedChips = prevChips.filter((prev) => !currentChips.find((current) => current.id === prev.id));
+                    const updatedChips = currentChips.filter((current) => {
+                        const prev = prevChips.find((p) => p.id === current.id);
                         return prev && JSON.stringify(prev) !== JSON.stringify(current);
                     });
 
-                    // Notify of changes
-                    addedChips.forEach(chip => {
+                    addedChips.forEach((chip) => {
                         onChipUpdate?.({
                             chipId: chip.id,
                             brokerId: chip.brokerId,
                             action: 'add',
-                            data: chip
+                            data: chip,
                         });
                     });
 
-                    removedChips.forEach(chip => {
+                    removedChips.forEach((chip) => {
                         onChipUpdate?.({
                             chipId: chip.id,
                             brokerId: chip.brokerId,
                             action: 'remove',
-                            data: chip
+                            data: chip,
                         });
                     });
 
-                    updatedChips.forEach(chip => {
+                    updatedChips.forEach((chip) => {
                         onChipUpdate?.({
                             chipId: chip.id,
                             brokerId: chip.brokerId,
                             action: 'update',
-                            data: chip
+                            data: chip,
                         });
                     });
                 }
-
                 setLastChipState(currentChipState);
             }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [context, id, lastEditorState, lastChipState, onMessageUpdate, onChipUpdate]);
+    }, [context, id, lastEditorState, lastChipState, onMessageUpdate, onChipUpdate, updateMessageContent]);
+
+    const saveContent = useCallback(() => {
+        const processedContent = context.getTextWithChipsReplaced(id, true);
+        dispatch(actions.updateUnsavedField({
+            recordId,
+            field: 'content',
+            value: processedContent
+        }));
+        updateRecord(recordId);
+        if (handleSave) {
+            handleSave();
+        }
+    }, [context, id, recordId, dispatch, actions, updateRecord, handleSave]);
+
+    useEffect(() => {
+        if (handleSave) {
+            saveContent();
+        }
+    }, [handleSave, saveContent]);
 
     return (
-            <EditorWithProviders
-                id={id}
-                initialContent={initialContent}
-                {...props}
-            />
+        <EditorWithProviders
+            id={id}
+            initialContent={initialContent}
+            className={className}
+            {...props}
+        />
     );
 };
 
-export default MessageEditor;
+MessageEditor.displayName = 'MessageEditor';
 
+export default MessageEditor;
 
 
 // Example usage:

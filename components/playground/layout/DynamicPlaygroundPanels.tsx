@@ -6,6 +6,7 @@ import { useMeasure } from '@uidotdev/usehooks';
 import CollapsibleSidebarPanel from './CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/panel-manager/ResultPanelManager';
 import EditorContainer from '../panel-manager/EditorContainer';
+import MessagesContainer from '../panel-manager/MessagesContainer';
 
 interface DynamicPlaygroundPanelsProps {
     leftComponent: React.ComponentType;
@@ -85,7 +86,8 @@ const DynamicPlaygroundPanels = forwardRef<
                         defaultSize={initialLeftSize}
                     />
                     <Panel defaultSize={55}>
-                        <EditorContainer />
+                        {/* <EditorContainer /> */}
+                        <MessagesContainer />
                     </Panel>
                     <PanelResizeHandle />
                     <Panel defaultSize={15}>

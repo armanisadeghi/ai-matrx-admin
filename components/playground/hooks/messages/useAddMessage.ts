@@ -1,8 +1,9 @@
 'use client';
 
+import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
 import { useAppStore, useEntityTools } from '@/lib/redux';
-import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { toMatrxId, toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { MessageTemplateDataOptional, MatrxRecordId } from '@/types';
 import { useCallback, useMemo } from 'react';
 
@@ -45,8 +46,33 @@ export function useAddMessage() {
     return { addMessage };
 }
 
-interface UseAddMessageResult {
-    addMessage: (message: MessageTemplateDataOptional, order: number) => MatrxRecordId | null;
+export function useUpdateMessage() {
+    const { actions, dispatch } = useEntityTools('messageTemplate');
+    const { updateRecord } = useUpdateRecord('messageTemplate');
+
+    const getRecordId = useMemo(() => (id: string) => toMatrxIdFromValue('messageTemplate', id), []);
+
+    const updateMessageContent = useCallback(
+        (id: string, content: string) => {
+            dispatch(
+                actions.updateUnsavedField({
+                    recordId: getRecordId(id),
+                    field: 'content',
+                    value: content,
+                })
+            );
+        },
+        [actions, dispatch, getRecordId]
+    );
+
+    const saveMessage = useCallback(
+        (id: string) => {
+            updateRecord(getRecordId(id));
+        },
+        [updateRecord, getRecordId]
+    );
+
+    return { updateMessageContent, saveMessage };
 }
 
 interface UseUpdateMessageResult {

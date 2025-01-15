@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useEntityTools } from '@/lib/redux';
-import { MessageTemplateDataOptional, MatrxRecordId, RecipeMessageDataRequired } from '@/types';
-import useStartCreateRecord from '@/app/entities/hooks/unsaved-records/useStartCreateRecord';
+import { MessageTemplateDataOptional, MatrxRecordId } from '@/types';
 import { useCreateRecord } from '@/app/entities/hooks/unsaved-records/useCreateRecord';
 
 interface PendingMessage {
@@ -19,111 +17,10 @@ export function useMessageCreation(activeRecipeFieldId: string | undefined) {
     const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
     const [initializedRecipe, setInitializedRecipe] = useState<string | undefined>();
     
-    const startCreateMessageTemplate = useStartCreateRecord({ entityKey: 'messageTemplate' });
-    const startCreateRecipeMessage = useStartCreateRecord({ entityKey: 'recipeMessage' });
     const { createRecord: createMessageTemplate } = useCreateRecord('messageTemplate');
     const { createRecord: createRecipeMessage } = useCreateRecord('recipeMessage');
     
     const { actions: messageTemplateActions, dispatch } = useEntityTools('messageTemplate');
-    const { actions: recipeMessageActions } = useEntityTools('recipeMessage');
-
-    const startNewMessage = useCallback((newMessage: MessageTemplateDataOptional, order: number) => {
-        if (!activeRecipeFieldId) return null;
-    
-        const messageId = uuidv4();
-        const messageRecordKey = startCreateMessageTemplate();
-        const relationshipRecordKey = startCreateRecipeMessage();
-    
-        if (!messageRecordKey || !relationshipRecordKey) return null;
-    
-        // Create message template
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'type',
-                value: newMessage.type,
-            })
-        );
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'role',
-                value: newMessage.role,
-            })
-        );
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'id',
-                value: messageId,
-            })
-        );
-        dispatch(
-            messageTemplateActions.updateUnsavedField({
-                recordId: messageRecordKey,
-                field: 'content',
-                value: newMessage.content || '',
-            })
-        );
-    
-        // Create relationship
-        const relationshipId = uuidv4();
-        dispatch(
-            recipeMessageActions.updateUnsavedField({
-                recordId: relationshipRecordKey,
-                field: 'messageId',
-                value: messageId,
-            })
-        );
-        dispatch(
-            recipeMessageActions.updateUnsavedField({
-                recordId: relationshipRecordKey,
-                field: 'recipeId',
-                value: activeRecipeFieldId,
-            })
-        );
-        dispatch(
-            recipeMessageActions.updateUnsavedField({
-                recordId: relationshipRecordKey,
-                field: 'order',
-                value: order,
-            })
-        );
-        dispatch(
-            recipeMessageActions.updateUnsavedField({
-                recordId: relationshipRecordKey,
-                field: 'id',
-                value: relationshipId,
-            })
-        );
-    
-        const newPendingMessage: PendingMessage = {
-            messageRecordKey,
-            relationshipRecordKey,
-            messageId,
-            content: newMessage.content || '',
-            role: newMessage.role,
-            type: newMessage.type,
-            order
-        };
-    
-        setPendingMessages(prev => [...prev, newPendingMessage]);
-        
-        createMessageTemplate(messageRecordKey);
-        createRecipeMessage(relationshipRecordKey);
-    
-        return messageId;
-    }, [
-        activeRecipeFieldId,
-        startCreateMessageTemplate, 
-        startCreateRecipeMessage, 
-        dispatch, 
-        messageTemplateActions,
-        recipeMessageActions,
-        createMessageTemplate,
-        createRecipeMessage
-    ]);
-    
 
     const updateMessageContent = useCallback((messageId: string, content: string) => {
         if (!activeRecipeFieldId) return;

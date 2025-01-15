@@ -162,6 +162,7 @@ export function useMessageTemplatesWithNew() {
     return {
         // Keep all existing returns
         messages: processedMessages as JoinedMessageData[], // Now properly typed as joined data
+        messageMatrxIds,
         brokers: processedBrokers,
         fetchDependentRecords,
         deleteMessageById,
