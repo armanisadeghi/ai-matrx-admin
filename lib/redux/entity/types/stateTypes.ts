@@ -301,6 +301,7 @@ export type EntityOperations =
     | 'FETCH_PAGINATED'
     | 'CREATE'
     | 'UPDATE'
+    | 'DIRECT_UPDATE'
     | 'DELETE'
     | 'CUSTOM';
 

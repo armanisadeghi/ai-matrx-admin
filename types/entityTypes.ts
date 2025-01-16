@@ -832,6 +832,11 @@ export type EntityData<TEntity extends EntityKeys> = {
           : never]: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>
 };
 
+export type EntityDataWithKey<TEntity extends EntityKeys> = EntityData<TEntity> & {
+    matrxRecordId?: MatrxRecordId;
+};
+
+
 export type registeredFunctionData = EntityData<'registeredFunction'>;
 export type userPreferencesData = EntityData<'userPreferences'>;
 export type brokerData = EntityData<'broker'>;

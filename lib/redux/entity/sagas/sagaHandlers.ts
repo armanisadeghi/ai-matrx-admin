@@ -1193,6 +1193,127 @@ function* handleUpdate<TEntity extends EntityKeys>(
     }
 }
 
+function* handleDirectUpdate<TEntity extends EntityKeys>(
+    {
+        entityKey,
+        actions,
+        api,
+        action,
+        unifiedDatabaseObject,
+    }: BaseSagaContext<TEntity> & {}) {
+    const entityLogger = EntityLogger.createLoggerWithDefaults('handleUpdate', entityKey);
+    entityLogger.log('debug', 'Starting update operation', action.payload);
+
+
+    let previousData: Record<string, any> | undefined;
+    let recordKey: MatrxRecordId;
+
+    try {
+        recordKey = unifiedDatabaseObject.recordKeys[0];
+        const entitySelectors = createEntitySelectors(entityKey);
+
+        const previousData = yield select(state =>
+            entitySelectors.selectRecordByKey(state, recordKey)
+        );
+
+        const allUpdatedData = unifiedDatabaseObject.data as Record<string, any>;
+
+        if (previousData) {
+            const optimisticData = {...previousData, ...allUpdatedData};
+            entityLogger.log('debug', 'Optimistic update', optimisticData);
+
+            yield put(actions.upsertRecords([
+                {recordKey, record: optimisticData}
+            ]));
+        }
+
+        // const convertedChangedData = yield select(selectDatabaseConversion, {
+        //     entityName: entityKey,
+        //     data: allUpdatedData
+        // });
+
+        const primaryKeyFields = unifiedDatabaseObject.databasePks;
+
+        // entityLogger.log('debug', 'Converted data for update:', convertedChangedData);
+
+
+        const primaryKeyValues = primaryKeyFields.reduce((acc, key) => {
+            if (previousData[key] !== undefined) {
+                acc[key] = previousData[key];
+            }
+            return acc;
+        }, {});
+
+        entityLogger.log('debug', 'Primary key values:', primaryKeyValues);
+
+
+        let query = api.update(allUpdatedData);
+        Object.entries(primaryKeyValues).forEach(([key, value]) => {
+            query = query.eq(key, value);
+        });
+
+        entityLogger.log('debug', 'DB Query:', query);
+        const {data, error} = yield query.select().single();
+
+        entityLogger.log('debug', 'Database response', {error, data});
+
+        if (error) throw error;
+
+
+        const payload = {entityName: entityKey, data};
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+
+
+        entityLogger.log('debug', 'Frontend response', frontendResponse);
+
+        yield put(actions.updateRecordSuccess(frontendResponse));
+
+        yield call(handleUpdateQuickReference, entityKey, actions, frontendResponse, unifiedDatabaseObject);
+
+        entityLogger.log('debug', 'Unified Database Object:', unifiedDatabaseObject);
+
+        const quickReferenceRecord = {
+            primaryKeyValues: primaryKeyValues,
+            displayValue: frontendResponse[unifiedDatabaseObject?.frontendDisplayField],
+            recordKey: recordKey
+        };
+        entityLogger.log('debug', 'quickReferenceRecord:', quickReferenceRecord);
+
+        // Update history
+        yield put(actions.pushToHistory({
+            timestamp: new Date().toISOString(),
+            operation: 'update',
+            data: frontendResponse,
+            previousData
+        }));
+
+        // Invalidate cache
+        yield put(actions.invalidateCache());
+
+
+
+        entityLogger.log('debug', 'Final result', frontendResponse);
+
+    } catch (error: any) {
+        entityLogger.log('error', 'Update operation error', error);
+
+        if (previousData) {
+            entityLogger.log('debug', 'Reverting optimistic update');
+            yield put(actions.upsertRecords([
+                {recordKey, record: previousData}
+            ]));
+        }
+
+        yield put(actions.setError(createStructuredError({
+            error,
+            location: 'handleUpdate Saga',
+            action,
+            entityKey,
+        })));
+        throw error;
+    }
+}
+
 
 function* handleUpdateQuickReference<TEntity extends EntityKeys>(
     entityKey: TEntity,
@@ -1311,6 +1432,7 @@ export {
     handleFetchOneAdvanced,
     handleGetOrFetchSelectedRecords,
     handleFetchSelectedRecords,
+    handleDirectUpdate,
 };
 
 

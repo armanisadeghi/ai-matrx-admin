@@ -4,11 +4,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { EntityShowSelectedAccordion } from '@/components/matrx/Entity';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
-import { AnimatePresence } from 'framer-motion';
-import BrokerRecordDisplay from '@/components/playground/brokers/EntityBrokerCard';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 import { SmartCrudButtons } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
-import SingleBrokerRecordDisplay from '@/components/playground/brokers/SingleBrokerRecordDisplay';
+
 interface ChipSelectionContentProps {
     onSave: (selectedRecords: any[]) => void;
     onCancel: () => void;
@@ -56,7 +54,7 @@ export const ChipSelectionContent: React.FC<ChipSelectionContentProps> = ({ onSa
                     <div className='h-[80vh]'>
                         <ScrollArea className='h-full w-full rounded-md border'>
                             <div className='p-4'>
-                            <SmartCrudButtons
+                                <SmartCrudButtons
                                     entityKey='broker'
                                     options={{ allowCreate: true, allowEdit: false, allowDelete: false, allowRefresh: false, allowCancel: false }}
                                     layout={{ buttonLayout: 'row', buttonSize: 'lg', buttonsPosition: 'top', buttonSpacing: 'normal' }}
@@ -73,9 +71,7 @@ export const ChipSelectionContent: React.FC<ChipSelectionContentProps> = ({ onSa
                 <div className='col-span-2'>
                     <div className='h-[80vh]'>
                         <ScrollArea className='h-full w-full rounded-md border'>
-                            <EntityShowSelectedAccordion
-                                entityKey='broker'
-                            />
+                            <EntityShowSelectedAccordion entityKey='dataBroker' />
                         </ScrollArea>
                     </div>
                 </div>

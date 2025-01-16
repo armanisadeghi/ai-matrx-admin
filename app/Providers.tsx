@@ -23,8 +23,6 @@ import { ContextMenuProvider } from '@/providers/ContextMenuProvider';
 import { DialogProvider } from '@/providers/dialogs/DialogContext';
 import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
-import { BrokersProvider } from '@/providers/brokers/BrokersProvider';
-import { BrokerSyncProvider } from '@/providers/brokerSync/BrokerSyncProvider';
 import { EditorProvider } from '@/features/rich-text-editor/provider/EditorProvider';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
@@ -35,6 +33,7 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
             <RecoilRoot>
                 <StoreProvider initialState={initialReduxState}>
                     <EntityProvider>
+                        
                         <SocketProvider>
                             <DialogProvider>
                                 <ContextMenuProvider>

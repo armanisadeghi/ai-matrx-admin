@@ -9,7 +9,7 @@ import BrokerRecordDisplay from '../brokers/EntityBrokerCard';
 import { SmartCrudButtons, SmartNewButton } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
 
 const initialLayoutProps = getUnifiedLayoutProps({
-    entityKey: 'broker',
+    entityKey: 'dataBroker',
     formComponent: 'MINIMAL',
     quickReferenceType: 'LIST',
     isExpanded: true,
@@ -25,8 +25,8 @@ const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
     dynamicLayoutOptions: {
         formStyleOptions: {
             fieldFiltering: {
-                excludeFields: ['id', 'otherSourceParams'],
-                defaultShownFields: ['displayName', 'value', 'stringValue', 'dataType', 'defaultSource', 'defaultDestination'],
+                excludeFields: ['id'],
+                defaultShownFields: ['name', 'defaultValue', 'dataType', 'defaultComponent'],
             },
         },
     },
@@ -59,7 +59,7 @@ export default function BrokerSidebar({
     return (
         <div className='flex flex-col h-full py-3'>
             <SmartCrudButtons
-                entityKey='broker'
+                entityKey='dataBroker'
                 options={{ allowCreate: true, allowEdit: false, allowDelete: false, allowRefresh: true, allowCancel: true }}
                 layout={{ buttonLayout: 'row', buttonSize: 'icon', buttonsPosition: 'top', buttonSpacing: 'normal' }}
             />

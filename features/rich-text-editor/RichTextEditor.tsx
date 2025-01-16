@@ -1,5 +1,5 @@
 // RichTextEditor.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
@@ -7,13 +7,15 @@ import { WithRefsProps, withRefs } from '@/lib/refs';
 import { setupEditorAttributes } from './utils/editorUtils';
 import { getEditorSelection, SelectionState } from './utils/selectionUtils';
 
-interface RichTextEditorProps extends WithRefsProps {
+export interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
     className?: string;
     onDragOver?: (e: React.DragEvent<HTMLElement>) => void;
     onDrop?: (e: React.DragEvent<HTMLElement>) => void;
     initialContent?: string;
+    onBlur?: () => void;
 }
+
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
     componentId,
@@ -21,10 +23,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     className = '', 
     onDragOver, 
     onDrop,
-    initialContent = ''
+    initialContent = '',
+    onBlur
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);
+    const blurListenersRef = useRef<Set<() => void>>(new Set());
     const [selectionState, setSelectionState] = useState<SelectionState>({
         hasSelection: false,
         selectedText: '',
@@ -70,8 +74,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             if (!editor) return;
             editor.textContent = content;
             updatePlainTextContent();
+        },
+        // Add new ref methods
+        blur: () => {
+            editorRef.current?.blur();
+        },
+        addBlurListener: (handler: () => void) => {
+            blurListenersRef.current.add(handler);
+        },
+        removeBlurListener: (handler: () => void) => {
+            blurListenersRef.current.delete(handler);
         }
     });
+
 
     // Handle selection changes
     useEffect(() => {
@@ -140,6 +155,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         }
     };
 
+    const handleBlurInternal = useCallback(() => {
+        normalizeContent();
+        
+        // Call the direct prop handler if provided
+        onBlur?.();
+
+        // Call all registered blur listeners
+        blurListenersRef.current.forEach(listener => listener());
+    }, [normalizeContent, onBlur]);
+
     return (
         <div className="relative group w-full h-full flex flex-col">
             <div className="flex-1 overflow-hidden">
@@ -150,7 +175,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                         focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
                     contentEditable
                     onInput={handleInput}
-                    onBlur={normalizeContent}
+                    onBlur={handleBlurInternal}
                     onDragOver={onDragOver || handleDragOverInternal}
                     onDrop={onDrop || handleDropInternal}
                 />

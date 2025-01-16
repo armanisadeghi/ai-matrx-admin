@@ -34,7 +34,7 @@ export function useJoinedRecords(relationshipDefinition: RelationshipDefinition,
     const joiningMatrxIds = mapper.getJoinMatrxIds();
     const childMatrxIds = mapper.getChildMatrxIds();
 
-    const matchingChildRecords = useAppSelector((state) => childSelectors.selectRecordsByKeys(state, childMatrxIds)) as EntityData<EntityKeys>[];
+    const matchingChildRecords = useAppSelector((state) => childSelectors.selectRecordsWithKeys(state, childMatrxIds)) as EntityData<EntityKeys>[];
 
     // Fetch Dependent Records for joining, which I think results in fetching all child records as well as the parent record.
     const fetchChildPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(

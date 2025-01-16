@@ -3,14 +3,8 @@
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
 import { useAppStore, useEntityTools } from '@/lib/redux';
-import { toMatrxId, toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { MessageTemplateDataOptional, MatrxRecordId } from '@/types';
+import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useCallback, useMemo } from 'react';
-
-interface MessageOperationState {
-    recipeStatus: 'initializing' | 'loading' | 'idle';
-    mode: 'existingRecipe' | 'newRecipe' | null;
-}
 
 export interface AddMessagePayload {
     content: string;
@@ -73,11 +67,4 @@ export function useUpdateMessage() {
     );
 
     return { updateMessageContent, saveMessage };
-}
-
-interface UseUpdateMessageResult {
-    updateMessageContent: (recordId: MatrxRecordId, content: string) => void;
-    saveMessageContent: (recordId: MatrxRecordId) => void;
-    updateRecipeMessageOrder: (recordId: MatrxRecordId, order: number) => void;
-    saveRecipeMessage: (recordId: MatrxRecordId) => void;
 }

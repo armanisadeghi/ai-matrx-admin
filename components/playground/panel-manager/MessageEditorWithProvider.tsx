@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
-import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { Card } from '@/components/ui';
-import { MatrxRecordId } from '@/types';
+import { DataBrokerData, MatrxRecordId } from '@/types';
 import MessageToolbar from './MessageToolbar';
+import { ProcessedRecipeMessages } from './types';
+import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
+import { useChipMonitor } from '../hooks/useChipMonitor';
+import { useAddBroker } from '../hooks/messages/useAddBroker';
 
 interface MessageData {
     id: string;
@@ -28,19 +31,22 @@ interface MessageEditorProps {
     className?: string;
     onCollapse?: () => void;
     onExpand?: () => void;
-    onDelete?: (id: string) => void;
+    onDelete?: (matrxRecordId: MatrxRecordId) => void;
     onMessageUpdate?: (messageData: MessageData) => void;
     onChipUpdate?: (chipData: ChipChangeData) => void;
     onToggleEditor?: (matrxRecordId: MatrxRecordId) => void;
-    deleteMessageById?: (id: string) => void;
+    deleteMessageById?: (matrxRecordId: MatrxRecordId) => void;
+    onOrderChange?: (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => void;
+    recipeMessageHook?: UseRecipeMessagesHook;
 }
 
-type MessageTemplateDataOptional = {
-    id?: string;
-    type?: 'text' | 'base64_image' | 'blob' | 'image_url' | 'other';
-    role?: 'user' | 'assistant' | 'system';
-    content?: string;
-};
+interface ChipData {
+    id: string;
+    label: string;
+    color?: string;
+    stringValue?: string;
+    brokerId?: MatrxRecordId;
+}
 
 export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     matrxRecordId,
@@ -52,13 +58,87 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     onMessageUpdate,
     onChipUpdate,
     onToggleEditor,
-    deleteMessageById,
+    onOrderChange,
+    recipeMessageHook,
     ...props
 }) => {
     const dispatch = useAppDispatch();
-    const { actions, selectors, store } = useEntityTools('messageTemplate');
+    const [isSaving, setIsSaving] = useState(false);
+    const [lastSavedContent, setLastSavedContent] = useState('');
+    const { actions: messageActions, selectors: messsageSelectors } = useEntityTools('messageTemplate');
+    const { actions: brokerActions, selectors: brokerSelectors, store } = useEntityTools('dataBroker');
+    const { messages, deleteMessageById } = recipeMessageHook;
 
-    const record = selectors.selectRecord(store.getState(), matrxRecordId) as MessageTemplateDataOptional;
+    const { addBroker } = useAddBroker(matrxRecordId);
+
+    const createNewBroker = useCallback((chipData: ChipData) => {
+        const addBrokerPayload = {
+            name: chipData.label,
+            defaultValue: chipData.stringValue || '',
+            dataType: 'str' as DataBrokerData['dataType'],
+
+        }
+        addBroker(addBrokerPayload);
+
+    }, [matrxRecordId]);
+
+    const addExistingBrokerToSelection = useCallback(
+        (brokerId: string) => {
+            console.log('Adding broker to selection:', brokerId);
+        },
+        [matrxRecordId]
+    );
+
+    const associateBrokerWithMessage = useCallback(
+        (brokerId: string) => {
+            console.log('Associating broker with message:', brokerId);
+        },
+        [matrxRecordId]
+    );
+
+    const chipMonitor = useChipMonitor({
+        editorId: matrxRecordId,
+        onChange: (changes) => {
+            changes.forEach((change) => {
+                switch (change.type) {
+                    case 'added':
+                        console.log('New chip added:', change.chip);
+                        // Trigger your broker logic here if needed
+                        if (!change.chip.brokerId) {
+                            console.log('Chip needs broker:', change.chip);
+                        }
+                        break;
+
+                    case 'updated':
+                        console.log('Chip updated:', {
+                            from: change.previousChip,
+                            to: change.chip,
+                        });
+                        break;
+
+                    case 'removed':
+                        console.log('Chip removed:', change.chip);
+                        break;
+                }
+
+                // Call your existing onChipUpdate if provided
+                if (onChipUpdate) {
+                    onChipUpdate({
+                        chipId: change.chip.id,
+                        brokerId: change.chip.brokerId,
+                        action: change.type === 'added' ? 'add' : change.type === 'updated' ? 'update' : 'remove',
+                        data: change.chip,
+                    });
+                }
+            });
+        },
+    });
+
+    const record = React.useMemo(
+        () => messages.find((message) => message.matrxRecordId === matrxRecordId),
+        [messages, matrxRecordId]
+    ) as ProcessedRecipeMessages;
+
     const context = useEditorContext();
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [lastEditorState, setLastEditorState] = useState<string>('');
@@ -68,14 +148,14 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     const updateMessageContent = useCallback(
         (content: string) => {
             dispatch(
-                actions.updateUnsavedField({
+                messageActions.updateUnsavedField({
                     recordId: matrxRecordId,
                     field: 'content',
                     value: content,
                 })
             );
         },
-        [actions, dispatch, matrxRecordId]
+        [messageActions, dispatch, matrxRecordId]
     );
 
     useEffect(() => {
@@ -83,10 +163,34 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     }, [isCollapsed]);
 
     const handleSave = useCallback(() => {
+        if (isSaving) return;
+
         const processedContent = context.getTextWithChipsReplaced(matrxRecordId, true);
+        // Skip if content hasn't changed
+        if (processedContent === lastSavedContent) {
+            return;
+        }
+
+        setIsSaving(true);
         updateMessageContent(processedContent);
         updateRecord(matrxRecordId);
-    }, [context, matrxRecordId, dispatch, actions, updateRecord]);
+        setLastSavedContent(processedContent);
+
+        setTimeout(() => {
+            setIsSaving(false);
+        }, 500);
+    }, [context, matrxRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent]);
+
+    // Initialize lastSavedContent when the record loads
+    useEffect(() => {
+        if (record?.content) {
+            setLastSavedContent(record.content);
+        }
+    }, [record?.content]);
+
+    const handleBlur = useCallback(() => {
+        // handleSave();
+    }, [handleSave]);
 
     const handleDelete = useCallback(() => {
         deleteMessageById(record.id);
@@ -199,10 +303,24 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         }
     }, [matrxRecordId, onToggleEditor]);
 
+    const handleRoleChange = useCallback(
+        (matrxRecordId: MatrxRecordId, newRole: 'user' | 'assistant' | 'system') => {
+            dispatch(
+                messageActions.updateUnsavedField({
+                    recordId: matrxRecordId,
+                    field: 'role',
+                    value: newRole,
+                })
+            );
+            updateRecord(matrxRecordId);
+        },
+        [dispatch]
+    );
+
     return (
         <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
             <MessageToolbar
-                id={matrxRecordId}
+                matrxRecordId={matrxRecordId}
                 role={record.role}
                 isCollapsed={isCollapsed}
                 onAddMedia={handleAddMedia}
@@ -213,6 +331,8 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
                 onProcessed={handleShowProcessed}
                 onTextWithChips={handleShowNormalContent}
                 onShowBrokerContent={handleReplaceChipsWithBrokerContent}
+                onRoleChange={handleRoleChange}
+                recipeMessageHook={recipeMessageHook}
             />
 
             <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
@@ -220,6 +340,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
                     id={matrxRecordId}
                     initialContent={record.content}
                     className={className}
+                    onBlur={handleBlur}
                     {...props}
                 />
             </div>

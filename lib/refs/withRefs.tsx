@@ -2,6 +2,7 @@
 import React from 'react';
 import { RefMethod } from './types';
 
+
 export interface WithRefsProps {
     componentId: string;
     refMethods?: { [key: string]: RefMethod };

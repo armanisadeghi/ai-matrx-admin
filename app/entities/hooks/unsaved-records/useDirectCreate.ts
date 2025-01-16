@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityKeys } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
@@ -7,7 +7,7 @@ import { DefinedRelationship, RelatedDataManager } from '../relationships/relati
 
 interface RawData {
     child: Record<string, unknown>;
-    joining?: Record<string, unknown>; // Made optional since it might be empty
+    joining?: Record<string, unknown>;
 }
 interface UseCoordinatedCreateOptions {
     joiningEntityKey: EntityKeys;

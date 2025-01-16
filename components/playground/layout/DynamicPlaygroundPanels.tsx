@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useRef, useState, forwardRef } from 'react';
+import React, { useRef, forwardRef } from 'react';
 import { PanelGroup, ImperativePanelHandle, PanelResizeHandle, Panel } from 'react-resizable-panels';
 import { useMeasure } from '@uidotdev/usehooks';
 import CollapsibleSidebarPanel from './CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/panel-manager/ResultPanelManager';
-import EditorContainer from '../panel-manager/EditorContainer';
 import MessagesContainer from '../panel-manager/MessagesContainer';
 
 interface DynamicPlaygroundPanelsProps {

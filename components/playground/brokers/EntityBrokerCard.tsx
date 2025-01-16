@@ -8,18 +8,19 @@ import { EntityKeys, MatrxRecordId } from '@/types';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
 import BrokerCardHeader from './BrokerCardHeader';
-import { useEntitySelectionCrud } from '@/app/entities/hooks/crud/useCrudById';
+import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
 
-const BrokerRecordDisplay = <TEntity extends EntityKeys>({ 
-    unifiedLayoutProps 
-}: { 
-    unifiedLayoutProps: UnifiedLayoutProps 
-}) => {
-    const entityName = 'broker' as EntityKeys;
+const BrokerRecordDisplay = <TEntity extends EntityKeys>({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
+    const entityName = 'dataBroker' as EntityKeys;
+    const { selectors } = useEntityTools(entityName);
+    const selectedRecords = useAppSelector(selectors.selectSelectedRecordsWithKey);
+    const { updateChip, removeChipData } = useEditorChips(editorId);
+
     const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
-    const { selectedRecordsOrDefaultsWithKeys, getEffectiveRecordOrDefaults } = useEntitySelectionCrud(entityName);
+
     const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
-    
+
     // Ref to track previous record IDs
     const prevRecordIdsRef = useRef<string[]>([]);
 
@@ -30,75 +31,78 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>({
 
     // Update open states when selected records change
     useEffect(() => {
-        const currentRecordIds = Object.keys(selectedRecordsOrDefaultsWithKeys);
+        const currentRecordIds = Object.keys(selectedRecords);
         const prevRecordIds = prevRecordIdsRef.current;
-        
+
         // Check if the arrays are different
-        const hasChanged = 
+        const hasChanged =
             currentRecordIds.length !== prevRecordIds.length ||
-            currentRecordIds.some(id => !prevRecordIds.includes(id)) ||
-            prevRecordIds.some(id => !currentRecordIds.includes(id));
-            
+            currentRecordIds.some((id) => !prevRecordIds.includes(id)) ||
+            prevRecordIds.some((id) => !currentRecordIds.includes(id));
+
         if (hasChanged) {
-            setOpenStates(prevStates => {
+            setOpenStates((prevStates) => {
                 const newStates = { ...prevStates };
-                
+
                 // Add new records
-                currentRecordIds.forEach(recordId => {
+                currentRecordIds.forEach((recordId) => {
                     if (!(recordId in newStates)) {
                         newStates[recordId] = true;
                     }
                 });
-                
+
                 // Remove old records
-                Object.keys(newStates).forEach(recordId => {
+                Object.keys(newStates).forEach((recordId) => {
                     if (!currentRecordIds.includes(recordId)) {
                         delete newStates[recordId];
                     }
                 });
-                
+
                 return newStates;
             });
-            
+
             // Update ref with current IDs
             prevRecordIdsRef.current = currentRecordIds;
         }
-    }, [selectedRecordsOrDefaultsWithKeys]);
+    }, [selectedRecords]);
 
     const toggleOpen = useCallback((recordId: MatrxRecordId) => {
-        setOpenStates(prev => ({
+        setOpenStates((prev) => ({
             ...prev,
-            [recordId]: !prev[recordId]
+            [recordId]: !prev[recordId],
         }));
     }, []);
 
-    const handleRemove = useCallback((recordId: MatrxRecordId) => {
-        handleToggleSelection(recordId);
-        setOpenStates(prev => {
-            const newState = { ...prev };
-            delete newState[recordId];
-            return newState;
-        });
-    }, [handleToggleSelection]);
+    const handleRemove = useCallback(
+        (recordId: MatrxRecordId) => {
+            handleToggleSelection(recordId);
+            setOpenStates((prev) => {
+                const newState = { ...prev };
+                delete newState[recordId];
+                return newState;
+            });
+        },
+        [handleToggleSelection]
+    );
 
-    if (!Object.keys(selectedRecordsOrDefaultsWithKeys).length) {
+    if (!Object.keys(selectedRecords).length) {
         return null;
     }
 
     return (
-        <div className="w-full space-y-4">
-            {Object.keys(selectedRecordsOrDefaultsWithKeys).map((recordId) => (
+        <div className='w-full space-y-4'>
+            {Object.entries(selectedRecords).map(([recordId, record]) => (
                 <motion.div
                     key={recordId}
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="my-4 last:mb-0"
+                    className='my-4 last:mb-0'
                 >
-                    <Card className="bg-elevation2 border border-elevation3 rounded-lg">
+                    <Card className='bg-elevation2 border border-elevation3 rounded-lg'>
                         <BrokerCardHeader
                             recordId={recordId}
-                            getRecord={getEffectiveRecordOrDefaults}
+                            record={record}
                             isOpen={openStates[recordId] || false}
                             onToggle={() => toggleOpen(recordId)}
                             onDelete={() => handleRemove(recordId)}
@@ -110,9 +114,9 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>({
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
-                                    className="overflow-hidden"
+                                    className='overflow-hidden'
                                 >
-                                    <CardContent className="p-2 bg-background space-y-2 border-t">
+                                    <CardContent className='p-2 bg-background space-y-2 border-t'>
                                         <EntityFormMinimalAnyRecord<TEntity>
                                             key={recordId}
                                             recordId={recordId}

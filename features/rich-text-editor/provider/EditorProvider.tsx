@@ -8,6 +8,8 @@ import { replaceChipsWithStringValues } from '../utils/editorStateUtils';
 import { chipSyncManager } from '../utils/ChipUpdater';
 import { useEditorLayout } from './hooks/useEditorLayout';
 import { useEditorRegistration } from './hooks/useEditorRegistration';
+import { MatrxRecordId } from '@/types';
+import { useBrokerChipSync } from './hooks/useBrokerChipSync';
 
 export interface LayoutMetadata {
     position: string | number;
@@ -40,6 +42,7 @@ export interface EditorContextValue {
     setPlainTextContent: (editorId: string, content: string) => void;
 
     // Chip operations
+    getChipsForBroker: (brokerId: MatrxRecordId) => Array<{ editorId: string; chips: ChipData[] }>;
     setChipCounter: (editorId: string, value: number) => void;
     incrementChipCounter: (editorId: string) => void;
     decrementChipCounter: (editorId: string) => void;
@@ -110,6 +113,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
     }, []);
 
+    useBrokerChipSync();
+
     // Implement all operations using editorId
     const setChipCounter = useCallback(
         (editorId: string, value: number) => {
@@ -162,6 +167,26 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [updateEditorState]
     );
 
+    const getChipsForBroker = useCallback((brokerId: MatrxRecordId) => {
+        const results: Array<{ editorId: string; chips: ChipData[] }> = [];
+        
+        editors.forEach((editorState, editorId) => {
+            console.log('Checking editor:', { editorId, editorState });
+            const matchingChips = editorState.chipData.filter(
+                chip => chip.brokerId === brokerId
+            );
+            
+            if (matchingChips.length > 0) {
+                results.push({
+                    editorId,
+                    chips: matchingChips
+                });
+            }
+        });
+        
+        return results;
+    }, [editors]);
+    
     const setChipData = useCallback(
         (editorId: string, data: ChipData[]) => {
             updateEditorState(editorId, { chipData: data });
@@ -348,9 +373,10 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
         plainTextContent,
         setPlainTextContent,
+
+        getChipsForBroker,
         setChipData,
         setColorAssignments,
-
         createNewChipData,
         addChipData,
         removeChipData,

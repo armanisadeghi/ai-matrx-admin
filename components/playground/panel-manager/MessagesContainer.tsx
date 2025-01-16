@@ -4,21 +4,22 @@ import React, { useCallback, useRef, useState } from 'react';
 import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { Button } from '@/components/ui';
 import { Plus } from 'lucide-react';
-import { MatrxRecordId, MessageTemplateDataOptional } from '@/types';
+import { MatrxRecordId } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
 import { useMessageTemplatesWithNew } from '../hooks/dev/useMessageWithNew';
 import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
-import ManagedMessageEditor from './CardWithProvider';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import ManagedMessageEditor from './MessageEditorWithProvider';
 import MessageEditor from '@/features/rich-text-editor/provider/withMessageEditor';
+import { ProcessedRecipeMessages } from './types';
 
-const INITIAL_PANELS: ExtendedMessageData[] = [
+const INITIAL_PANELS: ProcessedRecipeMessages[] = [
     {
         id: 'system-1',
         matrxRecordId: 'system-1',
         role: 'system',
         type: 'text',
         content: '',
+        order: 0,
     },
     {
         id: 'user-1',
@@ -26,24 +27,19 @@ const INITIAL_PANELS: ExtendedMessageData[] = [
         role: 'user',
         type: 'text',
         content: '',
+        order: 1,
     },
 ];
 
-type ExtendedMessageData = MessageTemplateDataOptional & {
-    matrxRecordId: MatrxRecordId;
-};
 
 function EditorContainer() {
-    const { messageMatrxIds, deleteMessageById } = useMessageTemplatesWithNew();
+    const recipeMessageHook = useMessageTemplatesWithNew();
+
+    const { messages, messageMatrxIds, deleteMessageById } = recipeMessageHook;
     const { addMessage } = useAddMessage();
 
-    const selectors = useEntityTools('messageTemplate').selectors;
-    const matchingChildRecords = useAppSelector((state) => selectors.selectRecordsWithKeys(state, messageMatrxIds)) as Array<ExtendedMessageData>;
-
-    const messages = matchingChildRecords;
-    const hasRealData = matchingChildRecords.length > 0;
-    const displayMessages = hasRealData ? matchingChildRecords : INITIAL_PANELS;
-
+    const hasRealData = messages.length > 0;
+    const displayMessages = hasRealData ? messages : INITIAL_PANELS;
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
     const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
@@ -69,51 +65,51 @@ function EditorContainer() {
         addMessage(newSection);
     }, [displayMessages, addMessage]);
 
-    const registerPanelRef = (id: string, ref: ImperativePanelHandle | null) => {
+    const registerPanelRef = (matrxRecordId: MatrxRecordId, ref: ImperativePanelHandle | null) => {
         if (ref) {
-            panelRefs.current.set(id, ref);
+            panelRefs.current.set(matrxRecordId, ref);
         } else {
-            panelRefs.current.delete(id);
+            panelRefs.current.delete(matrxRecordId);
         }
     };
 
-    const handlePanelCollapse = (id: string) => {
+    const handlePanelCollapse = (matrxRecordId: MatrxRecordId) => {
         setCollapsedPanels((prev) => {
             const newSet = new Set(prev);
-            newSet.add(id);
+            newSet.add(matrxRecordId);
             return newSet;
         });
         setHiddenEditors((prev) => {
             const newSet = new Set(prev);
-            newSet.add(id);
+            newSet.add(matrxRecordId);
             return newSet;
         });
     };
 
-    const handlePanelExpand = (id: string) => {
+    const handlePanelExpand = (matrxRecordId: MatrxRecordId) => {
         setCollapsedPanels((prev) => {
             const newSet = new Set(prev);
-            newSet.delete(id);
+            newSet.delete(matrxRecordId);
             return newSet;
         });
         setHiddenEditors((prev) => {
             const newSet = new Set(prev);
-            newSet.delete(id);
+            newSet.delete(matrxRecordId);
             return newSet;
         });
     };
 
     const toggleEditor = useCallback(
-        (id: string) => {
-            const panelRef = panelRefs.current.get(id);
-            const isCurrentlyCollapsed = collapsedPanels.has(id);
+        (matrxRecordId: MatrxRecordId) => {
+            const panelRef = panelRefs.current.get(matrxRecordId);
+            const isCurrentlyCollapsed = collapsedPanels.has(matrxRecordId);
 
             if (isCurrentlyCollapsed) {
                 panelRef?.resize(10);
-                handlePanelExpand(id);
+                handlePanelExpand(matrxRecordId);
             } else {
                 panelRef?.resize(3);
-                handlePanelCollapse(id);
+                handlePanelCollapse(matrxRecordId);
             }
         },
         [handlePanelExpand, handlePanelCollapse]
@@ -138,9 +134,9 @@ function EditorContainer() {
         setActiveEditorId(null);
     };
 
-    const openDialog = (type: DialogType, id: string) => {
+    const openDialog = (type: DialogType, matrxRecordId: MatrxRecordId) => {
         setDialogType(type);
-        setActiveEditorId(id);
+        setActiveEditorId(matrxRecordId);
         setDialogOpen(true);
     };
 
@@ -157,29 +153,30 @@ function EditorContainer() {
                     const isCollapsed = collapsedPanels.has(message.matrxRecordId);
 
                     return (
-                        <React.Fragment key={message.id}>
+                        <React.Fragment key={message.matrxRecordId}>
                             <Panel
-                                ref={(ref: ImperativePanelHandle | null) => registerPanelRef(message.id, ref)}
-                                id={message.id}
+                                ref={(ref: ImperativePanelHandle | null) => registerPanelRef(message.matrxRecordId, ref)}
+                                id={message.matrxRecordId}
                                 defaultSize={isLastPanel ? remainingSize : 10}
                                 minSize={10}
                                 maxSize={100}
                                 collapsible={true}
                                 collapsedSize={3}
-                                onCollapse={() => handlePanelCollapse(message.id)}
-                                onExpand={() => handlePanelExpand(message.id)}
+                                onCollapse={() => handlePanelCollapse(message.matrxRecordId)}
+                                onExpand={() => handlePanelExpand(message.matrxRecordId)}
                                 order={index + 1}
                             >
                                 {hasRealData ? (
                                     <ManagedMessageEditor
                                         matrxRecordId={message.matrxRecordId}
+                                        recipeMessageHook={recipeMessageHook}
                                         deleteMessageById={deleteMessageById}
                                         isCollapsed={isCollapsed}
                                         onToggleEditor={() => toggleEditor(message.matrxRecordId)}
                                     />
                                 ) : (
                                     <MessageEditor
-                                        id={message.id}
+                                        id={message.matrxRecordId}
                                         className='w-full h-full border rounded-md'
                                         initialContent={message.content}
                                     />

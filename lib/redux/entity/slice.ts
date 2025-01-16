@@ -40,6 +40,7 @@ import {
     CreateRecordPayload,
     createRecordSuccessPayload,
     DeleteRecordPayload,
+    DirectUpdateRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
     FetchOnePayload,
@@ -513,6 +514,18 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                         return;
                     }
                 }
+            },
+
+            directUpdateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectUpdateRecordPayload>) => {
+                entityLogger.log('info', 'slice - directUpdateRecord', action.payload);
+                setLoading(state, 'DIRECT_UPDATE');
+            },
+
+            directUpdateRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<EntityData<TEntity>>) => {
+                entityLogger.log('info', 'directUpdateRecordSuccess', action.payload);
+                const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                state.records[recordKey] = action.payload;
+                setSuccess(state, 'DIRECT_UPDATE');
             },
 
             updateRecord: (state: EntityState<TEntity>, action: PayloadAction<UpdateRecordPayload>) => {

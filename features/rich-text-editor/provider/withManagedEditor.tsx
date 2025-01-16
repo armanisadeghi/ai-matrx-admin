@@ -1,18 +1,13 @@
 // withManagedEditor.tsx
 import React, { useEffect } from 'react';
 import { WithRefsProps, withRefs } from '@/lib/refs';
-import RichTextEditor from '../RichTextEditor';
+import RichTextEditor, { RichTextEditorProps } from '../RichTextEditor';
 import { useEditorContext } from './EditorProvider';
 import { ChipMenuProvider } from '../components/ChipContextMenu';
 
-interface ManagedEditorProps extends WithRefsProps {
-    initialContent?: string;
-    onChange?: (content: string) => void;
-    className?: string;
-}
 
 const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
-    const WrappedEditor: React.FC<ManagedEditorProps> = ({
+    const WrappedEditor: React.FC<RichTextEditorProps> = ({
         componentId,
         initialContent,
         ...props
@@ -21,7 +16,6 @@ const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
 
         useEffect(() => {
             context.registerEditor(componentId);
-            return () => context.unregisterEditor(componentId);
         }, []);
 
         return (
@@ -40,7 +34,7 @@ const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
 
 const ManagedEditor = withManagedEditor(RichTextEditor);
 
-export const EditorWithProviders: React.FC<Omit<ManagedEditorProps, 'componentId'> & { id: string }> = ({
+export const EditorWithProviders: React.FC<Omit<RichTextEditorProps, 'componentId'> & { id: string }> = ({
     id,
     ...props
 }) => {

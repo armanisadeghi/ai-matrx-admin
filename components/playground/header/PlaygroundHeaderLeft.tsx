@@ -61,14 +61,14 @@ const PlaygroundHeaderLeft = ({
         ariaLabel="Create new broker"
       />
       <QuickRefCommandIcon
-        entityKey={"broker"}
+        entityKey={"dataBroker"}
         onRecordChange={handleRecordChange}
         title="Add Item"
         size={22}
         disabled={false}
       />
       <QuickRefMultiSelect
-        entityKey={"broker"}
+        entityKey={"dataBroker"}
         onRecordsChange={handleRecordsChange}
         fetchMode="fkIfk"
       />

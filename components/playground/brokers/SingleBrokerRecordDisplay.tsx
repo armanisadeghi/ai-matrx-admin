@@ -25,6 +25,9 @@ const SingleBrokerRecordDisplay = <TEntity extends EntityKeys>({
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
+    const record = getRecord(recordId);
+
+
     return (
         <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -35,7 +38,7 @@ const SingleBrokerRecordDisplay = <TEntity extends EntityKeys>({
             <Card className='bg-elevation2 border border-elevation3 rounded-lg'>
                 <BrokerCardHeader
                     recordId={recordId}
-                    getRecord={getRecord}
+                    record={record}
                     isOpen={isOpen}
                     onToggle={toggleOpen}
                     onDelete={onDelete ? () => onDelete(recordId) : undefined}

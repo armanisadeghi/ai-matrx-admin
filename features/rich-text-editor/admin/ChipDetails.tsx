@@ -15,7 +15,7 @@ import { Trash2 } from 'lucide-react';
 
 export const ChipDetails = ({ chip, editorId }: { chip: ChipData; editorId: string }) => {
     const { updateChip, removeChipData } = useEditorChips(editorId);
-    const { quickReferenceRecords } = useFetchQuickRef('broker');
+    const { quickReferenceRecords } = useFetchQuickRef('dataBroker');
 
     const handleBrokerChange = (brokerId: string) => {
         const broker = quickReferenceRecords?.find((b) => b.recordKey === brokerId);

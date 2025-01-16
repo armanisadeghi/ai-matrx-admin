@@ -42,6 +42,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return matchingRecords;
         });
 
+    // First, create a base selector that takes the additional parameters
+    const selectRecordKeyByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): MatrxRecordId | null => {
+        const records = selectAllRecords(state);
+        const entry = Object.entries(records).find(([_, record]) => record[fieldName] === fieldValue);
+        return entry ? (entry[0] as MatrxRecordId) : null;
+    };
+
+    // For multiple keys
+    const selectRecordKeysByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): MatrxRecordId[] => {
+        const records = selectAllRecords(state);
+        return Object.entries(records)
+            .filter(([_, record]) => record[fieldName] === fieldValue)
+            .map(([key]) => key as MatrxRecordId);
+    };
+
     const selectEntityDisplayName = createSelector([selectEntity], (entity) => {
         return entity.entityMetadata.displayName;
     });
@@ -60,25 +75,22 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             .filter(Boolean);
     });
 
-    const selectRecordsKeyPairs = createSelector(
-        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
-        (entity, recordKeys) => {
-            if (!recordKeys) return [];
-            if (!entity?.records) return [];
-    
-            return recordKeys
-                .filter((key): key is MatrxRecordId => key != null)
-                .map((recordKey) => {
-                    const record = entity.records[recordKey];
-                    return record ? { key: recordKey, record } : null;
-                })
-                .filter(Boolean);
-        }
-    );
-    
+    const selectRecordsKeyPairs = createSelector([selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (entity, recordKeys) => {
+        if (!recordKeys) return [];
+        if (!entity?.records) return [];
+
+        return recordKeys
+            .filter((key): key is MatrxRecordId => key != null)
+            .map((recordKey) => {
+                const record = entity.records[recordKey];
+                return record ? { key: recordKey, record } : null;
+            })
+            .filter(Boolean);
+    });
+
     const selectRecordsWithKeys = createSelector(
-        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
-        (entity, recordKeys) => {
+        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], 
+        (entity, recordKeys): EntityDataWithId<TEntity>[] => {
             if (!recordKeys) return [];
             if (!entity?.records) return [];
     
@@ -89,7 +101,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     if (record) {
                         return {
                             ...record,
-                            matrxRecordId: recordKey
+                            matrxRecordId: recordKey,
                         };
                     }
                     return null;
@@ -97,8 +109,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                 .filter(Boolean);
         }
     );
-    
-    
+
     const selectEffectiveRecordsByKeys = createSelector(
         [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
         (entity, recordKeys): TEntity[] => {
@@ -283,7 +294,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                 acc[recordKey] = record;
             }
             return acc;
-        }, {} as Record<string, NonNullable<(typeof entity.records)[keyof typeof entity.records]>>);
+        }, {} as Record<MatrxRecordId, NonNullable<(typeof entity.records)[keyof typeof entity.records]>>);
     });
 
     const selectActiveRecordId = createSelector([selectSelectionState], (selection) => selection.activeRecord ?? null);
@@ -1049,5 +1060,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
         selectRecordsKeyPairs,
         selectRecordsWithKeys,
+
+        selectRecordKeyByFieldValue,
+        selectRecordKeysByFieldValue,
     };
 };

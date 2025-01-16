@@ -1,10 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { DataBrokerDataRequired, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
+import { DataBrokerDataRequired, MatrxRecordId, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { processJoinedData, RelationshipDefinition } from '@/app/entities/hooks/relationships/utils';
 import { useActiveJoinedRecords } from '@/app/entities/hooks/relationships/useActiveJoinedRecords';
 import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships/useJoinedRecords';
-import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
+import { ProcessedRecipeMessages } from '../../panel-manager/types';
+import { useMessageReordering } from '../messages/useMessageReordering';
 
 const messageRelationshipDefinition: RelationshipDefinition = {
     parentEntity: {
@@ -40,13 +41,10 @@ const brokerRelationshipDefinition: RelationshipDefinition = {
     },
 };
 
-type JoinedMessageData = MessageTemplateDataOptional & {
-    order: number;
-    recipeId?: string; // Optional since components might not need this
-};
 
 export function useMessageTemplatesWithNew() {
-    // Keep all existing relationship management
+    const [needsReprocess, setNeedsReprocess] = useState(false);
+
     const {
         matchingChildRecords: messages,
         childMatrxIds: messageMatrxIds,
@@ -70,9 +68,13 @@ export function useMessageTemplatesWithNew() {
             childRecords: messages,
             joiningRecords: recipeMessages,
             relationshipDefinition: messageRelationshipDefinition,
-        });
-    }, [messages, recipeMessages]) as MessageTemplateDataOptional[];
+        }) as ProcessedRecipeMessages[];
+    }, [messages, recipeMessages, needsReprocess]);
 
+    const {
+        handleDragDrop,
+    } = useMessageReordering(processedMessages, () => setNeedsReprocess(true));
+    
     // Keep all existing broker relationship management
     const {
         matchingChildRecords: brokers,
@@ -131,7 +133,7 @@ export function useMessageTemplatesWithNew() {
     );
 
     const updateMessage = useCallback(
-        (messageId: string, updates: Partial<JoinedMessageData>) => {
+        (messageId: string, updates: Partial<ProcessedRecipeMessages>) => {
             // You have to be careful with using 'id' or 'messageId'. Everything we do should be with matrxRecordId, not id.
             if (unsavedMessageIds.includes(messageId)) {
                 // Separate the updates between the two tables
@@ -161,14 +163,14 @@ export function useMessageTemplatesWithNew() {
 
     return {
         // Keep all existing returns
-        messages: processedMessages as JoinedMessageData[], // Now properly typed as joined data
+        messages: processedMessages as ProcessedRecipeMessages[], // Now properly typed as joined data
         messageMatrxIds,
         brokers: processedBrokers,
         fetchDependentRecords,
         deleteMessageById,
         deleteMessageByMatrxId,
         createMessageTemplates,
-
+        handleDragDrop,
         // Add new message management methods
         addMessage,
         updateMessage,
@@ -177,3 +179,5 @@ export function useMessageTemplatesWithNew() {
         unsavedMessageIds,
     };
 }
+
+export type UseRecipeMessagesHook = ReturnType<typeof useMessageTemplatesWithNew>;

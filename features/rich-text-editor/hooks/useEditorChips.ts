@@ -13,7 +13,7 @@ interface QuickReferenceRecord {
 }
 
 export const useEditorChips = (editorId: string) => {
-    const entityKey = 'broker';
+    const entityKey = 'dataBroker';
     const context = useEditorContext();
     const {quickReferenceRecords} = useFetchQuickRef(entityKey);
 

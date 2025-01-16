@@ -2,15 +2,16 @@
 'use client';
 
 import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
-import { filteredPages, MODULE_HOME, MODULE_NAME} from './config';
-import React from "react";
+import { filteredPages, MODULE_HOME, MODULE_NAME } from './config';
+import React from 'react';
 import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
+import EditorAnalyzer from '@/features/rich-text-editor/admin/sidebar-analyzer/EditorAnalyzer';
 
-export default function Layout({children}: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex flex-col h-full">
-            <div className="sticky top-0 z-50">
+        <div className='flex flex-col h-full'>
+            <div className='sticky top-0 z-50'>
                 <ModuleHeaderWithProvider
                     pages={filteredPages}
                     moduleHome={MODULE_HOME}
@@ -18,7 +19,7 @@ export default function Layout({children}: { children: React.ReactNode }) {
                 />
             </div>
             <MatrxDynamicPanel
-                initialPosition="left"
+                initialPosition='right'
                 defaultExpanded={false}
                 expandButtonProps={{
                     label: 'Entity State',
@@ -26,13 +27,11 @@ export default function Layout({children}: { children: React.ReactNode }) {
             >
                 <EnhancedEntityAnalyzer
                     defaultExpanded={false}
-                    selectedEntityKey="broker"
+                    selectedEntityKey='dataBroker'
                 />
             </MatrxDynamicPanel>
 
-            <main className="flex-1">
-                {children}
-            </main>
+            <main className='flex-1'>{children}</main>
         </div>
     );
 }

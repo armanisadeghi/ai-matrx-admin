@@ -211,17 +211,25 @@ export const useEntitySelectionCrud = <TEntity extends EntityKeys>(entityKey: TE
     const effectiveRecordOrDefaults = useMemo(() => {
         return (matrxRecordId: MatrxRecordId) => selectors.selectEffectiveRecordOrDefaults(store.getState(), matrxRecordId);
     }, [selectors, store]);
-    
+
     const selectedRecordsOrDefaultsWithKeys = useMemo(() => {
         return selectedRecordIds.reduce((acc, recordId) => {
-            const record = effectiveRecordOrDefaults(recordId);
-            if (record) {
-                acc[recordId] = record;
+            // First try to get the actual record
+            const actualRecord = effectiveRecordById(recordId);
+            if (actualRecord) {
+                acc[recordId] = actualRecord;
+                return acc;
+            }
+
+            // Only fall back to defaults if no actual record exists
+            const defaultRecord = effectiveRecordOrDefaults(recordId);
+            if (defaultRecord) {
+                acc[recordId] = defaultRecord;
             }
             return acc;
         }, {} as EntityRecordMap<TEntity>);
-    }, [selectedRecordIds, effectiveRecordOrDefaults]);
-    
+    }, [selectedRecordIds, effectiveRecordById, effectiveRecordOrDefaults]);
+
     const selectedRecordsCrud = useMemo(
         () => ({
             updateRecord: updateSelectedRecords,

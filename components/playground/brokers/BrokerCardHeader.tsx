@@ -5,13 +5,14 @@ import { Button } from "@/components/ui";
 import { X, MessageCircleQuestion, Blocks, CheckCircle2, XCircle, ChevronUp, ChevronDown } from "lucide-react";
 import { getComponentIcon, getSourceIcon } from "@/app/(authenticated)/tests/recipe-creation/brokers-two/constants";
 import { cn } from "@/utils";
-import { MatrxRecordId } from "@/types";
+import { DataBrokerData, MatrxRecordId } from "@/types";
+import { useEditorContext } from "@/features/rich-text-editor/provider/EditorProvider";
+import { ChipData } from "@/features/rich-text-editor/types/editor.types";
 
 // Define the structure of a broker record
 interface BrokerRecord {
-  componentType?: string;
-  displayName?: string;
-  officialName?: string;
+  name?: string;
+  defaultComponent?: string;
   defaultSource?: string;
   isConnected?: boolean;
 }
@@ -19,20 +20,35 @@ interface BrokerRecord {
 // Define the component props
 interface BrokerCardHeaderProps {
   recordId: MatrxRecordId;
-  getRecord: (recordId: MatrxRecordId) => BrokerRecord;
+  record: BrokerRecord;
   isOpen: boolean;
   onToggle: () => void;
   onDelete: () => void;
 }
 
+const isChipDisconnected = (chip: ChipData) => {
+  return !chip.brokerId || 
+         chip.brokerId === 'disconnected' || 
+         chip.brokerId === 'null' || 
+         chip.brokerId === 'undefined';
+};
+
+
 const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ 
   recordId,
-  getRecord, 
+  record, 
   isOpen, 
   onToggle, 
   onDelete 
 }) => {
-  const data = getRecord(recordId);
+  const context = useEditorContext();
+
+  const chipsAndEditorData = context.getChipsForBroker(recordId)[0];
+  console.log("------",chipsAndEditorData);
+  console.log(chipsAndEditorData?.chips);
+
+  const isConnected = chipsAndEditorData?.chips?.some(chip => !isChipDisconnected(chip)) || false;
+  console.log(isConnected);
 
   return (
     <div
@@ -53,19 +69,19 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
 
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <div className="h-6 w-6 flex-shrink-0 flex items-center justify-center rounded-md bg-elevation2/50">
-          {data.componentType ? (
-            getComponentIcon(data.componentType)
+          {record.defaultComponent ? (
+            getComponentIcon(record.defaultComponent)
           ) : (
             <MessageCircleQuestion className="h-4 w-4 text-muted-foreground/50" />
           )}
         </div>
         <span className="font-medium text-sm truncate">
-          {data.displayName || data.officialName || "Unnamed Broker"}
+          {record.name || record.name || "Unnamed Broker"}
         </span>
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        <div
+        {/* <div
           className="h-6 w-6 flex items-center justify-center rounded-md bg-elevation2/50"
           title={data.defaultSource}
         >
@@ -74,18 +90,18 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
           ) : (
             <Blocks className="h-4 w-4 text-muted-foreground/50" />
           )}
-        </div>
+        </div> */}
 
         <div
           className={cn(
             "h-6 w-6 flex items-center justify-center rounded-md",
-            data.isConnected
+            isConnected
               ? "bg-success/10 text-success"
               : "bg-elevation2/50"
           )}
-          title={data.isConnected ? "Connected" : "Disconnected"}
+          title={isConnected ? "Connected" : "Disconnected"}
         >
-          {data.isConnected ? (
+          {isConnected ? (
             <CheckCircle2 className="h-4 w-4" />
           ) : (
             <XCircle className="h-4 w-4 text-muted-foreground/50" />
