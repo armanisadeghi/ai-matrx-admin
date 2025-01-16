@@ -41,7 +41,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
 
         // Only block if we've seen this exact request within our cache window
         if (lastRequestTime && currentTime - lastRequestTime < CACHE_WINDOW) {
-            sagaLogger.log('warn', `Skipping duplicate request for ${cacheKey} within ${CACHE_WINDOW}ms window`);
+            sagaLogger.log('debug', `Skipping duplicate request for ${cacheKey} within ${CACHE_WINDOW}ms window`);
             return true;
         }
         return false;

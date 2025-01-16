@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card';
 import { Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { useEditorContext } from '../provider/EditorProvider';
 import { Switch } from '@/components/ui';
 import { ChipDetails } from './ChipDetails';

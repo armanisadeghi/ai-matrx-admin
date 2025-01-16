@@ -10,12 +10,16 @@ import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
 import BrokerCardHeader from './BrokerCardHeader';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
+import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 
 const BrokerRecordDisplay = <TEntity extends EntityKeys>({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
     const entityName = 'dataBroker' as EntityKeys;
     const { selectors } = useEntityTools(entityName);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecordsWithKey);
-    const { updateChip, removeChipData } = useEditorChips(editorId);
+    const context = useEditorContext();
+
+    // const { updateChip, removeChipData } = useEditorChips(editorId);
+
 
     const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
 

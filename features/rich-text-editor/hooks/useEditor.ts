@@ -17,7 +17,17 @@ import { useDragAndDrop } from './useDragAndDrop';
 import { ChipRequestOptions } from '../types/editor.types';
 import { useChipMenu } from '../components/ChipContextMenu';
 
-export const useEditor = (editorId: string) => {
+export interface ChipHandlers {
+    onDragStart?: (event: MouseEvent) => void;
+    onDragEnd?: (event: MouseEvent) => void;
+    onClick?: (event: MouseEvent) => void;
+    onDoubleClick?: (event: MouseEvent) => void;
+    onMouseEnter?: (event: MouseEvent) => void;
+    onMouseLeave?: (event: MouseEvent) => void;
+    onContextMenu?: (event: MouseEvent) => void;
+}
+
+export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
     const context = useEditorContext();
     const { showMenu } = useChipMenu();
     const editorState = context.getEditorState(editorId);
@@ -127,38 +137,38 @@ export const useEditor = (editorId: string) => {
     }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
 
     const chipHandlers = {
-        onDragStart: (event) => console.log('Drag started:', event),
-        onDragEnd: (event) => console.log('Drag ended:', event),
-        onClick: (event) => console.log('Chip clicked:', event),
-        onDoubleClick: (event) => {
-            const chip = (event.target as HTMLElement).closest('[data-chip]');
-            if (!chip) return;
-            
-            const chipId = chip.getAttribute('data-chip-id');
-            if (!chipId) return;
-    
-            showMenu(editorId, chipId, event.clientX, event.clientY);
-            console.log('Chip double-clicked:', event);
-        },
-        onMouseEnter: (event) => console.log('Mouse entered:', event),
-        onMouseLeave: (event) => console.log('Mouse left:', event),
-        onContextMenu: (event: MouseEvent) => {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            const chip = (event.target as HTMLElement).closest('[data-chip]');
-            if (!chip) return;
-            
-            const chipId = chip.getAttribute('data-chip-id');
-            if (!chipId) return;
-    
-            showMenu(editorId, chipId, event.clientX, event.clientY);
-            console.log('Right-clicked:', event);
-        },
+        onDragStart: handlers?.onDragStart || ((event) => console.log('Drag started:', event)),
+        onDragEnd: handlers?.onDragEnd || ((event) => console.log('Drag ended:', event)),
+        onClick: handlers?.onClick || ((event) => console.log('Chip clicked:', event)),
+        onDoubleClick:
+            handlers?.onDoubleClick ||
+            ((event) => {
+                const chip = (event.target as HTMLElement).closest('[data-chip]');
+                if (!chip) return;
+
+                const chipId = chip.getAttribute('data-chip-id');
+                if (!chipId) return;
+
+                showMenu(editorId, chipId, event.clientX, event.clientY);
+            }),
+        onMouseEnter: handlers?.onMouseEnter || ((event) => console.log('Mouse entered:', event)),
+        onMouseLeave: handlers?.onMouseLeave || ((event) => console.log('Mouse left:', event)),
+        onContextMenu:
+            handlers?.onContextMenu ||
+            ((event: MouseEvent) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const chip = (event.target as HTMLElement).closest('[data-chip]');
+                if (!chip) return;
+
+                const chipId = chip.getAttribute('data-chip-id');
+                if (!chipId) return;
+
+                showMenu(editorId, chipId, event.clientX, event.clientY);
+            }),
     };
 
-
-    
     const convertSelectionToChip = useCallback(() => {
         const editor = getEditor();
         const { text, range } = getSelectedText();

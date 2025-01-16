@@ -45,9 +45,6 @@ export function useAddBroker(parentRecordId: MatrxRecordId) {
     const childEntity = 'dataBroker';
     const ChildEntityTwo = 'dataInputComponent';
     const { selectors: parentSelectors } = useEntityTools(parentEntity);
-
-    console.log('useAddBroker with message ID:', parentRecordId);
-
     const parentId = useMemo(() => toPkValue(parentRecordId), [parentRecordId]);
 
     const createRelationship = useRelationshipCreate(joiningEntity, childEntity, parentId);

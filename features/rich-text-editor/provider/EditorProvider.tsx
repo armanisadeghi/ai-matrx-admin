@@ -9,7 +9,6 @@ import { chipSyncManager } from '../utils/ChipUpdater';
 import { useEditorLayout } from './hooks/useEditorLayout';
 import { useEditorRegistration } from './hooks/useEditorRegistration';
 import { MatrxRecordId } from '@/types';
-import { useBrokerChipSync } from './hooks/useBrokerChipSync';
 
 export interface LayoutMetadata {
     position: string | number;
@@ -31,7 +30,7 @@ export type EditorStates = Map<string, EditorState>;
 export interface EditorContextValue {
     // State getters
     getEditorState: (editorId: string) => EditorState;
-
+    getAllEditorStates: () => { [key: string]: EditorState };
     // State operations
     registerEditor: (editorId: string) => void;
     unregisterEditor: (editorId: string) => void;
@@ -42,7 +41,8 @@ export interface EditorContextValue {
     setPlainTextContent: (editorId: string, content: string) => void;
 
     // Chip operations
-    getChipsForBroker: (brokerId: MatrxRecordId) => Array<{ editorId: string; chips: ChipData[] }>;
+    getAllChipData: () => ChipData[];
+    getChipsForBroker: (searchId: string) => ChipData[];
     setChipCounter: (editorId: string, value: number) => void;
     incrementChipCounter: (editorId: string) => void;
     decrementChipCounter: (editorId: string) => void;
@@ -51,7 +51,7 @@ export interface EditorContextValue {
     createNewChipData: (editorId: string, requestOptions?: ChipRequestOptions) => ChipData;
     addChipData: (editorId: string, data: ChipData) => void;
     removeChipData: (editorId: string, chipId: string) => void;
-    updateChipData: (editorId: string, chipId: string, updates: Partial<ChipData>) => void;
+    updateChipData: (chipId: string, updates: Partial<ChipData>) => void;
     getTextWithChipsReplaced: (editorId: string, showTokenIds?: boolean) => string;
     generateLabel: (editorId: string, requestOptions?: ChipRequestOptions) => string;
 
@@ -102,6 +102,22 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [editors]
     );
 
+    const getAllEditorStates = useCallback(() => {
+        const editorStatesObject: { [key: string]: EditorState } = {};
+        editors.forEach((state, editorId) => {
+            editorStatesObject[editorId] = state;
+        });
+        return editorStatesObject;
+    }, [editors]);
+
+    const getAllChipData = useCallback(() => {
+        const allChips: Array<ChipData> = [];
+        editors.forEach((state) => {
+            allChips.push(...state.chipData);
+        });
+        return allChips;
+    }, [editors]);
+
     const updateEditorState = useCallback((editorId: string, updates: Partial<EditorState>) => {
         setEditors((prev) => {
             const current = prev.get(editorId);
@@ -112,8 +128,6 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return next;
         });
     }, []);
-
-    useBrokerChipSync();
 
     // Implement all operations using editorId
     const setChipCounter = useCallback(
@@ -167,26 +181,20 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [updateEditorState]
     );
 
-    const getChipsForBroker = useCallback((brokerId: MatrxRecordId) => {
-        const results: Array<{ editorId: string; chips: ChipData[] }> = [];
-        
-        editors.forEach((editorState, editorId) => {
-            console.log('Checking editor:', { editorId, editorState });
-            const matchingChips = editorState.chipData.filter(
-                chip => chip.brokerId === brokerId
-            );
-            
-            if (matchingChips.length > 0) {
-                results.push({
-                    editorId,
-                    chips: matchingChips
-                });
-            }
-        });
-        
-        return results;
-    }, [editors]);
-    
+    const getChipsForBroker = useCallback(
+        (searchId: string) => {
+            const normalizedId = searchId.startsWith('id:') ? searchId.slice(3) : searchId;
+
+            const allChips: Array<ChipData> = [];
+            editors.forEach((state) => {
+                const matchingChips = state.chipData.filter((chip) => chip.brokerId === normalizedId);
+                allChips.push(...matchingChips);
+            });
+            return allChips;
+        },
+        [editors]
+    );
+
     const setChipData = useCallback(
         (editorId: string, data: ChipData[]) => {
             updateEditorState(editorId, { chipData: data });
@@ -313,19 +321,27 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     }, []);
 
-    const updateChipData = useCallback((editorId: string, chipId: string, updates: Partial<ChipData>) => {
+    const updateChipData = useCallback((chipId: string, updates: Partial<ChipData>) => {
         setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
             const next = new Map(prev);
-            next.set(editorId, {
-                ...current,
-                chipData: current.chipData.map((chip) => (chip.id === chipId ? { ...chip, ...updates } : chip)),
+
+            // Update the chip in every editor that has it
+            prev.forEach((state, editorId) => {
+                const chipIndex = state.chipData.findIndex((chip) => chip.id === chipId);
+                if (chipIndex !== -1) {
+                    const updatedState = {
+                        ...state,
+                        chipData: state.chipData.map((chip) => (chip.id === chipId ? { ...chip, ...updates } : chip)),
+                    };
+                    next.set(editorId, updatedState);
+
+                    // Trigger DOM sync if needed
+                    chipSyncManager.syncStateToDOM(editorId, chipId, updates);
+                }
             });
+
             return next;
         });
-        chipSyncManager.syncStateToDOM(editorId, chipId, updates);
     }, []);
 
     const getTextWithChipsReplaced = useCallback(
@@ -363,6 +379,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const value: EditorContextValue = {
         getEditorState,
+        getAllEditorStates,
         registerEditor,
         isEditorRegistered,
         unregisterEditor,
@@ -374,6 +391,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         plainTextContent,
         setPlainTextContent,
 
+        getAllChipData,
         getChipsForBroker,
         setChipData,
         setColorAssignments,

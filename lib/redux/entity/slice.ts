@@ -313,7 +313,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             },
 
             setActiveRecord: (state: EntityState<TEntity>, action: PayloadAction<MatrxRecordId>) => {
-                console.log('Entity Slice Set Active Record Action Payload: ', action.payload);
                 state.selection.lastActiveRecord = state.selection.activeRecord;
                 state.selection.activeRecord = action.payload;
 

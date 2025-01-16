@@ -10,6 +10,7 @@ import { ProcessedRecipeMessages } from './types';
 import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
 import { useChipMonitor } from '../hooks/useChipMonitor';
 import { useAddBroker } from '../hooks/messages/useAddBroker';
+import { ChipMenuProvider, useChipMenu } from '@/features/rich-text-editor/components/ChipContextMenu';
 
 interface MessageData {
     id: string;
@@ -68,6 +69,8 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     const { actions: messageActions, selectors: messsageSelectors } = useEntityTools('messageTemplate');
     const { actions: brokerActions, selectors: brokerSelectors, store } = useEntityTools('dataBroker');
     const { messages, deleteMessageById } = recipeMessageHook;
+    const [showDialog, setShowDialog] = useState(false);
+    const { showMenu } = useChipMenu();
 
     const { addBroker } = useAddBroker(matrxRecordId);
 
@@ -317,36 +320,97 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         [dispatch]
     );
 
-    return (
-        <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
-            <MessageToolbar
-                matrxRecordId={matrxRecordId}
-                role={record.role}
-                isCollapsed={isCollapsed}
-                onAddMedia={handleAddMedia}
-                onLinkBroker={handleLinkBroker}
-                onDelete={handleDelete}
-                onSave={handleSave}
-                onToggleCollapse={handleToggleVisibility}
-                onProcessed={handleShowProcessed}
-                onTextWithChips={handleShowNormalContent}
-                onShowBrokerContent={handleReplaceChipsWithBrokerContent}
-                onRoleChange={handleRoleChange}
-                recipeMessageHook={recipeMessageHook}
-            />
+    const handleChipClick = useCallback((event: MouseEvent) => {
+        const chip = (event.target as HTMLElement).closest('[data-chip]');
+        if (!chip) return;
+        
+        const chipId = chip.getAttribute('data-chip-id');
+        if (!chipId) return;
 
-            <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
+        console.log('Chip clicked:', chipId);
+    }, []);
+
+    const handleChipDoubleClick = useCallback((event: MouseEvent) => {
+        const chip = (event.target as HTMLElement).closest('[data-chip]');
+        if (!chip) return;
+        
+        const chipId = chip.getAttribute('data-chip-id');
+        if (!chipId) return;
+        
+        setShowDialog(true);
+    }, [setShowDialog]);
+
+    const handleChipMouseEnter = useCallback((event: MouseEvent) => {
+        const chip = (event.target as HTMLElement).closest('[data-chip]');
+        if (!chip) return;
+        
+        const chipId = chip.getAttribute('data-chip-id');
+        if (!chipId) return;
+
+        console.log('Mouse entered chip:', chipId);
+    }, []);
+
+    const handleChipMouseLeave = useCallback((event: MouseEvent) => {
+        const chip = (event.target as HTMLElement).closest('[data-chip]');
+        if (!chip) return;
+        
+        const chipId = chip.getAttribute('data-chip-id');
+        if (!chipId) return;
+
+        console.log('Mouse left chip:', chipId);
+    }, []);
+
+    const handleChipContextMenu = useCallback((event: MouseEvent) => {
+        const chip = (event.target as HTMLElement).closest('[data-chip]');
+        if (!chip) return;
+        
+        const chipId = chip.getAttribute('data-chip-id');
+        if (!chipId) return;
+        
+        event.preventDefault();
+        event.stopPropagation();
+        showMenu(matrxRecordId, chipId, event.clientX, event.clientY);
+    }, [matrxRecordId, showMenu]);
+
+
+    return (
+            <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
+                <MessageToolbar
+                    matrxRecordId={matrxRecordId}
+                    role={record.role}
+                    isCollapsed={isCollapsed}
+                    onAddMedia={handleAddMedia}
+                    onLinkBroker={handleLinkBroker}
+                    onDelete={handleDelete}
+                    onSave={handleSave}
+                    onToggleCollapse={handleToggleVisibility}
+                    onProcessed={handleShowProcessed}
+                    onTextWithChips={handleShowNormalContent}
+                    onShowBrokerContent={handleReplaceChipsWithBrokerContent}
+                    onRoleChange={handleRoleChange}
+                    recipeMessageHook={recipeMessageHook}
+                />
+
+                <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
                 <EditorWithProviders
                     id={matrxRecordId}
                     initialContent={record.content}
                     className={className}
                     onBlur={handleBlur}
+                    chipHandlers={{
+                        onClick: handleChipClick,
+                        onDoubleClick: handleChipDoubleClick,
+                        onMouseEnter: handleChipMouseEnter,
+                        onMouseLeave: handleChipMouseLeave,
+                        onContextMenu: handleChipContextMenu
+                    }}
                     {...props}
                 />
             </div>
         </Card>
     );
 };
+
 
 ManagedMessageEditor.displayName = 'ManagedMessageEditor';
 

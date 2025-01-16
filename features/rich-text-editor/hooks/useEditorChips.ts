@@ -59,9 +59,10 @@ export const useEditorChips = (editorId: string) => {
 
     const updateChip = useCallback(
         (chipId: string, updates: Partial<ChipData>) => {
-            context.updateChipData(editorId, chipId, updates);
+            console.log('==== Updating chip:', chipId, updates);
+            context.updateChipData(chipId, updates);
         },
-        [editorId, context]
+        [context]
     );
 
     const getBrokerChips = useCallback(

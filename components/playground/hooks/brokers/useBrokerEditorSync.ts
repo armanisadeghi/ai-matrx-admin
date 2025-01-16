@@ -12,7 +12,7 @@ export const useBrokerEditorSync = (brokerId: string) => {
         state.chipData
           .filter(chip => chip.brokerId === brokerId)
           .forEach(chip => {
-            context.updateChipData(editorId, chip.id, updates);
+            context.updateChipData(chip.id, updates);
           });
       });
     }, [context, brokerId]);

@@ -275,7 +275,7 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
 
 
     try {
-        entityLogger.log('info', 'Starting', action.payload);
+        entityLogger.log('debug', 'Starting', action.payload);
 
         const {existingRecords, recordIdsNotInState, primaryKeysToFetch} = yield select(
             entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
@@ -311,11 +311,11 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
                     const payload: FetchOneWithFkIfkPayload = {
                         matrxRecordId: recordId,
                     };
-                    entityLogger.log('info', 'fetchMode is fkIfk. Triggering fetchOneWithFkIfk with Payload:', payload);
+                    entityLogger.log('debug', 'fetchMode is fkIfk. Triggering fetchOneWithFkIfk with Payload:', payload);
                     yield put(actions.fetchOneWithFkIfk(payload));
                 }
             } else {
-                entityLogger.log('info', 'fetchMode is not fkIfk. Using fetchSelectedRecords');
+                entityLogger.log('debug', 'fetchMode is not fkIfk. Using fetchSelectedRecords');
                 yield put(actions.fetchSelectedRecords(queryOptions));
             }
         }
@@ -1015,7 +1015,7 @@ function* handleCreate<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleCreate', entityKey);
 
     const dataForInsert = unifiedDatabaseObject.data
-    entityLogger.log('info', 'Data for insert:', dataForInsert);
+    entityLogger.log('debug', 'Data for insert:', dataForInsert);
 
     try {
 
@@ -1026,7 +1026,7 @@ function* handleCreate<TEntity extends EntityKeys>(
 
         if (error) throw error;
 
-        entityLogger.log('info', 'Database response', {data});
+        entityLogger.log('debug', 'Database response', {data});
 
         const payload = {entityName: entityKey, data};
         const frontendResponse = yield select(selectFrontendConversion, payload);
@@ -1037,7 +1037,6 @@ function* handleCreate<TEntity extends EntityKeys>(
             data: frontendResponse
         };
 
-        console.log("successPayload", successPayload);
         entityLogger.log('debug', '-- Dispatching createRecordSuccess', successPayload);
 
         yield put(actions.createRecordSuccess(successPayload));

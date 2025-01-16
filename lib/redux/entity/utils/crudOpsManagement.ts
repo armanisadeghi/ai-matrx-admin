@@ -20,7 +20,7 @@ export class EntityModeManager {
     private validateTransition(currentMode: EntityOperationMode | null, targetMode: EntityOperationMode, state: EntityState<EntityKeys>): ModeTransitionResult {
         // TODO: This is a temporary workaround because it comes back that we have an operation when we dont
         if (state.pendingOperations.length > 0) {
-            this.logger.log('warn', 'There are pending operations', {
+            this.logger.log('debug', 'There are pending operations', {
                 pendingOperations: state.pendingOperations,
                 pendingOperationsCount: state.pendingOperations.length,
             });

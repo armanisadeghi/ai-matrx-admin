@@ -24,6 +24,7 @@ import { DialogProvider } from '@/providers/dialogs/DialogContext';
 import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
 import { EditorProvider } from '@/features/rich-text-editor/provider/EditorProvider';
+import { ChipMenuProvider } from '@/features/rich-text-editor/components/ChipContextMenu';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
 
@@ -33,7 +34,6 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
             <RecoilRoot>
                 <StoreProvider initialState={initialReduxState}>
                     <EntityProvider>
-                        
                         <SocketProvider>
                             <DialogProvider>
                                 <ContextMenuProvider>
@@ -49,7 +49,10 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                                 >
                                                     <OldFileSystemProvider>
                                                         <FileSystemDialogs />
+                                                                <ChipMenuProvider>
+                                                        
                                                         <EditorProvider>
+
                                                             <NextUIProvider>
                                                                 <TooltipProvider delayDuration={200}>
                                                                     <AudioModalProvider>
@@ -63,6 +66,7 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                                                 </TooltipProvider>
                                                             </NextUIProvider>
                                                         </EditorProvider>
+                                                    </ChipMenuProvider>
                                                     </OldFileSystemProvider>
                                                 </FileSystemProvider>
                                             </RefProvider>

@@ -1,6 +1,6 @@
 // RichTextEditor.tsx
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
+import { ChipHandlers, useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
 import { WithRefsProps, withRefs } from '@/lib/refs';
@@ -14,6 +14,7 @@ export interface RichTextEditorProps extends WithRefsProps {
     onDrop?: (e: React.DragEvent<HTMLElement>) => void;
     initialContent?: string;
     onBlur?: () => void;
+    chipHandlers?: ChipHandlers;
 }
 
 
@@ -24,7 +25,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onDragOver, 
     onDrop,
     initialContent = '',
-    onBlur
+    onBlur,
+    chipHandlers
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);
@@ -58,7 +60,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         handleNativeDragEnd,
         handleDragOver: handleDragOverInternal,
         handleDrop: handleDropInternal,
-    } = useEditor(componentId);
+    } = useEditor(componentId, chipHandlers);
 
     // Register methods with the Ref Manager
     useComponentRef(componentId, {

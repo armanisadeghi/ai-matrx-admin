@@ -61,7 +61,7 @@ const EntityInput = React.forwardRef<HTMLInputElement, EntityInputProps>(
 
         <Input
           ref={ref}
-          id={dynamicFieldInfo.name}
+          id={`entity_field_${dynamicFieldInfo.name}`}
           value={safeValue}
           onChange={(e) => onChange(e.target.value)}
           required={dynamicFieldInfo.isRequired}
@@ -69,6 +69,14 @@ const EntityInput = React.forwardRef<HTMLInputElement, EntityInputProps>(
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={getInputStyles}
+          // Add these attributes to prevent password manager interference
+          name={`entity_field_${dynamicFieldInfo.name}`}
+          autoComplete="new-password" // This ironically works better than "off" for preventing autofill
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          data-form-type="other"
+          data-lpignore="true"
         />
 
         <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -90,7 +98,7 @@ const EntityInput = React.forwardRef<HTMLInputElement, EntityInputProps>(
           <div className="relative mt-1">
             {renderInput()}
             <FloatingFieldLabel
-              htmlFor={dynamicFieldInfo.name}
+              htmlFor={`entity_field_${dynamicFieldInfo.name}`}
               disabled={disabled}
               isFocused={isFocused}
               hasValue={safeValue.length > 0}
