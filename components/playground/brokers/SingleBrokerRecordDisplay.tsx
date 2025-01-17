@@ -1,32 +1,161 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import BrokerCardHeader from './BrokerCardHeader';
+import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { ChipData } from '@/features/rich-text-editor/types/editor.types';
+import { TailwindColor } from '@/features/rich-text-editor/constants';
+import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
+import { List } from 'lucide-react';
+import MultiSelect from '@/components/ui/loaders/multi-select';
+
+interface BrokerRecord {
+    name?: string;
+    defaultValue?: string;
+    defaultComponent?: string;
+    isConnected?: boolean;
+}
 
 interface SingleBrokerRecordDisplayProps<TEntity extends EntityKeys> {
     recordId: MatrxRecordId;
-    getRecord: (recordId: MatrxRecordId) => any;
+    record: BrokerRecord;
     unifiedLayoutProps: UnifiedLayoutProps;
     onDelete?: (recordId: MatrxRecordId) => void;
 }
 
-const SingleBrokerRecordDisplay = <TEntity extends EntityKeys>({
-    recordId,
-    getRecord,
-    unifiedLayoutProps,
-    onDelete
-}: SingleBrokerRecordDisplayProps<TEntity>) => {
+interface ChipValueLabel {
+    value: string;
+    label: string;
+}
+
+const SingleBrokerRecordDisplay = <TEntity extends EntityKeys>({ recordId, record, unifiedLayoutProps, onDelete }: SingleBrokerRecordDisplayProps<TEntity>) => {
     const [isOpen, setIsOpen] = useState(true);
+    const [color, setColor] = useState<TailwindColor>('teal');
+    const context = useEditorContext();
+    const { quickReferenceRecords } = useFetchQuickRef('dataBroker');
+    const [selectedChipIds, setSelectedChipIds] = useState<string[]>([]);
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
-    const record = getRecord(recordId);
+    // Get all chips that match this broker
+    const getMatchingChips = useCallback(() => {
+        const allChips = context.getAllChipData();
+        return allChips.filter((chip) => `id:${chip.brokerId}` === recordId || chip.brokerId === recordId);
+    }, [context, recordId]);
 
+    // Get all available chips
+    const getAllAvailableChips = useCallback(() => {
+        const allChips = context.getAllChipData();
+        return allChips.filter((chip) => !chip.brokerId || chip.brokerId === recordId);
+    }, [context, recordId]);
+
+    // Transform chips to select options
+    const allChipsValueLabels = useMemo(() => {
+        const availableChips = getAllAvailableChips();
+        return availableChips.map(chip => ({
+            value: chip.id,
+            label: chip.label || chip.stringValue || 'Unnamed Chip'
+        }));
+    }, [getAllAvailableChips]);
+
+
+    
+    // Memoized selected values
+    const connectedChipIds = useMemo(() => {
+        const matchingChips = getMatchingChips();
+        return matchingChips.map((chip) => chip.id);
+    }, [getMatchingChips]);
+
+    const matchingChips = getMatchingChips();
+    const isConnected = matchingChips.length > 0;
+
+    // Update handler that updates all matching chips
+    const updateAllMatchingChips = useCallback(
+        (updates: Partial<ChipData>) => {
+            const chips = getMatchingChips();
+            chips.forEach((chip) => {
+                context.updateChipData(chip.id, updates);
+            });
+        },
+        [context, getMatchingChips]
+    );
+
+    // Handle chip connection/disconnection
+    const handleConnectToChip = useCallback(
+        (selectedIds: string[]) => {
+            const allChips = context.getAllChipData();
+            // Disconnect chips that were unselected
+            allChips.forEach((chip) => {
+                if (chip.brokerId === recordId && !selectedIds.includes(chip.id)) {
+                    context.updateChipData(chip.id, { brokerId: undefined });
+                }
+            });
+
+            // Connect newly selected chips
+            selectedIds.forEach((chipId) => {
+                const chip = allChips.find((c) => c.id === chipId);
+                if (chip) {
+                    context.updateChipData(chipId, {
+                        brokerId: recordId,
+                        color: color,
+                    });
+                }
+            });
+
+            setSelectedChipIds(selectedIds);
+        },
+        [context, recordId, color]
+    );
+
+    // Field-specific update handlers
+    const handleFieldUpdate = useCallback(
+        (field: string, value: any) => {
+            switch (field) {
+                case 'name':
+                    updateAllMatchingChips({
+                        label: value,
+                    });
+                    break;
+
+                case 'defaultValue':
+                    updateAllMatchingChips({
+                        stringValue: value,
+                    });
+                    break;
+
+                case 'defaultComponent':
+                    break;
+
+                case 'color':
+                    // Update state and all chips
+                    setColor(value as TailwindColor);
+                    updateAllMatchingChips({
+                        color: value as TailwindColor,
+                    });
+                    break;
+
+                default:
+                    console.warn(`Unhandled field update: ${field}`);
+            }
+        },
+        [updateAllMatchingChips]
+    );
+
+    const handleUpdates = useCallback((recordId: MatrxRecordId, updates: any) => {
+        console.log('==== Updating record:', recordId, updates);
+    }, []);
+
+    // Initialize selected chips on mount
+    useEffect(() => {
+        const initialMatchingChips = getMatchingChips();
+        console.log('useEffect Initial matching chips:', initialMatchingChips);
+        setSelectedChipIds(initialMatchingChips.map((chip) => chip.id));
+    }, [getMatchingChips]);
 
     return (
         <motion.div
@@ -39,6 +168,8 @@ const SingleBrokerRecordDisplay = <TEntity extends EntityKeys>({
                 <BrokerCardHeader
                     recordId={recordId}
                     record={record}
+                    color={color}
+                    isConnected={isConnected}
                     isOpen={isOpen}
                     onToggle={toggleOpen}
                     onDelete={onDelete ? () => onDelete(recordId) : undefined}
@@ -56,6 +187,15 @@ const SingleBrokerRecordDisplay = <TEntity extends EntityKeys>({
                                 <EntityFormMinimalAnyRecord<TEntity>
                                     recordId={recordId}
                                     unifiedLayoutProps={unifiedLayoutProps}
+                                    onFieldChange={handleFieldUpdate}
+                                />
+                                <MultiSelect
+                                    options={allChipsValueLabels}
+                                    value={connectedChipIds}
+                                    onChange={handleConnectToChip}
+                                    size='icon'
+                                    variant='primary'
+                                    icon={List}
                                 />
                             </CardContent>
                         </motion.div>

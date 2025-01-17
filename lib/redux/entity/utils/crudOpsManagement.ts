@@ -35,7 +35,7 @@ export class EntityModeManager {
             const unsavedCount = Object.keys(state.unsavedRecords).length;
 
             if (unsavedCount > 1) {
-                this.logger.log('warn', 'Multiple records have unsaved changes', {
+                this.logger.log('debug', 'Multiple records have unsaved changes', {
                     unsavedCount: unsavedCount,
                     hasUnsavedChanges: state.flags.hasUnsavedChanges,
                 });

@@ -1,15 +1,10 @@
-'use client';
-
 import React from 'react';
 import { Button } from '@/components/ui';
-import { X, MessageCircleQuestion, Blocks, CheckCircle2, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
-import { getComponentIcon, getSourceIcon } from '@/app/(authenticated)/tests/recipe-creation/brokers-two/constants';
+import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/utils';
-import { DataBrokerData, MatrxRecordId } from '@/types';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
-import { ChipData } from '@/features/rich-text-editor/types/editor.types';
+import { MatrxRecordId } from '@/types';
+import { TailwindColor, COLOR_STYLES } from '@/features/rich-text-editor/constants';
 
-// Define the structure of a broker record
 interface BrokerRecord {
     name?: string;
     defaultComponent?: string;
@@ -17,40 +12,50 @@ interface BrokerRecord {
     isConnected?: boolean;
 }
 
-// Define the component props
 interface BrokerCardHeaderProps {
     recordId: MatrxRecordId;
     record: BrokerRecord;
+    color?: TailwindColor;
+    isConnected?: boolean;
     isOpen: boolean;
     onToggle: () => void;
     onDelete: () => void;
 }
 
-const isChipDisconnected = (chip: ChipData) => {
-  return !chip.brokerId || chip.brokerId === 'disconnected' || chip.brokerId === 'null' || chip.brokerId === 'undefined';
-};
+const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ 
+    recordId, 
+    record, 
+    color = 'blue', 
+    isConnected, 
+    isOpen, 
+    onToggle, 
+    onDelete 
+}) => {
+    const getStatusClasses = () => {
+        return cn(
+            'h-6 w-6 flex items-center justify-center rounded-md relative',
+            'transition-all duration-300 ease-in-out'
+        );
+    };
 
-const getBrokerIdFromKey = (key: string) => key.replace('id:', '');
-
-
-const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ recordId, record, isOpen, onToggle, onDelete }) => {
-    const context = useEditorContext();
-
-    const allChips = context.getAllChipData();
-    console.log('======>> Checking allChips:', allChips);
-    const isConnected = allChips?.some((chip) => 
-      `id:${chip.brokerId}` === recordId
-  ) || false;
-
-  console.log('---Checking isConnected:', isConnected);
-
-  //   const chipsAndEditorData = context.getChipsForBroker(getBrokerIdFromKey(recordId))[0];
-  //   console.log('---Checking chipsAndEditorData:', chipsAndEditorData);
-  //     console.log('---Checking Is connected recordId:', recordId, isConnected);
+    const getIconClasses = (isConnected: boolean) => {
+        if (isConnected) {
+            return cn(
+                'h-4 w-4 transition-all duration-300',
+                // Using emerald for a rich green that works well in both modes
+                'text-emerald-600 dark:text-emerald-500',
+                // Add a subtle glow effect
+                'drop-shadow-[0_0_3px_rgba(16,185,129,0.3)]',
+                // Increase the glow on hover
+                'group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
+            );
+        }
+        return 'h-4 w-4 text-muted-foreground/50 transition-all duration-300';
+    };
 
     return (
         <div
-            className='flex items-center gap-2 p-2 cursor-pointer hover:bg-elevation3/50 transition-colors'
+            className='group flex items-center gap-2 p-2 cursor-pointer hover:bg-elevation3/50 transition-colors'
             onClick={onToggle}
         >
             <Button
@@ -66,36 +71,28 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ recordId, record, i
             </Button>
 
             <div className='flex items-center gap-2 min-w-0 flex-1'>
-                <div className='h-6 w-6 flex-shrink-0 flex items-center justify-center rounded-md bg-elevation2/50'>
-                    {record.defaultComponent ? (
-                        getComponentIcon(record.defaultComponent)
-                    ) : (
-                        <MessageCircleQuestion className='h-4 w-4 text-muted-foreground/50' />
-                    )}
-                </div>
-                <span className='font-medium text-sm truncate'>{record.name || record.name || 'Unnamed Broker'}</span>
+                <span className='font-medium text-sm truncate'>
+                    {record.name || 'Unnamed Broker'}
+                </span>
             </div>
 
             <div className='flex items-center gap-2 flex-shrink-0'>
-                {/* <div
-          className="h-6 w-6 flex items-center justify-center rounded-md bg-elevation2/50"
-          title={data.defaultSource}
-        >
-          {data.defaultSource ? (
-            getSourceIcon(data.defaultSource)
-          ) : (
-            <Blocks className="h-4 w-4 text-muted-foreground/50" />
-          )}
-        </div> */}
-
                 <div
-                    className={cn('h-6 w-6 flex items-center justify-center rounded-md', isConnected ? 'bg-success/10 text-success' : 'bg-elevation2/50')}
+                    className={getStatusClasses()}
                     title={isConnected ? 'Connected' : 'Disconnected'}
                 >
-                    {isConnected ? <CheckCircle2 className='h-4 w-4' /> : <XCircle className='h-4 w-4 text-muted-foreground/50' />}
+                    {isConnected ? (
+                        <CheckCircle2 className={getIconClasses(true)} />
+                    ) : (
+                        <XCircle className={getIconClasses(false)} />
+                    )}
                 </div>
 
-                {isOpen ? <ChevronUp className='h-4 w-4' /> : <ChevronDown className='h-4 w-4' />}
+                {isOpen ? (
+                    <ChevronUp className='h-4 w-4' />
+                ) : (
+                    <ChevronDown className='h-4 w-4' />
+                )}
             </div>
         </div>
     );

@@ -193,7 +193,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -256,7 +256,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -687,7 +687,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -750,7 +750,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -2167,7 +2167,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -2475,7 +2475,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -2538,7 +2538,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -3521,9 +3521,9 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'SPECIAL' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
-                    subComponent: 'RELATED_RECORD',
+                    subComponent: 'default',
                     variant: 'default',
                     section: 'default',
                     placeholder: 'default',
@@ -3584,9 +3584,9 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'SPECIAL' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
-                    subComponent: 'RELATED_RECORD',
+                    subComponent: 'default',
                     variant: 'default',
                     section: 'default',
                     placeholder: 'default',
@@ -3647,9 +3647,9 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'SPECIAL' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
-                    subComponent: 'RELATED_RECORD',
+                    subComponent: 'default',
                     variant: 'default',
                     section: 'default',
                     placeholder: 'default',
@@ -5226,7 +5226,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -5438,7 +5438,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -5501,7 +5501,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -7143,7 +7143,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -8943,7 +8943,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -13216,7 +13216,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -14366,7 +14366,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -14429,7 +14429,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -14949,7 +14949,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -15408,7 +15408,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -15471,7 +15471,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -15778,7 +15778,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -16548,7 +16548,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -16611,7 +16611,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -16736,7 +16736,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -17538,7 +17538,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -18862,7 +18862,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -18925,7 +18925,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -19303,7 +19303,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -19366,7 +19366,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -19735,7 +19735,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -19798,7 +19798,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -20202,7 +20202,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -20265,7 +20265,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -20572,7 +20572,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -20635,7 +20635,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -21017,7 +21017,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -21080,7 +21080,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -21387,7 +21387,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -21450,7 +21450,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -22005,7 +22005,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -22591,7 +22591,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -23177,7 +23177,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',
@@ -23753,7 +23753,7 @@ export const initialAutomationTableSchema = {
                 defaultGeneratorFunction: '',
                 validationFunctions: [],
                 exclusionRules: [],
-                defaultComponent: 'UUID_FIELD' as const,
+                defaultComponent: 'FK_SELECT' as const,
                 componentProps: {
                     subComponent: 'default',
                     variant: 'default',

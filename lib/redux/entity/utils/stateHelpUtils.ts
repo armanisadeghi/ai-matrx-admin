@@ -209,7 +209,7 @@ export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntitySta
 
 export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
     const prefix = 'new-record-';
-    const existingTempIds = Object.keys(state.unsavedRecords || {})
+    const existingTempIds = Object.keys(state?.unsavedRecords || {})
         .filter((id) => id.startsWith(prefix))
         .map((id) => parseInt(id.replace(prefix, '')))
         .sort((a, b) => b - a);

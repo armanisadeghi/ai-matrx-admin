@@ -1,16 +1,29 @@
+'use client';
+
 import React, { useCallback, useMemo, useRef } from 'react';
 import EntityBaseFieldFinal from '@/app/entities/fields/EntityBaseFieldFinal';
 import EntityRelationshipWrapperFinal from '@/app/entities/relationships/EntityRelationshipWrapperFinal';
 import { EntityKeys, EntityAnyFieldKey, MatrxRecordId } from '@/types/entityTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 
+interface FieldRendererOptions {
+    onFieldChange?: (fieldName: string, value: unknown) => void;
+}
+
 export function useFieldRenderer<TEntity extends EntityKeys>(
     entityKey: TEntity | null,
     activeRecordId: MatrxRecordId | null,
-    unifiedLayoutProps: UnifiedLayoutProps
+    unifiedLayoutProps: UnifiedLayoutProps,
+    options?: FieldRendererOptions
 ) {
-    // Create a stable instance ID for this component instance
     const instanceId = useRef(Math.random().toString(36).slice(2, 9));
+
+    const handleFieldChange = useCallback(
+        (fieldName: string, value: unknown) => {
+            options?.onFieldChange?.(fieldName, value);
+        },
+        [options]
+    );
 
     const getNativeFieldComponent = useCallback(
         (fieldName: EntityAnyFieldKey<TEntity>) => {
@@ -23,11 +36,12 @@ export function useFieldRenderer<TEntity extends EntityKeys>(
                         recordId={activeRecordId}
                         entityKey={entityKey}
                         unifiedLayoutProps={unifiedLayoutProps}
+                        onFieldChange={handleFieldChange}
                     />
                 </div>
             );
         },
-        [entityKey, activeRecordId, unifiedLayoutProps]
+        [entityKey, activeRecordId, unifiedLayoutProps, handleFieldChange]
     );
 
     const getRelationshipFieldComponent = useCallback(

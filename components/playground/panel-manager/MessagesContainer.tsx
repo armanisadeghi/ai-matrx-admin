@@ -9,61 +9,36 @@ import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
 import { useMessageTemplatesWithNew } from '../hooks/dev/useMessageWithNew';
 import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
 import ManagedMessageEditor from './MessageEditorWithProvider';
-import MessageEditor from '@/features/rich-text-editor/provider/withMessageEditor';
-import { ProcessedRecipeMessages } from './types';
-
-const INITIAL_PANELS: ProcessedRecipeMessages[] = [
-    {
-        id: 'system-1',
-        matrxRecordId: 'system-1',
-        role: 'system',
-        type: 'text',
-        content: '',
-        order: 0,
-    },
-    {
-        id: 'user-1',
-        matrxRecordId: 'user-1',
-        role: 'user',
-        type: 'text',
-        content: '',
-        order: 1,
-    },
-];
 
 
-function EditorContainer() {
+function MessagesContainer() {
     const recipeMessageHook = useMessageTemplatesWithNew();
-
     const { messages, messageMatrxIds, deleteMessageById } = recipeMessageHook;
     const { addMessage } = useAddMessage();
 
-    const hasRealData = messages.length > 0;
-    const displayMessages = hasRealData ? messages : INITIAL_PANELS;
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
     const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
     const panelRefs = useRef<Map<MatrxRecordId, ImperativePanelHandle>>(new Map());
 
-    // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState<DialogType>('delete');
     const [activeEditorId, setActiveEditorId] = useState<MatrxRecordId | null>(null);
 
     const addNewSection = useCallback(() => {
-        const lastSection = displayMessages[displayMessages.length - 1];
-        const lastRole = lastSection.role;
+        const lastSection = messages[messages.length - 1];
+        const lastRole = lastSection?.role || 'system';
         const nextRole = lastRole === 'user' ? 'assistant' : 'user';
 
         const newSection: AddMessagePayload = {
             role: nextRole,
             type: 'text',
             content: '',
-            order: displayMessages.length,
+            order: messages.length,
         };
 
         addMessage(newSection);
-    }, [displayMessages, addMessage]);
+    }, [messages, addMessage]);
 
     const registerPanelRef = (matrxRecordId: MatrxRecordId, ref: ImperativePanelHandle | null) => {
         if (ref) {
@@ -147,9 +122,12 @@ function EditorContainer() {
                 className='h-full'
                 ref={panelGroupRef}
             >
-                {displayMessages.map((message, index) => {
-                    const isLastPanel = index === displayMessages.length - 1;
-                    const remainingSize = 100 - (displayMessages.length - 1) * 10;
+                {(messages.length ? messages : [
+                    { matrxRecordId: 'system-1', role: 'system', order: 0 },
+                    { matrxRecordId: 'user-1', role: 'user', order: 1 }
+                ]).map((message, index, array) => {
+                    const isLastPanel = index === array.length - 1;
+                    const remainingSize = 100 - (array.length - 1) * 10;
                     const isCollapsed = collapsedPanels.has(message.matrxRecordId);
 
                     return (
@@ -166,21 +144,13 @@ function EditorContainer() {
                                 onExpand={() => handlePanelExpand(message.matrxRecordId)}
                                 order={index + 1}
                             >
-                                {hasRealData ? (
-                                    <ManagedMessageEditor
-                                        matrxRecordId={message.matrxRecordId}
-                                        recipeMessageHook={recipeMessageHook}
-                                        deleteMessageById={deleteMessageById}
-                                        isCollapsed={isCollapsed}
-                                        onToggleEditor={() => toggleEditor(message.matrxRecordId)}
-                                    />
-                                ) : (
-                                    <MessageEditor
-                                        id={message.matrxRecordId}
-                                        className='w-full h-full border rounded-md'
-                                        initialContent={message.content}
-                                    />
-                                )}
+                                <ManagedMessageEditor
+                                    matrxRecordId={message.matrxRecordId}
+                                    recipeMessageHook={recipeMessageHook}
+                                    deleteMessageById={deleteMessageById}
+                                    isCollapsed={isCollapsed}
+                                    onToggleEditor={() => toggleEditor(message.matrxRecordId)}
+                                />
                             </Panel>
                             {!isLastPanel && <PanelResizeHandle />}
                         </React.Fragment>
@@ -193,7 +163,7 @@ function EditorContainer() {
                     onClick={addNewSection}
                 >
                     <Plus className='h-4 w-4 mr-2' />
-                    Add {displayMessages[displayMessages.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
+                    Add {messages[messages.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
                 </Button>
             </PanelGroup>
 
@@ -207,4 +177,4 @@ function EditorContainer() {
     );
 }
 
-export default EditorContainer;
+export default MessagesContainer;

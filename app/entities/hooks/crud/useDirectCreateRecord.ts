@@ -54,3 +54,54 @@ export const useDirectCreateRecord = ({ entityKey, onSuccess, onError }: UseDire
         [dispatch, actions, selectors, store, entityToasts, onSuccess, onError]
     );
 };
+
+interface CreateRecordResult {
+    tempId: string;
+    coreId: string;
+}
+
+export const useCreateAndGetId = ({ entityKey, onSuccess, onError }: UseDirectCreateRecordOptions) => {
+    const { actions, dispatch, store, selectors } = useEntityTools(entityKey);
+    const entityToasts = useEntityToasts(entityKey);
+
+    return useCallback(
+        async ({ data }: { data: Record<string, unknown> }): Promise<CreateRecordResult> => {
+            let tempId: string;
+            const coreId = uuidv4();
+
+            try {
+                tempId = 'new-record-' + coreId;
+
+                dispatch(actions.startRecordCreationWithData({ tempId, initialData: data }));
+                const createPayload = selectors.selectCreatePayload(store.getState(), tempId);
+                dispatch(actions.addPendingOperation(tempId));
+
+                dispatch(
+                    actions.createRecord({
+                        ...createPayload,
+                        callbackId: callbackManager.register(({ success, error }) => {
+                            dispatch(actions.removePendingOperation(tempId));
+                            if (success) {
+                                entityToasts.handleCreateSuccess();
+                                onSuccess?.(tempId);
+                            } else {
+                                entityToasts.handleError(error, 'create');
+                                onError?.(error);
+                            }
+                        }),
+                    })
+                );
+
+                return { tempId, coreId };
+            } catch (error) {
+                if (tempId!) {
+                    dispatch(actions.removePendingOperation(tempId));
+                }
+                entityToasts.handleError(error as Error, 'create');
+                onError?.(error as Error);
+                throw error;
+            }
+        },
+        [dispatch, actions, selectors, store, entityToasts, onSuccess, onError]
+    );
+};

@@ -14,7 +14,7 @@ import { createCompleteChipStructure } from '../utils/chipService';
 import { useEditorContext } from '../provider/EditorProvider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
-import { ChipRequestOptions } from '../types/editor.types';
+import { ChipData, ChipRequestOptions } from '../types/editor.types';
 import { useChipMenu } from '../components/ChipContextMenu';
 
 export interface ChipHandlers {
@@ -25,6 +25,8 @@ export interface ChipHandlers {
     onMouseEnter?: (event: MouseEvent) => void;
     onMouseLeave?: (event: MouseEvent) => void;
     onContextMenu?: (event: MouseEvent) => void;
+    onNewChip?: (chipData: ChipData) => void;
+
 }
 
 export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
@@ -32,11 +34,6 @@ export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
     const { showMenu } = useChipMenu();
     const editorState = context.getEditorState(editorId);
     const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
-
-    useEffect(() => {
-        context.registerEditor(editorId);
-        return () => context.unregisterEditor(editorId);
-    }, [editorId]);
 
     const getText = useCallback(() => {
         return editorState.plainTextContent;
@@ -134,6 +131,7 @@ export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
         context.incrementChipCounter(editorId);
         context.addChipData(editorId, chipData);
         updatePlainTextContent();
+        handlers?.onNewChip?.(chipData);
     }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
 
     const chipHandlers = {
@@ -186,6 +184,7 @@ export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
         context.incrementChipCounter(editorId);
         context.addChipData(editorId, chipData);
         updatePlainTextContent();
+        handlers?.onNewChip?.(chipData);
         return true;
     }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
 

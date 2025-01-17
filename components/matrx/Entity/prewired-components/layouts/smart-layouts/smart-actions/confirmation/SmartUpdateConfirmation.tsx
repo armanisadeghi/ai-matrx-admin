@@ -44,10 +44,9 @@ export const SmartUpdateConfirmation = ({
         >
             <div className="space-y-2 -p-3">
                 <div className="grid grid-cols-1 gap-2">
-                    {comparison.fieldInfo.map(field => {
-                        if (!field.hasChanged) return null;
-
-                        return (
+                    {comparison.fieldInfo
+                        .filter(field => comparison.changedFields.has(field.name))
+                        .map(field => (
                             <div
                                 key={field.name}
                                 className={cn(
@@ -79,8 +78,7 @@ export const SmartUpdateConfirmation = ({
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })}
+                        ))}
                 </div>
             </div>
         </ConfirmationDialog>

@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
-import BrokerRecordDisplay from '../brokers/EntityBrokerCard';
+import BrokerRecordDisplay from '../brokers/BrokerRecordDisplay';
 import { SmartCrudButtons, SmartNewButton } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
 
 const initialLayoutProps = getUnifiedLayoutProps({
@@ -55,7 +55,6 @@ export default function BrokerSidebar({
         }
     };
 
-
     return (
         <div className='flex flex-col h-full py-3'>
             <SmartCrudButtons
@@ -65,9 +64,11 @@ export default function BrokerSidebar({
             />
             <ScrollArea className='flex-1'>
                 <AnimatePresence>
-                    <BrokerRecordDisplay
-                        unifiedLayoutProps={layoutProps}
-                    />
+
+                    {/* This would be a great place to add an "Orphan Chip Watcher" */}
+
+
+                    <BrokerRecordDisplay unifiedLayoutProps={layoutProps} />
                 </AnimatePresence>
             </ScrollArea>
         </div>

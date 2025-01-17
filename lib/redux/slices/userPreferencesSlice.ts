@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {AIProvider} from "@/lib/ai/aiChat.types";
+import { AIProvider } from '@/lib/ai/aiChat.types';
+import { MatrxRecordId } from '@/types';
 
 // Define types for each module's preferences
-interface DisplayPreferences {
+export interface DisplayPreferences {
     darkMode: boolean;
     theme: string;
     dashboardLayout: string;
@@ -11,7 +12,7 @@ interface DisplayPreferences {
     windowMode: string;
 }
 
-interface VoicePreferences {
+export interface VoicePreferences {
     voice: string;
     language: string;
     speed: number;
@@ -21,7 +22,7 @@ interface VoicePreferences {
     wakeWord: string;
 }
 
-interface AssistantPreferences {
+export interface AssistantPreferences {
     alwaysActive: boolean;
     alwaysWatching: boolean;
     useAudio: boolean;
@@ -30,11 +31,10 @@ interface AssistantPreferences {
     memoryLevel: number;
     preferredProvider: AIProvider;
     preferredModel: string;
-
 }
 
 // Suggested preferences for email management (you can adjust or remove as needed)
-interface EmailPreferences {
+export interface EmailPreferences {
     primaryEmail: string;
     notificationsEnabled: boolean;
     autoReply: boolean;
@@ -43,7 +43,7 @@ interface EmailPreferences {
 }
 
 // Suggested preferences for video conferencing (you can add or adjust fields)
-interface VideoConferencePreferences {
+export interface VideoConferencePreferences {
     background: string;
     filter: string;
     defaultCamera: string;
@@ -56,7 +56,7 @@ interface VideoConferencePreferences {
 }
 
 // Suggested preferences for photo editing (add your own fields)
-interface PhotoEditingPreferences {
+export interface PhotoEditingPreferences {
     defaultFilter: string;
     autoEnhance: boolean;
     resolution: string;
@@ -64,8 +64,7 @@ interface PhotoEditingPreferences {
     watermarkEnabled: boolean;
 }
 
-
-interface ImageGenerationPreferences {
+export interface ImageGenerationPreferences {
     defaultModel: string;
     resolution: string;
     style: string;
@@ -73,8 +72,7 @@ interface ImageGenerationPreferences {
     colorPalette: string;
 }
 
-
-interface TextGenerationPreferences {
+export interface TextGenerationPreferences {
     defaultModel: string;
     tone: string;
     creativityLevel: string;
@@ -83,7 +81,7 @@ interface TextGenerationPreferences {
 }
 
 // Preferences for coding settings
-interface CodingPreferences {
+export interface CodingPreferences {
     preferredLanguage: string;
     preferredTheme: string;
     gitIntegration: boolean;
@@ -95,7 +93,7 @@ interface CodingPreferences {
     voiceAssistance: boolean;
 }
 
-interface FlashcardPreferences {
+export interface FlashcardPreferences {
     fontSize: number;
     educationLevel: string;
     flashcardDifficultyAdjustment: number;
@@ -107,10 +105,15 @@ interface FlashcardPreferences {
     primaryTutorPersona: string;
 }
 
-
+export interface PlaygroundPreferences {
+    lastRecipeId: MatrxRecordId;
+    preferredProvider: MatrxRecordId;
+    preferredModel: MatrxRecordId;
+    preferredEndpoint: MatrxRecordId;
+}
 
 // Combine all module preferences into one interface
-interface UserPreferences {
+export interface UserPreferences {
     display: DisplayPreferences;
     voice: VoicePreferences;
     assistant: AssistantPreferences;
@@ -121,6 +124,7 @@ interface UserPreferences {
     textGeneration: TextGenerationPreferences;
     coding: CodingPreferences;
     flashcard: FlashcardPreferences;
+    playground: PlaygroundPreferences;
 }
 
 // Define the initial state
@@ -213,6 +217,12 @@ const initialState: UserPreferences = {
         aiActivityLevel: 'medium',
         voiceAssistance: false,
     },
+    playground: {
+        lastRecipeId: '',
+        preferredProvider: '',
+        preferredModel: '',
+        preferredEndpoint: '',
+    },
 };
 
 const userPreferencesSlice = createSlice({
@@ -240,10 +250,7 @@ const userPreferencesSlice = createSlice({
             const { module, preferences } = action.payload;
             state[module] = { ...state[module], ...preferences } as UserPreferences[T];
         },
-        resetModulePreferences: <T extends keyof UserPreferences>(
-            state,
-            action: PayloadAction<T>
-        ) => {
+        resetModulePreferences: <T extends keyof UserPreferences>(state, action: PayloadAction<T>) => {
             const module = action.payload;
             state[module] = initialState[module] as UserPreferences[T];
         },
@@ -251,11 +258,7 @@ const userPreferencesSlice = createSlice({
     },
 });
 
-export const {
-    setPreference,
-    setModulePreferences,
-    resetModulePreferences,
-    resetAllPreferences,
-} = userPreferencesSlice.actions;
+export const { setPreference, setModulePreferences, resetModulePreferences, resetAllPreferences } = userPreferencesSlice.actions;
 
 export default userPreferencesSlice.reducer;
+

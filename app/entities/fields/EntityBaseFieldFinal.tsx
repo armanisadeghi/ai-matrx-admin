@@ -17,9 +17,10 @@ export interface EntityBaseFieldFinalProps {
     recordId: MatrxRecordId;
     unifiedLayoutProps?: UnifiedLayoutProps;
     className?: string;
+    onFieldChange?: (fieldName: string, value: unknown) => void;
 }
 
-const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutProps, className }: EntityBaseFieldFinalProps) => {
+const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutProps, className, onFieldChange }: EntityBaseFieldFinalProps) => {
     const { store, actions, selectors, dispatch } = useEntityTools(entityKey);
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
@@ -45,8 +46,9 @@ const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutPro
                                 })
                             );
                         }
+                        onFieldChange?.(fieldName, newValue);
                     },
-                    [dispatch, actions, recordId, fieldName, operationMode]
+                    [dispatch, actions, recordId, fieldName, operationMode, onFieldChange]
                 );
         
                 return (

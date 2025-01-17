@@ -1,12 +1,12 @@
-import {useCallback} from 'react';
-import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
-import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {getEntitySlice} from '@/lib/redux/entity/entitySlice';
-import {AllEntityNameVariations, EntityKeys} from '@/types/entityTypes';
-import {EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
-import {Callback, callbackManager} from '@/utils/callbackManager';
-import * as React from "react";
-import {makeSelectEntityNameByFormat} from "@/lib/redux/schema/globalCacheSelectors";
+import { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { createEntitySelectors } from '@/lib/redux/entity/selectors';
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import { AllEntityNameVariations, EntityKeys } from '@/types/entityTypes';
+import { EntityStateField, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
+import { Callback, callbackManager } from '@/utils/callbackManager';
+import * as React from 'react';
+import { makeSelectEntityNameByFormat } from '@/lib/redux/schema/globalCacheSelectors';
 
 interface useFetchRelatedFinalParams {
     entityKey: EntityKeys;
@@ -14,7 +14,6 @@ interface useFetchRelatedFinalParams {
     activeEntityKey?: EntityKeys;
     fieldValue?: any;
 }
-
 
 interface UseFetchRelatedReturn {
     records: Record<MatrxRecordId, any>;
@@ -31,56 +30,34 @@ interface UseFetchRelatedReturn {
     recordCount: number; // New field
 }
 
-export function useFetchRelatedFinal(
-    {
-        entityKey,
-        activeEntityRecordId,
-        activeEntityKey,
-        fieldValue,
-    }: useFetchRelatedFinalParams): UseFetchRelatedReturn {
+export function useFetchRelatedFinal({ entityKey, activeEntityRecordId, activeEntityKey, fieldValue }: useFetchRelatedFinalParams): UseFetchRelatedReturn {
     const dispatch = useAppDispatch();
-    const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
+    const { actions } = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
-    const selectEntityName = makeSelectEntityNameByFormat(entityKey, "pretty");
+    const selectEntityName = makeSelectEntityNameByFormat(entityKey, 'pretty');
     const entityPrettyName = useAppSelector(selectEntityName);
 
-    const matrxRecordId: MatrxRecordId = useAppSelector(state =>
-        fieldValue ? selectors.selectMatrxRecordIdFromValue(state, fieldValue) : null
+    const matrxRecordId: MatrxRecordId = useAppSelector((state) => (fieldValue ? selectors.selectMatrxRecordIdFromValue(state, fieldValue) : null));
+
+    const fetchOne = useCallback(
+        (recordId: MatrxRecordId, callback?: Callback) => {
+            if (callback) {
+                const callbackId = callbackManager.register(callback);
+                dispatch(actions.fetchOne({ matrxRecordId: recordId, callbackId }));
+            } else {
+                dispatch(actions.fetchOne({ matrxRecordId: recordId }));
+            }
+        },
+        [dispatch, actions]
     );
-    // console.log("------useFetchRelatedFinal with Field Value: ", fieldValue);
-    //
-    // console.log("matrxRecordId: ", matrxRecordId);
-    // console.log("Entity Name: ", entityKey);
 
-    const fetchOne = useCallback((recordId: MatrxRecordId, callback?: Callback) => {
-        // console.log("fetchOne entity and id: ", entityKey, recordId);
+    const { records, fieldInfo: individualFieldInfo, displayField } = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
 
-
-        if (callback) {
-            const callbackId = callbackManager.register(callback);
-            dispatch(
-                actions.fetchOne({
-                    matrxRecordId: recordId,
-                    callbackId,
-                })
-            );
-        } else {
-            dispatch(
-                actions.fetchOne({
-                    matrxRecordId: recordId
-                })
-            );
-        }
-    }, [dispatch, actions]);
-
-    const {records, fieldInfo: individualFieldInfo, displayField} = useAppSelector(selectors.selectCombinedRecordsWithFieldInfo);
-
-    // Compute both hasRecords and recordCount in a single memo
-    const {hasRecords, recordCount} = React.useMemo(() => {
+    const { hasRecords, recordCount } = React.useMemo(() => {
         const count = Object.keys(records).length;
         return {
             hasRecords: count > 0,
-            recordCount: count
+            recordCount: count,
         };
     }, [records]);
 
@@ -89,7 +66,6 @@ export function useFetchRelatedFinal(
             const existingRecord = records[matrxRecordId];
             if (!existingRecord) {
                 fetchOne(matrxRecordId);
-                console.log(" useEffect Fetching One using matrxRecordId: ", matrxRecordId);
             }
         }
     }, [entityKey, matrxRecordId, fetchOne, records]);
@@ -98,9 +74,9 @@ export function useFetchRelatedFinal(
     const [hoveredItem, setHoveredItem] = React.useState<string | null>(null);
 
     const toggleFieldExpansion = (fieldId: string) => {
-        setExpandedFields(prev => ({
+        setExpandedFields((prev) => ({
             ...prev,
-            [fieldId]: !prev[fieldId]
+            [fieldId]: !prev[fieldId],
         }));
     };
 

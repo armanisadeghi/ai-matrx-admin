@@ -8,7 +8,7 @@ import { replaceChipsWithStringValues } from '../utils/editorStateUtils';
 import { chipSyncManager } from '../utils/ChipUpdater';
 import { useEditorLayout } from './hooks/useEditorLayout';
 import { useEditorRegistration } from './hooks/useEditorRegistration';
-import { MatrxRecordId } from '@/types';
+import { useBrokerSync } from './dev/useBrokerChipSync';
 
 export interface LayoutMetadata {
     position: string | number;
@@ -33,7 +33,6 @@ export interface EditorContextValue {
     getAllEditorStates: () => { [key: string]: EditorState };
     // State operations
     registerEditor: (editorId: string) => void;
-    unregisterEditor: (editorId: string) => void;
     isEditorRegistered: (editorId: string) => boolean; // New method
 
     // Editor-specific operations
@@ -70,6 +69,7 @@ export interface EditorContextValue {
     getEditorsByPosition: () => Array<{ id: string; layout: LayoutMetadata }>;
     setEditorVisibility: (editorId: string, isVisible: boolean) => void;
     moveEditor: (fromIndex: number, toIndex: number) => void;
+
 }
 
 export const getInitialEditorState = (): EditorState => ({
@@ -84,7 +84,7 @@ const EditorContext = createContext<EditorContextValue | null>(null);
 
 export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [editors, setEditors] = useState<EditorStates>(new Map());
-    const { registerEditor, unregisterEditor, isEditorRegistered } = useEditorRegistration(editors, setEditors);
+    const { registerEditor, isEditorRegistered } = useEditorRegistration(editors, setEditors);
 
     const { setEditorLayout, updateEditorLayout, getEditorLayout, getVisibleEditors, getEditorsByPosition, setEditorVisibility, moveEditor } = useEditorLayout(
         editors,
@@ -110,6 +110,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return editorStatesObject;
     }, [editors]);
 
+
     const getAllChipData = useCallback(() => {
         const allChips: Array<ChipData> = [];
         editors.forEach((state) => {
@@ -128,43 +129,6 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return next;
         });
     }, []);
-
-    // Implement all operations using editorId
-    const setChipCounter = useCallback(
-        (editorId: string, value: number) => {
-            updateEditorState(editorId, { chipCounter: value });
-        },
-        [updateEditorState]
-    );
-
-    const incrementChipCounter = useCallback((editorId: string) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, { ...current, chipCounter: current.chipCounter + 1 });
-            return next;
-        });
-    }, []);
-
-    const decrementChipCounter = useCallback((editorId: string) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, { ...current, chipCounter: current.chipCounter - 1 });
-            return next;
-        });
-    }, []);
-
-    const setDraggedChip = useCallback(
-        (editorId: string, chip: HTMLElement | null) => {
-            updateEditorState(editorId, { draggedChip: chip });
-        },
-        [updateEditorState]
-    );
 
     const plainTextContent = useCallback(
         (editorId: string) => {
@@ -377,12 +341,60 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
     }, []);
 
+
+
+
+
+
+
+
+    
+    // Implement all operations using editorId
+    const setChipCounter = useCallback(
+        (editorId: string, value: number) => {
+            updateEditorState(editorId, { chipCounter: value });
+        },
+        [updateEditorState]
+    );
+
+    const incrementChipCounter = useCallback((editorId: string) => {
+        setEditors((prev) => {
+            const current = prev.get(editorId);
+            if (!current) return prev;
+
+            const next = new Map(prev);
+            next.set(editorId, { ...current, chipCounter: current.chipCounter + 1 });
+            return next;
+        });
+    }, []);
+
+    const decrementChipCounter = useCallback((editorId: string) => {
+        setEditors((prev) => {
+            const current = prev.get(editorId);
+            if (!current) return prev;
+
+            const next = new Map(prev);
+            next.set(editorId, { ...current, chipCounter: current.chipCounter - 1 });
+            return next;
+        });
+    }, []);
+
+    const setDraggedChip = useCallback(
+        (editorId: string, chip: HTMLElement | null) => {
+            updateEditorState(editorId, { draggedChip: chip });
+        },
+        [updateEditorState]
+    );
+
+
+
+
+
     const value: EditorContextValue = {
         getEditorState,
         getAllEditorStates,
         registerEditor,
         isEditorRegistered,
-        unregisterEditor,
         setChipCounter,
         incrementChipCounter,
         decrementChipCounter,

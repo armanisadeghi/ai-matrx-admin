@@ -52,6 +52,7 @@ export function useMessageTemplatesWithNew() {
         deletePkWithChild: deleteMessageById,
         deleteMatrxIdWithChild: deleteMessageByMatrxId,
         createRelatedRecords: createMessageTemplates,
+        parentId: acticeRecipeId,
     } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
 
     // const { updateRecord: savePermanentRecordChanges } = useUpdateRecord("messageTemplate");
@@ -162,6 +163,7 @@ export function useMessageTemplatesWithNew() {
     );
 
     return {
+        acticeRecipeId,
         // Keep all existing returns
         messages: processedMessages as ProcessedRecipeMessages[], // Now properly typed as joined data
         messageMatrxIds,

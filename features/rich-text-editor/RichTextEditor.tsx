@@ -26,7 +26,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onDrop,
     initialContent = '',
     onBlur,
-    chipHandlers
+    chipHandlers,
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);

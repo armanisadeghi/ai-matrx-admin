@@ -27,11 +27,11 @@ export interface TextStyle {
 
 // State Types
 export interface EditorState {
-    chipCounter: number;
-    draggedChip: HTMLElement | null;
     plainTextContent: string;
     chipData: ChipData[];
     colorAssignments: Map<string, string>;
+    chipCounter?: number;
+    draggedChip?: HTMLElement | null;
 }
 
 export interface EditorInstanceState {

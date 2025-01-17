@@ -78,6 +78,7 @@ export function useJoinedRecords(relationshipDefinition: RelationshipDefinition,
 
     return {
         // Entity tools
+        parentId,
         parentSelectors,
         parentActions,
         childSelectors,

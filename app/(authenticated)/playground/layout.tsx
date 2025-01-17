@@ -6,6 +6,7 @@ import { filteredPages, MODULE_HOME, MODULE_NAME } from './config';
 import React from 'react';
 import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
+import EditorStateVisualizer from '@/features/rich-text-editor/admin/sidebar-analyzer/EditorStateVisualizer';
 import EditorAnalyzer from '@/features/rich-text-editor/admin/sidebar-analyzer/EditorAnalyzer';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     defaultExpanded={false}
                     selectedEntityKey='dataBroker'
                 />
+            </MatrxDynamicPanel>
+            <MatrxDynamicPanel
+                initialPosition='left'
+                defaultExpanded={false}
+                expandButtonProps={{
+                    label: 'Editor Analyzer',
+                }}
+            >
+                <EditorAnalyzer />
+                <EditorStateVisualizer />
             </MatrxDynamicPanel>
 
             <main className='flex-1'>{children}</main>

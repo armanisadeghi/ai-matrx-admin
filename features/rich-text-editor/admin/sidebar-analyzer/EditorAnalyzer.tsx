@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
 import { MatrxJsonToCollapsible } from "@/components/matrx/matrx-collapsible";
 import dynamic from 'next/dynamic';
 import EditorAnalyzerView from './EditorAnalyzerView';
@@ -24,134 +26,110 @@ interface EditorAnalyzerProps {
     defaultExpanded?: boolean;
 }
 
-const EditorAnalyzer: React.FC<EditorAnalyzerProps> = ({
-    className = '',
-    defaultExpanded = false,
-}) => {
+const EditorAnalyzer: React.FC<EditorAnalyzerProps> = () => {
     const context = useEditorContext();
-    const [registeredEditors, setRegisteredEditors] = useState<string[]>([]);
-    const [debugInfo, setDebugInfo] = useState<string>('Initializing...');
+    const [editorIds, setEditorIds] = useState<string[]>([]);
+    const [selectedEditor, setSelectedEditor] = useState<string | null>(null);
 
-    // Log the entire context when component mounts
     useEffect(() => {
-        console.log('EditorContext on mount:', {
-            context,
-            methods: Object.keys(context),
-            visibleEditors: context.getVisibleEditors?.() || [],
-        });
-    }, [context]);
-
-    // Enhanced editor detection
-    useEffect(() => {
-        const findRegisteredEditors = () => {
-            // Try multiple methods to find editors
-            const visibleEditors = context.getVisibleEditors?.() || [];
-            const editorsByPosition = context.getEditorsByPosition?.() || [];
-            
-            // Get editors from layout info
-            const layoutEditors = editorsByPosition.map(e => e.id);
-            
-            // Combine all found editors and remove duplicates
-            const allEditors = [...new Set([...visibleEditors, ...layoutEditors])];
-            
-            // Update debug info
-            setDebugInfo(`Found ${allEditors.length} editors:\n` +
-                `Visible: ${visibleEditors.join(', ')}\n` +
-                `Positioned: ${layoutEditors.join(', ')}`
-            );
-            
-            return allEditors;
+        const updateEditors = () => {
+            const allStates = context.getAllEditorStates();
+            const currentEditors = Object.keys(allStates).sort();
+            setEditorIds(currentEditors);
         };
 
-        const interval = setInterval(() => {
-            const editors = findRegisteredEditors();
-            
-            // Log every check
-            console.log('Editor check:', {
-                timestamp: new Date().toISOString(),
-                foundEditors: editors,
-                contextMethods: Object.keys(context),
-                hasVisibleEditors: typeof context.getVisibleEditors === 'function',
-                hasEditorsByPosition: typeof context.getEditorsByPosition === 'function'
-            });
-
-            if (editors.length > 0) {
-                setRegisteredEditors(editors);
-            }
-        }, 1000);
-
+        updateEditors();
+        const interval = setInterval(updateEditors, 1000);
         return () => clearInterval(interval);
     }, [context]);
 
-    // Debug display for development
-    const debugDisplay = (
-        <div className="p-4 text-sm font-mono bg-muted/20 rounded-md">
-            <div>Debug Info:</div>
-            <pre className="whitespace-pre-wrap">{debugInfo}</pre>
-        </div>
-    );
+    const getEditorSections = (editorId: string) => [
+        {
+            id: `${editorId}-state`,
+            title: 'Editor State',
+            data: context.getEditorState(editorId)
+        },
+        {
+            id: `${editorId}-layout`,
+            title: 'Layout Data',
+            data: context.getEditorLayout(editorId)
+        },
+        {
+            id: `${editorId}-chips`,
+            title: 'Chip Data',
+            data: context.getEditorState(editorId).chipData
+        }
+    ];
 
-    if (registeredEditors.length === 0) {
+    if (editorIds.length === 0) {
         return (
-            <div className="p-4 space-y-4">
-                <div className="text-muted-foreground">
-                    No registered editors found (Scanning for editors...)
-                </div>
-                {debugDisplay}
+            <div className="p-2">
+                <div className="text-muted-foreground text-sm">No editors found</div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-4 scrollbar-none">
-            {debugDisplay}
-            <CardContent className="p-4 pt-0">
-                {registeredEditors.map(editorId => (
-                    <EditorAnalyzerView 
-                        key={editorId} 
-                        editorId={editorId} 
-                    />
-                ))}
-
-                <p className="text-md text-primary pl-2 mt-4">
-                    Raw Editor States ({registeredEditors.length} editors)
-                </p>
-
-                {registeredEditors.map((editorId) => {
-                    const data = {
-                        state: context.getEditorState(editorId),
-                        layout: context.getEditorLayout(editorId),
-                        isRegistered: context.isEditorRegistered(editorId)
-                    };
-                    
-                    return (
-                        <MatrxJsonToCollapsible
-                            key={`editor-${editorId}`}
-                            title={`Editor ${editorId} State`}
-                            data={data}
-                            level={0}
+        <div className="space-y-2 scrollbar-none">
+            {selectedEditor ? (
+                <>
+                    <div className="flex items-center border-b border-border pb-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedEditor(null)}
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-1"/>
+                            <span className="text-sm font-medium">{selectedEditor}</span>
+                        </Button>
+                    </div>
+                    <CardContent className="p-2">
+                        <EditorAnalyzerView 
+                            editorId={selectedEditor}
+                            state={context.getEditorState(selectedEditor)}
+                            layout={context.getEditorLayout(selectedEditor)}
                         />
-                    );
-                })}
 
-                <Suspense fallback={<LoadingState />}>
-                    <EnhancedJsonViewerGroup
-                        viewers={registeredEditors.map(editorId => ({
-                            id: `editor-${editorId}`,
-                            title: `Editor ${editorId} State`,
-                            data: {
-                                state: context.getEditorState(editorId),
-                                layout: context.getEditorLayout(editorId),
-                                isRegistered: context.isEditorRegistered(editorId)
-                            }
-                        }))}
-                        layout="autoGrid"
-                        minimizedPosition="top"
-                        className="min-h-0"
-                        gridMinWidth="250px"
-                    />
-                </Suspense>
-            </CardContent>
+                        <div className="mt-4">
+                            {getEditorSections(selectedEditor).map((section) => (
+                                <MatrxJsonToCollapsible
+                                    key={section.id}
+                                    title={section.title}
+                                    data={section.data}
+                                    level={0}
+                                />
+                            ))}
+
+                            <Suspense fallback={<LoadingState />}>
+                                <EnhancedJsonViewerGroup
+                                    viewers={getEditorSections(selectedEditor)}
+                                    layout="autoGrid"
+                                    minimizedPosition="top"
+                                    className="min-h-0"
+                                    gridMinWidth="250px"
+                                />
+                            </Suspense>
+                        </div>
+                    </CardContent>
+                </>
+            ) : (
+                <CardContent className="p-2">
+                    <div className="flex gap-2 flex-wrap">
+                        {editorIds.map((editorId) => (
+                            <Button
+                                key={editorId}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedEditor(editorId)}
+                                className="text-sm"
+                            >
+                                {editorId}
+                            </Button>
+                        ))}
+                    </div>
+                </CardContent>
+            )}
         </div>
     );
 };

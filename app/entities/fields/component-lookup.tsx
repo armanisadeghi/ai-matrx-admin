@@ -30,6 +30,7 @@ import EntitySheet from "./other-components/EntitySheet";
 import EntityShowSelectedAccordion from "../relationships/EntityShowSelectedAccordion";
 import EntitySelectSpecial from "./field-components/EntitySelectSpecial";
 import EntitySpecialField from "./field-components/custom-fields/EntitySpecialField";
+import EntityForeignKeySelect from "./field-components/relationship-fields/EntityForeignKeySelect";
 
 
 export const ENTITY_FIELD_COMPONENTS = {
@@ -46,6 +47,7 @@ export const ENTITY_FIELD_COMPONENTS = {
     UUID_ARRAY: EntityUUIDArray,
     RELATIONAL_INPUT: RelationalInput,
     SPECIAL: EntitySpecialField,
+    FK_SELECT: EntityForeignKeySelect,
 
 
     SLIDER: EntitySlider,    
@@ -82,3 +84,16 @@ export const ENTITY_FIELD_COMPONENTS = {
 //     "SELECT": 17,
 //     "UUID_ARRAY": 2
 //   },
+
+const default_component_count = {
+    "UUID_FIELD": 38,
+    "INPUT": 37,
+    "FK_SELECT": 44,
+    "TEXTAREA": 48,
+    "SWITCH": 15,
+    "JSON_EDITOR": 43,
+    "NUMBER_INPUT": 26,
+    "DATE_PICKER": 16,
+    "SELECT": 18,
+    "UUID_ARRAY": 2
+} as const;

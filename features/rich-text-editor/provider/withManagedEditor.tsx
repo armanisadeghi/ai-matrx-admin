@@ -4,7 +4,6 @@ import { withRefs } from '@/lib/refs';
 import RichTextEditor, { RichTextEditorProps } from '../RichTextEditor';
 import { useEditorContext } from './EditorProvider';
 import { ChipMenuProvider } from '../components/ChipContextMenu';
-import { useBrokerChipSync } from './hooks/useBrokerChipSync';
 
 
 const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
@@ -14,7 +13,6 @@ const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
         ...props
     }) => {
         const context = useEditorContext();
-        useBrokerChipSync();
 
         useEffect(() => {
             context.registerEditor(componentId);

@@ -62,7 +62,6 @@ export const SmartDeleteConfirmation = ({
                                 <span className="font-medium text-muted-foreground">
                                     {field.displayName}:
                                 </span>
-                                {' '}
                                 <span className="whitespace-pre-wrap font-mono text-xs">
                                     {formatFieldValue(comparison.originalRecord?.[field.name])}
                                 </span>

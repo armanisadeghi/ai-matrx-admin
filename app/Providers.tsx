@@ -25,6 +25,7 @@ import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
 import { EditorProvider } from '@/features/rich-text-editor/provider/EditorProvider';
 import { ChipMenuProvider } from '@/features/rich-text-editor/components/ChipContextMenu';
+import { PreferenceSyncProvider } from '@/providers/usePreferenceSync';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
 
@@ -42,34 +43,34 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                             defaultTheme='dark'
                                             enableSystem={false}
                                         >
-                                            <RefProvider>
-                                                <FileSystemProvider
-                                                    initialBucket='Audio'
-                                                    allowedBuckets={allowedBuckets}
-                                                >
-                                                    <OldFileSystemProvider>
-                                                        <FileSystemDialogs />
-                                                                <ChipMenuProvider>
-                                                        
-                                                        <EditorProvider>
-
-                                                            <NextUIProvider>
-                                                                <TooltipProvider delayDuration={200}>
-                                                                    <AudioModalProvider>
-                                                                        <ModuleHeaderProvider>
-                                                                            <ShikiProvider initialLanguages={['typescript', 'javascript']}>
-                                                                                {children}
-                                                                            </ShikiProvider>
-                                                                        </ModuleHeaderProvider>
-                                                                        <Toaster />
-                                                                    </AudioModalProvider>
-                                                                </TooltipProvider>
-                                                            </NextUIProvider>
-                                                        </EditorProvider>
-                                                    </ChipMenuProvider>
-                                                    </OldFileSystemProvider>
-                                                </FileSystemProvider>
-                                            </RefProvider>
+                                            <PreferenceSyncProvider>
+                                                <RefProvider>
+                                                    <FileSystemProvider
+                                                        initialBucket='Audio'
+                                                        allowedBuckets={allowedBuckets}
+                                                    >
+                                                        <OldFileSystemProvider>
+                                                            <FileSystemDialogs />
+                                                            <ChipMenuProvider>
+                                                                <EditorProvider>
+                                                                    <NextUIProvider>
+                                                                        <TooltipProvider delayDuration={200}>
+                                                                            <AudioModalProvider>
+                                                                                <ModuleHeaderProvider>
+                                                                                    <ShikiProvider initialLanguages={['typescript', 'javascript']}>
+                                                                                        {children}
+                                                                                    </ShikiProvider>
+                                                                                </ModuleHeaderProvider>
+                                                                                <Toaster />
+                                                                            </AudioModalProvider>
+                                                                        </TooltipProvider>
+                                                                    </NextUIProvider>
+                                                                </EditorProvider>
+                                                            </ChipMenuProvider>
+                                                        </OldFileSystemProvider>
+                                                    </FileSystemProvider>
+                                                </RefProvider>
+                                            </PreferenceSyncProvider>
                                         </ThemeProvider>
                                     </ToastProvider>
                                 </ContextMenuProvider>

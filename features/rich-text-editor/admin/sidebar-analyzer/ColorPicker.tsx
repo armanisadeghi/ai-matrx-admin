@@ -8,8 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TailwindColor } from '../constants';
-import { getAllColorOptions } from '../utils/colorUitls';
+import { TailwindColor } from '../../constants';
+import { getAllColorOptions } from '../../utils/colorUitls';
 
 
 interface ColorPickerProps {

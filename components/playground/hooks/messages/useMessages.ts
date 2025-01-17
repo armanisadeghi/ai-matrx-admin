@@ -39,10 +39,8 @@ const brokerRelationshipDefinition: RelationshipDefinition = {
     },
 };
 
-
-
 export function useMessageTemplates() {
-    // First relationship: Recipe -> MessageTemplate
+    const dispatch = useAppDispatch();
     const {
         matchingChildRecords: messages,
         JoiningEntityRecords: recipeMessages,
@@ -56,7 +54,7 @@ export function useMessageTemplates() {
         return processJoinedData({
             childRecords: messages,
             joiningRecords: recipeMessages,
-            relationshipDefinition: messageRelationshipDefinition
+            relationshipDefinition: messageRelationshipDefinition,
         });
     }, [messages, recipeMessages]) as MessageTemplateDataOptional[];
 
@@ -73,11 +71,9 @@ export function useMessageTemplates() {
         return processJoinedData({
             childRecords: brokers,
             joiningRecords: messageBrokers,
-            relationshipDefinition: brokerRelationshipDefinition
+            relationshipDefinition: brokerRelationshipDefinition,
         });
     }, [brokers, messageBrokers]) as DataBrokerDataRequired[];
-
-    const dispatch = useAppDispatch();
 
     const fetchBrokersPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
         () => ({
@@ -94,8 +90,8 @@ export function useMessageTemplates() {
     }, [dispatch, brokerActions, brokerMatrxIds, fetchBrokersPayload]);
 
     return {
-        messages: processedMessages,  // Will include order and all other recipeMessage fields
-        brokers: processedBrokers,    // Will include all messageBroker fields
+        messages: processedMessages, // Will include order and all other recipeMessage fields
+        brokers: processedBrokers, // Will include all messageBroker fields
         fetchDependentRecords,
         deleteMessageById,
         deleteMessageByMatrxId,

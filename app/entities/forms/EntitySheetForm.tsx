@@ -14,6 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import EntityFormMinimalAnyRecord from './EntityFormMinimalAnyRecord';
+import { ScrollArea } from '@/components/ui';
 
 type FormMode = 'create' | 'edit' | 'view';
 
@@ -96,12 +97,12 @@ const EntitySheetForm = ({
         <SheetHeader>
           <SheetTitle>{getTitle()}</SheetTitle>
         </SheetHeader>
-
+        <ScrollArea className='h-[calc(100%-4rem)]'>
         <EntityFormMinimalAnyRecord
           recordId={mode === 'create' ? tempRecordId : recordId}
           unifiedLayoutProps={unifiedLayoutProps}
         />
-        
+        </ScrollArea>
         <div className="flex justify-end space-x-2 mt-4">
           <Button 
             variant="outline" 

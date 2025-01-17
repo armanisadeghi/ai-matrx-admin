@@ -324,6 +324,8 @@ export type FieldDatabaseTable<
 export type ForeignKeyReference = {
     table: AnyEntityDatabaseTable;
     column: AnyDatabaseColumnForEntity<EntityKeys>;
+    entity: EntityKeys;
+    field: EntityFieldKeys<EntityKeys>;
 }
 
 

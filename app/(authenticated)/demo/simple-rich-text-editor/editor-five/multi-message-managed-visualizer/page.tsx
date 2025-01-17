@@ -2,7 +2,7 @@
 
 import React from 'react';
 import MultiEditorPage from "./MultiEditorPage";
-import EditorStateVisualizer from '@/features/rich-text-editor/admin/EditorStateVisualizer';
+import EditorStateVisualizer from '@/features/rich-text-editor/admin/sidebar-analyzer/EditorStateVisualizer';
 
 export default function Page() {
     return (

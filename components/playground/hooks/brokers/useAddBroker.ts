@@ -1,7 +1,7 @@
 'use client';
 
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
-import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
+import { useRelationshipCreate, useRelationshipCreateManualId } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
 import { useAppStore, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { DataInputComponentData, MatrxRecordId, MessageTemplateData } from '@/types';
@@ -33,6 +33,7 @@ type DataBrokerData = {
 };
 
 export interface AddBrokerPayload {
+    id: string;
     name: string;
     defaultValue: string;
     dataType: DataBrokerDataType;
@@ -47,13 +48,13 @@ export function useAddBroker(parentRecordId: MatrxRecordId) {
     const { selectors: parentSelectors } = useEntityTools(parentEntity);
     const parentId = useMemo(() => toPkValue(parentRecordId), [parentRecordId]);
 
-    const createRelationship = useRelationshipCreate(joiningEntity, childEntity, parentId);
+    const createRelationship = useRelationshipCreateManualId(joiningEntity, childEntity, parentId);
 
     const addBroker = useCallback(
         (payload: AddBrokerPayload) => {
             const rawPayload = {
                 joining: { defaultValue: payload.defaultValue },
-                child: { name: payload.name, defaultValue: payload.defaultValue, dataType: payload.dataType },
+                child: { id: payload.id, name: payload.name, defaultValue: payload.defaultValue, dataType: payload.dataType },
             };
 
             console.log('useAddBroker with payload:', rawPayload);

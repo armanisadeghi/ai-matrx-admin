@@ -1,37 +1,27 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
-import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
-import BrokerCardHeader from './BrokerCardHeader';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import SingleBrokerRecordDisplay from './SingleBrokerRecordDisplay';
 
 const BrokerRecordDisplay = <TEntity extends EntityKeys>({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
     const entityName = 'dataBroker' as EntityKeys;
     const { selectors } = useEntityTools(entityName);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecordsWithKey);
     const context = useEditorContext();
-
-    // const { updateChip, removeChipData } = useEditorChips(editorId);
-
-
     const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
 
-    const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
-
-    // Ref to track previous record IDs
-    const prevRecordIdsRef = useRef<string[]>([]);
-
-    // Set selection mode only once on mount
     useEffect(() => {
         setSelectionMode('multiple');
     }, []); // Empty dependency array
+
+    const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
+    const prevRecordIdsRef = useRef<string[]>([]);
+
 
     // Update open states when selected records change
     useEffect(() => {
@@ -96,42 +86,13 @@ const BrokerRecordDisplay = <TEntity extends EntityKeys>({ unifiedLayoutProps }:
     return (
         <div className='w-full space-y-4'>
             {Object.entries(selectedRecords).map(([recordId, record]) => (
-                <motion.div
+                <SingleBrokerRecordDisplay
                     key={recordId}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className='my-4 last:mb-0'
-                >
-                    <Card className='bg-elevation2 border border-elevation3 rounded-lg'>
-                        <BrokerCardHeader
-                            recordId={recordId}
-                            record={record}
-                            isOpen={openStates[recordId] || false}
-                            onToggle={() => toggleOpen(recordId)}
-                            onDelete={() => handleRemove(recordId)}
-                        />
-
-                        <AnimatePresence>
-                            {openStates[recordId] && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className='overflow-hidden'
-                                >
-                                    <CardContent className='p-2 bg-background space-y-2 border-t'>
-                                        <EntityFormMinimalAnyRecord<TEntity>
-                                            key={recordId}
-                                            recordId={recordId}
-                                            unifiedLayoutProps={unifiedLayoutProps}
-                                        />
-                                    </CardContent>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </Card>
-                </motion.div>
+                    recordId={recordId}
+                    record={record}
+                    unifiedLayoutProps={unifiedLayoutProps}
+                    onDelete={handleRemove}
+                />
             ))}
         </div>
     );
