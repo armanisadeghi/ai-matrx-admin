@@ -5,8 +5,8 @@ import { AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
-import BrokerRecordDisplay from '../brokers/BrokerRecordDisplay';
-import { SmartCrudButtons, SmartNewButton } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
+import BrokerRecords from '../brokers/BrokerRecords';
+import { SmartCrudButtons } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
 
 const initialLayoutProps = getUnifiedLayoutProps({
     entityKey: 'dataBroker',
@@ -43,17 +43,11 @@ export default function BrokerSidebar({
     onBrokerChange: externalOnBrokerChange,
     initialSelectedBroker,
 }: BrokerSidebarProps) {
-    const [internalSelectedBroker, setInternalSelectedBroker] = React.useState<QuickReferenceRecord | undefined>(initialSelectedBroker);
 
-    const selectedBroker = externalSelectedBroker ?? internalSelectedBroker;
+    
 
-    const handleBrokerChange = (brokerQuickRef: QuickReferenceRecord) => {
-        if (externalOnBrokerChange) {
-            externalOnBrokerChange(brokerQuickRef);
-        } else {
-            setInternalSelectedBroker(brokerQuickRef);
-        }
-    };
+
+
 
     return (
         <div className='flex flex-col h-full py-3'>
@@ -61,6 +55,7 @@ export default function BrokerSidebar({
                 entityKey='dataBroker'
                 options={{ allowCreate: true, allowEdit: false, allowDelete: false, allowRefresh: true, allowCancel: true }}
                 layout={{ buttonLayout: 'row', buttonSize: 'icon', buttonsPosition: 'top', buttonSpacing: 'normal' }}
+                unifiedLayoutProps={layoutProps}
             />
             <ScrollArea className='flex-1'>
                 <AnimatePresence>
@@ -68,7 +63,7 @@ export default function BrokerSidebar({
                     {/* This would be a great place to add an "Orphan Chip Watcher" */}
 
 
-                    <BrokerRecordDisplay unifiedLayoutProps={layoutProps} />
+                    <BrokerRecords unifiedLayoutProps={layoutProps} />
                 </AnimatePresence>
             </ScrollArea>
         </div>

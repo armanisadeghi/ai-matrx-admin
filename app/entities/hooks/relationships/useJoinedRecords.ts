@@ -9,6 +9,7 @@ import { useSequentialDelete } from '../crud/useSequentialDelete';
 import useUnsavedJoinedWithParent from '../unsaved-records/useUnsavedJoinedWithParent';
 import { toMatrxId, toPkValues, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useRelationshipMapper } from './useRelationshipMapper';
+import { useSelector } from 'react-redux';
 
 export function useJoinedRecords(relationshipDefinition: RelationshipDefinition, parentId: string) {
     const dispatch = useAppDispatch();
@@ -125,9 +126,12 @@ export function useJoinedRecordsActiveParent(relationshipDefinition: Relationshi
 
 export function useJoinedDeleteRecord(relationshipDefinition, joiningSelectors, joiningEntity, JoiningEntityRecords, childEntity) {
     // Get all joining record IDs at the hook level
-    const allJoiningRecordIds = useAppSelector((state) => joiningSelectors.selectRecordIdsByRecords(state, JoiningEntityRecords));
+
+    const allJoiningRecordsWithKeys = useAppSelector((state) => joiningSelectors.selectRecordsWithKeys(state, JoiningEntityRecords));
+
 
     const { deleteRecords, isDeleting } = useSequentialDelete(joiningEntity, childEntity, (success) => {
+        console.log('Delete callback'); 
         if (success) {
             console.log('Both records deleted successfully');
         } else {
@@ -139,25 +143,28 @@ export function useJoinedDeleteRecord(relationshipDefinition, joiningSelectors, 
         (childRecordId: MatrxRecordId) => {
             const childIdToDelete = toPkValues(childRecordId)[0];
             const joiningRecordsToDelete = filterJoinForChild(JoiningEntityRecords, childIdToDelete, relationshipDefinition);
-            const joiningRecordId = allJoiningRecordIds[JoiningEntityRecords.indexOf(joiningRecordsToDelete[0])];
+            const joiningRecordId = allJoiningRecordsWithKeys[JoiningEntityRecords.indexOf(joiningRecordsToDelete[0])];
 
             if (joiningRecordId) {
                 deleteRecords(joiningRecordId, childRecordId);
             }
         },
-        [deleteRecords, JoiningEntityRecords, allJoiningRecordIds, childEntity, relationshipDefinition]
+        [deleteRecords, JoiningEntityRecords, allJoiningRecordsWithKeys, childEntity, relationshipDefinition]
     );
 
     const deletePkWithChild = useCallback(
         (primaryKeyValue: any) => {
             const joiningRecordsToDelete = filterJoinForChild(JoiningEntityRecords, primaryKeyValue, relationshipDefinition);
-            const joiningRecordId = allJoiningRecordIds[JoiningEntityRecords.indexOf(joiningRecordsToDelete[0])];
+            const joiningRecordId = allJoiningRecordsWithKeys[JoiningEntityRecords.indexOf(joiningRecordsToDelete[0])];
+
+
 
             if (joiningRecordId) {
+                console.log('deletePkWithChild Deleting records', joiningRecordId, primaryKeyValue);
                 deleteRecords(joiningRecordId, primaryKeyValue);
             }
         },
-        [deleteRecords, JoiningEntityRecords, allJoiningRecordIds, relationshipDefinition]
+        [deleteRecords, JoiningEntityRecords, allJoiningRecordsWithKeys, relationshipDefinition]
     );
 
     return {

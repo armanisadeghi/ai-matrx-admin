@@ -1,116 +1,25 @@
-// EditorProvider.tsx
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { ColorOption, ChipData, ChipRequestOptions } from '../types/editor.types';
-import { generateChipLabel } from '../utils/generateBrokerName';
-import { getAllColorOptions, getNextAvailableColor } from '../utils/colorUitls';
+// hooks/useEditorChips.ts
+import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { replaceChipsWithStringValues } from '../utils/editorStateUtils';
-import { chipSyncManager } from '../utils/ChipUpdater';
-import { useEditorLayout } from './hooks/useEditorLayout';
-import { useEditorRegistration } from './hooks/useEditorRegistration';
+import { 
+    ChipData, 
+    ChipRequestOptions, 
+    EditorState 
+} from '../../types/editor.types';
+import { generateChipLabel } from '../../utils/generateBrokerName';
+import { EditorStates } from '../EditorProvider';
+import { getAllColorOptions, getNextAvailableColor } from '../../utils/colorUitls';
+import { chipSyncManager } from '../../utils/ChipUpdater';
+import { replaceChipsWithStringValues } from '../../utils/editorStateUtils';
 import { MatrxRecordId } from '@/types';
 
-export interface LayoutMetadata {
-    position: string | number;
-    type?: string;
-    isVisible: boolean;
-}
+export const useEditorChips = (
+    editors: EditorStates,
+    setEditors: (updater: (prev: EditorStates) => EditorStates) => void,
+    getEditorState: (editorId: string) => EditorState
+) => {
 
-export interface EditorState {
-    chipCounter: number;
-    draggedChip: HTMLElement | null;
-    plainTextContent: string;
-    chipData: ChipData[];
-    colorAssignments: Map<string, string>;
-    layout?: LayoutMetadata;
-}
-
-export type EditorStates = Map<string, EditorState>;
-
-export interface EditorContextValue {
-    // State getters
-    getEditorState: (editorId: string) => EditorState;
-    getAllEditorStates: () => { [key: string]: EditorState };
-    // State operations
-    registerEditor: (editorId: string) => void;
-    unregisterEditor: (editorId: string) => void;
-    isEditorRegistered: (editorId: string) => boolean; // New method
-
-    // Editor-specific operations
-    plainTextContent: (editorId: string) => string;
-    setPlainTextContent: (editorId: string, content: string) => void;
-
-    // Chip operations
-    getAllChipData: () => ChipData[];
-    getChipsForBroker: (searchId: string) => ChipData[];
-    setChipCounter: (editorId: string, value: number) => void;
-    incrementChipCounter: (editorId: string) => void;
-    decrementChipCounter: (editorId: string) => void;
-    setDraggedChip: (editorId: string, chip: HTMLElement | null) => void;
-    setChipData: (editorId: string, data: ChipData[]) => void;
-    createNewChipData: (editorId: string, requestOptions?: ChipRequestOptions) => ChipData;
-    addChipData: (editorId: string, data: ChipData) => void;
-    removeChipData: (editorId: string, chipId: string) => void;
-    updateChipData: (chipId: string, updates: Partial<ChipData>) => void;
-    syncChipToBroker: (chipId: string, brokerId: MatrxRecordId) => void;
-    getTextWithChipsReplaced: (editorId: string, showTokenIds?: boolean) => string;
-    generateLabel: (editorId: string, requestOptions?: ChipRequestOptions) => string;
-
-    // Chip Color operations
-    getColorForChip: (editorId: string, chipId: string) => string | undefined;
-    getColorOptions: () => ColorOption[];
-    assignColorToChip: (editorId: string, chipId: string, color: string) => void;
-    setColorAssignments: (editorId: string, assignments: Map<string, string>) => void;
-    getNextColor: (editorId: string) => string;
-
-    // New layout management methods
-    setEditorLayout: (editorId: string, layout: LayoutMetadata) => void;
-    updateEditorLayout: (editorId: string, updates: Partial<LayoutMetadata>) => void;
-    getEditorLayout: (editorId: string) => LayoutMetadata | undefined;
-    getVisibleEditors: () => string[];
-    getEditorsByPosition: () => Array<{ id: string; layout: LayoutMetadata }>;
-    setEditorVisibility: (editorId: string, isVisible: boolean) => void;
-    moveEditor: (fromIndex: number, toIndex: number) => void;
-}
-
-export const getInitialEditorState = (): EditorState => ({
-    chipCounter: 0,
-    draggedChip: null,
-    plainTextContent: '',
-    chipData: [],
-    colorAssignments: new Map(),
-});
-
-const EditorContext = createContext<EditorContextValue | null>(null);
-
-export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [editors, setEditors] = useState<EditorStates>(new Map());
-    const { registerEditor, isEditorRegistered, unregisterEditor } = useEditorRegistration(editors, setEditors);
-
-    const { setEditorLayout, updateEditorLayout, getEditorLayout, getVisibleEditors, getEditorsByPosition, setEditorVisibility, moveEditor } = useEditorLayout(
-        editors,
-        setEditors
-    );
-
-    const getEditorState = useCallback(
-        (editorId: string) => {
-            const state = editors.get(editorId);
-            if (!state) {
-                return getInitialEditorState();
-            }
-            return state;
-        },
-        [editors]
-    );
-
-    const getAllEditorStates = useCallback(() => {
-        const editorStatesObject: { [key: string]: EditorState } = {};
-        editors.forEach((state, editorId) => {
-            editorStatesObject[editorId] = state;
-        });
-        return editorStatesObject;
-    }, [editors]);
-
+    
     const updateEditorState = useCallback((editorId: string, updates: Partial<EditorState>) => {
         setEditors((prev) => {
             const current = prev.get(editorId);
@@ -120,30 +29,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             next.set(editorId, { ...current, ...updates });
             return next;
         });
-    }, []);
-
-    const plainTextContent = useCallback(
-        (editorId: string) => {
-            const state = getEditorState(editorId);
-            return state.plainTextContent;
-        },
-        [getEditorState]
-    );
-
-    const setPlainTextContent = useCallback(
-        (editorId: string, content: string) => {
-            updateEditorState(editorId, { plainTextContent: content });
-        },
-        [updateEditorState]
-    );
-
-    const getTextWithChipsReplaced = useCallback(
-        (editorId: string, showTokenIds = false): string => {
-            const state = getEditorState(editorId);
-            return replaceChipsWithStringValues(state, showTokenIds);
-        },
-        [getEditorState]
-    );
+    }, [setEditors]);
 
     const getAllChipData = useCallback(() => {
         const allChips: Array<ChipData> = [];
@@ -416,58 +302,29 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         },
         [updateEditorState]
     );
-
-    const value: EditorContextValue = {
-        getEditorState,
-        unregisterEditor,
-        getAllEditorStates,
-        registerEditor,
-        isEditorRegistered,
+    
+    
+    return {
+        // Chip Counter
         setChipCounter,
         incrementChipCounter,
         decrementChipCounter,
-        setDraggedChip,
 
-        plainTextContent,
-        setPlainTextContent,
-
-        getAllChipData,
-        getChipsForBroker,
+        // Chip Data
         setChipData,
-        setColorAssignments,
         createNewChipData,
         addChipData,
         removeChipData,
         updateChipData,
-        syncChipToBroker,
-        getTextWithChipsReplaced,
 
+        // Color Management
+        setColorAssignments,
         getColorForChip,
         assignColorToChip,
-
-        getNextColor,
         getColorOptions,
-        generateLabel,
+        getNextColor,
 
-        setEditorLayout,
-        updateEditorLayout,
-        getEditorLayout,
-        getVisibleEditors,
-        getEditorsByPosition,
-        setEditorVisibility,
-        moveEditor,
+        generateLabel
     };
-
-    return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
 };
 
-export const useEditorContext = () => {
-    const context = useContext(EditorContext);
-    if (!context) {
-        throw new Error('useEditorContext must be used within an EditorProvider');
-    }
-    return context;
-};
-
-// This might have been a great idea that wasn't finished.
-// https://claude.ai/chat/61703be2-4230-4ce9-9f44-5317640ddf5a

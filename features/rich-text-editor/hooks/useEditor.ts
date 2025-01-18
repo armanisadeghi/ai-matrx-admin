@@ -1,37 +1,17 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
-    DEBUG_MODE,
-    ensureValidContainer,
     extractTextContent,
     getEditorElement,
-    getSelectedText,
-    insertWithRangeMethod,
-    insertWithStructurePreservation,
-    positionCursorAfterChip,
 } from '../utils/editorUtils';
-import { debugEditorState } from '../utils/debugUtils';
-import { createCompleteChipStructure } from '../utils/chipService';
+import { ChipHandlers } from '../utils/chipService';
 import { useEditorContext } from '../provider/EditorProvider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
-import { ChipData, ChipRequestOptions } from '../types/editor.types';
-import { useChipMenu } from '../components/ChipContextMenu';
+import { ChipRequestOptions } from '../types/editor.types';
+import { useChipCreation } from './useChipCreation';
 
-export interface ChipHandlers {
-    onDragStart?: (event: MouseEvent) => void;
-    onDragEnd?: (event: MouseEvent) => void;
-    onClick?: (event: MouseEvent) => void;
-    onDoubleClick?: (event: MouseEvent) => void;
-    onMouseEnter?: (event: MouseEvent) => void;
-    onMouseLeave?: (event: MouseEvent) => void;
-    onContextMenu?: (event: MouseEvent) => void;
-    onNewChip?: (chipData: ChipData) => void;
-
-}
-
-export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
+export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
     const context = useEditorContext();
-    const { showMenu } = useChipMenu();
     const editorState = context.getEditorState(editorId);
     const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
 
@@ -79,114 +59,7 @@ export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
         updatePlainTextContent,
     });
 
-    const insertChip = useCallback(() => {
-        const editor = getEditor();
-        const chipData = context.createNewChipData(editorId);
-        const beforeState = debugEditorState(editor);
-        const selection = window.getSelection();
-
-        if (!editor || !selection) return;
-
-        const currentRange = ensureValidContainer(editor, selection);
-
-        const { insertionWrapper, anchorNode } = createCompleteChipStructure(chipData, dragConfig, DEBUG_MODE, chipHandlers);
-
-        // Handle container setup
-        let container = currentRange.commonAncestorContainer;
-        if (container.nodeType === Node.TEXT_NODE) {
-            container = container.parentNode;
-        }
-
-        if (container === editor) {
-            const span = document.createElement('span');
-            span.appendChild(document.createTextNode('\u200B'));
-
-            if (currentRange.startContainer === editor) {
-                editor.insertBefore(span, editor.firstChild);
-            } else {
-                editor.appendChild(span);
-            }
-
-            container = span;
-            currentRange.selectNode(span);
-        }
-
-        const parent = currentRange.endContainer.parentNode;
-
-        // Try structure-preserving insertion first, fall back to range method if needed
-        const structurePreserved = insertWithStructurePreservation(insertionWrapper, currentRange, parent, container);
-
-        if (!structurePreserved) {
-            insertWithRangeMethod(insertionWrapper, currentRange);
-        }
-
-        // Position cursor and handle post-insertion tasks
-        positionCursorAfterChip(anchorNode, selection);
-
-        const afterState = debugEditorState(editor);
-        if (afterState.diffSummary.nestedSpans > beforeState.diffSummary.nestedSpans) {
-            console.warn('Nested spans increased during chip insertion');
-        }
-
-        context.incrementChipCounter(editorId);
-        context.addChipData(editorId, chipData);
-        updatePlainTextContent();
-        handlers?.onNewChip?.(chipData);
-    }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
-
-    const chipHandlers = {
-        onDragStart: handlers?.onDragStart || ((event) => console.log('Drag started:', event)),
-        onDragEnd: handlers?.onDragEnd || ((event) => console.log('Drag ended:', event)),
-        onClick: handlers?.onClick || ((event) => console.log('Chip clicked:', event)),
-        onDoubleClick:
-            handlers?.onDoubleClick ||
-            ((event) => {
-                const chip = (event.target as HTMLElement).closest('[data-chip]');
-                if (!chip) return;
-
-                const chipId = chip.getAttribute('data-chip-id');
-                if (!chipId) return;
-
-                showMenu(editorId, chipId, event.clientX, event.clientY);
-            }),
-        onMouseEnter: handlers?.onMouseEnter || ((event) => console.log('Mouse entered:', event)),
-        onMouseLeave: handlers?.onMouseLeave || ((event) => console.log('Mouse left:', event)),
-        onContextMenu:
-            handlers?.onContextMenu ||
-            ((event: MouseEvent) => {
-                event.preventDefault();
-                event.stopPropagation();
-
-                const chip = (event.target as HTMLElement).closest('[data-chip]');
-                if (!chip) return;
-
-                const chipId = chip.getAttribute('data-chip-id');
-                if (!chipId) return;
-
-                showMenu(editorId, chipId, event.clientX, event.clientY);
-            }),
-    };
-
-    const convertSelectionToChip = useCallback(() => {
-        const editor = getEditor();
-        const { text, range } = getSelectedText();
-        const chipData = context.createNewChipData(editorId, { stringValue: text });
-
-        if (!editor) return;
-
-        // Pass chipHandlers to createCompleteChipStructure
-        const { insertionWrapper, anchorNode } = createCompleteChipStructure(chipData, dragConfig, DEBUG_MODE, chipHandlers);
-
-        insertWithRangeMethod(insertionWrapper, range);
-
-        positionCursorAfterChip(anchorNode, window.getSelection()!);
-
-        context.incrementChipCounter(editorId);
-        context.addChipData(editorId, chipData);
-        updatePlainTextContent();
-        handlers?.onNewChip?.(chipData);
-        return true;
-    }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
+    const { insertChip, convertSelectionToChip } = useChipCreation(editorId, chipHandlers, dragConfig, context, updatePlainTextContent);
 
     return {
         // State from editorState
@@ -205,6 +78,8 @@ export const useEditor = (editorId: string, handlers?: ChipHandlers) => {
         updateContent: updatePlainTextContent,
         focus,
 
+        dragConfig,
+        chipHandlers,
         // Event handlers
         handleNativeDragStart,
         handleNativeDragEnd,

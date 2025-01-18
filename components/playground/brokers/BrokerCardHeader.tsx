@@ -42,11 +42,8 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
         if (isConnected) {
             return cn(
                 'h-4 w-4 transition-all duration-300',
-                // Using emerald for a rich green that works well in both modes
                 'text-emerald-600 dark:text-emerald-500',
-                // Add a subtle glow effect
                 'drop-shadow-[0_0_3px_rgba(16,185,129,0.3)]',
-                // Increase the glow on hover
                 'group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
             );
         }

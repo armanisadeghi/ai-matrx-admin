@@ -13,6 +13,10 @@ import { useChipMenu } from '@/features/rich-text-editor/components/ChipContextM
 import { isEqual } from 'lodash';
 import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
 import { v4 } from 'uuid';
+import { toggle } from '@nextui-org/react';
+import DebugPanel from './AdminToolbar';
+
+const DEBUG_STATUS = false;
 
 const INITIAL_PANELS: ProcessedRecipeMessages[] = [
     {
@@ -81,6 +85,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     onChipUpdate,
     onToggleEditor,
     onOrderChange,
+    deleteMessageById,
     recipeMessageHook,
     ...props
 }) => {
@@ -94,12 +99,12 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedContent, setLastSavedContent] = useState('');
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
+    const [debugVisible, setDebugVisible] = useState(false);
     const [lastEditorState, setLastEditorState] = useState<EditorState>(() => context.getEditorState(matrxRecordId));
     const [showDialog, setShowDialog] = useState(false);
 
     const { actions: messageActions, selectors: messageSelectors } = useEntityTools('messageTemplate');
-    const { actions: brokerActions, selectors: brokerSelectors, store } = useEntityTools('dataBroker');
-    const { messages, deleteMessageById } = recipeMessageHook;
+    const { messages } = recipeMessageHook;
 
     const record = useMemo(() => {
         const existingMessage = messages.find((message) => message.matrxRecordId === matrxRecordId);
@@ -156,9 +161,10 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
             console.log('createNewBroker', addBrokerPayload);
 
             addBroker(addBrokerPayload);
-            updateBrokerConnection(chipData.id, `id:${addBrokerPayload.id}`);
+            context.syncChipToBroker(chipData.id, `id:${addBrokerPayload.id}`);
+            // updateBrokerConnection(chipData.id, `id:${addBrokerPayload.id}`);
         },
-        [addBroker, updateBrokerConnection]
+        [addBroker, context.syncChipToBroker]
     );
 
     const addExistingBrokerToSelection = useCallback(
@@ -212,6 +218,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     }, [handleSave]);
 
     const handleDelete = useCallback(() => {
+        console.log('Deleting message:', matrxRecordId);
         deleteMessageById(record.id);
     }, [matrxRecordId, onDelete]);
 
@@ -321,6 +328,10 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         [matrxRecordId, showMenu]
     );
 
+    const toggleDebug = useCallback(() => {
+        setDebugVisible((prev) => !prev);
+    }, []);
+
     return (
         <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
             <MessageToolbar
@@ -337,8 +348,10 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
                 onShowBrokerContent={handleReplaceChipsWithBrokerContent}
                 onRoleChange={handleRoleChange}
                 recipeMessageHook={recipeMessageHook}
+                debug={DEBUG_STATUS}
+                onDebugClick={toggleDebug}
             />
-
+            {debugVisible && <DebugPanel editorId={matrxRecordId} />}
             <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
                 <EditorWithProviders
                     id={matrxRecordId}

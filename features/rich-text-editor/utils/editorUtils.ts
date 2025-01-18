@@ -1,4 +1,4 @@
-import { ChipData, ChipRequestOptions, TextStyle } from '../types';
+import { ChipData, ChipRequestOptions, TextStyle } from '../types/editor.types';
 
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
     if (!editor.firstChild) {
@@ -134,22 +134,20 @@ export const getSelectedText = (): { text: string; range: Range | null } => {
     if (!selection || selection.rangeCount === 0) {
         return { text: '', range: null };
     }
-
     const range = selection.getRangeAt(0);
     const text = range.toString().trim();
-
     return { text, range };
 };
 
-export const isValidChipText = (text: string): boolean => {
-    return text.length > 0 && text.length <= 1000;
+export const getCursorRange = (): Range | null => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return null;
+    return selection.getRangeAt(0);
 };
 
-export const initializeEditor = (editor: HTMLDivElement, id: string) => {
-    editor.setAttribute('role', 'textbox');
-    editor.setAttribute('aria-multiline', 'true');
-    editor.setAttribute('spellcheck', 'true');
-    editor.setAttribute('data-editor-id', id);
+
+export const isValidChipText = (text: string): boolean => {
+    return text.length > 0 && text.length <= 1000;
 };
 
 export function insertWithStructurePreservation(insertionWrapper: HTMLElement, currentRange: Range, parent: Node | null | undefined, container: Node): boolean {
@@ -197,7 +195,6 @@ export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Rang
     range.insertNode(insertionWrapper);
 }
 
-
 export const DEBUG_MODE = false;
 
 // Helper to get editor element by ID
@@ -213,11 +210,7 @@ export const setupEditorAttributes = (editor: HTMLDivElement, componentId: strin
     editor.setAttribute('data-editor-id', componentId);
 };
 
-
-export const prepareChipRequestOptions = (
-    existingChipData?: ChipData,
-    selectedText?: string
-): ChipRequestOptions => {
+export const prepareChipRequestOptions = (existingChipData?: ChipData, selectedText?: string): ChipRequestOptions => {
     if (!existingChipData) {
         return selectedText ? { stringValue: selectedText } : {};
     }
@@ -227,6 +220,6 @@ export const prepareChipRequestOptions = (
         label: existingChipData.label,
         color: existingChipData.color,
         brokerId: existingChipData.brokerId,
-        stringValue: existingChipData.stringValue
+        stringValue: existingChipData.stringValue,
     };
 };

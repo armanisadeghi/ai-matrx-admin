@@ -395,6 +395,9 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
+      re-resizable:
+        specifier: ^6.10.3
+        version: 6.10.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: latest
         version: 19.0.0
@@ -7914,6 +7917,12 @@ packages:
     resolution: {integrity: sha512-JsecfN+JlckncVXTWFWjn0Vk6uInl8GSf4eEd9tTk5qXHlgqkPdILpnYpgZcISXNYAzvfvsCZviaDk8AxyS5sg==}
     peerDependencies:
       reselect: '>1.0.0'
+
+  re-resizable@6.10.3:
+    resolution: {integrity: sha512-zvWb7X3RJMA4cuSrqoxgs3KR+D+pEXnGrD2FAD6BMYAULnZsSF4b7AOVyG6pC3VVNVOtlagGDCDmZSwWLjjBBw==}
+    peerDependencies:
+      react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-audio-player@0.17.0:
     resolution: {integrity: sha512-aCZgusPxA9HK7rLZcTdhTbBH9l6do9vn3NorgoDZRxRxJlOy9uZWzPaKjd7QdcuP2vXpxGA/61JMnnOEY7NXeA==}
@@ -19333,6 +19342,11 @@ snapshots:
   re-reselect@3.4.0(reselect@3.0.1):
     dependencies:
       reselect: 3.0.1
+
+  re-resizable@6.10.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   react-audio-player@0.17.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:

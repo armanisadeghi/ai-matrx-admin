@@ -26,7 +26,7 @@ export const SmartUpdateConfirmation = ({
     const handleConfirm = useCallback(() => {
         if (!comparison.matrxRecordId) return;
         updateRecord(comparison.matrxRecordId);
-    }, [comparison.matrxRecordId, updateRecord]);
+    }, [comparison, updateRecord]);
 
     if (!comparison.hasChanges) {
         return null;

@@ -2,64 +2,50 @@
 
 import { cn } from '@/utils';
 import { getColorClassName } from './colorUitls';
-import { ChipData, DOMSnapshot } from '../types';
 import { CHIP_BASE_CLASS } from '../constants';
+import { ChipData, DOMSnapshot } from '../types/editor.types';
+import { ChipMenuContextValue } from '../components/ChipContextMenu';
 
+export interface ChipHandlers {
+    onDragStart?: (event: MouseEvent) => void;
+    onDragEnd?: (event: MouseEvent) => void;
+    onClick?: (event: MouseEvent) => void;
+    onDoubleClick?: (event: MouseEvent) => void;
+    onMouseEnter?: (event: MouseEvent) => void;
+    onMouseLeave?: (event: MouseEvent) => void;
+    onContextMenu?: (event: MouseEvent) => void;
+    onNewChip?: (chipData: ChipData) => void;
 
-export const createChipElementWorkingTwo = (chipData: ChipData, { onDragStart, onDragEnd }): HTMLSpanElement => {
-    const chip = document.createElement('span');
-    const colorClassName = getColorClassName(chipData.color);
+}
 
-    chip.contentEditable = 'false';
-    chip.className = cn(CHIP_BASE_CLASS, colorClassName);
-    chip.setAttribute('data-chip', 'true');
-    chip.setAttribute('data-chip-id', chipData.id);
-    chip.setAttribute('data-chip-label', chipData.label);
-    chip.setAttribute('data-chip-original-content', chipData.stringValue);
-    chip.setAttribute('data-broker-id', chipData.brokerId);
-    chip.setAttribute('draggable', 'true');
-    chip.textContent = chipData.label;
-
-    if (onDragStart) chip.addEventListener('dragstart', onDragStart);
-    if (onDragEnd) chip.addEventListener('dragend', onDragEnd);
-
-    return chip;
+type ChipHandlerOptions = {
+    showMenu: ChipMenuContextValue['showMenu'];
+    editorId: string;
+    handlers?: ChipHandlers;
 };
 
-export const createChipElementOld = (chipData: ChipData, { onDragStart, onDragEnd }): HTMLSpanElement => {
-    // Create the outer container that will be draggable and hold spaces
-    const chipContainer = document.createElement('span');
-    chipContainer.contentEditable = 'false';
-    chipContainer.setAttribute('draggable', 'true');
-    chipContainer.setAttribute('data-chip-container', 'true');
-
-    // Create the actual chip with its styling and data
-    const chip = document.createElement('span');
-    const colorClassName = getColorClassName(chipData.color);
-    chip.className = cn(CHIP_BASE_CLASS, colorClassName);
-    chip.setAttribute('data-chip', 'true');
-    chip.setAttribute('data-chip-id', chipData.id);
-    chip.setAttribute('data-chip-label', chipData.label);
-    chip.setAttribute('data-chip-original-content', chipData.stringValue);
-    chip.setAttribute('data-broker-id', chipData.brokerId);
-    chip.textContent = chipData.label;
-
-    // Add drag handlers to the container
-    if (onDragStart) chipContainer.addEventListener('dragstart', onDragStart);
-    if (onDragEnd) chipContainer.addEventListener('dragend', onDragEnd);
-
-    // Assemble the structure with spaces
-    chipContainer.appendChild(document.createTextNode('\u00A0\u00A0')); // Two spaces before
-    chipContainer.appendChild(chip);
-    chipContainer.appendChild(document.createTextNode('\u00A0\u00A0')); // Two spaces after
-
-    return chipContainer;
+export const createChipHandlers = ({ handlers }: ChipHandlerOptions): ChipHandlers => {
+    // Simply pass through the handlers as they are
+    return {
+        onDragStart: handlers?.onDragStart,
+        onDragEnd: handlers?.onDragEnd,
+        onClick: handlers?.onClick,
+        onDoubleClick: handlers?.onDoubleClick,
+        onMouseEnter: handlers?.onMouseEnter,
+        onMouseLeave: handlers?.onMouseLeave,
+        onContextMenu: handlers?.onContextMenu,
+        onNewChip: handlers?.onNewChip
+    };
 };
+
+
 
 
 export const createChipElement = (
     chipData: ChipData,
-    {
+    handlers: Partial<ChipHandlers>
+): HTMLSpanElement => {
+    const {
         onDragStart,
         onDragEnd,
         onClick,
@@ -67,16 +53,8 @@ export const createChipElement = (
         onMouseEnter,
         onMouseLeave,
         onContextMenu,
-    }: {
-        onDragStart?: (event: DragEvent) => void;
-        onDragEnd?: (event: DragEvent) => void;
-        onClick?: (event: MouseEvent) => void;
-        onDoubleClick?: (event: MouseEvent) => void;
-        onMouseEnter?: (event: MouseEvent) => void;
-        onMouseLeave?: (event: MouseEvent) => void;
-        onContextMenu?: (event: MouseEvent) => void;
-    }
-): HTMLSpanElement => {
+    } = handlers;
+
     // Create the outer container that will be draggable and hold spaces
     const chipContainer = document.createElement('span');
     chipContainer.contentEditable = 'false';
@@ -111,7 +89,72 @@ export const createChipElement = (
     return chipContainer;
 };
 
+export function createCompleteChipStructure(
+    chipData: ChipData,
+    dragConfig,
+    debugMode = false,
+    chipHandlers: {
+        onDragStart?: (event: DragEvent) => void;
+        onDragEnd?: (event: DragEvent) => void;
+        onClick?: (event: MouseEvent) => void;
+        onDoubleClick?: (event: MouseEvent) => void;
+        onMouseEnter?: (event: MouseEvent) => void;
+        onMouseLeave?: (event: MouseEvent) => void;
+    } = {}
+) {
+    // Create wrapper
+    const chipWrapper = document.createElement('span');
+    const debugWrapperClass = `chip-wrapper border border-${chipData.color}-500`;
+    chipWrapper.className = debugMode ? debugWrapperClass : 'chip-wrapper';
+    chipWrapper.setAttribute('data-chip-wrapper', 'true');
 
+    // Create chip with drag handlers and optional additional handlers
+    const chip = createChipElement(chipData, { ...dragConfig, ...chipHandlers });
+
+    // Create unique identifier for this structure
+    const structureId = `chip-structure-${chipData.id}`;
+
+    // Create spacing node wrappers
+    const leadingSpaceWrapper = document.createElement('span');
+    const trailingSpaceWrapper = document.createElement('span');
+
+    // Add identifying attributes
+    leadingSpaceWrapper.setAttribute('data-chip-space', 'true');
+    leadingSpaceWrapper.setAttribute('data-space-type', 'leading');
+    leadingSpaceWrapper.setAttribute('data-structure-id', structureId);
+
+    trailingSpaceWrapper.setAttribute('data-chip-space', 'true');
+    trailingSpaceWrapper.setAttribute('data-space-type', 'trailing');
+    trailingSpaceWrapper.setAttribute('data-structure-id', structureId);
+
+    // Create anchor wrapper
+    const anchorWrapper = document.createElement('span');
+    anchorWrapper.setAttribute('data-chip-anchor', 'true');
+    anchorWrapper.setAttribute('data-structure-id', structureId);
+
+    // Create and append the actual nodes
+    leadingSpaceWrapper.appendChild(document.createTextNode('\u00A0'));
+    trailingSpaceWrapper.appendChild(document.createTextNode('\u00A0'));
+    anchorWrapper.appendChild(document.createTextNode('\u200B'));
+
+    // Assemble the structure
+    const insertionWrapper = document.createElement('span');
+    insertionWrapper.setAttribute('data-chip-container', 'true');
+    insertionWrapper.setAttribute('data-structure-id', structureId);
+
+    insertionWrapper.appendChild(leadingSpaceWrapper);
+    insertionWrapper.appendChild(chipWrapper);
+    chipWrapper.appendChild(chip);
+    insertionWrapper.appendChild(trailingSpaceWrapper);
+    insertionWrapper.appendChild(anchorWrapper);
+
+    return {
+        insertionWrapper,
+        chipWrapper,
+        chip,
+        anchorNode: anchorWrapper.firstChild as Text,
+    };
+}
 
 
 export const createFragmentChipStructure = (
@@ -181,65 +224,6 @@ export function insertElementsWithoutNesting(
 }
 
 
-function findSafeInsertionPoint(startNode: Node | null): { parent: Node, referenceNode: Node | null } {
-    let currentNode = startNode;
-    let lastSpanInDiv: Node | null = null;
-
-    while (currentNode) {
-        // Track the last span we see in case we need to fall back
-        if (currentNode.nodeName === 'SPAN') {
-            lastSpanInDiv = currentNode;
-        }
-
-        // Check if we've reached the end of a div
-        if (currentNode.nodeName === 'DIV' && !currentNode.nextSibling) {
-            if (lastSpanInDiv) {
-                return {
-                    parent: lastSpanInDiv.parentNode!,
-                    referenceNode: lastSpanInDiv
-                };
-            }
-            // If no spans found, insert at the end of the div
-            return {
-                parent: currentNode,
-                referenceNode: null
-            };
-        }
-
-        // Check if this is a safe node
-        if (currentNode.nodeName === 'SPAN') {
-            const span = currentNode as HTMLSpanElement;
-            const isSafe = span.contentEditable !== 'false' &&
-                          !span.hasAttribute('data-chip-container') &&
-                          !span.hasAttribute('data-chip');
-            
-            if (isSafe) {
-                return {
-                    parent: span.parentNode!,
-                    referenceNode: span
-                };
-            }
-        }
-
-        currentNode = currentNode.nextSibling;
-    }
-
-    // If we've reached the end of the document
-    if (lastSpanInDiv) {
-        return {
-            parent: lastSpanInDiv.parentNode!,
-            referenceNode: lastSpanInDiv
-        };
-    }
-
-    // Final fallback - return the original position
-    return {
-        parent: startNode?.parentNode!,
-        referenceNode: startNode
-    };
-}
-
-
 
 
 export function positionCursorInBuffer(fragment: DocumentFragment) {
@@ -283,72 +267,6 @@ export const createChipWithStructure = (
 
 
 
-export function createCompleteChipStructure(
-    chipData: ChipData,
-    dragConfig,
-    debugMode = false,
-    chipHandlers: {
-        onDragStart?: (event: DragEvent) => void;
-        onDragEnd?: (event: DragEvent) => void;
-        onClick?: (event: MouseEvent) => void;
-        onDoubleClick?: (event: MouseEvent) => void;
-        onMouseEnter?: (event: MouseEvent) => void;
-        onMouseLeave?: (event: MouseEvent) => void;
-    } = {}
-) {
-    // Create wrapper
-    const chipWrapper = document.createElement('span');
-    const debugWrapperClass = `chip-wrapper border border-${chipData.color}-500`;
-    chipWrapper.className = debugMode ? debugWrapperClass : 'chip-wrapper';
-    chipWrapper.setAttribute('data-chip-wrapper', 'true');
-
-    // Create chip with drag handlers and optional additional handlers
-    const chip = createChipElement(chipData, { ...dragConfig, ...chipHandlers });
-
-    // Create unique identifier for this structure
-    const structureId = `chip-structure-${chipData.id}`;
-
-    // Create spacing node wrappers
-    const leadingSpaceWrapper = document.createElement('span');
-    const trailingSpaceWrapper = document.createElement('span');
-
-    // Add identifying attributes
-    leadingSpaceWrapper.setAttribute('data-chip-space', 'true');
-    leadingSpaceWrapper.setAttribute('data-space-type', 'leading');
-    leadingSpaceWrapper.setAttribute('data-structure-id', structureId);
-
-    trailingSpaceWrapper.setAttribute('data-chip-space', 'true');
-    trailingSpaceWrapper.setAttribute('data-space-type', 'trailing');
-    trailingSpaceWrapper.setAttribute('data-structure-id', structureId);
-
-    // Create anchor wrapper
-    const anchorWrapper = document.createElement('span');
-    anchorWrapper.setAttribute('data-chip-anchor', 'true');
-    anchorWrapper.setAttribute('data-structure-id', structureId);
-
-    // Create and append the actual nodes
-    leadingSpaceWrapper.appendChild(document.createTextNode('\u00A0'));
-    trailingSpaceWrapper.appendChild(document.createTextNode('\u00A0'));
-    anchorWrapper.appendChild(document.createTextNode('\u200B'));
-
-    // Assemble the structure
-    const insertionWrapper = document.createElement('span');
-    insertionWrapper.setAttribute('data-chip-container', 'true');
-    insertionWrapper.setAttribute('data-structure-id', structureId);
-
-    insertionWrapper.appendChild(leadingSpaceWrapper);
-    insertionWrapper.appendChild(chipWrapper);
-    chipWrapper.appendChild(chip);
-    insertionWrapper.appendChild(trailingSpaceWrapper);
-    insertionWrapper.appendChild(anchorWrapper);
-
-    return {
-        insertionWrapper,
-        chipWrapper,
-        chip,
-        anchorNode: anchorWrapper.firstChild as Text,
-    };
-}
 
 
 export const createChipElementWorking = (chipData: ChipData): HTMLSpanElement => {

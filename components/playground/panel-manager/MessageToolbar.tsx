@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
-import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical } from 'lucide-react';
+import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical, Bug } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MatrxRecordId } from '@/types';
 import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
+import DebugWrapper from './AdminToolbar';
 
 interface MessageToolbarProps {
     matrxRecordId: MatrxRecordId;
@@ -19,6 +20,8 @@ interface MessageToolbarProps {
     onProcessed: (matrxRecordId: MatrxRecordId) => void;
     onRoleChange: (matrxRecordId: MatrxRecordId, newRole: string) => void;
     recipeMessageHook: UseRecipeMessagesHook;
+    debug?: boolean;
+    onDebugClick?: (matrxRecordId: MatrxRecordId) => void;
 }
 
 interface ActionButtonProps {
@@ -54,6 +57,7 @@ const RoleSelector: React.FC<{
     </DropdownMenu>
 );
 
+
 const MessageToolbar: React.FC<MessageToolbarProps> = ({
     matrxRecordId,
     role,
@@ -68,6 +72,8 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
     onProcessed,
     onRoleChange,
     recipeMessageHook,
+    debug = false,
+    onDebugClick,
 }) => {
     const { handleDragDrop } = recipeMessageHook;
     const [isDragOver, setIsDragOver] = useState(false);
@@ -116,6 +122,14 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         },
     ];
 
+    if (debug) {
+        actions.push({
+            label: 'Debug',
+            icon: <Bug className="h-4 w-4" />,
+            onClick: () => onDebugClick?.(matrxRecordId),
+        });
+    }
+
     const handleDragStart = (e: React.DragEvent) => {
         e.dataTransfer.setData('text/plain', matrxRecordId.toString());
         e.dataTransfer.effectAllowed = 'move';
@@ -143,7 +157,6 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
 
         const draggedId = e.dataTransfer.getData('text/plain');
         if (draggedId !== matrxRecordId.toString()) {
-            // Convert draggedId back to MatrxRecordId type
             const draggedMatrxId = draggedId as MatrxRecordId;
             handleDragDrop(draggedMatrxId, matrxRecordId);
         }
@@ -166,7 +179,7 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
                 matrxRecordId={matrxRecordId}
                 onRoleChange={onRoleChange}
             />
-            <div className='flex gap-1'>
+            <div className="flex gap-1">
                 {actions.map((action) => (
                     <ActionButton
                         key={action.label}

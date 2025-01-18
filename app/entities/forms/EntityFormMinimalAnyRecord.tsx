@@ -60,12 +60,13 @@ export const EntityFormMinimalAnyRecord = <TEntity extends EntityKeys>({
                         allowEdit: true,
                         allowDelete: true,
                         allowRefresh: true,
+                        allowAdvanced: true,
                     }}
                     crudLayout={{
                         buttonLayout: 'row',
                         buttonSize: 'icon',
                         buttonsPosition: 'top',
-                        buttonSpacing: 'normal',
+                        buttonSpacing: 'compact',
                     }}
                 />
             </div>

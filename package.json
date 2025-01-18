@@ -141,6 +141,7 @@
     "papaparse": "^5.4.1",
     "popmotion": "latest",
     "qrcode": "^1.5.4",
+    "re-resizable": "^6.10.3",
     "react": "latest",
     "react-audio-player": "^0.17.0",
     "react-colorful": "latest",

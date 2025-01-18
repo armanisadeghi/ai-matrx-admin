@@ -60,7 +60,7 @@ const PlaygroundHeaderLeft = ({
         title="Create New Broker"
         ariaLabel="Create new broker"
       />
-      <QuickRefCommandIcon
+      {/* <QuickRefCommandIcon
         entityKey={"dataBroker"}
         onRecordChange={handleRecordChange}
         title="Add Item"
@@ -71,7 +71,7 @@ const PlaygroundHeaderLeft = ({
         entityKey={"dataBroker"}
         onRecordsChange={handleRecordsChange}
         fetchMode="fkIfk"
-      />
+      /> */}
     </div>
   );
 };

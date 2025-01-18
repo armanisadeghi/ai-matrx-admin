@@ -18,6 +18,7 @@ export interface ChipData {
     color?: string;
     stringValue?: string;
     brokerId?: MatrxRecordId;
+    editorId?: MatrxRecordId;
 }
 
 export interface TextStyle {

@@ -1,21 +1,8 @@
-import React, { useState } from 'react';
-import { Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { SmartCrudButtons } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
-import EntityRecordSheet from '../../layout/EntityRecordSheet';
 import { ComponentDensity, ComponentSize, EntityKeys, MatrxRecordId } from '@/types';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { getUpdatedUnifiedLayoutProps } from '../../layout/configs';
 
-function getSheetLayoutProps(initialLayoutProps: UnifiedLayoutProps): UnifiedLayoutProps {
-    return getUpdatedUnifiedLayoutProps(initialLayoutProps, {
-        fieldFiltering: {
-            excludeFields: [],
-            defaultShownFields: [],
-        },
-        density: 'comfortable',
-    });
-}
 
 interface EntityFormFooterProps {
     entityKey: EntityKeys;
@@ -26,6 +13,7 @@ interface EntityFormFooterProps {
         allowEdit?: boolean;
         allowDelete?: boolean;
         allowRefresh?: boolean;
+        allowAdvanced?: boolean;
         showConfirmation?: boolean;
     };
     crudLayout: {
@@ -46,6 +34,7 @@ const EntityFormFooter = ({
         allowCreate: false,
         allowEdit: true,
         allowDelete: true,
+        allowAdvanced: true,
         allowRefresh: true,
     },
     crudLayout = {
@@ -56,14 +45,6 @@ const EntityFormFooter = ({
     },
     unifiedLayoutProps,
 }: EntityFormFooterProps) => {
-    const [sheetStates, setSheetStates] = useState<Record<string, boolean>>({});
-
-    const toggleSheet = (recordId: MatrxRecordId) => {
-        setSheetStates((prev) => ({
-            ...prev,
-            [recordId]: !prev[recordId],
-        }));
-    };
 
     return (
         <div className="flex flex-col items-center gap-4">
@@ -72,28 +53,7 @@ const EntityFormFooter = ({
                 recordId={recordId}
                 options={crudOptions}
                 layout={crudLayout}
-            />
-    
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleSheet(recordId)}
-                className="text-xs"
-            >
-                <Settings className="w-3 h-3 mr-2" />
-                Advanced
-            </Button>
-    
-            <EntityRecordSheet
-                className="w-full"
-                selectedEntity={entityKey}
-                recordId={recordId}
-                unifiedLayoutProps={getSheetLayoutProps(unifiedLayoutProps)}
-                updateKey={0}
-                open={sheetStates[recordId]}
-                onOpenChange={(open) => setSheetStates((prev) => ({ ...prev, [recordId]: open }))}
-                title="Advanced Settings"
-                size="xl"
+                unifiedLayoutProps={unifiedLayoutProps}
             />
         </div>
     );

@@ -1,5 +1,5 @@
 import { COLOR_STYLES, TAILWIND_COLORS, TailwindColor } from "../constants";
-import { ColorOption } from "../types";
+import { ColorOption } from "../types/editor.types";
 
 
 export function getNextAvailableColor(colorAssignments: Map<string, string>): string {

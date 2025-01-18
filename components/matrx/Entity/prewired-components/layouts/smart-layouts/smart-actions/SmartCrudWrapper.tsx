@@ -9,6 +9,8 @@ import SmartRefreshButton from './core-buttons/SmartRefreshButton';
 import LoadingButtonGroup from '@/components/ui/loaders/loading-button-group';
 import { cn } from '@/lib/utils';
 import { ComponentDensity, ComponentSize } from '@/types/componentConfigTypes';
+import { UnifiedLayoutProps } from '../../types';
+import SmartAdvancedButton from './core-buttons/SmartAdvancedButton';
 
 export interface SmartCrudWrapperProps {
     entityKey: EntityKeys;
@@ -20,6 +22,7 @@ export interface SmartCrudWrapperProps {
         allowCancel?: boolean;
         allowDelete?: boolean;
         allowRefresh?: boolean;
+        allowAdvanced?: boolean;
         showConfirmation?: boolean;
     };
     layout?: {
@@ -29,6 +32,7 @@ export interface SmartCrudWrapperProps {
         buttonSpacing?: ComponentDensity;
     };
     className?: string;
+    unifiedLayoutProps?: UnifiedLayoutProps;
 }
 
 const defaultOptions = {
@@ -37,6 +41,7 @@ const defaultOptions = {
     allowCancel: true,
     allowDelete: true,
     allowRefresh: true,
+    allowAdvanced: true,
     showConfirmation: true,
 };
 
@@ -47,14 +52,7 @@ const defaultLayout = {
     buttonSpacing: 'normal' as ComponentDensity,
 };
 
-export const SmartCrudWrapper = ({
-    entityKey,
-    recordId,
-    children,
-    options,
-    layout,
-    className,
-}: SmartCrudWrapperProps) => {
+export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layout, className, unifiedLayoutProps }: SmartCrudWrapperProps) => {
     // Merge provided options with defaults
     const mergedOptions = {
         ...defaultOptions,
@@ -78,20 +76,22 @@ export const SmartCrudWrapper = ({
                 />
             )}
             {mergedOptions.allowEdit && (
-                <SmartEditButton
-                    entityKey={entityKey}
-                    recordId={recordId}
-                    size={hideText ? 'icon' : mergedLayout.buttonSize}
-                    hideText={hideText}
-                />
+                <>
+                    <SmartEditButton
+                        entityKey={entityKey}
+                        recordId={recordId}
+                        size={hideText ? 'icon' : mergedLayout.buttonSize}
+                        hideText={hideText}
+                    />
+                    <SmartSaveButton
+                        entityKey={entityKey}
+                        recordId={recordId}
+                        size={hideText ? 'icon' : mergedLayout.buttonSize}
+                        hideText={hideText}
+                        showConfirmation={mergedOptions.showConfirmation}
+                    />
+                </>
             )}
-            <SmartSaveButton
-                entityKey={entityKey}
-                recordId={recordId}
-                size={hideText ? 'icon' : mergedLayout.buttonSize}
-                hideText={hideText}
-                showConfirmation={mergedOptions.showConfirmation}
-            />
             {mergedOptions.allowCancel && (
                 <SmartCancelButton
                     entityKey={entityKey}
@@ -114,6 +114,15 @@ export const SmartCrudWrapper = ({
                     recordId={recordId}
                     size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
+                />
+            )}
+            {mergedOptions.allowAdvanced && (
+                <SmartAdvancedButton
+                    entityKey={entityKey}
+                    recordId={recordId}
+                    size={hideText ? 'icon' : mergedLayout.buttonSize}
+                    hideText={hideText}
+                    unifiedLayoutProps={unifiedLayoutProps}
                 />
             )}
         </>

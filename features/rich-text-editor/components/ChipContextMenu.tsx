@@ -22,7 +22,7 @@ interface ChipMenuState {
     position?: { x: number; y: number };
 }
 
-interface ChipMenuContextValue {
+export interface ChipMenuContextValue {
     showMenu: (editorId: string, chipId: string, x: number, y: number) => void;
     hideMenu: () => void;
     activeChip: ChipMenuState | null;

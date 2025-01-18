@@ -1,10 +1,12 @@
 // components/common/crud/SmartCrudButtons.tsx
 
+import { UnifiedLayoutProps } from "../../types";
 import {SmartCrudWrapper, SmartCrudWrapperProps} from "./SmartCrudWrapper";
 import {cn} from "@/utils/cn";
 
 interface SmartCrudButtonsProps extends Omit<SmartCrudWrapperProps, 'children'> {
     containerClassName?: string;
+    unifiedLayoutProps?: UnifiedLayoutProps;
 }
 
 export const SmartCrudButtons = (
@@ -14,7 +16,8 @@ export const SmartCrudButtons = (
         options,
         layout,
         className,
-        containerClassName
+        containerClassName,
+        unifiedLayoutProps,
     }: SmartCrudButtonsProps) => {
     return (
         <div className={cn("min-w-0 w-full", containerClassName)}>
@@ -24,6 +27,7 @@ export const SmartCrudButtons = (
                 options={options}
                 layout={layout}
                 className={className}
+                unifiedLayoutProps={unifiedLayoutProps}
             />
         </div>
     );

@@ -87,6 +87,17 @@ export const updateChipById = (editorElement: HTMLDivElement, chipId: string, up
     }
 };
 
+export const updateChipToBrokerId = (
+    editorElement: HTMLDivElement,
+    chipId: string,
+    brokerId: MatrxRecordId
+): UpdateResult => {
+    return updateChipById(editorElement, chipId, {
+        id: brokerId,
+        brokerId: brokerId
+    });
+};
+
 /**
  * Updates all chips with a specific broker ID within a specific editor
  */

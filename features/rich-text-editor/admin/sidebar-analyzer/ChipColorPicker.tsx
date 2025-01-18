@@ -18,7 +18,7 @@ interface ColorPickerProps {
   className?: string;
 }
 
-const ColorPicker = ({ value, onValueChange, className }: ColorPickerProps) => {
+const ChipColorPicker = ({ value, onValueChange, className }: ColorPickerProps) => {
   const colorOptions = getAllColorOptions();
 
   return (
@@ -49,4 +49,4 @@ const ColorPicker = ({ value, onValueChange, className }: ColorPickerProps) => {
   );
 };
 
-export default ColorPicker;
+export default ChipColorPicker;

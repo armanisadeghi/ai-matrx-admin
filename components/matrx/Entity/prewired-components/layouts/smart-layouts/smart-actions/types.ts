@@ -4,6 +4,7 @@ import React from "react";
 import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
 import {ComponentSize} from "@/types/componentConfigTypes";
 import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
+import { UnifiedLayoutProps } from "../../types";
 
 export interface SmartButtonProps {
     entityKey?: EntityKeys;
@@ -16,4 +17,5 @@ export interface SmartButtonProps {
     hideText?: boolean;
     loading?: boolean;
     showConfirmation?: boolean;
+    unifiedLayoutProps?: UnifiedLayoutProps;
 }

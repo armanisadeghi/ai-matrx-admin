@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { ChipData } from '../../types/editor.types';
-import ColorPicker from './ColorPicker';
+import ChipColorPicker from './ChipColorPicker';
 import { TailwindColor } from '../../constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DeleteChipDialog from './DeleteChipDialog';
@@ -74,7 +74,7 @@ export const ChipDetails = ({ chip, editorId }: { chip: ChipData; editorId: stri
 
                 <div className='space-y-2'>
                     <label className='text-sm text-muted-foreground'>Color</label>
-                    <ColorPicker
+                    <ChipColorPicker
                         value={chip.color as TailwindColor}
                         onValueChange={handleColorChange}
                     />
