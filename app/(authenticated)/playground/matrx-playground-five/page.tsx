@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useLayoutEffect } from 'react';
+import React, { useRef, useState, useLayoutEffect, use, useEffect, useCallback } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import PlaygroundHeader from '@/components/playground/header/PlaygroundHeader';
@@ -8,12 +8,31 @@ import ModelSettingsPanel from '@/components/playground/right-sidebar/ModelSetti
 import DynamicPlaygroundPanels from '@/components/playground/layout/DynamicPlaygroundPanels';
 import { Button } from '@/components/ui/button';
 import BrokerSidebar from '@/components/playground/left-sidebar/BrokersSidebar';
+import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships/useJoinedRecords';
+import { messageRelationshipDefinition } from '@/components/playground/hooks/dev/useMessageWithNew';
+import AICockpitIntro from '@/components/playground/panel-manager/AICockpitIntro';
+import EntityCreateRecordSheet from '@/app/entities/layout/EntityCreateRecordSheet';
+import AddTemplateMessages from '@/components/playground/header/AddTemplateMessages';
+import { getLayoutOptions } from './constants';
+import { useDispatch } from 'react-redux';
+import { useEntityTools } from '@/lib/redux';
 
 export default function DynamicPanelsPage() {
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { parentId: activeRecipeId, matchingChildRecords: messages } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
+    const [showPlayground, setShowPlayground] = useState(false);
+    const dispatch = useDispatch();
+    const { actions, selectors, store } = useEntityTools('recipe');
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        if (activeRecipeId && messages.length > 1) {
+            setShowPlayground(true);
+        }
+    }, [activeRecipeId]);
 
     const panelsRef = useRef<{
         leftPanel: ImperativePanelHandle | null;
@@ -71,6 +90,19 @@ export default function DynamicPanelsPage() {
         </Button>
     );
 
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const handleNewRecipe = useCallback(
+        (count: number = 1) => {
+            dispatch(actions.clearActiveRecord());
+            dispatch(actions.startRecordCreation({ count }));
+            setOpen(true);
+        },
+        [dispatch, actions]
+    );
+
     const playgroundControls = {
         onToggleBrokers: () => {
             const newSize = isLeftCollapsed ? (isFullscreen ? 11 : 15) : 0;
@@ -81,6 +113,7 @@ export default function DynamicPanelsPage() {
             panelsRef.current?.rightPanel?.resize(newSize);
         },
         onShowCode: () => console.log('Show code clicked'),
+        onNewRecipe: handleNewRecipe,
         currentMode: 'default',
         onModeChange: (mode: string) => console.log(`Mode changed to: ${mode}`),
         version: 1,
@@ -99,14 +132,33 @@ export default function DynamicPanelsPage() {
             className={`flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : 'h-full'}`}
         >
             <PlaygroundHeader {...playgroundControls} />
-            <DynamicPlaygroundPanels
-                ref={panelsRef}
-                leftComponent={BrokerSidebar}
-                rightComponent={ModelSettingsPanel}
-                onLeftCollapsedChange={setIsLeftCollapsed}
-                onRightCollapsedChange={setIsRightCollapsed}
-                initialPanelCount={2}
-            />
+            {activeRecipeId ? (
+                <DynamicPlaygroundPanels
+                    ref={panelsRef}
+                    leftComponent={BrokerSidebar}
+                    rightComponent={ModelSettingsPanel}
+                    onLeftCollapsedChange={setIsLeftCollapsed}
+                    onRightCollapsedChange={setIsRightCollapsed}
+                    initialPanelCount={2}
+                />
+            ) : (
+                <AICockpitIntro {...playgroundControls}/>
+            )}
+            <EntityCreateRecordSheet
+                selectedEntity='recipe'
+                unifiedLayoutProps={getLayoutOptions()}
+                title='Create A New Recipe'
+                open={open}
+                onOpenChange={setOpen}
+                postCreationOptions={true}
+            >
+                <AddTemplateMessages
+                    onClose={handleClose}
+                    onError={(error) => {
+                        console.error('Error adding messages:', error);
+                    }}
+                />
+            </EntityCreateRecordSheet>
         </div>
     );
 }

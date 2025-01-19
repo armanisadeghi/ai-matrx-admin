@@ -7,21 +7,21 @@ import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
 import DebugWrapper from './AdminToolbar';
 
 interface MessageToolbarProps {
-    matrxRecordId: MatrxRecordId;
+    messageRecordId: MatrxRecordId;
     role: string;
     isCollapsed: boolean;
-    onAddMedia: (matrxRecordId: MatrxRecordId) => void;
-    onLinkBroker: (matrxRecordId: MatrxRecordId) => void;
-    onDelete: (matrxRecordId: MatrxRecordId) => void;
-    onSave: (matrxRecordId: MatrxRecordId) => void;
-    onToggleCollapse: (matrxRecordId: MatrxRecordId) => void;
-    onShowBrokerContent: (matrxRecordId: MatrxRecordId) => void;
-    onTextWithChips: (matrxRecordId: MatrxRecordId) => void;
-    onProcessed: (matrxRecordId: MatrxRecordId) => void;
-    onRoleChange: (matrxRecordId: MatrxRecordId, newRole: string) => void;
+    onAddMedia: (messageRecordId: MatrxRecordId) => void;
+    onLinkBroker: (messageRecordId: MatrxRecordId) => void;
+    onDelete: (messageRecordId: MatrxRecordId) => void;
+    onSave: (messageRecordId: MatrxRecordId) => void;
+    onToggleCollapse: (messageRecordId: MatrxRecordId) => void;
+    onShowBrokerContent: (messageRecordId: MatrxRecordId) => void;
+    onTextWithChips: (messageRecordId: MatrxRecordId) => void;
+    onProcessed: (messageRecordId: MatrxRecordId) => void;
+    onRoleChange: (messageRecordId: MatrxRecordId, newRole: string) => void;
     recipeMessageHook: UseRecipeMessagesHook;
     debug?: boolean;
-    onDebugClick?: (matrxRecordId: MatrxRecordId) => void;
+    onDebugClick?: (messageRecordId: MatrxRecordId) => void;
 }
 
 interface ActionButtonProps {
@@ -44,22 +44,22 @@ const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => 
 
 const RoleSelector: React.FC<{
     role: string;
-    matrxRecordId: MatrxRecordId;
-    onRoleChange: (matrxRecordId: MatrxRecordId, newRole: string) => void;
-}> = ({ role, matrxRecordId, onRoleChange }) => (
+    messageRecordId: MatrxRecordId;
+    onRoleChange: (messageRecordId: MatrxRecordId, newRole: string) => void;
+}> = ({ role, messageRecordId, onRoleChange }) => (
     <DropdownMenu>
         <DropdownMenuTrigger className='text-sm text-muted-foreground hover:text-foreground'>{role.toUpperCase()}</DropdownMenuTrigger>
         <DropdownMenuContent className="bg-elevation2 bg-opacity-100">
-            <DropdownMenuItem onClick={() => onRoleChange(matrxRecordId, 'system')}>SYSTEM</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRoleChange(matrxRecordId, 'user')}>USER</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onRoleChange(matrxRecordId, 'assistant')}>ASSISTANT</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onRoleChange(messageRecordId, 'system')}>SYSTEM</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onRoleChange(messageRecordId, 'user')}>USER</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onRoleChange(messageRecordId, 'assistant')}>ASSISTANT</DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>
 );
 
 
 const MessageToolbar: React.FC<MessageToolbarProps> = ({
-    matrxRecordId,
+    messageRecordId,
     role,
     isCollapsed,
     onAddMedia,
@@ -83,42 +83,42 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         {
             label: 'Add Media',
             icon: <Image className='h-4 w-4' />,
-            onClick: () => onAddMedia(matrxRecordId),
+            onClick: () => onAddMedia(messageRecordId),
         },
         {
             label: 'Link Broker',
             icon: <Link className='h-4 w-4' />,
-            onClick: () => onLinkBroker(matrxRecordId),
+            onClick: () => onLinkBroker(messageRecordId),
         },
         {
             label: 'Delete',
             icon: <Trash2 className='h-4 w-4' />,
-            onClick: () => onDelete(matrxRecordId),
+            onClick: () => onDelete(messageRecordId),
         },
         {
             label: 'Save',
             icon: <Save className='h-4 w-4' />,
-            onClick: () => onSave(matrxRecordId),
+            onClick: () => onSave(messageRecordId),
         },
         {
             label: isCollapsed ? 'Expand' : 'Collapse',
             icon: isCollapsed ? <Expand className='h-4 w-4' /> : <Minimize2 className='h-4 w-4' />,
-            onClick: () => onToggleCollapse(matrxRecordId),
+            onClick: () => onToggleCollapse(messageRecordId),
         },
         {
             label: 'Plain Text',
             icon: <LetterText className='h-4 w-4' />,
-            onClick: () => onShowBrokerContent(matrxRecordId),
+            onClick: () => onShowBrokerContent(messageRecordId),
         },
         {
             label: 'Text With Chips',
             icon: <Radiation className='h-4 w-4' />,
-            onClick: () => onTextWithChips(matrxRecordId),
+            onClick: () => onTextWithChips(messageRecordId),
         },
         {
             label: 'Processed',
             icon: <SquareRadical className='h-4 w-4' />,
-            onClick: () => onProcessed(matrxRecordId),
+            onClick: () => onProcessed(messageRecordId),
         },
     ];
 
@@ -126,12 +126,12 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         actions.push({
             label: 'Debug',
             icon: <Bug className="h-4 w-4" />,
-            onClick: () => onDebugClick?.(matrxRecordId),
+            onClick: () => onDebugClick?.(messageRecordId),
         });
     }
 
     const handleDragStart = (e: React.DragEvent) => {
-        e.dataTransfer.setData('text/plain', matrxRecordId.toString());
+        e.dataTransfer.setData('text/plain', messageRecordId.toString());
         e.dataTransfer.effectAllowed = 'move';
         setIsDragging(true);
     };
@@ -156,9 +156,9 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         setIsDragOver(false);
 
         const draggedId = e.dataTransfer.getData('text/plain');
-        if (draggedId !== matrxRecordId.toString()) {
+        if (draggedId !== messageRecordId.toString()) {
             const draggedMatrxId = draggedId as MatrxRecordId;
-            handleDragDrop(draggedMatrxId, matrxRecordId);
+            handleDragDrop(draggedMatrxId, messageRecordId);
         }
     };
 
@@ -176,7 +176,7 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         >
             <RoleSelector
                 role={role}
-                matrxRecordId={matrxRecordId}
+                messageRecordId={messageRecordId}
                 onRoleChange={onRoleChange}
             />
             <div className="flex gap-1">

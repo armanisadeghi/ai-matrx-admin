@@ -1060,6 +1060,15 @@ function* handleCreate<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'Final result', frontendResponse);
 
+        const primaryKeyMetadata = yield select(selectEntityPrimaryKeyMetadata, entityKey);
+        const recordKey = createRecordKey(primaryKeyMetadata, data);
+
+        return {
+            tempRecordId: unifiedDatabaseObject.tempRecordId,
+            recordKey,
+            data: frontendResponse,
+        };
+
     } catch (error: any) {
         entityLogger.log('error', 'Create operation error', error);
         yield put(actions.setError({

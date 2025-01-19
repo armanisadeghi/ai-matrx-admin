@@ -16,7 +16,12 @@ interface UseCoordinatedCreateOptions {
     onError?: (error: Error) => void;
 }
 
-export const useRelationshipCreate = (joinEntityName: DefinedRelationship, childEntity: EntityKeys, parentId: unknown) => {
+export const useRelationshipCreate = (
+    joinEntityName: DefinedRelationship,
+    childEntity: EntityKeys,
+    parentId: unknown,
+    callbacks?: { onSuccess?: () => void; onError?: (error: Error) => void }
+) => {
     const relatedData = useMemo(() => new RelatedDataManager(joinEntityName, { joiningEntity: true, child: true }), [joinEntityName]);
 
     const coordinated = useCoordinatedCreate({
@@ -24,9 +29,11 @@ export const useRelationshipCreate = (joinEntityName: DefinedRelationship, child
         childEntityKey: childEntity,
         onSuccess: () => {
             console.log('Relationship created successfully');
+            callbacks?.onSuccess?.();
         },
         onError: (error) => {
             console.warn('Error creating relationship', error, joinEntityName, childEntity, relatedData);
+            callbacks?.onError?.(error);
         },
     });
 
@@ -66,7 +73,6 @@ export const useRelationshipCreateManualId = (joinEntityName: DefinedRelationshi
 
     const createRelationship = useCallback(
         async (data: RawData) => {
-
             relatedData.setChildId(data.child.id as string);
             relatedData.setParentId(parentId as string);
             const { childEntity: childPayload, joiningEntity: joinPayload } = relatedData.createEntityWithRelationship(
@@ -85,7 +91,6 @@ export const useRelationshipCreateManualId = (joinEntityName: DefinedRelationshi
 
     return createRelationship;
 };
-
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

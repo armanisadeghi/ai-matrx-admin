@@ -227,3 +227,54 @@ export function getUpdatedUnifiedLayoutProps(
             : entitiesToHide || [],
     };
 }
+
+
+export const getSimplifiedLayoutProps = ({
+    entityKey,
+    handlers,
+    defaultShownFields,
+    isExpanded = true,
+    quickReferenceType = 'LIST',
+    density = 'compact',
+    size = 'sm',
+    excludeFields = ['id'],
+    formComponent = 'MINIMAL' as EntityFormType,
+}) => {
+    if (!entityKey || !handlers || !defaultShownFields) {
+        throw new Error('Required parameters missing: entityKey, handlers, and defaultShownFields are required');
+    }
+
+    const initialLayoutProps = getUnifiedLayoutProps({
+        entityKey,
+        formComponent,
+        quickReferenceType,
+        isExpanded,
+        handlers,
+    });
+
+    const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
+        formComponent,
+        dynamicStyleOptions: {
+            density,
+            size,
+        },
+        dynamicLayoutOptions: {
+            formStyleOptions: {
+                fieldFiltering: {
+                    excludeFields,
+                    defaultShownFields,
+                },
+            },
+        },
+    });
+
+    return layoutProps;
+};
+
+// Usage example:
+// const layoutProps = getSimplifiedLayoutProps({
+//     entityKey: 'dataBroker',
+//     handlers: {},
+//     defaultShownFields: ['name', 'defaultValue', 'dataType', 'defaultComponent']
+//     // Optional props will use defaults if not provided
+// });

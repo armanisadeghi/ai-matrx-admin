@@ -7,7 +7,7 @@ import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships
 import { ProcessedRecipeMessages } from '../../panel-manager/types';
 import { useMessageReordering } from '../messages/useMessageReordering';
 
-const messageRelationshipDefinition: RelationshipDefinition = {
+export const messageRelationshipDefinition: RelationshipDefinition = {
     parentEntity: {
         entityKey: 'recipe',
         referenceField: 'id',
@@ -54,6 +54,9 @@ export function useMessageTemplatesWithNew() {
         createRelatedRecords: createMessageTemplates,
         parentId: acticeRecipeId,
     } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
+
+    console.log('===== useMessageTemplatesWithNew   messages', messages);
+
 
     // const { updateRecord: savePermanentRecordChanges } = useUpdateRecord("messageTemplate");
 

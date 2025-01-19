@@ -13,7 +13,7 @@ import ManagedMessageEditor from './MessageEditorWithProvider';
 
 function MessagesContainer() {
     const recipeMessageHook = useMessageTemplatesWithNew();
-    const { messages, messageMatrxIds, deleteMessageById } = recipeMessageHook;
+    const { messages, messageMatrxIds, deleteMessageByMatrxId } = recipeMessageHook;
     const { addMessage } = useAddMessage();
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
@@ -33,58 +33,58 @@ function MessagesContainer() {
         const newSection: AddMessagePayload = {
             role: nextRole,
             type: 'text',
-            content: '',
+            content: 'test message',
             order: messages.length,
         };
 
         addMessage(newSection);
     }, [messages, addMessage]);
 
-    const registerPanelRef = (matrxRecordId: MatrxRecordId, ref: ImperativePanelHandle | null) => {
+    const registerPanelRef = (messageRecordId: MatrxRecordId, ref: ImperativePanelHandle | null) => {
         if (ref) {
-            panelRefs.current.set(matrxRecordId, ref);
+            panelRefs.current.set(messageRecordId, ref);
         } else {
-            panelRefs.current.delete(matrxRecordId);
+            panelRefs.current.delete(messageRecordId);
         }
     };
 
-    const handlePanelCollapse = (matrxRecordId: MatrxRecordId) => {
+    const handlePanelCollapse = (messageRecordId: MatrxRecordId) => {
         setCollapsedPanels((prev) => {
             const newSet = new Set(prev);
-            newSet.add(matrxRecordId);
+            newSet.add(messageRecordId);
             return newSet;
         });
         setHiddenEditors((prev) => {
             const newSet = new Set(prev);
-            newSet.add(matrxRecordId);
+            newSet.add(messageRecordId);
             return newSet;
         });
     };
 
-    const handlePanelExpand = (matrxRecordId: MatrxRecordId) => {
+    const handlePanelExpand = (messageRecordId: MatrxRecordId) => {
         setCollapsedPanels((prev) => {
             const newSet = new Set(prev);
-            newSet.delete(matrxRecordId);
+            newSet.delete(messageRecordId);
             return newSet;
         });
         setHiddenEditors((prev) => {
             const newSet = new Set(prev);
-            newSet.delete(matrxRecordId);
+            newSet.delete(messageRecordId);
             return newSet;
         });
     };
 
     const toggleEditor = useCallback(
-        (matrxRecordId: MatrxRecordId) => {
-            const panelRef = panelRefs.current.get(matrxRecordId);
-            const isCurrentlyCollapsed = collapsedPanels.has(matrxRecordId);
+        (messageRecordId: MatrxRecordId) => {
+            const panelRef = panelRefs.current.get(messageRecordId);
+            const isCurrentlyCollapsed = collapsedPanels.has(messageRecordId);
 
             if (isCurrentlyCollapsed) {
                 panelRef?.resize(10);
-                handlePanelExpand(matrxRecordId);
+                handlePanelExpand(messageRecordId);
             } else {
                 panelRef?.resize(3);
-                handlePanelCollapse(matrxRecordId);
+                handlePanelCollapse(messageRecordId);
             }
         },
         [handlePanelExpand, handlePanelCollapse]
@@ -95,7 +95,7 @@ function MessagesContainer() {
 
         switch (dialogType) {
             case 'delete':
-                deleteMessageById(activeEditorId);
+                deleteMessageByMatrxId(activeEditorId);
                 break;
             case 'unsaved':
                 console.log('Confirming exit with unsaved changes for:', activeEditorId);
@@ -109,29 +109,30 @@ function MessagesContainer() {
         setActiveEditorId(null);
     };
 
-    const openDialog = (type: DialogType, matrxRecordId: MatrxRecordId) => {
+    const openDialog = (type: DialogType, messageRecordId: MatrxRecordId) => {
         setDialogType(type);
-        setActiveEditorId(matrxRecordId);
+        setActiveEditorId(messageRecordId);
         setDialogOpen(true);
     };
 
     return (
         <>
             <PanelGroup
+                id='(messages-panel-group)'
                 direction='vertical'
                 className='h-full'
                 ref={panelGroupRef}
             >
                 {(messages.length ? messages : [
-                    { matrxRecordId: 'system-1', role: 'system', order: 0 },
-                    { matrxRecordId: 'user-1', role: 'user', order: 1 }
+                    { id: 'system-1', role: 'system', order: 0 },
+                    { id: 'user-1', role: 'user', order: 1 }
                 ]).map((message, index, array) => {
                     const isLastPanel = index === array.length - 1;
                     const remainingSize = 100 - (array.length - 1) * 10;
                     const isCollapsed = collapsedPanels.has(message.matrxRecordId);
 
                     return (
-                        <React.Fragment key={message.matrxRecordId}>
+                        <React.Fragment key={message.id}>
                             <Panel
                                 ref={(ref: ImperativePanelHandle | null) => registerPanelRef(message.matrxRecordId, ref)}
                                 id={message.matrxRecordId}
@@ -145,9 +146,9 @@ function MessagesContainer() {
                                 order={index + 1}
                             >
                                 <ManagedMessageEditor
-                                    matrxRecordId={message.matrxRecordId}
+                                    messageRecordId={message.matrxRecordId}
                                     recipeMessageHook={recipeMessageHook}
-                                    deleteMessageById={deleteMessageById}
+                                    deleteMessageByMatrxId={deleteMessageByMatrxId}
                                     isCollapsed={isCollapsed}
                                     onToggleEditor={() => toggleEditor(message.matrxRecordId)}
                                 />

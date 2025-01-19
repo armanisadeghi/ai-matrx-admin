@@ -11,13 +11,13 @@ export const PromptButton = ({ isActive, onClick }: { isActive: boolean; onClick
     variant={isActive ? "default" : "ghost"}
     size="sm"
     className={cn(
-      "gap-1.5 h-8 w-32 rounded-none",
+      "gap-1.5 h-8 rounded-none",
       isActive && "bg-primary text-primary-foreground"
     )}
     onClick={onClick}
   >
     <MessageSquare size={16} />
-    <span className="text-sm">Prompt</span>
+    {/* <span className="text-sm">Prompt</span> */}
   </Button>
 );
 
@@ -27,13 +27,13 @@ export const EvaluateButton = ({ isActive, onClick }: { isActive: boolean; onCli
     variant={isActive ? "default" : "ghost"}
     size="sm"
     className={cn(
-      "gap-1.5 h-8 w-32 rounded-none",
+      "gap-1.5 h-8 rounded-none",
       isActive && "bg-primary text-primary-foreground"
     )}
     onClick={onClick}
   >
     <Brain size={16} />
-    <span className="text-sm">Evaluate</span>
+    {/* <span className="text-sm">Evaluate</span> */}
   </Button>
 );
 
@@ -43,13 +43,13 @@ export const TrainButton = ({ isActive, onClick }: { isActive: boolean; onClick:
     variant={isActive ? "default" : "ghost"}
     size="sm"
     className={cn(
-      "gap-1.5 h-8 w-32 rounded-none",
+      "gap-1.5 h-8 rounded-none",
       isActive && "bg-primary text-primary-foreground"
     )}
     onClick={onClick}
   >
     <BookOpen size={16} />
-    <span className="text-sm">Train</span>
+    {/* <span className="text-sm">Train</span> */}
   </Button>
 );
 
@@ -59,13 +59,13 @@ export const RecipeButton = ({ isActive, onClick }: { isActive: boolean; onClick
     variant={isActive ? "default" : "ghost"}
     size="sm"
     className={cn(
-      "gap-1.5 h-8 w-32 rounded-none",
+      "gap-1.5 h-8 rounded-none",
       isActive && "bg-primary text-primary-foreground"
     )}
     onClick={onClick}
   >
     <Workflow size={16} />
-    <span className="text-sm">Recipe</span>
+    {/* <span className="text-sm">Recipe</span> */}
   </Button>
 );
 
@@ -75,13 +75,13 @@ export const AgentButton = ({ isActive, onClick }: { isActive: boolean; onClick:
     variant={isActive ? "default" : "ghost"}
     size="sm"
     className={cn(
-      "gap-1.5 h-8 w-32 rounded-none",
+      "gap-1.5 h-8 rounded-none",
       isActive && "bg-primary text-primary-foreground"
     )}
     onClick={onClick}
   >
     <Bot size={16} />
-    <span className="text-sm">Agent</span>
+    {/* <span className="text-sm">Agent</span> */}
   </Button>
 );
 

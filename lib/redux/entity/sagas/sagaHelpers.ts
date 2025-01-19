@@ -1,35 +1,26 @@
 // lib/redux/entity/sagaHelpers.ts
 
-import {
-    AllEntityNameVariations,
-    AnyEntityDatabaseTable,
-    EntityKeys
-} from "@/types/entityTypes";
-import {createEntitySlice} from "@/lib/redux/entity/slice";
-import {PayloadAction} from "@reduxjs/toolkit";
-import {
-    FlexibleQueryOptions,
-    QueryOptions,
-    UnifiedDatabaseObject
-} from "@/lib/redux/entity/types/stateTypes";
-import {supabase} from "@/utils/supabase/client";
-import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
-import {call, put, select} from "redux-saga/effects";
+import { AllEntityNameVariations, AnyEntityDatabaseTable, EntityKeys } from '@/types/entityTypes';
+import { createEntitySlice } from '@/lib/redux/entity/slice';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { FlexibleQueryOptions, QueryOptions, UnifiedDatabaseObject } from '@/lib/redux/entity/types/stateTypes';
+import { supabase } from '@/utils/supabase/client';
+import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
+import { call, put, select } from 'redux-saga/effects';
 import {
     selectEntityDatabaseName,
     selectEntityFrontendName,
     selectFrontendConversion,
     selectPayloadOptionsDatabaseConversion,
-    selectUnifiedDatabaseObjectConversion
-} from "@/lib/redux/schema/globalCacheSelectors";
-import {callbackManager} from "@/utils/callbackManager";
-import {getEntitySlice} from "@/lib/redux/entity/entitySlice";
-import {createStructuredError} from "@/utils/errorContext";
-
+    selectUnifiedDatabaseObjectConversion,
+} from '@/lib/redux/schema/globalCacheSelectors';
+import { callbackManager } from '@/utils/callbackManager';
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import { createStructuredError } from '@/utils/errorContext';
 
 export interface BaseSagaContext<TEntity extends EntityKeys> {
     entityKey: TEntity;
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"];
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'];
     api: any;
     action: PayloadAction<any>;
     tableName: AnyEntityDatabaseTable;
@@ -41,32 +32,26 @@ export interface WithFullConversionSagaContext<TEntity extends EntityKeys> exten
     successAction: (payload: any) => PayloadAction<any>;
 }
 
-export type SagaHandler<TEntity extends EntityKeys> = (
-    context: BaseSagaContext<TEntity>
-) => Generator;
+export type SagaHandler<TEntity extends EntityKeys> = (context: BaseSagaContext<TEntity>) => Generator;
 
-export type WithFullConversionSagaHandler<TEntity extends EntityKeys> = (
-    context: WithFullConversionSagaContext<TEntity>
-) => Generator;
+export type WithFullConversionSagaHandler<TEntity extends EntityKeys> = (context: WithFullConversionSagaContext<TEntity>) => Generator;
 
 function* initializeDatabaseApi(tableName: AnyEntityDatabaseTable) {
     return supabase.from(tableName);
 }
 
-
 export function* withConversion<TEntity extends EntityKeys>(
     sagaHandler: SagaHandler<TEntity>,
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     action: PayloadAction<any>
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH CONVERSION', entityKey);
     entityLogger.log('debug', 'Full Action Payload', action.payload);
 
-
     try {
         const tableName: AnyEntityDatabaseTable = yield select(selectEntityDatabaseName, entityKey);
-        entityLogger.log('debug', 'Resolved table name', {tableName});
+        entityLogger.log('debug', 'Resolved table name', { tableName });
 
         const api = yield call(initializeDatabaseApi, tableName);
         entityLogger.log('debug', 'Database API initialized');
@@ -81,51 +66,55 @@ export function* withConversion<TEntity extends EntityKeys>(
             entityKey,
             actions,
             api,
-            action: {...action, payload: action.payload},
+            action: { ...action, payload: action.payload },
             tableName,
-            dbQueryOptions
+            dbQueryOptions,
         };
 
         const result = yield call(sagaHandler, context);
 
         if (action.payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, {success: true});
+            const callbackData = {
+                success: true,
+                entityName: entityKey,
+                result,
+                requestData: context,
+                originalPayload: action.payload,
+            };
+
+            callbackManager.triggerWithContext(action.payload.callbackId, callbackData, {
+                progress: {
+                    progress: 100,
+                    status: 'completed',
+                },
+            });
         }
 
         return result;
-
     } catch (error: any) {
         entityLogger.log('error', 'Error in conversion', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during database operation",
-            code: error.code,
-            details: error
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during database operation',
+                code: error.code,
+                details: error,
+            })
+        );
 
         if (action.payload.callback) {
-            callbackManager.trigger(action.payload.callbackId, {success: false, error: "Error message"});
+            callbackManager.trigger(action.payload.callbackId, { success: false, error: 'Error message' });
         }
 
         throw error;
     }
 }
 
-export const optionalActionKeys = [
-    'recordKeys',
-    'matrxRecordId',
-    'filters',
-    'sorts',
-    'limit',
-    'offset',
-    'data',
-    'tempRecordId',
-] as const;
-
+export const optionalActionKeys = ['recordKeys', 'matrxRecordId', 'filters', 'sorts', 'limit', 'offset', 'data', 'tempRecordId'] as const;
 
 export function* withFullConversion<TEntity extends EntityKeys>(
     sagaHandler: WithFullConversionSagaHandler<TEntity>,
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     action: PayloadAction<any>,
     successAction?: (payload: any) => PayloadAction<any>
 ) {
@@ -135,7 +124,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
 
     try {
         const flexibleQueryOptions: FlexibleQueryOptions = {
-            entityNameAnyFormat: entityKey
+            entityNameAnyFormat: entityKey,
         };
 
         entityLogger.log('debug', 'Flexible Query Options', flexibleQueryOptions);
@@ -155,10 +144,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
 
-        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(
-            selectUnifiedDatabaseObjectConversion,
-            flexibleQueryOptions
-        );
+        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(selectUnifiedDatabaseObjectConversion, flexibleQueryOptions);
 
         entityLogger.log('debug', 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
 
@@ -169,7 +155,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
             entityKey,
             actions,
             api,
-            action: {...action, payload: payload},
+            action: { ...action, payload: payload },
             tableName: unifiedDatabaseObject.tableName,
             unifiedDatabaseObject,
             successAction,
@@ -179,7 +165,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'withFullConversion result', entityKey, result);
 
-        const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: result});
+        const frontendResponse = yield select(selectFrontendConversion, { entityName: entityKey, data: result });
         entityLogger.log('debug', 'Frontend Conversion', entityKey, frontendResponse);
 
         if (successAction) {
@@ -187,25 +173,41 @@ export function* withFullConversion<TEntity extends EntityKeys>(
         }
 
         if (action.payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, {success: true});
+            const callbackData = {
+                success: true,
+                entityName: entityKey,
+                result,
+                requestData: context,
+                originalPayload: action.payload,
+            };
+
+            callbackManager.triggerWithContext(action.payload.callbackId, callbackData, {
+                progress: {
+                    progress: 100,
+                    status: 'completed',
+                },
+            });
         }
 
     } catch (error: any) {
         entityLogger.log('error', 'withFullConversion Error in conversion', entityKey, error, payload);
 
-        yield put(actions.setError(createStructuredError({
-            error,
-            location: 'handleUpdate Saga',
-            action,
-            entityKey,
-        })));
+        yield put(
+            actions.setError(
+                createStructuredError({
+                    error,
+                    location: 'handleUpdate Saga',
+                    action,
+                    entityKey,
+                })
+            )
+        );
 
         if (payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, {success: false, error: "Error message"});
+            callbackManager.trigger(action.payload.callbackId, { success: false, error: 'Error message' });
         }
     }
 }
-
 
 export function getSliceActions<TEntity extends EntityKeys>(entityKey: TEntity) {
     const slice = getEntitySlice(entityKey);
@@ -217,19 +219,17 @@ interface TransformResult {
         data: any;
     };
     relatedEntities: {
-        tableName: AllEntityNameVariations;  // This is the database version of the name
+        tableName: AllEntityNameVariations; // This is the database version of the name
         data: any;
     }[];
 }
 
-export const transformDatabaseResponse = (
-    response: Record<string, any>
-): TransformResult => {
+export const transformDatabaseResponse = (response: Record<string, any>): TransformResult => {
     const result: TransformResult = {
         mainEntity: {
-            data: {} // Will contain main object data
+            data: {}, // Will contain main object data
         },
-        relatedEntities: []
+        relatedEntities: [],
     };
 
     Object.entries(response).forEach(([key, value]) => {
@@ -238,7 +238,7 @@ export const transformDatabaseResponse = (
 
             result.relatedEntities.push({
                 tableName,
-                data: value
+                data: value,
             });
         } else {
             result.mainEntity.data[key] = value;
@@ -248,10 +248,9 @@ export const transformDatabaseResponse = (
     return result;
 };
 
-
 export function* withFullRelationConversion<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     action: PayloadAction<any>,
     successAction?: (payload: any) => PayloadAction<any>
 ) {
@@ -282,22 +281,18 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
 
-        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(
-            selectUnifiedDatabaseObjectConversion,
-            flexibleQueryOptions
-        );
+        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(selectUnifiedDatabaseObjectConversion, flexibleQueryOptions);
 
         entityLogger.log('debug', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
 
         const rpcArgs = {
             p_table_name: unifiedDatabaseObject.tableName,
-            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues
+            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues,
         };
 
-        const {data, error} = yield supabase
-            .rpc('fetch_all_fk_ifk', rpcArgs, {
-                count: 'exact'
-            });
+        const { data, error } = yield supabase.rpc('fetch_all_fk_ifk', rpcArgs, {
+            count: 'exact',
+        });
 
         if (error) {
             entityLogger.log('error', 'RPC call failed:', error);
@@ -306,15 +301,13 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'Full response data:', data);
 
-
-        const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: data});
+        const frontendResponse = yield select(selectFrontendConversion, { entityName: entityKey, data: data });
         entityLogger.log('debug', 'Frontend Conversion', frontendResponse);
         yield put(actions.fetchOneWithFkIfkSuccess(frontendResponse));
 
         const transformed = transformDatabaseResponse(data);
 
         const groupedEntities: Partial<Record<EntityKeys, any[]>> = {};
-
 
         for (const relatedEntity of transformed.relatedEntities) {
             const frontendEntityName: EntityKeys = yield select(selectEntityFrontendName, relatedEntity.tableName);
@@ -326,15 +319,13 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             }
 
             // If it's an array, add all records, if single object, wrap in array
-            const recordsToAdd = Array.isArray(relatedEntity.data)
-                                 ? relatedEntity.data
-                                 : [relatedEntity.data];
+            const recordsToAdd = Array.isArray(relatedEntity.data) ? relatedEntity.data : [relatedEntity.data];
 
             // Convert each record to frontend format
             for (const record of recordsToAdd) {
                 const frontendResponse = yield select(selectFrontendConversion, {
                     entityName: frontendEntityName,
-                    data: record
+                    data: record,
                 });
                 groupedEntities[frontendEntityName].push(frontendResponse);
             }
@@ -352,29 +343,39 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
         }
 
         if (action.payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, {success: true});
-        } else {
-            entityLogger.log('debug', "No callbackId provided in action payload:", payload);
+            const callbackData = {
+                success: true,
+                entityName: entityKey,
+                result: frontendResponse,
+                requestData: unifiedDatabaseObject,
+                originalPayload: action.payload,
+            };
+
+            callbackManager.triggerWithContext(action.payload.callbackId, callbackData, {
+                progress: {
+                    progress: 100,
+                    status: 'completed',
+                },
+            });
         }
+        
     } catch (error: any) {
         yield put(
             actions.setError({
-                message: error.message || "An error occurred during database operation",
+                message: error.message || 'An error occurred during database operation',
                 code: error.code,
                 details: error,
             })
         );
 
         if (payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, {success: false, error: "Error message"});
+            callbackManager.trigger(action.payload.callbackId, { success: false, error: 'Error message' });
         }
         throw error;
     }
 }
 
-
 // const frontendResponse = yield select(selectFrontendConversion, {entityName: entityKey, data: data});
 // if (successAction) {
 //     yield put(successAction(frontendResponse));
 // }
-

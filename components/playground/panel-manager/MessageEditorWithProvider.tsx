@@ -9,12 +9,13 @@ import MessageToolbar from './MessageToolbar';
 import { ProcessedRecipeMessages } from './types';
 import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
 import { AddBrokerPayload, useAddBroker } from '../hooks/brokers/useAddBroker';
-import { useChipMenu } from '@/features/rich-text-editor/components/ChipContextMenu';
 import { isEqual } from 'lodash';
 import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
 import { v4 } from 'uuid';
-import { toggle } from '@nextui-org/react';
 import DebugPanel from './AdminToolbar';
+import { ChipData } from '@/features/rich-text-editor/types/editor.types';
+import useChipHandlers from '../hooks/useChipHandlers';
+import { useAddMessage } from '../hooks/messages/useAddMessage';
 
 const DEBUG_STATUS = false;
 
@@ -52,30 +53,22 @@ interface ChipChangeData {
 }
 
 interface MessageEditorProps {
-    matrxRecordId: MatrxRecordId;
+    messageRecordId: MatrxRecordId;
     isCollapsed: boolean;
     className?: string;
     onCollapse?: () => void;
     onExpand?: () => void;
-    onDelete?: (matrxRecordId: MatrxRecordId) => void;
+    onDelete?: (messageRecordId: MatrxRecordId) => void;
     onMessageUpdate?: (messageData: MessageData) => void;
     onChipUpdate?: (chipData: ChipChangeData) => void;
-    onToggleEditor?: (matrxRecordId: MatrxRecordId) => void;
-    deleteMessageById?: (matrxRecordId: MatrxRecordId) => void;
+    onToggleEditor?: (messageRecordId: MatrxRecordId) => void;
+    deleteMessageByMatrxId?: (messageRecordId: MatrxRecordId) => void;
     onOrderChange?: (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => void;
     recipeMessageHook?: UseRecipeMessagesHook;
 }
 
-interface ChipData {
-    id: string;
-    label: string;
-    color?: string;
-    stringValue?: string;
-    brokerId?: MatrxRecordId;
-}
-
 export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
-    matrxRecordId,
+    messageRecordId,
     className,
     isCollapsed = false,
     onCollapse,
@@ -85,34 +78,35 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     onChipUpdate,
     onToggleEditor,
     onOrderChange,
-    deleteMessageById,
+    deleteMessageByMatrxId,
     recipeMessageHook,
     ...props
 }) => {
     const dispatch = useAppDispatch();
     const context = useEditorContext();
     const { updateRecord } = useUpdateRecord('messageTemplate');
-    const { showMenu } = useChipMenu();
-    const { addBroker } = useAddBroker(matrxRecordId);
-    const { updateBrokerConnection, updateChip } = useEditorChips(matrxRecordId);
+    const { addBroker } = useAddBroker(messageRecordId);
+
+    const { updateBrokerConnection, updateChip } = useEditorChips(messageRecordId);
 
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedContent, setLastSavedContent] = useState('');
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [debugVisible, setDebugVisible] = useState(false);
-    const [lastEditorState, setLastEditorState] = useState<EditorState>(() => context.getEditorState(matrxRecordId));
-    const [showDialog, setShowDialog] = useState(false);
+    const [lastEditorState, setLastEditorState] = useState<EditorState>(() => context.getEditorState(messageRecordId));
 
     const { actions: messageActions, selectors: messageSelectors } = useEntityTools('messageTemplate');
     const { messages } = recipeMessageHook;
 
+    const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu } = useChipHandlers(messageRecordId);
+
     const record = useMemo(() => {
-        const existingMessage = messages.find((message) => message.matrxRecordId === matrxRecordId);
+        const existingMessage = messages.find((message) => message.matrxRecordId === messageRecordId);
         if (existingMessage) return existingMessage;
 
-        const initialPanel = INITIAL_PANELS.find((panel) => panel.matrxRecordId === matrxRecordId);
+        const initialPanel = INITIAL_PANELS.find((panel) => panel.matrxRecordId === messageRecordId);
         return initialPanel || INITIAL_PANELS[0];
-    }, [messages, matrxRecordId]) as ProcessedRecipeMessages;
+    }, [messages, messageRecordId]) as ProcessedRecipeMessages;
 
     useEffect(() => {
         setIsEditorHidden(isCollapsed);
@@ -125,16 +119,16 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     }, [record?.content]);
 
     useEffect(() => {
-        if (!context.isEditorRegistered(matrxRecordId)) return;
+        if (!context.isEditorRegistered(messageRecordId)) return;
 
         const interval = setInterval(() => {
-            const currentState = context.getEditorState(matrxRecordId);
-            const processedContent = context.getTextWithChipsReplaced(matrxRecordId, true);
-            const rawContent = context.getTextWithChipsReplaced(matrxRecordId, false);
+            const currentState = context.getEditorState(messageRecordId);
+            const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
+            const rawContent = context.getTextWithChipsReplaced(messageRecordId, false);
 
             if (!isEqual(currentState, lastEditorState)) {
                 const messageData: MessageData = {
-                    id: matrxRecordId,
+                    id: messageRecordId,
                     content: rawContent,
                     processedContent,
                     chips: currentState.chipData,
@@ -146,7 +140,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [context, matrxRecordId, lastEditorState, onMessageUpdate]);
+    }, [context, messageRecordId, lastEditorState, onMessageUpdate]);
 
     const createNewBroker = useCallback(
         (chipData: ChipData) => {
@@ -171,33 +165,33 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         (brokerId: string) => {
             console.log('Adding broker to selection:', brokerId);
         },
-        [matrxRecordId]
+        [messageRecordId]
     );
 
     const associateBrokerWithMessage = useCallback(
         (brokerId: string) => {
             console.log('Associating broker with message:', brokerId);
         },
-        [matrxRecordId]
+        [messageRecordId]
     );
 
     const updateMessageContent = useCallback(
         (content: string) => {
             dispatch(
                 messageActions.updateUnsavedField({
-                    recordId: matrxRecordId,
+                    recordId: messageRecordId,
                     field: 'content',
                     value: content,
                 })
             );
         },
-        [messageActions, dispatch, matrxRecordId]
+        [messageActions, dispatch, messageRecordId]
     );
 
     const handleSave = useCallback(() => {
         if (isSaving) return;
 
-        const processedContent = context.getTextWithChipsReplaced(matrxRecordId, true);
+        const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
         // Skip if content hasn't changed
         if (processedContent === lastSavedContent) {
             return;
@@ -205,22 +199,22 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
 
         setIsSaving(true);
         updateMessageContent(processedContent);
-        updateRecord(matrxRecordId);
+        updateRecord(messageRecordId);
         setLastSavedContent(processedContent);
 
         setTimeout(() => {
             setIsSaving(false);
         }, 500);
-    }, [context, matrxRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent]);
+    }, [context, messageRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent]);
 
     const handleBlur = useCallback(() => {
         handleSave();
     }, [handleSave]);
 
     const handleDelete = useCallback(() => {
-        console.log('Deleting message:', matrxRecordId);
-        deleteMessageById(record.id);
-    }, [matrxRecordId, onDelete]);
+        console.log('Deleting message:', messageRecordId);
+        deleteMessageByMatrxId(messageRecordId);
+    }, [messageRecordId, onDelete]);
 
     const handleAddMedia = useCallback(() => {
         // Implementation for adding media
@@ -249,83 +243,22 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     const handleToggleVisibility = useCallback(() => {
         setIsEditorHidden((prev) => !prev);
         if (onToggleEditor) {
-            onToggleEditor(matrxRecordId);
+            onToggleEditor(messageRecordId);
         }
-    }, [matrxRecordId, onToggleEditor]);
+    }, [messageRecordId, onToggleEditor]);
 
     const handleRoleChange = useCallback(
-        (matrxRecordId: MatrxRecordId, newRole: 'user' | 'assistant' | 'system') => {
+        (messageRecordId: MatrxRecordId, newRole: 'user' | 'assistant' | 'system') => {
             dispatch(
                 messageActions.updateUnsavedField({
-                    recordId: matrxRecordId,
+                    recordId: messageRecordId,
                     field: 'role',
                     value: newRole,
                 })
             );
-            updateRecord(matrxRecordId);
+            updateRecord(messageRecordId);
         },
         [dispatch]
-    );
-
-    const handleChipClick = useCallback((event: MouseEvent) => {
-        const chip = (event.target as HTMLElement).closest('[data-chip]');
-        if (!chip) return;
-
-        const chipId = chip.getAttribute('data-chip-id');
-        if (!chipId) return;
-
-        // Add the test attribute to the clicked chip
-        chip.setAttribute('data-test-clicked', 'true');
-
-        console.log('Chip clicked:', chipId);
-    }, []);
-
-    const handleChipDoubleClick = useCallback(
-        (event: MouseEvent) => {
-            const chip = (event.target as HTMLElement).closest('[data-chip]');
-            if (!chip) return;
-
-            const chipId = chip.getAttribute('data-chip-id');
-            if (!chipId) return;
-
-            setShowDialog(true);
-        },
-        [setShowDialog]
-    );
-
-    const handleChipMouseEnter = useCallback((event: MouseEvent) => {
-        const chip = (event.target as HTMLElement).closest('[data-chip]');
-        if (!chip) return;
-
-        const chipId = chip.getAttribute('data-chip-id');
-        if (!chipId) return;
-
-        console.log('Mouse entered chip:', chipId);
-    }, []);
-
-    const handleChipMouseLeave = useCallback((event: MouseEvent) => {
-        const chip = (event.target as HTMLElement).closest('[data-chip]');
-        if (!chip) return;
-
-        const chipId = chip.getAttribute('data-chip-id');
-        if (!chipId) return;
-
-        console.log('Mouse left chip:', chipId);
-    }, []);
-
-    const handleChipContextMenu = useCallback(
-        (event: MouseEvent) => {
-            const chip = (event.target as HTMLElement).closest('[data-chip]');
-            if (!chip) return;
-
-            const chipId = chip.getAttribute('data-chip-id');
-            if (!chipId) return;
-
-            event.preventDefault();
-            event.stopPropagation();
-            showMenu(matrxRecordId, chipId, event.clientX, event.clientY);
-        },
-        [matrxRecordId, showMenu]
     );
 
     const toggleDebug = useCallback(() => {
@@ -335,7 +268,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     return (
         <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
             <MessageToolbar
-                matrxRecordId={matrxRecordId}
+                messageRecordId={messageRecordId}
                 role={record.role}
                 isCollapsed={isCollapsed}
                 onAddMedia={handleAddMedia}
@@ -351,10 +284,10 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
                 debug={DEBUG_STATUS}
                 onDebugClick={toggleDebug}
             />
-            {debugVisible && <DebugPanel editorId={matrxRecordId} />}
+            {debugVisible && <DebugPanel editorId={messageRecordId} />}
             <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
                 <EditorWithProviders
-                    id={matrxRecordId}
+                    id={messageRecordId}
                     initialContent={record.content}
                     className={className}
                     onBlur={handleBlur}

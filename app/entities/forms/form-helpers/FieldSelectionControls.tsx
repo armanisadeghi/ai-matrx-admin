@@ -1,7 +1,8 @@
 import React from 'react';
-import MultiSelect from '@/components/ui/loaders/multi-select';
-import { UseFieldVisibilityReturn } from '@/lib/redux/entity/hooks/useFieldVisibility';
+import MultiSelect from '@/components/ui/loaders/multi-select-updated-two';
+
 import { Filter, CheckSquare, XSquare } from 'lucide-react';
+import { UseFieldVisibilityReturn } from '../../hooks/form-related/useFieldVisibility';
 
 interface FieldSelectionControlsProps {
     fieldVisibility: UseFieldVisibilityReturn;

@@ -1,7 +1,7 @@
 // lib/redux/entity/selectors.ts
 
 import { createSelector, Selector } from '@reduxjs/toolkit';
-import { EntityKeys, EntityData, EntityAnyFieldKey } from '@/types/entityTypes';
+import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey } from '@/types/entityTypes';
 import { RootState } from '@/lib/redux/store';
 import {
     EntityDataWithId,
@@ -90,7 +90,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectRecordsWithKeys = createSelector(
         [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], 
-        (entity, recordKeys): EntityDataWithId<TEntity>[] => {
+        (entity, recordKeys): EntityDataWithKey<EntityKeys>[] => {
             if (!recordKeys) return [];
             if (!entity?.records) return [];
     
@@ -102,7 +102,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                         return {
                             ...record,
                             matrxRecordId: recordKey,
-                        };
+                        }
                     }
                     return null;
                 })

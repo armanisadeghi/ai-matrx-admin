@@ -13,7 +13,12 @@ export interface AddMessagePayload {
     type: 'other' | 'text' | 'base64_image' | 'blob' | 'image_url';
 }
 
-export function useAddMessage() {
+interface UseAddMessageOptions {
+    onSuccess?: () => void;
+    onError?: (error: Error) => void;
+}
+
+export function useAddMessage({ onSuccess, onError }: UseAddMessageOptions = {}) {
     const store = useAppStore();
     const parentEntity = 'recipe';
     const joiningEntity = 'recipeMessage';
@@ -23,7 +28,10 @@ export function useAddMessage() {
     const activeParentRecordId = parentSelectors.selectActiveRecordId(store.getState());
     const parentId = useMemo(() => toPkValue(activeParentRecordId), [activeParentRecordId]);
 
-    const createRelationship = useRelationshipCreate(joiningEntity, childEntity, parentId);
+    const createRelationship = useRelationshipCreate(joiningEntity, childEntity, parentId, {
+        onSuccess,
+        onError
+    });
 
     const addMessage = useCallback(
         (payload: AddMessagePayload) => {

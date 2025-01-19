@@ -9,11 +9,10 @@ import { EntityKeys } from "@/types";
 import { selectEntitySelectText, useAppSelector } from "@/lib/redux";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 
-
 interface QuickRefSelectProps {
   entityKey?: EntityKeys;
   initialSelectedRecord?: QuickReferenceRecord;
-  onRecordChange: (record: QuickReferenceRecord) => void;
+  onRecordChange?: (record: QuickReferenceRecord) => void;
   fetchMode?: FetchMode;
 }
 
@@ -46,7 +45,7 @@ export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({
   useEffect(() => {
     if (initialSelectedRecord) {
       setSelectedRecordKey(initialSelectedRecord.recordKey);
-      onRecordChange(initialSelectedRecord);
+      onRecordChange?.(initialSelectedRecord);
     }
   }, [initialSelectedRecord, onRecordChange]);
 
@@ -61,7 +60,7 @@ export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({
     );
     
     if (selectedRecord) {
-      onRecordChange(selectedRecord);
+      onRecordChange?.(selectedRecord);
       handleRecordSelect(newRecordKey);
     }
   };
