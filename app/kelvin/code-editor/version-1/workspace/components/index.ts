@@ -1,1 +1,1 @@
-export * from "./FileExplorer";
+export * from "./SplitPane";
