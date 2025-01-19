@@ -51,7 +51,7 @@ interface SelectedFile {
     path: string;
 }
 
-interface FileState {
+export interface FileState {
     content: string | FileContentResult | null;
     secondaryContent: string;
     selectedFile: SelectedFile | null;
