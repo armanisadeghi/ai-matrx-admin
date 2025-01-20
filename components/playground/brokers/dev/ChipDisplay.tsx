@@ -29,32 +29,32 @@ const ChipDisplay = ({ chip, brokers, onUpdate }: ChipDisplayProps) => {
         return 'notFetched';
     }, [chip.brokerId]);
 
-    const selectedBroker = useMemo(() => 
-        brokers.find(b => b.recordKey === chip.brokerId),
-        [brokers, chip.brokerId]
-    );
+    const selectedBroker = useMemo(() => brokers.find((b) => b.recordKey === chip.brokerId), [brokers, chip.brokerId]);
 
-    const handleFieldUpdate = useCallback((field: keyof ChipData, value: any) => {
-        const updates: Partial<ChipData> = { [field]: value };
-        
-        if (field === 'brokerId') {
-            const broker = brokers.find(b => b.recordKey === value);
-            if (broker) {
-                updates.label = broker.displayValue;
+    const handleFieldUpdate = useCallback(
+        (field: keyof ChipData, value: any) => {
+            const updates: Partial<ChipData> = { [field]: value };
+
+            if (field === 'brokerId') {
+                const broker = brokers.find((b) => b.recordKey === value);
+                if (broker) {
+                    updates.label = broker.displayValue;
+                }
             }
-        }
 
-        onUpdate(chip.id, updates);
-    }, [onUpdate, chip.id, brokers]);
+            onUpdate(chip.id, updates);
+        },
+        [onUpdate, chip.id, brokers]
+    );
 
     return (
         <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="my-2 last:mb-0"
+            className='my-2 last:mb-0'
         >
-            <Card className="bg-elevation2 border border-elevation3 rounded-lg">
+            <Card className='bg-elevation2 border border-elevation3 rounded-lg'>
                 <ChipHeader
                     chip={chip}
                     status={status}
@@ -66,38 +66,19 @@ const ChipDisplay = ({ chip, brokers, onUpdate }: ChipDisplayProps) => {
                     {isOpen && (
                         <motion.div
                             initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
+                            animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
+                            className='overflow-hidden'
                         >
-                            <CardContent className="p-2 bg-background space-y-3 border-t">
-                                <div className="space-y-2">
-                                    <label className="text-sm text-muted-foreground">Label</label>
-                                    <Input
-                                        value={chip.label}
-                                        onChange={(e) => handleFieldUpdate('label', e.target.value)}
-                                        className="h-8"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm text-muted-foreground">Color</label>
-                                    <ChipColorPicker
-                                        value={chip.color as TailwindColor}
-                                        onValueChange={(color) => handleFieldUpdate('color', color)}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm text-muted-foreground">Broker</label>
+                            <CardContent className='p-2 bg-background space-y-3 border-t'>
+                                <div className='space-y-2'>
+                                    <label className='text-sm text-muted-foreground'>Broker</label>
                                     <Select
                                         value={chip.brokerId}
                                         onValueChange={(value) => handleFieldUpdate('brokerId', value)}
                                     >
-                                        <SelectTrigger className="h-8">
-                                            <SelectValue>
-                                                {selectedBroker?.displayValue || 'Select Broker'}
-                                            </SelectValue>
+                                        <SelectTrigger className='h-8'>
+                                            <SelectValue>{selectedBroker?.displayValue || 'Select Broker'}</SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
                                             {brokers.map(({ recordKey, displayValue }) => (
@@ -112,15 +93,34 @@ const ChipDisplay = ({ chip, brokers, onUpdate }: ChipDisplayProps) => {
                                     </Select>
                                 </div>
 
+                                <div className='space-y-2'>
+                                    <label className='text-sm text-muted-foreground'>Color</label>
+                                    <ChipColorPicker
+                                        value={chip.color as TailwindColor}
+                                        onValueChange={(color) => handleFieldUpdate('color', color)}
+                                    />
+                                </div>
+
                                 {status === 'disconnected' && (
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-muted-foreground">Value</label>
-                                        <Textarea
-                                            value={chip.stringValue}
-                                            onChange={(e) => handleFieldUpdate('stringValue', e.target.value)}
-                                            className="min-h-[80px] text-sm font-mono resize-none"
-                                        />
-                                    </div>
+                                    <>
+                                        <div className='space-y-2'>
+                                            <label className='text-sm text-muted-foreground'>Label</label>
+                                            <Input
+                                                value={chip.label}
+                                                onChange={(e) => handleFieldUpdate('label', e.target.value)}
+                                                className='h-8'
+                                            />
+                                        </div>
+
+                                        <div className='space-y-2'>
+                                            <label className='text-sm text-muted-foreground'>Value</label>
+                                            <Textarea
+                                                value={chip.stringValue}
+                                                onChange={(e) => handleFieldUpdate('stringValue', e.target.value)}
+                                                className='min-h-[80px] text-sm font-mono resize-none'
+                                            />
+                                        </div>
+                                    </>
                                 )}
                             </CardContent>
                         </motion.div>

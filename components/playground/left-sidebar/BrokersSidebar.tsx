@@ -43,12 +43,6 @@ export default function BrokerSidebar({
     onBrokerChange: externalOnBrokerChange,
     initialSelectedBroker,
 }: BrokerSidebarProps) {
-
-    
-
-
-
-
     return (
         <div className='flex flex-col h-full py-3'>
             <SmartCrudButtons
@@ -59,9 +53,7 @@ export default function BrokerSidebar({
             />
             <ScrollArea className='flex-1'>
                 <AnimatePresence>
-
                     {/* This would be a great place to add an "Orphan Chip Watcher" */}
-
 
                     <BrokerRecords unifiedLayoutProps={layoutProps} />
                 </AnimatePresence>

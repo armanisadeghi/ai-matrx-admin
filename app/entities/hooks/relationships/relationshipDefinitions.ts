@@ -302,15 +302,47 @@ export const RELATIONSHIP_DEFINITIONS = {
 };
 
 
+const sampleConfig = {
+    definition: 'recipeMessage',
+    parentEntity: 'recipe',
+    childEntity: 'messageTemplate',
+}
+
+const sampleConfig2 = {
+    definition: 'recipeMessage',
+    entityOne: 'parent',
+    entityTwo: 'child',
+    entityThree: null,
+    entityFour: null,
+}
+
+const sampleConfig3 = {
+    definition: 'recipeMessage',
+    parent: 'entityOne',
+    child: 'entityTwo',
+    childTwo: null,
+    childThree: null,
+}
+
+
 export class RelationshipMapper {
     private definition: RelationshipDefinition;
     private data: any[];
     private parentEntity: EntityKeys | null = null;
-    private parentId: string | null = null;
+    private parentId: string | number | null = null;
 
     constructor(entityName: EntityKeys) {
         this.definition = RELATIONSHIP_DEFINITIONS[entityName];
         this.data = [];
+    }
+
+    getState() {
+        return {
+            definition: this.definition,
+            data: this.data,
+            parentEntity: this.parentEntity,
+            parentId: this.parentId,
+        };
     }
 
     setParentEntity(entityName: EntityKeys) {
@@ -379,6 +411,10 @@ export class RelationshipMapper {
         return toMatrxIdFromValueBatch(targetEntity, childIds);
     }
 }
+
+
+
+
 
 export type EnrichedRelationshipDefinition = {
     definition: RelationshipDefinition;

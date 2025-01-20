@@ -1,9 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui';
-import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown, Frown } from 'lucide-react';
 import { cn } from '@/utils';
 import { MatrxRecordId } from '@/types';
 import { TailwindColor, COLOR_STYLES } from '@/features/rich-text-editor/constants';
+import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 
 interface BrokerRecord {
     name?: string;
@@ -15,6 +16,7 @@ interface BrokerRecord {
 interface BrokerCardHeaderProps {
     recordId: MatrxRecordId;
     record: BrokerRecord;
+    chips: ChipData[];
     color?: TailwindColor;
     isConnected?: boolean;
     isOpen: boolean;
@@ -22,20 +24,12 @@ interface BrokerCardHeaderProps {
     onDelete: () => void;
 }
 
-const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ 
-    recordId, 
-    record, 
-    color = 'blue', 
-    isConnected, 
-    isOpen, 
-    onToggle, 
-    onDelete 
-}) => {
+const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ recordId, record, chips, color = 'blue', isConnected, isOpen, onToggle, onDelete }) => {
+    const name = record?.name || chips[0].label || 'Unnamed Broker';
+    const hasChips = chips.length > 0;
+
     const getStatusClasses = () => {
-        return cn(
-            'h-6 w-6 flex items-center justify-center rounded-md relative',
-            'transition-all duration-300 ease-in-out'
-        );
+        return cn('h-6 w-6 flex items-center justify-center rounded-md relative', 'transition-all duration-300 ease-in-out');
     };
 
     const getIconClasses = (isConnected: boolean) => {
@@ -68,9 +62,7 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
             </Button>
 
             <div className='flex items-center gap-2 min-w-0 flex-1'>
-                <span className='font-medium text-sm truncate'>
-                    {record.name || 'Unnamed Broker'}
-                </span>
+                <span className='font-medium text-sm truncate'>{name}</span>
             </div>
 
             <div className='flex items-center gap-2 flex-shrink-0'>
@@ -79,17 +71,17 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
                     title={isConnected ? 'Connected' : 'Disconnected'}
                 >
                     {isConnected ? (
-                        <CheckCircle2 className={getIconClasses(true)} />
+                        hasChips ? (
+                            <CheckCircle2 className={getIconClasses(true)} />
+                        ) : (
+                            <Frown className={getIconClasses(true)} />
+                        )
                     ) : (
                         <XCircle className={getIconClasses(false)} />
                     )}
                 </div>
 
-                {isOpen ? (
-                    <ChevronUp className='h-4 w-4' />
-                ) : (
-                    <ChevronDown className='h-4 w-4' />
-                )}
+                {isOpen ? <ChevronUp className='h-4 w-4' /> : <ChevronDown className='h-4 w-4' />}
             </div>
         </div>
     );

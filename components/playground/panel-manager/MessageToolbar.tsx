@@ -3,8 +3,7 @@ import { Button } from '@/components/ui';
 import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical, Bug } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MatrxRecordId } from '@/types';
-import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
-import DebugWrapper from './AdminToolbar';
+import { UseRecipeMessagesHook } from '../hooks/useRecipeMessages';
 
 interface MessageToolbarProps {
     messageRecordId: MatrxRecordId;
@@ -19,7 +18,7 @@ interface MessageToolbarProps {
     onTextWithChips: (messageRecordId: MatrxRecordId) => void;
     onProcessed: (messageRecordId: MatrxRecordId) => void;
     onRoleChange: (messageRecordId: MatrxRecordId, newRole: string) => void;
-    recipeMessageHook: UseRecipeMessagesHook;
+    onDragDrop: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
     debug?: boolean;
     onDebugClick?: (messageRecordId: MatrxRecordId) => void;
 }
@@ -71,11 +70,10 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
     onTextWithChips,
     onProcessed,
     onRoleChange,
-    recipeMessageHook,
+    onDragDrop,
     debug = false,
     onDebugClick,
 }) => {
-    const { handleDragDrop } = recipeMessageHook;
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -158,7 +156,7 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         const draggedId = e.dataTransfer.getData('text/plain');
         if (draggedId !== messageRecordId.toString()) {
             const draggedMatrxId = draggedId as MatrxRecordId;
-            handleDragDrop(draggedMatrxId, messageRecordId);
+            onDragDrop(draggedMatrxId, messageRecordId);
         }
     };
 

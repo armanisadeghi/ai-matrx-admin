@@ -6,14 +6,41 @@ import { Button } from '@/components/ui';
 import { Plus } from 'lucide-react';
 import { MatrxRecordId } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
-import { useMessageTemplatesWithNew } from '../hooks/dev/useMessageWithNew';
 import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
 import ManagedMessageEditor from './MessageEditorWithProvider';
+import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
+import { useRecipeMessages } from '../hooks/useRecipeMessages';
+import { ProcessedRecipeMessages } from './types';
+
+const INITIAL_PANELS: ProcessedRecipeMessages[] = [
+    {
+        id: 'system-1',
+        matrxRecordId: 'system-1',
+        role: 'system',
+        type: 'text',
+        content: '',
+        order: 0,
+    },
+    {
+        id: 'user-1',
+        matrxRecordId: 'user-1',
+        role: 'user',
+        type: 'text',
+        content: '',
+        order: 1,
+    },
+];
 
 
-function MessagesContainer() {
-    const recipeMessageHook = useMessageTemplatesWithNew();
-    const { messages, messageMatrxIds, deleteMessageByMatrxId } = recipeMessageHook;
+
+interface MessagesContainerProps {
+    recipeRecordId: MatrxRecordId;
+    relationshipHook: RelationshipHook;
+}
+
+function MessagesContainer({ recipeRecordId, relationshipHook }: MessagesContainerProps) {
+    const recipeMessageHook = useRecipeMessages(relationshipHook);;
+    const { messages, deleteMessage, handleDragDrop } = recipeMessageHook;
     const { addMessage } = useAddMessage();
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
@@ -95,7 +122,7 @@ function MessagesContainer() {
 
         switch (dialogType) {
             case 'delete':
-                deleteMessageByMatrxId(activeEditorId);
+                deleteMessage(activeEditorId);
                 break;
             case 'unsaved':
                 console.log('Confirming exit with unsaved changes for:', activeEditorId);
@@ -147,10 +174,11 @@ function MessagesContainer() {
                             >
                                 <ManagedMessageEditor
                                     messageRecordId={message.matrxRecordId}
-                                    recipeMessageHook={recipeMessageHook}
-                                    deleteMessageByMatrxId={deleteMessageByMatrxId}
+                                    message={message}
+                                    deleteMessage={deleteMessage}
                                     isCollapsed={isCollapsed}
                                     onToggleEditor={() => toggleEditor(message.matrxRecordId)}
+                                    onDragDrop={handleDragDrop}
                                 />
                             </Panel>
                             {!isLastPanel && <PanelResizeHandle />}

@@ -835,7 +835,7 @@ export type EntityData<TEntity extends EntityKeys> = {
 };
 
 export type EntityDataWithKey<TEntity extends EntityKeys> = EntityData<TEntity> & {
-    matrxRecordId?: MatrxRecordId;
+    matrxRecordId: MatrxRecordId;
 };
 
 

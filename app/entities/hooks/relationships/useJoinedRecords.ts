@@ -3,7 +3,7 @@
 import { createEntitySelectors, GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { EntityData, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { useCallback, useEffect } from 'react';
-import { RelationshipDefinition, createRelationshipData, filterJoinForChild } from './utils';
+import { createRelationshipData, filterJoinForChild } from './utils';
 import React from 'react';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
 import useUnsavedJoinedWithParent from '../unsaved-records/useUnsavedJoinedWithParent';

@@ -6,6 +6,8 @@ import { useMeasure } from '@uidotdev/usehooks';
 import CollapsibleSidebarPanel from './CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/panel-manager/ResultPanelManager';
 import MessagesContainer from '../panel-manager/MessagesContainer';
+import { MatrxRecordId } from '@/types';
+import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 
 interface DynamicPlaygroundPanelsProps {
     leftComponent: React.ComponentType;
@@ -18,15 +20,11 @@ interface DynamicPlaygroundPanelsProps {
     initialRightSize?: number;
     initialPanelCount?: number;
     className?: string;
+    activeRecipeId: MatrxRecordId;
+    relationshipHook: RelationshipHook;
 }
 
-const DynamicPlaygroundPanels = forwardRef<
-    {
-        leftPanel: ImperativePanelHandle | null;
-        rightPanel: ImperativePanelHandle | null;
-    },
-    DynamicPlaygroundPanelsProps
->(
+const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; rightPanel: ImperativePanelHandle | null }, DynamicPlaygroundPanelsProps>(
     (
         {
             leftComponent,
@@ -39,6 +37,9 @@ const DynamicPlaygroundPanels = forwardRef<
             initialRightSize = 15,
             initialPanelCount = 2,
             className = '',
+            activeRecipeId,
+            relationshipHook,
+
         },
         ref
     ) => {
@@ -86,7 +87,10 @@ const DynamicPlaygroundPanels = forwardRef<
                     />
                     <Panel defaultSize={55}>
                         {/* <EditorContainer /> */}
-                        <MessagesContainer />
+                        <MessagesContainer
+                        recipeRecordId={activeRecipeId} 
+                        relationshipHook={relationshipHook}
+                        />
                     </Panel>
                     <PanelResizeHandle />
                     <Panel defaultSize={15}>

@@ -55,7 +55,6 @@ export function useMessageTemplatesWithNew() {
         parentId: acticeRecipeId,
     } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
 
-    console.log('===== useMessageTemplatesWithNew   messages', messages);
 
 
     // const { updateRecord: savePermanentRecordChanges } = useUpdateRecord("messageTemplate");

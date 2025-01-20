@@ -5,13 +5,15 @@ import { MatrxRecordId } from '@/types';
 import { EditorLineInfo, getEditorLineInfo } from '@/features/rich-text-editor/utils/new-test-util';
 import CompactTable from '@/components/matrx/CompactTable';
 import { findAllChipPatterns } from '@/features/rich-text-editor/utils/setEditorUtils';
+import { ProcessedRecipeMessages } from './types';
 
 interface DebugPanelProps {
     editorId: MatrxRecordId;
+    message: ProcessedRecipeMessages;
 }
 
-const DebugPanel: React.FC<DebugPanelProps> = ({ editorId }) => {
-    const [activeView, setActiveView] = useState<'editor' | 'text' | 'chips' | 'patterns'>('editor');
+const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
+    const [activeView, setActiveView] = useState<'editor' | 'text' | 'chips' | 'patterns' | 'message'>('editor');
     const [editorInfo, setEditorInfo] = useState<EditorLineInfo>({} as EditorLineInfo);
     const [patternMatches, setPatternMatches] = useState<any[]>([]);
     const context = useEditorContext();
@@ -63,6 +65,10 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId }) => {
             id: 'patterns',
             label: 'Chip Patterns',
             onMouseEnter: refreshPatternMatches
+        },
+        {
+            id: 'message',
+            label: 'Message Data'
         }
     ];
 
@@ -106,6 +112,22 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId }) => {
                     <CompactTable
                         data={patternMatches}
                         columns={4}
+                    />
+                );
+            case 'message':
+                return (
+                    <CompactTable
+                        data={[{
+                            id: message.id,
+                            matrxRecordId: message.matrxRecordId,
+                            order: message.order,
+                            recipeId: message.recipeId,
+                            parentMatrxId: message.parentMatrxId,
+                            role: message.role,
+                            type: message.type,
+                            content: message.content
+                        }]}
+                        columns={7}
                     />
                 );
         }

@@ -1,55 +1,106 @@
 'use client';
 
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
-import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import BrokerDisplayCard from './BrokerDisplayCard';
-import ChipDisplay from './ChipDisplay';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
+import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';
+
+interface DisplayCard {
+    id: string;
+    brokerId?: MatrxRecordId;
+    brokerRecord?: any;
+    chips: ChipData[];
+}
+
+const DEBOUNCE_DELAY = 1000; // 1 second delay
 
 const BrokerRecords = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
     const entityName = 'dataBroker' as EntityKeys;
     const { selectors } = useEntityTools(entityName);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecordsWithKey);
     const context = useEditorContext();
-    const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
-    const { quickReferenceRecords } = useFetchQuickRef('dataBroker');
+    const { quickReferenceRecords } = useFetchQuickRef(entityName);
+    const { handleRecordSelect, setSelectionMode } = useSelectQuickRef(entityName);
 
-    // Memoize broker references for quick lookup
-    const brokerMap = useMemo(() => {
-        return quickReferenceRecords?.reduce((acc, broker) => {
-            acc[broker.recordKey] = broker;
-            return acc;
-        }, {} as Record<string, typeof quickReferenceRecords[0]>) || {};
-    }, [quickReferenceRecords]);
+    // Refs for debouncing
+    const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const latestCardsRef = useRef<DisplayCard[]>([]);
 
-    // Get unmatched chips (excluding those that are already displayed in broker cards)
-    const unmatchedChips = useMemo(() => {
-        const allChips = context.getAllChipData() || [];
-        return allChips.filter(chip => {
-            if (!chip.editorId) return false;
-            // Filter out chips that are already matched with displayed brokers
-            if (chip.brokerId && selectedRecords[chip.brokerId]) return false;
-            return true;
-        });
-    }, [context, selectedRecords]);
+    // Stable state that will only update after debounce period
+    const [stableDisplayCards, setStableDisplayCards] = useState<DisplayCard[]>([]);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setSelectionMode('multiple');
-        }, 0);
-        return () => clearTimeout(timeoutId);
+        setSelectionMode('multiple');
     }, []);
+
+    const allChips = useMemo(() => context.getAllChipData() || [], [context]);
+
+    // Create the latest version of display cards
+    const currentDisplayCards = useMemo(() => {
+        const cards: DisplayCard[] = [];
+        const processedChips = new Set<string>();
+
+        Object.entries(selectedRecords).forEach(([brokerId, brokerRecord]) => {
+            const brokerChips = allChips.filter(chip => 
+                chip.editorId && chip.brokerId === brokerId
+            );
+            
+            if (brokerChips.length > 0 || brokerRecord) {
+                brokerChips.forEach(chip => processedChips.add(chip.id));
+                cards.push({
+                    id: brokerId,
+                    brokerId,
+                    brokerRecord,
+                    chips: brokerChips,
+                });
+            }
+        });
+
+        allChips
+            .filter(chip => !processedChips.has(chip.id))
+            .forEach(chip => {
+                cards.push({
+                    id: chip.id,
+                    chips: [chip],
+                });
+            });
+
+        return cards;
+    }, [selectedRecords, allChips]);
+
+    // Update the latest cards ref and schedule a state update
+    useEffect(() => {
+        latestCardsRef.current = currentDisplayCards;
+
+        // Clear existing timeout
+        if (updateTimeoutRef.current) {
+            clearTimeout(updateTimeoutRef.current);
+        }
+
+        // Set new timeout
+        updateTimeoutRef.current = setTimeout(() => {
+            setStableDisplayCards(latestCardsRef.current);
+            updateTimeoutRef.current = null;
+        }, DEBOUNCE_DELAY);
+
+        // Cleanup
+        return () => {
+            if (updateTimeoutRef.current) {
+                clearTimeout(updateTimeoutRef.current);
+            }
+        };
+    }, [currentDisplayCards]);
 
     const handleRemove = useCallback(
         (recordId: MatrxRecordId) => {
-            handleToggleSelection(recordId);
+            handleRecordSelect(recordId);
         },
-        [handleToggleSelection]
+        [handleRecordSelect]
     );
 
     const handleChipUpdate = useCallback(
@@ -59,32 +110,18 @@ const BrokerRecords = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayo
         [context]
     );
 
-    const selectedBrokers = useMemo(() => 
-        Object.entries(selectedRecords).map(([recordId, record]) => ({
-            recordId,
-            record,
-        })),
-        [selectedRecords]
-    );
-
     return (
         <div className="w-full space-y-2">
-            {selectedBrokers.map(({ recordId, record }) => (
+            {stableDisplayCards.map(card => (
                 <BrokerDisplayCard
-                    key={recordId}
-                    recordId={recordId}
-                    record={record}
+                    key={card.id}
+                    recordId={card.brokerId}
+                    record={card.brokerRecord}
+                    chips={card.chips}
                     unifiedLayoutProps={unifiedLayoutProps}
                     onDelete={handleRemove}
-                />
-            ))}
-            
-            {unmatchedChips.map(chip => (
-                <ChipDisplay
-                    key={chip.id}
-                    chip={chip}
-                    brokers={quickReferenceRecords || []}
-                    onUpdate={handleChipUpdate}
+                    onChipUpdate={handleChipUpdate}
+                    brokerOptions={quickReferenceRecords || []}
                 />
             ))}
         </div>

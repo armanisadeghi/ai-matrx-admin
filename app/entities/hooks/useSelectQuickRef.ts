@@ -1,31 +1,30 @@
 import * as React from 'react';
-import {FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools} from '@/lib/redux';
-import {useAppSelector} from '@/lib/redux/hooks';
-import {MatrxRecordId, SelectionMode} from '@/lib/redux/entity/types/stateTypes';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
+import { FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { MatrxRecordId, SelectionMode } from '@/lib/redux/entity/types/stateTypes';
+import { EntityKeys, EntityData } from '@/types/entityTypes';
 
 const useAreArraysEqual = (a: MatrxRecordId[], b: MatrxRecordId[]) => {
-    return React.useMemo(
-        () => a.length === b.length && a.every((val, idx) => val === b[idx]),
-        [a, b]
-    );
+    return React.useMemo(() => a.length === b.length && a.every((val, idx) => val === b[idx]), [a, b]);
 };
 
 const useHasOnlyNewRecords = (selectedRecordIds: MatrxRecordId[]) => {
     return React.useMemo(
-        () => selectedRecordIds.every(recordId => 
-            // Add null check before accessing startsWith
-            recordId != null && typeof recordId === 'string' && recordId.startsWith('new-record-')
-        ),
+        () =>
+            selectedRecordIds.every(
+                (recordId) =>
+                    // Add null check before accessing startsWith
+                    recordId != null && typeof recordId === 'string' && recordId.startsWith('new-record-')
+            ),
         [selectedRecordIds]
     );
 };
 
 export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
     const { actions, selectors, dispatch } = useEntityTools(entityKey);
-    const [fetchMode, setFetchMode] = React.useState<FetchMode>("native");
+    const [fetchMode, setFetchMode] = React.useState<FetchMode>('native');
     const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
-    
+
     // Ensure selectedRecordIds is never null
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds) ?? [];
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
@@ -54,32 +53,28 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         }
         dispatch(actions.getOrFetchSelectedRecords(payload));
         setLastProcessedIds(selectedRecordIds);
-    }, [
-        selectedRecordIds,
-        hasOnlyNewRecords,
-        isEqual,
-        payload,
-        dispatch,
-        actions
-    ]);
+    }, [selectedRecordIds, hasOnlyNewRecords, isEqual, payload, dispatch, actions]);
 
     const isSelected = React.useCallback(
-        (recordKey: MatrxRecordId) => 
+        (recordKey: MatrxRecordId) =>
             recordKey != null && // Add null check
-            Array.isArray(selectedRecordIds) && 
-            selectedRecordIds.includes(recordKey), 
+            Array.isArray(selectedRecordIds) &&
+            selectedRecordIds.includes(recordKey),
         [selectedRecordIds]
     );
 
-    const handleToggleSelection = React.useCallback((recordKey: MatrxRecordId) => {
-        if (!recordKey) return; // Early return if recordKey is null/undefined
-        
-        if (isSelected(recordKey)) {
-            dispatch(actions.removeFromSelection(recordKey));
-        } else {
-            dispatch(actions.addToSelection(recordKey));
-        }
-    }, [dispatch, actions, isSelected]);
+    const handleToggleSelection = React.useCallback(
+        (recordKey: MatrxRecordId) => {
+            if (!recordKey) return; // Early return if recordKey is null/undefined
+
+            if (isSelected(recordKey)) {
+                dispatch(actions.removeFromSelection(recordKey));
+            } else {
+                dispatch(actions.addToSelection(recordKey));
+            }
+        },
+        [dispatch, actions, isSelected]
+    );
 
     const handleSingleSelection = React.useCallback(
         (recordKey: MatrxRecordId) => {
@@ -89,15 +84,14 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         [dispatch, actions]
     );
 
-    const toggleSelectionMode = React.useCallback(
-        () => dispatch(actions.setToggleSelectionMode()),
-        [dispatch, actions]
-    );
+    const toggleSelectionMode = React.useCallback(() => dispatch(actions.setToggleSelectionMode()), [dispatch, actions]);
+
+    const setSelectionMode = React.useCallback((mode: SelectionMode) => dispatch(actions.setSelectionMode(mode)), [dispatch, actions]);
 
     const handleRecordSelect = React.useCallback(
         (recordKey: MatrxRecordId) => {
             if (!recordKey) return; // Early return if recordKey is null/undefined
-            
+
             if (selectionMode === 'multiple') {
                 handleToggleSelection(recordKey);
             } else {
@@ -108,25 +102,20 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
         [selectionMode, handleToggleSelection, handleSingleSelection, dispatch, actions]
     );
 
-    return React.useMemo(() => ({
-        selectionMode,
-        handleRecordSelect,
-        toggleSelectionMode,
-        setFetchMode,
-        quickReferenceRecords,
-        selectedRecordIds,
-        activeRecord,
-        activeRecordId,
-    }), [
-        selectionMode,
-        handleRecordSelect,
-        toggleSelectionMode,
-        setFetchMode,
-        quickReferenceRecords,
-        selectedRecordIds,
-        activeRecord,
-        activeRecordId,
-    ]);
+    return React.useMemo(
+        () => ({
+            selectionMode,
+            setSelectionMode,
+            handleRecordSelect,
+            toggleSelectionMode,
+            setFetchMode,
+            quickReferenceRecords,
+            selectedRecordIds,
+            activeRecord,
+            activeRecordId,
+        }),
+        [selectionMode, setSelectionMode, handleRecordSelect, toggleSelectionMode, setFetchMode, quickReferenceRecords, selectedRecordIds, activeRecord, activeRecordId]
+    );
 }
 
 export type useQuickRefReturn = ReturnType<typeof useSelectQuickRef>;

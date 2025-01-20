@@ -17,6 +17,7 @@ import {
 import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from '@/lib/redux/entity/utils/stateHelpUtils';
 import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
 import { mapFieldDataToFormField } from '@/lib/redux/entity/utils/tempFormHelper';
+import { uniqBy } from 'lodash';
 
 interface FieldNameGroups<TEntity extends EntityKeys> {
     nativeFields: EntityAnyFieldKey<TEntity>[];
@@ -88,13 +89,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             .filter(Boolean);
     });
 
+    const selectRecordWithKey = createSelector(
+        [selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey],
+        (entity, recordKey): EntityDataWithKey<EntityKeys> | null => {
+            if (!recordKey) return null;
+            if (!entity?.records) return null;
+    
+            const record = entity.records[recordKey];
+            if (!record) return null;
+    
+            return {
+                ...record,
+                matrxRecordId: recordKey,
+            };
+        }
+    );
+
+
     const selectRecordsWithKeys = createSelector(
         [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], 
         (entity, recordKeys): EntityDataWithKey<EntityKeys>[] => {
             if (!recordKeys) return [];
             if (!entity?.records) return [];
     
-            return recordKeys
+            const records = recordKeys
                 .filter((recordKey): recordKey is MatrxRecordId => recordKey != null)
                 .map((recordKey) => {
                     const record = entity.records[recordKey];
@@ -107,8 +125,94 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     return null;
                 })
                 .filter(Boolean);
+                
+            return uniqBy(records, 'matrxRecordId');
         }
     );
+
+    const selectRecordWithKeyByPrimaryKey = createSelector(
+        [selectEntity, (_: RootState, primaryKeyValues: Record<string, unknown>) => primaryKeyValues],
+        (entity, primaryKeyValues): EntityDataWithKey<EntityKeys> | null => {
+            if (!primaryKeyValues) return null;
+            if (!entity?.records || !entity.entityMetadata) return null;
+    
+            const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+            if (!recordKey) return null;
+    
+            const record = entity.records[recordKey];
+            if (!record) return null;
+    
+            return {
+                ...record,
+                matrxRecordId: recordKey,
+            };
+        }
+    );
+    
+    const selectRecordsWithKeysByPrimaryKeys = createSelector(
+        [selectEntity, (_: RootState, primaryKeyValuesList: Record<string, unknown>[]) => primaryKeyValuesList],
+        (entity, primaryKeyValuesList): EntityDataWithKey<EntityKeys>[] => {
+            if (!primaryKeyValuesList) return [];
+            if (!entity?.records || !entity.entityMetadata) return [];
+    
+            return primaryKeyValuesList
+                .map((primaryKeyValues) => {
+                    const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+                    if (!recordKey) return null;
+                    
+                    const record = entity.records[recordKey];
+                    if (!record) return null;
+    
+                    return {
+                        ...record,
+                        matrxRecordId: recordKey,
+                    };
+                })
+                .filter(Boolean);
+        }
+    );
+
+    const selectRecordsWithKeysBySimpleIds = createSelector(
+        [selectEntity, (_: RootState, simpleIds: unknown[]) => simpleIds],
+        (entity, simpleIds): EntityDataWithKey<EntityKeys>[] => {
+            if (!simpleIds) return [];
+            if (!entity?.records || !entity.entityMetadata) return [];
+    
+            const fields = entity.entityMetadata.primaryKeyMetadata.fields;
+            
+            // Convert simple IDs to proper primary key format
+            const primaryKeyValuesList = simpleIds.map(id => {
+                // Handle single field case (most common)
+                if (fields.length === 1) {
+                    return { [fields[0]]: id };
+                }
+                
+                // Handle multiple fields by matching values to fields in order
+                return fields.reduce((acc, field, index) => {
+                    if (Array.isArray(id) && id.length >= index) {
+                        acc[field] = id[index];
+                    }
+                    return acc;
+                }, {} as Record<string, unknown>);
+            });
+    
+            return primaryKeyValuesList
+                .map((primaryKeyValues) => {
+                    const recordKey = createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+                    if (!recordKey) return null;
+                    
+                    const record = entity.records[recordKey];
+                    if (!record) return null;
+    
+                    return {
+                        ...record,
+                        matrxRecordId: recordKey,
+                    };
+                })
+                .filter(Boolean);
+        }
+    );
+
 
     const selectEffectiveRecordsByKeys = createSelector(
         [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
@@ -763,6 +867,27 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         };
     });
 
+    const selectAllEffectiveRecordsWithKeys = createSelector(
+        [selectAllRecords, selectUnsavedRecords],
+        (records, unsavedRecords): EntityDataWithKey<EntityKeys>[] => {
+            // If both are undefined/null, return empty array
+            if (!records && !unsavedRecords) {
+                return [];
+            }
+    
+            const enhancedRecords = Object.entries(records || {}).map(([recordKey, record]) => ({
+                ...record,
+                matrxRecordId: recordKey,
+            }));
+    
+            const enhancedUnsavedRecords = Object.entries(unsavedRecords || {}).map(([recordKey, record]) => ({
+                ...record,
+                matrxRecordId: recordKey,
+            }));
+    
+            return [...enhancedRecords, ...enhancedUnsavedRecords];
+        }
+    );
     const selectEffectiveRecordById = createSelector(
         [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
         (unsavedRecords, records, recordId) => {
@@ -1059,7 +1184,13 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectEffectiveRecordsByKeys,
 
         selectRecordsKeyPairs,
+        
+        selectRecordWithKey,
         selectRecordsWithKeys,
+        selectRecordWithKeyByPrimaryKey,
+        selectRecordsWithKeysByPrimaryKeys,
+        selectRecordsWithKeysBySimpleIds,
+        selectAllEffectiveRecordsWithKeys,
 
         selectRecordKeyByFieldValue,
         selectRecordKeysByFieldValue,

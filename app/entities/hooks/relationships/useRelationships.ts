@@ -1,77 +1,19 @@
-import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { useCallback, useMemo } from 'react';
 import { RelationshipMapper } from './relationshipDefinitions';
-import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useGetOrFetchRecord, useGetorFetchRecords } from '../records/useGetOrFetch';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
 import { useRelationshipCreate } from '../unsaved-records/useDirectCreate';
 import { simpleRelDef } from './definitionConversionUtil';
 
-export function useRelationshipMapper(entityName: EntityKeys, parentEntity: EntityKeys) {
-    const selectors = createEntitySelectors(entityName);
-    const records = useAppSelector(selectors.selectAllEffectiveRecords);
+export function useRelWithFetch(relDefSimple: simpleRelDef, anyParentId: MatrxRecordId | string | number) {
+    const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString()) : undefined;
 
-    const mapper = useMemo(() => {
-        const m = new RelationshipMapper(entityName);
-        m.setParentEntity(parentEntity);
-        m.setData(records);
-        return m;
-    }, [entityName, parentEntity, records]);
-
-    return mapper;
-}
-
-export function useParentRelationship(joinEntityname: EntityKeys, parentEntity: EntityKeys, parentId: string) {
-    const selectors = createEntitySelectors(joinEntityname);
-    const records = useAppSelector(selectors.selectAllEffectiveRecords);
-
-    const mapper = useMemo(() => {
-        const m = new RelationshipMapper(joinEntityname);
-        m.setParentEntity(parentEntity);
-        m.setData(records);
-        m.setParentId(parentId);
-        return m;
-    }, [joinEntityname, parentEntity, records, parentId]);
-
-    const JoiningEntityRecords = mapper.getJoinRecords();
-    const joiningMatrxIds = mapper.getJoinMatrxIds();
-    const childIds = mapper.getChildMatrxIds();
-    const childMatrxIds = mapper.getChildMatrxIds();
-    const parentMatrxid = toMatrxIdFromValue(parentEntity, parentId);
-
-    return { mapper, JoiningEntityRecords, joiningMatrxIds, childIds, childMatrxIds, parentMatrxid, parentId };
-}
-
-export function useActiveParentRelationship(joinEntityname: EntityKeys, parentEntity: EntityKeys) {
-    const selectors = createEntitySelectors(joinEntityname);
-    const parentSelectors = createEntitySelectors(parentEntity);
-    const records = useAppSelector(selectors.selectAllEffectiveRecords);
-    const parentMatrxid = useAppSelector(parentSelectors.selectActiveRecordId);
-
-    const mapper = useMemo(() => {
-        const m = new RelationshipMapper(joinEntityname);
-        m.setParentEntity(parentEntity);
-        m.setData(records);
-        m.setParentRecordId(parentMatrxid);
-        return m;
-    }, [joinEntityname, parentEntity, records, parentMatrxid]);
-
-    const JoiningEntityRecords = mapper.getJoinRecords();
-    const joiningMatrxIds = mapper.getJoinMatrxIds();
-    const childIds = mapper.getChildMatrxIds();
-    const childMatrxIds = mapper.getChildMatrxIds();
-    const parentId = toPkValue(parentMatrxid);
-
-    return { mapper, JoiningEntityRecords, joiningMatrxIds, childIds, childMatrxIds, parentMatrxid, parentId };
-}
-
-export function useRelWithFetch(relationshipDefinition: simpleRelDef, anyParentId: MatrxRecordId | string | number) {
-    const parentId = typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString();
-
-    const parentEntity = relationshipDefinition.parent.name;
-    const joiningEntity = relationshipDefinition.join.name;
-    const childEntity = relationshipDefinition.child.name;
+    const parentEntity = relDefSimple.parent.name;
+    const joiningEntity = relDefSimple.join.name;
+    const childEntity = relDefSimple.child.name;
 
     // Get selectors for all entities
     const parentSelectors = createEntitySelectors(parentEntity);
@@ -111,7 +53,7 @@ export function useRelWithFetch(relationshipDefinition: simpleRelDef, anyParentI
                 return;
             }
 
-            const JoinRecordId = findSingleJoinRecordKeyForChild(JoiningEntityRecords, childRecordId, relationshipDefinition);
+            const JoinRecordId = findSingleJoinRecordKeyForChild(JoiningEntityRecords, childRecordId, relDefSimple);
             if (JoinRecordId) {
                 deleteRecords(childRecordId, JoinRecordId);
             }
@@ -145,12 +87,16 @@ export function useRelWithFetch(relationshipDefinition: simpleRelDef, anyParentI
     };
 }
 
+export type RelationshipHook = ReturnType<typeof useRelWithFetch>;
+
+
+
 export function findSingleJoinRecordKeyForChild(
     joinRecordsWithKey: EntityDataWithKey<EntityKeys>[],
     childIdValue: MatrxRecordId | string | number,
-    relationshipDefinition: simpleRelDef
+    relDefSimple: simpleRelDef
 ): MatrxRecordId | undefined {
-    const childField = relationshipDefinition.join.childField;
+    const childField = relDefSimple.join.childField;
     const childId = typeof childIdValue === 'string' && childIdValue.includes(':') ? toPkValue(childIdValue) : childIdValue;
     const matchingRecord = joinRecordsWithKey.find((record) => record[childField] === childId);
     if (!matchingRecord) {
@@ -162,12 +108,32 @@ export function findSingleJoinRecordKeyForChild(
 export function filterAllJoinRecordKeysForChild(
     joinRecordsWithKey: EntityDataWithKey<EntityKeys>[],
     childIdValue: MatrxRecordId | string | number,
-    relationshipDefinition: simpleRelDef
+    relDefSimple: simpleRelDef
 ): MatrxRecordId[] {
-    const childField = relationshipDefinition.join.childField;
+    const childField = relDefSimple.join.childField;
     const childId = typeof childIdValue === 'string' && childIdValue.includes(':') ? toPkValue(childIdValue) : childIdValue;
     const matchingRecords = joinRecordsWithKey.filter((record) => record[childField] === childId);
     const recordKeys: MatrxRecordId[] = matchingRecords.map((record) => record.matrxRecordId);
     return recordKeys;
 }
 
+export function useJoinedActiveParent(relDef: simpleRelDef) {
+    const selectors = createEntitySelectors(relDef.parent.name);
+    const activeParentMatrxId = useAppSelector(selectors.selectActiveRecordId);
+    const activeParentId = toPkValue(activeParentMatrxId);
+
+    const relationshipHook = useRelWithFetch(relDef, activeParentId);
+
+    return { activeParentMatrxId, activeParentId, relationshipHook };
+}
+
+export function useDoubleJoinedActiveParent(firstRelDef: simpleRelDef, secondRelDef: simpleRelDef) {
+    const selectors = createEntitySelectors(firstRelDef.parent.name);
+    const activeParentMatrxId = useAppSelector(selectors.selectActiveRecordId);
+    const activeParentId = toPkValue(activeParentMatrxId);
+
+    const firstRelHook = useRelWithFetch(firstRelDef, activeParentId);
+    const secondRelHook = useRelWithFetch(secondRelDef, activeParentId);
+
+    return { activeParentMatrxId, activeParentId, firstRelHook, secondRelHook };
+}

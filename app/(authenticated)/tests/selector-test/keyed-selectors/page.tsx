@@ -20,7 +20,8 @@ import { JsonViewer } from "@/components/ui";
 import { createEntitySelectors } from '@/lib/redux/entity/selectors';
 import { EntityKeys } from "@/types/entityTypes";
 import GenerateBaseline from './generateBaseline';
-import {entitySelectorsConfig} from "@/app/(authenticated)/tests/selector-test/keyed-selectors/selectorsConfig";
+import {entitySelectorsConfig, fetchConfig} from "@/app/(authenticated)/tests/selector-test/keyed-selectors/selectorsConfig";
+import { useGetorFetchRecords } from '@/app/entities/hooks/records/useGetOrFetch';
 
 // Type definitions
 export type SelectorConfig = {
@@ -111,6 +112,11 @@ const adaptConfigForBaseline = (
 
 const EntitySelectorTestPage: React.FC = () => {
     const currentSelectorRef = useRef<string>('');
+
+    const recordsWithKeys = useGetorFetchRecords(fetchConfig.entityKey, fetchConfig.matrxRecordIds);
+
+    console.log("Fetching records with keys...");
+    console.log(fetchConfig.matrxRecordIds);
 
     useEffect(() => {
         const originalConsole = {

@@ -7,7 +7,6 @@ import { Card } from '@/components/ui';
 import { MatrxRecordId } from '@/types';
 import MessageToolbar from './MessageToolbar';
 import { ProcessedRecipeMessages } from './types';
-import { UseRecipeMessagesHook } from '../hooks/dev/useMessageWithNew';
 import { AddBrokerPayload, useAddBroker } from '../hooks/brokers/useAddBroker';
 import { isEqual } from 'lodash';
 import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
@@ -15,28 +14,8 @@ import { v4 } from 'uuid';
 import DebugPanel from './AdminToolbar';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import useChipHandlers from '../hooks/useChipHandlers';
-import { useAddMessage } from '../hooks/messages/useAddMessage';
 
-const DEBUG_STATUS = false;
-
-const INITIAL_PANELS: ProcessedRecipeMessages[] = [
-    {
-        id: 'system-1',
-        matrxRecordId: 'system-1',
-        role: 'system',
-        type: 'text',
-        content: '',
-        order: 0,
-    },
-    {
-        id: 'user-1',
-        matrxRecordId: 'user-1',
-        role: 'user',
-        type: 'text',
-        content: '',
-        order: 1,
-    },
-];
+const DEBUG_STATUS = true;
 
 interface MessageData {
     id: string;
@@ -54,6 +33,7 @@ interface ChipChangeData {
 
 interface MessageEditorProps {
     messageRecordId: MatrxRecordId;
+    message: ProcessedRecipeMessages;
     isCollapsed: boolean;
     className?: string;
     onCollapse?: () => void;
@@ -62,13 +42,14 @@ interface MessageEditorProps {
     onMessageUpdate?: (messageData: MessageData) => void;
     onChipUpdate?: (chipData: ChipChangeData) => void;
     onToggleEditor?: (messageRecordId: MatrxRecordId) => void;
-    deleteMessageByMatrxId?: (messageRecordId: MatrxRecordId) => void;
+    onDragDrop?: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
+    deleteMessage?: (messageRecordId: MatrxRecordId) => void;
     onOrderChange?: (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => void;
-    recipeMessageHook?: UseRecipeMessagesHook;
 }
 
 export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     messageRecordId,
+    message,
     className,
     isCollapsed = false,
     onCollapse,
@@ -77,9 +58,9 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     onMessageUpdate,
     onChipUpdate,
     onToggleEditor,
+    onDragDrop,
     onOrderChange,
-    deleteMessageByMatrxId,
-    recipeMessageHook,
+    deleteMessage,
     ...props
 }) => {
     const dispatch = useAppDispatch();
@@ -96,27 +77,18 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     const [lastEditorState, setLastEditorState] = useState<EditorState>(() => context.getEditorState(messageRecordId));
 
     const { actions: messageActions, selectors: messageSelectors } = useEntityTools('messageTemplate');
-    const { messages } = recipeMessageHook;
 
     const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu } = useChipHandlers(messageRecordId);
-
-    const record = useMemo(() => {
-        const existingMessage = messages.find((message) => message.matrxRecordId === messageRecordId);
-        if (existingMessage) return existingMessage;
-
-        const initialPanel = INITIAL_PANELS.find((panel) => panel.matrxRecordId === messageRecordId);
-        return initialPanel || INITIAL_PANELS[0];
-    }, [messages, messageRecordId]) as ProcessedRecipeMessages;
 
     useEffect(() => {
         setIsEditorHidden(isCollapsed);
     }, [isCollapsed]);
 
     useEffect(() => {
-        if (record?.content) {
-            setLastSavedContent(record.content);
+        if (message?.content) {
+            setLastSavedContent(message.content);
         }
-    }, [record?.content]);
+    }, [message?.content]);
 
     useEffect(() => {
         if (!context.isEditorRegistered(messageRecordId)) return;
@@ -213,7 +185,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
 
     const handleDelete = useCallback(() => {
         console.log('Deleting message:', messageRecordId);
-        deleteMessageByMatrxId(messageRecordId);
+        deleteMessage(messageRecordId);
     }, [messageRecordId, onDelete]);
 
     const handleAddMedia = useCallback(() => {
@@ -269,7 +241,7 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
             <MessageToolbar
                 messageRecordId={messageRecordId}
-                role={record.role}
+                role={message.role}
                 isCollapsed={isCollapsed}
                 onAddMedia={handleAddMedia}
                 onLinkBroker={handleLinkBroker}
@@ -280,15 +252,15 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
                 onTextWithChips={handleShowNormalContent}
                 onShowBrokerContent={handleReplaceChipsWithBrokerContent}
                 onRoleChange={handleRoleChange}
-                recipeMessageHook={recipeMessageHook}
+                onDragDrop={onDragDrop}
                 debug={DEBUG_STATUS}
                 onDebugClick={toggleDebug}
             />
-            {debugVisible && <DebugPanel editorId={messageRecordId} />}
+            {debugVisible && <DebugPanel editorId={messageRecordId} message={message}/>}
             <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
                 <EditorWithProviders
                     id={messageRecordId}
-                    initialContent={record.content}
+                    initialContent={message.content}
                     className={className}
                     onBlur={handleBlur}
                     chipHandlers={{
