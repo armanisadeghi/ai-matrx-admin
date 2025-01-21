@@ -5,12 +5,10 @@ import { useEditorContext } from '../provider/EditorProvider';
 import { getEditorElement } from '../utils/editorUtils';
 import { createChipLine, createEmptyLine, createTextOnlyLine, findAllChipPatterns, processContentLines } from '../utils/setEditorUtils';
 import { createCompleteChipStructure } from '../utils/chipService';
-import { RootState, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { DataBrokerData, MatrxRecordId } from '@/types';
 import { ChipData } from '../types/editor.types';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
-import { useQuickRefModes } from '@/app/entities/hooks/useQuickRefModes';
-import React from 'react';
 
 export const useSetEditorContent = (editorId: string, useEditor: EditorHookResult) => {
     const context = useEditorContext();
@@ -38,25 +36,26 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
         (content: string): Map<string, ChipData> => {
             const chipPatterns = findAllChipPatterns(content);
             const chipDataMap = new Map<string, ChipData>();
+            let count = 1;
 
             chipPatterns.forEach((pattern) => {
-                const broker = getBrokerById(pattern.id);
+                const broker = getBrokerById(pattern.matrxRecordId);
                 if (broker) {
-                    chipDataMap.set(pattern.id, {
-                        id: pattern.id,
+                    chipDataMap.set(pattern.matrxRecordId, {
+                        id: pattern.matrxRecordId,
                         label: broker.name,
                         stringValue: broker.defaultValue,
-                        brokerId: broker.id,
-                        color: context.getNextColor(editorId),
+                        brokerId: pattern.matrxRecordId,
+                        color: context.colors.getNextColor(),
                     });
                 } else {
-                    console.log('Orphaned chip:', pattern.id, pattern.originalText);
+                    console.log('Orphaned chip:', pattern.matrxRecordId, pattern.id, pattern.originalText);
                     chipDataMap.set(pattern.id, {
                         id: pattern.id,
-                        label: 'Orphaned Chip',
+                        label: `Orphaned Chip ${count++}`,
                         stringValue: pattern.originalText.slice(1, -2),
                         brokerId: 'disconnected',
-                        color: context.getNextColor(editorId),
+                        color: context.colors.getNextColor(),
                     });
                 }
             });
@@ -79,6 +78,7 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
 
                 // Prepare all chip data first
                 const chipDataMap = prepareChipData(content);
+                console.log('Chip data map:', chipDataMap);
 
                 // Process content into lines
                 const processedLines = processContentLines(content);
@@ -120,7 +120,7 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
                 }
 
                 context.setPlainTextContent(editorId, content);
-                context.setChipData(editorId, Array.from(chipDataMap.values()));
+                context.chips.setChipData(editorId, Array.from(chipDataMap.values()));
 
                 return true;
             } catch (error) {

@@ -345,8 +345,19 @@ export class RelationshipMapper {
         };
     }
 
+    private isEntityPartOfRelationship(entityName: EntityKeys): boolean {
+        const entities = [
+            this.definition.entityOne,
+            this.definition.entityTwo,
+            this.definition.entityThree,
+            this.definition.entityFour
+        ].filter(Boolean);
+        
+        return entities.includes(entityName);
+    }
+
     setParentEntity(entityName: EntityKeys) {
-        if (entityName !== this.definition.entityOne && entityName !== this.definition.entityTwo) {
+        if (!this.isEntityPartOfRelationship(entityName)) {
             throw new Error(`Entity ${entityName} is not part of this relationship`);
         }
         this.parentEntity = entityName;
@@ -364,14 +375,47 @@ export class RelationshipMapper {
         this.data = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
     }
 
+    private getEntityConfig(entityName: EntityKeys) {
+        const configs = [
+            {
+                entity: this.definition.entityOne,
+                referenceField: this.definition.ReferenceFieldOne,
+                entityField: this.definition.entityOneField,
+                pks: this.definition.entityOnePks,
+            },
+            {
+                entity: this.definition.entityTwo,
+                referenceField: this.definition.ReferenceFieldTwo,
+                entityField: this.definition.entityTwoField,
+                pks: this.definition.entityTwoPks,
+            },
+            {
+                entity: this.definition.entityThree,
+                referenceField: this.definition.ReferenceFieldThree,
+                entityField: this.definition.entityThreeField,
+                pks: this.definition.entityThreePks,
+            },
+            {
+                entity: this.definition.entityFour,
+                referenceField: this.definition.ReferenceFieldFour,
+                entityField: this.definition.entityFourField,
+                pks: this.definition.entityFourPks,
+            }
+        ].filter(config => config.entity);
+
+        return configs.find(config => config.entity === entityName);
+    }
+
     // Join table record operations
     getJoinRecords(): Array<Record<string, any>> {
         if (!this.parentEntity || !this.parentId) return [];
 
-        const isEntityOne = this.parentEntity === this.definition.entityOne;
-        const sourceField = isEntityOne ? this.definition.ReferenceFieldOne : this.definition.ReferenceFieldTwo!;
+        const parentConfig = this.getEntityConfig(this.parentEntity);
+        if (!parentConfig) return [];
 
-        return this.data.filter((record) => record && record[sourceField] === this.parentId);
+        return this.data.filter((record) => 
+            record && record[parentConfig.referenceField] === this.parentId
+        );
     }
 
     getJoinRecordIds(): string[] {
@@ -390,19 +434,42 @@ export class RelationshipMapper {
     getChildIds(): string[] {
         if (!this.parentEntity || !this.parentId) return [];
 
-        const isEntityOne = this.parentEntity === this.definition.entityOne;
-        const sourceField = isEntityOne ? this.definition.ReferenceFieldOne : this.definition.ReferenceFieldTwo!;
-        const targetField = isEntityOne ? this.definition.ReferenceFieldTwo! : this.definition.ReferenceFieldOne;
+        const parentConfig = this.getEntityConfig(this.parentEntity);
+        if (!parentConfig) return [];
 
+        // Get all other entities' reference fields
+        const otherConfigs = [
+            this.getEntityConfig(this.definition.entityOne),
+            this.getEntityConfig(this.definition.entityTwo),
+            this.getEntityConfig(this.definition.entityThree),
+            this.getEntityConfig(this.definition.entityFour)
+        ].filter(config => config && config.entity !== this.parentEntity);
+
+        // Filter records based on parent entity and map to child IDs
         return this.data
-            .filter((record) => record && record[sourceField] === this.parentId)
-            .map((record) => record[targetField])
+            .filter((record) => record && record[parentConfig.referenceField] === this.parentId)
+            .flatMap((record) => 
+                otherConfigs.map(config => config && record[config.referenceField])
+            )
             .filter(Boolean);
     }
 
     private getTargetEntity(): EntityKeys {
         if (!this.parentEntity) throw new Error('Parent entity not set');
-        return this.parentEntity === this.definition.entityOne ? this.definition.entityTwo! : this.definition.entityOne;
+        
+        // Find the first non-parent entity in the relationship
+        const otherEntity = [
+            this.definition.entityOne,
+            this.definition.entityTwo,
+            this.definition.entityThree,
+            this.definition.entityFour
+        ].find(entity => entity && entity !== this.parentEntity);
+
+        if (!otherEntity) {
+            throw new Error('No target entity found');
+        }
+
+        return otherEntity;
     }
 
     getChildMatrxIds(): MatrxRecordId[] | null {
@@ -411,7 +478,6 @@ export class RelationshipMapper {
         return toMatrxIdFromValueBatch(targetEntity, childIds);
     }
 }
-
 
 
 

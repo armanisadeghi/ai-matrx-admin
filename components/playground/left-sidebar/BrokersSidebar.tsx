@@ -7,6 +7,7 @@ import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entit
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import BrokerRecords from '../brokers/BrokerRecords';
 import { SmartCrudButtons } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
+import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 
 const initialLayoutProps = getUnifiedLayoutProps({
     entityKey: 'dataBroker',
@@ -43,6 +44,9 @@ export default function BrokerSidebar({
     onBrokerChange: externalOnBrokerChange,
     initialSelectedBroker,
 }: BrokerSidebarProps) {
+    const selectors = createEntitySelectors('recipe');
+    const activeRecipeId = useAppSelector(selectors.selectActiveRecordId);
+
     return (
         <div className='flex flex-col h-full py-3'>
             <SmartCrudButtons
@@ -51,11 +55,15 @@ export default function BrokerSidebar({
                 layout={{ buttonLayout: 'row', buttonSize: 'icon', buttonsPosition: 'top', buttonSpacing: 'normal' }}
                 unifiedLayoutProps={layoutProps}
             />
-            <ScrollArea className='flex-1'>
+            <ScrollArea className='flex-1 scrollbar-none'>
                 <AnimatePresence>
                     {/* This would be a great place to add an "Orphan Chip Watcher" */}
 
-                    <BrokerRecords unifiedLayoutProps={layoutProps} />
+                    {/* <BrokerRecords unifiedLayoutProps={layoutProps} /> */}
+                    <BrokerRecords
+                        key={activeRecipeId} // This will force a complete remount when activeRecipeId changes
+                        unifiedLayoutProps={layoutProps}
+                    />
                 </AnimatePresence>
             </ScrollArea>
         </div>

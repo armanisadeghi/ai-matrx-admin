@@ -34,8 +34,6 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
         }) as ProcessedRecipeMessages[];
     }, [coreMessages, recipeMessages, needsReprocess]);
 
-    console.log('Processed messages:', processedMessages);
-
     const { handleDragDrop } = useMessageReordering(processedMessages, () => setNeedsReprocess(true));
 
     // Add new message management methods

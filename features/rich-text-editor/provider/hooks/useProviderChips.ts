@@ -1,35 +1,172 @@
 // hooks/useEditorChips.ts
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-    ChipData, 
-    ChipRequestOptions, 
-    EditorState 
-} from '../../types/editor.types';
+import { ChipData, ChipRequestOptions, EditorState } from '../../types/editor.types';
 import { generateChipLabel } from '../../utils/generateBrokerName';
 import { EditorStates } from '../EditorProvider';
-import { getAllColorOptions, getNextAvailableColor } from '../../utils/colorUitls';
 import { chipSyncManager } from '../../utils/ChipUpdater';
-import { replaceChipsWithStringValues } from '../../utils/editorStateUtils';
 import { MatrxRecordId } from '@/types';
+import { ColorManagement } from '../../hooks/useColorManagement';
 
-export const useEditorChips = (
+export const useProviderChips = (
     editors: EditorStates,
+    messagesLoading: boolean,
     setEditors: (updater: (prev: EditorStates) => EditorStates) => void,
-    getEditorState: (editorId: string) => EditorState
+    getEditorState: (editorId: string) => EditorState,
+    updateEditorState: (editorId: string, updates: Partial<EditorState>) => void,
+    colors: ColorManagement
 ) => {
+    const generateLabel = useCallback(
+        (editorId: string, requestOptions: ChipRequestOptions = {}): string => {
+            const editorState = getEditorState(editorId);
+            return generateChipLabel({
+                chipData: editorState.chipData,
+                requestOptions,
+            });
+        },
+        [getEditorState]
+    );
 
-    
-    const updateEditorState = useCallback((editorId: string, updates: Partial<EditorState>) => {
+    const setChipData = useCallback(
+        (editorId: string, data: ChipData[]) => {
+            updateEditorState(editorId, { chipData: data });
+        },
+        [updateEditorState]
+    );
+
+    const createNewChipData = useCallback(
+        (editorId: string, requestOptions: ChipRequestOptions = {}): ChipData => {
+            const editorState = getEditorState(editorId);
+            return {
+                id: requestOptions.id ?? uuidv4(),
+                label:
+                    requestOptions.label ??
+                    generateChipLabel({
+                        chipData: editorState.chipData,
+                        requestOptions,
+                    }),
+                stringValue: requestOptions.stringValue ?? '',
+                color: requestOptions.color ?? colors.getNextColor(),
+                brokerId: requestOptions.brokerId ?? 'disconnected',
+            };
+        },
+        [getEditorState, colors]
+    );
+
+    // Used Exclusiely by the Editor to crate a new chip
+    const addChipData = useCallback((editorId: string, data: ChipData) => {
         setEditors((prev) => {
             const current = prev.get(editorId);
             if (!current) return prev;
 
             const next = new Map(prev);
-            next.set(editorId, { ...current, ...updates });
+            next.set(editorId, {
+                ...current,
+                chipData: [...current.chipData, data],
+            });
             return next;
         });
-    }, [setEditors]);
+    }, []);
+
+    const removeChipData = useCallback(
+        (editorId: string, chipId: string) => {
+            setEditors((prev) => {
+                const current = prev.get(editorId);
+                if (!current) return prev;
+
+                const chip = current.chipData.find((c) => c.id === chipId);
+                if (chip) {
+                    colors.releaseColor(chip.color);
+                }
+
+                const next = new Map(prev);
+                next.set(editorId, {
+                    ...current,
+                    chipData: current.chipData.filter((chip) => chip.id !== chipId),
+                });
+                return next;
+            });
+
+            chipSyncManager.deleteChip(editorId, chipId);
+        },
+        [colors]
+    );
+
+    const updateChipData = useCallback(
+        (chipId: string, updates: Partial<ChipData>) => {
+            setEditors((prev) => {
+                const next = new Map(prev);
+
+                prev.forEach((state, editorId) => {
+                    const chip = state.chipData.find((c) => c.id === chipId);
+                    if (chip) {
+                        // If color is being updated, handle color management
+                        if (updates.color && updates.color !== chip.color) {
+                            colors.releaseColor(chip.color);
+                        }
+
+                        const updatedState = {
+                            ...state,
+                            chipData: state.chipData.map((c) => (c.id === chipId ? { ...c, ...updates } : c)),
+                        };
+                        next.set(editorId, updatedState);
+                        chipSyncManager.syncStateToDOM(editorId, chipId, updates);
+                    }
+                });
+
+                return next;
+            });
+        },
+        [colors]
+    );
+
+    const syncChipToBroker = useCallback(async (chipId: string, brokerId: MatrxRecordId) => {
+        return new Promise<void>((resolve) => {
+            const observer = new MutationObserver((mutations, obs) => {
+                obs.disconnect();
+                resolve();
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['data-chip-id', 'data-broker-id'],
+            });
+
+            setEditors((prev) => {
+                const next = new Map(prev);
+                prev.forEach((state, editorId) => {
+                    const chipIndex = state.chipData.findIndex((chip) => chip.id === chipId);
+                    if (chipIndex !== -1) {
+                        const updatedChipData = [...state.chipData];
+                        updatedChipData[chipIndex] = {
+                            ...updatedChipData[chipIndex],
+                            id: brokerId,
+                            brokerId: brokerId,
+                        };
+
+                        const updatedState = {
+                            ...state,
+                            chipData: updatedChipData,
+                        };
+                        next.set(editorId, updatedState);
+
+                        chipSyncManager.syncStateToDOM(editorId, chipId, {
+                            id: brokerId,
+                            brokerId: brokerId,
+                        });
+                    }
+                });
+                return next;
+            });
+
+            setTimeout(() => {
+                observer.disconnect();
+                resolve();
+            }, 1000);
+        });
+    }, []);
 
     const getAllChipData = useCallback(() => {
         const allChips: Array<ChipData> = [];
@@ -40,8 +177,6 @@ export const useEditorChips = (
         });
         return allChips;
     }, [editors]);
-
-    
 
     const getChipsForBroker = useCallback(
         (searchId: string) => {
@@ -57,274 +192,17 @@ export const useEditorChips = (
         [editors]
     );
 
-    const setChipData = useCallback(
-        (editorId: string, data: ChipData[]) => {
-            updateEditorState(editorId, { chipData: data });
-        },
-        [updateEditorState]
-    );
-
-    const setColorAssignments = useCallback(
-        (editorId: string, assignments: Map<string, string>) => {
-            updateEditorState(editorId, { colorAssignments: assignments });
-        },
-        [updateEditorState]
-    );
-
-    const createNewChipData = useCallback(
-        (editorId: string, requestOptions: ChipRequestOptions = {}): ChipData => {
-            const editorState = getEditorState(editorId);
-            const id = requestOptions.id ?? uuidv4();
-            const stringValue = requestOptions.stringValue ?? '';
-            const label =
-                requestOptions.label ??
-                generateChipLabel({
-                    chipData: editorState.chipData,
-                    requestOptions,
-                });
-            const color = requestOptions.color ?? getNextAvailableColor(editorState.colorAssignments);
-            const brokerId = requestOptions.brokerId ?? 'disconnected';
-
-            const newColorAssignments = new Map(editorState.colorAssignments).set(id, color);
-            setColorAssignments(editorId, newColorAssignments);
-
-            return {
-                id,
-                label,
-                stringValue,
-                color,
-                brokerId,
-                editorId,
-            };
-        },
-        [getEditorState, setColorAssignments]
-    );
-
-    const getColorOptions = useCallback(() => {
-        return getAllColorOptions();
-    }, []);
-
-    const getNextColor = useCallback(
-        (editorId: string): string => {
-            const editorState = getEditorState(editorId);
-            return getNextAvailableColor(editorState.colorAssignments);
-        },
-        [getEditorState]
-    );
-
-    const generateLabel = useCallback(
-        (editorId: string, requestOptions: ChipRequestOptions = {}): string => {
-            const editorState = getEditorState(editorId);
-            return generateChipLabel({
-                chipData: editorState.chipData,
-                requestOptions,
-            });
-        },
-        [getEditorState]
-    );
-
-    const addChipData = useCallback((editorId: string, data: ChipData) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, {
-                ...current,
-                chipData: [...current.chipData, data],
-                chipCounter: current.chipCounter + 1,
-            });
-            return next;
-        });
-    }, []);
-
-    const removeChipData = useCallback((editorId: string, chipId: string) => {
-        console.log('Starting removeChipData:', { editorId, chipId });
-
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            console.log('Current editor state:', {
-                hasEditor: !!current,
-                chipCount: current?.chipData?.length,
-            });
-
-            if (!current) {
-                console.log('No editor found, returning previous state');
-                return prev;
-            }
-
-            const next = new Map(prev);
-            const newColorAssignments = new Map(current.colorAssignments);
-            newColorAssignments.delete(chipId);
-
-            const newState = {
-                ...current,
-                chipData: current.chipData.filter((chip) => chip.id !== chipId),
-                colorAssignments: newColorAssignments,
-                chipCounter: current.chipCounter - 1,
-            };
-
-            next.set(editorId, newState);
-
-            console.log('Updated editor state:', {
-                chipCount: newState.chipData.length,
-                editorIds: Array.from(next.keys()),
-            });
-
-            return next;
-        });
-
-        // Sync DOM deletion
-        console.log('Attempting DOM sync');
-        const deleteResult = chipSyncManager.deleteChip(editorId, chipId);
-        console.log('DOM sync result:', deleteResult);
-
-        if (!deleteResult.success) {
-            console.error('Failed to delete chip from DOM:', deleteResult.error);
-        }
-    }, []);
-
-    const updateChipData = useCallback((chipId: string, updates: Partial<ChipData>) => {
-        setEditors((prev) => {
-            const next = new Map(prev);
-
-            // Update the chip in every editor that has it
-            prev.forEach((state, editorId) => {
-                const chipIndex = state.chipData.findIndex((chip) => chip.id === chipId);
-                if (chipIndex !== -1) {
-                    const updatedState = {
-                        ...state,
-                        chipData: state.chipData.map((chip) => (chip.id === chipId ? { ...chip, ...updates } : chip)),
-                    };
-                    next.set(editorId, updatedState);
-
-                    // Trigger DOM sync if needed
-                    chipSyncManager.syncStateToDOM(editorId, chipId, updates);
-                }
-            });
-
-            return next;
-        });
-    }, []);
-
-    const syncChipToBroker = useCallback((chipId: string, brokerId: MatrxRecordId) => {
-        setEditors((prev) => {
-            const next = new Map(prev);
-
-            prev.forEach((state, editorId) => {
-                const chipIndex = state.chipData.findIndex((chip) => chip.id === chipId);
-                if (chipIndex !== -1) {
-                    // Create updated chip data with both ID and brokerId changes
-                    const updatedChipData = [...state.chipData];
-                    updatedChipData[chipIndex] = {
-                        ...updatedChipData[chipIndex],
-                        id: brokerId, // Update chip ID to match broker
-                        brokerId: brokerId, // Set the broker ID reference
-                    };
-
-                    const updatedState = {
-                        ...state,
-                        chipData: updatedChipData,
-                    };
-                    next.set(editorId, updatedState);
-
-                    // Sync DOM with both ID changes
-                    chipSyncManager.syncStateToDOM(editorId, chipId, {
-                        id: brokerId,
-                        brokerId: brokerId,
-                    });
-                }
-            });
-
-            return next;
-        });
-    }, []);
-
-
-    const getColorForChip = useCallback(
-        (editorId: string, chipId: string) => {
-            const editorState = getEditorState(editorId);
-            return editorState.colorAssignments.get(chipId);
-        },
-        [getEditorState]
-    );
-
-    const assignColorToChip = useCallback((editorId: string, chipId: string, color: string) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            const newColorAssignments = new Map(current.colorAssignments);
-            newColorAssignments.set(chipId, color);
-
-            next.set(editorId, {
-                ...current,
-                colorAssignments: newColorAssignments,
-            });
-            return next;
-        });
-    }, []);
-
-    // Implement all operations using editorId
-    const setChipCounter = useCallback(
-        (editorId: string, value: number) => {
-            updateEditorState(editorId, { chipCounter: value });
-        },
-        [updateEditorState]
-    );
-
-    const incrementChipCounter = useCallback((editorId: string) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, { ...current, chipCounter: current.chipCounter + 1 });
-            return next;
-        });
-    }, []);
-
-    const decrementChipCounter = useCallback((editorId: string) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, { ...current, chipCounter: current.chipCounter - 1 });
-            return next;
-        });
-    }, []);
-
-    const setDraggedChip = useCallback(
-        (editorId: string, chip: HTMLElement | null) => {
-            updateEditorState(editorId, { draggedChip: chip });
-        },
-        [updateEditorState]
-    );
-    
-    
     return {
-        // Chip Counter
-        setChipCounter,
-        incrementChipCounter,
-        decrementChipCounter,
-
-        // Chip Data
+        getAllChipData,
+        getChipsForBroker,
         setChipData,
         createNewChipData,
+        generateLabel,
         addChipData,
         removeChipData,
         updateChipData,
-
-        // Color Management
-        setColorAssignments,
-        getColorForChip,
-        assignColorToChip,
-        getColorOptions,
-        getNextColor,
-
-        generateLabel
+        syncChipToBroker,
     };
 };
 
+export type ProviderChipsHook = ReturnType<typeof useProviderChips>;

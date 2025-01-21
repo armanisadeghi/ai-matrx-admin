@@ -7,13 +7,13 @@ import { Card } from '@/components/ui';
 import { MatrxRecordId } from '@/types';
 import MessageToolbar from './MessageToolbar';
 import { ProcessedRecipeMessages } from './types';
-import { AddBrokerPayload, useAddBroker } from '../hooks/brokers/useAddBroker';
 import { isEqual } from 'lodash';
-import { useEditorChips } from '@/features/rich-text-editor/hooks/useEditorChips';
 import { v4 } from 'uuid';
 import DebugPanel from './AdminToolbar';
 import { ChipData, EditorState } from '@/features/rich-text-editor/types/editor.types';
 import useChipHandlers from '../hooks/useChipHandlers';
+import { useRelatedDataBrokers } from '../hooks/useMessageBrokers';
+import { TextPlaceholderEffect } from './TextPlaceholderEffect';
 
 const DEBUG_STATUS = true;
 
@@ -47,7 +47,7 @@ interface MessageEditorProps {
     onOrderChange?: (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => void;
 }
 
-export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
+export const MessageEditor: React.FC<MessageEditorProps> = ({
     messageRecordId,
     message,
     className,
@@ -66,19 +66,43 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
     const dispatch = useAppDispatch();
     const context = useEditorContext();
     const { updateRecord } = useUpdateRecord('messageTemplate');
-    const { addBroker } = useAddBroker(messageRecordId);
-
-    const { updateBrokerConnection, updateChip } = useEditorChips(messageRecordId);
+    // const { addBroker } = useAddBroker(messageRecordId);
+    const [initialRenderHold, setInitialRenderHold] = useState(true);
 
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedContent, setLastSavedContent] = useState('');
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [debugVisible, setDebugVisible] = useState(false);
     const [lastEditorState, setLastEditorState] = useState<EditorState>(() => context.getEditorState(messageRecordId));
-
-    const { actions: messageActions, selectors: messageSelectors } = useEntityTools('messageTemplate');
-
+    const { actions: messageActions } = useEntityTools('messageTemplate');
     const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu } = useChipHandlers(messageRecordId);
+
+    const {
+        messageBrokers,
+        messageBrokerMatrxIds,
+        dataBrokerIds,
+        dataBrokerMatrxIds,
+        coreDataBrokers,
+        processedDataBrokers,
+        messagePkId,
+        messageMatrxId,
+        deleteDataBroker,
+        addBroker,
+        messageBrokerIsLoading,
+        messageBrokerLoadingState,
+    } = useRelatedDataBrokers(messageRecordId);
+
+    useEffect(() => {
+        if (messageBrokerIsLoading) {
+            setInitialRenderHold(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!messageBrokerIsLoading && initialRenderHold) {
+            setInitialRenderHold(false);
+        }
+    }, [messageBrokerIsLoading, initialRenderHold]);
 
     useEffect(() => {
         setIsEditorHidden(isCollapsed);
@@ -114,38 +138,6 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
         return () => clearInterval(interval);
     }, [context, messageRecordId, lastEditorState, onMessageUpdate]);
 
-    const createNewBroker = useCallback(
-        (chipData: ChipData) => {
-            const addBrokerPayload: AddBrokerPayload = {
-                id: v4(),
-                name: chipData.label || 'New Broker',
-                defaultValue: chipData.stringValue || '',
-                dataType: 'str' as const,
-            };
-
-            console.log('==>> createNewBroker with Chip Data:', chipData);
-            console.log('createNewBroker', addBrokerPayload);
-
-            addBroker(addBrokerPayload);
-            context.chips.syncChipToBroker(chipData.id, `id:${addBrokerPayload.id}`);
-        },
-        [addBroker, context.chips.syncChipToBroker]
-    );
-
-    const addExistingBrokerToSelection = useCallback(
-        (brokerId: string) => {
-            console.log('Adding broker to selection:', brokerId);
-        },
-        [messageRecordId]
-    );
-
-    const associateBrokerWithMessage = useCallback(
-        (brokerId: string) => {
-            console.log('Associating broker with message:', brokerId);
-        },
-        [messageRecordId]
-    );
-
     const updateMessageContent = useCallback(
         (content: string) => {
             dispatch(
@@ -177,6 +169,35 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
             setIsSaving(false);
         }, 500);
     }, [context, messageRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent]);
+
+    const createNewBroker = useCallback(
+        async (chipData: ChipData) => {
+            try {
+                const newBrokerId = v4();
+                await addBroker(newBrokerId, chipData);
+                console.log('Successfully created relationship');
+                await context.chips.syncChipToBroker(chipData.id, `id:${newBrokerId}`);
+                handleSave();
+            } catch (error) {
+                console.error('Failed to create relationship:', error);
+            }
+        },
+        [addBroker, context.chips.syncChipToBroker, handleSave]
+    );
+
+    const addExistingBrokerToSelection = useCallback(
+        (brokerId: string) => {
+            console.log('Adding broker to selection:', brokerId);
+        },
+        [messageRecordId]
+    );
+
+    const associateBrokerWithMessage = useCallback(
+        (brokerId: string) => {
+            console.log('Associating broker with message:', brokerId);
+        },
+        [messageRecordId]
+    );
 
     const handleBlur = useCallback(() => {
         handleSave();
@@ -255,28 +276,39 @@ export const ManagedMessageEditor: React.FC<MessageEditorProps> = ({
                 debug={DEBUG_STATUS}
                 onDebugClick={toggleDebug}
             />
-            {debugVisible && <DebugPanel editorId={messageRecordId} message={message}/>}
-            <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
-                <EditorWithProviders
-                    id={messageRecordId}
-                    initialContent={message.content}
-                    className={className}
-                    onBlur={handleBlur}
-                    chipHandlers={{
-                        onClick: handleChipClick,
-                        onDoubleClick: handleChipDoubleClick,
-                        onMouseEnter: handleChipMouseEnter,
-                        onMouseLeave: handleChipMouseLeave,
-                        onContextMenu: handleChipContextMenu,
-                        onNewChip: createNewBroker,
-                    }}
-                    {...props}
+            {debugVisible && (
+                <DebugPanel
+                    editorId={messageRecordId}
+                    message={message}
                 />
+            )}
+            <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
+                {initialRenderHold ? (
+                    <div className='flex items-center justify-center h-full'>
+                        <TextPlaceholderEffect />
+                    </div>
+                ) : (
+                    <EditorWithProviders
+                        id={messageRecordId}
+                        initialContent={message.content}
+                        className={className}
+                        onBlur={handleBlur}
+                        chipHandlers={{
+                            onClick: handleChipClick,
+                            onDoubleClick: handleChipDoubleClick,
+                            onMouseEnter: handleChipMouseEnter,
+                            onMouseLeave: handleChipMouseLeave,
+                            onContextMenu: handleChipContextMenu,
+                            onNewChip: createNewBroker,
+                        }}
+                        {...props}
+                    />
+                )}
             </div>
         </Card>
     );
 };
 
-ManagedMessageEditor.displayName = 'ManagedMessageEditor';
+MessageEditor.displayName = 'MessageEditor';
 
-export default ManagedMessageEditor;
+export default MessageEditor;

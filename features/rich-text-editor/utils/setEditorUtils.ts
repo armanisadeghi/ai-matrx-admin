@@ -1,3 +1,4 @@
+import { MatrxRecordId } from '@/types';
 import { ChipData } from '../types/editor.types';
 
 interface LineSegment {
@@ -13,7 +14,7 @@ interface ProcessedLine {
 }
 
 export const findChipPatterns = (text: string) => {
-    const chipPattern = /{([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}!/g;
+    const chipPattern = /\{([^}]+)\}!/g;
     const matches = [];
 
     let match;
@@ -29,18 +30,50 @@ export const findChipPatterns = (text: string) => {
     return matches;
 };
 
-export const findAllChipPatterns = (text: string) => {
-    const chipPattern = /\{(.*?)\}!/g;
-    const matches = [];
+interface ChipMatch {
+    key?: string;
+    id: string;
+    matrxRecordId?: MatrxRecordId
+    startIndex: number;
+    endIndex: number;
+    originalText: string;
+}
+
+export const findAllChipPatterns = (text: string): ChipMatch[] => {
+    const chipPattern = /\{([^}]+)\}!/g;
+    const matches: ChipMatch[] = [];
 
     let match;
     while ((match = chipPattern.exec(text)) !== null) {
-        matches.push({
-            id: match[1], // Captured content between `{` and `}`
-            startIndex: match.index,
-            endIndex: match.index + match[0].length,
-            originalText: match[0], // Full matched pattern including `{}` and `}!`
-        });
+        const content = match[1]; // Content between { and }
+        const colonIndex = content.indexOf(':');
+        
+        let chipMatch: ChipMatch;
+
+        // If there's a colon, treat the entire content as a MatrxRecordId
+        if (colonIndex !== -1) {
+            const key = content.substring(0, colonIndex).trim();
+            const value = content.substring(colonIndex + 1).trim();
+            
+            chipMatch = {
+                key,
+                id: value,
+                matrxRecordId: content.trim(), // Direct string assignment
+                startIndex: match.index,
+                endIndex: match.index + match[0].length,
+                originalText: match[0]
+            };
+        } else {
+            // If no colon, the entire content is just the id
+            chipMatch = {
+                id: content.trim(),
+                startIndex: match.index,
+                endIndex: match.index + match[0].length,
+                originalText: match[0]
+            };
+        }
+
+        matches.push(chipMatch);
     }
 
     return matches;
@@ -61,7 +94,7 @@ export const processContentLines = (content: string): ProcessedLine[] => {
             };
         }
 
-        const chipMatches = findChipPatterns(line);
+        const chipMatches = findAllChipPatterns(line);
         const segments: LineSegment[] = [];
         let currentPosition = 0;
 

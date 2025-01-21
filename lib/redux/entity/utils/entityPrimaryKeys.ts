@@ -251,3 +251,84 @@ export const toPkValue = (matrxId: MatrxRecordId): string => {
     const values = toPkValues(matrxId);
     return values?.[0] || null;
 };
+
+
+
+export function parseId(entityName: EntityKeys, id: string | number): { matrxRecordId: string; simpleId: string } {
+    if (!id || !entityName) {
+        throw new Error('Invalid arguments: entityName and id are required.');
+    }
+
+    const isMatrxRecordId = typeof id === 'string' && id.includes(':');
+
+    if (isMatrxRecordId) {
+        const simpleId = toPkValue(id);
+        if (!simpleId) {
+            throw new Error(`Unable to extract simpleId from matrxRecordId: ${id}`);
+        }
+        return { matrxRecordId: id, simpleId };
+    } else {
+        // Use toMatrxIdFromValue to generate matrxRecordId from simpleId
+        const matrxRecordId = toMatrxIdFromValue(entityName, id);
+        if (!matrxRecordId) {
+            throw new Error(`Unable to generate matrxRecordId for entity "${entityName}" with value: ${id}`);
+        }
+        return { matrxRecordId, simpleId: id.toString() };
+    }
+}
+
+
+
+type IdInput = string | number | Record<string, string>;
+
+export function parseIdAdvanced(
+    entityName: EntityKeys,
+    id: IdInput
+): { matrxRecordId: string; simpleId: string | null; primaryKeyRecord: Record<string, string> } {
+    if (!id || !entityName) {
+        throw new Error('Invalid arguments: entityName and id are required.');
+    }
+
+    // Check if input is a primary key record
+    if (typeof id === 'object' && !Array.isArray(id)) {
+        // Generate matrxRecordId from primary key record
+        const matrxRecordId = Object.entries(id)
+            .map(([key, value]) => `${key}:${value}`)
+            .join('::');
+        return {
+            matrxRecordId,
+            simpleId: null,
+            primaryKeyRecord: id,
+        };
+    }
+
+    // Check if input is matrxRecordId
+    if (typeof id === 'string' && id.includes('::')) {
+        const primaryKeyRecord = toPkId(id);
+        if (!primaryKeyRecord) {
+            throw new Error(`Invalid matrxRecordId: ${id}`);
+        }
+        const simpleId = Object.values(primaryKeyRecord).length === 1 ? Object.values(primaryKeyRecord)[0] : null;
+        return {
+            matrxRecordId: id,
+            simpleId,
+            primaryKeyRecord,
+        };
+    }
+
+    // Otherwise, assume input is simpleId
+    if (typeof id === 'string' || typeof id === 'number') {
+        const pkColumns = primaryKeys[entityName].databaseColumns;
+        if (pkColumns.length > 1) {
+            throw new Error(`Entity "${entityName}" has multiple primary keys. Provide a primary key record instead.`);
+        }
+        const matrxRecordId = `${pkColumns[0]}:${id}`;
+        return {
+            matrxRecordId,
+            simpleId: id.toString(),
+            primaryKeyRecord: { [pkColumns[0]]: id.toString() },
+        };
+    }
+
+    throw new Error('Unsupported id format.');
+}

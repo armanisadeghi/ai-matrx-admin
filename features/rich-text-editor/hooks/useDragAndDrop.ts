@@ -1,8 +1,5 @@
-// useDragAndDrop.ts
-import { useCallback } from 'react';
-import { getDropRange, isValidDropTarget } from '../utils/editorUtils';
-import { useEditorContext } from '../provider/EditorProvider';
-import { getEditorElement } from '../utils/editorUtils';
+import { useCallback, useState } from 'react';
+import { getDropRange, isValidDropTarget, getEditorElement } from '../utils/editorUtils';
 
 export const useDragAndDrop = (
     editorId: string,
@@ -11,24 +8,21 @@ export const useDragAndDrop = (
         updatePlainTextContent: () => void;
     }
 ) => {
-    const context = useEditorContext();
-    const editorState = context.getEditorState(editorId);
-    const { draggedChip } = editorState;
+    const [draggedChip, setDraggedChip] = useState<HTMLElement | null>(null);
 
-    // These handlers don't need editor element, so they remain largely unchanged
     const handleNativeDragStart = useCallback((e: DragEvent) => {
         const chip = e.target as HTMLElement;
-        context.setDraggedChip(editorId, chip);
+        setDraggedChip(chip);
         e.dataTransfer?.setData('text/plain', chip.textContent || '');
         chip.classList.add('opacity-25');
         e.stopPropagation();
-    }, [editorId]);
+    }, []);
 
     const handleNativeDragEnd = useCallback((e: DragEvent) => {
         const chip = e.target as HTMLElement;
         chip.classList.remove('opacity-25');
-        context.setDraggedChip(editorId, null);
-    }, [editorId]);
+        setDraggedChip(null);
+    }, []);
 
     const handleDragOver = useCallback(
         (e: React.DragEvent<HTMLElement>) => {
@@ -75,7 +69,7 @@ export const useDragAndDrop = (
 
             normalizeContent();
             updatePlainTextContent();
-            context.setDraggedChip(editorId, null);
+            setDraggedChip(null);
         },
         [draggedChip, editorId, normalizeContent, updatePlainTextContent]
     );

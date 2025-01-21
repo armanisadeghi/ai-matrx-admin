@@ -7,10 +7,10 @@ import { Plus } from 'lucide-react';
 import { MatrxRecordId } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
 import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
-import ManagedMessageEditor from './MessageEditorWithProvider';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { useRecipeMessages } from '../hooks/useRecipeMessages';
 import { ProcessedRecipeMessages } from './types';
+import MessageEditor from './MessageEditor';
 
 const INITIAL_PANELS: ProcessedRecipeMessages[] = [
     {
@@ -172,7 +172,7 @@ function MessagesContainer({ recipeRecordId, relationshipHook }: MessagesContain
                                 onExpand={() => handlePanelExpand(message.matrxRecordId)}
                                 order={index + 1}
                             >
-                                <ManagedMessageEditor
+                                <MessageEditor
                                     messageRecordId={message.matrxRecordId}
                                     message={message}
                                     deleteMessage={deleteMessage}

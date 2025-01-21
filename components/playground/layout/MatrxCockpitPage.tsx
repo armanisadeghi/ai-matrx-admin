@@ -17,7 +17,12 @@ import { getLayoutOptions } from './constants';
 import { useJoinedActiveParent } from '@/app/entities/hooks/relationships/useRelationships';
 import { createRelationshipDefinition } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 
-export const recipeMessageDef = createRelationshipDefinition('recipeMessage', 'recipe', 'messageTemplate', 'order');
+export const recipeMessageDef = createRelationshipDefinition({
+    relationshipKey: 'recipeMessage',
+    parent: 'recipe',
+    child: 'messageTemplate',
+    orderField: 'order',
+});
 
 export default function MatrxCockpitPage() {
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);

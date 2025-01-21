@@ -38,7 +38,7 @@ export const createChipElement = (chipId: string): HTMLSpanElement => {
     return chip;
 };
 
-export const getDropRange = (x: number, y: number, editor: HTMLDivElement): Range | null => {
+export const getDropRangeOld = (x: number, y: number, editor: HTMLDivElement): Range | null => {
     if (!editor) return null;
 
     const range = document.caretRangeFromPoint(x, y);
@@ -47,7 +47,7 @@ export const getDropRange = (x: number, y: number, editor: HTMLDivElement): Rang
     return range;
 };
 
-export const isValidDropTarget = (node: Node, editorRef: HTMLDivElement): boolean => {
+export const isValidDropTargetOld = (node: Node, editorRef: HTMLDivElement): boolean => {
     let current: Node | null = node;
     while (current && current !== editorRef) {
         if (current instanceof Element && current.hasAttribute('data-chip-id')) {
@@ -57,6 +57,17 @@ export const isValidDropTarget = (node: Node, editorRef: HTMLDivElement): boolea
     }
     return true;
 };
+
+export const getDropRange = (x: number, y: number, editor: HTMLDivElement): Range | null => {
+    const range = document.caretRangeFromPoint(x, y);
+    if (!range || !editor.contains(range.commonAncestorContainer)) return null;
+    return range;
+};
+
+export const isValidDropTarget = (node: Node, editor: HTMLDivElement): boolean => {
+    return editor.contains(node);
+};
+
 
 export const extractTextContent = (editor: HTMLDivElement): string => {
     let text = '';

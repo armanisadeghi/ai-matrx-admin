@@ -1,5 +1,5 @@
-import { EntityAnyFieldKey, EntityKeys } from "@/types";
-import { RELATIONSHIP_DEFINITIONS } from "./relationshipDefinitions";
+import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { RELATIONSHIP_DEFINITIONS } from './relationshipDefinitions';
 
 export type simpleRelDef = {
     parent: {
@@ -27,53 +27,59 @@ export type simpleRelDef = {
     };
 };
 
-export function createRelationshipDefinition(
-    relationshipKey: keyof typeof RELATIONSHIP_DEFINITIONS,
-    parentEntityKey: EntityKeys,
-    childEntityKey: EntityKeys,
-    orderPositionField?: EntityAnyFieldKey<EntityKeys>
-): simpleRelDef {
-    const fullRel = RELATIONSHIP_DEFINITIONS[relationshipKey];
-    
-    // Create pairs of entity info including both the entity's field and the joining table's reference field
-    const entityPairs = [
-        { 
-            entity: fullRel.entityOne, 
-            entityField: fullRel.entityOneField,
-            joiningTableField: fullRel.ReferenceFieldOne 
-        },
-        { 
-            entity: fullRel.entityTwo, 
-            entityField: fullRel.entityTwoField,
-            joiningTableField: fullRel.ReferenceFieldTwo
-        },
-        { 
-            entity: fullRel.entityThree, 
-            entityField: fullRel.entityThreeField,
-            joiningTableField: fullRel.ReferenceFieldThree 
-        },
-        { 
-            entity: fullRel.entityFour, 
-            entityField: fullRel.entityFourField,
-            joiningTableField: fullRel.ReferenceFieldFour
-        }
-    ].filter(pair => pair.entity); // Filter out any undefined entities
+export interface RelationshipDefinitionInput {
+    relationshipKey: keyof typeof RELATIONSHIP_DEFINITIONS;
+    parent: EntityKeys;
+    child: EntityKeys;
+    orderField?: EntityAnyFieldKey<EntityKeys>;
+}
 
-    const parentInfo = entityPairs.find(e => e.entity === parentEntityKey);
-    const childInfo = entityPairs.find(e => e.entity === childEntityKey);
+export function createRelationshipDefinition({
+    relationshipKey,
+    parent,
+    child,
+    orderField,
+}: RelationshipDefinitionInput): simpleRelDef {
+    const fullRel = RELATIONSHIP_DEFINITIONS[relationshipKey];
+
+    const entityPairs = [
+        {
+            entity: fullRel.entityOne,
+            entityField: fullRel.entityOneField,
+            joiningTableField: fullRel.ReferenceFieldOne,
+        },
+        {
+            entity: fullRel.entityTwo,
+            entityField: fullRel.entityTwoField,
+            joiningTableField: fullRel.ReferenceFieldTwo,
+        },
+        {
+            entity: fullRel.entityThree,
+            entityField: fullRel.entityThreeField,
+            joiningTableField: fullRel.ReferenceFieldThree,
+        },
+        {
+            entity: fullRel.entityFour,
+            entityField: fullRel.entityFourField,
+            joiningTableField: fullRel.ReferenceFieldFour,
+        },
+    ].filter((pair) => pair.entity);
+
+    const parentInfo = entityPairs.find((e) => e.entity === parent);
+    const childInfo = entityPairs.find((e) => e.entity === child);
 
     if (!parentInfo || !childInfo) {
-        throw new Error(`Could not find ${parentEntityKey} or ${childEntityKey} in relationship definition`);
+        throw new Error(`Could not find ${parent} or ${child} in relationship definition`);
     }
 
     return {
         parent: {
-            name: parentEntityKey,
-            referenceField: parentInfo.entityField
+            name: parent,
+            referenceField: parentInfo.entityField,
         },
         child: {
-            name: childEntityKey,
-            referenceField: childInfo.entityField
+            name: child,
+            referenceField: childInfo.entityField,
         },
         join: {
             name: fullRel.joiningTable,
@@ -81,15 +87,34 @@ export function createRelationshipDefinition(
             parentField: parentInfo.joiningTableField,
             childField: childInfo.joiningTableField,
             additionalFields: fullRel.additionalFields,
-            orderPositionField: orderPositionField || null
-        }
+            orderPositionField: orderField || null,
+        },
     };
 }
 
-// Example usage:
-export const recipeMessageDef = createRelationshipDefinition(
-    'recipeMessage',
-    'recipe', 
-    'messageTemplate',
-    'order'
-);
+
+export const recipeMessageDef = createRelationshipDefinition({
+    relationshipKey: 'recipeMessage',
+    parent: 'recipe',
+    child: 'messageTemplate',
+    orderField: 'order',
+});
+
+const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
+    recipeMessage: {
+        relationshipKey: 'recipeMessage',
+        parent: 'recipe',
+        child: 'messageTemplate',
+        orderField: 'order',
+    },
+    messageBroker: {
+        relationshipKey: 'messageBroker',
+        parent: 'messageTemplate',
+        child: 'dataBroker',
+    }
+} as const;
+
+export type KnownRelDef = keyof typeof RELATIONSHIP_INPUTS;
+
+export const getStandardRelationship = (key: KnownRelDef) =>
+    createRelationshipDefinition(RELATIONSHIP_INPUTS[key]);

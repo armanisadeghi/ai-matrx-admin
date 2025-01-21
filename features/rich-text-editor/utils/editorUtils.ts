@@ -208,6 +208,8 @@ export const setupEditorAttributes = (editor: HTMLDivElement, componentId: strin
     editor.setAttribute('spellcheck', 'true');
     editor.setAttribute('data-editor-root', 'true');
     editor.setAttribute('data-editor-id', componentId);
+    // Explicitly mark as drop target
+    editor.setAttribute('data-drop-target', 'true');
 };
 
 export const prepareChipRequestOptions = (existingChipData?: ChipData, selectedText?: string): ChipRequestOptions => {

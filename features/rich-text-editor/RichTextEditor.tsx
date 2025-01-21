@@ -31,6 +31,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     chipHandlers: handlers,
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const initializedRef = useRef(false);
     const blurListenersRef = useRef<Set<() => void>>(new Set());
     const [selectionState, setSelectionState] = useState<SelectionState>({
@@ -117,13 +118,22 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         if (!editor || initializedRef.current) return;
 
         setupEditorAttributes(editor, componentId);
+        console.log('Setting initial content:', initialContent);
 
         // Use our new setContent method for initial content
         if (initialContent && !initializedRef.current) {
             setContent(initialContent).then(() => {
                 initializedRef.current = true;
             });
+            console.log('Setting initial content:', initialContent);
         }
+    }, []);
+
+    useEffect(() => {
+        if (isProcessing) return;
+        const editor = editorRef.current;
+        if (!editor || initializedRef.current) return;
+        console.log('--Additional useEffect:', initialContent);
 
         const handlePaste = (e: ClipboardEvent) => {
             e.preventDefault();
@@ -136,37 +146,40 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         editor.addEventListener('paste', handlePaste);
         editor.addEventListener('dragstart', handleNativeDragStart);
         editor.addEventListener('dragend', handleNativeDragEnd);
+        console.log('event listeners added');
 
         return () => {
             editor.removeEventListener('paste', handlePaste);
             editor.removeEventListener('dragstart', handleNativeDragStart);
             editor.removeEventListener('dragend', handleNativeDragEnd);
         };
-    }, [componentId, initialContent, handleNativeDragStart, handleNativeDragEnd, updatePlainTextContent, setContent]);
+    }, [componentId, initialContent, handleNativeDragStart, handleNativeDragEnd, updatePlainTextContent]);
 
     // Handle content changes
     useEffect(() => {
+        console.log('Content changed:', plainTextContent);
         onChange?.(plainTextContent);
     }, [onChange, plainTextContent]);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+        console.log('Input event:', e.currentTarget.textContent);
         updatePlainTextContent();
         onChange?.(e.currentTarget.textContent || '');
     };
 
     const handleConvertToChip = () => {
+        console.log('Convert to chip');
         if (selectionState.hasSelection) {
             convertSelectionToChip();
         }
     };
 
     const handleBlurInternal = useCallback(() => {
+        console.log('Blur event');
         normalizeContent();
         onBlur?.();
         blurListenersRef.current.forEach((listener) => listener());
     }, [normalizeContent, onBlur]);
-
-
 
     return (
         <div className='relative group w-full h-full flex flex-col'>

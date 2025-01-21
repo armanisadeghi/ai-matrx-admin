@@ -838,6 +838,10 @@ export type EntityDataWithKey<TEntity extends EntityKeys> = EntityData<TEntity> 
     matrxRecordId: MatrxRecordId;
 };
 
+export type ProcessedEntityData<TEntity extends EntityKeys> = EntityData<TEntity> & {
+    matrxRecordId?: MatrxRecordId;
+    [key: string]: any;
+};
 
 export type registeredFunctionData = EntityData<'registeredFunction'>;
 export type userPreferencesData = EntityData<'userPreferences'>;

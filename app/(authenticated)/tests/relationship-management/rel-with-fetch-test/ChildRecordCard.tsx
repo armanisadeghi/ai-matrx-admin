@@ -3,7 +3,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { EntityDataWithKey, EntityKeys } from '@/types';
+import { EntityDataWithKey, EntityKeys, ProcessedEntityData } from '@/types';
 
 export const ChildRecordsCard = memo(
     ({
@@ -11,7 +11,7 @@ export const ChildRecordsCard = memo(
         isLoading,
         loadingState,
     }: {
-        childRecords: EntityDataWithKey<EntityKeys>[];
+        childRecords: ProcessedEntityData<EntityKeys>[];
         isLoading: boolean;
         loadingState: { parent: boolean; join: boolean; child: boolean };
     }) => {

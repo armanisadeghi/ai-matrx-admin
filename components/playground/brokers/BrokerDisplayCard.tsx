@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useCallback, useState, useMemo, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { MatrxRecordId } from '@/types';
+import { EntityDataWithKey, MatrxRecordId } from '@/types';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import BrokerCardHeader from './BrokerCardHeader';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { TailwindColor } from '@/features/rich-text-editor/constants';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ChipColorPicker from '@/features/rich-text-editor/admin/sidebar-analyzer/ChipColorPicker';
-import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
+import { EnhancedRecord, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 
 type DataBrokerData = {
@@ -25,9 +24,13 @@ type DataBrokerData = {
     defaultComponent?: string;
 }
 
+interface EnhancedBrokerRecord extends EnhancedRecord {
+    chips?: ChipData[];
+}
+
 interface BrokerDisplayCardProps {
     recordId: MatrxRecordId | null;
-    record: DataBrokerData | null;
+    record: EntityDataWithKey<'broker'> | null;
     unifiedLayoutProps: UnifiedLayoutProps;
     chips: ChipData[];
     onDelete?: (recordId: MatrxRecordId) => void;
@@ -66,6 +69,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
     const handleBrokerFieldUpdate = useCallback(
         (field: string, value: any) => {
             if (!hasChips || !onChipUpdate) return;
+            console.log('== -- === -- - field', field, 'value', value);
 
             // Sync relevant broker fields to all associated chips
             switch (field) {
@@ -199,28 +203,6 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                                             entityKey='dataBroker'
                                             onRecordChange={(record) => handleOrphanChipUpdate('brokerId', record.recordKey)}
                                             />
-
-
-                                            {/* <Select
-                                                value={chips[0]?.brokerId || ''}
-                                                onValueChange={(value) => handleOrphanChipUpdate('brokerId', value)}
-                                            >
-                                                <SelectTrigger className='h-8'>
-                                                    <SelectValue>
-                                                        {brokerOptions?.find((b) => b.recordKey === chips[0]?.brokerId)?.displayValue || 'Select Broker'}
-                                                    </SelectValue>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {brokerOptions?.map(({ recordKey, displayValue }) => (
-                                                        <SelectItem
-                                                            key={recordKey}
-                                                            value={recordKey}
-                                                        >
-                                                            {displayValue}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select> */}
                                         </div>
                                     </>
                                 )}

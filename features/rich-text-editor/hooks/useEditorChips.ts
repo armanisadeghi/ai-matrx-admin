@@ -1,7 +1,7 @@
 // useEditorChips.ts
 import { useCallback, useEffect } from 'react';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
-import { DataBrokerData, MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types';
 import { getEditorElement } from '../utils/editorUtils';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 

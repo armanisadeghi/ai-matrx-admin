@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,29 +11,63 @@ import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnaly
 import ChildRecordsCard from './ChildRecordCard';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
-import JsonBuilder from './JsonBuilder'; // Import the new component
-import { createRelationshipDefinition } from '@/app/entities/hooks/relationships/definitionConversionUtil';
+import { createRelationshipDefinition, RelationshipDefinitionInput } from '@/app/entities/hooks/relationships/definitionConversionUtil';
+import EntityJsonBuilder from './EntityJsonBuilder';
+import { useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 
-export const recipeMessageDef = createRelationshipDefinition(
-    'recipeMessage',
-    'recipe', 
-    'messageTemplate',
-    'order'
-);
-
+// Define the relationship inputs as constants
+const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
+    recipeMessage: {
+        relationshipKey: 'recipeMessage',
+        parent: 'recipe',
+        child: 'messageTemplate',
+        orderField: 'order',
+    },
+    messageBroker: {
+        relationshipKey: 'messageBroker',
+        parent: 'messageTemplate',
+        child: 'dataBroker',
+    }
+} as const;
 
 export default function RelationshipTester() {
-    // UI States
+    // Get initial definitions list
+    const availableDefinitions = useMemo(() => 
+        Object.entries(RELATIONSHIP_INPUTS).map(([key, input]) => ({
+            key,
+            input,
+            definition: createRelationshipDefinition(input)
+        })), []
+    );
+
+    // State management
+    const [selectedKey, setSelectedKey] = useState<string>(availableDefinitions[0].key);
     const [inputParentId, setInputParentId] = useState('');
     const [activeParentId, setActiveParentId] = useState('');
     const [selectedChildId, setSelectedChildId] = useState<string>('');
     const [childDataInput, setChildDataInput] = useState('');
     const [joinDataInput, setJoinDataInput] = useState('');
 
-    const { mapper, childRecords, parentMatrxid, deleteChildAndJoin, createRelatedRecords, isLoading, loadingState } = useRelWithFetch(
-        recipeMessageDef,
+    // Get current definition
+    const currentDefinition = useMemo(() => 
+        availableDefinitions.find(def => def.key === selectedKey)?.definition,
+        [selectedKey, availableDefinitions]
+    );
+
+    const { mapper, childRecords, processedChildRecords, parentMatrxid, deleteChildAndJoin, createRelatedRecords, isLoading, loadingState } = useRelFetchProcessing(
+        currentDefinition!,
         activeParentId
     );
+
+    const handleDefinitionChange = (key: string) => {
+        setSelectedKey(key);
+        // Reset states when definition changes
+        setInputParentId('');
+        setActiveParentId('');
+        setSelectedChildId('');
+        setChildDataInput('');
+        setJoinDataInput('');
+    };
 
     const handleLoadData = () => {
         setActiveParentId(inputParentId);
@@ -64,10 +98,12 @@ export default function RelationshipTester() {
         }
     };
 
-    const handleRecipeChange = (record: QuickReferenceRecord) => {
+    const handleParentChange = (record: QuickReferenceRecord) => {
         setInputParentId(record.primaryKeyValues.id);
         setActiveParentId(record.primaryKeyValues.id);
     };
+
+    if (!currentDefinition) return null;
 
     return (
         <div className='p-4 w-full space-y-4'>
@@ -77,12 +113,35 @@ export default function RelationshipTester() {
                     <CardTitle>Relationship Testing Interface</CardTitle>
                 </CardHeader>
                 <CardContent className='grid grid-cols-2 gap-4'>
+                    {/* Definition Selector */}
+                    <div className='col-span-2 space-y-2'>
+                        <label className='text-sm font-medium'>Relationship Definition</label>
+                        <Select
+                            value={selectedKey}
+                            onValueChange={handleDefinitionChange}
+                        >
+                            <SelectTrigger className='w-full'>
+                                <SelectValue placeholder='Select relationship definition' />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableDefinitions.map(({ key, definition }) => (
+                                    <SelectItem
+                                        key={key}
+                                        value={key}
+                                    >
+                                        {key} ({definition.parent.name} ↔ {definition.child.name})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     <div className='col-span-2 space-y-2'>
                         <label className='text-sm font-medium'>Parent ID</label>
                         <div className='flex gap-2'>
                             <QuickRefSelect
-                                entityKey='recipe'
-                                onRecordChange={handleRecipeChange}
+                                entityKey={currentDefinition.parent.name}
+                                onRecordChange={handleParentChange}
                             />
                             <Input
                                 value={inputParentId}
@@ -99,14 +158,15 @@ export default function RelationshipTester() {
                         </div>
                     </div>
 
-                    <JsonBuilder
-                        label='Child Data (messageTemplate)'
+                    <EntityJsonBuilder
+                        entity={currentDefinition.child.name}
+                        label={`Child Data (${currentDefinition.child.name})`}
                         value={childDataInput}
                         onChange={setChildDataInput}
                     />
-
-                    <JsonBuilder
-                        label='Join Data (recipeMessage)'
+                    <EntityJsonBuilder
+                        entity={currentDefinition.join.name}
+                        label={`Join Data (${currentDefinition.join.name})`}
                         value={joinDataInput}
                         onChange={setJoinDataInput}
                     />
@@ -155,7 +215,7 @@ export default function RelationshipTester() {
                                     <SelectValue placeholder='Select child record' />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {childRecords.map((record) => (
+                                    {processedChildRecords.map((record) => (
                                         <SelectItem
                                             key={record.matrxRecordId}
                                             value={record.matrxRecordId}
@@ -170,7 +230,7 @@ export default function RelationshipTester() {
                 </Card>
                 {/* Child Records Column */}
                 <ChildRecordsCard
-                    childRecords={childRecords}
+                    childRecords={processedChildRecords}
                     isLoading={isLoading}
                     loadingState={loadingState}
                 />
@@ -195,7 +255,7 @@ export default function RelationshipTester() {
             >
                 <EnhancedEntityAnalyzer
                     defaultExpanded={false}
-                    selectedEntityKey='recipe'
+                    selectedEntityKey={currentDefinition.parent.name}
                 />
             </MatrxDynamicPanel>
         </div>

@@ -8,6 +8,8 @@ import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
+import ChipDisplay from './ChipDisplay';
+import BrokerDisplayCard from './BrokerDisplayCard';
 
 const BrokerRecords = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
     const entityName = 'dataBroker' as EntityKeys;
@@ -27,7 +29,7 @@ const BrokerRecords = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayo
 
     // Get unmatched chips (excluding those that are already displayed in broker cards)
     const unmatchedChips = useMemo(() => {
-        const allChips = context.getAllChipData() || [];
+        const allChips = context.chips.getAllChipData() || [];
         return allChips.filter(chip => {
             if (!chip.editorId) return false;
             // Filter out chips that are already matched with displayed brokers
@@ -52,7 +54,7 @@ const BrokerRecords = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayo
 
     const handleChipUpdate = useCallback(
         (chipId: string, updates: Partial<ChipData>) => {
-            context.updateChipData(chipId, updates);
+            context.chips.updateChipData(chipId, updates);
         },
         [context]
     );

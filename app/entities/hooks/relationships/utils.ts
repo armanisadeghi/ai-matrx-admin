@@ -1,4 +1,4 @@
-import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey } from '@/types';
+import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey, ProcessedEntityData } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 import { simpleRelDef } from './definitionConversionUtil';
@@ -271,7 +271,6 @@ export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefi
     return processedRecords;
 }
 
-type JoinedEntityData = EntityDataWithKey<EntityKeys> & EntityDataWithKey<EntityKeys>;
 
 type ProcessJoinedDataOptions = {
     childRecords: EntityDataWithKey<EntityKeys>[];
@@ -290,7 +289,7 @@ export function processJoinedData({
     relationshipDefinition, 
     filterStatus, 
     parentMatrxId 
-}: ProcessJoinedDataOptions): JoinedEntityData[] {
+}: ProcessJoinedDataOptions): ProcessedEntityData<EntityKeys>[] {
     if (!childRecords?.length || !joiningRecords?.length) {
         return childRecords;
     }

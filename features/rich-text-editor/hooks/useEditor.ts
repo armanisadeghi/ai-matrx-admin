@@ -63,11 +63,8 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
 
     return {
         // State from editorState
-        chipCounter: editorState.chipCounter,
-        draggedChip: editorState.draggedChip,
         plainTextContent: editorState.plainTextContent,
         chipData: editorState.chipData,
-        colorAssignments: editorState.colorAssignments,
 
         // Ref Manager methods
         insertChip,
@@ -88,8 +85,6 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
         handleStyleChange,
         updatePlainTextContent,
         normalizeContent,
-        removeChipData: (chipId: string) => context.removeChipData(editorId, chipId),
-        createNewChipData: (options: ChipRequestOptions) => context.createNewChipData(editorId, options),
     };
 };
 

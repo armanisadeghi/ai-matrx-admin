@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { DefinedRelationship, RelatedDataManager } from '../relationships/relationshipDefinitions';
 
 interface RawData {
-    child: Record<string, unknown>;
-    joining?: Record<string, unknown>;
+    child: Record<any, unknown>;
+    joining?: Record<any, unknown>;
 }
 interface UseCoordinatedCreateOptions {
     joiningEntityKey: EntityKeys;

@@ -58,7 +58,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 
     useEffect(() => {
         const interval = setInterval(() => {
-            if (!context.isEditorRegistered(id)) return;
+            if (!context.registry.isEditorRegistered(id)) return;
 
             const state = context.getEditorState(id);
             const processedContent = context.getTextWithChipsReplaced(id, true);

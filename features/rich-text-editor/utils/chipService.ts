@@ -103,6 +103,7 @@ export function createCompleteChipStructure(
     } = {}
 ) {
     // Create wrapper
+    console.log('--Creating chip structure:', chipData);
     const chipWrapper = document.createElement('span');
     const debugWrapperClass = `chip-wrapper border border-${chipData.color}-500`;
     chipWrapper.className = debugMode ? debugWrapperClass : 'chip-wrapper';

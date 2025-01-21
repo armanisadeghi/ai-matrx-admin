@@ -132,7 +132,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             },
 
             fetchOneWithFkIfk: (state: EntityState<TEntity>, action: PayloadAction<FetchOneWithFkIfkPayload>) => {
-                entityLogger.log('debug', 'fetchOneWithFkIfk set to loading', action.payload);
+                entityLogger.log('info', '------ > fetchOneWithFkIfk set to loading', action.payload);
                 setLoading(state, 'FETCH_ONE_WITH_FK_IFK');
             },
 

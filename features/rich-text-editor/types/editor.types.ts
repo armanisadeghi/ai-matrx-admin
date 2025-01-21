@@ -3,6 +3,18 @@ import { MatrxRecordId } from '@/types';
 import { RefObject } from 'react';
 import { TailwindColor } from '../constants';
 
+export interface LayoutMetadata {
+    position: string | number;
+    type?: string;
+    isVisible: boolean;
+}
+
+export interface EditorState {
+    plainTextContent: string;
+    chipData: ChipData[];
+    layout?: LayoutMetadata;
+}
+
 // Base Types
 export interface ChipRequestOptions {
     id?: string;
@@ -24,15 +36,6 @@ export interface ChipData {
 export interface TextStyle {
     command: string;
     value?: string | null;
-}
-
-// State Types
-export interface EditorState {
-    plainTextContent: string;
-    chipData: ChipData[];
-    colorAssignments: Map<string, string>;
-    chipCounter?: number;
-    draggedChip?: HTMLElement | null;
 }
 
 export interface EditorInstanceState {
@@ -83,48 +86,7 @@ export type EditorStateUpdate =
     | { type: 'updateContent'; content: string }
     | { type: 'updateContent'; content: string }
     | { type: 'incrementChipCounter' }
-    | { type: 'applyStyle'; style: TextStyle }
-
-
-
-export interface EditorProviderContext {
-    // Editor Instance Management
-    registerEditor: (id: string, ref: RefObject<HTMLDivElement>) => void;
-    unregisterEditor: (id: string) => void;
-
-    // Editor State Access
-    getEditorState: (id: string) => EditorInstanceState;
-    updateEditorState: (editorId: string, update: EditorStateUpdate) => void;
-
-    // Content Management
-    setEditorContent: (id: string, content: ContentInput) => void;
-    getPlainTextContent: (id: string) => string;
-    getFullTextContent: (id: string) => string;
-
-    // Chip Management
-    insertChip: (editorId: string, options: ChipRequestOptions) => void;
-    updateChip: (chipId: string, updates: Partial<ChipData>) => void;
-    removeChip: (chipId: string) => void;
-
-    // Chip Queries
-    findChipById: (chipId: string, scope?: 'editor' | 'global') => ChipData | null;
-    findChipsByBrokerId: (brokerId: MatrxRecordId, scope?: 'editor' | 'global') => ChipData[];
-    getAllChips: (scope?: 'editor' | 'global') => ChipData[];
-    getChipContent: (chipId: string) => string;
-
-    // Broker Operations
-    getBrokerAssociations: (brokerId: MatrxRecordId) => Set<string>;
-    getUniqueBrokerIds: () => MatrxRecordId[];
-
-    // DOM Verification
-    verifyChipsFromDOM: () => ChipVerificationResult;
-    recoverChipContent: (chipId: string) => string;
-    analyzeChipDistribution: () => { [key: string]: number };
-
-    // Subscriptions
-    subscribeToEditorChanges: (editorId: string, callback: (state: EditorInstanceState) => void) => () => void;
-    subscribeToChipChanges: (callback: (chips: Map<string, ChipData>) => void) => () => void;
-}
+    | { type: 'applyStyle'; style: TextStyle };
 
 // Hook Result Types
 export interface UseEditorResult {
@@ -148,10 +110,7 @@ export interface UseEditorChipsResult {
     convertSelectionToChip: () => boolean;
     getBrokerChips: (brokerId: MatrxRecordId) => ChipData[];
     createNewChipData: (editorId: string, options: ChipRequestOptions) => ChipData;
-
 }
-
-
 
 export interface UseEditorStylesResult {
     applyStyle: (style: TextStyle) => void;
@@ -190,5 +149,3 @@ export interface DOMSnapshot {
         caretPosition: number;
     };
 }
-
-

@@ -10,13 +10,14 @@ import {
 } from '../utils/editorUtils';
 import { debugEditorState } from '../utils/debugUtils';
 import { ChipHandlers, createCompleteChipStructure } from '../utils/chipService';
+import { EditorContextValue } from '../provider/EditorProvider';
 
-export const useChipCreation = (editorId: string, chipHandlers: ChipHandlers, dragConfig: any, context: any, updatePlainTextContent: () => void) => {
+export const useChipCreation = (editorId: string, chipHandlers: ChipHandlers, dragConfig: any, context: EditorContextValue, updatePlainTextContent: () => void) => {
     const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
 
     const insertChip = useCallback(() => {
         const editor = getEditor();
-        const chipData = context.createNewChipData(editorId);
+        const chipData = context.chips.createNewChipData(editorId);
         const beforeState = debugEditorState(editor);
         const selection = window.getSelection();
 
@@ -63,8 +64,7 @@ export const useChipCreation = (editorId: string, chipHandlers: ChipHandlers, dr
             console.warn('Nested spans increased during chip insertion');
         }
 
-        context.incrementChipCounter(editorId);
-        context.addChipData(editorId, chipData);
+        context.chips.addChipData(editorId, chipData);
         updatePlainTextContent();
         chipHandlers?.onNewChip?.(chipData);
     }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
@@ -75,7 +75,7 @@ export const useChipCreation = (editorId: string, chipHandlers: ChipHandlers, dr
         const { text, range } = getSelectedText();
         if (!range) return insertChip();
 
-        const chipData = context.createNewChipData(editorId, { stringValue: text });
+        const chipData = context.chips.createNewChipData(editorId, { stringValue: text });
 
         if (!editor) return;
 
@@ -86,8 +86,7 @@ export const useChipCreation = (editorId: string, chipHandlers: ChipHandlers, dr
 
         positionCursorAfterChip(anchorNode, window.getSelection()!);
 
-        context.incrementChipCounter(editorId);
-        context.addChipData(editorId, chipData);
+        context.chips.addChipData(editorId, chipData);
         updatePlainTextContent();
         chipHandlers?.onNewChip?.(chipData);
         return true;

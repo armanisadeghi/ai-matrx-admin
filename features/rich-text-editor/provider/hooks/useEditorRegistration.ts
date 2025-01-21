@@ -1,5 +1,6 @@
 import { useRef, useCallback } from 'react';
-import { EditorState, EditorStates, getInitialEditorState, LayoutMetadata } from '../EditorProvider';
+import { EditorStates, getInitialEditorState } from '../EditorProvider';
+import { LayoutMetadata } from '../../types/editor.types';
 
 
 export const useEditorRegistration = (editors: EditorStates, setEditors: (updater: (prev: EditorStates) => EditorStates) => void) => {
@@ -58,3 +59,5 @@ export const useEditorRegistration = (editors: EditorStates, setEditors: (update
         isEditorRegistered,
     };
 };
+
+export type EditorRegistration = ReturnType<typeof useEditorRegistration>;
