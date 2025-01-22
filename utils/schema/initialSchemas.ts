@@ -1,7 +1,7 @@
 // File: lib/initialSchemas.ts
 
 import { AutomationTableName, DataStructure, FetchStrategy, NameFormat, FieldDataOptionsType } from '@/types/AutomationSchemaTypes';
-import { AutomationEntity, EntityData, EntityDataMixed, EntityDataOptional } from '@/types/entityTypes';
+import { AutomationEntity, EntityData, EntityDataMixed, EntityDataOptional, EntityDataWithKey, ProcessedEntityData } from '@/types/entityTypes';
 
 export const initialAutomationTableSchema = {
     action: {
@@ -8937,7 +8937,7 @@ export const initialAutomationTableSchema = {
                 isRequired: false,
                 maxLength: null,
                 isArray: false,
-                defaultValue: '' as const,
+                defaultValue: '6463aae0-9480-4c4c-90b8-e3ce9c11a103' as const,
                 isPrimaryKey: false,
                 isDisplayField: false,
                 defaultGeneratorFunction: '',
@@ -8978,6 +8978,204 @@ export const initialAutomationTableSchema = {
                 foreignKeyReference: { table: 'data_input_component', column: 'id', entity: 'dataInputComponent', field: 'id' },
                 description:
                     '"Default Component" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.',
+            },
+            color: {
+                fieldNameFormats: {
+                    frontend: 'color',
+                    backend: 'color',
+                    database: 'color',
+                    pretty: 'Color',
+                    component: 'Color',
+                    kebab: 'color',
+                    sqlFunctionRef: 'p_color',
+                    RestAPI: 'color',
+                    GraphQL: 'color',
+                    custom: 'color',
+                } as const,
+
+                uniqueColumnId: 'supabase_automation_matrix:public:data_broker:color',
+                uniqueFieldId: 'supabase_automation_matrix:dataBroker:color',
+
+                dataType: 'string' as const,
+                isRequired: false,
+                maxLength: null,
+                isArray: false,
+                defaultValue: 'blue' as const,
+                isPrimaryKey: false,
+                isDisplayField: false,
+                defaultGeneratorFunction: '',
+                validationFunctions: [],
+                exclusionRules: [],
+                defaultComponent: 'SELECT' as const,
+                componentProps: {
+                    subComponent: 'enumSelect',
+                    variant: 'default',
+                    section: 'default',
+                    placeholder: 'default',
+                    size: 'default',
+                    textSize: 'default',
+                    textColor: 'default',
+                    rows: 'default',
+                    animation: 'default',
+                    fullWidthValue: 'default',
+                    fullWidth: 'default',
+                    disabled: 'default',
+                    className: 'default',
+                    type: 'default',
+                    onChange: 'default',
+                    onBlur: 'default',
+                    formatString: 'default',
+                    min: 'default',
+                    max: 'default',
+                    step: 'default',
+                    numberType: 'default',
+                    options: [
+                        {
+                            label: 'Amber',
+                            value: 'amber',
+                        },
+                        {
+                            label: 'Blue',
+                            value: 'blue',
+                        },
+                        {
+                            label: 'Cyan',
+                            value: 'cyan',
+                        },
+                        {
+                            label: 'Emerald',
+                            value: 'emerald',
+                        },
+                        {
+                            label: 'Fuchsia',
+                            value: 'fuchsia',
+                        },
+                        {
+                            label: 'Gray',
+                            value: 'gray',
+                        },
+                        {
+                            label: 'Green',
+                            value: 'green',
+                        },
+                        {
+                            label: 'Indigo',
+                            value: 'indigo',
+                        },
+                        {
+                            label: 'Lime',
+                            value: 'lime',
+                        },
+                        {
+                            label: 'Neutral',
+                            value: 'neutral',
+                        },
+                        {
+                            label: 'Orange',
+                            value: 'orange',
+                        },
+                        {
+                            label: 'Pink',
+                            value: 'pink',
+                        },
+                        {
+                            label: 'Purple',
+                            value: 'purple',
+                        },
+                        {
+                            label: 'Red',
+                            value: 'red',
+                        },
+                        {
+                            label: 'Rose',
+                            value: 'rose',
+                        },
+                        {
+                            label: 'Sky',
+                            value: 'sky',
+                        },
+                        {
+                            label: 'Slate',
+                            value: 'slate',
+                        },
+                        {
+                            label: 'Stone',
+                            value: 'stone',
+                        },
+                        {
+                            label: 'Teal',
+                            value: 'teal',
+                        },
+                        {
+                            label: 'Violet',
+                            value: 'violet',
+                        },
+                        {
+                            label: 'Yellow',
+                            value: 'yellow',
+                        },
+                        {
+                            label: 'Zinc',
+                            value: 'zinc',
+                        },
+                    ],
+                    required: false,
+                },
+                structure: 'single' as const,
+                isNative: true,
+                typeReference: {} as TypeBrand<
+                    | 'amber'
+                    | 'blue'
+                    | 'cyan'
+                    | 'emerald'
+                    | 'fuchsia'
+                    | 'gray'
+                    | 'green'
+                    | 'indigo'
+                    | 'lime'
+                    | 'neutral'
+                    | 'orange'
+                    | 'pink'
+                    | 'purple'
+                    | 'red'
+                    | 'rose'
+                    | 'sky'
+                    | 'slate'
+                    | 'stone'
+                    | 'teal'
+                    | 'violet'
+                    | 'yellow'
+                    | 'zinc'
+                    | undefined
+                >,
+                enumValues: [
+                    'amber',
+                    'blue',
+                    'cyan',
+                    'emerald',
+                    'fuchsia',
+                    'gray',
+                    'green',
+                    'indigo',
+                    'lime',
+                    'neutral',
+                    'orange',
+                    'pink',
+                    'purple',
+                    'red',
+                    'rose',
+                    'sky',
+                    'slate',
+                    'stone',
+                    'teal',
+                    'violet',
+                    'yellow',
+                    'zinc',
+                ] as const,
+                entityName: 'dataBroker',
+                databaseTable: 'data_broker',
+                foreignKeyReference: null,
+                description: '"Color" field for dataBroker. This is an optional field. Your entry must be an string data type.',
             },
             dataInputComponentReference: {
                 fieldNameFormats: {

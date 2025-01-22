@@ -7,7 +7,6 @@ import { ChipHandlers } from '../utils/chipService';
 import { useEditorContext } from '../provider/EditorProvider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
-import { ChipRequestOptions } from '../types/editor.types';
 import { useChipCreation } from './useChipCreation';
 
 export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
@@ -62,10 +61,6 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
     const { insertChip, convertSelectionToChip } = useChipCreation(editorId, chipHandlers, dragConfig, context, updatePlainTextContent);
 
     return {
-        // State from editorState
-        plainTextContent: editorState.plainTextContent,
-        chipData: editorState.chipData,
-
         // Ref Manager methods
         insertChip,
         convertSelectionToChip,

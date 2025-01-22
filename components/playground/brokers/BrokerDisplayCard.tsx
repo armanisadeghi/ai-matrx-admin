@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityDataWithKey, MatrxRecordId } from '@/types';
+import { MatrxRecordId } from '@/types';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import BrokerCardHeader from './BrokerCardHeader';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
@@ -14,15 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import ChipColorPicker from '@/features/rich-text-editor/admin/sidebar-analyzer/ChipColorPicker';
 import { EnhancedRecord, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
+import { DataBrokerData } from './BrokerRecordsSimple';
 
-type DataBrokerData = {
-    id: string;
-    name: string;
-} & {
-    dataType?: "str" | "bool" | "dict" | "float" | "int" | "list" | "url";
-    defaultValue?: string;
-    defaultComponent?: string;
-}
 
 interface EnhancedBrokerRecord extends EnhancedRecord {
     chips?: ChipData[];
@@ -30,7 +23,7 @@ interface EnhancedBrokerRecord extends EnhancedRecord {
 
 interface BrokerDisplayCardProps {
     recordId: MatrxRecordId | null;
-    record: EntityDataWithKey<'broker'> | null;
+    record: any | null;
     unifiedLayoutProps: UnifiedLayoutProps;
     chips: ChipData[];
     onDelete?: (recordId: MatrxRecordId) => void;

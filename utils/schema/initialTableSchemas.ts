@@ -191,7 +191,7 @@ export const action = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -254,7 +254,7 @@ export const action = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -686,7 +686,7 @@ export const aiAgent = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -749,7 +749,7 @@ export const aiAgent = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -2168,7 +2168,7 @@ export const aiModel = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -2477,7 +2477,7 @@ export const aiModelEndpoint = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -2540,7 +2540,7 @@ export const aiModelEndpoint = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -3525,7 +3525,7 @@ export const aiSettings = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -3588,7 +3588,7 @@ export const aiSettings = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -3651,7 +3651,7 @@ export const aiSettings = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -5231,7 +5231,7 @@ export const arg = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -5444,7 +5444,7 @@ export const automationBoundaryBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -5507,7 +5507,7 @@ export const automationBoundaryBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -7151,7 +7151,7 @@ export const broker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -8942,13 +8942,13 @@ export const dataBroker = {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: '' as const,
+            defaultValue: '6463aae0-9480-4c4c-90b8-e3ce9c11a103' as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -8983,6 +8983,204 @@ export const dataBroker = {
             foreignKeyReference: { table: 'data_input_component', column: 'id', entity: 'dataInputComponent', field: 'id' },
             description:
                 '"Default Component" field for dataBroker. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataInputComponent.',
+        },
+        color: {
+            fieldNameFormats: {
+                frontend: 'color',
+                backend: 'color',
+                database: 'color',
+                pretty: 'Color',
+                component: 'Color',
+                kebab: 'color',
+                sqlFunctionRef: 'p_color',
+                RestAPI: 'color',
+                GraphQL: 'color',
+                custom: 'color',
+            } as const,
+
+            uniqueColumnId: 'supabase_automation_matrix:public:data_broker:color',
+            uniqueFieldId: 'supabase_automation_matrix:dataBroker:color',
+
+            dataType: 'string' as const,
+            isRequired: false,
+            maxLength: null,
+            isArray: false,
+            defaultValue: 'Blue' as const,
+            isPrimaryKey: false,
+            isDisplayField: false,
+            defaultGeneratorFunction: '',
+            validationFunctions: [],
+            exclusionRules: [],
+            defaultComponent: 'SELECT' as const,
+            componentProps: {
+                subComponent: 'enumSelect',
+                variant: 'default',
+                section: 'default',
+                placeholder: 'default',
+                size: 'default',
+                textSize: 'default',
+                textColor: 'default',
+                rows: 'default',
+                animation: 'default',
+                fullWidthValue: 'default',
+                fullWidth: 'default',
+                disabled: 'default',
+                className: 'default',
+                type: 'default',
+                onChange: 'default',
+                onBlur: 'default',
+                formatString: 'default',
+                min: 'default',
+                max: 'default',
+                step: 'default',
+                numberType: 'default',
+                options: [
+                    {
+                        label: 'Amber',
+                        value: 'Amber',
+                    },
+                    {
+                        label: 'Blue',
+                        value: 'Blue',
+                    },
+                    {
+                        label: 'Cyan',
+                        value: 'Cyan',
+                    },
+                    {
+                        label: 'Emerald',
+                        value: 'Emerald',
+                    },
+                    {
+                        label: 'Fuchsia',
+                        value: 'Fuchsia',
+                    },
+                    {
+                        label: 'Gray',
+                        value: 'Gray',
+                    },
+                    {
+                        label: 'Green',
+                        value: 'Green',
+                    },
+                    {
+                        label: 'Indigo',
+                        value: 'Indigo',
+                    },
+                    {
+                        label: 'Lime',
+                        value: 'Lime',
+                    },
+                    {
+                        label: 'Neutral',
+                        value: 'Neutral',
+                    },
+                    {
+                        label: 'Orange',
+                        value: 'Orange',
+                    },
+                    {
+                        label: 'Pink',
+                        value: 'Pink',
+                    },
+                    {
+                        label: 'Purple',
+                        value: 'Purple',
+                    },
+                    {
+                        label: 'Red',
+                        value: 'Red',
+                    },
+                    {
+                        label: 'Rose',
+                        value: 'Rose',
+                    },
+                    {
+                        label: 'Sky',
+                        value: 'Sky',
+                    },
+                    {
+                        label: 'Slate',
+                        value: 'Slate',
+                    },
+                    {
+                        label: 'Stone',
+                        value: 'Stone',
+                    },
+                    {
+                        label: 'Teal',
+                        value: 'Teal',
+                    },
+                    {
+                        label: 'Violet',
+                        value: 'Violet',
+                    },
+                    {
+                        label: 'Yellow',
+                        value: 'Yellow',
+                    },
+                    {
+                        label: 'Zinc',
+                        value: 'Zinc',
+                    },
+                ],
+                required: false,
+            },
+            structure: 'single' as const,
+            isNative: true,
+            typeReference: {} as TypeBrand<
+                | 'Amber'
+                | 'Blue'
+                | 'Cyan'
+                | 'Emerald'
+                | 'Fuchsia'
+                | 'Gray'
+                | 'Green'
+                | 'Indigo'
+                | 'Lime'
+                | 'Neutral'
+                | 'Orange'
+                | 'Pink'
+                | 'Purple'
+                | 'Red'
+                | 'Rose'
+                | 'Sky'
+                | 'Slate'
+                | 'Stone'
+                | 'Teal'
+                | 'Violet'
+                | 'Yellow'
+                | 'Zinc'
+                | undefined
+            >,
+            enumValues: [
+                'Amber',
+                'Blue',
+                'Cyan',
+                'Emerald',
+                'Fuchsia',
+                'Gray',
+                'Green',
+                'Indigo',
+                'Lime',
+                'Neutral',
+                'Orange',
+                'Pink',
+                'Purple',
+                'Red',
+                'Rose',
+                'Sky',
+                'Slate',
+                'Stone',
+                'Teal',
+                'Violet',
+                'Yellow',
+                'Zinc',
+            ] as const,
+            entityName: 'dataBroker',
+            databaseTable: 'data_broker',
+            foreignKeyReference: null,
+            description: '"Color" field for dataBroker. This is an optional field. Your entry must be an string data type.',
         },
         dataInputComponentReference: {
             fieldNameFormats: {
@@ -13228,7 +13426,7 @@ export const flashcardData = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -14373,7 +14571,7 @@ export const flashcardHistory = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -14436,7 +14634,7 @@ export const flashcardHistory = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -14957,7 +15155,7 @@ export const flashcardImages = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -15417,7 +15615,7 @@ export const flashcardSetRelations = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -15480,7 +15678,7 @@ export const flashcardSetRelations = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -15788,7 +15986,7 @@ export const flashcardSets = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -16559,7 +16757,7 @@ export const messageBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -16622,7 +16820,7 @@ export const messageBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -16747,7 +16945,7 @@ export const messageBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -17551,7 +17749,7 @@ export const processor = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -18876,7 +19074,7 @@ export const recipeBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -18939,7 +19137,7 @@ export const recipeBroker = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -19318,7 +19516,7 @@ export const recipeDisplay = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -19381,7 +19579,7 @@ export const recipeDisplay = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -19751,7 +19949,7 @@ export const recipeFunction = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -19814,7 +20012,7 @@ export const recipeFunction = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -20219,7 +20417,7 @@ export const recipeMessage = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -20282,7 +20480,7 @@ export const recipeMessage = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -20590,7 +20788,7 @@ export const recipeModel = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -20653,7 +20851,7 @@ export const recipeModel = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -21036,7 +21234,7 @@ export const recipeProcessor = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -21099,7 +21297,7 @@ export const recipeProcessor = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -21407,7 +21605,7 @@ export const recipeTool = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -21470,7 +21668,7 @@ export const recipeTool = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -22025,7 +22223,7 @@ export const registeredFunction = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -22612,7 +22810,7 @@ export const systemFunction = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -23199,7 +23397,7 @@ export const tool = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -23777,7 +23975,7 @@ export const userPreferences = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'UUID_FIELD' as const,
+            defaultComponent: 'FK_SELECT' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',

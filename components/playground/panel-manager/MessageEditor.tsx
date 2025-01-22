@@ -14,6 +14,7 @@ import { ChipData, EditorState } from '@/features/rich-text-editor/types/editor.
 import useChipHandlers from '../hooks/useChipHandlers';
 import { useRelatedDataBrokers } from '../hooks/useMessageBrokers';
 import { TextPlaceholderEffect } from './TextPlaceholderEffect';
+import { m } from 'framer-motion';
 
 const DEBUG_STATUS = true;
 
@@ -43,7 +44,7 @@ interface MessageEditorProps {
     onChipUpdate?: (chipData: ChipChangeData) => void;
     onToggleEditor?: (messageRecordId: MatrxRecordId) => void;
     onDragDrop?: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
-    deleteMessage?: (messageRecordId: MatrxRecordId) => void;
+    deleteMessage?: (childRecordId: MatrxRecordId) => void;
     onOrderChange?: (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => void;
 }
 
@@ -93,6 +94,10 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     } = useRelatedDataBrokers(messageRecordId);
 
     useEffect(() => {
+        console.log('============ only logs during a render');
+    }, []);
+
+    useEffect(() => {
         if (messageBrokerIsLoading) {
             setInitialRenderHold(true);
         }
@@ -136,7 +141,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [context, messageRecordId, lastEditorState, onMessageUpdate]);
+    }, [messageRecordId, lastEditorState, onMessageUpdate]);
 
     const updateMessageContent = useCallback(
         (content: string) => {
@@ -151,8 +156,34 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         [messageActions, dispatch, messageRecordId]
     );
 
+    const handleSaveWithMetadata = useCallback(() => {
+        if (isSaving || initialRenderHold || messageBrokerIsLoading) {
+            return;
+        }
+    
+        setIsSaving(true);
+        
+        context.contentService.saveContent(messageRecordId, context.getEditorState(messageRecordId))
+            .then(savedContent => {
+                setLastSavedContent(savedContent);
+                updateRecord(messageRecordId);
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    setIsSaving(false);
+                }, 500);
+            });
+            
+    }, [context, messageRecordId, updateRecord, isSaving]);
+
+
     const handleSave = useCallback(() => {
-        if (isSaving) return;
+        console.log('Saving message:', messageRecordId);
+        if (isSaving || initialRenderHold || messageBrokerIsLoading) {
+            console.log('Skipping save:', isSaving, initialRenderHold, messageBrokerIsLoading);
+            return;
+        }
+        
 
         const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
         // Skip if content hasn't changed
@@ -174,6 +205,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         async (chipData: ChipData) => {
             try {
                 const newBrokerId = v4();
+                console.log('Creating new broker:', newBrokerId, chipData);
                 await addBroker(newBrokerId, chipData);
                 console.log('Successfully created relationship');
                 await context.chips.syncChipToBroker(chipData.id, `id:${newBrokerId}`);
@@ -182,7 +214,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                 console.error('Failed to create relationship:', error);
             }
         },
-        [addBroker, context.chips.syncChipToBroker, handleSave]
+        [addBroker, handleSave]
     );
 
     const addExistingBrokerToSelection = useCallback(
@@ -200,6 +232,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     );
 
     const handleBlur = useCallback(() => {
+        console.log('blur event', messageRecordId);
         handleSave();
     }, [handleSave]);
 

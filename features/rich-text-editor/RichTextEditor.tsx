@@ -4,11 +4,12 @@ import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
 import { WithRefsProps, withRefs } from '@/lib/refs';
-import { setupEditorAttributes } from './utils/editorUtils';
+import { getFormattedContent, setupEditorAttributes } from './utils/editorUtils';
 import { getEditorSelection, SelectionState } from './utils/selectionUtils';
 import { useChipMenu } from './components/ChipContextMenu';
 import { ChipHandlers, createChipHandlers } from './utils/chipService';
 import { useSetEditorContent } from './hooks/useSetEditorContent';
+import { useEditorContext } from './provider/EditorProvider';
 
 export interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
@@ -16,6 +17,7 @@ export interface RichTextEditorProps extends WithRefsProps {
     onDragOver?: (e: React.DragEvent<HTMLElement>) => void;
     onDrop?: (e: React.DragEvent<HTMLElement>) => void;
     initialContent?: string;
+    initialRichContent?: string;
     onBlur?: () => void;
     chipHandlers?: ChipHandlers;
 }
@@ -26,11 +28,17 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     className = '',
     onDragOver,
     onDrop,
-    initialContent = '',
+    initialContent,
+    initialRichContent,
     onBlur,
     chipHandlers: handlers,
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
+    const context = useEditorContext();
+    const editorState = context.getEditorState(componentId);
+    const providerContent = editorState.plainTextContent;
+    const providerChips = editorState.chipData;
+
     const [isLoading, setIsLoading] = useState(true);
     const initializedRef = useRef(false);
     const blurListenersRef = useRef<Set<() => void>>(new Set());
@@ -48,9 +56,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const {
         // Internal methods
         updatePlainTextContent,
-        normalizeContent,
-        handleStyleChange,
-
         // Ref methods
         insertChip,
         convertSelectionToChip,
@@ -59,10 +64,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         normalize,
         updateContent,
         focus,
-
-        // State
-        plainTextContent,
-
         // Event handlers
         handleNativeDragStart,
         handleNativeDragEnd,
@@ -111,23 +112,34 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         };
     }, []);
 
-    // Handle initial setup and content
     useEffect(() => {
-        if (isProcessing) return;
-        const editor = editorRef.current;
-        if (!editor || initializedRef.current) return;
+        const initializeEditor = async () => {
+            if (isProcessing) return;
+            const editor = editorRef.current;
+            if (!editor || initializedRef.current) return;
+    
+            setupEditorAttributes(editor, componentId);
+    
+            try {
+                if (initialRichContent && !initializedRef.current) {
+                    const newState = await context.setInitialContent(componentId, initialRichContent);
+                    console.log('Setting initial rich content:', newState);
+                    
+                    await setContent(newState.plainTextContent);
+                    initializedRef.current = true;
+                } else if (initialContent && !initializedRef.current) {
+                    context.setPlainTextContent(componentId, initialContent);
+                    await setContent(initialContent);
+                    initializedRef.current = true;
+                }
+            } catch (error) {
+                console.error('Error initializing editor:', error);
+            }
+        };
+    
+        initializeEditor();
+    }, [isProcessing, componentId, initialContent, initialRichContent]);
 
-        setupEditorAttributes(editor, componentId);
-        console.log('Setting initial content:', initialContent);
-
-        // Use our new setContent method for initial content
-        if (initialContent && !initializedRef.current) {
-            setContent(initialContent).then(() => {
-                initializedRef.current = true;
-            });
-            console.log('Setting initial content:', initialContent);
-        }
-    }, []);
 
     useEffect(() => {
         if (isProcessing) return;
@@ -157,29 +169,33 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     // Handle content changes
     useEffect(() => {
-        console.log('Content changed:', plainTextContent);
-        onChange?.(plainTextContent);
-    }, [onChange, plainTextContent]);
+        console.log('Content changed:', providerContent);
+        onChange?.(providerContent);
+    }, [onChange, providerContent]);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-        console.log('Input event:', e.currentTarget.textContent);
-        updatePlainTextContent();
-        onChange?.(e.currentTarget.textContent || '');
+        const content = getFormattedContent(e.currentTarget);
+        console.log('Formatted content:', JSON.stringify(content)); // For debugging
+        context.setPlainTextContent(componentId, content);
+        onChange?.(content);
     };
 
-    const handleConvertToChip = () => {
-        console.log('Convert to chip');
+    const handleNewChip = () => {
         if (selectionState.hasSelection) {
+            console.log('Convert to chip');
             convertSelectionToChip();
+        } else {
+            console.log('Inserting New chip');
+            insertChip();
         }
     };
 
     const handleBlurInternal = useCallback(() => {
         console.log('Blur event');
-        normalizeContent();
+        normalize();
         onBlur?.();
         blurListenersRef.current.forEach((listener) => listener());
-    }, [normalizeContent, onBlur]);
+    }, [normalize, onBlur]);
 
     return (
         <div className='relative group w-full h-full flex flex-col'>
@@ -199,8 +215,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
             <EditorChipButton
                 editorId={componentId}
-                onInsertChip={insertChip}
-                onConvertToChip={handleConvertToChip}
+                onInsertChip={handleNewChip}
+                onConvertToChip={handleNewChip}
                 hasSelection={selectionState.hasSelection}
             />
         </div>

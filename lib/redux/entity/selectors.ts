@@ -63,19 +63,25 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return entity.entityMetadata.displayName;
     });
 
-    const selectRecordByKey = createSelector([selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey], (entity, recordKey) => {
-        return entity.records[recordKey] || null;
-    });
-
-    const selectRecordsByKeys = createSelector([selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (entity, recordKeys) => {
-        if (!recordKeys) return [];
-        if (!entity?.records) return [];
-
-        return recordKeys
-            .filter((key): key is MatrxRecordId => key != null) // Type guard to remove null/undefined keys
-            .map((recordKey) => entity.records[recordKey] || null)
-            .filter(Boolean);
-    });
+    const selectRecordByKey = createSelector(
+        [selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey],
+        (records, recordKey) => {
+            return records[recordKey] || null;
+        }
+    );
+    
+    const selectRecordsByKeys = createSelector(
+        [selectAllRecords, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
+        (records, recordKeys) => {
+            if (!recordKeys?.length) return [];
+            if (!records) return [];
+    
+            return recordKeys
+                .filter((key): key is MatrxRecordId => key != null)
+                .map((recordKey) => records[recordKey] || null)
+                .filter(Boolean);
+        }
+    );
 
     const selectRecordsKeyPairs = createSelector([selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (entity, recordKeys) => {
         if (!recordKeys) return [];
@@ -91,42 +97,31 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     });
 
     const selectRecordWithKey = createSelector(
-        [selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey],
-        (entity, recordKey): EntityDataWithKey<EntityKeys> | null => {
-            if (!recordKey) return null;
-            if (!entity?.records) return null;
-
-            const record = entity.records[recordKey];
+        [selectRecordByKey, (_: RootState, recordKey: MatrxRecordId) => recordKey],
+        (record, recordKey): EntityDataWithKey<EntityKeys> | null => {
             if (!record) return null;
-
+    
             return {
                 ...record,
                 matrxRecordId: recordKey,
             };
         }
     );
-
+    
     const selectRecordsWithKeys = createSelector(
-        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
-        (entity, recordKeys): EntityDataWithKey<EntityKeys>[] => {
-            if (!recordKeys) return [];
-            if (!entity?.records) return [];
-
-            const records = recordKeys
-                .filter((recordKey): recordKey is MatrxRecordId => recordKey != null)
-                .map((recordKey) => {
-                    const record = entity.records[recordKey];
-                    if (record) {
-                        return {
-                            ...record,
-                            matrxRecordId: recordKey,
-                        };
-                    }
-                    return null;
-                })
-                .filter(Boolean);
-
-            return uniqBy(records, 'matrxRecordId');
+        [selectRecordsByKeys, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
+        (records, recordKeys): EntityDataWithKey<EntityKeys>[] => {
+            // Early return for empty or null recordKeys
+            if (!recordKeys?.length) return [];
+            if (!records) return [];
+            
+            return uniqBy(
+                records.map((record, index) => ({
+                    ...record,
+                    matrxRecordId: recordKeys[index],
+                })),
+                'matrxRecordId'
+            );
         }
     );
 

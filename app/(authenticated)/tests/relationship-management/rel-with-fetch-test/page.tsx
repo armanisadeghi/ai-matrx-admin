@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useRelWithFetch } from '@/app/entities/hooks/relationships/useRelationshipMapper';
 import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
 import ChildRecordsCard from './ChildRecordCard';

@@ -117,16 +117,34 @@ export const applyTextStyle = (style: TextStyle): void => {
     document.execCommand(style.command, false, style.value || null);
 };
 
-export const getFormattedContent = (editor: HTMLDivElement): string => {
-    const clone = editor.cloneNode(true) as HTMLDivElement;
-    const chips = clone.querySelectorAll('[data-chip="true"]');
+export const getFormattedContent = (element: HTMLElement): string => {
+    let content = '';
+    const childNodes = element.childNodes;
 
-    chips.forEach((chip) => {
-        const chipName = chip.textContent;
-        chip.replaceWith(`{${chipName}}!`);
-    });
+    for (let i = 0; i < childNodes.length; i++) {
+        const node = childNodes[i];
 
-    return clone.textContent || '';
+        if (node.nodeType === Node.TEXT_NODE) {
+            content += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const elem = node as HTMLElement;
+
+            // Handle line breaks
+            if (elem.tagName === 'DIV') {
+                if (content && !content.endsWith('\n')) {
+                    content += '\n';
+                }
+                content += getFormattedContent(elem);
+            } else if (elem.tagName === 'BR') {
+                content += '\n';
+            } else {
+                // Handle other elements (like spans)
+                content += getFormattedContent(elem);
+            }
+        }
+    }
+
+    return content;
 };
 
 export const getSelectedText = (): { text: string; range: Range | null } => {
@@ -144,7 +162,6 @@ export const getCursorRange = (): Range | null => {
     if (!selection || selection.rangeCount === 0) return null;
     return selection.getRangeAt(0);
 };
-
 
 export const isValidChipText = (text: string): boolean => {
     return text.length > 0 && text.length <= 1000;

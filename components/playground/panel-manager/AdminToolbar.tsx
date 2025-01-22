@@ -127,7 +127,6 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
                             type: message.type,
                             content: message.content
                         }]}
-                        columns={7}
                     />
                 );
         }

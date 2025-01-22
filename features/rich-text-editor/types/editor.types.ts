@@ -1,5 +1,5 @@
 // features/rich-text-editor/types/editor.types.ts
-import { MatrxRecordId } from '@/types';
+import { BrokerDataOptional, DataBrokerDataOptional, MatrxRecordId } from '@/types';
 import { RefObject } from 'react';
 import { TailwindColor } from '../constants';
 
@@ -9,9 +9,18 @@ export interface LayoutMetadata {
     isVisible: boolean;
 }
 
+export interface ContentMetadata {
+    chips?: ChipData[];
+    brokers?: DataBrokerDataOptional[];
+    style?: any; // Placeholder for future styling metadata
+    version: string;
+}
+
+
 export interface EditorState {
     plainTextContent: string;
     chipData: ChipData[];
+    metadata: ContentMetadata;
     layout?: LayoutMetadata;
 }
 

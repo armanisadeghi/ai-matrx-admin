@@ -122,7 +122,7 @@ function MessagesContainer({ recipeRecordId, relationshipHook }: MessagesContain
 
         switch (dialogType) {
             case 'delete':
-                deleteMessage(activeEditorId);
+                console.log('Deleting message:', activeEditorId);
                 break;
             case 'unsaved':
                 console.log('Confirming exit with unsaved changes for:', activeEditorId);

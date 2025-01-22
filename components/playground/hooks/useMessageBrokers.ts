@@ -9,6 +9,7 @@ export interface AddBrokerPayload {
     name: string;
     defaultValue: string;
     dataType: DataBrokerData['dataType'];
+    color?: string;
 }
 
 export function useMessageBrokers(messageBrokerHook: RelationshipProcessingHook) {
@@ -35,6 +36,7 @@ export function useMessageBrokers(messageBrokerHook: RelationshipProcessingHook)
                 name: chipData.label || 'New Broker',
                 defaultValue: chipData.stringValue || '',
                 dataType: 'str' as const,
+                color: chipData.color || 'blue',
             };
 
             const defaultValue = newBroker.defaultValue || '';

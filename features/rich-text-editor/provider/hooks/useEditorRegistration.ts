@@ -1,25 +1,32 @@
 import { useRef, useCallback } from 'react';
-import { EditorStates, getInitialEditorState } from '../EditorProvider';
-import { LayoutMetadata } from '../../types/editor.types';
+import { DEFAULT_METADATA, EditorStates, } from '../EditorProvider';
+import { EditorState, LayoutMetadata } from '../../types/editor.types';
+
+
+export const getEmptyState = (initialContent): EditorState => ({
+    plainTextContent: initialContent,
+    chipData: [],
+    metadata: { ...DEFAULT_METADATA }
+});
 
 
 export const useEditorRegistration = (editors: EditorStates, setEditors: (updater: (prev: EditorStates) => EditorStates) => void) => {
     const registrationRef = useRef(new Set<string>());
 
     const registerEditor = useCallback(
-        (editorId: string, initialLayout?: LayoutMetadata) => {
+        (editorId: string, initialContent?: string, initialLayout?: LayoutMetadata) => {
             if (registrationRef.current.has(editorId)) {
-                // console.log('Skipping duplicate registration:', editorId);
                 return;
             }
 
-            // console.log('Registering editor:', editorId);
             registrationRef.current.add(editorId);
+
+            const startingContent = initialContent || '';
 
             setEditors((prev) => {
                 if (prev.has(editorId)) return prev;
                 const next = new Map(prev);
-                const initialState = getInitialEditorState();
+                const initialState = getEmptyState(startingContent);
                 if (initialLayout) {
                     initialState.layout = initialLayout;
                 }
@@ -33,11 +40,9 @@ export const useEditorRegistration = (editors: EditorStates, setEditors: (update
     const unregisterEditor = useCallback(
         (editorId: string) => {
             if (!registrationRef.current.has(editorId)) {
-                // console.log('Skipping unregistration of unknown editor:', editorId);
                 return;
             }
 
-            // console.log('Unregistering editor:', editorId);
             registrationRef.current.delete(editorId);
 
             setEditors((prev) => {

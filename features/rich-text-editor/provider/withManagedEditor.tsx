@@ -13,7 +13,7 @@ const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
         const context = useEditorContext();
 
         useEffect(() => {
-            context.registry.registerEditor(componentId);
+            context.registry.registerEditor(componentId, initialContent);
             
             return () => {
                 context.registry.unregisterEditor(componentId);

@@ -293,7 +293,7 @@ export function processJoinedData({
     if (!childRecords?.length || !joiningRecords?.length) {
         return childRecords;
     }
-
+    console.log('---> ProcessJoinedDataOptions', childRecords, joiningRecords, relationshipDefinition, filterStatus, parentMatrxId);
     const {
         parent: { referenceField: parentReferenceField },
         child: { referenceField: childReferenceField },

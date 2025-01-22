@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId, MessageTemplateProcessed } from '@/types';
 import { useAppDispatch, useAppStore, useEntityTools } from '@/lib/redux';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
-import { ProcessedRecipeMessages } from '../../panel-manager/types';
 
 // Base hook for updating order
 export const useUpdateOrder = () => {
@@ -12,7 +11,7 @@ export const useUpdateOrder = () => {
     const { updateRecord } = useUpdateRecord('recipeMessage');
 
     return useCallback(
-        (message: ProcessedRecipeMessages, newOrder: number) => {
+        (message: MessageTemplateProcessed, newOrder: number) => {
             const state = store.getState();
             const recipeMessageKey = selectors.selectRecordKeyByFieldValue(state, 'messageId', message.id);
 
@@ -37,7 +36,7 @@ export const useMoveUp = () => {
     const { actions, selectors, store } = useEntityTools('recipeMessage');
 
     return useCallback(
-        (message: ProcessedRecipeMessages) => {
+        (message: MessageTemplateProcessed) => {
             const state = store.getState();
             const recipeMessageKey = selectors.selectRecordKeyByFieldValue(state, 'messageId', message.id);
 
@@ -58,7 +57,7 @@ export const useMoveDown = () => {
     const { actions, selectors, store } = useEntityTools('recipeMessage');
 
     return useCallback(
-        (message: ProcessedRecipeMessages) => {
+        (message: MessageTemplateProcessed) => {
             const state = store.getState();
             const recipeMessageKey = selectors.selectRecordKeyByFieldValue(state, 'messageId', message.id);
 
@@ -74,7 +73,7 @@ export const useMoveDown = () => {
 };
 
 // Optional: Combined hook for all reordering functionality
-export const useMessageReordering = (messages: ProcessedRecipeMessages[], onComplete?: () => void) => {
+export const useMessageReordering = (messages: MessageTemplateProcessed[], onComplete?: () => void) => {
     const updateOrder = useUpdateOrder();
     const moveUpHook = useMoveUp();
     const moveDownHook = useMoveDown();

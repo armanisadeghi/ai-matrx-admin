@@ -1,5 +1,6 @@
 import { MatrxRecordId } from '@/types';
 import { ChipData } from '../types/editor.types';
+import { MATRX_PATTERN } from './patternUtils';
 
 interface LineSegment {
     type: 'text' | 'chip';
@@ -40,7 +41,7 @@ interface ChipMatch {
 }
 
 export const findAllChipPatterns = (text: string): ChipMatch[] => {
-    const chipPattern = /\{([^}]+)\}!/g;
+    const chipPattern = MATRX_PATTERN;
     const matches: ChipMatch[] = [];
 
     let match;
