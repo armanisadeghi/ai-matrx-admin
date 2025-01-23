@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
-import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical, Bug, Eye } from 'lucide-react';
+import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical, Bug } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MatrxRecordId } from '@/types';
 
@@ -8,15 +8,16 @@ interface MessageToolbarProps {
     messageRecordId: MatrxRecordId;
     role: string;
     isCollapsed: boolean;
-    onAddMedia: (messageRecordId: MatrxRecordId) => void;
-    onLinkBroker: (messageRecordId: MatrxRecordId) => void;
+    onAddMedia?: (messageRecordId: MatrxRecordId) => void;
+    onLinkBroker?: (messageRecordId: MatrxRecordId) => void;
     onDelete: (messageRecordId: MatrxRecordId) => void;
     onSave: (messageRecordId: MatrxRecordId) => void;
     onToggleCollapse: (messageRecordId: MatrxRecordId) => void;
-    onShowChips: (messageRecordId: MatrxRecordId) => void;
-    onShowEncoded: (messageRecordId: MatrxRecordId) => void;
-    onShowNames: (messageRecordId: MatrxRecordId) => void;
-    onShowDefaultValue: (messageRecordId: MatrxRecordId) => void;
+    onDefaultValue: (messageRecordId: MatrxRecordId) => void;
+    onWithNames: (messageRecordId: MatrxRecordId) => void;
+    onWithIds: (messageRecordId: MatrxRecordId) => void;
+    onEncoded: (messageRecordId: MatrxRecordId) => void;
+    onProcessed: (messageRecordId: MatrxRecordId) => void;
     onRoleChange: (messageRecordId: MatrxRecordId, newRole: string) => void;
     onDragDrop: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
     debug?: boolean;
@@ -48,13 +49,14 @@ const RoleSelector: React.FC<{
 }> = ({ role, messageRecordId, onRoleChange }) => (
     <DropdownMenu>
         <DropdownMenuTrigger className='text-sm text-muted-foreground hover:text-foreground'>{role.toUpperCase()}</DropdownMenuTrigger>
-        <DropdownMenuContent className='bg-elevation2 bg-opacity-100'>
+        <DropdownMenuContent className="bg-elevation2 bg-opacity-100">
             <DropdownMenuItem onClick={() => onRoleChange(messageRecordId, 'system')}>SYSTEM</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onRoleChange(messageRecordId, 'user')}>USER</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onRoleChange(messageRecordId, 'assistant')}>ASSISTANT</DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
 
 const MessageToolbar: React.FC<MessageToolbarProps> = ({
     messageRecordId,
@@ -65,10 +67,11 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
     onDelete,
     onSave,
     onToggleCollapse,
-    onShowChips,
-    onShowEncoded,
-    onShowNames,
-    onShowDefaultValue,
+    onDefaultValue,
+    onWithIds,
+    onWithNames,
+    onEncoded,
+    onProcessed,
     onRoleChange,
     onDragDrop,
     debug = false,
@@ -104,31 +107,36 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
             onClick: () => onToggleCollapse(messageRecordId),
         },
         {
-            label: 'Standard',
-            icon: <Radiation className='h-4 w-4' />,
-            onClick: () => onShowChips(messageRecordId),
-        },
-        {
             label: 'Plain Text',
             icon: <LetterText className='h-4 w-4' />,
-            onClick: () => onShowEncoded(messageRecordId),
+            onClick: () => onWithIds(messageRecordId),
         },
         {
-            label: 'Broker Names',
+            label: 'Default Values',
+            icon: <Radiation className='h-4 w-4' />,
+            onClick: () => onDefaultValue(messageRecordId),
+        },
+        {
+            label: 'Encoded',
             icon: <SquareRadical className='h-4 w-4' />,
-            onClick: () => onShowNames(messageRecordId),
+            onClick: () => onEncoded(messageRecordId),
+        },
+        {
+            label: 'Text With Names',
+            icon: <Radiation className='h-4 w-4' />,
+            onClick: () => onWithNames(messageRecordId),
         },
         {
             label: 'Processed',
-            icon: <Eye className='h-4 w-4' />,
-            onClick: () => onShowDefaultValue(messageRecordId),
+            icon: <SquareRadical className='h-4 w-4' />,
+            onClick: () => onProcessed(messageRecordId),
         },
     ];
 
     if (debug) {
         actions.push({
             label: 'Debug',
-            icon: <Bug className='h-4 w-4' />,
+            icon: <Bug className="h-4 w-4" />,
             onClick: () => onDebugClick?.(messageRecordId),
         });
     }
@@ -182,7 +190,7 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
                 messageRecordId={messageRecordId}
                 onRoleChange={onRoleChange}
             />
-            <div className='flex gap-1'>
+            <div className="flex gap-1">
                 {actions.map((action) => (
                     <ActionButton
                         key={action.label}

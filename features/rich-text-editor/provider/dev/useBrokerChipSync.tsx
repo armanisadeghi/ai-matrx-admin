@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAppSelector } from '@/lib/redux';
 import { DataBrokerData } from '@/types';
 import { isEqual } from 'lodash';
-import { EditorState } from '../EditorProvider';
+import { EditorState } from '../new/EditorProvider';
 import { ChipData } from '../../types/editor.types';
 
 export type EditorStates = Map<string, EditorState>;

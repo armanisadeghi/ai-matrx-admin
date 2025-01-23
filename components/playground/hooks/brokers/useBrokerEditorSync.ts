@@ -1,4 +1,4 @@
-import { useEditorContext } from "@/features/rich-text-editor/provider/EditorProvider";
+import { useEditorContext } from "@/features/rich-text-editor/provider/new/EditorProvider";
 import { ChipData } from "@/features/rich-text-editor/types/editor.types";
 import { useCallback } from "react";
 

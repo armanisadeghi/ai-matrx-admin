@@ -1,40 +1,45 @@
 // RichTextEditor.tsx
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
-import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
-import { WithRefsProps, withRefs } from '@/lib/refs';
+import { WithRefsProps } from '@/lib/refs';
 import { getFormattedContent, setupEditorAttributes } from './utils/editorUtils';
 import { getEditorSelection, SelectionState } from './utils/selectionUtils';
 import { useChipMenu } from './components/ChipContextMenu';
 import { ChipHandlers, createChipHandlers } from './utils/chipService';
 import { useSetEditorContent } from './hooks/useSetEditorContent';
-import { useEditorContext } from './provider/provider';
+import { DisplayMode, transformMatrxText } from './utils/patternUtils';
+import { EditorState, useMessageEditor } from './provider/new/messageEditorProvider';
 
-export interface RichTextEditorProps extends WithRefsProps {
+export interface RichTextMessageEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
     className?: string;
+    initialContent?: string;
     onDragOver?: (e: React.DragEvent<HTMLElement>) => void;
     onDrop?: (e: React.DragEvent<HTMLElement>) => void;
-    initialContent?: string;
+    displayMode?: DisplayMode;  // Add this
+    editorState?: EditorState; // Add this to connect with our provider
     onBlur?: () => void;
     chipHandlers?: ChipHandlers;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({
+const RichTextMessageEditor: React.FC<RichTextMessageEditorProps> = ({
     componentId,
     onChange,
     className = '',
     onDragOver,
     onDrop,
     initialContent,
+    displayMode = DisplayMode.NAME,
+    editorState,
     onBlur,
     chipHandlers: handlers,
 }) => {
-    const editorRef = useRef<HTMLDivElement>(null);
-    const context = useEditorContext();
+    const editorContext = useMessageEditor();
+    const [displayContent, setDisplayContent] = useState('');
+    
 
-    const providerContent = context.getContent(componentId);
+    const editorRef = useRef<HTMLDivElement>(null);
     const initializedRef = useRef(false);
     const blurListenersRef = useRef<Set<() => void>>(new Set());
     const [selectionState, setSelectionState] = useState<SelectionState>({
@@ -44,9 +49,35 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     });
 
     const { showMenu } = useChipMenu();
+
     const chipHandlers = createChipHandlers({ showMenu, editorId: componentId, handlers });
     const editorHook = useEditor(componentId, chipHandlers);
     const { setContent, isProcessing } = useSetEditorContent(componentId, editorHook);
+
+    useEffect(() => {
+        if (isProcessing || !editorRef.current || initializedRef.current) return;
+        
+        if (displayMode !== DisplayMode.ENCODED) {
+            const transformed = transformMatrxText(
+                editorContext.state.encodedContent,
+                displayMode
+            );
+            setDisplayContent(transformed);
+        } else {
+            setDisplayContent(editorContext.state.encodedContent);
+            setContent(editorContext.state.encodedContent);
+
+        }
+    }, [editorContext?.state.encodedContent, displayMode]);
+
+
+    // Initialize editor with content
+    useEffect(() => {
+        if (isProcessing || !editorRef.current || initializedRef.current) return;
+        
+        setupEditorAttributes(editorRef.current, componentId);
+        initializedRef.current = true;
+    }, [isProcessing, displayContent]);
 
     const {
         // Internal methods
@@ -66,27 +97,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         handleDrop: handleDropInternal,
     } = editorHook;
 
-    // Register methods with the Ref Manager
-    useComponentRef(componentId, {
-        getText,
-        updateContent,
-        applyStyle,
-        normalize,
-        insertChip,
-        convertSelectionToChip,
-        focus,
-        setContent,
-        // Add new ref methods
-        blur: () => {
-            editorRef.current?.blur();
-        },
-        addBlurListener: (handler: () => void) => {
-            blurListenersRef.current.add(handler);
-        },
-        removeBlurListener: (handler: () => void) => {
-            blurListenersRef.current.delete(handler);
-        },
-    });
+
+    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+        const content = getFormattedContent(e.currentTarget);
+        editorContext?.updateEncodedContent(content);
+    };
+
 
     // Handle selection changes
     useEffect(() => {
@@ -108,39 +124,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }, []);
 
     useEffect(() => {
-        const initializeEditor = async () => {
-            if (isProcessing) return;
-            const editor = editorRef.current;
-            if (!editor || initializedRef.current) return;
-
-            setupEditorAttributes(editor, componentId);
-
-            try {
-                if (initialContent && !initializedRef.current) {
-                    await setContent(initialContent);
-                    initializedRef.current = true;
-                }
-            } catch (error) {
-                console.error('Error initializing editor:', error);
-            }
-        };
-
-        initializeEditor();
-    }, [isProcessing, componentId, initialContent]);
-
-    useEffect(() => {
         if (isProcessing) return;
         const editor = editorRef.current;
         if (!editor || initializedRef.current) return;
         console.log('--Additional useEffect:', initialContent);
 
-        const handlePaste = (e: ClipboardEvent) => {
+        const handlePaste = useCallback((e: ClipboardEvent) => {
             e.preventDefault();
             const text = e.clipboardData?.getData('text/plain');
             if (text) {
                 document.execCommand('insertText', false, text);
+                const newContent = getFormattedContent(editorRef.current!);
+                editorContext?.updateEncodedContent(newContent);
             }
-        };
+        }, [editorContext]);
 
         editor.addEventListener('paste', handlePaste);
         editor.addEventListener('dragstart', handleNativeDragStart);
@@ -154,17 +151,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         };
     }, [componentId, initialContent, handleNativeDragStart, handleNativeDragEnd, updatePlainTextContent]);
 
-    // Handle content changes
-    useEffect(() => {
-        console.log('Content changed:', providerContent);
-        onChange?.(providerContent);
-    }, [onChange, providerContent]);
-
-    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-        const content = getFormattedContent(e.currentTarget);
-        context.setContent(componentId, content);
-        onChange?.(content);
-    };
 
     const handleNewChip = () => {
         if (selectionState.hasSelection) {
@@ -177,11 +163,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     };
 
     const handleBlurInternal = useCallback(() => {
-        console.log('Blur event');
         normalize();
+        const normalizedContent = getFormattedContent(editorRef.current!);
+        editorContext?.updateEncodedContent(normalizedContent);
         onBlur?.();
         blurListenersRef.current.forEach((listener) => listener());
-    }, [normalize, onBlur]);
+    }, [normalize, onBlur, editorContext]);
+
 
     return (
         <div className='relative group w-full h-full flex flex-col'>
@@ -209,4 +197,4 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     );
 };
 
-export default withRefs(RichTextEditor);
+export default RichTextMessageEditor;

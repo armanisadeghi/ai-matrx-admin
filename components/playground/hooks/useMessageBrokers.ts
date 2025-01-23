@@ -51,6 +51,28 @@ export function useMessageBrokers(messageBrokerHook: RelationshipProcessingHook)
         [createRelatedRecords]
     );
 
+    const addDataBroker = useCallback(
+        async (newBrokerId: string, Broker: any) => {
+            const newBroker = {
+                id: newBrokerId,
+                name: Broker.name || 'New Broker',
+                defaultValue: Broker.defaultValue || '',
+                dataType: Broker.dataType || 'str',
+                color: Broker.color || 'blue',
+            };
+
+            const defaultValue = newBroker.defaultValue || '';
+            
+            return createRelatedRecords(
+                {
+                    child: newBroker,
+                    joining: { defaultValue: defaultValue },
+                }
+            );
+        },
+        [createRelatedRecords]
+    );
+
     return {
         messageMapper,
         messageBrokers,
@@ -63,6 +85,7 @@ export function useMessageBrokers(messageBrokerHook: RelationshipProcessingHook)
         messageMatrxId,
         deleteDataBroker,
         addBroker,
+        addDataBroker,
         messageBrokerIsLoading,
         messageBrokerLoadingState,
     };

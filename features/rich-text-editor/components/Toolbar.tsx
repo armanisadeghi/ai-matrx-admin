@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChipButtons } from './ChipButtons';
 import { TOOLBAR_CONFIG } from '../constants/styling';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useEditorContext } from '../provider/new/EditorProvider';
 import { TextStyle } from '../types/editor.types';
 
 interface ToolbarProps {

@@ -12,24 +12,47 @@ export interface LayoutMetadata {
 export interface ContentMetadata {
     chips?: ChipData[];
     brokers?: DataBrokerDataOptional[];
-    style?: any; // Placeholder for future styling metadata
+    styles?: any[];
     version: string;
 }
 
+export type MatrxStatus = 'new' | 'active' | 'archived' | 'deleted' | string;
+
+export interface BrokerMetaData {
+    matrxRecordId?: string;
+    name?: string;
+    defaultValue?: string;
+    color?: string;
+    status?: MatrxStatus;
+    defaultComponent?: string;
+    dataType?: string;
+    id?: string;
+    // [key: string]: string | undefined;
+}
+
+export type ContentMode = 'encodeChips' | 'encodeVisible' | 'name' | 'defaultValue' | 'recordKey' | 'status';
 
 export interface EditorState {
-    plainTextContent: string;
+    content: string;
+    contentMode: ContentMode;
     chipData: ChipData[];
-    metadata: ContentMetadata;
+    metadata?: BrokerMetaData[];
     layout?: LayoutMetadata;
 }
 
+
 // Base Types
 export interface ChipRequestOptions {
+    matrxRecordId?: string;
+    name?: string;
+    defaultValue?: string;
+    color?: string;
+    status?: MatrxStatus;
+    defaultComponent?: string;
+    dataType?: string;
     id?: string;
     label?: string;
     stringValue?: string;
-    color?: string;
     brokerId?: MatrxRecordId;
 }
 

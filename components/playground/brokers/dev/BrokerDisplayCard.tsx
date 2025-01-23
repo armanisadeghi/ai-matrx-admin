@@ -7,7 +7,7 @@ import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { EntityFormMinimalAnyRecord } from '@/app/entities/forms/EntityFormMinimalAnyRecord';
 import BrokerCardHeader from '../BrokerCardHeader';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/provider/new/EditorProvider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { TailwindColor } from '@/features/rich-text-editor/constants';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';

@@ -2,12 +2,12 @@
 
 import React, { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityKeys, MatrxRecordId } from '@/types';
 import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 import { useEnhancedFetch, useEntityFetch } from '@/app/entities/hooks/useEntityFetch';
 import BrokerDisplayCard from './BrokerDisplayCard';
 import { EnhancedRecord } from '@/lib/redux/entity/types/stateTypes';
+import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
 
 interface ChipData {
     id: string;

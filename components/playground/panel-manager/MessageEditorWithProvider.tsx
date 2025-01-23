@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/provider/new/EditorProvider';
 import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { Card } from '@/components/ui';
 import { MatrxRecordId } from '@/types';

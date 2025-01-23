@@ -1,4 +1,4 @@
-import { ChipData, ChipRequestOptions } from "../_dev/types";
+import { ChipData, ChipRequestOptions } from "../types/editor.types";
 
 // utils/brokerNameUtils.ts
 interface LabelGeneratorOptions {
@@ -42,23 +42,23 @@ export const generateChipLabel = ({ chipData, requestOptions }: LabelGeneratorOp
         return getNextNumericSuffix(requestOptions.label, existingLabels);
     }
 
-    // If we have string value, generate label based on content
-    if (requestOptions.stringValue) {
-        const contentType = detectContentType(requestOptions.stringValue);
+    const requestValue = requestOptions.defaultValue || requestOptions.name || requestOptions.stringValue;
+    if (requestValue) {
+        const contentType = detectContentType(requestValue);
         let baseLabel: string;
 
         switch (contentType) {
             case 'code':
-                baseLabel = formatCodeContent(requestOptions.stringValue);
+                baseLabel = formatCodeContent(requestValue);
                 break;
             case 'json':
-                baseLabel = formatJsonContent(requestOptions.stringValue);
+                baseLabel = formatJsonContent(requestValue);
                 break;
             case 'markdown':
-                baseLabel = formatMarkdownContent(requestOptions.stringValue);
+                baseLabel = formatMarkdownContent(requestValue);
                 break;
             default:
-                baseLabel = formatPlainText(requestOptions.stringValue);
+                baseLabel = formatPlainText(requestValue);
         }
 
         return getNextNumericSuffix(baseLabel, existingLabels);

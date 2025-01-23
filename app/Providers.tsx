@@ -23,7 +23,7 @@ import { ContextMenuProvider } from '@/providers/ContextMenuProvider';
 import { DialogProvider } from '@/providers/dialogs/DialogContext';
 import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
-import { EditorProvider } from '@/features/rich-text-editor/provider/EditorProvider';
+import { EditorProvider } from '@/features/rich-text-editor/provider/provider';
 import { ChipMenuProvider } from '@/features/rich-text-editor/components/ChipContextMenu';
 import { PreferenceSyncProvider } from '@/providers/usePreferenceSync';
 

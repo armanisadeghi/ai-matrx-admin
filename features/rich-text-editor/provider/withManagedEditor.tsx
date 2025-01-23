@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { withRefs } from '@/lib/refs';
 import RichTextEditor, { RichTextEditorProps } from '../RichTextEditor';
-import { useEditorContext } from './EditorProvider';
 import { ChipMenuProvider } from '../components/ChipContextMenu';
+import { useEditorContext } from './provider';
 
 const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
     const WrappedEditor: React.FC<RichTextEditorProps> = ({

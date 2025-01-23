@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/provider/new/EditorProvider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { MatrxRecordId } from '@/types';
 import { EditorLineInfo, getEditorLineInfo } from '@/features/rich-text-editor/utils/new-test-util';
@@ -9,7 +9,7 @@ import { ProcessedRecipeMessages } from './types';
 
 interface DebugPanelProps {
     editorId: MatrxRecordId;
-    message: ProcessedRecipeMessages;
+    message: any;
 }
 
 const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {

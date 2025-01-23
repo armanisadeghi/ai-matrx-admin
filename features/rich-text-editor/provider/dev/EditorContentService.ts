@@ -1,7 +1,7 @@
 // EditorContentService.ts
 import { useAppDispatch, useEntityTools } from "@/lib/redux";
-import { MATRX_PATTERN } from "../utils/patternUtils";
-import { ChipData, ContentMetadata, EditorState } from "../types/editor.types";
+import { MATRX_PATTERN } from "../../utils/patternUtils";
+import { ChipData, ContentMetadata, EditorState } from "../../types/editor.types";
 
 export interface ContentWithMetadata {
     content: string;
@@ -33,7 +33,7 @@ export const DEFAULT_METADATA: ContentMetadata = {
     version: '1.0'
 };
 
-export const getEmptyState = (): EditorState => ({
+const getEmptyState = (): EditorState => ({
     plainTextContent: '',
     chipData: [],
     metadata: { ...DEFAULT_METADATA }

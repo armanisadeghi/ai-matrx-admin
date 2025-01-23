@@ -52,6 +52,7 @@ import {
 } from '@/lib/redux/entity/actions';
 import { Callback } from '@/utils/callbackManager';
 import { EntityModeManager } from './utils/crudOpsManagement';
+import { getOrFetchSelectedRecordsThunk } from './thunks';
 
 export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity, initialState: EntityState<TEntity>) => {
     const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice`, entityKey, 'ENTITY_SLICE');
@@ -910,9 +911,28 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             resetState: () => initialState,
         },
 
-        // Extra Reducers
         extraReducers: (builder) => {
             builder
+                // Add handlers for the new thunk
+                .addCase(getOrFetchSelectedRecordsThunk.pending, (state) => {
+                    entityLogger.log('debug', 'getOrFetchSelectedRecordsThunk pending');
+                    setLoading(state, 'GET_OR_FETCH_RECORDS');
+                })
+                .addCase(getOrFetchSelectedRecordsThunk.fulfilled, (state) => {
+                    entityLogger.log('debug', 'getOrFetchSelectedRecordsThunk fulfilled');
+                    setSuccess(state, 'GET_OR_FETCH_RECORDS');
+                    clearError(state);
+                })
+                .addCase(getOrFetchSelectedRecordsThunk.rejected, (state, action) => {
+                    entityLogger.log('error', 'getOrFetchSelectedRecordsThunk rejected', action.error);
+                    setError(state, {
+                        payload: {
+                            message: action.error.message || 'An error occurred during fetch by record IDs.',
+                            code: action.error.code,
+                        }
+                    });
+                })
+                // Keep existing matchers
                 .addMatcher(
                     (action) => action.type.endsWith('/rejected'),
                     (state, action: PayloadAction<{ message?: string; code?: number; details?: any }>) => {
@@ -929,6 +949,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 );
         },
     });
+
     return {
         reducer: slice.reducer,
         actions: slice.actions,

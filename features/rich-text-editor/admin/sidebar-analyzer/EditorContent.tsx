@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { useEditorContext } from '../../provider/EditorProvider';
+import { useEditorContext } from '../../provider/new/EditorProvider';
 import { Switch } from '@/components/ui';
 
 

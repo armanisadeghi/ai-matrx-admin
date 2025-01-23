@@ -1,6 +1,6 @@
 // hooks/useManagedEditor.ts
 import { useRefManager } from '@/lib/refs';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useEditorContext } from '../provider/new/EditorProvider';
 import { useCallback } from 'react';
 
 export const useManagedEditor = (editorId: string) => {

@@ -11,8 +11,7 @@ import { processJoinedData } from './utils';
 import _ from 'lodash';
 
 export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: MatrxRecordId | string | number) {
-    const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? 
-        toPkValue(anyParentId) : anyParentId.toString()) : undefined;
+    const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString()) : undefined;
 
     const parentEntity = relDefSimple.parent.name;
     const joiningEntity = relDefSimple.join.name;
@@ -46,19 +45,18 @@ export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: M
     const joiningMatrxIds = mapper.getJoinMatrxIds();
     const childIds = mapper.getChildMatrxIds();
     const childMatrxIds = mapper.getChildMatrxIds();
-    const childRecords = useAppSelector((state) => 
-        childSelectors.selectRecordsWithKeys(state, childMatrxIds)) as EntityDataWithKey<EntityKeys>[];
+    const childRecords = useAppSelector((state) => childSelectors.selectRecordsWithKeys(state, childMatrxIds)) as EntityDataWithKey<EntityKeys>[];
 
     useGetorFetchRecords(childEntity, childMatrxIds) as EntityDataWithKey<EntityKeys>[];
 
     // Raw loading state
     const isRawLoading = isParentLoading || isJoinLoading || isChildLoading || isDeleting;
-    
+
     // Processing stability tracking
     const lastStableTimeRef = useRef(Date.now());
     const [isProcessingStable, setIsProcessingStable] = useState(false);
     const [processedChildRecords, setProcessedChildRecords] = useState<ProcessedEntityData<EntityKeys>[]>([]);
-    
+
     useEffect(() => {
         if (isRawLoading) {
             lastStableTimeRef.current = Date.now();
@@ -91,7 +89,7 @@ export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: M
         join: isJoinLoading,
         child: isChildLoading,
         isDeleting,
-        isProcessingStable
+        isProcessingStable,
     };
 
     const deleteChildAndJoin = useCallback(
@@ -100,11 +98,7 @@ export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: M
                 return;
             }
 
-            const JoinRecordId = findSingleJoinRecordKeyForChild(
-                JoiningEntityRecords, 
-                childRecordId, 
-                relDefSimple
-            );
+            const JoinRecordId = findSingleJoinRecordKeyForChild(JoiningEntityRecords, childRecordId, relDefSimple);
             if (JoinRecordId) {
                 deleteRecords(childRecordId, JoinRecordId);
             }
@@ -132,8 +126,6 @@ export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: M
 }
 
 export type RelationshipProcessingHook = ReturnType<typeof useRelFetchProcessing>;
-
-
 
 export function findSingleJoinRecordKeyForChild(
     joinRecordsWithKey: EntityDataWithKey<EntityKeys>[],

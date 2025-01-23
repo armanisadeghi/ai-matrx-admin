@@ -1,6 +1,7 @@
 // features\rich-text-editor\utils\editorStateUtils.ts
 
 import { EditorState } from "../types/editor.types";
+import { MATRX_PATTERN } from "./patternUtils";
 
 export type EditorStateUtils = {
     formatForDisplay: (text: string) => string;
@@ -66,19 +67,22 @@ export const editorStateUtils: EditorStateUtils = {
 export const replaceChipsWithStringValues = (
     state: Pick<EditorState, 'plainTextContent' | 'chipData'>,
     showTokenIds = false
-  ): string => {
+): string => {
     if (!state.plainTextContent) return '';
     
     // Create efficient lookup map for chips
     const chipMap = new Map(
-      state.chipData?.map(chip => [chip.id, chip]) ?? []
+        state.chipData?.map(chip => [chip.id, chip]) ?? []
     );
     
+    // Reset the pattern's lastIndex
+    MATRX_PATTERN.lastIndex = 0;
+    
     return state.plainTextContent.replace(
-      /{([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}!/g,
-      (match, tokenId) => {
-        if (showTokenIds) return match;
-        return chipMap.get(tokenId)?.stringValue ?? match;
-      }
+        MATRX_PATTERN,
+        (match, tokenId) => {
+            if (showTokenIds) return match;
+            return chipMap.get(tokenId)?.stringValue ?? match;
+        }
     );
-  };
+};

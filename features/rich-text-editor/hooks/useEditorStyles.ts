@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { TextStyle } from '../types/editor.types';
 import { applyTextStyle } from '../utils/editorUtils';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useEditorContext } from '../provider/provider';
 import { getEditorElement } from '../utils/editorUtils';
 
 export const useEditorStyles = (
@@ -12,7 +12,6 @@ export const useEditorStyles = (
     }
 ) => {
     const context = useEditorContext();
-    const editorState = context.getEditorState(editorId);
 
     const handleStyleChange = useCallback(
         (style: TextStyle) => {

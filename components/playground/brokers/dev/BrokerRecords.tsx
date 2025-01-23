@@ -5,7 +5,7 @@ import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/provider/new/EditorProvider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import ChipDisplay from './ChipDisplay';

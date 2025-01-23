@@ -4,7 +4,7 @@ import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { DataBrokerDataOptional, EntityKeys, MatrxRecordId, MessageBrokerDataOptional } from '@/types';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import BrokerDisplayCard from './BrokerDisplayCard';
 import { useEnhancedFetch } from '@/app/entities/hooks/useEntityFetch';

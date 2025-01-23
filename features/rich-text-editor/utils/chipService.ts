@@ -3,7 +3,7 @@
 import { cn } from '@/utils';
 import { getColorClassName } from './colorUitls';
 import { CHIP_BASE_CLASS } from '../constants';
-import { ChipData, DOMSnapshot } from '../types/editor.types';
+import { BrokerMetaData, DOMSnapshot } from '../types/editor.types';
 import { ChipMenuContextValue } from '../components/ChipContextMenu';
 
 export interface ChipHandlers {
@@ -14,7 +14,7 @@ export interface ChipHandlers {
     onMouseEnter?: (event: MouseEvent) => void;
     onMouseLeave?: (event: MouseEvent) => void;
     onContextMenu?: (event: MouseEvent) => void;
-    onNewChip?: (chipData: ChipData) => void;
+    onNewChip?: (brokerMetadata: BrokerMetaData) => void;
 
 }
 
@@ -42,7 +42,7 @@ export const createChipHandlers = ({ handlers }: ChipHandlerOptions): ChipHandle
 
 
 export const createChipElement = (
-    chipData: ChipData,
+    brokerMetadata: BrokerMetaData,
     handlers: Partial<ChipHandlers>
 ): HTMLSpanElement => {
     const {
@@ -63,14 +63,21 @@ export const createChipElement = (
 
     // Create the actual chip with its styling and data
     const chip = document.createElement('span');
-    const colorClassName = getColorClassName(chipData.color);
+    const colorClassName = getColorClassName(brokerMetadata.color);
     chip.className = cn(CHIP_BASE_CLASS, colorClassName);
     chip.setAttribute('data-chip', 'true');
-    chip.setAttribute('data-chip-id', chipData.id);
-    chip.setAttribute('data-chip-label', chipData.label);
-    chip.setAttribute('data-chip-original-content', chipData.stringValue);
-    chip.setAttribute('data-broker-id', chipData.brokerId);
-    chip.textContent = chipData.label;
+    chip.setAttribute('data-chip-id', brokerMetadata.id);
+    chip.setAttribute('data-chip-matrxRecordId', brokerMetadata.matrxRecordId);
+    chip.setAttribute('data-chip-name', brokerMetadata.name);
+    chip.setAttribute('data-chip-defaultValue', brokerMetadata.defaultValue);
+    chip.setAttribute('data-chip-color', brokerMetadata.color);
+    chip.setAttribute('data-chip-status', brokerMetadata.status);
+    chip.setAttribute('data-chip-defaultComponent', brokerMetadata.defaultComponent);
+    chip.setAttribute('data-chip-dataType', brokerMetadata.defaultComponent);
+    chip.setAttribute('data-chip-label', brokerMetadata.name);
+    chip.setAttribute('data-chip-original-content', brokerMetadata.defaultComponent);
+    chip.setAttribute('data-broker-id', brokerMetadata.matrxRecordId);
+    chip.textContent = brokerMetadata.name;
 
     // Attach event handlers to the container
     if (onDragStart) chipContainer.addEventListener('dragstart', onDragStart);
@@ -90,7 +97,7 @@ export const createChipElement = (
 };
 
 export function createCompleteChipStructure(
-    chipData: ChipData,
+    brokerMetadata: BrokerMetaData,
     dragConfig,
     debugMode = false,
     chipHandlers: {
@@ -103,17 +110,17 @@ export function createCompleteChipStructure(
     } = {}
 ) {
     // Create wrapper
-    console.log('--Creating chip structure:', chipData);
+    console.log('--Creating chip structure:', brokerMetadata);
     const chipWrapper = document.createElement('span');
-    const debugWrapperClass = `chip-wrapper border border-${chipData.color}-500`;
+    const debugWrapperClass = `chip-wrapper border border-${brokerMetadata.color}-500`;
     chipWrapper.className = debugMode ? debugWrapperClass : 'chip-wrapper';
     chipWrapper.setAttribute('data-chip-wrapper', 'true');
 
     // Create chip with drag handlers and optional additional handlers
-    const chip = createChipElement(chipData, { ...dragConfig, ...chipHandlers });
+    const chip = createChipElement(brokerMetadata, { ...dragConfig, ...chipHandlers });
 
     // Create unique identifier for this structure
-    const structureId = `chip-structure-${chipData.id}`;
+    const structureId = `chip-structure-${brokerMetadata.matrxRecordId}`;
 
     // Create spacing node wrappers
     const leadingSpaceWrapper = document.createElement('span');
@@ -158,8 +165,8 @@ export function createCompleteChipStructure(
 }
 
 
-export const createFragmentChipStructure = (
-    chipData: ChipData,
+export const createFragmentChipStructureXXXXX = (
+    brokerMetadata: BrokerMetaData,
     { onDragStart, onDragEnd }
 ): { elements: HTMLSpanElement[], cursorTargetId: string } => {
     const cursorTargetId = `cursor-target-${Math.random().toString(36).substr(2, 9)}`;
@@ -167,7 +174,7 @@ export const createFragmentChipStructure = (
     const beforeBuffer = document.createElement('span');
     beforeBuffer.appendChild(document.createTextNode('\u200B'));
     
-    const chip = createChipElement(chipData, { onDragStart, onDragEnd });
+    const chip = createChipElement(brokerMetadata, { onDragStart, onDragEnd });
     
     const afterBuffer = document.createElement('span');
     afterBuffer.setAttribute('data-cursor-target', cursorTargetId);
@@ -246,11 +253,11 @@ export function positionCursorInBuffer(fragment: DocumentFragment) {
 
 
 export const createChipWithStructure = (
-    chipData: ChipData,
+    brokerMetadata: BrokerMetaData,
     { onDragStart, onDragEnd }
 ): { beforeBuffer: HTMLSpanElement; chip: HTMLSpanElement; afterBuffer: HTMLSpanElement } => {
     // Create our chip with its spaces and styling
-    const chip = createChipElement(chipData, { onDragStart, onDragEnd });
+    const chip = createChipElement(brokerMetadata, { onDragStart, onDragEnd });
 
     // Create independent buffer spans
     const beforeBuffer = document.createElement('span');
@@ -270,23 +277,23 @@ export const createChipWithStructure = (
 
 
 
-export const createChipElementWorking = (chipData: ChipData): HTMLSpanElement => {
+export const createChipElementWorking = (brokerMetadata: BrokerMetaData ): HTMLSpanElement => {
     const chip = document.createElement('span');
-    const colorClassName = getColorClassName(chipData.color);
+    const colorClassName = getColorClassName(brokerMetadata.color);
     chip.contentEditable = 'false';
     chip.className = cn(CHIP_BASE_CLASS, colorClassName);
     chip.setAttribute('data-chip', 'true');
-    chip.setAttribute('data-chip-id', chipData.id);
-    chip.setAttribute('data-chip-label', chipData.label);
-    chip.setAttribute('data-chip-original-content', chipData.stringValue);
-    chip.setAttribute('data-broker-id', chipData.brokerId);
+    chip.setAttribute('data-chip-id', brokerMetadata.matrxRecordId);
+    chip.setAttribute('data-chip-label', brokerMetadata.name);
+    chip.setAttribute('data-chip-original-content', brokerMetadata.defaultValue);
+    chip.setAttribute('data-broker-id', brokerMetadata.matrxRecordId);
     chip.setAttribute('draggable', 'true');
-    chip.textContent = chipData.label;
+    chip.textContent = brokerMetadata.name;
     return chip;
 };
 
 export const createChipElements = (
-    chipData: ChipData,
+    brokerMetadata: BrokerMetaData,
     debugMode: boolean,
     eventHandlers: {
         onDragStart: (e: DragEvent) => void;
@@ -294,9 +301,9 @@ export const createChipElements = (
     }
 ) => {
     const chipWrapper = document.createElement('span');
-    chipWrapper.className = debugMode ? `chip-wrapper border border-${chipData.color}-500` : 'chip-wrapper';
+    chipWrapper.className = debugMode ? `chip-wrapper border border-${brokerMetadata.color}-500` : 'chip-wrapper';
 
-    const chip = createChipElementWorking(chipData);
+    const chip = createChipElementWorking(brokerMetadata);
     chip.addEventListener('dragstart', eventHandlers.onDragStart);
     chip.addEventListener('dragend', eventHandlers.onDragEnd);
 

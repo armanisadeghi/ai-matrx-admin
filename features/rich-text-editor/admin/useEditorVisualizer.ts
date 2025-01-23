@@ -1,6 +1,6 @@
 // useEditorVisualizer.ts - This is the hook specifically for visualization
 import { useState, useEffect } from 'react';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useEditorContext } from '../provider/new/EditorProvider';
 
 export const useEditorVisualizer = () => {
     const context = useEditorContext();

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { isMatrxRecordId, useAppDispatch, useEntityTools } from '@/lib/redux';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
 import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { Card } from '@/components/ui';
 import { MatrxRecordId } from '@/types';
@@ -14,16 +13,10 @@ import { ChipData, EditorState } from '@/features/rich-text-editor/types/editor.
 import useChipHandlers from '../hooks/useChipHandlers';
 import { useRelatedDataBrokers } from '../hooks/useMessageBrokers';
 import { TextPlaceholderEffect } from './TextPlaceholderEffect';
-import { m } from 'framer-motion';
+import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
 
 const DEBUG_STATUS = true;
 
-interface MessageData {
-    id: string;
-    content: string;
-    processedContent: string;
-    chips: ChipData[];
-}
 
 interface ChipChangeData {
     chipId: string;
@@ -40,7 +33,6 @@ interface MessageEditorProps {
     onCollapse?: () => void;
     onExpand?: () => void;
     onDelete?: (messageRecordId: MatrxRecordId) => void;
-    onMessageUpdate?: (messageData: MessageData) => void;
     onChipUpdate?: (chipData: ChipChangeData) => void;
     onToggleEditor?: (messageRecordId: MatrxRecordId) => void;
     onDragDrop?: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
@@ -56,7 +48,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     onCollapse,
     onExpand,
     onDelete,
-    onMessageUpdate,
     onChipUpdate,
     onToggleEditor,
     onDragDrop,
@@ -67,31 +58,16 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const dispatch = useAppDispatch();
     const context = useEditorContext();
     const { updateRecord } = useUpdateRecord('messageTemplate');
-    // const { addBroker } = useAddBroker(messageRecordId);
     const [initialRenderHold, setInitialRenderHold] = useState(true);
 
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedContent, setLastSavedContent] = useState('');
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [debugVisible, setDebugVisible] = useState(false);
-    const [lastEditorState, setLastEditorState] = useState<EditorState>(() => context.getEditorState(messageRecordId));
     const { actions: messageActions } = useEntityTools('messageTemplate');
     const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu } = useChipHandlers(messageRecordId);
-
-    const {
-        messageBrokers,
-        messageBrokerMatrxIds,
-        dataBrokerIds,
-        dataBrokerMatrxIds,
-        coreDataBrokers,
-        processedDataBrokers,
-        messagePkId,
-        messageMatrxId,
-        deleteDataBroker,
-        addBroker,
-        messageBrokerIsLoading,
-        messageBrokerLoadingState,
-    } = useRelatedDataBrokers(messageRecordId);
+    const brokerHook = useRelatedDataBrokers(messageRecordId);
+    const { addBroker, messageBrokerIsLoading } = brokerHook;
 
     useEffect(() => {
         console.log('============ only logs during a render');
@@ -119,29 +95,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         }
     }, [message?.content]);
 
-    useEffect(() => {
-        if (!context.registry.isEditorRegistered(messageRecordId)) return;
-
-        const interval = setInterval(() => {
-            const currentState = context.getEditorState(messageRecordId);
-            const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
-            const rawContent = context.getTextWithChipsReplaced(messageRecordId, false);
-
-            if (!isEqual(currentState, lastEditorState)) {
-                const messageData: MessageData = {
-                    id: messageRecordId,
-                    content: rawContent,
-                    processedContent,
-                    chips: currentState.chipData,
-                };
-
-                onMessageUpdate?.(messageData);
-                setLastEditorState(currentState);
-            }
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [messageRecordId, lastEditorState, onMessageUpdate]);
 
     const updateMessageContent = useCallback(
         (content: string) => {
@@ -156,37 +109,13 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         [messageActions, dispatch, messageRecordId]
     );
 
-    const handleSaveWithMetadata = useCallback(() => {
-        if (isSaving || initialRenderHold || messageBrokerIsLoading) {
-            return;
-        }
-    
-        setIsSaving(true);
-        
-        context.contentService.saveContent(messageRecordId, context.getEditorState(messageRecordId))
-            .then(savedContent => {
-                setLastSavedContent(savedContent);
-                updateRecord(messageRecordId);
-            })
-            .finally(() => {
-                setTimeout(() => {
-                    setIsSaving(false);
-                }, 500);
-            });
-            
-    }, [context, messageRecordId, updateRecord, isSaving]);
-
-
     const handleSave = useCallback(() => {
         console.log('Saving message:', messageRecordId);
         if (isSaving || initialRenderHold || messageBrokerIsLoading) {
             console.log('Skipping save:', isSaving, initialRenderHold, messageBrokerIsLoading);
             return;
         }
-        
-
-        const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
-        // Skip if content hasn't changed
+        const processedContent = context.getTextWithChipsReplaced(messageRecordId);
         if (processedContent === lastSavedContent) {
             return;
         }
@@ -251,18 +180,24 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         console.log('Linking broker');
     }, []);
 
-    const handleShowProcessed = useCallback(() => {
-        console.log('This will show the ugly processed content which replaces chips with the formula for the chip');
+    const handleShowChips = useCallback(() => {
+        context.setContentMode(messageRecordId, 'encodeChips');
+        console.log('Showing chips');
     }, []);
 
-    const handleShowNormalContent = useCallback(() => {
-        console.log('This will show the default Editor content, which has text, styling and chips.');
+    const handleShowEncoded = useCallback(() => {
+        context.setContentMode(messageRecordId, 'encodeVisible');
+        console.log('Showing encoded');
     }, []);
 
-    const handleReplaceChipsWithBrokerContent = useCallback(() => {
-        console.log(
-            'This will replace chips and fetch the content value of each chip from the database and show the content for that broker in place of the chip'
-        );
+    const handleShowNames = useCallback(() => {
+        context.setContentMode(messageRecordId, 'name');
+        console.log('Showing names');
+    }, []);
+
+    const handleShowDefaultValue = useCallback(() => {
+        context.setContentMode(messageRecordId, 'defaultValue');
+        console.log('Showing default value');
     }, []);
 
     const handleToggleVisibility = useCallback(() => {
@@ -290,6 +225,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         setDebugVisible((prev) => !prev);
     }, []);
 
+
     return (
         <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
             <MessageToolbar
@@ -301,9 +237,10 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                 onDelete={handleDelete}
                 onSave={handleSave}
                 onToggleCollapse={handleToggleVisibility}
-                onProcessed={handleShowProcessed}
-                onTextWithChips={handleShowNormalContent}
-                onShowBrokerContent={handleReplaceChipsWithBrokerContent}
+                onShowChips={handleShowChips}
+                onShowEncoded={handleShowEncoded}
+                onShowNames={handleShowNames}
+                onShowDefaultValue={handleShowDefaultValue}
                 onRoleChange={handleRoleChange}
                 onDragDrop={onDragDrop}
                 debug={DEBUG_STATUS}

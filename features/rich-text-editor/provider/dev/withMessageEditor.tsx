@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { EditorWithProviders } from './withManagedEditor';
-import { useEditorContext } from './EditorProvider';
-import { ChipData } from '../types/editor.types';
+import { EditorWithProviders } from '../withManagedEditor';
+import { useEditorContext } from '../new/EditorProvider';
+import { ChipData } from '../../types/editor.types';
 import { useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';

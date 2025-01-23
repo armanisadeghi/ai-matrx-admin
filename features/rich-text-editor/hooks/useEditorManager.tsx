@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { useEditorContext } from '../provider/EditorProvider';
 import { ChipData } from '../types/editor.types';
+import { useEditorContext } from '../provider/provider';
 
 export const useEditorManager = () => {
     const context = useEditorContext();
@@ -12,7 +12,7 @@ export const useEditorManager = () => {
         const findAllEditors = () => {
             const allStates = context.getAllEditorStates();
             const editorsWithState = Object.keys(allStates);
-            const editorsWithLayout = context.getEditorsByPosition().map(editor => editor.id);
+            const editorsWithLayout = context.layout.getEditorsByPosition().map((editor) => editor.id);
             return Array.from(new Set([...editorsWithState, ...editorsWithLayout])).sort();
         };
 
@@ -24,11 +24,11 @@ export const useEditorManager = () => {
     }, [context]);
 
     const getAllEditorStates = useCallback(() => {
-        return editorIds.map(id => ({
+        return editorIds.map((id) => ({
             id,
             state: context.getEditorState(id),
-            layout: context.getEditorLayout(id),
-            isRegistered: context.isEditorRegistered(id)
+            layout: context.layout.getEditorLayout(id),
+            isRegistered: context.registry.isEditorRegistered(id),
         }));
     }, [context, editorIds]);
 
@@ -37,21 +37,27 @@ export const useEditorManager = () => {
             const state = context.getEditorState(id);
             return [
                 ...chips,
-                ...(state.chipData || []).map(chip => ({
+                ...(state.chipData || []).map((chip) => ({
                     ...chip,
-                    editorId: id
-                }))
+                    editorId: id,
+                })),
             ];
         }, []);
     }, [context, editorIds]);
 
-    const getChipsByBroker = useCallback((brokerId: string) => {
-        return getAllChips().filter(chip => chip.brokerId === brokerId);
-    }, [getAllChips]);
+    const getChipsByBroker = useCallback(
+        (brokerId: string) => {
+            return getAllChips().filter((chip) => chip.brokerId === brokerId);
+        },
+        [getAllChips]
+    );
 
-    const getEditorState = useCallback((editorId: string) => {
-        return context.getEditorState(editorId);
-    }, [context]);
+    const getEditorState = useCallback(
+        (editorId: string) => {
+            return context.getEditorState(editorId);
+        },
+        [context]
+    );
 
     return {
         editorIds,
@@ -59,11 +65,10 @@ export const useEditorManager = () => {
         getAllChips,
         getChipsByBroker,
         getEditorState,
-        // Direct context methods for updates
-        updateChipData: context.updateChipData,
-        removeChipData: context.removeChipData,
-        getEditorLayout: context.getEditorLayout,
-        isEditorRegistered: context.isEditorRegistered,
+        updateChipData: context.chips.updateChipData,
+        removeChipData: context.chips.removeChipData,
+        getEditorLayout: context.layout.getEditorLayout,
+        isEditorRegistered: context.registry.isEditorRegistered,
     };
 };
 

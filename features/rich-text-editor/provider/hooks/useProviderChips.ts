@@ -1,12 +1,13 @@
 // hooks/useEditorChips.ts
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { ChipData, ChipRequestOptions, EditorState } from '../../types/editor.types';
+import { ChipData, ChipRequestOptions, EditorState, BrokerMetaData } from '../../types/editor.types';
 import { generateChipLabel } from '../../utils/generateBrokerName';
-import { EditorStates } from '../EditorProvider';
 import { chipSyncManager } from '../../utils/ChipUpdater';
-import { MatrxRecordId } from '@/types';
+import { DataBrokerData, MatrxRecordId } from '@/types';
 import { ColorManagement } from '../../hooks/useColorManagement';
+import { EditorStates } from '../provider';
+import { useCoordinatedCreate, useRelationshipCreateWithParentId } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
 
 export const useProviderChips = (
     editors: EditorStates,
@@ -16,6 +17,69 @@ export const useProviderChips = (
     updateEditorState: (editorId: string, updates: Partial<EditorState>) => void,
     colors: ColorManagement
 ) => {
+    const createRelatedRecords = useRelationshipCreateWithParentId('messageBroker', 'dataBroker');
+
+    const makeBrokerMetadata = useCallback(
+        (editorId: string, requestOptions: ChipRequestOptions = {}): BrokerMetaData => {
+            const idToUse = requestOptions.id ?? uuidv4();
+            const brokerMetadata = {
+                id: idToUse,
+                name: requestOptions.name ?? generateLabel(editorId, requestOptions),
+                defaultValue: requestOptions.defaultValue ?? '',
+                color: requestOptions.color ?? colors.getNextColor(),
+                brokerId: requestOptions.brokerId ?? `id:${idToUse}`,
+                matrxRecordId: idToUse,
+                defaultComponent: requestOptions.defaultComponent ?? undefined,
+                dataType: requestOptions.dataType ?? 'str',
+            };
+            return brokerMetadata;
+        },
+        [getEditorState, colors]
+    );
+
+    const brokerFromMetadata = useCallback((metadata: BrokerMetaData): DataBrokerData => {
+        return {
+            id: metadata.id,
+            name: metadata.name || 'New Broker',
+            defaultValue: metadata.defaultValue || '',
+            color: metadata.color as DataBrokerData['color'],
+            defaultComponent: metadata.defaultComponent || '',
+            dataType: metadata.dataType as DataBrokerData['dataType'],
+        };
+    }, []);
+
+    const handleError = useCallback((error: Error) => {
+        console.error('Failed to create related records:', error);
+    }, []);
+
+    const createNewChipData = useCallback(
+        async (editorId: string, requestOptions: ChipRequestOptions = {}): Promise<BrokerMetaData> => {
+            const brokerMetadata = makeBrokerMetadata(editorId, requestOptions);
+            const brokerData = brokerFromMetadata(brokerMetadata);
+
+            try {
+                await createRelatedRecords(
+                    {
+                        child: brokerData,
+                        joining: {
+                            defaultValue: brokerData.defaultValue,
+                            messageId: editorId,
+                        },
+                    },
+                    editorId
+                );
+
+                addBrokerMetadata(editorId, brokerMetadata);
+                addChipDataFromMetadata(editorId, brokerMetadata);
+                return brokerMetadata as BrokerMetaData;
+            } catch (error) {
+                handleError(error as Error);
+                throw error;
+            }
+        },
+        [createRelatedRecords, makeBrokerMetadata, brokerFromMetadata, handleError]
+    );
+
     const generateLabel = useCallback(
         (editorId: string, requestOptions: ChipRequestOptions = {}): string => {
             const editorState = getEditorState(editorId);
@@ -34,25 +98,6 @@ export const useProviderChips = (
         [updateEditorState]
     );
 
-    const createNewChipData = useCallback(
-        (editorId: string, requestOptions: ChipRequestOptions = {}): ChipData => {
-            const editorState = getEditorState(editorId);
-            return {
-                id: requestOptions.id ?? uuidv4(),
-                label:
-                    requestOptions.label ??
-                    generateChipLabel({
-                        chipData: editorState.chipData,
-                        requestOptions,
-                    }),
-                stringValue: requestOptions.stringValue ?? '',
-                color: requestOptions.color ?? colors.getNextColor(),
-                brokerId: requestOptions.brokerId ?? 'disconnected',
-            };
-        },
-        [getEditorState, colors]
-    );
-
     // Used Exclusiely by the Editor to crate a new chip
     const addChipData = useCallback((editorId: string, data: ChipData) => {
         setEditors((prev) => {
@@ -67,6 +112,33 @@ export const useProviderChips = (
             return next;
         });
     }, []);
+
+    const addBrokerMetadata = useCallback((editorId: string, data: BrokerMetaData) => {
+        setEditors((prev) => {
+            const current = prev.get(editorId);
+            if (!current) return prev;
+
+            const next = new Map(prev);
+            next.set(editorId, {
+                ...current,
+                metadata: [...current.metadata, data],
+            });
+            return next;
+        });
+    }, []);
+
+    const addChipDataFromMetadata = useCallback(
+        (editorId: string, metadata: BrokerMetaData) => {
+            const chipData: ChipData = {
+                id: metadata.matrxRecordId,
+                label: metadata.name,
+                color: metadata.color,
+                brokerId: metadata.matrxRecordId,
+            };
+            addChipData(editorId, chipData);
+        },
+        [addChipData]
+    );
 
     const removeChipData = useCallback(
         (editorId: string, chipId: string) => {

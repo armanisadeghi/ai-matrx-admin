@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/provider/new/EditorProvider';
 
 interface EditorDebugState {
     isRegistered: boolean;

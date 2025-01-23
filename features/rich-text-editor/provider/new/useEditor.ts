@@ -1,19 +1,22 @@
 import { useCallback } from 'react';
-import { extractTextContent, getEditorElement } from '../utils/editorUtils';
+import {
+    extractTextContent,
+    getEditorElement,
+} from '../utils/editorUtils';
 import { ChipHandlers } from '../utils/chipService';
-import { useEditorContext } from '../provider/provider';
+import { useEditorContext } from '../provider/EditorProvider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
 import { useChipCreation } from './useChipCreation';
 
 export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
     const context = useEditorContext();
-    const content = context.getContent(editorId);
+    const editorState = context.getEditorState(editorId);
     const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
 
     const getText = useCallback(() => {
-        return content;
-    }, [content]);
+        return editorState.plainTextContent;
+    }, [editorState.plainTextContent]);
 
     const focus = useCallback(() => {
         const editor = getEditor();
@@ -26,7 +29,7 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
         const editor = getEditor();
         if (!editor) return;
         const text = extractTextContent(editor);
-        context.setContent(editorId, text);
+        context.setPlainTextContent(editorId, text);
     }, [getEditor, editorId]);
 
     const normalizeContent = useCallback(() => {

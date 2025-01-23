@@ -5,9 +5,19 @@ import { useMessageReordering } from './messages/useMessageReordering';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { recipeMessageDef } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { getAllMatrxRecordIdsFromMessages } from '@/features/rich-text-editor/utils/patternUtils';
+import { getOrFetchSelectedRecordsThunk, RecordResult } from '@/lib/redux/entity/thunks';
+
+type NewMessage = {
+    id?: string;
+    createdAt?: Date;
+    type?: "text" | "base64_image" | "blob" | "image_url" | "other" | string;
+    role?: "user" | "assistant" | "system" | string;
+    content?: string;
+}
 
 export type AddMessagePayload = {
-    child: MessageTemplateDataOptional;
+    child: NewMessage;
     joining: { order: number };
 };
 
@@ -52,7 +62,6 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
         loadingState: recipeMessageLoadingState,
     } = recipeMessageHook;
 
-    // Track when loading has been stable (false) for 200ms
     useEffect(() => {
         if (recipeMessageIsLoading) {
             setCanProcess(false);
@@ -91,44 +100,69 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
     const uniqueBrokers = React.useMemo(() => {
         if (!canProcess) return lastUniqueBrokers;
 
-        const newUniqueBrokers = extractUniqueBrokersFromRecords(processedMessages);
+        const newUniqueBrokers = getAllMatrxRecordIdsFromMessages(processedMessages);
+        console.log('----++++---- New unique brokers:', newUniqueBrokers);
         setLastUniqueBrokers(newUniqueBrokers);
         return newUniqueBrokers;
     }, [processedMessages, canProcess]);
 
     useEffect(() => {
         if (uniqueBrokers.length > 0) {
-            dispatch(
-                brokerActions.getOrFetchSelectedRecords({
+            dispatch(getOrFetchSelectedRecordsThunk({
+                entityKey: 'dataBroker',
+                actions: brokerActions,
+                payload: {
                     matrxRecordIds: uniqueBrokers,
                     fetchMode: 'fkIfk',
-                })
-            );
+                }
+            }))
+            .unwrap()  // This extracts the actual payload from the AsyncThunk result
+            .then((results: RecordResult<any>[]) => {
+                const fetchedBrokers = results.filter(result => result.data);
+                console.log('Fetched brokers:', fetchedBrokers.map(b => b.data.name));
+                const missingBrokers = results.filter(result => !result.data);
+                console.log('Missing brokers:', missingBrokers.map(b => b.recordId));
+                
+                if (missingBrokers.length > 0) {
+                    console.warn('Some brokers could not be fetched:', missingBrokers.map(b => b.recordId));
+                }
+            })
+            .catch((error) => {
+                console.error('Failed to fetch brokers:', error);
+            });
         }
     }, [dispatch, brokerActions, uniqueBrokers]);
 
+
+
+    
     const { handleDragDrop } = useMessageReordering(processedMessages, () => setNeedsReprocess(true));
 
     const addMessage = useCallback(
-        async (newMessage: MessageTemplateDataOptional) => {
+        (newMessage: MessageTemplateDataOptional, onComplete?: (success: boolean) => void) => {
             const nextOrder = processedMessages.length;
-            await createMessage(
+            createMessage(
                 {
                     child: newMessage,
                     joining: { order: nextOrder },
                 },
                 {
                     onSuccess: () => {
-                        console.log('Successfully created relationship');
+                        onComplete?.(true);
                     },
                     onError: (error) => {
                         console.error('Failed to create relationship:', error);
+                        onComplete?.(false);
                     },
                 }
             );
         },
         [createMessage, processedMessages]
     );
+    
+
+    console.log('====recipeMessageHook processedMessages', processedMessages);
+
 
     return {
         recipePkId,
@@ -138,7 +172,7 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
         messageIds,
         recipeMessages,
         recipeMessageMatrxIds,
-        recipeMessageIsLoading, // Return the original loading state
+        recipeMessageIsLoading,
         recipeMessageLoadingState,
         deleteMessage,
         handleDragDrop,
@@ -147,3 +181,4 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
 }
 
 export type UseRecipeMessagesHook = ReturnType<typeof useRecipeMessages>;
+

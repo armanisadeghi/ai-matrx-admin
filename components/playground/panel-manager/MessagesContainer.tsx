@@ -34,11 +34,11 @@ const INITIAL_PANELS: ProcessedRecipeMessages[] = [
 
 
 interface MessagesContainerProps {
-    recipeRecordId: MatrxRecordId;
     relationshipHook: RelationshipHook;
+    recipeRecordId?: MatrxRecordId;
 }
 
-function MessagesContainer({ recipeRecordId, relationshipHook }: MessagesContainerProps) {
+function MessagesContainer({ relationshipHook, recipeRecordId }: MessagesContainerProps) {
     const recipeMessageHook = useRecipeMessages(relationshipHook);;
     const { messages, deleteMessage, handleDragDrop } = recipeMessageHook;
     const { addMessage } = useAddMessage();

@@ -48,19 +48,22 @@ export function useRelWithFetch(relDefSimple: simpleRelDef, anyParentId: MatrxRe
     useGetorFetchRecords(childEntity, childMatrxIds) as EntityDataWithKey<EntityKeys>[];
 
     const deleteChildAndJoin = useCallback(
-        (childRecordId: MatrxRecordId) => {
+        (childRecordId: MatrxRecordId, onComplete?: (success: boolean) => void) => {
             if (!childMatrxIds.includes(childRecordId)) {
+                onComplete?.(false);
                 return;
             }
-
+    
             const JoinRecordId = findSingleJoinRecordKeyForChild(JoiningEntityRecords, childRecordId, relDefSimple);
             if (JoinRecordId) {
                 deleteRecords(childRecordId, JoinRecordId);
+            } else {
+                onComplete?.(false);
             }
         },
-        [deleteRecords, JoiningEntityRecords]
+        [deleteRecords, JoiningEntityRecords, childMatrxIds, relDefSimple]
     );
-
+    
     const createRelatedRecords = useRelationshipCreate(joiningEntity, childEntity, parentId);
 
     const isLoading = isParentLoading || isJoinLoading || isChildLoading;

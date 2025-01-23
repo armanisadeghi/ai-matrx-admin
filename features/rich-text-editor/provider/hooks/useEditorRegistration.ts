@@ -1,16 +1,29 @@
 import { useRef, useCallback } from 'react';
-import { DEFAULT_METADATA, EditorStates, } from '../EditorProvider';
 import { EditorState, LayoutMetadata } from '../../types/editor.types';
+import { DisplayMode, transformMatrxText, getProcessedMetadataFromText } from '../../utils/patternUtils';
+import { EditorStates } from '../provider';
 
-
-export const getEmptyState = (initialContent): EditorState => ({
-    plainTextContent: initialContent,
+const initialState: EditorState = {
+    content: '',
+    contentMode: 'encodeChips',
     chipData: [],
-    metadata: { ...DEFAULT_METADATA }
+    metadata: [],
+    layout: {
+        position: 0,
+        isVisible: true,
+    },
+};
+
+export const getInitialState = (initialContent: string): EditorState => ({
+    ...initialState,
+    content: initialContent,
+    metadata: getProcessedMetadataFromText(initialContent),
 });
 
-
-export const useEditorRegistration = (editors: EditorStates, setEditors: (updater: (prev: EditorStates) => EditorStates) => void) => {
+export const useEditorRegistration = (
+    editors: EditorStates, 
+    setEditors: (updater: (prev: EditorStates) => EditorStates) => void
+) => {
     const registrationRef = useRef(new Set<string>());
 
     const registerEditor = useCallback(
@@ -20,16 +33,18 @@ export const useEditorRegistration = (editors: EditorStates, setEditors: (update
             }
 
             registrationRef.current.add(editorId);
-
             const startingContent = initialContent || '';
 
             setEditors((prev) => {
                 if (prev.has(editorId)) return prev;
+                
                 const next = new Map(prev);
-                const initialState = getEmptyState(startingContent);
+                const initialState = getInitialState(startingContent);
+                
                 if (initialLayout) {
                     initialState.layout = initialLayout;
                 }
+                
                 next.set(editorId, initialState);
                 return next;
             });
@@ -54,9 +69,12 @@ export const useEditorRegistration = (editors: EditorStates, setEditors: (update
         [setEditors]
     );
 
-    const isEditorRegistered = useCallback((editorId: string) => {
-        return registrationRef.current.has(editorId);
-    }, []);
+    const isEditorRegistered = useCallback(
+        (editorId: string) => {
+            return registrationRef.current.has(editorId);
+        }, 
+        []
+    );
 
     return {
         registerEditor,

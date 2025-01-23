@@ -1,6 +1,7 @@
 // File: useSetEditorContent.ts
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { EditorHookResult } from './useEditor';
+import { useEditorContext } from '../provider/EditorProvider';
 import { getEditorElement } from '../utils/editorUtils';
 import { createChipLine, createEmptyLine, createTextOnlyLine, findAllChipPatterns, processContentLines } from '../utils/setEditorUtils';
 import { createCompleteChipStructure } from '../utils/chipService';
@@ -8,8 +9,6 @@ import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { DataBrokerData, MatrxRecordId } from '@/types';
 import { ChipData } from '../types/editor.types';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
-import { getProcessedMetadataFromText } from '../utils/patternUtils';
-import { useEditorContext } from '../provider/provider';
 
 export const useSetEditorContent = (editorId: string, useEditor: EditorHookResult) => {
     const context = useEditorContext();
@@ -66,23 +65,6 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
         [getBrokerById]
     );
 
-    type DataBrokers = {
-        matrxRecordId?: MatrxRecordId;
-        name?: string;
-        defaultValue?: string;
-        color?: string;
-        status?: 'new' | 'missing' | 'connected' | string;
-        defaultComponent?: string;
-        dataType?: string;
-        id?: MatrxRecordId;
-    };
-
-    const prepareBrokerMap = (content: string): Map<MatrxRecordId, DataBrokers> => {
-        return new Map(
-            getProcessedMetadataFromText(content).map((metadata) => [metadata.matrxRecordId, metadata])
-        );
-    };
-    
     // Main content setting callback
     const setContent = useCallback(
         async (content: string) => {
@@ -137,7 +119,7 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
                     selection.addRange(range);
                 }
 
-                context.setContent(editorId, content);
+                context.setPlainTextContent(editorId, content);
                 context.chips.setChipData(editorId, Array.from(chipDataMap.values()));
 
                 return true;

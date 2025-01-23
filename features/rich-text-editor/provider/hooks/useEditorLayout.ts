@@ -1,6 +1,6 @@
 // hooks/useEditorLayout.ts
 import { useCallback } from 'react';
-import { EditorStates } from '../EditorProvider';
+import { EditorStates } from '../new/EditorProvider';
 import { LayoutMetadata } from '../../types/editor.types';
 
 // https://claude.ai/chat/61703be2-4230-4ce9-9f44-5317640ddf5a

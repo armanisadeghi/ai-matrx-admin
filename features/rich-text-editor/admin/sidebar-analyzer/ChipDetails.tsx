@@ -10,7 +10,7 @@ import ChipColorPicker from './ChipColorPicker';
 import { TailwindColor } from '../../constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DeleteChipDialog from './DeleteChipDialog';
-import { useEditorContext } from '../../provider/EditorProvider';
+import { useEditorContext } from '../../provider/new/EditorProvider';
 
 export const ChipDetails = ({ chip, editorId }: { chip: ChipData; editorId: string }) => {
     const context = useEditorContext();

@@ -1,90 +1,181 @@
-export const MATRX_PATTERN = /\{(.*?)\}!/gs;
-export const MATRX_BARE_UUID = /{([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}!/gs;
-export const MATRX_ID_PATTERN = /{([a-zA-Z_][a-zA-Z0-9_]*:[^:}]+(?:::(?:[a-zA-Z_][a-zA-Z0-9_]*:[^:}]+))*)}!/gs;
+import { MessageTemplateProcessed } from '@/types';
+
+export const MATRX_PATTERN = /\{([^}]+)}!/g;
+export const MATRX_BARE_UUID = /{([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}!/g;
+export const MATRX_ID_PATTERN = /{([a-zA-Z_][a-zA-Z0-9_]*:[^:}]+(?:::(?:[a-zA-Z_][a-zA-Z0-9_]*:[^:}]+))*)}!/g;
 
 export const PATTERN_OPTIONS = {
-    basic: MATRX_PATTERN,
+    all: MATRX_PATTERN,
     UUID: MATRX_BARE_UUID,
     recordkey: MATRX_ID_PATTERN,
 };
 
-type PatternKey = keyof typeof PATTERN_OPTIONS;
-type PatternMatch = {
-    pattern: PatternKey;
-    matches: string[];
-};
-
-/**
- * Find all matches for specified MATRX patterns in content
- * @param content The text content to search through
- * @param patterns Array of pattern names to match against ('basic', 'UUID', 'recordkey')
- * @returns Array of objects containing pattern name and its matches
- */
-export const findMatrxPatterns = (
-    content: string,
-    patterns: PatternKey[]
-): PatternMatch[] => {
-    const validPatterns = patterns.filter((p): p is PatternKey => 
-        p in PATTERN_OPTIONS
-    );
-
-    return validPatterns.map(patternName => {
-        // Reset the regex lastIndex to ensure fresh search
-        PATTERN_OPTIONS[patternName].lastIndex = 0;
-        
-        // Find all matches for this pattern
-        const matches = Array.from(
-            content.matchAll(PATTERN_OPTIONS[patternName]),
-            match => match[1]  // Get the captured group instead of full match
-        );
-
-        return {
-            pattern: patternName,
-            matches: matches
-        };
-    });
-};
-
-/**
- * Find all MATRX pattern matches in content
- * @param content The text content to search through
- * @returns Array of matched strings without delimiters
- */
 export const findMatrxMatches = (content: string): string[] => {
-    // Reset the regex lastIndex
     MATRX_PATTERN.lastIndex = 0;
-    
-    // Return all matches
-    return Array.from(
-        content.matchAll(MATRX_PATTERN),
-        match => match[1]
-    );
+
+    return Array.from(content.matchAll(MATRX_PATTERN), (match) => match[1]);
 };
 
+export const findPatterns = (pattern: RegExp, content: string): string[] => {
+    MATRX_PATTERN.lastIndex = 0;
 
-/**
- * Find and parse all MATRX ID patterns in content into record objects
- * @param content The text content to search through
- * @returns Array of parsed record objects
- */
-export const findMatrxRecords = (content: string): Record<string, unknown>[] => {
-    // Reset the regex lastIndex
-    MATRX_ID_PATTERN.lastIndex = 0;
-    
-    // Find all ID pattern matches and parse them
-    return Array.from(
-        content.matchAll(MATRX_ID_PATTERN),
-        match => match[1] // Get the captured content without delimiters
-    ).map(idContent => {
-        // Parse each ID content using the same logic as parseRecordKey
-        return idContent.split('::').reduce((acc, pair) => {
-            const [field, value] = pair.split(':');
-            if (field && value !== undefined) {
-                acc[field] = value;
-            } else {
-                throw new Error(`Invalid format in record key part: ${pair}`);
-            }
-            return acc;
-        }, {} as Record<string, unknown>);
+    return Array.from(content.matchAll(pattern), (match) => match[1]);
+};
+
+export const findPatternsByname = (patternName: string, content: string): string[] => {
+    const pattern = PATTERN_OPTIONS[patternName];
+    MATRX_PATTERN.lastIndex = 0;
+
+    return Array.from(content.matchAll(pattern), (match) => match[1]);
+};
+
+interface PatternResults {
+    all: string[];
+    uuids: string[];
+    ids: string[];
+}
+
+export const findAllPatterns = (content: string): PatternResults => {
+    return {
+        all: findPatterns(MATRX_PATTERN, content),
+        uuids: findPatterns(MATRX_BARE_UUID, content),
+        ids: findPatterns(MATRX_ID_PATTERN, content),
+    };
+};
+
+export const findAllPatternsOrdered = (content: string): PatternResults => {
+    const idMatches = new Set(findPatterns(MATRX_ID_PATTERN, content));
+
+    const uuidMatches = new Set(findPatterns(MATRX_BARE_UUID, content).filter((match) => !idMatches.has(match)));
+
+    const basicMatches = new Set(findPatterns(MATRX_PATTERN, content).filter((match) => !idMatches.has(match) && !uuidMatches.has(match)));
+
+    return {
+        ids: Array.from(idMatches),
+        uuids: Array.from(uuidMatches),
+        all: Array.from(basicMatches),
+    };
+};
+
+// Add valid status types
+export type MatrxStatus = 'new' | 'active' | 'archived' | 'deleted' | string;
+
+interface MatrxMetadata {
+    matrxRecordId?: string;
+    name?: string;
+    defaultValue?: string;
+    color?: string;
+    status?: MatrxStatus;
+    defaultComponent?: string;
+    dataType?: string;
+    id?: string;
+    [key: string]: string | undefined;
+}
+
+// Define display options as an enum
+export enum DisplayMode {
+    ENCODED = 'encoded',
+    SIMPLE_ID = 'simple_id',
+    RECORD_KEY = 'record_key',
+    NAME = 'name',
+    DEFAULT_VALUE = 'default_value',
+    STATUS = 'status',
+}
+
+// Parse a single MATRX pattern into its metadata components
+export const parseMatrxMetadata = (content: string): MatrxMetadata => {
+    const parts = content.split('|');
+    const metadata: MatrxMetadata = {};
+
+    parts.forEach((part) => {
+        const match = part.match(/^([^:]+):"([^"]*)"$/) || part.match(/^([^:]+):([^"]*)$/);
+        if (match) {
+            const [, key, value] = match;
+            metadata[key] = value;
+        }
     });
+
+    return metadata;
+};
+
+export const transformMatrxText = (text: string, mode: DisplayMode): string => {
+    MATRX_PATTERN.lastIndex = 0;
+
+    return text.replace(MATRX_PATTERN, (fullMatch, content) => {
+        const metadata = parseMatrxMetadata(content);
+
+        switch (mode) {
+            case DisplayMode.ENCODED:
+                return fullMatch;
+
+            case DisplayMode.SIMPLE_ID:
+                return metadata.id ? `{id:${metadata.id}}!` : fullMatch;
+
+            case DisplayMode.RECORD_KEY:
+                return metadata.recordKey || fullMatch;
+
+            case DisplayMode.NAME:
+                return metadata.name || fullMatch;
+
+            case DisplayMode.DEFAULT_VALUE:
+                return metadata.defaultValue || fullMatch;
+
+            case DisplayMode.STATUS:
+                return metadata.status || fullMatch;
+
+            default:
+                return fullMatch;
+        }
+    });
+};
+
+export const isMatrxNew = (metadata: MatrxMetadata): boolean => metadata.status === 'new';
+
+export const isMatrxActive = (metadata: MatrxMetadata): boolean => metadata.status === 'active';
+
+// Function to get metadata from text
+export const getMetadataFromText = (text: string): MatrxMetadata[] => {
+    MATRX_PATTERN.lastIndex = 0;
+    const matches = Array.from(text.matchAll(MATRX_PATTERN), (match) => match[1]);
+    return matches.map(parseMatrxMetadata);
+};
+
+export const getProcessedMetadataFromText = (text: string): MatrxMetadata[] => {
+    // Step 1: Extract metadata using the existing function
+    const rawMetadata = getMetadataFromText(text);
+
+    // Step 2: Define the consistent structure for metadata keys
+    const defaultMetadataKeys: MatrxMetadata = {
+        matrxRecordId: '',
+        name: '',
+        defaultValue: '',
+        color: '',
+        status: '',
+        defaultComponent: '',
+        dataType: '',
+        id: '',
+    };
+
+    // Step 3: Map raw metadata to the consistent structure
+    return rawMetadata.map((metadata) => ({
+        ...defaultMetadataKeys,
+        ...metadata,
+    }));
+};
+
+export const getAllMatrxRecordIds = (text: string): string[] =>
+    getProcessedMetadataFromText(text)
+        .map((metadata) => metadata.matrxRecordId)
+        .filter((id): id is string => Boolean(id));
+
+interface message {
+    content: string;
+    [key: string]: string | undefined;
+}
+
+export const getAllMatrxRecordIdsFromMessages = (messages: message[]): string[] => {
+    return messages
+        .map((message) => message.content || '') // Extract 'content', default to empty string
+        .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
+        .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
 };
