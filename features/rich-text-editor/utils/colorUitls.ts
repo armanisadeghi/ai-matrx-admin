@@ -19,3 +19,8 @@ export function getAllColorOptions(): ColorOption[] {
         className: COLOR_STYLES[color]
     }));
 }
+
+export function getRandomColor(): TailwindColor {
+    const randomIndex = Math.floor(Math.random() * TAILWIND_COLORS.length);
+    return TAILWIND_COLORS[randomIndex];
+}

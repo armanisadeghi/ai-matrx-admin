@@ -7,8 +7,8 @@ import { getEditorElement } from '../utils/editorUtils';
 
 export const useEditorStyles = (
     editorId: string,
-    { updatePlainTextContent }: {
-        updatePlainTextContent: () => void;
+    { updateEncodedText }: {
+        updateEncodedText: () => void;
     }
 ) => {
     const context = useEditorContext();
@@ -20,9 +20,9 @@ export const useEditorStyles = (
             
             applyTextStyle(style);
             editor.focus();
-            updatePlainTextContent();
+            updateEncodedText();
         },
-        [editorId, updatePlainTextContent]
+        [editorId, updateEncodedText]
     );
 
     return {

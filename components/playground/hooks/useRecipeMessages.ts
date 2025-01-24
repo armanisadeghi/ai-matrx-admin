@@ -70,7 +70,7 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
 
         const timer = setTimeout(() => {
             setCanProcess(true);
-        }, 200);
+        }, 400);
 
         return () => clearTimeout(timer);
     }, [recipeMessageIsLoading]);
@@ -99,12 +99,17 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
 
     const uniqueBrokers = React.useMemo(() => {
         if (!canProcess) return lastUniqueBrokers;
-
+    
         const newUniqueBrokers = getAllMatrxRecordIdsFromMessages(processedMessages);
-        console.log('----++++---- New unique brokers:', newUniqueBrokers);
+        
+        if (newUniqueBrokers.length > 0) {
+            console.log('----++++---- New unique brokers:', newUniqueBrokers);
+        }
+        
         setLastUniqueBrokers(newUniqueBrokers);
         return newUniqueBrokers;
     }, [processedMessages, canProcess]);
+
 
     useEffect(() => {
         if (uniqueBrokers.length > 0) {
@@ -124,7 +129,7 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
                 console.log('Missing brokers:', missingBrokers.map(b => b.recordId));
                 
                 if (missingBrokers.length > 0) {
-                    console.warn('Some brokers could not be fetched:', missingBrokers.map(b => b.recordId));
+                    console.log('Some brokers could not be fetched:', missingBrokers.map(b => b.recordId));
                 }
             })
             .catch((error) => {
@@ -140,6 +145,7 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
 
     const addMessage = useCallback(
         (newMessage: MessageTemplateDataOptional, onComplete?: (success: boolean) => void) => {
+            
             const nextOrder = processedMessages.length;
             createMessage(
                 {
@@ -160,9 +166,6 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
         [createMessage, processedMessages]
     );
     
-
-    console.log('====recipeMessageHook processedMessages', processedMessages);
-
 
     return {
         recipePkId,

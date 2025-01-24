@@ -1,82 +1,60 @@
 import { useCallback } from 'react';
-import { extractTextContent, getEditorElement } from '../utils/editorUtils';
-import { ChipHandlers } from '../utils/chipService';
+import { extractEncodedTextFromDom } from '../utils/editorUtils';
 import { useEditorContext } from '../provider/provider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
 import { useChipCreation } from './useChipCreation';
+import { ChipHandlers } from '../utils/createChipUtil';
 
-export const useEditor = (editorId: string, chipHandlers: ChipHandlers) => {
+export const useEditor = (editorId: string, chipHandlers: ChipHandlers, onChange?: (text: string) => void) => {
     const context = useEditorContext();
-    const content = context.getContent(editorId);
-    const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
+
+    const getEditorElement = useCallback((): HTMLDivElement | null => {
+        return document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement | null;
+    }, []);
 
     const getText = useCallback(() => {
-        return content;
-    }, [content]);
+        return context.getContent(editorId);
+    }, [context, editorId]);
 
     const focus = useCallback(() => {
-        const editor = getEditor();
+        const editor = getEditorElement();
         if (editor) {
             editor.focus();
         }
-    }, [getEditor]);
+    }, [getEditorElement]);
 
-    const updatePlainTextContent = useCallback(() => {
-        const editor = getEditor();
+    const updateEncodedText = useCallback(() => {
+        const editor = getEditorElement();
         if (!editor) return;
-        const text = extractTextContent(editor);
+        const text = extractEncodedTextFromDom(editor);
         context.setContent(editorId, text);
-    }, [getEditor, editorId]);
+        onChange?.(text);
+    }, [getEditorElement, editorId]);
 
-    const normalizeContent = useCallback(() => {
-        const editor = getEditor();
-        if (!editor) return;
-        console.log('Normalizing content');
-        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
-
-        let node;
-        while ((node = walker.nextNode())) {
-            if (node.parentNode === editor) {
-                const span = document.createElement('span');
-                node.parentNode.insertBefore(span, node);
-                span.appendChild(node);
-            }
-        }
-    }, [getEditor]);
-
-    // Update hook calls to use editorId instead of ref
-    const { handleNativeDragStart, handleNativeDragEnd, handleDragOver, handleDrop, dragConfig } = useDragAndDrop(editorId, {
-        normalizeContent,
-        updatePlainTextContent,
+    const { handleDragOver, handleDrop, setDraggedChip } = useDragAndDrop(editorId, {
+        updateEncodedText,
     });
 
     const { handleStyleChange } = useEditorStyles(editorId, {
-        updatePlainTextContent,
+        updateEncodedText,
     });
 
-    const { insertChip, convertSelectionToChip } = useChipCreation(editorId, chipHandlers, dragConfig, context, updatePlainTextContent);
+    const { insertChip, convertSelectionToChip } = useChipCreation(editorId, chipHandlers, setDraggedChip, context, updateEncodedText);
 
     return {
-        // Ref Manager methods
         insertChip,
         convertSelectionToChip,
         applyStyle: handleStyleChange,
         getText,
-        normalize: normalizeContent,
-        updateContent: updatePlainTextContent,
+        updateEncodedText,
+        getEditorElement,
         focus,
-
-        dragConfig,
+        setDraggedChip,
         chipHandlers,
-        // Event handlers
-        handleNativeDragStart,
-        handleNativeDragEnd,
         handleDragOver,
         handleDrop,
         handleStyleChange,
-        updatePlainTextContent,
-        normalizeContent,
     };
 };
 

@@ -1,107 +1,213 @@
 import { useCallback } from 'react';
-import { useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityKeys } from '@/types';
+import { createRecordKey, useAppDispatch, useAppSelector, useEntityToasts, useEntityTools } from '@/lib/redux';
+import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { v4 as uuidv4 } from 'uuid';
+import { useCallbackManager } from '@/hooks/useCallbackManager';
+import { useDispatch } from 'react-redux';
 
 interface UseDirectCreateRecordOptions {
     entityKey: EntityKeys;
     onSuccess?: (recordId: string) => void;
     onError?: (error: Error) => void;
+    showToast?: boolean;
 }
 
-export const useDirectCreateRecord = ({ entityKey, onSuccess, onError }: UseDirectCreateRecordOptions) => {
-    const { actions, dispatch, store, selectors } = useEntityTools(entityKey);
+export const useDirectCreateRecord = ({ 
+    entityKey, 
+    onSuccess, 
+    onError,
+    showToast = true 
+}: UseDirectCreateRecordOptions) => {
+    const { actions, dispatch, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
+    const createCallback = useCallbackManager();
+    const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
 
     return useCallback(
         async ({ data }: { data: Record<string, unknown> }) => {
-            let tempId: string;
-
             try {
-                tempId = 'new-record-' + uuidv4();
+                const recordId = uuidv4();
+                const primaryKeyField = primaryKeyMetadata?.fields[0];
 
-                dispatch(actions.startRecordCreationWithData({ tempId, initialData: data }));
-                const createPayload = selectors.selectCreatePayload(store.getState(), tempId);
-                dispatch(actions.addPendingOperation(tempId));
+                if (!primaryKeyField) {
+                    throw new Error('Primary key field not found');
+                }
+
+                const dataWithId = {
+                    ...data,
+                    [primaryKeyField]: recordId
+                };
+
+                const matrxRecordId = createRecordKey(primaryKeyMetadata, dataWithId);
+                const callbackPromise = createCallback() as CustomPromise;
 
                 dispatch(
-                    actions.createRecord({
-                        ...createPayload,
-                        callbackId: callbackManager.register(({ success, error }) => {
-                            dispatch(actions.removePendingOperation(tempId));
-                            if (success) {
-                                entityToasts.handleCreateSuccess();
-                                onSuccess?.(tempId);
-                            } else {
-                                entityToasts.handleError(error, 'create');
-                                onError?.(error);
-                            }
-                        }),
+                    actions.directCreateRecord({
+                        matrxRecordId,
+                        data: dataWithId,
+                        callbackId: callbackPromise.callbackId,
                     })
                 );
 
-                return tempId;
-            } catch (error) {
-                if (tempId!) {
-                    dispatch(actions.removePendingOperation(tempId));
+                await callbackPromise;
+
+                if (showToast) {
+                    entityToasts.handleCreateSuccess();
                 }
-                entityToasts.handleError(error as Error, 'create');
+                onSuccess?.(recordId);
+
+                return recordId;
+            } catch (error) {
+                if (showToast) {
+                    entityToasts.handleError(error as Error, 'create');
+                }
                 onError?.(error as Error);
                 throw error;
             }
         },
-        [dispatch, actions, selectors, store, entityToasts, onSuccess, onError]
+        [
+            dispatch,
+            actions,
+            primaryKeyMetadata,
+            createCallback,
+            entityToasts,
+            onSuccess,
+            onError,
+            showToast
+        ]
     );
 };
 
+
 interface CreateRecordResult {
-    tempId: string;
+    matrxRecordId: MatrxRecordId;
     coreId: string;
 }
 
-export const useCreateAndGetId = ({ entityKey, onSuccess, onError }: UseDirectCreateRecordOptions) => {
-    const { actions, dispatch, store, selectors } = useEntityTools(entityKey);
+interface UseCreateAndGetIdOptions {
+    entityKey: EntityKeys;
+    onSuccess?: (recordId: string) => void;
+    onError?: (error: Error) => void;
+    showToast?: boolean;
+}
+
+export const useCreateAndGetId = ({ 
+    entityKey, 
+    onSuccess, 
+    onError,
+    showToast = true 
+}: UseCreateAndGetIdOptions) => {
+    const { actions, dispatch, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
+    const createCallback = useCallbackManager();
+    const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
 
     return useCallback(
         async ({ data }: { data: Record<string, unknown> }): Promise<CreateRecordResult> => {
-            let tempId: string;
-            const coreId = uuidv4();
-
             try {
-                tempId = 'new-record-' + coreId;
+                const coreId = uuidv4();
+                const primaryKeyField = primaryKeyMetadata?.fields[0];
 
-                dispatch(actions.startRecordCreationWithData({ tempId, initialData: data }));
-                const createPayload = selectors.selectCreatePayload(store.getState(), tempId);
-                dispatch(actions.addPendingOperation(tempId));
+                if (!primaryKeyField) {
+                    throw new Error('Primary key field not found');
+                }
+
+                const dataWithId = {
+                    ...data,
+                    [primaryKeyField]: coreId
+                };
+
+                const matrxRecordId = createRecordKey(primaryKeyMetadata, dataWithId);
+                const callbackPromise = createCallback() as CustomPromise;
 
                 dispatch(
-                    actions.createRecord({
-                        ...createPayload,
-                        callbackId: callbackManager.register(({ success, error }) => {
-                            dispatch(actions.removePendingOperation(tempId));
-                            if (success) {
-                                entityToasts.handleCreateSuccess();
-                                onSuccess?.(tempId);
-                            } else {
-                                entityToasts.handleError(error, 'create');
-                                onError?.(error);
-                            }
-                        }),
+                    actions.directCreateRecord({
+                        matrxRecordId,
+                        data: dataWithId,
+                        callbackId: callbackPromise.callbackId,
                     })
                 );
 
-                return { tempId, coreId };
-            } catch (error) {
-                if (tempId!) {
-                    dispatch(actions.removePendingOperation(tempId));
+                await callbackPromise;
+
+                if (showToast) {
+                    entityToasts.handleCreateSuccess();
                 }
-                entityToasts.handleError(error as Error, 'create');
+                onSuccess?.(coreId);
+
+                return { matrxRecordId, coreId };
+            } catch (error) {
+                if (showToast) {
+                    entityToasts.handleError(error as Error, 'create');
+                }
                 onError?.(error as Error);
                 throw error;
             }
         },
-        [dispatch, actions, selectors, store, entityToasts, onSuccess, onError]
+        [
+            dispatch,
+            actions,
+            primaryKeyMetadata,
+            createCallback,
+            entityToasts,
+            onSuccess,
+            onError,
+            showToast
+        ]
     );
 };
+
+
+interface CreateWithIdOptions {
+    entityKey: EntityKeys;
+    onSuccess?: (result: EntityData<EntityKeys>) => void;
+    onError?: (error: Error) => void;
+    showToast?: boolean;
+}
+
+interface DirectCreateRecordResult {
+    result: EntityData<EntityKeys>;
+}
+
+interface CustomPromise extends Promise<any> {
+    callbackId?: string;
+}
+
+export const useCreateWithId = ({ entityKey, onSuccess, onError, showToast = true }: CreateWithIdOptions) => {
+    const dispatch = useAppDispatch();
+    const { actions } = useEntityTools(entityKey);
+    const createCallback = useCallbackManager();
+    const entityToasts = useEntityToasts(entityKey);
+
+    return useCallback(
+        async ({ data, matrxRecordId }: { data: Record<string, unknown>; matrxRecordId: MatrxRecordId }): Promise<DirectCreateRecordResult> => {
+            try {
+                const callbackPromise = createCallback() as CustomPromise;
+
+                dispatch(
+                    actions.directCreateRecord({
+                        matrxRecordId,
+                        data,
+                        callbackId: callbackPromise.callbackId,
+                    })
+                );
+
+                const result = await callbackPromise;
+                if (showToast) {
+                    entityToasts.handleCreateSuccess();
+                }
+                onSuccess?.(result);
+                return { result };
+            } catch (error) {
+                if (showToast) {
+                    entityToasts.handleError(error as Error, 'create');
+                }
+                onError?.(error as Error);
+                throw error;
+            }
+        },
+        [dispatch, actions, createCallback, onSuccess, onError, showToast, entityToasts]
+    );
+};
+

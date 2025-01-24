@@ -1,18 +1,21 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { BrokerMetaData, ContentMode, EditorState } from '../types/editor.types';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { BrokerMetaData, ContentMode, EditorState, LayoutMetadata } from '../types/editor.types';
 import { EditorLayout, useEditorLayout } from './hooks/useEditorLayout';
-import { EditorRegistration, getInitialState, useEditorRegistration } from './hooks/useEditorRegistration';
-import { useProviderChips, ProviderChipsHook } from './hooks/useProviderChips';
 import { ColorManagement, useColorManagement } from '../hooks/useColorManagement';
 import { DisplayMode, transformMatrxText, getProcessedMetadataFromText } from '../utils/patternUtils';
+import { ProviderChipsHook, useProviderChips } from './hooks/useProviderChips';
 
 export type EditorStates = Map<string, EditorState>;
 
 export interface EditorContextValue {
+    registerEditor: (editorId: string, initialContent?: string, initialLayout?: LayoutMetadata) => void;
+    unregisterEditor: (editorId: string) => void;
+    isEditorRegistered: (editorId: string) => boolean;
     setContent: (editorId: string, content: string) => void;
     getContent: (editorId: string) => string;
     getContentMode: (editorId: string) => string;
     setContentMode: (editorId: string, contentMode: ContentMode) => void;
+    getBrokerMetadata: (editorId: string) => BrokerMetaData[];
     getEditorState: (editorId: string) => EditorState;
     getAllEditorStates: () => { [key: string]: EditorState };
     getTextWithChipsReplaced: (editorId: string) => string;
@@ -22,12 +25,21 @@ export interface EditorContextValue {
     updateAllBrokerMetadata: () => void;
     messagesLoading: boolean;
     setMessagesLoading: (loading: boolean) => void;
-
-    registry: EditorRegistration;
     layout: EditorLayout;
     colors: ColorManagement;
     chips: ProviderChipsHook;
 }
+
+const initialState: EditorState = {
+    content: '',
+    contentMode: 'encodeChips',
+    chipData: [],
+    metadata: [],
+    layout: {
+        position: 0,
+        isVisible: true,
+    },
+};
 
 const getDisplayMode = (contentMode: ContentMode): DisplayMode => {
     switch (contentMode) {
@@ -47,29 +59,62 @@ const getDisplayMode = (contentMode: ContentMode): DisplayMode => {
     }
 };
 
-
 const EditorContext = createContext<EditorContextValue | null>(null);
 
 export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [editors, setEditors] = useState<EditorStates>(new Map());
     const [messagesLoading, setMessagesLoading] = useState(false);
+    const registeredEditors = useRef(new Set<string>());
     const colors = useColorManagement();
-    const registry = useEditorRegistration(editors, setEditors);
     const layout = useEditorLayout(editors, setEditors);
+
+    const registerEditor = useCallback((editorId: string, initialContent = '', initialLayout?: LayoutMetadata) => {
+        if (registeredEditors.current.has(editorId)) return;
+
+        registeredEditors.current.add(editorId);
+        setEditors((prev) => {
+            const next = new Map(prev);
+            const state: EditorState = {
+                ...initialState,
+                content: initialContent,
+                metadata: getProcessedMetadataFromText(initialContent),
+                layout: initialLayout || initialState.layout,
+            };
+            next.set(editorId, state);
+            return next;
+        });
+    }, []);
 
     const getEditorState = useCallback(
         (editorId: string) => {
+            if (!registeredEditors.current.has(editorId)) {
+                throw new Error(`Attempting to access unregistered editor: ${editorId}`);
+            }
             const state = editors.get(editorId);
             if (!state) {
-                console.log('Editor state not found for id:', editorId);
-                return getInitialState('');
+                throw new Error(`Editor state not found for registered editor: ${editorId}`);
             }
             return state;
         },
         [editors]
     );
 
+    const unregisterEditor = useCallback((editorId: string) => {
+        if (!registeredEditors.current.has(editorId)) return;
+
+        registeredEditors.current.delete(editorId);
+        setEditors((prev) => {
+            const next = new Map(prev);
+            next.delete(editorId);
+            return next;
+        });
+    }, []);
+
+    const isEditorRegistered = useCallback((editorId: string) => registeredEditors.current.has(editorId), []);
+
     const updateEditorState = useCallback((editorId: string, updates: Partial<EditorState>) => {
+        if (!registeredEditors.current.has(editorId)) return;
+
         setEditors((prev) => {
             const current = prev.get(editorId);
             if (!current) return prev;
@@ -86,6 +131,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const updateBrokerMetadata = useCallback(
         (editorId: string) => {
+            if (!registeredEditors.current.has(editorId)) return;
+
             const currentState = getEditorState(editorId);
             const processedMetadata = processContentAndUpdateMetadata(currentState.content);
             updateEditorState(editorId, { metadata: processedMetadata });
@@ -95,7 +142,9 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const updateAllBrokerMetadata = useCallback(() => {
         editors.forEach((_, editorId) => {
-            updateBrokerMetadata(editorId);
+            if (registeredEditors.current.has(editorId)) {
+                updateBrokerMetadata(editorId);
+            }
         });
     }, [editors, updateBrokerMetadata]);
 
@@ -104,45 +153,39 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const getAllEditorStates = useCallback(() => {
         const editorStatesObject: { [key: string]: EditorState } = {};
         editors.forEach((state, editorId) => {
-            editorStatesObject[editorId] = state;
+            if (registeredEditors.current.has(editorId)) {
+                editorStatesObject[editorId] = state;
+            }
         });
         return editorStatesObject;
     }, [editors]);
 
-    const getContent = useCallback(
-        (editorId: string) => {
-            const state = getEditorState(editorId);
-            return state.content;
-        },
-        [getEditorState]
-    );
+    const getContent = useCallback((editorId: string) => getEditorState(editorId).content, [getEditorState]);
+
+    const getBrokerMetadata = useCallback((editorId: string) => getEditorState(editorId).metadata, [getEditorState]);
 
     const setContent = useCallback(
         (editorId: string, content: string) => {
+            if (!registeredEditors.current.has(editorId)) return;
+
             const processedMetadata = processContentAndUpdateMetadata(content);
-            updateEditorState(editorId, { 
+            updateEditorState(editorId, {
                 content,
-                metadata: processedMetadata 
+                metadata: processedMetadata,
             });
         },
         [updateEditorState, processContentAndUpdateMetadata]
     );
 
-    const getContentMode = useCallback(
-        (editorId: string): string => {
-            const state = getEditorState(editorId);
-            return state.contentMode;
-        },
-        [getEditorState]
-    );
+    const getContentMode = useCallback((editorId: string): string => getEditorState(editorId).contentMode, [getEditorState]);
 
     const setContentMode = useCallback(
         (editorId: string, contentMode: ContentMode) => {
+            if (!registeredEditors.current.has(editorId)) return;
             updateEditorState(editorId, { contentMode });
         },
         [updateEditorState]
     );
-
 
     const getTextWithChipsReplaced = useCallback(
         (editorId: string): string => {
@@ -159,7 +202,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         },
         [getEditorState]
     );
-    
+
     const getContentByCurrentMode = useCallback(
         (editorId: string): string => {
             const state = getEditorState(editorId);
@@ -168,9 +211,11 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         },
         [getEditorState]
     );
-    
+
     const value: EditorContextValue = {
-        registry,
+        registerEditor,
+        unregisterEditor,
+        isEditorRegistered,
         layout,
         colors,
         chips,
@@ -178,6 +223,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         getAllEditorStates,
         getContent,
         setContent,
+        getBrokerMetadata,
         getContentMode,
         setContentMode,
         getTextWithChipsReplaced,

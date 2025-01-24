@@ -1,15 +1,16 @@
 // RichTextEditor.tsx
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
 import { WithRefsProps, withRefs } from '@/lib/refs';
-import { getFormattedContent, setupEditorAttributes } from './utils/editorUtils';
+import { extractEncodedTextFromDom, setupEditorAttributes } from './utils/editorUtils';
 import { getEditorSelection, SelectionState } from './utils/selectionUtils';
-import { useChipMenu } from './components/ChipContextMenu';
-import { ChipHandlers, createChipHandlers } from './utils/chipService';
 import { useSetEditorContent } from './hooks/useSetEditorContent';
 import { useEditorContext } from './provider/provider';
+import { ChipHandlers } from './utils/createChipUtil';
+import { debounce } from 'lodash';
+import { createEditorUpdateManager } from './createEditorUpdateManager';
 
 export interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
@@ -21,18 +22,15 @@ export interface RichTextEditorProps extends WithRefsProps {
     chipHandlers?: ChipHandlers;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({
-    componentId,
-    onChange,
-    className = '',
-    onDragOver,
-    onDrop,
-    initialContent,
-    onBlur,
-    chipHandlers: handlers,
-}) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, className = '', onDragOver, onDrop, initialContent, onBlur, chipHandlers }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const context = useEditorContext();
+
+    const updateManager = useMemo(
+        () => createEditorUpdateManager(componentId, context, onChange),
+        [componentId, context, onChange]
+    );
+
 
     const providerContent = context.getContent(componentId);
     const initializedRef = useRef(false);
@@ -43,25 +41,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         range: null,
     });
 
-    const { showMenu } = useChipMenu();
-    const chipHandlers = createChipHandlers({ showMenu, editorId: componentId, handlers });
-    const editorHook = useEditor(componentId, chipHandlers);
+    const editorHook = useEditor(componentId, chipHandlers, onChange);
     const { setContent, isProcessing } = useSetEditorContent(componentId, editorHook);
 
     const {
         // Internal methods
-        updatePlainTextContent,
+        updateEncodedText,
         // Ref methods
         insertChip,
         convertSelectionToChip,
         applyStyle,
         getText,
-        normalize,
-        updateContent,
         focus,
         // Event handlers
-        handleNativeDragStart,
-        handleNativeDragEnd,
         handleDragOver: handleDragOverInternal,
         handleDrop: handleDropInternal,
     } = editorHook;
@@ -69,9 +61,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     // Register methods with the Ref Manager
     useComponentRef(componentId, {
         getText,
-        updateContent,
+        updateEncodedText,
         applyStyle,
-        normalize,
         insertChip,
         convertSelectionToChip,
         focus,
@@ -132,62 +123,72 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         if (isProcessing) return;
         const editor = editorRef.current;
         if (!editor || initializedRef.current) return;
-        console.log('--Additional useEffect:', initialContent);
 
         const handlePaste = (e: ClipboardEvent) => {
             e.preventDefault();
             const text = e.clipboardData?.getData('text/plain');
             if (text) {
                 document.execCommand('insertText', false, text);
+                updateEncodedText();
             }
         };
 
         editor.addEventListener('paste', handlePaste);
-        editor.addEventListener('dragstart', handleNativeDragStart);
-        editor.addEventListener('dragend', handleNativeDragEnd);
         console.log('event listeners added');
 
         return () => {
             editor.removeEventListener('paste', handlePaste);
-            editor.removeEventListener('dragstart', handleNativeDragStart);
-            editor.removeEventListener('dragend', handleNativeDragEnd);
         };
-    }, [componentId, initialContent, handleNativeDragStart, handleNativeDragEnd, updatePlainTextContent]);
+    }, [componentId, initialContent, updateEncodedText]);
 
     // Handle content changes
     useEffect(() => {
-        console.log('Content changed:', providerContent);
         onChange?.(providerContent);
     }, [onChange, providerContent]);
 
-    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-        const content = getFormattedContent(e.currentTarget);
+
+    const handleContentUpdate = (element: HTMLDivElement, componentId: string, onChange?: (content: string) => void) => {
+        const content = extractEncodedTextFromDom(element);
         context.setContent(componentId, content);
         onChange?.(content);
     };
 
+    const debouncedUpdate = debounce(handleContentUpdate, 1000);
+
+    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+        const element = e.currentTarget;
+        const inputType = (e as unknown as InputEvent).inputType;
+
+        // Immediate updates for specific types of changes
+        if (inputType === 'deleteByCut' || inputType === 'insertFromPaste' || inputType === 'deleteContentBackward' || inputType === 'deleteContentForward') {
+            handleContentUpdate(element, componentId, onChange);
+            return;
+        }
+
+        // Debounced updates for regular typing
+        debouncedUpdate(element, componentId, onChange);
+    };
+
     const handleNewChip = () => {
         if (selectionState.hasSelection) {
-            console.log('Convert to chip');
             convertSelectionToChip();
         } else {
-            console.log('Inserting New chip');
             insertChip();
         }
     };
 
     const handleBlurInternal = useCallback(() => {
-        console.log('Blur event');
-        normalize();
+        updateEncodedText();
         onBlur?.();
         blurListenersRef.current.forEach((listener) => listener());
-    }, [normalize, onBlur]);
+    }, [updateEncodedText, onBlur]);
 
     return (
         <div className='relative group w-full h-full flex flex-col'>
             <div className='flex-1 overflow-hidden'>
                 <div
                     ref={editorRef}
+                    data-editor-id={componentId}
                     className={`w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 
                         dark:scrollbar-thumb-neutral-600 scrollbar-track-transparent px-4 py-2
                         focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}

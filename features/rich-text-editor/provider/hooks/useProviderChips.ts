@@ -4,10 +4,61 @@ import { v4 as uuidv4 } from 'uuid';
 import { ChipData, ChipRequestOptions, EditorState, BrokerMetaData } from '../../types/editor.types';
 import { generateChipLabel } from '../../utils/generateBrokerName';
 import { chipSyncManager } from '../../utils/ChipUpdater';
-import { DataBrokerData, MatrxRecordId } from '@/types';
+import { DataBrokerData, MatrxRecordId, MessageBrokerData } from '@/types';
 import { ColorManagement } from '../../hooks/useColorManagement';
 import { EditorStates } from '../provider';
-import { useCoordinatedCreate, useRelationshipCreateWithParentId } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
+import { RelationshipCreateResult, useRelationshipDirectCreate } from '@/app/entities/hooks/crud/useDirectRelCreate';
+import { getRandomColor } from '../../utils/colorUitls';
+import { useAppDispatch, useEntityTools } from '@/lib/redux';
+
+export const sanitizeId = (id?: string): string | undefined => {
+    if (!id) return id;
+
+    const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+    const match = id.match(uuidRegex);
+    return match ? match[0] : id;
+};
+
+export const makeBrokerMetadata = (requestOptions: ChipRequestOptions = {}): BrokerMetaData => {
+    const sanitizedId = sanitizeId(requestOptions.id);
+    return {
+        id: sanitizedId ?? uuidv4(),
+        name: requestOptions.name ?? generateChipLabel(requestOptions.defaultValue ?? ''),
+        defaultValue: requestOptions.defaultValue ?? '',
+        color: requestOptions.color ?? getRandomColor(),
+        matrxRecordId: requestOptions.brokerId ?? `id:${sanitizeId(requestOptions.id)}`,
+        defaultComponent: requestOptions.defaultComponent,
+        dataType: requestOptions.dataType ?? 'str',
+    };
+};
+
+export const brokerFromMetadata = (metadata: BrokerMetaData): DataBrokerData => ({
+    id: sanitizeId(metadata.id),
+    name: metadata.name || 'New Broker',
+    defaultValue: metadata.defaultValue || '',
+    color: metadata.color as DataBrokerData['color'],
+    defaultComponent: metadata.defaultComponent || '',
+    dataType: metadata.dataType as DataBrokerData['dataType'],
+});
+
+const processReturnResults = (results: RelationshipCreateResult[]) => {
+    const brokerRecord = results[0].childRecord.data as DataBrokerData;
+    const messageBrokerRecord = results[0].joinRecord.data as MessageBrokerData;
+    const matrxRecordId = results[0].childMatrxRecordId;
+    
+    const brokerMetadata = {
+        id: brokerRecord.id,
+        name: brokerRecord.name,
+        defaultValue: brokerRecord.defaultValue || brokerRecord.name,
+        color: brokerRecord.color || getRandomColor(),
+        matrxRecordId,
+        defaultComponent: brokerRecord.defaultComponent || '',
+        dataType: brokerRecord.dataType || 'str',
+        status: 'active',
+    };
+
+    return { matrxRecordId, brokerMetadata, messageBrokerRecord };
+};
 
 export const useProviderChips = (
     editors: EditorStates,
@@ -17,61 +68,44 @@ export const useProviderChips = (
     updateEditorState: (editorId: string, updates: Partial<EditorState>) => void,
     colors: ColorManagement
 ) => {
-    const createRelatedRecords = useRelationshipCreateWithParentId('messageBroker', 'dataBroker');
-
-    const makeBrokerMetadata = useCallback(
-        (editorId: string, requestOptions: ChipRequestOptions = {}): BrokerMetaData => {
-            const idToUse = requestOptions.id ?? uuidv4();
-            const brokerMetadata = {
-                id: idToUse,
-                name: requestOptions.name ?? generateLabel(editorId, requestOptions),
-                defaultValue: requestOptions.defaultValue ?? '',
-                color: requestOptions.color ?? colors.getNextColor(),
-                brokerId: requestOptions.brokerId ?? `id:${idToUse}`,
-                matrxRecordId: idToUse,
-                defaultComponent: requestOptions.defaultComponent ?? undefined,
-                dataType: requestOptions.dataType ?? 'str',
-            };
-            return brokerMetadata;
-        },
-        [getEditorState, colors]
-    );
-
-    const brokerFromMetadata = useCallback((metadata: BrokerMetaData): DataBrokerData => {
-        return {
-            id: metadata.id,
-            name: metadata.name || 'New Broker',
-            defaultValue: metadata.defaultValue || '',
-            color: metadata.color as DataBrokerData['color'],
-            defaultComponent: metadata.defaultComponent || '',
-            dataType: metadata.dataType as DataBrokerData['dataType'],
-        };
-    }, []);
+    const dispatch = useAppDispatch();
+    const createRelatedRecords = useRelationshipDirectCreate('messageBroker', 'dataBroker');
+    const { actions } = useEntityTools('dataBroker');
 
     const handleError = useCallback((error: Error) => {
         console.error('Failed to create related records:', error);
     }, []);
 
     const createNewChipData = useCallback(
-        async (editorId: string, requestOptions: ChipRequestOptions = {}): Promise<BrokerMetaData> => {
-            const brokerMetadata = makeBrokerMetadata(editorId, requestOptions);
-            const brokerData = brokerFromMetadata(brokerMetadata);
+        async (
+            editorId: string,
+            requestOptions: ChipRequestOptions = {}
+        ): Promise<{ matrxRecordId: MatrxRecordId; brokerMetadata: BrokerMetaData; messageBrokerRecord: MessageBrokerData }> => {
+
+            const initialBrokerMetadata = makeBrokerMetadata(requestOptions);
+            const brokerData = brokerFromMetadata(initialBrokerMetadata);
 
             try {
-                await createRelatedRecords(
-                    {
-                        child: brokerData,
-                        joining: {
-                            defaultValue: brokerData.defaultValue,
-                            messageId: editorId,
-                        },
+                const result = await createRelatedRecords({
+                    parentId: sanitizeId(editorId),
+                    child: brokerData,
+                    joining: {
+                        defaultValue: brokerData.defaultValue,
+                        messageId: editorId,
                     },
-                    editorId
-                );
+                });
+
+                if (!result) {
+                    throw new Error('Failed to create related records: No result returned');
+                }
+
+                const { matrxRecordId, brokerMetadata, messageBrokerRecord } = processReturnResults([result]);
+
+                dispatch(actions.addToSelection(matrxRecordId));
 
                 addBrokerMetadata(editorId, brokerMetadata);
                 addChipDataFromMetadata(editorId, brokerMetadata);
-                return brokerMetadata as BrokerMetaData;
+                return { matrxRecordId, brokerMetadata, messageBrokerRecord };
             } catch (error) {
                 handleError(error as Error);
                 throw error;
@@ -82,11 +116,8 @@ export const useProviderChips = (
 
     const generateLabel = useCallback(
         (editorId: string, requestOptions: ChipRequestOptions = {}): string => {
-            const editorState = getEditorState(editorId);
-            return generateChipLabel({
-                chipData: editorState.chipData,
-                requestOptions,
-            });
+            const content = requestOptions.defaultValue ?? '';
+            return generateChipLabel(content);
         },
         [getEditorState]
     );

@@ -846,30 +846,35 @@ export class RelatedDataManager {
     createEntityWithRelationship(
         parentId: unknown,
         childData: Record<string, unknown> = {},
-        joiningData: Record<string, unknown> = {}
+        joiningData: Record<string, unknown> = {},
+        childId?: unknown
     ): {
         childEntity: Record<string, unknown>;
         joiningEntity: Record<string, unknown>;
     } {
         this.setParentId(parentId);
-
+        
+        if (childId !== undefined) {
+            this.setChildId(childId);
+        }
+    
         const childEntity = {
             ...childData,
             [this.childField]: this.entityValues.child[this.childField],
         };
-
+    
         const joiningEntity = {
             ...joiningData,
             ...this.getCoreJoiningData(),
             ...Object.fromEntries(this.joiningTablePks.map((pk) => [pk, this.entityValues.joining[pk]])),
         };
-
+    
         return {
             childEntity,
             joiningEntity,
         };
     }
-
+    
     getCoreJoiningData(): Record<string, unknown> {
         const data: Record<string, unknown> = {};
 

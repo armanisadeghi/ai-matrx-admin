@@ -1,12 +1,11 @@
-// hooks/useEntityToasts.ts
-import {MatrxVariant} from "@/components/ui/types";
-import {toast} from "@/components/ui/use-toast";
-import {EntityKeys} from "@/types/entityTypes";
+import { MatrxVariant } from "@/components/ui/types";
+import { toast } from "@/components/ui/use-toast";
+import { EntityKeys } from "@/types/entityTypes";
 
 interface ToastOptions {
     showToast?: boolean;
+    customMessage?: string;
 }
-
 
 export const useEntityToasts = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     const getEntityName = () => {
@@ -23,7 +22,7 @@ export const useEntityToasts = <TEntity extends EntityKeys>(entityKey: TEntity) 
 
         toast({
             title,
-            description,
+            description: options?.customMessage || description,
             variant,
             duration: 3000, // 3 seconds
         });
@@ -56,6 +55,15 @@ export const useEntityToasts = <TEntity extends EntityKeys>(entityKey: TEntity) 
         );
     };
 
+    const handleCustomSuccess = (message: string, options?: Omit<ToastOptions, 'customMessage'>) => {
+        showToast(
+            "Success",
+            message,
+            "success",
+            { ...options, customMessage: message }
+        );
+    };
+
     const handleError = (error: any, operation: string, options?: ToastOptions) => {
         showToast(
             "Error",
@@ -69,6 +77,7 @@ export const useEntityToasts = <TEntity extends EntityKeys>(entityKey: TEntity) 
         handleCreateSuccess,
         handleUpdateSuccess,
         handleDeleteSuccess,
+        handleCustomSuccess,
         handleError,
     };
 };

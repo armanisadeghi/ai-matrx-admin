@@ -5,10 +5,10 @@ import { RelationshipMapper } from './relationshipDefinitions';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useGetOrFetchRecord, useGetorFetchRecords } from '../records/useGetOrFetch';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
-import { useRelationshipCreate } from '../unsaved-records/useDirectCreate';
 import { simpleRelDef } from './definitionConversionUtil';
 import { processJoinedData } from './utils';
 import _ from 'lodash';
+import { useRelationshipDirectCreate } from '../crud/useDirectRelCreate';
 
 export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString()) : undefined;
@@ -106,7 +106,7 @@ export function useRelFetchProcessing(relDefSimple: simpleRelDef, anyParentId: M
         [deleteRecords, JoiningEntityRecords, childMatrxIds, relDefSimple]
     );
 
-    const createRelatedRecords = useRelationshipCreate(joiningEntity, childEntity, parentId);
+    const createRelatedRecords = useRelationshipDirectCreate(joiningEntity, childEntity, parentId);
 
     return {
         mapper,

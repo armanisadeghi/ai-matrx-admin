@@ -1,4 +1,6 @@
-export const CHIP_BASE_CLASS = 'inline-flex items-center px-2 py-1 mx-1 rounded-md cursor-move';
+export const CHIP_BASE_CLASS_OLD = 'inline-flex items-center px-2 py-1 mx-1 rounded-md cursor-move';
+
+export const CHIP_BASE_CLASS = 'inline-flex items-center align-middle px-2 py-1 mx-1 rounded-md cursor-move min-h-[24px] min-w-[128px]';
 
 export const TAILWIND_COLORS = [
     'slate',

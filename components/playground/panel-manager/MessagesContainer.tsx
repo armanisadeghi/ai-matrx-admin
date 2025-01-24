@@ -40,8 +40,7 @@ interface MessagesContainerProps {
 
 function MessagesContainer({ relationshipHook, recipeRecordId }: MessagesContainerProps) {
     const recipeMessageHook = useRecipeMessages(relationshipHook);;
-    const { messages, deleteMessage, handleDragDrop } = recipeMessageHook;
-    const { addMessage } = useAddMessage();
+    const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());

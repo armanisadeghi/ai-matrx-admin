@@ -1,71 +1,31 @@
 import { ChipData, ChipRequestOptions } from "../types/editor.types";
 
 // utils/brokerNameUtils.ts
-interface LabelGeneratorOptions {
-    chipData: ChipData[];
-    requestOptions: ChipRequestOptions;
+function generateNewBroker() {
+    const randomNumber = Math.floor(Math.random() * 900) + 100;
+    return `New Broker ${randomNumber}`;
 }
 
-const getNextNumericSuffix = (baseLabel: string, existingLabels: Set<string>): string => {
-    if (!existingLabels.has(baseLabel)) return baseLabel;
-
-    let counter = 1;
-    let newLabel = `${baseLabel} - ${counter}`;
-
-    while (existingLabels.has(newLabel)) {
-        counter++;
-        newLabel = `${baseLabel} - ${counter}`;
+export const generateChipLabel = (content: string) => {
+    // Check if content is null, undefined, or less than 3 characters
+    if (!content || content.trim().length < 3) {
+        return generateNewBroker();
     }
 
-    return newLabel;
-};
+    const contentType = detectContentType(content);
 
-const getNextDefaultChipNumber = (existingLabels: Set<string>): string => {
-    const baseLabel = 'New Chip';
-    let counter = 1;
-    let label = `${baseLabel} ${counter}`;
-
-    while (existingLabels.has(label)) {
-        counter++;
-        label = `${baseLabel} ${counter}`;
-    }
-
-    return label;
-};
-
-export const generateChipLabel = ({ chipData, requestOptions }: LabelGeneratorOptions): string => {
-    // Extract existing labels from chip data
-    const existingLabels = new Set(chipData.map((chip) => chip.label));
-
-    // If label is provided in options, ensure it's unique
-    if (requestOptions.label) {
-        return getNextNumericSuffix(requestOptions.label, existingLabels);
-    }
-
-    const requestValue = requestOptions.defaultValue || requestOptions.name || requestOptions.stringValue;
-    if (requestValue) {
-        const contentType = detectContentType(requestValue);
-        let baseLabel: string;
-
+    return (() => {
         switch (contentType) {
             case 'code':
-                baseLabel = formatCodeContent(requestValue);
-                break;
+                return formatCodeContent(content);
             case 'json':
-                baseLabel = formatJsonContent(requestValue);
-                break;
+                return formatJsonContent(content);
             case 'markdown':
-                baseLabel = formatMarkdownContent(requestValue);
-                break;
+                return formatMarkdownContent(content);
             default:
-                baseLabel = formatPlainText(requestValue);
+                return formatPlainText(content);
         }
-
-        return getNextNumericSuffix(baseLabel, existingLabels);
-    }
-
-    // Default case: generate next available "New Chip" number
-    return getNextDefaultChipNumber(existingLabels);
+    })();
 };
 
 const detectContentType = (content: string): 'code' | 'json' | 'markdown' | 'text' => {

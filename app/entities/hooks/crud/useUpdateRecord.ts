@@ -8,10 +8,16 @@ interface UseUpdateRecordResult {
     updateRecord: (matrxRecordId: MatrxRecordId) => void;
 }
 
+interface UseUpdateRecordOptions {
+    onComplete?: () => void;
+    showToast?: boolean;
+}
+
 export const useUpdateRecord = (
-    entityKey: EntityKeys, 
-    onComplete?: () => void
+    entityKey: EntityKeys,
+    options: UseUpdateRecordOptions = {}
 ): UseUpdateRecordResult => {
+    const { onComplete, showToast = true } = options;
     const { actions, dispatch } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
 
@@ -23,14 +29,18 @@ export const useUpdateRecord = (
             callbackId: callbackManager.register(({ success, error }) => {
                 dispatch(actions.removePendingOperation(matrxRecordId));
                 if (success) {
-                    entityToasts.handleUpdateSuccess();
+                    if (showToast) {
+                        entityToasts.handleUpdateSuccess();
+                    }
                     onComplete?.();
                 } else {
-                    entityToasts.handleError(error, 'update');
+                    if (showToast) {
+                        entityToasts.handleError(error, 'update');
+                    }
                 }
             })
         }));
-    }, [dispatch, actions, entityToasts, onComplete]);
+    }, [dispatch, actions, entityToasts, onComplete, showToast]);
 
     return { updateRecord };
 };

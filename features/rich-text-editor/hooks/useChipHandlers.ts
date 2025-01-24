@@ -55,4 +55,4 @@ export const useChipHandlers = ({
   };
 };
 
-export type ChipHandlers = ReturnType<typeof useChipHandlers>;
+export type UseChipHandlersHook = ReturnType<typeof useChipHandlers>;

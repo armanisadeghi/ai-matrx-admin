@@ -1,11 +1,10 @@
-import { MatrxRecordId } from '@/types';
-import { ChipData } from '../types/editor.types';
-import { MATRX_PATTERN } from './patternUtils';
+import { BrokerMetaData } from '../types/editor.types';
+import { MATRX_PATTERN, parseMatrxMetadata } from './patternUtils';
 
 interface LineSegment {
     type: 'text' | 'chip';
     content: string;
-    chipId?: string;
+    metadata?: string;
 }
 
 interface ProcessedLine {
@@ -14,115 +13,56 @@ interface ProcessedLine {
     isEmpty: boolean;
 }
 
-export const findChipPatterns = (text: string) => {
-    const chipPattern = /\{([^}]+)\}!/g;
-    const matches = [];
-
-    let match;
-    while ((match = chipPattern.exec(text)) !== null) {
-        matches.push({
-            id: match[1],
-            startIndex: match.index,
-            endIndex: match.index + match[0].length,
-            originalText: match[0],
-        });
-    }
-
-    return matches;
-};
-
-interface ChipMatch {
-    key?: string;
-    id: string;
-    matrxRecordId?: MatrxRecordId
-    startIndex: number;
-    endIndex: number;
-    originalText: string;
-}
-
-export const findAllChipPatterns = (text: string): ChipMatch[] => {
-    const chipPattern = MATRX_PATTERN;
-    const matches: ChipMatch[] = [];
-
-    let match;
-    while ((match = chipPattern.exec(text)) !== null) {
-        const content = match[1]; // Content between { and }
-        const colonIndex = content.indexOf(':');
-        
-        let chipMatch: ChipMatch;
-
-        // If there's a colon, treat the entire content as a MatrxRecordId
-        if (colonIndex !== -1) {
-            const key = content.substring(0, colonIndex).trim();
-            const value = content.substring(colonIndex + 1).trim();
-            
-            chipMatch = {
-                key,
-                id: value,
-                matrxRecordId: content.trim(), // Direct string assignment
-                startIndex: match.index,
-                endIndex: match.index + match[0].length,
-                originalText: match[0]
-            };
-        } else {
-            // If no colon, the entire content is just the id
-            chipMatch = {
-                id: content.trim(),
-                startIndex: match.index,
-                endIndex: match.index + match[0].length,
-                originalText: match[0]
-            };
-        }
-
-        matches.push(chipMatch);
-    }
-
-    return matches;
-};
-
-/**
- * Process content into lines with proper segmentation
- */
 export const processContentLines = (content: string): ProcessedLine[] => {
+    // Split on newlines but preserve the exact number of empty lines
     const lines = content.split('\n');
 
+    let previousWasEmpty = false;  // Track consecutive empty lines
+    
     return lines.map((line, index) => {
-        if (line.trim() === '') {
-            return {
+        const trimmedLine = line.trim();
+        
+        // Handle empty lines
+        if (trimmedLine === '') {
+            // If this is an empty line, mark it as a true empty line
+            // but don't create additional ones
+            const result = {
                 segments: [],
                 isFirstLine: index === 0,
                 isEmpty: true,
             };
+            previousWasEmpty = true;
+            return result;
         }
 
-        const chipMatches = findAllChipPatterns(line);
+        // Non-empty line processing
+        previousWasEmpty = false;
         const segments: LineSegment[] = [];
-        let currentPosition = 0;
+        let lastIndex = 0;
+        let match;
 
-        chipMatches.forEach((match) => {
-            // Add text before chip if exists
-            if (match.startIndex > currentPosition) {
+        MATRX_PATTERN.lastIndex = 0;
+        while ((match = MATRX_PATTERN.exec(line))) {
+            if (match.index > lastIndex) {
                 segments.push({
                     type: 'text',
-                    content: line.slice(currentPosition, match.startIndex),
+                    content: line.slice(lastIndex, match.index),
                 });
             }
 
-            // Add chip
             segments.push({
                 type: 'chip',
-                content: match.originalText,
-                chipId: match.id,
+                content: match[0],
+                metadata: match[1],
             });
 
-            currentPosition = match.endIndex;
-        });
+            lastIndex = match.index + match[0].length;
+        }
 
-        // Add remaining text if any
-        if (currentPosition < line.length) {
+        if (lastIndex < line.length) {
             segments.push({
                 type: 'text',
-                content: line.slice(currentPosition),
+                content: line.slice(lastIndex),
             });
         }
 
@@ -131,62 +71,58 @@ export const processContentLines = (content: string): ProcessedLine[] => {
             isFirstLine: index === 0,
             isEmpty: false,
         };
+    }).filter((line, index, array) => {
+        // Filter out consecutive empty lines
+        if (index > 0 && line.isEmpty && array[index - 1].isEmpty) {
+            return false;
+        }
+        return true;
     });
 };
 
-/**
- * Create empty line element
- */
+
 export const createEmptyLine = (isFirstLine: boolean): HTMLElement => {
     const container = document.createElement(isFirstLine ? 'span' : 'div');
+    const span = document.createElement('span');
     const br = document.createElement('br');
-    container.appendChild(br);
+    span.appendChild(br);
+    container.appendChild(span);
     return container;
 };
 
-/**
- * Process text-only line
- */
 export const createTextOnlyLine = (text: string, isFirstLine: boolean): HTMLElement => {
     const container = document.createElement(isFirstLine ? 'span' : 'div');
-    container.textContent = text;
+    const span = document.createElement('span');
+    span.appendChild(document.createTextNode(text));
+    container.appendChild(span);
     return container;
 };
 
-/**
- * Process line with chips
- */
+interface ChipStructureResult {
+    insertionWrapper: HTMLSpanElement;
+    chipWrapper: HTMLSpanElement;
+    chip: HTMLSpanElement;
+    anchorNode: Text;
+}
+
 export const createChipLine = (
     segments: LineSegment[],
     isFirstLine: boolean,
-    createChipStructure: (chipData: ChipData) => {
-        insertionWrapper: HTMLElement;
-        anchorNode: Text;
-    },
-    chipDataMap: Map<string, ChipData>
+    createChipStructure: (metadata: BrokerMetaData) => ChipStructureResult
 ): HTMLElement => {
     const container = document.createElement(isFirstLine ? 'span' : 'div');
-
-    segments.forEach((segment, index) => {
+    const span = document.createElement('span');
+    
+    segments.forEach((segment) => {
         if (segment.type === 'text') {
-            container.appendChild(document.createTextNode(segment.content));
-        } else if (segment.type === 'chip' && segment.chipId) {
-            const chipData = chipDataMap.get(segment.chipId);
-            if (!chipData) {
-                console.warn(`Chip data not found for id: ${segment.chipId}`);
-                // Fallback to basic chip if data not found
-                const { insertionWrapper } = createChipStructure({
-                    id: segment.chipId,
-                    label: segment.chipId,
-                    stringValue: segment.content
-                });
-                container.appendChild(insertionWrapper);
-            } else {
-                const { insertionWrapper } = createChipStructure(chipData);
-                container.appendChild(insertionWrapper);
-            }
+            span.appendChild(document.createTextNode(segment.content));
+        } else if (segment.type === 'chip' && segment.metadata) {
+            const metadata = parseMatrxMetadata(segment.metadata);
+            const { insertionWrapper } = createChipStructure(metadata);
+            span.appendChild(insertionWrapper);
         }
     });
 
+    container.appendChild(span);
     return container;
 };

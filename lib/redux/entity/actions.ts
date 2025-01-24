@@ -71,6 +71,12 @@ export type DirectUpdateRecordPayload = {
     callbackId?: string;
 };
 
+export type DirectCreateRecordPayload = {
+    matrxRecordId: MatrxRecordId;
+    data: Record<string, any>
+    callbackId?: string;
+};
+
 
 export type DeleteRecordPayload = {
     matrxRecordId: MatrxRecordId;

@@ -291,6 +291,7 @@ export type EntityOperations =
     | 'CREATE'
     | 'UPDATE'
     | 'DIRECT_UPDATE'
+    | 'DIRECT_CREATE'
     | 'DELETE'
     | 'CUSTOM';
 

@@ -63,10 +63,6 @@ function* handleFetchOne<TEntity extends EntityKeys>({ entityKey, actions, api, 
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOne', entityKey);
     entityLogger.log('debug', 'Starting fetchOne', action.payload);
 
-    // ============ See withFullRelationConversion ============
-
-    // const relationships = yield select(selectEntityRelationships, entityKey);
-
     let query = api.select('*');
 
     Object.entries(unifiedDatabaseObject.primaryKeysAndValues).forEach(([key, value]) => {
@@ -1005,6 +1001,55 @@ function* handleCreate<TEntity extends EntityKeys>({
     }
 }
 
+export function* handleDirectCreate<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<EntityData<TEntity>>;
+}) {
+    const entityLogger = EntityLogger.createLoggerWithDefaults('handleDirectCreate', entityKey);
+
+    const dataForInsert = unifiedDatabaseObject.data;
+    entityLogger.log('debug', 'Data for insert:', dataForInsert);
+
+    try {
+        const { data, error } = yield api.insert(dataForInsert).select().single();
+
+        if (error) throw error;
+
+        const payload = { entityName: entityKey, data };
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+
+        yield put(actions.directCreateRecordSuccess(frontendResponse));
+
+        entityLogger.log('debug', 'frontend response data', frontendResponse);
+
+        yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse, unifiedDatabaseObject);
+
+        const primaryKeyMetadata = yield select(selectEntityPrimaryKeyMetadata, entityKey);
+        const recordKey = createRecordKey(primaryKeyMetadata, data);
+
+        return {
+            recordKey,
+            data: frontendResponse,
+        };
+
+    } catch (error: any) {
+        entityLogger.log('error', 'Create operation error', error);
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during create.',
+                code: error.code,
+            })
+        );
+        throw error;
+    }
+}
+
+
 function* handleUpdate<TEntity extends EntityKeys>({ entityKey, actions, api, action, unifiedDatabaseObject }: BaseSagaContext<TEntity> & {}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleUpdate', entityKey);
     entityLogger.log('debug', 'Starting update operation', action.payload);
@@ -1134,14 +1179,7 @@ function* handleDirectUpdate<TEntity extends EntityKeys>({ entityKey, actions, a
             yield put(actions.upsertRecords([{ recordKey, record: optimisticData }]));
         }
 
-        // const convertedChangedData = yield select(selectDatabaseConversion, {
-        //     entityName: entityKey,
-        //     data: allUpdatedData
-        // });
-
         const primaryKeyFields = unifiedDatabaseObject.databasePks;
-
-        // entityLogger.log('debug', 'Converted data for update:', convertedChangedData);
 
         const primaryKeyValues = primaryKeyFields.reduce((acc, key) => {
             if (previousData[key] !== undefined) {
@@ -1330,6 +1368,7 @@ export {
     handleFetchMetrics,
     handleFetchOneAdvanced,
     handleGetOrFetchSelectedRecords,
+    handleQuickReferenceUpdate,
     handleFetchSelectedRecords,
     handleDirectUpdate,
 };

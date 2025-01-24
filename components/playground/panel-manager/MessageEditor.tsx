@@ -1,15 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { isMatrxRecordId, useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { Card } from '@/components/ui';
 import { MatrxRecordId } from '@/types';
 import MessageToolbar from './MessageToolbar';
 import { ProcessedRecipeMessages } from './types';
-import { isEqual } from 'lodash';
-import { v4 } from 'uuid';
 import DebugPanel from './AdminToolbar';
-import { ChipData, EditorState } from '@/features/rich-text-editor/types/editor.types';
+import { BrokerMetaData, ChipData } from '@/features/rich-text-editor/types/editor.types';
 import useChipHandlers from '../hooks/useChipHandlers';
 import { useRelatedDataBrokers } from '../hooks/useMessageBrokers';
 import { TextPlaceholderEffect } from './TextPlaceholderEffect';
@@ -70,10 +68,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const { addBroker, messageBrokerIsLoading } = brokerHook;
 
     useEffect(() => {
-        console.log('============ only logs during a render');
-    }, []);
-
-    useEffect(() => {
         if (messageBrokerIsLoading) {
             setInitialRenderHold(true);
         }
@@ -131,19 +125,17 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     }, [context, messageRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent]);
 
     const createNewBroker = useCallback(
-        async (chipData: ChipData) => {
+        async (brokerMetadata: BrokerMetaData) => {
             try {
-                const newBrokerId = v4();
-                console.log('Creating new broker:', newBrokerId, chipData);
-                await addBroker(newBrokerId, chipData);
-                console.log('Successfully created relationship');
-                await context.chips.syncChipToBroker(chipData.id, `id:${newBrokerId}`);
+
+                // await context.chips.syncChipToBroker(chipData.id, `id:${newBrokerId}`);
+                console.log('Message Editor was informated of a new broker:', brokerMetadata);
                 handleSave();
             } catch (error) {
                 console.error('Failed to create relationship:', error);
             }
         },
-        [addBroker, handleSave]
+        [handleSave]
     );
 
     const addExistingBrokerToSelection = useCallback(
@@ -161,7 +153,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     );
 
     const handleBlur = useCallback(() => {
-        console.log('blur event', messageRecordId);
         handleSave();
     }, [handleSave]);
 

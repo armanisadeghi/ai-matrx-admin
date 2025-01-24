@@ -19,8 +19,9 @@ import {
     handleGetOrFetchSelectedRecords,
     handleFetchSelectedRecords,
     handleDirectUpdate,
+    handleDirectCreate,
 } from '@/lib/redux/entity/sagas/sagaHandlers';
-import { CreateRecordPayload, DeleteRecordPayload, DirectUpdateRecordPayload, FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from '../actions';
+import { CreateRecordPayload, DeleteRecordPayload, DirectCreateRecordPayload, DirectUpdateRecordPayload, FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from '../actions';
 import { withConversion, withFullConversion, withFullRelationConversion } from '@/lib/redux/entity/sagas/sagaHelpers';
 import { getEntitySlice } from '@/lib/redux';
 
@@ -102,6 +103,12 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                     yield call(withFullConversion, handleCreate, entityKey, actions, action);
                     setCache(actions.createRecord.type, action.payload);
                 }),
+                takeEvery(actions.directCreateRecord.type, function* (action: SagaAction<DirectCreateRecordPayload>) {
+                    sagaLogger.log('debug', 'Handling createRecord', action.payload);
+                    if (shouldSkip(actions.directCreateRecord.type, action.payload)) return;
+                    yield call(withFullConversion, handleDirectCreate, entityKey, actions, action);
+                    setCache(actions.createRecord.type, action.payload);
+                }),
                 takeEvery(
                     actions.updateRecord.type,
                     function* (
@@ -122,6 +129,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                     yield call(withFullConversion, handleDirectUpdate, entityKey, actions, action);
                     setCache(actions.directUpdateRecord.type, action.payload);
                 }),
+
                 takeEvery(actions.deleteRecord.type, function* (action: PayloadAction<DeleteRecordPayload>) {
                     sagaLogger.log('debug', 'Handling deleteRecord', action.payload);
                     if (shouldSkip(actions.deleteRecord.type, action.payload)) return;

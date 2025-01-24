@@ -23,9 +23,9 @@ import { ContextMenuProvider } from '@/providers/ContextMenuProvider';
 import { DialogProvider } from '@/providers/dialogs/DialogContext';
 import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
-import { EditorProvider } from '@/features/rich-text-editor/provider/provider';
 import { ChipMenuProvider } from '@/features/rich-text-editor/components/ChipContextMenu';
 import { PreferenceSyncProvider } from '@/providers/usePreferenceSync';
+import { EditorProvider } from '@/features/rich-text-editor/provider/provider';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
 
@@ -38,21 +38,21 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                         <SocketProvider>
                             <DialogProvider>
                                 <ContextMenuProvider>
-                                    <ToastProvider>
-                                        <ThemeProvider
-                                            defaultTheme='dark'
-                                            enableSystem={false}
-                                        >
-                                            <PreferenceSyncProvider>
-                                                <RefProvider>
-                                                    <FileSystemProvider
-                                                        initialBucket='Audio'
-                                                        allowedBuckets={allowedBuckets}
-                                                    >
-                                                        <OldFileSystemProvider>
-                                                            <FileSystemDialogs />
-                                                            <ChipMenuProvider>
-                                                                <EditorProvider>
+                                    <ChipMenuProvider>
+                                        <ToastProvider>
+                                            <ThemeProvider
+                                                defaultTheme='dark'
+                                                enableSystem={false}
+                                            >
+                                                <PreferenceSyncProvider>
+                                                    <RefProvider>
+                                                        <EditorProvider>
+                                                            <FileSystemProvider
+                                                                initialBucket='Audio'
+                                                                allowedBuckets={allowedBuckets}
+                                                            >
+                                                                <OldFileSystemProvider>
+                                                                    <FileSystemDialogs />
                                                                     <NextUIProvider>
                                                                         <TooltipProvider delayDuration={200}>
                                                                             <AudioModalProvider>
@@ -65,14 +65,14 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                                                             </AudioModalProvider>
                                                                         </TooltipProvider>
                                                                     </NextUIProvider>
-                                                                </EditorProvider>
-                                                            </ChipMenuProvider>
-                                                        </OldFileSystemProvider>
-                                                    </FileSystemProvider>
-                                                </RefProvider>
-                                            </PreferenceSyncProvider>
-                                        </ThemeProvider>
-                                    </ToastProvider>
+                                                                </OldFileSystemProvider>
+                                                            </FileSystemProvider>
+                                                        </EditorProvider>
+                                                    </RefProvider>
+                                                </PreferenceSyncProvider>
+                                            </ThemeProvider>
+                                        </ToastProvider>
+                                    </ChipMenuProvider>
                                 </ContextMenuProvider>
                             </DialogProvider>
                         </SocketProvider>

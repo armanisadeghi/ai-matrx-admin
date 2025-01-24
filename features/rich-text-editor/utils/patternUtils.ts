@@ -58,7 +58,7 @@ export const findAllPatternsOrdered = (content: string): PatternResults => {
 };
 
 // Add valid status types
-export type MatrxStatus = 'new' | 'active' | 'archived' | 'deleted' | string;
+export type MatrxStatus = 'new' | 'active' | 'disconnected' | 'deleted' | string;
 
 interface MatrxMetadata {
     matrxRecordId?: string;
@@ -91,12 +91,13 @@ export const parseMatrxMetadata = (content: string): MatrxMetadata => {
         const match = part.match(/^([^:]+):"([^"]*)"$/) || part.match(/^([^:]+):([^"]*)$/);
         if (match) {
             const [, key, value] = match;
-            metadata[key] = value;
+            metadata[key] = value === 'undefined' ? '' : value;
         }
     });
 
     return metadata;
 };
+
 
 export const transformMatrxText = (text: string, mode: DisplayMode): string => {
     MATRX_PATTERN.lastIndex = 0;
@@ -109,10 +110,10 @@ export const transformMatrxText = (text: string, mode: DisplayMode): string => {
                 return fullMatch;
 
             case DisplayMode.SIMPLE_ID:
-                return metadata.id ? `{id:${metadata.id}}!` : fullMatch;
+                return metadata.id || fullMatch;
 
             case DisplayMode.RECORD_KEY:
-                return metadata.recordKey || fullMatch;
+                return metadata.matrxRecordId || fullMatch;
 
             case DisplayMode.NAME:
                 return metadata.name || fullMatch;
@@ -147,13 +148,13 @@ export const getProcessedMetadataFromText = (text: string): MatrxMetadata[] => {
     // Step 2: Define the consistent structure for metadata keys
     const defaultMetadataKeys: MatrxMetadata = {
         matrxRecordId: '',
+        id: '',
         name: '',
         defaultValue: '',
         color: '',
         status: '',
         defaultComponent: '',
         dataType: '',
-        id: '',
     };
 
     // Step 3: Map raw metadata to the consistent structure

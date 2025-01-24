@@ -16,7 +16,7 @@ export interface ContentMetadata {
     version: string;
 }
 
-export type MatrxStatus = 'new' | 'active' | 'archived' | 'deleted' | string;
+export type MatrxStatus = 'new' | 'active' | 'disconnected' | 'deleted' | string;
 
 export interface BrokerMetaData {
     matrxRecordId?: string;
@@ -27,7 +27,7 @@ export interface BrokerMetaData {
     defaultComponent?: string;
     dataType?: string;
     id?: string;
-    // [key: string]: string | undefined;
+    [key: string]: string | undefined;
 }
 
 export type ContentMode = 'encodeChips' | 'encodeVisible' | 'name' | 'defaultValue' | 'recordKey' | 'status';

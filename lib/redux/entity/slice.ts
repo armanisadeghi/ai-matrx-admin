@@ -40,6 +40,7 @@ import {
     CreateRecordPayload,
     createRecordSuccessPayload,
     DeleteRecordPayload,
+    DirectCreateRecordPayload,
     DirectUpdateRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
@@ -133,7 +134,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             },
 
             fetchOneWithFkIfk: (state: EntityState<TEntity>, action: PayloadAction<FetchOneWithFkIfkPayload>) => {
-                entityLogger.log('info', '------ > fetchOneWithFkIfk set to loading', action.payload);
+                entityLogger.log('debug', '------ > fetchOneWithFkIfk set to loading', action.payload);
                 setLoading(state, 'FETCH_ONE_WITH_FK_IFK');
             },
 
@@ -452,12 +453,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             },
             createRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<createRecordSuccessPayload>) => {
                 entityLogger.log('debug', 'createRecordSuccess', action.payload);
-                const preDebugData = {
-                    pendingOperations: state.pendingOperations,
-                    unsavedRecords: state.unsavedRecords,
-                    payload: action.payload,
-                };
-                entityLogger.log('debug', 'createRecordSuccess debugData:', preDebugData);
 
                 const tempId = action.payload.tempRecordId;
                 const data = action.payload.data;
@@ -468,12 +463,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, data);
                 state.records[recordKey] = data;
 
-                const postDebugData = {
-                    pendingOperations: state.pendingOperations,
-                    unsavedRecords: state.unsavedRecords,
-                    payload: action.payload,
-                };
-                entityLogger.log('debug', 'createRecordSuccess postDebugData:', postDebugData);
 
                 const result = modeManager.changeMode(state, 'view');
 
@@ -514,6 +503,17 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                         return;
                     }
                 }
+            },
+            directCreateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectCreateRecordPayload>) => {
+                entityLogger.log('info', 'slice - directCreateRecord', action.payload);
+                setLoading(state, 'DIRECT_CREATE');
+            },
+
+            directCreateRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<EntityData<TEntity>>) => {
+                entityLogger.log('info', 'directCreateRecordSuccess', action.payload);
+                const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                state.records[recordKey] = action.payload;
+                setSuccess(state, 'DIRECT_CREATE');
             },
 
             directUpdateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectUpdateRecordPayload>) => {

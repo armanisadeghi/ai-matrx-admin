@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import {
-    DEBUG_MODE,
     ensureValidContainer,
     getEditorElement,
     getSelectedText,
@@ -8,14 +7,13 @@ import {
     insertWithStructurePreservation,
     positionCursorAfterChip,
 } from '../utils/editorUtils';
-import { debugEditorState } from '../utils/debugUtils';
-import { ChipHandlers, createCompleteChipStructure } from '../utils/chipService';
 import { EditorContextValue } from '../provider/provider';
+import { createChipStructure, ChipHandlers } from '../utils/createChipUtil';
 
 export const useChipCreation = (
     editorId: string,
     chipHandlers: ChipHandlers,
-    dragConfig: any,
+    setDraggedChip: (chip: HTMLElement | null) => void,
     context: EditorContextValue,
     updatePlainTextContent: () => void
 ) => {
@@ -27,13 +25,12 @@ export const useChipCreation = (
     
         if (!editor || !selection) return;
     
-        const beforeState = debugEditorState(editor);
         const currentRange = ensureValidContainer(editor, selection);
         
         try {
-            const brokerMetadata = await context.chips.createNewChipData(editorId);
-            
-            const { insertionWrapper, anchorNode } = createCompleteChipStructure(brokerMetadata, dragConfig, DEBUG_MODE, chipHandlers);
+            const { matrxRecordId, brokerMetadata, messageBrokerRecord } = await context.chips.createNewChipData(editorId);
+
+            const { insertionWrapper, anchorNode } = createChipStructure(brokerMetadata, setDraggedChip, chipHandlers);
     
             // Handle container setup
             let container = currentRange.commonAncestorContainer;
@@ -66,18 +63,13 @@ export const useChipCreation = (
     
             // Position cursor and handle post-insertion tasks
             positionCursorAfterChip(anchorNode, selection);
-    
-            const afterState = debugEditorState(editor);
-            if (afterState.diffSummary.nestedSpans > beforeState.diffSummary.nestedSpans) {
-                console.warn('Nested spans increased during chip insertion');
-            }
-    
+        
             updatePlainTextContent();
             chipHandlers?.onNewChip?.(brokerMetadata);
         } catch (error) {
             console.error('Failed to insert chip:', error);
         }
-    }, [editorId, context, dragConfig, updatePlainTextContent, getEditor]);
+    }, [editorId, context, setDraggedChip, updatePlainTextContent, getEditor]);
 
     const convertSelectionToChip = useCallback(async () => {
         const editor = getEditor();
@@ -87,12 +79,12 @@ export const useChipCreation = (
             const { text, range } = getSelectedText();
             if (!range) return insertChip();
 
-            const brokerMetadata = await context.chips.createNewChipData(editorId, {
+            const { matrxRecordId, brokerMetadata, messageBrokerRecord } = await context.chips.createNewChipData(editorId, {
                 defaultValue: text,
             });
 
             // Create and insert the chip structure
-            const { insertionWrapper, anchorNode } = createCompleteChipStructure(brokerMetadata, dragConfig, DEBUG_MODE, chipHandlers);
+            const { insertionWrapper, anchorNode } = createChipStructure(brokerMetadata, setDraggedChip, chipHandlers);
 
             insertWithRangeMethod(insertionWrapper, range);
 
@@ -106,10 +98,9 @@ export const useChipCreation = (
             return true;
         } catch (error) {
             console.error('Failed to convert selection to chip:', error);
-            // You might want to show a user-facing error message here
             return false;
         }
-    }, [editorId, context.chips, dragConfig, updatePlainTextContent, getEditor, chipHandlers, DEBUG_MODE, insertChip]);
+    }, [editorId, context.chips, setDraggedChip, updatePlainTextContent, getEditor, chipHandlers, insertChip]);
 
     return {
         insertChip,

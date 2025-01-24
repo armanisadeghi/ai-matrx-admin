@@ -599,9 +599,19 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }))
     );
 
-    const selectNativeFieldOptionsWithDefaults = createSelector([selectFieldInfo], (fieldInfo): FieldOptionWithDefault[] =>
+    const selectNativeFieldOptionsWithDefaultsNoPk = createSelector([selectFieldInfo], (fieldInfo): FieldOptionWithDefault[] =>
         fieldInfo
             .filter((field) => field.isNative && !field.isPrimaryKey)
+            .map((field) => ({
+                value: field.name,
+                label: field.displayName,
+                defaultValue: field.defaultValue,
+            }))
+    );
+
+    const selectNativeFieldOptionsWithDefaults = createSelector([selectFieldInfo], (fieldInfo): FieldOptionWithDefault[] =>
+        fieldInfo
+            .filter((field) => field.isNative)
             .map((field) => ({
                 value: field.name,
                 label: field.displayName,
@@ -1189,6 +1199,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectDefaultValues,
         selectFieldOptionsWithDefaults, // new
         selectNativeFieldOptionsWithDefaults, // new
+        selectNativeFieldOptionsWithDefaultsNoPk,
 
         selectFlexFormField,
 

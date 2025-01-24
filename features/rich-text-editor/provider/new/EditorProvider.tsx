@@ -43,7 +43,7 @@
 //         (editorId: string) => {
 //             const state = editors.get(editorId);
 //             if (!state) {
-//                 console.log('-------------------------------Editor state not found for id:', editorId);
+//                 console.log('------------------------------- state not found for id:', editorId);
 //                 const initialContent = '';
 //                 return getInitialState(initialContent);
 //             }

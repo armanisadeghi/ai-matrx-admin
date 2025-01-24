@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { withRefs } from '@/lib/refs';
 import RichTextEditor, { RichTextEditorProps } from '../RichTextEditor';
-import { ChipMenuProvider } from '../components/ChipContextMenu';
 import { useEditorContext } from './provider';
 
 const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
@@ -11,23 +12,40 @@ const withManagedEditor = (BaseEditor: typeof RichTextEditor) => {
         ...props
     }) => {
         const context = useEditorContext();
+        const [isInitialized, setIsInitialized] = useState(false);
+        const [isReady, setIsReady] = useState(false);
 
+        // Register editor on first mount only
         useEffect(() => {
-            context.registry.registerEditor(componentId, initialContent);
-            
+            context.registerEditor(componentId, initialContent);
+            setIsInitialized(true);
+
             return () => {
-                context.registry.unregisterEditor(componentId);
+                context.unregisterEditor(componentId);
             };
         }, []);
 
+        // Add delay to ensure editor is fully initialized
+        useEffect(() => {
+            if (!isInitialized) return;
+
+            const timer = setTimeout(() => {
+                setIsReady(true);
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }, [isInitialized]);
+
+        if (!isReady) {
+            return null;
+        }
+
         return (
-            <ChipMenuProvider>
                 <BaseEditor
                     componentId={componentId}
                     initialContent={initialContent}
                     {...props}
                 />
-            </ChipMenuProvider>
         );
     };
 
@@ -38,11 +56,13 @@ const ManagedEditor = withManagedEditor(RichTextEditor);
 
 export const EditorWithProviders: React.FC<Omit<RichTextEditorProps, 'componentId'> & { id: string }> = ({
     id,
+    initialContent,
     ...props
 }) => {
     return (
         <ManagedEditor
             componentId={id}
+            initialContent={initialContent}
             {...props}
         />
     );
