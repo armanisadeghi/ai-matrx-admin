@@ -244,7 +244,7 @@
     "stream-browserify": "latest",
     "stream-http": "latest",
     "tailwind-scrollbar": "latest",
-    "tailwindcss": "latest",
+    "tailwindcss": "3.4.16",
     "tailwindcss-3d": "latest",
     "ts-jest": "latest",
     "ts-node": "latest",

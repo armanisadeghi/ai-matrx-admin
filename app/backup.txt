@@ -1,0 +1,506 @@
+/* globals.css */
+
+@tailwind base;
+@tailwind components;
+@import "tailwindcss/utilities";
+
+
+@layer base {
+    :root {
+        --background: 48 22% 100%;
+        --matrx-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.17'/%3E%3C/svg%3E");
+        --matrx-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.15'/%3E%3C/svg%3E");
+        --foreground: 240 10% 3.9%;
+        --card: 0 0% 98%;
+        --card-foreground: 240 10% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 240 10% 3.9%;
+
+        --primary: 210 80% 45%;
+        --primary-foreground: 0 0% 100%;
+
+        --secondary: 275 65% 80%;
+        --secondary-foreground: 275 35% 20%;
+        --muted: 240 4.8% 95.9%;
+        --muted-foreground: 240 3.8% 46.1%;
+        --accent: 262 83% 58%;  /* More vibrant accent */
+        --accent-foreground: 240 5.9% 10%;
+        --destructive: 0 84% 60%;  /* Brighter destructive */
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 5.9% 90%;
+        --input: 240 5.9% 90%;
+        --ring: 240 5% 64.9%;
+        --radius: 0.5rem;
+        --success: 142 76% 36%;
+        --success-foreground: 144 70% 98%;
+        --warning: 38 92% 50%;
+        --warning-foreground: 48 96% 98%;
+
+
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+
+        /* Enhanced accent colors */
+        --accent-2: 280 70% 50%;  /* More saturated */
+        --accent-3: 200 95% 40%;  /* Brighter */
+        --info: 200 98% 39%;
+
+        /* Adjusted hover state colors for more contrast */
+        --primary-hover: 240 5.9% 15%;
+        --secondary-hover: 240 4.8% 90%;
+        --accent-hover: 262 83% 48%;
+
+        /* Adjusted active state colors */
+        --primary-active: 240 5.9% 20%;
+        --secondary-active: 240 4.8% 85%;
+        --accent-active: 262 83% 38%;
+
+        /* Elevation colors with slight tint */
+        --elevation-1: 262 20% 98%;
+        --elevation-2: 262 20% 96%;
+        --elevation-3: 262 20% 94%;
+
+        /* Enhanced gradients */
+        --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
+        --gradient-2: linear-gradient(to right, hsl(var(--chart-1)), hsl(var(--chart-2)));
+        --gradient-3: linear-gradient(to bottom right, hsl(var(--accent-2)), hsl(var(--accent-3)));
+
+        /* Animation specific */
+        --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        --animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+
+        /* Custom checkerboard pattern for light mode */
+        --checkerboard: linear-gradient(45deg, hsl(0, 0%, 94%) 25%, transparent 25%),
+        linear-gradient(-45deg, hsl(0, 0%, 94%) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, hsl(0, 0%, 85%) 75%),
+        linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 85%) 75%);
+        --sidebar-background: 0 0% 98%;
+        --sidebar-foreground: 240 5.3% 26.1%;
+        --sidebar-primary: 240 5.9% 10%;
+        --sidebar-primary-foreground: 0 0% 98%;
+        --sidebar-accent: 240 4.8% 95.9%;
+        --sidebar-accent-foreground: 240 5.9% 10%;
+        --sidebar-border: 220 13% 91%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+
+        
+
+    }
+
+    .dark {
+        --background: 0 0% 12%;
+        --matrix-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='.1'/%3E%3C/svg%3E");
+        --matrx-old-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
+        --matrx-card-background: url('/dark-turbulence-noise.svg');
+        --foreground: 0 0% 98%;
+        --card: 0 0% 8%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 3.9%;
+        --popover-foreground: 0 0% 98%;
+
+        --primary: 210 90% 65%;
+        --primary-foreground: 0 0% 10%;
+
+        --secondary: 275 60% 30%;
+        --secondary-foreground: 275 75% 90%;
+        --muted: 240 3.7% 15.9%;
+        --muted-foreground: 0, 0%, 72%;
+        --accent: 240 3.7% 15.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 72% 60%;
+        --destructive-foreground: 0 85.7% 97.3%;
+        --border: 240 3.7% 15.9%;
+        --input: 240 3.7% 15.9%;
+        --ring: 240 4.9% 83.9%;
+        --radius: 0.5rem;
+        --success: 142 69% 58%;
+        --success-foreground: 144 70% 98%;
+        --warning: 48 96% 58%;
+        --warning-foreground: 48 96% 98%;
+
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+
+        /* New colors */
+        --accent-2: 280 65% 60%;
+        --accent-3: 200 95% 40%;
+        --info: 200 98% 50%;
+
+        /* Hover state colors */
+        --primary-hover: 0 0% 85%;
+        --secondary-hover: 240 3.7% 25%;
+        --accent-hover: 240 3.7% 25%;
+
+        /* Active state colors */
+        --primary-active: 0 0% 75%;
+        --secondary-active: 240 3.7% 35%;
+        --accent-active: 240 3.7% 35%;
+
+        /* Elevation colors */
+        --elevation-1: 0 0% 15%;
+        --elevation-2: 0 0% 25%;
+        --elevation-3: 0 0% 35%;
+
+
+
+        /* Gradients */
+        --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
+        --gradient-2: linear-gradient(to right, hsl(var(--chart-1)), hsl(var(--chart-2)));
+        --gradient-3: linear-gradient(to bottom right, hsl(var(--accent-2)), hsl(var(--accent-3)));
+
+        /* Animation specific */
+        --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        --animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+
+        /* Custom checkerboard pattern for dark mode */
+        --checkerboard: linear-gradient(45deg, hsl(0, 0%, 31%) 25%, transparent 25%),
+        linear-gradient(-45deg, hsl(0, 0%, 31%) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, hsl(0, 0%, 24%) 75%),
+        linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 24%) 75%);
+        --sidebar-background: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+}
+
+
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    html {
+        @apply scroll-smooth;
+        font-size: 16px; /* Base font size */
+    }
+    body {
+        @apply bg-texture-light dark:bg-texture-dark text-foreground;
+
+        /* font-feature-settings: "rlig" 1, "calt" 1; */
+        font-synthesis-weight: none;
+        text-rendering: optimizeLegibility;
+        font-size: 1.0625rem; /* Slightly larger than default, equivalent to 17px */
+
+    }
+    input, textarea, select {
+        font-size: 1.0625rem; /* Match body font size for form elements */
+    }
+}
+
+@layer components {
+    .card {
+        @apply bg-texture-light dark:bg-texture-dark;
+    }
+}
+
+
+@layer utilities {
+
+    .light-mode-shadow {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .light-mode-border {
+        border: 1px solid hsl(var(--border));
+    }
+
+    .light-mode-bg-gradient {
+        background-image: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--elevation-3)));
+    }
+
+    .step {
+        counter-increment: step;
+    }
+
+    .step:before {
+        @apply absolute w-9 h-9 bg-muted rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px border-4 border-background;
+        @apply ml-[-50px] mt-[-4px];
+        content: counter(step);
+    }
+
+    .chunk-container {
+        @apply shadow-none;
+    }
+
+    .chunk-container::after {
+        content: "";
+        @apply absolute -inset-4 shadow-xl rounded-xl border;
+    }
+
+    /* ATTEMPT AT GLOBAL THIN SCROLLBAR */
+    * {
+        scrollbar-width: thin; /* For Firefox */
+    }
+    *::-webkit-scrollbar {
+        width: 4px; /* Thin scrollbar width globally */
+    }
+    *::-webkit-scrollbar-track {
+        background: var(--background); /* Global scrollbar track background */
+    }
+    *::-webkit-scrollbar-thumb {
+        background-color: var(--primary); /* Global scrollbar thumb color */
+        border-radius: 10px; /* Round the edges of the scrollbar thumb */
+        border: 1px solid var(--background); /* Add some padding inside the scrollbar thumb */
+    }
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary-foreground); /* Darken the scrollbar thumb on hover globally */
+    }
+    *::-webkit-scrollbar-thumb:active {
+        background-color: var(--secondary); /* Change color when the thumb is active globally */
+    }
+    /* ATTEMPT AT GLOBAL THIN SCROLLBAR */
+
+    .hide-scrollbar {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* Internet Explorer 10+ */
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none; /* WebKit */
+    }
+
+    /* Custom checkerboard utility class */
+    .bg-checkerboard {
+        background-image: var(--checkerboard);
+        background-size: 20px 20px;
+    }
+
+    /* Custom Scrollbar Styles */
+    .scrollbar-thin {
+        scrollbar-width: thin; /* For Firefox */
+    }
+
+    .scrollbar-thumb-primary {
+        scrollbar-color: var(--primary) var(--background); /* Primary color for scrollbar thumb */
+    }
+
+    /* WebKit-based browsers (Chrome, Safari, etc.) */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 4px; /* Reduced scrollbar width */
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: var(--background); /* Scrollbar track background */
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: var(--primary); /* Scrollbar thumb color */
+        border-radius: 10px; /* Round the edges of the scrollbar thumb */
+        border: 1px solid var(--background); /* Thin border inside the scrollbar thumb */
+    }
+
+    /* Additional optional hover effect for scrollbar thumb */
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary-foreground); /* Darken the scrollbar thumb on hover */
+    }
+
+    /* Optional active effect for the scrollbar thumb */
+    .scrollbar-thin::-webkit-scrollbar-thumb:active {
+        background-color: var(--secondary); /* Different color when the thumb is active */
+    }
+
+}
+
+
+/* Contrast Red */
+.contrast-red {
+    --primary: 0 72.2% 50.6%;
+    --primary-foreground: 0 85.7% 97.3%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --ring: 0 72.2% 50.6%;
+}
+
+/* Contrast Blue */
+.contrast-blue {
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --ring: 221.2 83.2% 53.3%;
+}
+
+/* Contrast Green */
+.contrast-green {
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --ring: 142.1 76.2% 36.3%;
+}
+
+/* Contrast Violet */
+.contrast-violet {
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --ring: 262.1 83.3% 57.8%;
+}
+
+/* Contrast Yellow */
+.contrast-yellow {
+    --primary: 47.9 95.8% 53.1%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+    --ring: 47.9 95.8% 53.1%;
+}
+
+/* Added for Grid-24, but added matrx to it. Real system doesn't have 'matrx' */
+.matrx-grid-cell {
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.matrx-grid-content {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+}
+
+/* Portal styles */
+#help-panel-portal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 50;
+}
+
+#help-panel-portal > * {
+    pointer-events: auto;
+}
+
+.pointer-events-none {
+    pointer-events: none !important;
+}
+
+.pointer-events-auto {
+    pointer-events: auto !important;
+}
+
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #4B5563;
+    border-radius: 3px;
+}
+
+:root {
+    --primary-rgb: 14, 165, 233; /* Example RGB values for a blue color */
+}
+
+.shiki-wrapper {
+    @apply font-mono text-sm overflow-x-auto;
+}
+
+.shiki-wrapper pre {
+    @apply p-4 rounded-lg border bg-muted/10 overflow-x-auto;
+}
+
+.shiki {
+    @apply !bg-transparent;
+}
+
+.shiki code {
+    @apply whitespace-pre-wrap break-words w-full;
+}
+
+[data-theme='dark'] .shiki,
+[data-theme='dark'] .shiki span {
+    color-scheme: dark;
+}
+
+.mask-bottom {
+    mask-image: linear-gradient(to bottom, black calc(100% - 3rem), transparent 100%);
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer utilities {
+    @media (max-width: 640px) {
+        .container {
+            @apply px-1;
+        }
+
+        .notes-mobile-layout {
+            .notes-list {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 10;
+                background: var(--background);
+                transform: translateX(-100%);
+                transition: transform 0.2s;
+
+                &.show {
+                    transform: translateX(0);
+                }
+            }
+        }
+    }
+}
