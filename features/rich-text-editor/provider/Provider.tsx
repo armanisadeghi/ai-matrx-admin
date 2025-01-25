@@ -13,17 +13,18 @@ export interface EditorContextValue {
     isEditorRegistered: (editorId: string) => boolean;
     setContent: (editorId: string, content: string) => void;
     getContent: (editorId: string) => string;
-    getContentMode: (editorId: string) => string;
+    getContentMode: (editorId: string) => ContentMode;
     setContentMode: (editorId: string, contentMode: ContentMode) => void;
     getBrokerMetadata: (editorId: string) => BrokerMetaData[];
     getEditorState: (editorId: string) => EditorState;
     getAllEditorStates: () => { [key: string]: EditorState };
     getTextWithChipsReplaced: (editorId: string) => string;
-    getContentByMode: (editorId: string, mode: DisplayMode) => string;
+    getContentByMode: (editorId: string, mode: ContentMode) => string;
     getContentByCurrentMode: (editorId: string) => string;
     updateBrokerMetadata: (editorId: string) => void;
     updateAllBrokerMetadata: () => void;
     messagesLoading: boolean;
+    getContentWithIds: (editorId: string) => string;
     setMessagesLoading: (loading: boolean) => void;
     layout: EditorLayout;
     colors: ColorManagement;
@@ -41,7 +42,7 @@ const initialState: EditorState = {
     },
 };
 
-const getDisplayMode = (contentMode: ContentMode): DisplayMode => {
+export const getDisplayMode = (contentMode: ContentMode): DisplayMode => {
     switch (contentMode) {
         case 'encodeChips':
         case 'encodeVisible':
@@ -177,7 +178,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [updateEditorState, processContentAndUpdateMetadata]
     );
 
-    const getContentMode = useCallback((editorId: string): string => getEditorState(editorId).contentMode, [getEditorState]);
+    const getContentMode = useCallback((editorId: string): ContentMode => getEditorState(editorId).contentMode, [getEditorState]);
 
     const setContentMode = useCallback(
         (editorId: string, contentMode: ContentMode) => {
@@ -187,18 +188,11 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [updateEditorState]
     );
 
-    const getTextWithChipsReplaced = useCallback(
-        (editorId: string): string => {
-            const state = getEditorState(editorId);
-            return transformMatrxText(state.content, DisplayMode.ENCODED);
-        },
-        [getEditorState]
-    );
-
     const getContentByMode = useCallback(
-        (editorId: string, mode: DisplayMode): string => {
+        (editorId: string, mode: ContentMode): string => {
             const state = getEditorState(editorId);
-            return transformMatrxText(state.content, mode);
+            const displayMode = getDisplayMode(mode);
+            return transformMatrxText(state.content, displayMode);
         },
         [getEditorState]
     );
@@ -212,6 +206,23 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         [getEditorState]
     );
 
+    const getTextWithChipsReplaced = useCallback(
+        (editorId: string): string => {
+            const state = getEditorState(editorId);
+            return transformMatrxText(state.content, DisplayMode.ENCODED);
+        },
+        [getEditorState]
+    );
+
+    const getContentWithIds = useCallback(
+        (editorId: string): string => {
+            const state = getEditorState(editorId);
+            return transformMatrxText(state.content, DisplayMode.RECORD_KEY);
+        },
+        [getEditorState]
+    );
+
+    
     const value: EditorContextValue = {
         registerEditor,
         unregisterEditor,
@@ -233,6 +244,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateAllBrokerMetadata,
         messagesLoading,
         setMessagesLoading,
+        getContentWithIds,
     };
 
     return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;

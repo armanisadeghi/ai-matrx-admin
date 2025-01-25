@@ -1,19 +1,18 @@
 import { cn } from '@/utils';
 import { getColorClassName } from './colorUitls';
 import { CHIP_BASE_CLASS } from '../constants';
-import { BrokerMetaData } from '../types/editor.types';
+import { BrokerMetaData, ContentMode } from '../types/editor.types';
 import { ChipMenuContextValue } from '../components/ChipContextMenu';
 
 export interface ChipHandlers {
     onDragStart?: (event: MouseEvent) => void;
     onDragEnd?: (event: MouseEvent) => void;
     onClick?: (event: MouseEvent) => void;
-    onDoubleClick?: (event: MouseEvent) => void;
+    onDoubleClick?: (event: MouseEvent, metadata: BrokerMetaData) => void;  // Updated to include metadata
     onMouseEnter?: (event: MouseEvent) => void;
     onMouseLeave?: (event: MouseEvent) => void;
     onContextMenu?: (event: MouseEvent) => void;
     onNewChip?: (brokerMetadata: BrokerMetaData) => void;
-
 }
 
 type ChipHandlerOptions = {
@@ -40,13 +39,7 @@ export const createChipHandlers = ({ handlers }: ChipHandlerOptions): ChipHandle
 export const createChipStructure = (
     brokerMetadata: BrokerMetaData,
     setDraggedChip: (chip: HTMLElement | null) => void,
-    handlers: Partial<{
-        onClick?: (event: MouseEvent) => void;
-        onDoubleClick?: (event: MouseEvent) => void;
-        onMouseEnter?: (event: MouseEvent) => void;
-        onMouseLeave?: (event: MouseEvent) => void;
-        onContextMenu?: (event: MouseEvent) => void;
-    }> = {}
+    handlers: ChipHandlers,
 ) => {
     const structureId = `chip-structure-${brokerMetadata.matrxRecordId}`;
 
@@ -142,7 +135,7 @@ export const createChipStructure = (
 
     // Add other handlers to container
     if (handlers.onClick) chipContainer.addEventListener('click', handlers.onClick);
-    if (handlers.onDoubleClick) chipContainer.addEventListener('dblclick', handlers.onDoubleClick);
+    if (handlers.onDoubleClick) chipContainer.addEventListener('dblclick', (event: MouseEvent) => handlers.onDoubleClick!(event, brokerMetadata));
     if (handlers.onMouseEnter) chipContainer.addEventListener('mouseenter', handlers.onMouseEnter);
     if (handlers.onMouseLeave) chipContainer.addEventListener('mouseleave', handlers.onMouseLeave);
     if (handlers.onContextMenu) chipContainer.addEventListener('contextmenu', handlers.onContextMenu);
@@ -169,3 +162,5 @@ export const createChipStructure = (
         anchorNode: anchorWrapper.firstChild as Text,
     };
 };
+
+

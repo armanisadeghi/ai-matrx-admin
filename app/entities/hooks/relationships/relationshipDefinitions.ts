@@ -1,312 +1,35 @@
+'use client';
+
 import { EntityRecordMap } from '@/lib/redux/entity/types/stateTypes';
-import { toMatrxIdFromValueBatch, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { EntityAnyFieldKey, EntityKeys, MatrxRecordId } from '@/types';
+import { toPkValue, toMatrxIdFromValueBatch } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { EntityKeys, MatrxRecordId, EntityAnyFieldKey } from '@/types';
+import { entityFieldNameGroups } from './fieldsDataUtil';
+import { RelationshipDefinition } from '@/types/relationshipTypes';
 import { v4 as uuidv4 } from 'uuid';
-
-export type RelationshipDefinition = {
-    joiningTable: EntityKeys;
-    relationshipCount: number;
-    additionalFields: EntityAnyFieldKey<EntityKeys>[];
-    joiningTablePks: EntityAnyFieldKey<EntityKeys>[];
-    ReferenceFieldOne: EntityAnyFieldKey<EntityKeys>;
-    entityOne: EntityKeys;
-    entityOneField: EntityAnyFieldKey<EntityKeys>;
-    entityOnePks: EntityAnyFieldKey<EntityKeys>[];
-    ReferenceFieldTwo?: EntityAnyFieldKey<EntityKeys>;
-    entityTwo?: EntityKeys;
-    entityTwoField?: EntityAnyFieldKey<EntityKeys>;
-    entityTwoPks?: EntityAnyFieldKey<EntityKeys>[];
-    ReferenceFieldThree?: EntityAnyFieldKey<EntityKeys>;
-    entityThree?: EntityKeys;
-    entityThreeField?: EntityAnyFieldKey<EntityKeys>;
-    entityThreePks?: EntityAnyFieldKey<EntityKeys>[];
-    ReferenceFieldFour?: EntityAnyFieldKey<EntityKeys>;
-    entityFour?: EntityKeys;
-    entityFourField?: EntityAnyFieldKey<EntityKeys>;
-    entityFourPks?: EntityAnyFieldKey<EntityKeys>[];
-};
-
-const actionRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'action',
-    relationshipCount: 2,
-    additionalFields: ['name', 'nodeType', 'referenceId'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'matrix',
-    entityOne: 'automationMatrix',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'transformer',
-    entityTwo: 'transformer',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const aiAgentRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'aiAgent',
-    relationshipCount: 2,
-    additionalFields: ['name', 'systemMessageOverride'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'aiSettingsId',
-    entityOne: 'aiSettings',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipeId',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const aiModelEndpointRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'aiModelEndpoint',
-    relationshipCount: 2,
-    additionalFields: ['available', 'configuration', 'createdAt', 'endpointPriority', 'notes'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'aiEndpointId',
-    entityOne: 'aiEndpoint',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'aiModelId',
-    entityTwo: 'aiModel',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const aiSettingsRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'aiSettings',
-    relationshipCount: 3,
-    additionalFields: [
-        'audioFormat',
-        'audioVoice',
-        'count',
-        'frequencyPenalty',
-        'maxTokens',
-        'modalities',
-        'presencePenalty',
-        'presetName',
-        'quality',
-        'responseFormat',
-        'size',
-        'stream',
-        'temperature',
-        'tools',
-        'topP',
-    ],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'aiEndpoint',
-    entityOne: 'aiEndpoint',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'aiModel',
-    entityTwo: 'aiModel',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-    ReferenceFieldThree: 'aiProvider',
-    entityThree: 'aiProvider',
-    entityThreeField: 'id',
-    entityThreePks: ['id'],
-};
-
-const automationBoundaryBrokerRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'automationBoundaryBroker',
-    relationshipCount: 2,
-    additionalFields: ['beaconDestination', 'sparkSource'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'broker',
-    entityOne: 'broker',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'matrix',
-    entityTwo: 'automationMatrix',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const flashcardHistoryRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'flashcardHistory',
-    relationshipCount: 2,
-    additionalFields: ['correctCount', 'createdAt', 'incorrectCount', 'reviewCount', 'updatedAt'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'flashcardId',
-    entityOne: 'flashcardData',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'userId',
-    // entityTwo: "users",
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const flashcardSetRelationsRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'flashcardSetRelations',
-    relationshipCount: 4,
-    additionalFields: ['order'],
-    joiningTablePks: ['flashcardId', 'setId'],
-    ReferenceFieldOne: 'flashcardId',
-    entityOne: 'flashcardData',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'flashcardId',
-    entityTwo: 'flashcardData',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-    ReferenceFieldThree: 'setId',
-    entityThree: 'flashcardSets',
-    entityThreeField: 'setId',
-    entityThreePks: ['setId'],
-    ReferenceFieldFour: 'setId',
-    entityFour: 'flashcardSets',
-    entityFourField: 'setId',
-    entityFourPks: ['setId'],
-};
-
-const messageBrokerRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'messageBroker',
-    relationshipCount: 3,
-    additionalFields: ['defaultValue'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'brokerId',
-    entityOne: 'dataBroker',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'defaultComponent',
-    entityTwo: 'dataInputComponent',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-    ReferenceFieldThree: 'messageId',
-    entityThree: 'messageTemplate',
-    entityThreeField: 'id',
-    entityThreePks: ['id'],
-};
-
-const recipeBrokerRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeBroker',
-    relationshipCount: 2,
-    additionalFields: ['brokerRole', 'required'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'broker',
-    entityOne: 'broker',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipe',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const recipeDisplayRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeDisplay',
-    relationshipCount: 2,
-    additionalFields: ['displaySettings', 'priority'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'display',
-    entityOne: 'displayOption',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipe',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const recipeFunctionRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeFunction',
-    relationshipCount: 2,
-    additionalFields: ['params', 'role'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'function',
-    entityOne: 'systemFunction',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipe',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const recipeMessageRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeMessage',
-    relationshipCount: 2,
-    additionalFields: ['order'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'messageId',
-    entityOne: 'messageTemplate',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipeId',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const recipeModelRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeModel',
-    relationshipCount: 2,
-    additionalFields: ['priority', 'role'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'aiModel',
-    entityOne: 'aiModel',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipe',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const recipeProcessorRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeProcessor',
-    relationshipCount: 2,
-    additionalFields: ['params'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'processor',
-    entityOne: 'processor',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'recipe',
-    entityTwo: 'recipe',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-const recipeToolRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: 'recipeTool',
-    relationshipCount: 2,
-    additionalFields: ['params'],
-    joiningTablePks: ['id'],
-    ReferenceFieldOne: 'recipe',
-    entityOne: 'recipe',
-    entityOneField: 'id',
-    entityOnePks: ['id'],
-    ReferenceFieldTwo: 'tool',
-    entityTwo: 'tool',
-    entityTwoField: 'id',
-    entityTwoPks: ['id'],
-};
-
-export const RELATIONSHIP_DEFINITIONS = {
-    action: actionRelationshipDefinition,
-    aiAgent: aiAgentRelationshipDefinition,
-    aiModelEndpoint: aiModelEndpointRelationshipDefinition,
-    aiSettings: aiSettingsRelationshipDefinition,
-    automationBoundaryBroker: automationBoundaryBrokerRelationshipDefinition,
-    flashcardHistory: flashcardHistoryRelationshipDefinition,
-    flashcardSetRelations: flashcardSetRelationsRelationshipDefinition,
-    messageBroker: messageBrokerRelationshipDefinition,
-    recipeBroker: recipeBrokerRelationshipDefinition,
-    recipeDisplay: recipeDisplayRelationshipDefinition,
-    recipeFunction: recipeFunctionRelationshipDefinition,
-    recipeMessage: recipeMessageRelationshipDefinition,
-    recipeModel: recipeModelRelationshipDefinition,
-    recipeProcessor: recipeProcessorRelationshipDefinition,
-    recipeTool: recipeToolRelationshipDefinition,
-};
-
+import {
+    actionRelationshipDefinition,
+    aiAgentRelationshipDefinition,
+    aiModelEndpointRelationshipDefinition,
+    aiSettingsRelationshipDefinition,
+    automationBoundaryBrokerRelationshipDefinition,
+    flashcardHistoryRelationshipDefinition,
+    flashcardSetRelationsRelationshipDefinition,
+    messageBrokerRelationshipDefinition,
+    recipeBrokerRelationshipDefinition,
+    recipeDisplayRelationshipDefinition,
+    recipeFunctionRelationshipDefinition,
+    recipeMessageRelationshipDefinition,
+    recipeModelRelationshipDefinition,
+    recipeProcessorRelationshipDefinition,
+    recipeToolRelationshipDefinition,
+    RELATIONSHIP_DEFINITIONS,
+} from './relationshipData';
 
 const sampleConfig = {
     definition: 'recipeMessage',
     parentEntity: 'recipe',
     childEntity: 'messageTemplate',
-}
+};
 
 const sampleConfig2 = {
     definition: 'recipeMessage',
@@ -314,7 +37,7 @@ const sampleConfig2 = {
     entityTwo: 'child',
     entityThree: null,
     entityFour: null,
-}
+};
 
 const sampleConfig3 = {
     definition: 'recipeMessage',
@@ -322,8 +45,7 @@ const sampleConfig3 = {
     child: 'entityTwo',
     childTwo: null,
     childThree: null,
-}
-
+};
 
 export class RelationshipMapper {
     private definition: RelationshipDefinition;
@@ -346,13 +68,8 @@ export class RelationshipMapper {
     }
 
     private isEntityPartOfRelationship(entityName: EntityKeys): boolean {
-        const entities = [
-            this.definition.entityOne,
-            this.definition.entityTwo,
-            this.definition.entityThree,
-            this.definition.entityFour
-        ].filter(Boolean);
-        
+        const entities = [this.definition.entityOne, this.definition.entityTwo, this.definition.entityThree, this.definition.entityFour].filter(Boolean);
+
         return entities.includes(entityName);
     }
 
@@ -400,10 +117,10 @@ export class RelationshipMapper {
                 referenceField: this.definition.ReferenceFieldFour,
                 entityField: this.definition.entityFourField,
                 pks: this.definition.entityFourPks,
-            }
-        ].filter(config => config.entity);
+            },
+        ].filter((config) => config.entity);
 
-        return configs.find(config => config.entity === entityName);
+        return configs.find((config) => config.entity === entityName);
     }
 
     // Join table record operations
@@ -413,9 +130,7 @@ export class RelationshipMapper {
         const parentConfig = this.getEntityConfig(this.parentEntity);
         if (!parentConfig) return [];
 
-        return this.data.filter((record) => 
-            record && record[parentConfig.referenceField] === this.parentId
-        );
+        return this.data.filter((record) => record && record[parentConfig.referenceField] === this.parentId);
     }
 
     getJoinRecordIds(): string[] {
@@ -442,28 +157,23 @@ export class RelationshipMapper {
             this.getEntityConfig(this.definition.entityOne),
             this.getEntityConfig(this.definition.entityTwo),
             this.getEntityConfig(this.definition.entityThree),
-            this.getEntityConfig(this.definition.entityFour)
-        ].filter(config => config && config.entity !== this.parentEntity);
+            this.getEntityConfig(this.definition.entityFour),
+        ].filter((config) => config && config.entity !== this.parentEntity);
 
         // Filter records based on parent entity and map to child IDs
         return this.data
             .filter((record) => record && record[parentConfig.referenceField] === this.parentId)
-            .flatMap((record) => 
-                otherConfigs.map(config => config && record[config.referenceField])
-            )
+            .flatMap((record) => otherConfigs.map((config) => config && record[config.referenceField]))
             .filter(Boolean);
     }
 
     private getTargetEntity(): EntityKeys {
         if (!this.parentEntity) throw new Error('Parent entity not set');
-        
+
         // Find the first non-parent entity in the relationship
-        const otherEntity = [
-            this.definition.entityOne,
-            this.definition.entityTwo,
-            this.definition.entityThree,
-            this.definition.entityFour
-        ].find(entity => entity && entity !== this.parentEntity);
+        const otherEntity = [this.definition.entityOne, this.definition.entityTwo, this.definition.entityThree, this.definition.entityFour].find(
+            (entity) => entity && entity !== this.parentEntity
+        );
 
         if (!otherEntity) {
             throw new Error('No target entity found');
@@ -479,9 +189,6 @@ export class RelationshipMapper {
     }
 }
 
-
-
-
 export type EnrichedRelationshipDefinition = {
     definition: RelationshipDefinition;
     parentEntity: EntityKeys;
@@ -494,7 +201,7 @@ export const ENRICHED_RELATIONSHIP_DEFINITIONS: Record<any, EnrichedRelationship
     },
     aiAgent: {
         definition: aiAgentRelationshipDefinition,
-        parentEntity: 'aiSettings',
+        parentEntity: 'recipe',
     },
     aiModelEndpoint: {
         definition: aiModelEndpointRelationshipDefinition,
@@ -677,6 +384,7 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
         };
     }
 
+    console.log('Mapped Relationship: ', mapped);
     return mapped;
 }
 
@@ -847,34 +555,81 @@ export class RelatedDataManager {
         parentId: unknown,
         childData: Record<string, unknown> = {},
         joiningData: Record<string, unknown> = {},
-        childId?: unknown
+        childId?: unknown,
+        filter?: boolean
     ): {
         childEntity: Record<string, unknown>;
         joiningEntity: Record<string, unknown>;
     } {
+        // Apply filtering to input data before processing if filter flag is true
+        const effectiveChildData = filter ? this.filterDataByFields(childData, entityFieldNameGroups[this.childEntity].nativeFields) : childData;
+
+        const effectiveJoiningData = filter ? this.filterDataByFields(joiningData, entityFieldNameGroups[this.joiningTable].nativeFieldsNoPk) : joiningData;
+
         this.setParentId(parentId);
-        
+
         if (childId !== undefined) {
             this.setChildId(childId);
         }
-    
+
         const childEntity = {
-            ...childData,
+            ...effectiveChildData,
             [this.childField]: this.entityValues.child[this.childField],
         };
-    
+
         const joiningEntity = {
-            ...joiningData,
+            ...effectiveJoiningData,
             ...this.getCoreJoiningData(),
             ...Object.fromEntries(this.joiningTablePks.map((pk) => [pk, this.entityValues.joining[pk]])),
         };
-    
+
         return {
             childEntity,
             joiningEntity,
         };
     }
-    
+
+    private filterDataByFields(data: Record<string, unknown>, fields: string[]): Record<string, unknown> {
+        return Object.fromEntries(Object.entries(data).filter(([key]) => fields.includes(key)));
+    }
+
+    private filterEntityPayloads(
+        childPayload: Record<string, unknown>,
+        joiningPayload: Record<string, unknown>
+    ): {
+        filteredChild: Record<string, unknown>;
+        filteredJoining: Record<string, unknown>;
+    } {
+        const childFields = entityFieldNameGroups[this.childEntity].nativeFields;
+        const joiningFields = entityFieldNameGroups[this.joiningTable].nativeFieldsNoPk;
+
+        return {
+            filteredChild: this.filterDataByFields(childPayload, childFields),
+            filteredJoining: this.filterDataByFields(joiningPayload, joiningFields),
+        };
+    }
+
+    createEntityWithFilteredRelationship(
+        parentId: unknown,
+        childData: Record<string, unknown> = {},
+        joiningData: Record<string, unknown> = {},
+        childId?: unknown
+    ): {
+        childEntity: Record<string, unknown>;
+        joiningEntity: Record<string, unknown>;
+    } {
+        // First, use the original method to handle all the relationship logic
+        const { childEntity, joiningEntity } = this.createEntityWithRelationship(parentId, childData, joiningData, childId);
+
+        // Then apply our filtering to both entities
+        const { filteredChild, filteredJoining } = this.filterEntityPayloads(childEntity, joiningEntity);
+
+        return {
+            childEntity: filteredChild,
+            joiningEntity: filteredJoining,
+        };
+    }
+
     getCoreJoiningData(): Record<string, unknown> {
         const data: Record<string, unknown> = {};
 
@@ -1126,3 +881,11 @@ export class RelatedDataManager {
         return ids;
     }
 }
+
+export function getRelationshipMapper(entityName: EntityKeys): RelationshipMapper {
+    const definitions = RELATIONSHIP_DEFINITIONS;
+    return new RelationshipMapper(entityName);
+}
+
+const definitions = RELATIONSHIP_DEFINITIONS;
+console.log('Definitions: ', definitions);

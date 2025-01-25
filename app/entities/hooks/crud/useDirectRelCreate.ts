@@ -4,6 +4,30 @@ import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
 import { DefinedRelationship, RelatedDataManager } from '../relationships/relationshipDefinitions';
 import { useSequentialCreate } from './useSequentialCreate';
 
+
+export interface ProcessedResults {
+    childRecord: EntityData<EntityKeys>;
+    joinRecord: EntityData<EntityKeys>;
+    childMatrxRecordId: MatrxRecordId;
+    joinMatrxRecordId: MatrxRecordId;
+}
+
+export const processReturnResults = (results: RelationshipCreateResult[]): ProcessedResults => {
+    const childRecord = results[0].childRecord.data as EntityData<EntityKeys>;
+    const joinRecord = results[0].joinRecord.data as EntityData<EntityKeys>;
+    const childMatrxRecordId = results[0].childRecord.recordKey as MatrxRecordId;
+    const joinMatrxRecordId = results[0].joinRecord.recordKey as MatrxRecordId;
+
+    return {
+        childRecord,
+        joinRecord,
+        childMatrxRecordId,
+        joinMatrxRecordId,
+    };
+};
+
+
+
 interface RawData {
     child: Record<string, unknown>;
     joining?: Record<string, unknown>;
@@ -22,7 +46,7 @@ export interface RelationshipCreateResult {
     joinMatrxRecordId: MatrxRecordId;
 }
 
-interface RelationshipCreateCallbacks {
+export interface RelationshipCreateCallbacks {
     onSuccess?: (result: RelationshipCreateResult) => void;
     onError?: (error: Error) => void;
     showIndividualToasts?: boolean;
@@ -60,7 +84,7 @@ export const useRelationshipDirectCreate = (
     };
 
     const createRelationship = useCallback(
-        async (data: RawData, callbacks?: RelationshipCreateCallbacks): Promise<RelationshipCreateResult | void> => {
+        async (data: RawData, callbacks?: RelationshipCreateCallbacks, filter?: boolean): Promise<RelationshipCreateResult | void> => {
             try {
                 const childPkFields = childPkMetadata.fields;
                 const primaryKeyField = childPkFields[0];
@@ -77,11 +101,18 @@ export const useRelationshipDirectCreate = (
                     effectiveParentId,
                     data.child,
                     data.joining ?? {},
-                    childId
+                    childId,
+                    filter
                 );
+    
+                console.log('Child payload:', childPayload);
+                console.log('Join payload:', joinPayload);
+
 
                 const cleanChildPayload = filterPayloadByNativeFields(childPayload, childNativeFields);
                 const cleanJoinPayload = filterPayloadByNativeFields(joinPayload, joinNativeFields);
+                console.log('Cleaned child payload:', cleanChildPayload);
+                console.log('Cleaned join payload:', cleanJoinPayload);
 
                 const childMatrxRecordId = createRecordKey(childPkMetadata, cleanChildPayload);
                 const joinMatrxRecordId = createRecordKey(joinPkMetadata, cleanJoinPayload);

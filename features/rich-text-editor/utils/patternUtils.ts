@@ -180,3 +180,59 @@ export const getAllMatrxRecordIdsFromMessages = (messages: message[]): string[] 
         .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
         .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
 };
+
+
+
+export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
+    const parts: string[] = [];
+    
+    // Handle required fields first
+    if (metadata.matrxRecordId) {
+        parts.push(`matrxRecordId:${metadata.matrxRecordId}`);
+    }
+    
+    if (metadata.id) {
+        parts.push(`id:${metadata.id}`);
+    }
+    
+    // Handle optional fields with quotes for values that might contain special characters
+    if (metadata.name !== undefined) {
+        parts.push(`name:"${metadata.name}"`);
+    }
+    
+    if (metadata.defaultValue !== undefined) {
+        parts.push(`defaultValue:"${metadata.defaultValue}"`);
+    }
+    
+    if (metadata.color !== undefined) {
+        parts.push(`color:"${metadata.color}"`);
+    }
+    
+    if (metadata.status !== undefined) {
+        parts.push(`status:"${metadata.status}"`);
+    }
+    
+    if (metadata.defaultComponent !== undefined && metadata.defaultComponent !== '') {
+        parts.push(`defaultComponent:"${metadata.defaultComponent}"`);
+    }
+    
+    if (metadata.dataType !== undefined && metadata.dataType !== '') {
+        parts.push(`dataType:"${metadata.dataType}"`);
+    }
+    
+    return `{${parts.join('|')}}!`;
+};
+
+export const encodeMatrxMetadataArray = (metadataArray: MatrxMetadata[]): string => {
+    return metadataArray.map(encodeMatrxMetadata).join(' ');
+};
+
+// Helper function to insert encoded MATRX patterns into text with placeholders
+export const insertMatrxPatterns = (text: string, patterns: MatrxMetadata[]): string => {
+    let result = text;
+    patterns.forEach((pattern, index) => {
+        const placeholder = `[MATRX_PATTERN_${index}]`;
+        result = result.replace(placeholder, encodeMatrxMetadata(pattern));
+    });
+    return result;
+};

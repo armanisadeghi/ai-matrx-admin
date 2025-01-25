@@ -15,7 +15,6 @@ import { useEditorContext } from '@/features/rich-text-editor/provider/provider'
 
 const DEBUG_STATUS = true;
 
-
 interface ChipChangeData {
     chipId: string;
     brokerId?: string;
@@ -63,7 +62,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [debugVisible, setDebugVisible] = useState(false);
     const { actions: messageActions } = useEntityTools('messageTemplate');
-    const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu } = useChipHandlers(messageRecordId);
+    const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu, addDialogHandler } = useChipHandlers(messageRecordId);
     const brokerHook = useRelatedDataBrokers(messageRecordId);
     const { addBroker, messageBrokerIsLoading } = brokerHook;
 
@@ -88,7 +87,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
             setLastSavedContent(message.content);
         }
     }, [message?.content]);
-
 
     const updateMessageContent = useCallback(
         (content: string) => {
@@ -127,7 +125,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const createNewBroker = useCallback(
         async (brokerMetadata: BrokerMetaData) => {
             try {
-
                 // await context.chips.syncChipToBroker(chipData.id, `id:${newBrokerId}`);
                 console.log('Message Editor was informated of a new broker:', brokerMetadata);
                 handleSave();
@@ -151,6 +148,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         },
         [messageRecordId]
     );
+
 
     const handleBlur = useCallback(() => {
         handleSave();
@@ -216,7 +214,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         setDebugVisible((prev) => !prev);
     }, []);
 
-
     return (
         <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
             <MessageToolbar
@@ -256,7 +253,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                         onBlur={handleBlur}
                         chipHandlers={{
                             onClick: handleChipClick,
-                            onDoubleClick: handleChipDoubleClick,
+                            onDoubleClick: addDialogHandler,
                             onMouseEnter: handleChipMouseEnter,
                             onMouseLeave: handleChipMouseLeave,
                             onContextMenu: handleChipContextMenu,
@@ -273,3 +270,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 MessageEditor.displayName = 'MessageEditor';
 
 export default MessageEditor;
+function extractBrokerMetadata(chip: HTMLElement): any {
+    throw new Error('Function not implemented.');
+}
+

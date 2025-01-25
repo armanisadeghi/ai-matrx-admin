@@ -1,6 +1,22 @@
 import { useChipMenu } from '@/features/rich-text-editor/components/ChipContextMenu';
+import { BrokerMetaData } from '@/features/rich-text-editor/types/editor.types';
 import { MatrxRecordId } from '@/types';
 import { useCallback, useState } from 'react';
+
+
+interface ChipDialogEvent extends CustomEvent {
+    detail: {
+        chipId: string;
+        metadata: BrokerMetaData;
+    };
+}
+
+declare global {
+    interface WindowEventMap {
+        'openChipDialog': ChipDialogEvent;
+    }
+}
+
 
 export function useChipHandlers(messageId: MatrxRecordId) {
     const { showMenu } = useChipMenu();
@@ -19,6 +35,23 @@ export function useChipHandlers(messageId: MatrxRecordId) {
         console.log('Chip clicked:', chipId);
     }, []);
 
+    const addDialogHandler = (event: MouseEvent, metadata: BrokerMetaData) => {
+        event.preventDefault();
+        event.stopPropagation();
+    
+        const dialogEvent = new CustomEvent('openChipDialog', {
+            bubbles: true,
+            detail: {
+                chipId: metadata.matrxRecordId,
+                metadata: metadata
+            }
+        });
+    
+        // Dispatch from the element, but ensure we're using the provided metadata
+        event.target?.dispatchEvent(dialogEvent);
+    };
+
+    
     const handleChipDoubleClick = useCallback(
         (event: MouseEvent) => {
             const chip = (event.target as HTMLElement).closest('[data-chip]');
@@ -70,6 +103,7 @@ export function useChipHandlers(messageId: MatrxRecordId) {
     return {
         handleChipClick,
         handleChipDoubleClick,
+        addDialogHandler,
         handleChipMouseEnter,
         handleChipMouseLeave,
         handleChipContextMenu,
@@ -79,3 +113,6 @@ export function useChipHandlers(messageId: MatrxRecordId) {
 export type UseChipHandlersResult = ReturnType<typeof useChipHandlers>;
 
 export default useChipHandlers;
+function extractBrokerMetadata(chip: HTMLElement): any {
+    throw new Error('Function not implemented.');
+}

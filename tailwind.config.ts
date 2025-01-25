@@ -1,4 +1,6 @@
 // tailwind.config.ts
+/** @type {import('tailwindcss').Config} */
+
 import type { Config } from "tailwindcss";
 import { animations } from './utils/tailwind-config/animations';
 import { colors } from './utils/tailwind-config/colors';
@@ -8,7 +10,6 @@ import { createUtilities } from './utils/tailwind-config/utilities';
 import { plugins } from './utils/tailwind-config/plugins';
 
 const config: Config = {
-    darkMode: ["class"],
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",

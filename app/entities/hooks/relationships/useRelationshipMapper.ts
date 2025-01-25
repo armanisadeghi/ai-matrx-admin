@@ -6,7 +6,7 @@ import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPr
 import { useGetOrFetchRecord, useGetorFetchRecords } from '../records/useGetOrFetch';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
 import { useRelationshipCreate } from '../unsaved-records/useDirectCreate';
-import { simpleRelDef } from './definitionConversionUtil';
+import { SimpleRelDef } from './definitionConversionUtil';
 
 export function useRelationshipMapper(entityName: EntityKeys, parentEntity: EntityKeys) {
     const selectors = createEntitySelectors(entityName);
@@ -66,7 +66,7 @@ export function useActiveParentRelationship(joinEntityname: EntityKeys, parentEn
     return { mapper, JoiningEntityRecords, joiningMatrxIds, childIds, childMatrxIds, parentMatrxid, parentId };
 }
 
-export function useRelWithFetch(relationshipDefinition: simpleRelDef, anyParentId: MatrxRecordId | string | number) {
+export function useRelWithFetch(relationshipDefinition: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const parentId = typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString();
 
     const parentEntity = relationshipDefinition.parent.name;
@@ -148,7 +148,7 @@ export function useRelWithFetch(relationshipDefinition: simpleRelDef, anyParentI
 export function findSingleJoinRecordKeyForChild(
     joinRecordsWithKey: EntityDataWithKey<EntityKeys>[],
     childIdValue: MatrxRecordId | string | number,
-    relationshipDefinition: simpleRelDef
+    relationshipDefinition: SimpleRelDef
 ): MatrxRecordId | undefined {
     const childField = relationshipDefinition.join.childField;
     const childId = typeof childIdValue === 'string' && childIdValue.includes(':') ? toPkValue(childIdValue) : childIdValue;
@@ -162,7 +162,7 @@ export function findSingleJoinRecordKeyForChild(
 export function filterAllJoinRecordKeysForChild(
     joinRecordsWithKey: EntityDataWithKey<EntityKeys>[],
     childIdValue: MatrxRecordId | string | number,
-    relationshipDefinition: simpleRelDef
+    relationshipDefinition: SimpleRelDef
 ): MatrxRecordId[] {
     const childField = relationshipDefinition.join.childField;
     const childId = typeof childIdValue === 'string' && childIdValue.includes(':') ? toPkValue(childIdValue) : childIdValue;

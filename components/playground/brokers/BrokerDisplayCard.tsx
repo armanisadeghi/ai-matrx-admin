@@ -15,7 +15,7 @@ import ChipColorPicker from '@/features/rich-text-editor/admin/sidebar-analyzer/
 import { EnhancedRecord, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import { DataBrokerData } from './BrokerRecordsSimple';
-
+import { updateChipMetadata } from '@/features/rich-text-editor/utils/enhancedChipUtils';
 
 interface EnhancedBrokerRecord extends EnhancedRecord {
     chips?: ChipData[];
@@ -51,7 +51,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
             chips.forEach((chip) => {
                 onChipUpdate(chip.id, {
                     ...updates,
-                    editorId: chip.editorId, // Preserve the editorId
+                    editorId: chip.editorId,
                 });
             });
         },
@@ -59,7 +59,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
     );
 
     // Handle updates from the broker form
-    const handleBrokerFieldUpdate = useCallback(
+    const handleBrokerFieldChange = useCallback(
         (field: string, value: any) => {
             if (!hasChips || !onChipUpdate) return;
             console.log('== -- === -- - field', field, 'value', value);
@@ -85,6 +85,16 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
         [updateChips, recordId]
     );
 
+    // Handle updates from the broker form
+    const handleBrokerFieldUpdate= useCallback(
+        (field: string, value: any) => {
+            const updates: Record<string, any> = {
+                [field]: value,
+            };
+            updateChipMetadata(recordId, updates);
+        },
+        [recordId]
+    );
     // Handle orphan chip updates
     const handleOrphanChipUpdate = useCallback(
         (field: string, value: any) => {
@@ -109,12 +119,12 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                     if (selectedBroker) {
                         // When a broker is selected, sync all relevant fields
                         onChipUpdate(chip.id, {
-                            id: value,           // Set chip ID to match broker ID
-                            brokerId: value,     // Set broker ID
-                            editorId: chip.editorId,  // Preserve editor ID
-                            label: selectedBroker.displayValue,  // Use broker's name as label
-                            color: color,        // Maintain current color
-                            stringValue: record?.defaultValue || chip.stringValue  // Use broker's default value if available
+                            id: value, // Set chip ID to match broker ID
+                            brokerId: value, // Set broker ID
+                            editorId: chip.editorId, // Preserve editor ID
+                            label: selectedBroker.displayValue, // Use broker's name as label
+                            color: color, // Maintain current color
+                            stringValue: record?.defaultValue || chip.stringValue, // Use broker's default value if available
                         });
                     } else {
                         // If broker is deselected, maintain chip as orphan
@@ -123,7 +133,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                             editorId: chip.editorId,
                             label: chip.label,
                             color: color,
-                            stringValue: chip.stringValue
+                            stringValue: chip.stringValue,
                         });
                     }
                     break;
@@ -193,8 +203,8 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                                         <div className='space-y-2'>
                                             <label className='text-sm text-muted-foreground'>Broker</label>
                                             <QuickRefSelect
-                                            entityKey='dataBroker'
-                                            onRecordChange={(record) => handleOrphanChipUpdate('brokerId', record.recordKey)}
+                                                entityKey='dataBroker'
+                                                onRecordChange={(record) => handleOrphanChipUpdate('brokerId', record.recordKey)}
                                             />
                                         </div>
                                     </>

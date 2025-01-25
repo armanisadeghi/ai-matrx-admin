@@ -1,9 +1,9 @@
 import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey, ProcessedEntityData } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
-import { simpleRelDef } from './definitionConversionUtil';
+import { SimpleRelDef } from './definitionConversionUtil';
 
-export function createRelationshipData(relationshipDefinition: simpleRelDef, parentRecordId: MatrxRecordId, childId: string = 'uuid') {
+export function createRelationshipData(relationshipDefinition: SimpleRelDef, parentRecordId: MatrxRecordId, childId: string = 'uuid') {
     const childEntityId = childId === 'uuid' ? uuidv4() : childId;
 
     return {
@@ -225,7 +225,7 @@ export function applyDefaultValues({
 type MergeJoinFieldsOptions = {
     childRecords: EntityDataWithKey<EntityKeys>[];
     joiningRecords: EntityDataWithKey<EntityKeys>[];
-    relationshipDefinition: simpleRelDef;
+    relationshipDefinition: SimpleRelDef;
 };
 
 export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefinition }: MergeJoinFieldsOptions): EntityDataWithKey<EntityKeys>[] {
@@ -275,7 +275,7 @@ export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefi
 type ProcessJoinedDataOptions = {
     childRecords: EntityDataWithKey<EntityKeys>[];
     joiningRecords: EntityDataWithKey<EntityKeys>[];
-    relationshipDefinition: simpleRelDef;
+    relationshipDefinition: SimpleRelDef;
     parentMatrxId?: MatrxRecordId;
     filterStatus?: {
         value: RelationshipStatus | RelationshipStatus[];
@@ -382,7 +382,7 @@ export function processJoinedData({
 export function filterJoinForChild(
     allJoiningRecords: Record<string, any>[],
     childIdValue: string | number,
-    relationshipDefinition: simpleRelDef
+    relationshipDefinition: SimpleRelDef
 ): Record<string, any>[] {
     const childField = relationshipDefinition.join.childField;
 

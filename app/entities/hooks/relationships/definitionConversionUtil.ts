@@ -1,7 +1,11 @@
-import { EntityAnyFieldKey, EntityKeys } from '@/types';
-import { RELATIONSHIP_DEFINITIONS } from './relationshipDefinitions';
+'use client';
 
-export type simpleRelDef = {
+import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { RELATIONSHIP_DEFINITIONS } from './relationshipData';
+
+
+
+export type SimpleRelDef = {
     parent: {
         name: EntityKeys;
         referenceField: EntityAnyFieldKey<EntityKeys>;
@@ -39,7 +43,7 @@ export function createRelationshipDefinition({
     parent,
     child,
     orderField,
-}: RelationshipDefinitionInput): simpleRelDef {
+}: RelationshipDefinitionInput): SimpleRelDef {
     const fullRel = RELATIONSHIP_DEFINITIONS[relationshipKey];
 
     const entityPairs = [
@@ -111,10 +115,17 @@ const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
         relationshipKey: 'messageBroker',
         parent: 'messageTemplate',
         child: 'dataBroker',
-    }
+    },
+    aiAgent: {
+        relationshipKey: 'aiAgent',
+        parent: 'recipe',
+        child: 'aiSettings',
+    },
 } as const;
 
 export type KnownRelDef = keyof typeof RELATIONSHIP_INPUTS;
 
 export const getStandardRelationship = (key: KnownRelDef) =>
     createRelationshipDefinition(RELATIONSHIP_INPUTS[key]);
+
+

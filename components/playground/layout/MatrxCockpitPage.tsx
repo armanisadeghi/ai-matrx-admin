@@ -15,7 +15,8 @@ import { useDispatch } from 'react-redux';
 import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './constants';
 import { useJoinedActiveParent } from '@/app/entities/hooks/relationships/useRelationships';
-import { createRelationshipDefinition } from '@/app/entities/hooks/relationships/definitionConversionUtil';
+import { createRelationshipDefinition, getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
+import { RELATIONSHIP_DEFINITIONS } from '@/app/entities/hooks/relationships/relationshipDefinitions';
 
 export const recipeMessageDef = createRelationshipDefinition({
     relationshipKey: 'recipeMessage',
@@ -24,13 +25,18 @@ export const recipeMessageDef = createRelationshipDefinition({
     orderField: 'order',
 });
 
+const rels = RELATIONSHIP_DEFINITIONS;
+
 export default function MatrxCockpitPage() {
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const relDef = getStandardRelationship('messageBroker');
 
-    const { activeParentMatrxId: activeRecipeId, activeParentId, relationshipHook } = useJoinedActiveParent(recipeMessageDef);
+    const parentRecipeHook = useJoinedActiveParent(relDef);
+
+    const { activeParentMatrxId: activeRecipeId, activeParentId, relationshipHook } = parentRecipeHook;
     const { childRecords: messages } = relationshipHook;
 
     const [showPlayground, setShowPlayground] = useState(false);

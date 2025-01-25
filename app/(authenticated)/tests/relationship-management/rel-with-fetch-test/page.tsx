@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,11 @@ import { useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRel
 
 // Define the relationship inputs as constants
 const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
+    aiAgent: {
+        relationshipKey: 'aiAgent',
+        parent: 'recipe',
+        child: 'aiSettings',
+    },
     recipeMessage: {
         relationshipKey: 'recipeMessage',
         parent: 'recipe',
@@ -26,17 +31,19 @@ const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
         relationshipKey: 'messageBroker',
         parent: 'messageTemplate',
         child: 'dataBroker',
-    }
+    },
 } as const;
 
 export default function RelationshipTester() {
     // Get initial definitions list
-    const availableDefinitions = useMemo(() => 
-        Object.entries(RELATIONSHIP_INPUTS).map(([key, input]) => ({
-            key,
-            input,
-            definition: createRelationshipDefinition(input)
-        })), []
+    const availableDefinitions = useMemo(
+        () =>
+            Object.entries(RELATIONSHIP_INPUTS).map(([key, input]) => ({
+                key,
+                input,
+                definition: createRelationshipDefinition(input),
+            })),
+        []
     );
 
     // State management
@@ -48,15 +55,10 @@ export default function RelationshipTester() {
     const [joinDataInput, setJoinDataInput] = useState('');
 
     // Get current definition
-    const currentDefinition = useMemo(() => 
-        availableDefinitions.find(def => def.key === selectedKey)?.definition,
-        [selectedKey, availableDefinitions]
-    );
+    const currentDefinition = useMemo(() => availableDefinitions.find((def) => def.key === selectedKey)?.definition, [selectedKey, availableDefinitions]);
 
-    const { mapper, childRecords, processedChildRecords, parentMatrxid, deleteChildAndJoin, createRelatedRecords, isLoading, loadingState } = useRelFetchProcessing(
-        currentDefinition!,
-        activeParentId
-    );
+    const { mapper, childRecords, processedChildRecords, parentMatrxid, deleteChildAndJoin, createRelatedRecords, isLoading, loadingState } =
+        useRelFetchProcessing(currentDefinition!, activeParentId);
 
     const handleDefinitionChange = (key: string) => {
         setSelectedKey(key);
@@ -74,26 +76,48 @@ export default function RelationshipTester() {
 
     const handleCreate = async () => {
         try {
+            // Validate and parse JSON input strings
             const childData = childDataInput ? JSON.parse(childDataInput) : {};
             const joinData = joinDataInput ? JSON.parse(joinDataInput) : {};
+            const filter = true;
 
-            await createRelatedRecords(
+            // Call the async function
+            const result = await createRelatedRecords(
                 {
                     child: childData,
                     joining: joinData,
                 },
                 {
-                    onSuccess: () => {
+                    onSuccess: (result) => {
+                        console.log('Relationship created successfully:', result);
                         setChildDataInput('');
                         setJoinDataInput('');
                     },
                     onError: (error) => {
                         console.error('Failed to create relationship:', error);
                     },
-                }
+                },
+                filter
             );
+
+            // Validate and log the result
+            if (!result) {
+                throw new Error('Failed to create related records: No result returned');
+            }
+
+            const { childRecord, joinRecord, childMatrxRecordId } = result;
+
+            console.log('Created relationship:', result);
+            console.log('Created child record:', childRecord);
+            console.log('Created join record:', joinRecord);
+            console.log('Child MatrxRecordId:', childMatrxRecordId);
         } catch (error) {
-            console.error('Failed to parse JSON data:', error);
+            // Log errors for JSON parsing or API call failures
+            if (error instanceof SyntaxError) {
+                console.error('Failed to parse JSON data:', error.message);
+            } else {
+                console.error('Error during relationship creation:', error.message);
+            }
         }
     };
 
@@ -146,7 +170,7 @@ export default function RelationshipTester() {
                                 value={inputParentId}
                                 onChange={(e) => setInputParentId(e.target.value)}
                                 placeholder='Enter parent ID'
-                                className='flex-1'
+                                className='flex-1 min-w-[300px]'
                             />
                             <Button
                                 onClick={handleLoadData}

@@ -1,7 +1,7 @@
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import React, { useEffect, useCallback } from 'react';
 import { useRecipe } from './useRecipe';
-import { AiAgentDataOptional, AiAgentDataRequired, AiSettingsDataRequired, MatrxRecordId } from '@/types';
+import { AiAgentDataRequired, AiSettingsDataRequired, MatrxRecordId } from '@/types';
 
 export function useAiAgents() {
     const dispatch = useAppDispatch();

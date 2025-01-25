@@ -1,7 +1,7 @@
 // lib/redux/entity/selectors.ts
 
 import { createSelector, Selector } from '@reduxjs/toolkit';
-import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey } from '@/types/entityTypes';
+import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntityFieldKeys } from '@/types/entityTypes';
 import { RootState } from '@/lib/redux/store';
 import {
     EnhancedRecord,
@@ -63,25 +63,19 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return entity.entityMetadata.displayName;
     });
 
-    const selectRecordByKey = createSelector(
-        [selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey],
-        (records, recordKey) => {
-            return records[recordKey] || null;
-        }
-    );
-    
-    const selectRecordsByKeys = createSelector(
-        [selectAllRecords, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
-        (records, recordKeys) => {
-            if (!recordKeys?.length) return [];
-            if (!records) return [];
-    
-            return recordKeys
-                .filter((key): key is MatrxRecordId => key != null)
-                .map((recordKey) => records[recordKey] || null)
-                .filter(Boolean);
-        }
-    );
+    const selectRecordByKey = createSelector([selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey], (records, recordKey) => {
+        return records[recordKey] || null;
+    });
+
+    const selectRecordsByKeys = createSelector([selectAllRecords, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (records, recordKeys) => {
+        if (!recordKeys?.length) return [];
+        if (!records) return [];
+
+        return recordKeys
+            .filter((key): key is MatrxRecordId => key != null)
+            .map((recordKey) => records[recordKey] || null)
+            .filter(Boolean);
+    });
 
     const selectRecordsKeyPairs = createSelector([selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (entity, recordKeys) => {
         if (!recordKeys) return [];
@@ -100,21 +94,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         [selectRecordByKey, (_: RootState, recordKey: MatrxRecordId) => recordKey],
         (record, recordKey): EntityDataWithKey<EntityKeys> | null => {
             if (!record) return null;
-    
+
             return {
                 ...record,
                 matrxRecordId: recordKey,
             };
         }
     );
-    
+
     const selectRecordsWithKeys = createSelector(
         [selectRecordsByKeys, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
         (records, recordKeys): EntityDataWithKey<EntityKeys>[] => {
             // Early return for empty or null recordKeys
             if (!recordKeys?.length) return [];
             if (!records) return [];
-            
+
             return uniqBy(
                 records.map((record, index) => ({
                     ...record,
@@ -545,6 +539,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectPrimaryKeyMetadata = createSelector([selectEntityMetadata], (metadata) => metadata.primaryKeyMetadata);
 
+    const selectPrimaryKeyFields = createSelector([selectPrimaryKeyMetadata], (primaryKeyMetadata) => primaryKeyMetadata.fields);
+
     const selectDisplayField = createSelector(
         [selectEntityMetadata],
         (metadata) => metadata.fields.find((f) => f.isDisplayField)?.name || metadata.primaryKeyMetadata.fields[0]
@@ -916,25 +912,24 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return [...enhancedRecords, ...enhancedUnsavedRecords];
         }
     );
-    
-    
+
     const selectEnhancedRecords = createSelector(
         [selectQuickReference, selectAllEffectiveRecordsWithKeys],
         (quickReferenceRecords, fullRecords): EnhancedRecord[] => {
             if (!quickReferenceRecords) {
                 return [];
             }
-    
+
             // Create a map of full records for quick lookup
             const fullRecordsMap = fullRecords.reduce((acc, record) => {
                 acc[record.matrxRecordId] = record;
                 return acc;
             }, {} as Record<string, EntityDataWithKey<EntityKeys>>);
-    
+
             // Map quick reference records to enhanced records
             return quickReferenceRecords.map((quickRef): EnhancedRecord => {
                 const fullRecord = fullRecordsMap[quickRef.recordKey];
-    
+
                 return {
                     recordKey: quickRef.recordKey,
                     needsFetch: !fullRecord,
@@ -943,29 +938,24 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             });
         }
     );
-    
+
     const selectEnhancedRecordByKey = createSelector(
         [selectEnhancedRecords, (_, recordId: string) => recordId],
         (enhancedRecords, recordId): EnhancedRecord | null => {
             if (!enhancedRecords) return null;
-            
-            return enhancedRecords.find(record => record.recordKey === recordId) || null;
+
+            return enhancedRecords.find((record) => record.recordKey === recordId) || null;
         }
     );
 
-    const selectSelectedEnhancedRecords = createSelector(
-        [selectEnhancedRecords, selectSelectedRecordIds],
-        (enhancedRecords, selectedIds): EnhancedRecord[] => {
-            if (!selectedIds?.length || !enhancedRecords?.length) return [];
-            
-            // Create a Set for O(1) lookup of selected IDs
-            const selectedIdsSet = new Set(selectedIds);
-            
-            return enhancedRecords.filter(record => 
-                selectedIdsSet.has(record.recordKey)
-            );
-        }
-    );
+    const selectSelectedEnhancedRecords = createSelector([selectEnhancedRecords, selectSelectedRecordIds], (enhancedRecords, selectedIds): EnhancedRecord[] => {
+        if (!selectedIds?.length || !enhancedRecords?.length) return [];
+
+        // Create a Set for O(1) lookup of selected IDs
+        const selectedIdsSet = new Set(selectedIds);
+
+        return enhancedRecords.filter((record) => selectedIdsSet.has(record.recordKey));
+    });
 
     const selectEffectiveRecordById = createSelector(
         [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
@@ -1126,6 +1116,212 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectNativeFieldNamesNoPk = createSelector([selectNativeFieldNames, selectPrimaryKeyMetadata], (nativeFieldNames, primaryKeyMetadata) => {
+        const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+        return nativeFieldNames.filter((fieldName) => !primaryKeySet.has(fieldName as AllEntityFieldKeys));
+    });
+
+    const selectForeignKeyFieldNames = createSelector([selectFieldInfo], (fields) => {
+        const foreignKeyFields: AllEntityFieldKeys[] = [];
+
+        for (const field of fields) {
+            if (field.foreignKeyReference !== null) {
+                foreignKeyFields.push(field.name as AllEntityFieldKeys);
+            }
+        }
+
+        return foreignKeyFields;
+    });
+
+    const selectNonForeignKeyFieldNames = createSelector([selectFieldInfo], (fields) => {
+        const nonForeignKeyFields: AllEntityFieldKeys[] = [];
+
+        for (const field of fields) {
+            if (field.foreignKeyReference === null) {
+                nonForeignKeyFields.push(field.name as AllEntityFieldKeys);
+            }
+        }
+
+        return nonForeignKeyFields;
+    });
+
+    const selectNonPkFkFieldNames = createSelector([selectFieldInfo, selectPrimaryKeyMetadata], (fields, primaryKeyMetadata) => {
+        const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+        const filteredFields: AllEntityFieldKeys[] = [];
+
+        for (const field of fields) {
+            if (!primaryKeySet.has(field.name as AllEntityFieldKeys) && field.foreignKeyReference === null) {
+                filteredFields.push(field.name as AllEntityFieldKeys);
+            }
+        }
+
+        return filteredFields;
+    });
+
+    const selectMatchDataToFields = (data: Record<string, any>) =>
+        createSelector([selectFieldNames], (fieldNames) => {
+            const matchingFields: Record<string, any> = {};
+
+            for (const fieldName of fieldNames) {
+                if (fieldName in data) {
+                    matchingFields[fieldName] = data[fieldName];
+                }
+            }
+
+            return matchingFields;
+        });
+
+    const selectMatchDataToNativeFields = (data: Record<string, any>) =>
+        createSelector([selectNativeFieldNames], (nativeFields) => {
+            const matchingFields: Record<string, any> = {};
+
+            for (const fieldName of nativeFields) {
+                if (fieldName in data) {
+                    matchingFields[fieldName] = data[fieldName];
+                }
+            }
+
+            return matchingFields;
+        });
+
+    const selectMatchListDataToFields = (records: Record<string, any>[]) =>
+        createSelector([selectFieldNames], (fieldNames) => {
+            const matchingRecords: Record<string, any>[] = [];
+
+            for (const record of records) {
+                const matchingFields: Record<string, any> = {};
+
+                for (const fieldName of fieldNames) {
+                    if (fieldName in record) {
+                        matchingFields[fieldName] = record[fieldName];
+                    }
+                }
+
+                matchingRecords.push(matchingFields);
+            }
+
+            return matchingRecords;
+        });
+
+    const selectMatchListDataToNativeFields = (records: Record<string, any>[]) =>
+        createSelector([selectNativeFieldNames], (nativeFieldNames) => {
+            const matchingRecords: Record<string, any>[] = [];
+
+            for (const record of records) {
+                const matchingFields: Record<string, any> = {};
+
+                for (const fieldName of nativeFieldNames) {
+                    if (fieldName in record) {
+                        matchingFields[fieldName] = record[fieldName];
+                    }
+                }
+
+                matchingRecords.push(matchingFields);
+            }
+
+            return matchingRecords;
+        });
+
+    const selectMatchDataToFieldsNoPk = (data: Record<string, any>) =>
+        createSelector([selectFieldNames, selectPrimaryKeyMetadata], (fieldNames, primaryKeyMetadata) => {
+            const matchingFields: Record<string, any> = {};
+            const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+
+            for (const fieldName of fieldNames as AllEntityFieldKeys[]) {
+                if (!primaryKeySet.has(fieldName) && fieldName in data) {
+                    matchingFields[fieldName] = data[fieldName];
+                }
+            }
+
+            return matchingFields;
+        });
+
+    const selectMatchDataToNativeFieldsNoPk = (data: Record<string, any>) =>
+        createSelector([selectNativeFieldNames, selectPrimaryKeyMetadata], (nativeFields, primaryKeyMetadata) => {
+            const matchingFields: Record<string, any> = {};
+            const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+
+            for (const fieldName of nativeFields as AllEntityFieldKeys[]) {
+                if (!primaryKeySet.has(fieldName) && fieldName in data) {
+                    matchingFields[fieldName] = data[fieldName];
+                }
+            }
+
+            return matchingFields;
+        });
+
+    const selectMatchListDataToFieldsNoPk = (records: Record<string, any>[]) =>
+        createSelector([selectFieldNames, selectPrimaryKeyMetadata], (fieldNames, primaryKeyMetadata) => {
+            const matchingRecords: Record<string, any>[] = [];
+            const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+
+            for (const record of records) {
+                const matchingFields: Record<string, any> = {};
+
+                for (const fieldName of fieldNames as AllEntityFieldKeys[]) {
+                    if (!primaryKeySet.has(fieldName) && fieldName in record) {
+                        matchingFields[fieldName] = record[fieldName];
+                    }
+                }
+
+                matchingRecords.push(matchingFields);
+            }
+
+            return matchingRecords;
+        });
+
+    const selectMatchListDataToNativeFieldsNoPk = (records: Record<string, any>[]) =>
+        createSelector([selectNativeFieldNames, selectPrimaryKeyMetadata], (nativeFieldNames, primaryKeyMetadata) => {
+            const matchingRecords: Record<string, any>[] = [];
+            const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+
+            for (const record of records) {
+                const matchingFields: Record<string, any> = {};
+
+                for (const fieldName of nativeFieldNames as AllEntityFieldKeys[]) {
+                    if (!primaryKeySet.has(fieldName) && fieldName in record) {
+                        matchingFields[fieldName] = record[fieldName];
+                    }
+                }
+
+                matchingRecords.push(matchingFields);
+            }
+
+            return matchingRecords;
+        });
+
+    const selectMatchDataToNonPkFkFields = (data: Record<string, any>) =>
+        createSelector([selectNonPkFkFieldNames], (nonPkFkFieldNames) => {
+            const matchingFields: Record<string, any> = {};
+
+            for (const fieldName of nonPkFkFieldNames) {
+                if (fieldName in data) {
+                    matchingFields[fieldName] = data[fieldName];
+                }
+            }
+
+            return matchingFields;
+        });
+
+    const selectMatchListDataToNonPkFkFields = (records: Record<string, any>[]) =>
+        createSelector([selectNonPkFkFieldNames], (nonPkFkFieldNames) => {
+            const matchingRecords: Record<string, any>[] = [];
+
+            for (const record of records) {
+                const matchingFields: Record<string, any> = {};
+
+                for (const fieldName of nonPkFkFieldNames) {
+                    if (fieldName in record) {
+                        matchingFields[fieldName] = record[fieldName];
+                    }
+                }
+
+                matchingRecords.push(matchingFields);
+            }
+
+            return matchingRecords;
+        });
+
     return {
         selectEntity,
         selectAllRecords,
@@ -1280,5 +1476,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectEnhancedRecords,
         selectEnhancedRecordByKey,
         selectSelectedEnhancedRecords,
+
+        selectMatchDataToFields,
+        selectMatchDataToNativeFields,
+        selectMatchListDataToFields,
+        selectMatchListDataToNativeFields,
+        selectMatchDataToFieldsNoPk,
+        selectMatchDataToNativeFieldsNoPk,
+        selectMatchListDataToFieldsNoPk,
+        selectMatchListDataToNativeFieldsNoPk,
+
+        selectNativeFieldNamesNoPk,
+        selectForeignKeyFieldNames,
+        selectNonForeignKeyFieldNames,
+        selectNonPkFkFieldNames,
+        selectMatchDataToNonPkFkFields,
+        selectMatchListDataToNonPkFkFields,
     };
 };
