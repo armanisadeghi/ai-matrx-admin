@@ -156,8 +156,9 @@ export function processEntityFields<TEntity extends EntityKeys>(
     Object.entries(entityDef.entityFields).forEach(([fieldName, fieldDef]) => {
         const processedField = processField(entityName, fieldName, fieldDef, fieldOverrides);
 
-        const fieldId = createFieldId(entityName, fieldName);
-        processedFields[fieldId] = processedField;
+        const fieldId = createFieldId(entityName, fieldName);  // changed to remove field__id concept but it will cause problems with global cache slice.
+
+        processedFields[fieldName] = processedField;
     });
 
     return processedFields as EntityProcessedFields<TEntity>;

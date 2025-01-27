@@ -52,18 +52,20 @@ export function useChipHandlers(messageId: MatrxRecordId) {
     };
 
     
-    const handleChipDoubleClick = useCallback(
-        (event: MouseEvent) => {
-            const chip = (event.target as HTMLElement).closest('[data-chip]');
-            if (!chip) return;
-
-            const chipId = chip.getAttribute('data-chip-id');
-            if (!chipId) return;
-
-            setShowDialog(true);
-        },
-        [setShowDialog]
-    );
+    const handleChipDoubleClick = (event: MouseEvent, metadata: BrokerMetaData) => {
+        event.preventDefault();
+        event.stopPropagation();
+    
+        const dialogEvent = new CustomEvent('openChipDialog', {
+            bubbles: true,
+            detail: {
+                chipId: metadata.matrxRecordId,
+                metadata: metadata
+            }
+        });
+    
+        event.target?.dispatchEvent(dialogEvent);
+    };
 
     const handleChipMouseEnter = useCallback((event: MouseEvent) => {
         const chip = (event.target as HTMLElement).closest('[data-chip]');
@@ -113,6 +115,4 @@ export function useChipHandlers(messageId: MatrxRecordId) {
 export type UseChipHandlersResult = ReturnType<typeof useChipHandlers>;
 
 export default useChipHandlers;
-function extractBrokerMetadata(chip: HTMLElement): any {
-    throw new Error('Function not implemented.');
-}
+

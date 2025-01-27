@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 
 export function useFetchQuickRefSingleMode<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const [fetchMode, setFetchMode] = React.useState<FetchMode>('native');
 
     const loadingState = useAppSelector(selectors.selectLoadingState);

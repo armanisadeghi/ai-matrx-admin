@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Code, Play } from "lucide-react";
 import PlaygroundActionsDropdown from "./PlaygroundActionsDropdown";
 import PanelToggle from "@/components/matrx/PanelToggle";
+import { DoubleJoinedActiveParentProcessingHook } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
 
 
 interface PlaygroundHeaderRightProps {
@@ -13,6 +14,7 @@ interface PlaygroundHeaderRightProps {
   onShowCode: () => void;
   onPlay: () => void;
   fullScreenToggleButton?: React.ReactNode;
+  doubleParentActiveRecipeHook: DoubleJoinedActiveParentProcessingHook;
 }
 
 const PlaygroundHeaderRight = ({
@@ -21,6 +23,7 @@ const PlaygroundHeaderRight = ({
   onShowCode,
   onPlay,
   fullScreenToggleButton,
+  doubleParentActiveRecipeHook,
 }: PlaygroundHeaderRightProps) => {
   const handleSettingsToggle = (newIsCollapsed: boolean) => {
     onToggleSettings();

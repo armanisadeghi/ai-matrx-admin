@@ -21,14 +21,17 @@ let globalCache: UnifiedSchemaCache | null = null;
 function initializeNameMappings<TEntity extends EntityKeys>() {
     const entityNameToDatabase = {} as Record<keyof AutomationSchema, string>;
     const entityNameToBackend = {} as Record<keyof AutomationSchema, string>;
+    const entityNametoPretty = {} as Record<keyof AutomationSchema, string>;
     const fieldNameToDatabase = {} as Record<keyof AutomationSchema, Record<string, string>>;
     const fieldNameToBackend = {} as Record<keyof AutomationSchema, Record<string, string>>;
+    const fieldNameToPretty = {} as Record<keyof AutomationSchema, Record<string, string>>;
 
     // Build entity name mappings
     Object.entries(entityNameFormats).forEach(([canonicalName, formats]) => {
         const typedEntityName = canonicalName as EntityKeys;
         entityNameToDatabase[typedEntityName] = formats.database;
         entityNameToBackend[typedEntityName] = formats.backend;
+        entityNametoPretty[typedEntityName] = formats.pretty
     });
 
     // Build field name mappings
@@ -36,18 +39,22 @@ function initializeNameMappings<TEntity extends EntityKeys>() {
         const typedEntityName = entityName as EntityKeys;
         fieldNameToDatabase[typedEntityName] = {};
         fieldNameToBackend[typedEntityName] = {};
+        fieldNameToPretty[typedEntityName] = {};
 
         Object.entries(fieldFormats).forEach(([fieldName, formats]) => {
             fieldNameToDatabase[typedEntityName][fieldName] = formats.database;
             fieldNameToBackend[typedEntityName][fieldName] = formats.backend;
+            fieldNameToPretty[typedEntityName][fieldName] = formats.pretty;
         });
     });
 
     return {
         entityNameToDatabase,
         entityNameToBackend,
+        entityNametoPretty,
         fieldNameToDatabase,
         fieldNameToBackend,
+        fieldNameToPretty,
     };
 }
 
@@ -67,7 +74,14 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(trace: string
         const entitiesWithoutFields: Partial<Record<EntityKeys, SchemaEntity>> = {};
 
         // Part 1: Initialize name mappings
-        const { entityNameToDatabase, entityNameToBackend, fieldNameToDatabase, fieldNameToBackend } = initializeNameMappings<TEntity>();
+        const {
+            entityNameToDatabase,
+            entityNameToBackend,
+            entityNametoPretty,
+            fieldNameToDatabase,
+            fieldNameToBackend,
+            fieldNameToPretty,
+        } = initializeNameMappings<TEntity>();
 
         // Process each entity
         Object.entries(initialAutomationTableSchema).forEach(([entityName, entityDef]) => {
@@ -95,10 +109,14 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(trace: string
             fieldNameFormats,
             entityNameToDatabase,
             entityNameToBackend,
+            entityNametoPretty,
             fieldNameToDatabase,
             fieldNameToBackend,
+            fieldNameToPretty,
             fullEntityRelationships: asEntityRelationships(entityRelationships),
         };
+
+        console.log('INITIALIZING SCHEMA SYSTEM');
 
         return globalCache;
     } catch (error) {
@@ -107,19 +125,17 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(trace: string
 }
 
 export function generateClientGlobalCache(): UnifiedSchemaCache {
-    if (!globalCache) initializeSchemaSystem();
+    if (!globalCache) return initializeSchemaSystem();
 
     if (!globalCache) throw new Error('Schema system not initialized');
 
     return globalCache;
 }
 
-export function getGlobalCache(trace: string[] = ['unknownCaller']): UnifiedSchemaCache | null {
-    trace = [...trace, 'getGlobalCache'];
+export function getGlobalCache(): UnifiedSchemaCache | null {
 
     if (!globalCache) {
-        console.warn('Global cache is not initialized. Returning null.');
-        return null;
+        globalCache = initializeSchemaSystem();
     }
 
     return globalCache;

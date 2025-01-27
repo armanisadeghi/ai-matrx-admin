@@ -1,16 +1,15 @@
-'use client';
-
+// RichTextEditor.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEditor } from '@/features/rich-text-editor/hooks/useEditor';
 import { useComponentRef } from '@/lib/refs';
 import { EditorChipButton } from './components/EditorChipButton';
 import { WithRefsProps, withRefs } from '@/lib/refs';
-import { setupEditorAttributes } from './utils/editorUtils';
+import { extractEncodedTextFromDom, setupEditorAttributes } from './utils/editorUtils';
 import { getEditorSelection, SelectionState } from './utils/selectionUtils';
 import { useSetEditorContent } from './hooks/useSetEditorContent';
 import { useEditorContext } from './provider/provider';
 import { ChipHandlers } from './utils/createChipUtil';
-import { createEditorUpdateManager } from './createEditorUpdateManager';
+import { debounce } from 'lodash';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BrokerMetaData } from './types/editor.types';
 
@@ -22,29 +21,19 @@ export interface RichTextEditorProps extends WithRefsProps {
     initialContent?: string;
     onBlur?: () => void;
     chipHandlers?: ChipHandlers;
-    updateOptions?: {
-        debounceDelay?: number;
-        maxWait?: number;
-        minUpdateInterval?: number;
-    };
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({
-    componentId,
-    onChange,
-    className = '',
-    onDragOver,
-    onDrop,
-    initialContent,
-    onBlur,
-    chipHandlers: initialChipHandlers,
-    updateOptions,
-}) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, className = '', onDragOver, onDrop, initialContent, onBlur, chipHandlers }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const context = useEditorContext();
-    const blurListenersRef = useRef<Set<() => void>>(new Set());
+    const providerContent = context.getContent(componentId);
     const initializedRef = useRef(false);
+    const blurListenersRef = useRef<Set<() => void>>(new Set());
     const dialogEventListenerRef = useRef<(e: Event) => void>(() => {});
+    const [dialogState, setDialogState] = useState({
+        isOpen: false,
+        selectedChip: null as BrokerMetaData | null,
+    });
 
     const [selectionState, setSelectionState] = useState<SelectionState>({
         hasSelection: false,
@@ -52,78 +41,34 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         range: null,
     });
 
-
-    const [dialogState, setDialogState] = useState({
-        isOpen: false,
-        selectedChip: null as BrokerMetaData | null
-    });
-
-    // Memoize the enhanced chip handlers to prevent recreation
-    const enhancedChipHandlers = useMemo(() => ({
-        ...initialChipHandlers,
-        onDoubleClick: (event: MouseEvent, metadata: BrokerMetaData) => {
-            setDialogState({
-                isOpen: true,
-                selectedChip: metadata
-            });
-            initialChipHandlers?.onDoubleClick?.(event, metadata);
-        }
-    }), [initialChipHandlers]);
-
-    useEffect(() => {
-        const handleChipDialog = (e: CustomEvent) => {
-            setDialogState({
-                isOpen: true,
-                selectedChip: e.detail.metadata
-            });
-        };
-
-        dialogEventListenerRef.current = handleChipDialog as EventListener;
-        document.addEventListener('openChipDialog', dialogEventListenerRef.current);
-        
-        return () => {
-            if (dialogEventListenerRef.current) {
-                document.removeEventListener('openChipDialog', dialogEventListenerRef.current);
-            }
-        };
-    }, []);
-
-    const editorHook = useEditor(componentId, enhancedChipHandlers, onChange);
+    const editorHook = useEditor(componentId, chipHandlers, onChange);
     const { setContent, isProcessing } = useSetEditorContent(componentId, editorHook);
 
-    const updateManager = useMemo(
-        () => createEditorUpdateManager(componentId, context, onChange, updateOptions),
-        [componentId, context, onChange, updateOptions]
-    );
-
     const {
+        // Internal methods
         updateEncodedText,
+        // Ref methods
         insertChip,
-        convertSelectionToChip,
         convertToEnhancedChip,
         applyStyle,
         getText,
         focus,
+        // Event handlers
         handleDragOver: handleDragOverInternal,
         handleDrop: handleDropInternal,
     } = editorHook;
 
+    // Register methods with the Ref Manager
     useComponentRef(componentId, {
         getText,
-        updateEncodedText: () => {
-            if (editorRef.current && !isProcessing) {
-                updateManager.forceUpdate(editorRef.current);
-            }
-        },
+        updateEncodedText,
         applyStyle,
         insertChip,
-        convertSelectionToChip,
+        convertToEnhancedChip,
         focus,
         setContent,
+        // Add new ref methods
         blur: () => {
-            if (!isProcessing) {
-                updateManager.flushPendingUpdates(editorRef.current!);
-            }
             editorRef.current?.blur();
         },
         addBlurListener: (handler: () => void) => {
@@ -134,15 +79,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         },
     });
 
+    // Handle selection changes
     useEffect(() => {
         const editor = editorRef.current;
         if (!editor) return;
 
         const handleSelectionChange = () => {
-            if (!isProcessing) {
-                const newState = getEditorSelection(editor);
-                setSelectionState(newState);
-            }
+            const newState = getEditorSelection(editor);
+            setSelectionState(newState);
         };
 
         document.addEventListener('selectionchange', handleSelectionChange);
@@ -152,13 +96,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             document.removeEventListener('selectionchange', handleSelectionChange);
             editor.removeEventListener('mouseup', handleSelectionChange);
         };
-    }, [isProcessing]);
-
-    useEffect(() => {
-        if (!isProcessing && !initializedRef.current) {
-            updateManager.initialize();
-        }
-    }, [isProcessing, updateManager]);
+    }, []);
 
     useEffect(() => {
         const initializeEditor = async () => {
@@ -169,7 +107,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             setupEditorAttributes(editor, componentId);
 
             try {
-                if (initialContent) {
+                if (initialContent && !initializedRef.current) {
                     await setContent(initialContent);
                     initializedRef.current = true;
                 }
@@ -179,69 +117,88 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         };
 
         initializeEditor();
-    }, [isProcessing, componentId, initialContent, setContent]);
+    }, [isProcessing, componentId, initialContent]);
 
     useEffect(() => {
         if (isProcessing) return;
         const editor = editorRef.current;
-        if (!editor || !initializedRef.current) return;
+        if (!editor || initializedRef.current) return;
 
-        const handlePaste = async (e: ClipboardEvent) => {
+        const handlePaste = (e: ClipboardEvent) => {
             e.preventDefault();
             const text = e.clipboardData?.getData('text/plain');
             if (text) {
                 document.execCommand('insertText', false, text);
-                if (initializedRef.current) {
-                    updateManager.forceUpdate(editor);
-                }
+                updateEncodedText();
             }
         };
 
         editor.addEventListener('paste', handlePaste);
+        console.log('event listeners added');
 
         return () => {
             editor.removeEventListener('paste', handlePaste);
         };
-    }, [componentId, updateManager, isProcessing]);
+    }, [componentId, initialContent, updateEncodedText]);
 
+    // useEffect(() => {
+    //     const handleChipDialog = (e: CustomEvent) => {
+    //         setDialogState({
+    //             isOpen: true,
+    //             selectedChip: e.detail.metadata,
+    //         });
+    //     };
+
+    //     dialogEventListenerRef.current = handleChipDialog as EventListener;
+    //     document.addEventListener('openChipDialog', dialogEventListenerRef.current);
+
+    //     return () => {
+    //         if (dialogEventListenerRef.current) {
+    //             document.removeEventListener('openChipDialog', dialogEventListenerRef.current);
+    //         }
+    //     };
+    // }, []);
+
+    // Handle content changes
     useEffect(() => {
-        return () => {
-            updateManager.cleanup();
-        };
-    }, [updateManager]);
+        onChange?.(providerContent);
+    }, [onChange, providerContent]);
 
-    const handleInput = useCallback(
-        (e: React.FormEvent<HTMLDivElement>) => {
-            if (!isProcessing && initializedRef.current) {
-                updateManager.handleInput(e);
-            }
-        },
-        [updateManager, isProcessing]
-    );
+    const handleContentUpdate = (element: HTMLDivElement, componentId: string, onChange?: (content: string) => void) => {
+        const content = extractEncodedTextFromDom(element);
+        context.setContent(componentId, content);
+        onChange?.(content);
+    };
 
-    const handleNewChip = useCallback(async () => {
-        const editor = editorRef.current;
-        if (!editor) return;
+    const debouncedUpdate = debounce(handleContentUpdate, 1000);
 
-        try {
-            if (selectionState.hasSelection) {
-                // await convertSelectionToChip();
-                await convertToEnhancedChip();
-            } else {
-                await insertChip();
-            }
-        } catch (error) {
-            console.error('Error handling chip operation:', error);
+    const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+        const element = e.currentTarget;
+        const inputType = (e as unknown as InputEvent).inputType;
+
+        // Immediate updates for specific types of changes
+        if (inputType === 'deleteByCut' || inputType === 'insertFromPaste' || inputType === 'deleteContentBackward' || inputType === 'deleteContentForward') {
+            handleContentUpdate(element, componentId, onChange);
+            return;
         }
-    }, [selectionState.hasSelection, convertSelectionToChip, insertChip, isProcessing]);
+
+        // Debounced updates for regular typing
+        debouncedUpdate(element, componentId, onChange);
+    };
+
+    const handleNewChip = () => {
+        if (selectionState.hasSelection) {
+            convertToEnhancedChip();
+        } else {
+            insertChip();
+        }
+    };
 
     const handleBlurInternal = useCallback(() => {
-        if (!isProcessing && initializedRef.current) {
-            updateManager.flushPendingUpdates(editorRef.current!);
-        }
+        updateEncodedText();
         onBlur?.();
         blurListenersRef.current.forEach((listener) => listener());
-    }, [updateManager, onBlur, isProcessing]);
+    }, [updateEncodedText, onBlur]);
 
     return (
         <div className='relative group w-full h-full flex flex-col'>
@@ -249,7 +206,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 <div
                     ref={editorRef}
                     data-editor-id={componentId}
-                    className={`w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300
+                    className={`w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 
                         dark:scrollbar-thumb-neutral-600 scrollbar-track-transparent px-4 py-2
                         focus:outline-none text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap ${className}`}
                     contentEditable
@@ -266,16 +223,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 onConvertToChip={handleNewChip}
                 hasSelection={selectionState.hasSelection}
             />
-            <Dialog 
-                open={dialogState.isOpen} 
-                onOpenChange={(open) => setDialogState(prev => ({ ...prev, isOpen: open }))}
+            <Dialog
+                open={dialogState.isOpen}
+                onOpenChange={(open) => setDialogState((prev) => ({ ...prev, isOpen: open }))}
             >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Chip Details</DialogTitle>
                     </DialogHeader>
                     {dialogState.selectedChip && (
-                        <div className="p-4">
+                        <div className='p-4'>
                             <p>Name: {dialogState.selectedChip.name}</p>
                             <p>Record ID: {dialogState.selectedChip.matrxRecordId}</p>
                             <p>Status: {dialogState.selectedChip.status}</p>

@@ -6,41 +6,24 @@ import { Button } from '@/components/ui';
 import { Plus } from 'lucide-react';
 import { MatrxRecordId } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
-import { AddMessagePayload, useAddMessage } from '../hooks/messages/useAddMessage';
-import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
-import { useRecipeMessages } from '../hooks/useRecipeMessages';
-import { ProcessedRecipeMessages } from './types';
 import MessageEditor from './MessageEditor';
-
-const INITIAL_PANELS: ProcessedRecipeMessages[] = [
-    {
-        id: 'system-1',
-        matrxRecordId: 'system-1',
-        role: 'system',
-        type: 'text',
-        content: '',
-        order: 0,
-    },
-    {
-        id: 'user-1',
-        matrxRecordId: 'user-1',
-        role: 'user',
-        type: 'text',
-        content: '',
-        order: 1,
-    },
-];
-
+import { NewMessageEntry, useProcessedRecipeMessages } from '../hooks/useProcessedRecipeMessages';
+import { debugFor, useRenderCount } from '@/utils/simple-debugger';
+import { PlaygroundControls } from '../types';
 
 
 interface MessagesContainerProps {
-    relationshipHook: RelationshipHook;
-    recipeRecordId?: MatrxRecordId;
+    playgroundControls: PlaygroundControls;
 }
 
-function MessagesContainer({ relationshipHook, recipeRecordId }: MessagesContainerProps) {
-    const recipeMessageHook = useRecipeMessages(relationshipHook);;
+function MessagesContainer({ playgroundControls }: MessagesContainerProps) {
+    const recipeMessagesProcessingHook = playgroundControls.doubleParentActiveRecipeHook.firstRelHook;
+    const recipeMessageHook = useProcessedRecipeMessages(recipeMessagesProcessingHook);;
     const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
+
+    const log = debugFor("messageTemplate", 'MessagesContainer');
+    useRenderCount('useRelFetchProcessing');
+    log('Got Messages', messages, true, true);    
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
@@ -56,7 +39,7 @@ function MessagesContainer({ relationshipHook, recipeRecordId }: MessagesContain
         const lastRole = lastSection?.role || 'system';
         const nextRole = lastRole === 'user' ? 'assistant' : 'user';
 
-        const newSection: AddMessagePayload = {
+        const newSection: NewMessageEntry = {
             role: nextRole,
             type: 'text',
             content: 'test message',

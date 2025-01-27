@@ -6,7 +6,7 @@ import React, { useCallback, useMemo } from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import FormFieldMotionWrapperFinal from './FormFieldMotionWrapperFinal';
 import { StaticFieldConfig, FieldDisableLogic } from './field-management';
 import { useFieldValue } from './field-hooks';
@@ -21,7 +21,9 @@ export interface EntityBaseFieldFinalProps {
 }
 
 const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutProps, className, onFieldChange }: EntityBaseFieldFinalProps) => {
-    const { store, actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
+
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
 
@@ -50,7 +52,7 @@ const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutPro
                     },
                     [dispatch, actions, recordId, fieldName, operationMode, onFieldChange]
                 );
-        
+
                 return (
                     <FieldDisableLogic
                         entityStatus={entityStatus}

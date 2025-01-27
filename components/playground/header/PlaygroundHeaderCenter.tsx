@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, History } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger } from '@/components/ui/select';
@@ -8,30 +8,10 @@ import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import PlaygroundHistoryDialog from './PlaygroundHistoryDialog';
 import PlaygroundNavContainer from './PlaygroundNavContainer';
 import { usePreferenceValue } from '@/hooks/user-preferences/usePreferenceValue';
-import { MatrxRecordId } from '@/types';
-import QuickRefSelectFindNew from '@/app/entities/quick-reference/dynamic-quick-ref/QuickRefSelectFindNew';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { getSimplifiedLayoutProps } from '@/app/entities/layout/configs';
-import EntityCreateRecordSheet from '@/app/entities/layout/EntityCreateRecordSheet';
-import AddTemplateMessages from './AddTemplateMessages';
-import { useEntityTools } from '@/lib/redux';
-import { useDispatch } from 'react-redux';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
-
-const getLayoutOptions = (): UnifiedLayoutProps => {
-    const layoutProps = getSimplifiedLayoutProps({
-        entityKey: 'recipe',
-        formComponent: 'MINIMAL',
-        quickReferenceType: 'LIST',
-        isExpanded: true,
-        handlers: {},
-        excludeFields: ['id'],
-        defaultShownFields: ['name', 'description', 'tags', 'status', 'version', 'isPublic'],
-        density: 'compact',
-        size: 'sm',
-    });
-    return layoutProps;
-};
+import { DoubleJoinedActiveParentProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 
 interface PlaygroundHeaderCenterProps {
     initialSettings?: {
@@ -42,14 +22,16 @@ interface PlaygroundHeaderCenterProps {
     onModeChange?: (mode: string) => void;
     onVersionChange?: (version: number) => void;
     onNewRecipe?: () => void;
+    doubleParentActiveRecipeHook: DoubleJoinedActiveParentProcessingHook;
 }
 
 const PlaygroundHeaderCenter = ({
     initialSettings = {},
-    currentMode = 'prompt',
+    currentMode,
     onModeChange = () => {},
     onVersionChange = () => {},
     onNewRecipe = () => {},
+    doubleParentActiveRecipeHook,
 }: PlaygroundHeaderCenterProps) => {
     const [lastUsedRecipe, setLastUsedRecipe] = usePreferenceValue('playground', 'lastRecipeId');
     const [version, setVersion] = useState(initialSettings?.version ?? 1);
@@ -66,54 +48,46 @@ const PlaygroundHeaderCenter = ({
     };
 
     return (
-        <div className='flex items-center justify-center w-full px-2 h-10'>
-            <div className='flex items-center gap-2 max-w-4xl w-full'>
+        <div className='flex items-center w-full px-2 h-10'>
+            <div className='flex items-center gap-4 w-full'>
                 <PlaygroundNavContainer
                     currentMode={currentMode}
                     onModeChange={onModeChange}
                 />
 
-                <div className='flex items-center justify-center gap-2 flex-1 min-w-0'>
+                <div className='flex items-center gap-2 flex-1 pl-5 min-w-0'>
+                    <Button
+                        variant='ghost'
+                        size='md'
+                        className='bg-elevation2 h-8 w-8 px-2 shrink-0'
+                        onClick={() => onNewRecipe()}
+                    >
+                        <Plus size={16} />
+                    </Button>
+
                     <div className='min-w-[160px] max-w-[320px] w-full'>
                         <QuickRefSelect
                             entityKey='recipe'
                             onRecordChange={handleRecipeChange}
                         />
                     </div>
-
-                    <Select
+                    <select
+                        className='w-16 bg-elevation1 rounded-md p-2 text-sm'
                         value={version.toString()}
-                        onValueChange={(v) => handleVersionChange(Number(v))}
+                        onChange={(v) => handleVersionChange(Number(v))}
                     >
-                        <SelectTrigger className='h-8 w-24'>
-                            <div className='flex items-center justify-center'>
-                                <span className='text-sm'>Version {version}</span>
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Select Version</SelectLabel>
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
-                                    <SelectItem
-                                        key={v}
-                                        value={v.toString()}
-                                    >
-                                        Version {v}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-
+                        <option value=''></option>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((v) => (
+                            <option
+                                key={v}
+                                value={v.toString()}
+                                className='text-ellipsis overflow-hidden'
+                            >
+                                {v}
+                            </option>
+                        ))}
+                    </select>
                     <div className='flex items-center gap-2'>
-                        <Button
-                            variant='ghost'
-                            size='md'
-                            className='h-8 w-8 p-0 shrink-0'
-                            onClick={() => onNewRecipe()}
-                        >
-                            <Plus size={16} />
-                        </Button>
                         <Button
                             variant='ghost'
                             size='md'

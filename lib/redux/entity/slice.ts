@@ -302,7 +302,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             addToSelection: (state: EntityState<TEntity>, action: PayloadAction<MatrxRecordId>) => {
                 if (isMatrxRecordId(action.payload)) {
                     addRecordToSelection(state, entityKey, action.payload);
-                } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
+                } else if (isEntityData(action.payload, state.entityMetadata.entityFields)) {
                     const matrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                     addRecordToSelection(state, entityKey, matrxRecordId);
                 } else {

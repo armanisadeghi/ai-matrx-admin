@@ -3,28 +3,32 @@
 
 import { createEntitySlice } from './slice';
 import { EntityKeys, AutomationEntities, AutomationEntity, Relationship } from '@/types/entityTypes';
-import { EntityMetadata, EntityStateField } from '@/lib/redux/entity/types/stateTypes';
-import { createInitialState, extractFieldsFromSchema } from '@/lib/redux/entity/utils/initialize';
+import { EntityMetadata } from '@/lib/redux/entity/types/stateTypes';
+import { createInitialState } from '@/lib/redux/entity/utils/initialize';
 import { createEntitySelectors } from './selectors';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { PayloadAction } from '@reduxjs/toolkit';
+
+
 
 export const initializeEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity, schema: AutomationEntity<TEntity>) => {
     if (!schema) {
         throw new Error(`Schema not provided for entity: ${entityKey}`);
     }
     const metadata: EntityMetadata = {
+        ...schema,
         entityName: entityKey,
-        displayName: schema.entityNameFormats.pretty || entityKey,
+        uniqueTableId: schema.uniqueTableId,
+        uniqueEntityId: schema.uniqueEntityId,
+        displayName: schema.displayName,
         schemaType: schema.schemaType,
         primaryKeyMetadata: schema.primaryKeyMetadata,
         displayFieldMetadata: schema.displayFieldMetadata,
-        fields: extractFieldsFromSchema(schema, entityKey) as EntityStateField[],
-        relationships: schema.relationships as unknown as Relationship[],
+        entityFields: schema.entityFields,
+        relationships: schema.relationships,
     };
 
     return {
-        metadata,
         initialState: createInitialState<TEntity>(metadata),
     };
 };

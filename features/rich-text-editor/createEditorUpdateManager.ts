@@ -1,6 +1,6 @@
 import { debounce } from 'lodash';
 import { extractEncodedTextFromDom } from './utils/editorUtils';
-import { EditorContextValue } from './provider/provider';
+import { EditorContextValue, useEditorContext } from './provider/provider';
 
 interface UpdateOptions {
     immediate?: boolean;
@@ -30,10 +30,12 @@ const DEFAULT_OPTIONS = {
 
 export const createEditorUpdateManager = (
     componentId: string, 
-    context: EditorContextValue,
     onChange?: (text: string) => void,
     userOptions?: ManagerOptions
 ) => {
+
+    const context = useEditorContext();
+
     const options = {
         ...DEFAULT_OPTIONS,
         ...userOptions

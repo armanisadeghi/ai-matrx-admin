@@ -1,4 +1,4 @@
-import { MessageTemplateProcessed } from '@/types';
+import { MessageTemplateProcessed, MessageTemplateRecordWithKey } from '@/types';
 
 export const MATRX_PATTERN = /\{([^}]+)}!/g;
 export const MATRX_BARE_UUID = /{([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}!/g;
@@ -171,17 +171,26 @@ export const getAllMatrxRecordIds = (text: string): string[] =>
 
 interface message {
     content: string;
-    [key: string]: string | undefined;
+    [key: string]: any;
 }
 
-export const getAllMatrxRecordIdsFromMessages = (messages: message[]): string[] => {
+export const getAllMatrxRecordIdsFromMessages = (messages: MessageTemplateRecordWithKey[]): string[] => {
     return messages
         .map((message) => message.content || '') // Extract 'content', default to empty string
         .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
         .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
 };
 
-
+export const getNewMatrxRecordIdsFromMessages = (
+    messages: MessageTemplateRecordWithKey[],
+    currentIds: string[]
+): string[] => {
+    const allIdsFromMessages = messages
+        .map((message) => message.content || '') // Extract 'content', default to empty string
+        .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
+        .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
+        return allIdsFromMessages.filter(id => !currentIds.includes(id));
+};
 
 export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
     const parts: string[] = [];

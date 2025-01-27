@@ -5,6 +5,7 @@ import { AutomationEntity, TypeBrand } from '@/types/entityTypes';
 export const action = {
     schemaType: 'table' as const,
     entityName: 'action',
+    displayName: 'Action',
     uniqueTableId: 'supabase_automation_matrix:public:action',
     uniqueEntityId: 'supabase_automation_matrix:action',
     primaryKey: 'id',
@@ -500,6 +501,7 @@ export const action = {
 export const aiAgent = {
     schemaType: 'table' as const,
     entityName: 'aiAgent',
+    displayName: 'Ai Agent',
     uniqueTableId: 'supabase_automation_matrix:public:ai_agent',
     uniqueEntityId: 'supabase_automation_matrix:aiAgent',
     primaryKey: 'id',
@@ -933,6 +935,7 @@ export const aiAgent = {
 export const aiEndpoint = {
     schemaType: 'table' as const,
     entityName: 'aiEndpoint',
+    displayName: 'Ai Endpoint',
     uniqueTableId: 'supabase_automation_matrix:public:ai_endpoint',
     uniqueEntityId: 'supabase_automation_matrix:aiEndpoint',
     primaryKey: 'id',
@@ -1486,6 +1489,7 @@ export const aiEndpoint = {
 export const aiModel = {
     schemaType: 'table' as const,
     entityName: 'aiModel',
+    displayName: 'Ai Model',
     uniqueTableId: 'supabase_automation_matrix:public:ai_model',
     uniqueEntityId: 'supabase_automation_matrix:aiModel',
     primaryKey: 'id',
@@ -2353,6 +2357,7 @@ export const aiModel = {
 export const aiModelEndpoint = {
     schemaType: 'table' as const,
     entityName: 'aiModelEndpoint',
+    displayName: 'Ai Model Endpoint',
     uniqueTableId: 'supabase_automation_matrix:public:ai_model_endpoint',
     uniqueEntityId: 'supabase_automation_matrix:aiModelEndpoint',
     primaryKey: 'id',
@@ -2972,6 +2977,7 @@ export const aiModelEndpoint = {
 export const aiProvider = {
     schemaType: 'table' as const,
     entityName: 'aiProvider',
+    displayName: 'Ai Provider',
     uniqueTableId: 'supabase_automation_matrix:public:ai_provider',
     uniqueEntityId: 'supabase_automation_matrix:aiProvider',
     primaryKey: 'id',
@@ -3401,6 +3407,7 @@ export const aiProvider = {
 export const aiSettings = {
     schemaType: 'table' as const,
     entityName: 'aiSettings',
+    displayName: 'Ai Settings',
     uniqueTableId: 'supabase_automation_matrix:public:ai_settings',
     uniqueEntityId: 'supabase_automation_matrix:aiSettings',
     primaryKey: 'id',
@@ -4768,6 +4775,7 @@ export const aiSettings = {
 export const arg = {
     schemaType: 'table' as const,
     entityName: 'arg',
+    displayName: 'Arg',
     uniqueTableId: 'supabase_automation_matrix:public:arg',
     uniqueEntityId: 'supabase_automation_matrix:arg',
     primaryKey: 'id',
@@ -5320,6 +5328,7 @@ export const arg = {
 export const automationBoundaryBroker = {
     schemaType: 'table' as const,
     entityName: 'automationBoundaryBroker',
+    displayName: 'Automation Boundary Broker',
     uniqueTableId: 'supabase_automation_matrix:public:automation_boundary_broker',
     uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
     primaryKey: 'id',
@@ -5813,6 +5822,7 @@ export const automationBoundaryBroker = {
 export const automationMatrix = {
     schemaType: 'table' as const,
     entityName: 'automationMatrix',
+    displayName: 'Automation Matrix',
     uniqueTableId: 'supabase_automation_matrix:public:automation_matrix',
     uniqueEntityId: 'supabase_automation_matrix:automationMatrix',
     primaryKey: 'id',
@@ -6339,6 +6349,7 @@ export const automationMatrix = {
 export const broker = {
     schemaType: 'table' as const,
     entityName: 'broker',
+    displayName: 'Broker',
     uniqueTableId: 'supabase_automation_matrix:public:broker',
     uniqueEntityId: 'supabase_automation_matrix:broker',
     primaryKey: 'id',
@@ -8129,6 +8140,7 @@ export const broker = {
 export const bucketStructures = {
     schemaType: 'table' as const,
     entityName: 'bucketStructures',
+    displayName: 'Bucket Structures',
     uniqueTableId: 'supabase_automation_matrix:public:bucket_structures',
     uniqueEntityId: 'supabase_automation_matrix:bucketStructures',
     primaryKey: 'bucketId',
@@ -8369,6 +8381,7 @@ export const bucketStructures = {
 export const bucketTreeStructures = {
     schemaType: 'table' as const,
     entityName: 'bucketTreeStructures',
+    displayName: 'Bucket Tree Structures',
     uniqueTableId: 'supabase_automation_matrix:public:bucket_tree_structures',
     uniqueEntityId: 'supabase_automation_matrix:bucketTreeStructures',
     primaryKey: 'bucketId',
@@ -8609,6 +8622,7 @@ export const bucketTreeStructures = {
 export const dataBroker = {
     schemaType: 'table' as const,
     entityName: 'dataBroker',
+    displayName: 'Data Broker',
     uniqueTableId: 'supabase_automation_matrix:public:data_broker',
     uniqueEntityId: 'supabase_automation_matrix:dataBroker',
     primaryKey: 'id',
@@ -9005,7 +9019,7 @@ export const dataBroker = {
             isRequired: false,
             maxLength: null,
             isArray: false,
-            defaultValue: 'Blue' as const,
+            defaultValue: 'blue' as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: '',
@@ -9037,91 +9051,91 @@ export const dataBroker = {
                 options: [
                     {
                         label: 'Amber',
-                        value: 'Amber',
+                        value: 'amber',
                     },
                     {
                         label: 'Blue',
-                        value: 'Blue',
+                        value: 'blue',
                     },
                     {
                         label: 'Cyan',
-                        value: 'Cyan',
+                        value: 'cyan',
                     },
                     {
                         label: 'Emerald',
-                        value: 'Emerald',
+                        value: 'emerald',
                     },
                     {
                         label: 'Fuchsia',
-                        value: 'Fuchsia',
+                        value: 'fuchsia',
                     },
                     {
                         label: 'Gray',
-                        value: 'Gray',
+                        value: 'gray',
                     },
                     {
                         label: 'Green',
-                        value: 'Green',
+                        value: 'green',
                     },
                     {
                         label: 'Indigo',
-                        value: 'Indigo',
+                        value: 'indigo',
                     },
                     {
                         label: 'Lime',
-                        value: 'Lime',
+                        value: 'lime',
                     },
                     {
                         label: 'Neutral',
-                        value: 'Neutral',
+                        value: 'neutral',
                     },
                     {
                         label: 'Orange',
-                        value: 'Orange',
+                        value: 'orange',
                     },
                     {
                         label: 'Pink',
-                        value: 'Pink',
+                        value: 'pink',
                     },
                     {
                         label: 'Purple',
-                        value: 'Purple',
+                        value: 'purple',
                     },
                     {
                         label: 'Red',
-                        value: 'Red',
+                        value: 'red',
                     },
                     {
                         label: 'Rose',
-                        value: 'Rose',
+                        value: 'rose',
                     },
                     {
                         label: 'Sky',
-                        value: 'Sky',
+                        value: 'sky',
                     },
                     {
                         label: 'Slate',
-                        value: 'Slate',
+                        value: 'slate',
                     },
                     {
                         label: 'Stone',
-                        value: 'Stone',
+                        value: 'stone',
                     },
                     {
                         label: 'Teal',
-                        value: 'Teal',
+                        value: 'teal',
                     },
                     {
                         label: 'Violet',
-                        value: 'Violet',
+                        value: 'violet',
                     },
                     {
                         label: 'Yellow',
-                        value: 'Yellow',
+                        value: 'yellow',
                     },
                     {
                         label: 'Zinc',
-                        value: 'Zinc',
+                        value: 'zinc',
                     },
                 ],
                 required: false,
@@ -9129,53 +9143,53 @@ export const dataBroker = {
             structure: 'single' as const,
             isNative: true,
             typeReference: {} as TypeBrand<
-                | 'Amber'
-                | 'Blue'
-                | 'Cyan'
-                | 'Emerald'
-                | 'Fuchsia'
-                | 'Gray'
-                | 'Green'
-                | 'Indigo'
-                | 'Lime'
-                | 'Neutral'
-                | 'Orange'
-                | 'Pink'
-                | 'Purple'
-                | 'Red'
-                | 'Rose'
-                | 'Sky'
-                | 'Slate'
-                | 'Stone'
-                | 'Teal'
-                | 'Violet'
-                | 'Yellow'
-                | 'Zinc'
+                | 'amber'
+                | 'blue'
+                | 'cyan'
+                | 'emerald'
+                | 'fuchsia'
+                | 'gray'
+                | 'green'
+                | 'indigo'
+                | 'lime'
+                | 'neutral'
+                | 'orange'
+                | 'pink'
+                | 'purple'
+                | 'red'
+                | 'rose'
+                | 'sky'
+                | 'slate'
+                | 'stone'
+                | 'teal'
+                | 'violet'
+                | 'yellow'
+                | 'zinc'
                 | undefined
             >,
             enumValues: [
-                'Amber',
-                'Blue',
-                'Cyan',
-                'Emerald',
-                'Fuchsia',
-                'Gray',
-                'Green',
-                'Indigo',
-                'Lime',
-                'Neutral',
-                'Orange',
-                'Pink',
-                'Purple',
-                'Red',
-                'Rose',
-                'Sky',
-                'Slate',
-                'Stone',
-                'Teal',
-                'Violet',
-                'Yellow',
-                'Zinc',
+                'amber',
+                'blue',
+                'cyan',
+                'emerald',
+                'fuchsia',
+                'gray',
+                'green',
+                'indigo',
+                'lime',
+                'neutral',
+                'orange',
+                'pink',
+                'purple',
+                'red',
+                'rose',
+                'sky',
+                'slate',
+                'stone',
+                'teal',
+                'violet',
+                'yellow',
+                'zinc',
             ] as const,
             entityName: 'dataBroker',
             databaseTable: 'data_broker',
@@ -9267,6 +9281,7 @@ export const dataBroker = {
 export const dataInputComponent = {
     schemaType: 'table' as const,
     entityName: 'dataInputComponent',
+    displayName: 'Data Input Component',
     uniqueTableId: 'supabase_automation_matrix:public:data_input_component',
     uniqueEntityId: 'supabase_automation_matrix:dataInputComponent',
     primaryKey: 'id',
@@ -10588,6 +10603,7 @@ export const dataInputComponent = {
 export const dataOutputComponent = {
     schemaType: 'table' as const,
     entityName: 'dataOutputComponent',
+    displayName: 'Data Output Component',
     uniqueTableId: 'supabase_automation_matrix:public:data_output_component',
     uniqueEntityId: 'supabase_automation_matrix:dataOutputComponent',
     primaryKey: 'id',
@@ -11352,6 +11368,7 @@ export const dataOutputComponent = {
 export const displayOption = {
     schemaType: 'table' as const,
     entityName: 'displayOption',
+    displayName: 'Display Option',
     uniqueTableId: 'supabase_automation_matrix:public:display_option',
     uniqueEntityId: 'supabase_automation_matrix:displayOption',
     primaryKey: 'id',
@@ -11747,6 +11764,7 @@ export const displayOption = {
 export const emails = {
     schemaType: 'table' as const,
     entityName: 'emails',
+    displayName: 'Emails',
     uniqueTableId: 'supabase_automation_matrix:public:emails',
     uniqueEntityId: 'supabase_automation_matrix:emails',
     primaryKey: 'id',
@@ -12235,6 +12253,7 @@ export const emails = {
 export const extractor = {
     schemaType: 'table' as const,
     entityName: 'extractor',
+    displayName: 'Extractor',
     uniqueTableId: 'supabase_automation_matrix:public:extractor',
     uniqueEntityId: 'supabase_automation_matrix:extractor',
     primaryKey: 'id',
@@ -12628,6 +12647,7 @@ export const extractor = {
 export const fileStructure = {
     schemaType: 'table' as const,
     entityName: 'fileStructure',
+    displayName: 'File Structure',
     uniqueTableId: 'supabase_automation_matrix:public:file_structure',
     uniqueEntityId: 'supabase_automation_matrix:fileStructure',
     primaryKey: 'id',
@@ -13302,6 +13322,7 @@ export const fileStructure = {
 export const flashcardData = {
     schemaType: 'table' as const,
     entityName: 'flashcardData',
+    displayName: 'Flashcard Data',
     uniqueTableId: 'supabase_automation_matrix:public:flashcard_data',
     uniqueEntityId: 'supabase_automation_matrix:flashcardData',
     primaryKey: 'id',
@@ -14447,6 +14468,7 @@ export const flashcardData = {
 export const flashcardHistory = {
     schemaType: 'table' as const,
     entityName: 'flashcardHistory',
+    displayName: 'Flashcard History',
     uniqueTableId: 'supabase_automation_matrix:public:flashcard_history',
     uniqueEntityId: 'supabase_automation_matrix:flashcardHistory',
     primaryKey: 'id',
@@ -15031,6 +15053,7 @@ export const flashcardHistory = {
 export const flashcardImages = {
     schemaType: 'table' as const,
     entityName: 'flashcardImages',
+    displayName: 'Flashcard Images',
     uniqueTableId: 'supabase_automation_matrix:public:flashcard_images',
     uniqueEntityId: 'supabase_automation_matrix:flashcardImages',
     primaryKey: 'id',
@@ -15552,6 +15575,7 @@ export const flashcardImages = {
 export const flashcardSetRelations = {
     schemaType: 'table' as const,
     entityName: 'flashcardSetRelations',
+    displayName: 'Flashcard Set Relations',
     uniqueTableId: 'supabase_automation_matrix:public:flashcard_set_relations',
     uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
     primaryKey: 'flashcardId, setId',
@@ -15862,6 +15886,7 @@ export const flashcardSetRelations = {
 export const flashcardSets = {
     schemaType: 'table' as const,
     entityName: 'flashcardSets',
+    displayName: 'Flashcard Sets',
     uniqueTableId: 'supabase_automation_matrix:public:flashcard_sets',
     uniqueEntityId: 'supabase_automation_matrix:flashcardSets',
     primaryKey: 'setId',
@@ -16633,6 +16658,7 @@ export const flashcardSets = {
 export const messageBroker = {
     schemaType: 'table' as const,
     entityName: 'messageBroker',
+    displayName: 'Message Broker',
     uniqueTableId: 'supabase_automation_matrix:public:message_broker',
     uniqueEntityId: 'supabase_automation_matrix:messageBroker',
     primaryKey: 'id',
@@ -17100,6 +17126,7 @@ export const messageBroker = {
 export const messageTemplate = {
     schemaType: 'table' as const,
     entityName: 'messageTemplate',
+    displayName: 'Message Template',
     uniqueTableId: 'supabase_automation_matrix:public:message_template',
     uniqueEntityId: 'supabase_automation_matrix:messageTemplate',
     primaryKey: 'id',
@@ -17563,6 +17590,7 @@ export const messageTemplate = {
 export const processor = {
     schemaType: 'table' as const,
     entityName: 'processor',
+    displayName: 'Processor',
     uniqueTableId: 'supabase_automation_matrix:public:processor',
     uniqueEntityId: 'supabase_automation_matrix:processor',
     primaryKey: 'id',
@@ -17994,6 +18022,7 @@ export const processor = {
 export const recipe = {
     schemaType: 'table' as const,
     entityName: 'recipe',
+    displayName: 'Recipe',
     uniqueTableId: 'supabase_automation_matrix:public:recipe',
     uniqueEntityId: 'supabase_automation_matrix:recipe',
     primaryKey: 'id',
@@ -18950,6 +18979,7 @@ export const recipe = {
 export const recipeBroker = {
     schemaType: 'table' as const,
     entityName: 'recipeBroker',
+    displayName: 'Recipe Broker',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_broker',
     uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
     primaryKey: 'id',
@@ -19392,6 +19422,7 @@ export const recipeBroker = {
 export const recipeDisplay = {
     schemaType: 'table' as const,
     entityName: 'recipeDisplay',
+    displayName: 'Recipe Display',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_display',
     uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
     primaryKey: 'id',
@@ -19825,6 +19856,7 @@ export const recipeDisplay = {
 export const recipeFunction = {
     schemaType: 'table' as const,
     entityName: 'recipeFunction',
+    displayName: 'Recipe Function',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_function',
     uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
     primaryKey: 'id',
@@ -20293,6 +20325,7 @@ export const recipeFunction = {
 export const recipeMessage = {
     schemaType: 'table' as const,
     entityName: 'recipeMessage',
+    displayName: 'Recipe Message',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_message',
     uniqueEntityId: 'supabase_automation_matrix:recipeMessage',
     primaryKey: 'id',
@@ -20408,7 +20441,7 @@ export const recipeMessage = {
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:messageId',
 
             dataType: 'uuid' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: '' as const,
@@ -20441,7 +20474,7 @@ export const recipeMessage = {
                 step: 'default',
                 numberType: 'default',
                 options: 'default',
-                required: false,
+                required: true,
             },
             structure: 'single' as const,
             isNative: true,
@@ -20451,7 +20484,7 @@ export const recipeMessage = {
             databaseTable: 'recipe_message',
             foreignKeyReference: { table: 'message_template', column: 'id', entity: 'messageTemplate', field: 'id' },
             description:
-                '"Message Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a messageTemplate.',
+                '"Message Id" field for recipeMessage. This is a required field. Your entry must be an uuid data type. This must be a unique value. This field is a reference to a messageTemplate.',
         },
         recipeId: {
             fieldNameFormats: {
@@ -20471,7 +20504,7 @@ export const recipeMessage = {
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:recipeId',
 
             dataType: 'uuid' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: '' as const,
@@ -20504,7 +20537,7 @@ export const recipeMessage = {
                 step: 'default',
                 numberType: 'default',
                 options: 'default',
-                required: false,
+                required: true,
             },
             structure: 'single' as const,
             isNative: true,
@@ -20514,7 +20547,7 @@ export const recipeMessage = {
             databaseTable: 'recipe_message',
             foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
             description:
-                '"Recipe Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a recipe.',
+                '"Recipe Id" field for recipeMessage. This is a required field. Your entry must be an uuid data type. This must be a unique value. This field is a reference to a recipe.',
         },
         order: {
             fieldNameFormats: {
@@ -20534,10 +20567,10 @@ export const recipeMessage = {
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:order',
 
             dataType: 'number' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: '' as const,
+            defaultValue: '1' as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: '',
@@ -20567,7 +20600,7 @@ export const recipeMessage = {
                 step: 'default',
                 numberType: 'smallint',
                 options: 'default',
-                required: false,
+                required: true,
             },
             structure: 'single' as const,
             isNative: true,
@@ -20576,7 +20609,7 @@ export const recipeMessage = {
             entityName: 'recipeMessage',
             databaseTable: 'recipe_message',
             foreignKeyReference: null,
-            description: '"Order" field for recipeMessage. This is an optional field. Your entry must be an number data type.',
+            description: '"Order" field for recipeMessage. This is a required field. Your entry must be an number data type.',
         },
         messageTemplateReference: {
             fieldNameFormats: {
@@ -20664,6 +20697,7 @@ export const recipeMessage = {
 export const recipeModel = {
     schemaType: 'table' as const,
     entityName: 'recipeModel',
+    displayName: 'Recipe Model',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_model',
     uniqueEntityId: 'supabase_automation_matrix:recipeModel',
     primaryKey: 'id',
@@ -21110,6 +21144,7 @@ export const recipeModel = {
 export const recipeProcessor = {
     schemaType: 'table' as const,
     entityName: 'recipeProcessor',
+    displayName: 'Recipe Processor',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_processor',
     uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
     primaryKey: 'id',
@@ -21481,6 +21516,7 @@ export const recipeProcessor = {
 export const recipeTool = {
     schemaType: 'table' as const,
     entityName: 'recipeTool',
+    displayName: 'Recipe Tool',
     uniqueTableId: 'supabase_automation_matrix:public:recipe_tool',
     uniqueEntityId: 'supabase_automation_matrix:recipeTool',
     primaryKey: 'id',
@@ -21851,6 +21887,7 @@ export const recipeTool = {
 export const registeredFunction = {
     schemaType: 'table' as const,
     entityName: 'registeredFunction',
+    displayName: 'Registered Function',
     uniqueTableId: 'supabase_automation_matrix:public:registered_function',
     uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
     primaryKey: 'id',
@@ -22376,6 +22413,7 @@ export const registeredFunction = {
 export const systemFunction = {
     schemaType: 'table' as const,
     entityName: 'systemFunction',
+    displayName: 'System Function',
     uniqueTableId: 'supabase_automation_matrix:public:system_function',
     uniqueEntityId: 'supabase_automation_matrix:systemFunction',
     primaryKey: 'id',
@@ -22963,6 +23001,7 @@ export const systemFunction = {
 export const tool = {
     schemaType: 'table' as const,
     entityName: 'tool',
+    displayName: 'Tool',
     uniqueTableId: 'supabase_automation_matrix:public:tool',
     uniqueEntityId: 'supabase_automation_matrix:tool',
     primaryKey: 'id',
@@ -23580,6 +23619,7 @@ export const tool = {
 export const transformer = {
     schemaType: 'table' as const,
     entityName: 'transformer',
+    displayName: 'Transformer',
     uniqueTableId: 'supabase_automation_matrix:public:transformer',
     uniqueEntityId: 'supabase_automation_matrix:transformer',
     primaryKey: 'id',
@@ -23913,6 +23953,7 @@ export const transformer = {
 export const userPreferences = {
     schemaType: 'table' as const,
     entityName: 'userPreferences',
+    displayName: 'User Preferences',
     uniqueTableId: 'supabase_automation_matrix:public:user_preferences',
     uniqueEntityId: 'supabase_automation_matrix:userPreferences',
     primaryKey: 'userId',

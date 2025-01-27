@@ -13,7 +13,8 @@ interface QuickReferenceRecord {
 }
 
 export function useEntityFetch<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const isLoading = useAppSelector(selectors.selectIsLoading);
     const quickReferences = useAppSelector(selectors.selectQuickReference) as QuickReferenceRecord[];
     const isQuickRefFetchComplete = useAppSelector(selectors.selectIsQuickReferenceFetchComplete);
@@ -97,7 +98,8 @@ type UseGetOrFetchRecordProps = {
 };
 
 export function useEnhancedFetch<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const isLoading = useAppSelector(selectors.selectIsLoading);
     const quickReferences = useAppSelector(selectors.selectQuickReference) as QuickReferenceRecord[];
     const isQuickRefFetchComplete = useAppSelector(selectors.selectIsQuickReferenceFetchComplete);
@@ -125,10 +127,10 @@ export function useEnhancedFetch<TEntity extends EntityKeys>(entityKey: TEntity)
         [dispatch, actions]
     );
 
-    const getOrFetchRecord  = React.useCallback(
+    const getOrFetchRecord = React.useCallback(
         async (recordKey: MatrxRecordId) => {
-            const record = enhancedRecords.find(r => r.recordKey === recordKey);
-            
+            const record = enhancedRecords.find((r) => r.recordKey === recordKey);
+
             if (record?.needsFetch) {
                 dispatch(
                     actions.getOrFetchSelectedRecords({
@@ -137,7 +139,7 @@ export function useEnhancedFetch<TEntity extends EntityKeys>(entityKey: TEntity)
                     })
                 );
             }
-    
+
             return record || null;
         },
         [enhancedRecords, dispatch, actions]
@@ -148,9 +150,9 @@ export function useEnhancedFetch<TEntity extends EntityKeys>(entityKey: TEntity)
             quickReferences,
             isLoading,
             fetchFullRecords,
-            getOrFetchRecord ,
+            getOrFetchRecord,
             enhancedRecords,
         }),
-        [quickReferences, isLoading, fetchFullRecords, getOrFetchRecord, enhancedRecords ]
+        [quickReferences, isLoading, fetchFullRecords, getOrFetchRecord, enhancedRecords]
     );
 }

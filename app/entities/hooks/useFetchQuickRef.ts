@@ -4,11 +4,11 @@ import * as React from 'react';
 import { getRecordIdByRecord, useEntityTools } from '@/lib/redux';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
-import { AllEntityFieldKeys, EntityData, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { EntityKeys } from '@/types/entityTypes';
 
 export function useFetchQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { actions, selectors } = useEntityTools(entityKey);
     const loadingState = useAppSelector(selectors.selectLoadingState);
     const isQuickReferenceFetchComplete = useAppSelector(selectors.selectIsQuickReferenceFetchComplete);
 

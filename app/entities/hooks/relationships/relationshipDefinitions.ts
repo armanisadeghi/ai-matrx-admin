@@ -384,7 +384,7 @@ export function mapRelationship(enrichedDefinition: EnrichedRelationshipDefiniti
         };
     }
 
-    console.log('Mapped Relationship: ', mapped);
+    // console.log('Mapped Relationship: ', mapped);
     return mapped;
 }
 
@@ -888,4 +888,3 @@ export function getRelationshipMapper(entityName: EntityKeys): RelationshipMappe
 }
 
 const definitions = RELATIONSHIP_DEFINITIONS;
-console.log('Definitions: ', definitions);

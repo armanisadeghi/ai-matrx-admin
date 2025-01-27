@@ -3,6 +3,7 @@ import { useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback } from 'react';
+import { useAppDispatch } from '@/lib/redux/hooks';
 
 interface UseUpdateRecordResult {
     updateRecord: (matrxRecordId: MatrxRecordId) => void;
@@ -18,7 +19,8 @@ export const useUpdateRecord = (
     options: UseUpdateRecordOptions = {}
 ): UseUpdateRecordResult => {
     const { onComplete, showToast = true } = options;
-    const { actions, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
 
     const updateRecord = useCallback((matrxRecordId: MatrxRecordId) => {

@@ -6,7 +6,7 @@ import EntityRelationshipWrapperFinal from '@/app/entities/relationships/EntityR
 import { EntityKeys, EntityAnyFieldKey, MatrxRecordId } from '@/types/entityTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 
-interface FieldRendererOptions {
+export interface FieldRendererOptions {
     onFieldChange?: (fieldName: string, value: unknown) => void;
 }
 

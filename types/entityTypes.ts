@@ -355,27 +355,6 @@ export type EntityField<TEntity extends EntityKeys, TField extends EntityFieldKe
     fieldNameFormats: FieldNameFormats<TEntity, TField>;
 };
 
-// name: string;
-// displayName: string;
-// isPrimaryKey: boolean;
-// isDisplayField?: boolean;
-// dataType: FieldDataOptionsType;
-// isArray: boolean;
-// structure: DataStructure;
-// isNative: boolean;
-// defaultComponent?: string;
-// componentProps: ComponentProps;
-// isRequired: boolean;
-// maxLength: number;
-// defaultValue: any;
-// defaultGeneratorFunction: string;
-// validationFunctions: string[];
-// exclusionRules: string[];
-// enumValues: string[];
-// entityName: EntityKeys;
-// databaseTable: string;
-// description: string;
-
 
 /**
  * Define the base relationship structure
@@ -388,17 +367,18 @@ export interface Relationship {
     junctionTable: string | null;
 }
 
-/**
- * Type for an array of relationships or empty array
- */
-export type RelationshipArray = readonly Relationship[] | readonly [];
+// First, define a helper type to ensure we're working with mutable arrays
+type Mutable<T> = {
+    -readonly [P in keyof T]: T[P];
+};
 
-/**
- * Entity-level relationships type that preserves the exact structure from the schema
- */
-export type EntityRelationships<TEntity extends EntityKeys> =
-    Extract<AutomationSchema[TEntity]['relationships'], RelationshipArray>;
-
+// Then use it in our relationship type definitions
+export type EntityRelationships<TEntity extends EntityKeys> = 
+    Mutable<AutomationSchema[TEntity]['relationships']> extends (infer R)[]
+        ? R extends Relationship
+            ? Relationship[]
+            : never
+        : never;    
 
 export type EntitySchemaType<TEntity extends EntityKeys> =
     AutomationSchema[TEntity]['schemaType'];
@@ -490,6 +470,8 @@ export type SchemaCombined<TEntity extends EntityKeys> = {
 export type AutomationEntity<TEntity extends EntityKeys> = {
     schemaType: EntitySchemaType<TEntity>;
     entityName: TEntity;
+    name: string;
+    displayName: string;
     uniqueTableId: string;
     uniqueEntityId: string;
     primaryKey: string;
@@ -498,13 +480,11 @@ export type AutomationEntity<TEntity extends EntityKeys> = {
     defaultFetchStrategy: FetchStrategy;
     componentProps: EntityComponentProps<TEntity>;
     entityNameFormats: EntityNameFormats<TEntity>;
-    relationships: EntityRelationships<TEntity>;
-    entityFields: {
-        [TField in EntityFieldKeys<TEntity>]: EntityField<TEntity, TField>;
-    };
+    relationships: Relationship[];
+    entityFields: Record<AllEntityFieldKeys, EntityFieldKeys<TEntity>>;
 };
 
-
+// Record<AllEntityFieldKeys, EntityStateField>;
 /**
  * Complete automation schema containing all applets
  */
@@ -537,8 +517,10 @@ export interface UnifiedSchemaCache {
     fieldNameFormats: Record<EntityKeys, Record<string, Record<string, string>>>;
     entityNameToDatabase: Record<EntityKeys, string>;
     entityNameToBackend: Record<EntityKeys, string>;
+    entityNametoPretty: Record<EntityKeys, string>;
     fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
     fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
+    fieldNameToPretty: Record<EntityKeys, Record<string, string>>;
     fullEntityRelationships?: Record<EntityKeys, FullEntityRelationships>
 }
 

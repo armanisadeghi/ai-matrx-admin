@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { MatrxRecordId, SelectionMode } from '@/lib/redux/entity/types/stateTypes';
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 
@@ -21,7 +21,8 @@ const useHasOnlyNewRecords = (selectedRecordIds: MatrxRecordId[]) => {
 };
 
 export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { actions, selectors } = useEntityTools(entityKey);
     const [fetchMode, setFetchMode] = React.useState<FetchMode>('native');
     const [lastProcessedIds, setLastProcessedIds] = React.useState<MatrxRecordId[]>([]);
 

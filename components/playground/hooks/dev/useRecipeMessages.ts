@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ExpandRecursively, MessageTemplateDataOptional, MessageTemplateProcessed, MessageTemplateRecordWithKey, RecipeMessageRecordWithKey } from '@/types';
 import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
-import { useMessageReordering } from './messages/useMessageReordering';
+import { useMessageReordering } from '../messages/useMessageReordering';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { recipeMessageDef } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
@@ -45,7 +45,6 @@ export const extractUniqueBrokersFromRecords = (messages: MessageTemplateProcess
 export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
     const dispatch = useAppDispatch();
     const [needsReprocess, setNeedsReprocess] = useState(false);
-    const [canProcess, setCanProcess] = useState(false);
     const { actions: brokerActions } = useEntityTools('dataBroker');
     const {
         mapper: messageMapper,
@@ -61,6 +60,8 @@ export function useRecipeMessages(recipeMessageHook: RelationshipHook) {
         isLoading: recipeMessageIsLoading,
         loadingState: recipeMessageLoadingState,
     } = recipeMessageHook;
+
+    const [canProcess, setCanProcess] = useState(false);
 
     useEffect(() => {
         if (recipeMessageIsLoading) {

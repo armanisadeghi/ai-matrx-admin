@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useRef, forwardRef } from 'react';
+import React, { useRef, forwardRef, useState, useEffect } from 'react';
 import { PanelGroup, ImperativePanelHandle, PanelResizeHandle, Panel } from 'react-resizable-panels';
 import { useMeasure } from '@uidotdev/usehooks';
 import CollapsibleSidebarPanel from './CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/panel-manager/ResultPanelManager';
 import MessagesContainer from '../panel-manager/MessagesContainer';
-import { MatrxRecordId } from '@/types';
-import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
+import { PlaygroundPanelComponent, PlaygroundControls } from '../types';
 
 interface DynamicPlaygroundPanelsProps {
-    leftComponent: React.ComponentType;
-    rightComponent: React.ComponentType;
+    leftComponent: PlaygroundPanelComponent;
+    rightComponent: PlaygroundPanelComponent;
     onLeftCollapsedChange?: (isCollapsed: boolean) => void;
     onRightCollapsedChange?: (isCollapsed: boolean) => void;
     onLeftResize?: (size: number) => void;
@@ -20,11 +19,10 @@ interface DynamicPlaygroundPanelsProps {
     initialRightSize?: number;
     initialPanelCount?: number;
     className?: string;
-    activeRecipeId: MatrxRecordId;
-    relationshipHook: RelationshipHook;
+    playgroundControls: PlaygroundControls;
 }
 
-const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; rightPanel: ImperativePanelHandle | null }, DynamicPlaygroundPanelsProps>(
+const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; rightPanel: ImperativePanelHandle | null, }, DynamicPlaygroundPanelsProps>(
     (
         {
             leftComponent,
@@ -37,14 +35,27 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
             initialRightSize = 15,
             initialPanelCount = 2,
             className = '',
-            activeRecipeId,
-            relationshipHook,
-
+            playgroundControls,
         },
         ref
     ) => {
         const leftPanelRef = useRef<ImperativePanelHandle>(null);
         const rightPanelRef = useRef<ImperativePanelHandle>(null);
+        const [showBrokers, setShowBrokers] = useState(false);
+        const [showSettings, setShowSettings] = useState(false);
+        const [showMessages, setShowMessages] = useState(false);
+        const [showProcessing, setShowProcessing] = useState(false);
+
+        const { doubleParentActiveRecipeHook } = playgroundControls;
+
+        const { activeParentMatrxId: activeRecipeId, firstRelHook: recipeMessagesProcessingHook, secondRelHook: recipeAgentProcessingHook } = doubleParentActiveRecipeHook;
+        const { childRecords: messages } = recipeMessagesProcessingHook;
+
+        useEffect(() => {
+            if (activeRecipeId && messages.length > 1) {
+                setShowMessages(true);
+            }
+        }, [activeRecipeId, messages.length]);
 
         // Expose panel refs to parent
         React.useImperativeHandle(ref, () => ({
@@ -84,17 +95,22 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
                         component={leftComponent}
                         side='left'
                         defaultSize={initialLeftSize}
+                        playgroundControls={playgroundControls}
                     />
                     <Panel defaultSize={55}>
                         {/* <EditorContainer /> */}
-                        <MessagesContainer
-                        recipeRecordId={activeRecipeId} 
-                        relationshipHook={relationshipHook}
-                        />
+                        {showMessages && (
+                            <MessagesContainer
+                                playgroundControls={playgroundControls}
+                                />
+                        )}
                     </Panel>
                     <PanelResizeHandle />
                     <Panel defaultSize={15}>
-                        <ResultPanelManager initialPanels={initialPanelCount} />
+                        <ResultPanelManager 
+                        initialPanels={initialPanelCount} 
+                        playgroundControls={playgroundControls}
+                        />
                     </Panel>
                     <CollapsibleSidebarPanel
                         ref={rightPanelRef}
@@ -104,6 +120,7 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
                         component={rightComponent}
                         side='right'
                         defaultSize={initialRightSize}
+                        playgroundControls={playgroundControls}
                     />
                 </PanelGroup>
             </div>

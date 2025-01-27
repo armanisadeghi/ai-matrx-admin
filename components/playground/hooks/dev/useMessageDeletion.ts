@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { MatrxRecordId, RecipeMessageDataRequired } from '@/types';
 import { useDeleteRecord } from '@/app/entities/hooks/crud/useDeleteRecord';
+import { useAppDispatch } from '@/lib/redux';
 
 interface UseMessageDeletionOptions {
     activeRecipeFieldId: string | undefined;
@@ -11,7 +12,7 @@ export function useMessageDeletion({ activeRecipeFieldId }: UseMessageDeletionOp
     const { selectors: recipeMessageSelectors } = useEntityTools('recipeMessage');
     const { actions: recipeMessageActions } = useEntityTools('recipeMessage');
 
-    const { dispatch } = useEntityTools('messageTemplate');
+    const dispatch = useAppDispatch();
 
     // Delete handlers for both entities
     const handleRecipeMessageDelete = useCallback((success: boolean) => {

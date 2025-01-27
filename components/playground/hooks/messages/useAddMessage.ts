@@ -2,11 +2,11 @@
 
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
-import { useAppStore, useEntityTools } from '@/lib/redux';
+import { useAppStore, useAppDispatch, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useCallback, useMemo } from 'react';
 
-export interface AddMessagePayload {
+interface AddMessagePayload {
     content: string;
     order: number;
     role: 'user' | 'system' | 'assistant';
@@ -49,7 +49,8 @@ export function useAddMessage({ onSuccess, onError }: UseAddMessageOptions = {})
 }
 
 export function useUpdateMessage() {
-    const { actions, dispatch } = useEntityTools('messageTemplate');
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const { updateRecord } = useUpdateRecord('messageTemplate');
 
     const getRecordId = useMemo(() => (id: string) => toMatrxIdFromValue('messageTemplate', id), []);

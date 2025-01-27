@@ -86,37 +86,37 @@ const DEFAULT_FIELD_VALUES = {
 /**
  * Simplified field extraction that maintains type safety
  */
-export function extractFieldsFromSchema<TEntity extends EntityKeys>(
-    schema: AutomationEntity<TEntity>,
-    entityKey: EntityKeys,
-) {
-    if (!schema?.entityFields) {
-        console.warn('No entityFields found in schema');
-        return [];
-    }
+// export function extractFieldsFromSchema<TEntity extends EntityKeys>(
+//     schema: AutomationEntity<TEntity>,
+//     entityKey: EntityKeys,
+// ) {
+//     if (!schema?.entityFields) {
+//         console.warn('No entityFields found in schema');
+//         return [];
+//     }
 
-    return Object.entries(schema.entityFields).map(([key, field]) => {
-        if (!isValidSchemaField(field)) {
-            console.warn(`Field ${key} does not have expected structure`);
-            return {
-                name: key as AllEntityFieldKeys,
-                entityName: entityKey,
-                ...Object.fromEntries(
-                    Object.entries(DEFAULT_FIELD_VALUES).map(([key, value]) => [
-                        key,
-                        typeof value === 'function' ? value(key) : value
-                    ])
-                ),
-            };
-        }
+//     return Object.entries(schema.entityFields).map(([key, field]) => {
+//         if (!isValidSchemaField(field)) {
+//             console.warn(`Field ${key} does not have expected structure`);
+//             return {
+//                 name: key as AllEntityFieldKeys,
+//                 entityName: entityKey,
+//                 ...Object.fromEntries(
+//                     Object.entries(DEFAULT_FIELD_VALUES).map(([key, value]) => [
+//                         key,
+//                         typeof value === 'function' ? value(key) : value
+//                     ])
+//                 ),
+//             };
+//         }
 
-        return {
-            name: key as AllEntityFieldKeys,
-            displayName: field.fieldNameFormats.pretty,
-            ...field,
-        } as EntityStateField;
-    });
-}
+//         return {
+//             name: key as AllEntityFieldKeys,
+//             displayName: field.fieldNameFormats.pretty,
+//             ...field,
+//         } as EntityStateField;
+//     });
+// }
 
 
 

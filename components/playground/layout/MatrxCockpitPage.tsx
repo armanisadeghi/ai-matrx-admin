@@ -14,32 +14,33 @@ import AddTemplateMessages from '@/components/playground/header/AddTemplateMessa
 import { useDispatch } from 'react-redux';
 import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './constants';
-import { useJoinedActiveParent } from '@/app/entities/hooks/relationships/useRelationships';
-import { createRelationshipDefinition, getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
-import { RELATIONSHIP_DEFINITIONS } from '@/app/entities/hooks/relationships/relationshipDefinitions';
-
-export const recipeMessageDef = createRelationshipDefinition({
-    relationshipKey: 'recipeMessage',
-    parent: 'recipe',
-    child: 'messageTemplate',
-    orderField: 'order',
-});
-
-const rels = RELATIONSHIP_DEFINITIONS;
+import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
+import { useDoubleJoinedActiveParentProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { PlaygroundControls } from '../types';
 
 export default function MatrxCockpitPage() {
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-    const relDef = getStandardRelationship('messageBroker');
-
-    const parentRecipeHook = useJoinedActiveParent(relDef);
-
-    const { activeParentMatrxId: activeRecipeId, activeParentId, relationshipHook } = parentRecipeHook;
-    const { childRecords: messages } = relationshipHook;
-
+    const [currentMode, setCurrentMode] = useState('recipe');
+    const [recipeVersion, setRecipeVersion] = useState(1);
     const [showPlayground, setShowPlayground] = useState(false);
+    const recipeMessageDef = getStandardRelationship('recipeMessage');
+    const recipeSettingsDef = getStandardRelationship('aiAgent');
+
+    const doubleParentActiveRecipeHook = useDoubleJoinedActiveParentProcessing(recipeMessageDef, recipeSettingsDef);
+
+    const {
+        activeParentMatrxId: activeRecipeId,
+        activeParentId,
+        firstRelHook: processedRecipeMessagesHook,
+        secondRelHook: processedRecipeAgentHook,
+    } = doubleParentActiveRecipeHook;
+
+    const { childRecords: messages } = processedRecipeMessagesHook;
+
+
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
     const [open, setOpen] = useState(false);
@@ -66,7 +67,7 @@ export default function MatrxCockpitPage() {
         };
     }, []);
 
-    const openLeftPanel = () => {
+    const onOpenLeftPanel = () => {
         if (isFullscreen) {
             panelsRef.current?.leftPanel?.resize(11);
         } else {
@@ -74,7 +75,7 @@ export default function MatrxCockpitPage() {
         }
     };
 
-    const openRightPanel = () => {
+    const onOpenRightPanel = () => {
         if (isFullscreen) {
             panelsRef.current?.rightPanel?.resize(11);
         } else {
@@ -119,7 +120,20 @@ export default function MatrxCockpitPage() {
         [dispatch, actions]
     );
 
-    const playgroundControls = {
+    const handleShowCode = () => {
+        console.log('Show code clicked');
+    };
+
+    const handleVersionChange = (version: number) => {
+        console.log(`Version changed to: ${version}`);
+        setRecipeVersion(version);
+    };
+
+    const handlePlay = () => {
+        console.log('Play clicked');
+    };
+
+    const playgroundControls: PlaygroundControls = {
         onToggleBrokers: () => {
             const newSize = isLeftCollapsed ? (isFullscreen ? 11 : 15) : 0;
             panelsRef.current?.leftPanel?.resize(newSize);
@@ -128,18 +142,19 @@ export default function MatrxCockpitPage() {
             const newSize = isRightCollapsed ? (isFullscreen ? 11 : 15) : 0;
             panelsRef.current?.rightPanel?.resize(newSize);
         },
-        onShowCode: () => console.log('Show code clicked'),
+        onShowCode: () => handleShowCode(),
         onNewRecipe: handleNewRecipe,
-        currentMode: 'default',
-        onModeChange: (mode: string) => console.log(`Mode changed to: ${mode}`),
-        version: 1,
-        onVersionChange: (version: number) => console.log(`Version changed to: ${version}`),
-        onPlay: () => console.log('Play clicked'),
+        currentMode,
+        onModeChange: (mode: string) => setCurrentMode(mode),
+        version: recipeVersion,
+        onVersionChange: (version: number) => handleVersionChange(version),
+        onPlay: () => handlePlay(),
         isLeftCollapsed,
         isRightCollapsed,
-        openLeftPanel,
-        openRightPanel,
+        onOpenLeftPanel,
+        onOpenRightPanel,
         fullScreenToggleButton,
+        doubleParentActiveRecipeHook,
     };
 
     return (
@@ -156,8 +171,7 @@ export default function MatrxCockpitPage() {
                     onLeftCollapsedChange={setIsLeftCollapsed}
                     onRightCollapsedChange={setIsRightCollapsed}
                     initialPanelCount={2}
-                    activeRecipeId={activeRecipeId}
-                    relationshipHook={relationshipHook}
+                    playgroundControls={playgroundControls}
                 />
             ) : (
                 <AICockpitIntro {...playgroundControls} />

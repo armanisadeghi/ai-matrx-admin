@@ -6,6 +6,7 @@ import { useAppStore, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { DataInputComponentData, MatrxRecordId, MessageTemplateData } from '@/types';
 import { useCallback, useMemo } from 'react';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 type DataBrokerDataType = 'float' | 'str' | 'bool' | 'dict' | 'int' | 'list' | 'url';
 
@@ -68,7 +69,8 @@ export function useAddBroker(parentRecordId: MatrxRecordId) {
 }
 
 export function useUpdateBroker() {
-    const { actions, dispatch } = useEntityTools('dataBroker');
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools("dataBroker");
     const { updateRecord } = useUpdateRecord('dataBroker');
 
     const getRecordId = useMemo(() => (id: string) => toMatrxIdFromValue('dataBroker', id), []);

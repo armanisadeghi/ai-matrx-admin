@@ -541,22 +541,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectPrimaryKeyFields = createSelector([selectPrimaryKeyMetadata], (primaryKeyMetadata) => primaryKeyMetadata.fields);
 
-    const selectDisplayField = createSelector(
-        [selectEntityMetadata],
-        (metadata) => metadata.fields.find((f) => f.isDisplayField)?.name || metadata.primaryKeyMetadata.fields[0]
-    );
-
-    // History Selectors
     const selectHistory = createSelector([selectEntity], (entity) => entity.history);
 
-    const selectFieldInfo = createSelector([selectEntityMetadata], (metadata) => metadata?.fields || []);
+    const selectDisplayField = createSelector([selectEntityMetadata], (metadata) => {
+        const displayField = Object.values(metadata.entityFields).find((f) => f.isDisplayField)?.name;
+        return displayField || metadata.primaryKeyMetadata.fields[0];
+    });
 
-    const selectFieldNames = createSelector([selectFieldInfo], (fields) => fields.map((field) => field.name));
+    const selectFieldInfo = createSelector([selectEntityMetadata], (metadata): Record<string, EntityStateField> => metadata?.entityFields || {});
+
+    const selectFieldNames = createSelector([selectFieldInfo], (fields) => Object.keys(fields));
 
     const selectFlexFormField = createSelector([selectFieldInfo], (fields) => {
-        if (!fields?.length) return [];
+        if (!fields || Object.keys(fields).length === 0) return [];
 
-        return fields.map((field) => ({
+        return Object.values(fields).map((field) => ({
             ...field,
             label: field.displayName,
             type: mapFieldDataToFormField(field.dataType),
@@ -565,17 +564,17 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     // For select components (value/label pairs)
     const selectFieldOptions = createSelector([selectFieldInfo], (fields) =>
-        fields.map((field) => ({
+        Object.values(fields).map((field) => ({
             value: field.name,
             label: field.displayName,
         }))
     );
 
-    const selectDefaultValues = createSelector([selectFieldInfo], (fieldInfo) =>
-        fieldInfo.reduce(
-            (acc, field) => ({
+    const selectDefaultValues = createSelector([selectFieldInfo], (fields) =>
+        Object.entries(fields).reduce(
+            (acc, [fieldName, field]) => ({
                 ...acc,
-                [field.name]: field.defaultValue,
+                [fieldName]: field.defaultValue,
             }),
             {} as Record<string, any>
         )
@@ -588,7 +587,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     }
 
     const selectFieldOptionsWithDefaults = createSelector([selectFieldInfo], (fieldInfo): FieldOptionWithDefault[] =>
-        fieldInfo.map((field) => ({
+        Object.values(fieldInfo).map((field) => ({
             value: field.name,
             label: field.displayName,
             defaultValue: field.defaultValue,
@@ -596,7 +595,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectNativeFieldOptionsWithDefaultsNoPk = createSelector([selectFieldInfo], (fieldInfo): FieldOptionWithDefault[] =>
-        fieldInfo
+        Object.values(fieldInfo)
             .filter((field) => field.isNative && !field.isPrimaryKey)
             .map((field) => ({
                 value: field.name,
@@ -606,7 +605,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectNativeFieldOptionsWithDefaults = createSelector([selectFieldInfo], (fieldInfo): FieldOptionWithDefault[] =>
-        fieldInfo
+        Object.values(fieldInfo)
             .filter((field) => field.isNative)
             .map((field) => ({
                 value: field.name,
@@ -628,38 +627,40 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectChangedFieldsSet = createSelector([selectRecordPair, selectFieldInfo], ({ originalRecord, unsavedRecord, isNewRecord }, fieldInfo) => {
         if (isNewRecord) {
-            return new Set(fieldInfo.map((field) => field.name));
+            // If it's a new record, return all field names as a Set
+            return new Set(Object.keys(fieldInfo));
         }
 
+        // Otherwise, return a Set of field names where the original and unsaved values differ
         return new Set(
-            fieldInfo.filter((field) => originalRecord && unsavedRecord && originalRecord[field.name] !== unsavedRecord[field.name]).map((field) => field.name)
+            Object.values(fieldInfo)
+                .filter((field: EntityStateField) => originalRecord && unsavedRecord && originalRecord[field.name] !== unsavedRecord[field.name])
+                .map((field: EntityStateField) => field.name)
         );
     });
 
     const selectChangedFieldData = createSelector([selectRecordPair, selectChangedFieldsSet], ({ unsavedRecord, isNewRecord }, changedFields) => {
-        // If it's a new record, include all fields from unsavedRecord
-        if (isNewRecord && unsavedRecord) {
+        if (!unsavedRecord) {
+            return {};
+        }
+
+        if (isNewRecord) {
             return { ...unsavedRecord };
         }
 
-        // For updates, only include changed fields
-        if (unsavedRecord) {
-            return Array.from(changedFields).reduce(
-                (acc, fieldName) => ({
-                    ...acc,
-                    [fieldName]: unsavedRecord[fieldName],
-                }),
-                {}
-            );
+        const changedData: Partial<typeof unsavedRecord> = {};
+        for (const fieldName of changedFields) {
+            if (typeof fieldName === 'string' && fieldName in unsavedRecord) {
+                changedData[fieldName as keyof typeof unsavedRecord] = unsavedRecord[fieldName as keyof typeof unsavedRecord];
+            }
         }
-
-        return {};
+        return changedData;
     });
 
     const selectFieldComparisons = createSelector(
         [selectRecordPair, selectChangedFieldsSet, selectFieldInfo],
         ({ originalRecord, unsavedRecord, isNewRecord }, changedFields, fieldInfo) => {
-            return fieldInfo.map((field) => ({
+            return Object.values(fieldInfo).map((field) => ({
                 name: field.name,
                 displayName: field.displayName,
                 hasChanged: isNewRecord || changedFields.has(field.name),
@@ -744,30 +745,40 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectPendingOperations = createSelector([selectEntity], (entity) => entity.pendingOperations);
 
     const selectTableColumns = createSelector([selectFieldInfo], (fields) => {
-        if (!fields?.length) return [];
+        if (!fields || Object.keys(fields).length === 0) return [];
 
-        return fields.map((field) => ({
+        return Object.values(fields).map((field) => ({
             ...field,
             key: field.name,
             title: field.displayName,
         }));
     });
 
-    const selectCombinedRecordsWithFieldInfo = createSelector([selectEntity, selectFieldInfo, selectDisplayField], (entity, fieldInfo, displayField) => {
-        const keyedSelectedRecords = Array.from(entity.selection.selectedRecords).reduce((acc, recordKey) => {
+    const selectRecordWithDisplay = createSelector(
+        [selectEntity, (_: RootState, recordKey: string) => recordKey, selectFieldInfo],
+        (entity, recordKey, fields) => {
             const record = entity.records[recordKey];
-            if (record) {
-                acc[recordKey] = record;
-            }
-            return acc;
-        }, {} as Record<string, (typeof entity.records)[keyof typeof entity.records]>);
+            if (!record) return null;
 
-        return {
-            records: keyedSelectedRecords,
+            return Object.values(fields).reduce((acc, field) => {
+                acc[field.name] = {
+                    value: record[field.name],
+                    displayValue: String(record[field.name]),
+                    fieldInfo: field,
+                };
+                return acc;
+            }, {} as Record<string, { value: any; displayValue: string; fieldInfo: EntityStateField }>);
+        }
+    );
+
+    const selectCombinedRecordsWithFieldInfo = createSelector(
+        [selectSelectedRecordsWithKey, selectFieldInfo, selectDisplayField],
+        (records, fieldInfo, displayField) => ({
+            records,
             fieldInfo,
             displayField,
-        };
-    });
+        })
+    );
 
     // Filtered and paginated data combined
     const selectCurrentPageFiltered = createSelector([selectFilteredRecords, selectPaginationInfo], (filteredRecords, pagination) => {
@@ -776,30 +787,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return filteredRecords.slice(startIndex, startIndex + pageSize);
     });
 
-    // Record with display values resolved
-    const selectRecordWithDisplay = createSelector(
-        [selectEntity, (_: RootState, recordKey: string) => recordKey, selectFieldInfo],
-        (entity, recordKey, fields) => {
-            const record = entity.records[recordKey];
-            if (!record) return null;
-
-            return fields.reduce((acc, field) => {
-                acc[field.name] = {
-                    value: record[field.name],
-                    displayValue: String(record[field.name]),
-                    fieldInfo: field,
-                };
-                return acc;
-            }, {} as Record<string, { value: any; displayValue: string; fieldInfo: (typeof fields)[0] }>);
-        }
-    );
-
     // Quick access to important metadata combinations
     const selectMetadataSummary = createSelector([selectEntityMetadata], (metadata) => ({
         displayName: metadata.displayName,
         primaryKeys: metadata.primaryKeyMetadata.fields,
-        displayField: metadata.fields.find((f) => f.isDisplayField)?.name,
-        totalFields: metadata.fields.length,
+        displayField: metadata.displayFieldMetadata.fieldName,
+        totalFields: Object.keys(metadata.entityFields).length,
         schemaType: metadata.schemaType,
     }));
 
@@ -879,15 +872,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (unsavedRecords, recordId) => unsavedRecords[recordId]
     );
 
-    const selectAllEffectiveRecords = createSelector([selectAllRecords, selectUnsavedRecords], (records, unsavedRecords): EntityRecordMap<TEntity> => {
-        // If both are undefined/null, return empty object to maintain type consistency
-        if (!records && !unsavedRecords) {
-            return {} as EntityRecordMap<TEntity>;
-        }
-
+    const selectAllEffectiveRecords = createSelector([selectAllRecords, selectUnsavedRecords], (records, unsavedRecords) => {
+        // If both are undefined/null, return an empty object to maintain type consistency
         return {
-            ...(records || {}),
-            ...(unsavedRecords || {}),
+            ...(records ?? {}),
+            ...(unsavedRecords ?? {}),
         };
     });
 
@@ -996,8 +985,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (effectiveRecord, fieldName) => effectiveRecord[fieldName]
     );
 
-    const selectFieldMetadata = createSelector([selectFieldInfo, (_: RootState, fieldName: string) => fieldName], (fields, fieldName) =>
-        fields.find((f) => f.name === fieldName)
+    const selectFieldMetadata = createSelector(
+        [selectFieldInfo, (_: RootState, fieldName: string) => fieldName],
+        (fields, fieldName) => fields[fieldName] || null
     );
 
     const selectRecord = createSelector([selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey], (records, recordKey) => records[recordKey]);
@@ -1025,7 +1015,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectFieldIdentifiers = createSelector([selectFieldInfo], (fields) =>
-        fields.map((field) => {
+        Object.values(fields).map((field) => {
             console.log('field: ', field);
             console.log('uniqueFieldId: ', field.uniqueFieldId);
             const parts = field.uniqueFieldId.split(':');
@@ -1055,8 +1045,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     });
 
     const selectFieldGroups = createSelector([selectFieldInfo], (fields) => ({
-        nativeFields: fields.filter((field) => field.isNative),
-        relationshipFields: fields.filter((field) => !field.isNative),
+        nativeFields: Object.values(fields).filter((field) => field.isNative),
+        relationshipFields: Object.values(fields).filter((field) => !field.isNative),
     }));
 
     const selectNativeFields = createSelector([selectFieldGroups], (groups) => groups.nativeFields);
@@ -1067,13 +1057,13 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         const nativeFields: EntityAnyFieldKey<TEntity>[] = [];
         const relationshipFields: EntityAnyFieldKey<TEntity>[] = [];
 
-        for (const field of fields) {
+        Object.values(fields).forEach((field) => {
             if (field.isNative) {
                 nativeFields.push(field.name as EntityAnyFieldKey<TEntity>);
             } else {
                 relationshipFields.push(field.name as EntityAnyFieldKey<TEntity>);
             }
-        }
+        });
 
         return {
             nativeFields,
@@ -1084,13 +1074,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectFieldDisplayNames = createSelector([selectFieldInfo], (fields) => {
         const displayNameMap = new Map<EntityAnyFieldKey<TEntity>, string>();
 
-        for (const field of fields) {
-            displayNameMap.set(field.name as EntityAnyFieldKey<TEntity>, field.displayName || field.name);
-        }
+        Object.entries(fields).forEach(([fieldName, field]) => {
+            displayNameMap.set(fieldName as EntityAnyFieldKey<TEntity>, field.displayName || fieldName);
+        });
 
         return displayNameMap;
     });
-
     const selectNativeFieldNames = createSelector([selectFieldNameGroups], (groups) => groups.nativeFields);
 
     const selectRelationshipFieldNames = createSelector([selectFieldNameGroups], (groups) => groups.relationshipFields);
@@ -1098,16 +1087,20 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectFieldNameGroupsWithHidden = createSelector(
         [selectFieldInfo, (_state, hiddenRelatedEntities: string[] = []) => hiddenRelatedEntities],
         (fields, hiddenRelatedEntities): FieldNameGroups<TEntity> => {
+            if (!fields || typeof fields !== 'object') {
+                return { nativeFields: [], relationshipFields: [] };
+            }
+
             const nativeFields: EntityAnyFieldKey<TEntity>[] = [];
             const relationshipFields: EntityAnyFieldKey<TEntity>[] = [];
 
-            for (const field of fields) {
+            Object.entries(fields).forEach(([fieldName, field]) => {
                 if (field.isNative) {
-                    nativeFields.push(field.name as EntityAnyFieldKey<TEntity>);
+                    nativeFields.push(fieldName as EntityAnyFieldKey<TEntity>);
                 } else if (!hiddenRelatedEntities?.length || !hiddenRelatedEntities.includes(field.entityName)) {
-                    relationshipFields.push(field.name as EntityAnyFieldKey<TEntity>);
+                    relationshipFields.push(fieldName as EntityAnyFieldKey<TEntity>);
                 }
-            }
+            });
 
             return {
                 nativeFields,
@@ -1124,7 +1117,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectForeignKeyFieldNames = createSelector([selectFieldInfo], (fields) => {
         const foreignKeyFields: AllEntityFieldKeys[] = [];
 
-        for (const field of fields) {
+        for (const field of Object.values(fields)) {
             if (field.foreignKeyReference !== null) {
                 foreignKeyFields.push(field.name as AllEntityFieldKeys);
             }
@@ -1136,7 +1129,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectNonForeignKeyFieldNames = createSelector([selectFieldInfo], (fields) => {
         const nonForeignKeyFields: AllEntityFieldKeys[] = [];
 
-        for (const field of fields) {
+        for (const field of Object.values(fields)) {
             if (field.foreignKeyReference === null) {
                 nonForeignKeyFields.push(field.name as AllEntityFieldKeys);
             }
@@ -1149,7 +1142,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
         const filteredFields: AllEntityFieldKeys[] = [];
 
-        for (const field of fields) {
+        for (const field of Object.values(fields)) {
             if (!primaryKeySet.has(field.name as AllEntityFieldKeys) && field.foreignKeyReference === null) {
                 filteredFields.push(field.name as AllEntityFieldKeys);
             }

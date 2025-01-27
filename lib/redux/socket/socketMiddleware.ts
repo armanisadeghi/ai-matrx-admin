@@ -17,10 +17,10 @@ export const socketMiddleware: Middleware = (storeAPI) => (next) => (action: Unk
     // Dispatch socket connection states
     switch (action.type) {
         case 'SOCKET_CONNECTING':
-            console.log('SocketMiddleware: Socket is connecting...');
+            // console.log('SocketMiddleware: Socket is connecting...');
             break;
         case 'SOCKET_CONNECTED':
-            console.log('SocketMiddleware: Socket connected');
+            // console.log('SocketMiddleware: Socket connected');
             break;
         case 'SOCKET_DISCONNECTED':
             console.log('SocketMiddleware: Socket disconnected');

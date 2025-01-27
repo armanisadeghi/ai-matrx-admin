@@ -5,7 +5,7 @@ import React from "react";
 import { getUnifiedLayoutProps } from "@/app/entities/layout/configs";
 
 export default function EntityManagementPage() {
-  const entityKey = "dataBroker";
+  const entityKey = "emails";
   const layoutProps = getUnifiedLayoutProps({
     entityKey: entityKey,
     formComponent: "STANDARD", // "STANDARD" | "MINIMAL" | "MULTI_SELECT" | ARMANI

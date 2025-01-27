@@ -121,7 +121,6 @@ export function useJoinedActiveParent(relDef: SimpleRelDef) {
     const selectors = createEntitySelectors(relDef.parent.name);
     const activeParentMatrxId = useAppSelector(selectors.selectActiveRecordId);
     const activeParentId = toPkValue(activeParentMatrxId);
-
     const relationshipHook = useRelWithFetch(relDef, activeParentId);
 
     return { activeParentMatrxId, activeParentId, relationshipHook };

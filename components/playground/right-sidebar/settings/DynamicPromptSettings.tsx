@@ -1,6 +1,8 @@
 import EntityFormCustomMinimal from '@/app/entities/forms/EntityFormCustomMinimal';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useCallback } from 'react';
+import { PlaygroundControls } from '../../types';
+import { UseRecipeAgentSettingsHook } from '../../hooks/useRecipeAgentSettings';
 
 const initialLayoutProps = getUnifiedLayoutProps({
     entityKey: 'aiSettings',
@@ -20,27 +22,61 @@ const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
         formStyleOptions: {
             fieldFiltering: {
                 excludeFields: ['id'],
-                defaultShownFields: [ 'presetName','aiEndpoint', 'aiProvider', 'aiModel', 'temperature', 'maxTokens', 'stream', 'responseFormat', 'tools',],
+                defaultShownFields: ['presetName', 'aiEndpoint', 'aiProvider', 'aiModel', 'temperature', 'maxTokens', 'stream', 'responseFormat', 'tools'],
             },
         },
     },
 });
 
-// Displays the active Record ID for settings
-// If we added different settings to Selection, then we could have each tab # display a different setting and the active tab would become the activve record ID
-// Running 1 test would run the active settings record Id with the recipe
-// Running multiple at once would trigger a separate run for each one in selections.
+
+interface DynamicPromptSettingsProps {
+    playgroundControls: PlaygroundControls;
+    recipeAgentSettingsHook: UseRecipeAgentSettingsHook;
+    settingsSetNumber: number;
+}
+
+interface FieldOptions {
+    onFieldChange: (fieldName: string, value: unknown) => void;
+}
+
+export const DynamicPromptSettings = ({ playgroundControls, recipeAgentSettingsHook, settingsSetNumber }: DynamicPromptSettingsProps) => {
+    const settingsIndex = settingsSetNumber - 1;
+    const {
+        aiAgents,
+        agentMatrxIds,
+        settingsIds,
+        settingsMatrxIds = [],
+        coreSettings,
+        processedSettings,
+        recipePkId,
+        recipeMatrxId,
+        deleteSettings,
+        createNewSettingsData,
+        aiSettingsIsLoading,
+        aiSettingsLoadingState,
+    } = recipeAgentSettingsHook;
+
+    const recordId = Array.isArray(settingsMatrxIds) && settingsMatrxIds.length > settingsIndex ? settingsMatrxIds[settingsIndex] : null;
 
 
+    const handleFieldChange = useCallback((field: string, value: unknown) => {
+        console.log('Field changed:', field, value);
+    }, []);
 
-export const DynamicPromptSettings = () => {
-    const { selectors } = useEntityTools('aiSettings');
-    const activeRecordid = useAppSelector(selectors.selectActiveRecordId);
+
+    const fieldOptions: FieldOptions = {
+        onFieldChange: handleFieldChange,
+    };
 
     return (
         <EntityFormCustomMinimal
-            recordId={activeRecordid}
+            recordId={recordId}
             unifiedLayoutProps={layoutProps}
+            fieldOptions={fieldOptions}
+            avoidViewMode={false}
+            showRelatedFields={true}
+            density={'compact'}
+
         />
     );
 };

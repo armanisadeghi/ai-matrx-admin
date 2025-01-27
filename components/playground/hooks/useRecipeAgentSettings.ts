@@ -42,6 +42,10 @@ type AiAgentData = {
 };
 
 export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessingHook) {
+    const dispatch = useAppDispatch();
+    const { actions: aiSettingsActions, selectors: aiSettingsSelectors } = useEntityTools('aiSettings');
+    const { actions: aiAgentActions, selectors: aiAgentSelectors } = useEntityTools('aiAgent');
+
     const {
         mapper: settingsMapper,
         JoiningEntityRecords: aiAgents,
@@ -58,9 +62,6 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
         loadingState: aiSettingsLoadingState,
     } = recipeSettingsHook;
 
-    const dispatch = useAppDispatch();
-    const { actions: aiSettingsActions, selectors: aiSettingsSelectors } = useEntityTools('aiSettings');
-    const { actions: aiAgentActions, selectors: aiAgentSelectors } = useEntityTools('aiAgent');
 
     const handleError = useCallback((error: Error) => {
         console.error('Error creating settings and agent:', error);
@@ -137,7 +138,7 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
     };
 }
 
-export type UseRecipeAgentSettings = ReturnType<typeof useRecipeAgentSettings>;
+export type UseRecipeAgentSettingsHook = ReturnType<typeof useRecipeAgentSettings>;
 
 export function useRelatedAiSettings(recipeMatrxId: MatrxRecordId) {
     const relDef = getStandardRelationship('aiAgent');

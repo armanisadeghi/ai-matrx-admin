@@ -41,7 +41,7 @@
 //     const context = useEditorContext();
 //     const [lastEditorState, setLastEditorState] = useState<string>('');
 //     const [lastChipState, setLastChipState] = useState<string>('');
-//     const { actions, dispatch } = useEntityTools('messageTemplate');
+//     const { actions, } = useEntityTools('messageTemplate');
 //     const { updateRecord } = useUpdateRecord('messageTemplate');
 //     const recordId = useMemo(() => toMatrxIdFromValue('messageTemplate', id), [id]);
 

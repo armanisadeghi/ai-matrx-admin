@@ -34,7 +34,7 @@ export class SocketManager {
 
                     this.registerEventHandlers();
 
-                    console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
+                    // console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
                 } catch (error) {
                     console.error('SocketManager: Error connecting socket', error);
                 }
@@ -50,7 +50,7 @@ export class SocketManager {
             this.cleanupDynamicListeners();
             this.socket.disconnect();
             this.socket = null;
-            console.log('SocketManager: Disconnected and cleaned up listeners');
+            // console.log('SocketManager: Disconnected and cleaned up listeners');
         }
     }
 
@@ -67,11 +67,11 @@ export class SocketManager {
 
         // Standard connection events
         socket.on('connect', () => {
-            console.log('Socket connected:', socket.id);
+            // console.log('Socket connected:', socket.id);
         });
 
         socket.on('disconnect', () => {
-            console.log('Socket disconnected');
+            // console.log('Socket disconnected');
         });
 
         // Dynamic listener for responses

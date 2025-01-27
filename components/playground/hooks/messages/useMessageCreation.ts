@@ -20,7 +20,7 @@
 //     const { createRecord: createMessageTemplate } = useCreateRecord('messageTemplate');
 //     const { createRecord: createRecipeMessage } = useCreateRecord('recipeMessage');
     
-//     const { actions: messageTemplateActions, dispatch } = useEntityTools('messageTemplate');
+//     const { actions: messageTemplateActions, } = useEntityTools('messageTemplate');
 
 //     const updateMessageContent = useCallback((messageId: string, content: string) => {
 //         if (!activeRecipeFieldId) return;

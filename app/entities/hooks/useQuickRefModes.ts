@@ -1,11 +1,12 @@
 import * as React from 'react';
-import {FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools} from '@/lib/redux';
-import {useAppSelector} from '@/lib/redux/hooks';
-import {MatrxRecordId, SelectionMode} from '@/lib/redux/entity/types/stateTypes';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
+import {useEntityTools} from '@/lib/redux';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
+import {EntityKeys} from '@/types/entityTypes';
 
 export function useQuickRefModes<TEntity extends EntityKeys>(entityKey: TEntity) {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectionMode = useAppSelector(selectors.selectSelectionMode);
 

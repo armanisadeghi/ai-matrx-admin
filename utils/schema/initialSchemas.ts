@@ -7,6 +7,7 @@ export const initialAutomationTableSchema = {
     action: {
         schemaType: 'table' as const,
         entityName: 'action',
+        displayName: 'Action',
         uniqueTableId: 'supabase_automation_matrix:public:action',
         uniqueEntityId: 'supabase_automation_matrix:action',
         primaryKey: 'id',
@@ -55,6 +56,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:action:id',
                 uniqueFieldId: 'supabase_automation_matrix:action:id',
@@ -117,6 +120,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:action:name',
                 uniqueFieldId: 'supabase_automation_matrix:action:name',
@@ -179,6 +184,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'matrix',
                     custom: 'matrix',
                 } as const,
+                name: 'matrix',
+                displayName: 'Matrix',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:action:matrix',
                 uniqueFieldId: 'supabase_automation_matrix:action:matrix',
@@ -242,6 +249,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'transformer',
                     custom: 'transformer',
                 } as const,
+                name: 'transformer',
+                displayName: 'Transformer',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:action:transformer',
                 uniqueFieldId: 'supabase_automation_matrix:action:transformer',
@@ -305,6 +314,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'nodeType',
                     custom: 'nodeType',
                 } as const,
+                name: 'nodeType',
+                displayName: 'Node Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:action:node_type',
                 uniqueFieldId: 'supabase_automation_matrix:action:nodeType',
@@ -367,6 +378,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'referenceId',
                     custom: 'referenceId',
                 } as const,
+                name: 'referenceId',
+                displayName: 'Reference Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:action:reference_id',
                 uniqueFieldId: 'supabase_automation_matrix:action:referenceId',
@@ -431,6 +444,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:automation_matrix:id',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:id',
+                name: 'automationMatrixReference',
+                displayName: 'Automation Matrix Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -463,6 +478,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:transformer:id',
                 uniqueFieldId: 'supabase_automation_matrix:transformer:id',
+                name: 'transformerReference',
+                displayName: 'Transformer Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -501,6 +518,7 @@ export const initialAutomationTableSchema = {
     aiAgent: {
         schemaType: 'table' as const,
         entityName: 'aiAgent',
+        displayName: 'Ai Agent',
         uniqueTableId: 'supabase_automation_matrix:public:ai_agent',
         uniqueEntityId: 'supabase_automation_matrix:aiAgent',
         primaryKey: 'id',
@@ -549,6 +567,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiAgent:id',
@@ -611,6 +631,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:name',
                 uniqueFieldId: 'supabase_automation_matrix:aiAgent:name',
@@ -673,6 +695,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipeId',
                     custom: 'recipeId',
                 } as const,
+                name: 'recipeId',
+                displayName: 'Recipe Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:recipe_id',
                 uniqueFieldId: 'supabase_automation_matrix:aiAgent:recipeId',
@@ -736,6 +760,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiSettingsId',
                     custom: 'aiSettingsId',
                 } as const,
+                name: 'aiSettingsId',
+                displayName: 'Ai Settings Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:ai_settings_id',
                 uniqueFieldId: 'supabase_automation_matrix:aiAgent:aiSettingsId',
@@ -799,6 +825,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'systemMessageOverride',
                     custom: 'systemMessageOverride',
                 } as const,
+                name: 'systemMessageOverride',
+                displayName: 'System Message Override',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:system_message_override',
                 uniqueFieldId: 'supabase_automation_matrix:aiAgent:systemMessageOverride',
@@ -863,6 +891,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_settings:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:id',
+                name: 'aiSettingsReference',
+                displayName: 'Ai Settings Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -895,6 +925,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -933,6 +965,7 @@ export const initialAutomationTableSchema = {
     aiEndpoint: {
         schemaType: 'table' as const,
         entityName: 'aiEndpoint',
+        displayName: 'Ai Endpoint',
         uniqueTableId: 'supabase_automation_matrix:public:ai_endpoint',
         uniqueEntityId: 'supabase_automation_matrix:aiEndpoint',
         primaryKey: 'id',
@@ -981,6 +1014,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:id',
@@ -1043,6 +1078,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:name',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:name',
@@ -1105,6 +1142,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'provider',
                     custom: 'provider',
                 } as const,
+                name: 'provider',
+                displayName: 'Provider',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:provider',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:provider',
@@ -1167,6 +1206,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:description',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:description',
@@ -1229,6 +1270,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'additionalCost',
                     custom: 'additionalCost',
                 } as const,
+                name: 'additionalCost',
+                displayName: 'Additional Cost',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:additional_cost',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:additionalCost',
@@ -1291,6 +1334,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'costDetails',
                     custom: 'costDetails',
                 } as const,
+                name: 'costDetails',
+                displayName: 'Cost Details',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:cost_details',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:costDetails',
@@ -1353,6 +1398,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'params',
                     custom: 'params',
                 } as const,
+                name: 'params',
+                displayName: 'Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:params',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:params',
@@ -1417,6 +1464,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_model_endpoint',
                 uniqueEntityId: 'supabase_automation_matrix:aiModelEndpoint',
+                name: 'aiModelEndpointInverse',
+                displayName: 'Ai Model Endpoint Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1448,6 +1497,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_settings',
                 uniqueEntityId: 'supabase_automation_matrix:aiSettings',
+                name: 'aiSettingsInverse',
+                displayName: 'Ai Settings Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -1485,6 +1536,7 @@ export const initialAutomationTableSchema = {
     aiModel: {
         schemaType: 'table' as const,
         entityName: 'aiModel',
+        displayName: 'Ai Model',
         uniqueTableId: 'supabase_automation_matrix:public:ai_model',
         uniqueEntityId: 'supabase_automation_matrix:aiModel',
         primaryKey: 'id',
@@ -1533,6 +1585,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:id',
@@ -1595,6 +1649,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:name',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:name',
@@ -1657,6 +1713,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'commonName',
                     custom: 'commonName',
                 } as const,
+                name: 'commonName',
+                displayName: 'Common Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:common_name',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:commonName',
@@ -1719,6 +1777,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'modelClass',
                     custom: 'modelClass',
                 } as const,
+                name: 'modelClass',
+                displayName: 'Model Class',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:model_class',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:modelClass',
@@ -1781,6 +1841,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'provider',
                     custom: 'provider',
                 } as const,
+                name: 'provider',
+                displayName: 'Provider',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:provider',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:provider',
@@ -1843,6 +1905,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'endpoints',
                     custom: 'endpoints',
                 } as const,
+                name: 'endpoints',
+                displayName: 'Endpoints',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:endpoints',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:endpoints',
@@ -1905,6 +1969,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'contextWindow',
                     custom: 'contextWindow',
                 } as const,
+                name: 'contextWindow',
+                displayName: 'Context Window',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:context_window',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:contextWindow',
@@ -1967,6 +2033,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'maxTokens',
                     custom: 'maxTokens',
                 } as const,
+                name: 'maxTokens',
+                displayName: 'Max Tokens',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:max_tokens',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:maxTokens',
@@ -2029,6 +2097,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'capabilities',
                     custom: 'capabilities',
                 } as const,
+                name: 'capabilities',
+                displayName: 'Capabilities',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:capabilities',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:capabilities',
@@ -2091,6 +2161,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'controls',
                     custom: 'controls',
                 } as const,
+                name: 'controls',
+                displayName: 'Controls',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:controls',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:controls',
@@ -2153,6 +2225,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'modelProvider',
                     custom: 'modelProvider',
                 } as const,
+                name: 'modelProvider',
+                displayName: 'Model Provider',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model:model_provider',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:modelProvider',
@@ -2218,6 +2292,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_provider:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:id',
+                name: 'aiProviderReference',
+                displayName: 'Ai Provider Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2250,6 +2326,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_model_endpoint',
                 uniqueEntityId: 'supabase_automation_matrix:aiModelEndpoint',
+                name: 'aiModelEndpointInverse',
+                displayName: 'Ai Model Endpoint Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2281,6 +2359,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_settings',
                 uniqueEntityId: 'supabase_automation_matrix:aiSettings',
+                name: 'aiSettingsInverse',
+                displayName: 'Ai Settings Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2312,6 +2392,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_model',
                 uniqueEntityId: 'supabase_automation_matrix:recipeModel',
+                name: 'recipeModelInverse',
+                displayName: 'Recipe Model Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2351,6 +2433,7 @@ export const initialAutomationTableSchema = {
     aiModelEndpoint: {
         schemaType: 'table' as const,
         entityName: 'aiModelEndpoint',
+        displayName: 'Ai Model Endpoint',
         uniqueTableId: 'supabase_automation_matrix:public:ai_model_endpoint',
         uniqueEntityId: 'supabase_automation_matrix:aiModelEndpoint',
         primaryKey: 'id',
@@ -2399,6 +2482,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:id',
@@ -2461,6 +2546,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiModelId',
                     custom: 'aiModelId',
                 } as const,
+                name: 'aiModelId',
+                displayName: 'Ai Model Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:ai_model_id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:aiModelId',
@@ -2524,6 +2611,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiEndpointId',
                     custom: 'aiEndpointId',
                 } as const,
+                name: 'aiEndpointId',
+                displayName: 'Ai Endpoint Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:ai_endpoint_id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:aiEndpointId',
@@ -2587,6 +2676,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'available',
                     custom: 'available',
                 } as const,
+                name: 'available',
+                displayName: 'Available',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:available',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:available',
@@ -2649,6 +2740,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'endpointPriority',
                     custom: 'endpointPriority',
                 } as const,
+                name: 'endpointPriority',
+                displayName: 'Endpoint Priority',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:endpoint_priority',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:endpointPriority',
@@ -2711,6 +2804,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'configuration',
                     custom: 'configuration',
                 } as const,
+                name: 'configuration',
+                displayName: 'Configuration',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:configuration',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:configuration',
@@ -2773,6 +2868,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'notes',
                     custom: 'notes',
                 } as const,
+                name: 'notes',
+                displayName: 'Notes',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:notes',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:notes',
@@ -2835,6 +2932,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:createdAt',
@@ -2899,6 +2998,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_endpoint:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:id',
+                name: 'aiEndpointReference',
+                displayName: 'Ai Endpoint Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2931,6 +3032,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_model:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:id',
+                name: 'aiModelReference',
+                displayName: 'Ai Model Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -2969,6 +3072,7 @@ export const initialAutomationTableSchema = {
     aiProvider: {
         schemaType: 'table' as const,
         entityName: 'aiProvider',
+        displayName: 'Ai Provider',
         uniqueTableId: 'supabase_automation_matrix:public:ai_provider',
         uniqueEntityId: 'supabase_automation_matrix:aiProvider',
         primaryKey: 'id',
@@ -3017,6 +3121,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:id',
@@ -3079,6 +3185,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:name',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:name',
@@ -3141,6 +3249,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'companyDescription',
                     custom: 'companyDescription',
                 } as const,
+                name: 'companyDescription',
+                displayName: 'Company Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:company_description',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:companyDescription',
@@ -3203,6 +3313,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'documentationLink',
                     custom: 'documentationLink',
                 } as const,
+                name: 'documentationLink',
+                displayName: 'Documentation Link',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:documentation_link',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:documentationLink',
@@ -3265,6 +3377,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'modelsLink',
                     custom: 'modelsLink',
                 } as const,
+                name: 'modelsLink',
+                displayName: 'Models Link',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:models_link',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:modelsLink',
@@ -3329,6 +3443,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_settings',
                 uniqueEntityId: 'supabase_automation_matrix:aiSettings',
+                name: 'aiSettingsInverse',
+                displayName: 'Ai Settings Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3360,6 +3476,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_model',
                 uniqueEntityId: 'supabase_automation_matrix:aiModel',
+                name: 'aiModelInverse',
+                displayName: 'Ai Model Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -3397,6 +3515,7 @@ export const initialAutomationTableSchema = {
     aiSettings: {
         schemaType: 'table' as const,
         entityName: 'aiSettings',
+        displayName: 'Ai Settings',
         uniqueTableId: 'supabase_automation_matrix:public:ai_settings',
         uniqueEntityId: 'supabase_automation_matrix:aiSettings',
         primaryKey: 'id',
@@ -3445,6 +3564,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:id',
@@ -3507,6 +3628,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiEndpoint',
                     custom: 'aiEndpoint',
                 } as const,
+                name: 'aiEndpoint',
+                displayName: 'Ai Endpoint',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:ai_endpoint',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:aiEndpoint',
@@ -3570,6 +3693,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiProvider',
                     custom: 'aiProvider',
                 } as const,
+                name: 'aiProvider',
+                displayName: 'Ai Provider',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:ai_provider',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:aiProvider',
@@ -3633,6 +3758,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiModel',
                     custom: 'aiModel',
                 } as const,
+                name: 'aiModel',
+                displayName: 'Ai Model',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:ai_model',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:aiModel',
@@ -3696,6 +3823,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'temperature',
                     custom: 'temperature',
                 } as const,
+                name: 'temperature',
+                displayName: 'Temperature',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:temperature',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:temperature',
@@ -3758,6 +3887,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'maxTokens',
                     custom: 'maxTokens',
                 } as const,
+                name: 'maxTokens',
+                displayName: 'Max Tokens',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:max_tokens',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:maxTokens',
@@ -3820,6 +3951,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'topP',
                     custom: 'topP',
                 } as const,
+                name: 'topP',
+                displayName: 'Top P',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:top_p',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:topP',
@@ -3882,6 +4015,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'frequencyPenalty',
                     custom: 'frequencyPenalty',
                 } as const,
+                name: 'frequencyPenalty',
+                displayName: 'Frequency Penalty',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:frequency_penalty',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:frequencyPenalty',
@@ -3944,6 +4079,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'presencePenalty',
                     custom: 'presencePenalty',
                 } as const,
+                name: 'presencePenalty',
+                displayName: 'Presence Penalty',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:presence_penalty',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:presencePenalty',
@@ -4006,6 +4143,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'stream',
                     custom: 'stream',
                 } as const,
+                name: 'stream',
+                displayName: 'Stream',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:stream',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:stream',
@@ -4068,6 +4207,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'responseFormat',
                     custom: 'responseFormat',
                 } as const,
+                name: 'responseFormat',
+                displayName: 'Response Format',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:response_format',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:responseFormat',
@@ -4130,6 +4271,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'size',
                     custom: 'size',
                 } as const,
+                name: 'size',
+                displayName: 'Size',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:size',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:size',
@@ -4192,6 +4335,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'quality',
                     custom: 'quality',
                 } as const,
+                name: 'quality',
+                displayName: 'Quality',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:quality',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:quality',
@@ -4254,6 +4399,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'count',
                     custom: 'count',
                 } as const,
+                name: 'count',
+                displayName: 'Count',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:count',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:count',
@@ -4316,6 +4463,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'audioVoice',
                     custom: 'audioVoice',
                 } as const,
+                name: 'audioVoice',
+                displayName: 'Audio Voice',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:audio_voice',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:audioVoice',
@@ -4378,6 +4527,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'audioFormat',
                     custom: 'audioFormat',
                 } as const,
+                name: 'audioFormat',
+                displayName: 'Audio Format',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:audio_format',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:audioFormat',
@@ -4440,6 +4591,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'modalities',
                     custom: 'modalities',
                 } as const,
+                name: 'modalities',
+                displayName: 'Modalities',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:modalities',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:modalities',
@@ -4502,6 +4655,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'tools',
                     custom: 'tools',
                 } as const,
+                name: 'tools',
+                displayName: 'Tools',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:tools',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:tools',
@@ -4564,6 +4719,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'presetName',
                     custom: 'presetName',
                 } as const,
+                name: 'presetName',
+                displayName: 'Preset Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:preset_name',
                 uniqueFieldId: 'supabase_automation_matrix:aiSettings:presetName',
@@ -4628,6 +4785,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_endpoint:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:id',
+                name: 'aiEndpointReference',
+                displayName: 'Ai Endpoint Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4660,6 +4819,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_model:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:id',
+                name: 'aiModelReference',
+                displayName: 'Ai Model Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4692,6 +4853,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_provider:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiProvider:id',
+                name: 'aiProviderReference',
+                displayName: 'Ai Provider Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4724,6 +4887,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_agent',
                 uniqueEntityId: 'supabase_automation_matrix:aiAgent',
+                name: 'aiAgentInverse',
+                displayName: 'Ai Agent Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -4763,6 +4928,7 @@ export const initialAutomationTableSchema = {
     arg: {
         schemaType: 'table' as const,
         entityName: 'arg',
+        displayName: 'Arg',
         uniqueTableId: 'supabase_automation_matrix:public:arg',
         uniqueEntityId: 'supabase_automation_matrix:arg',
         primaryKey: 'id',
@@ -4811,6 +4977,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:id',
                 uniqueFieldId: 'supabase_automation_matrix:arg:id',
@@ -4873,6 +5041,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:name',
                 uniqueFieldId: 'supabase_automation_matrix:arg:name',
@@ -4935,6 +5105,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'required',
                     custom: 'required',
                 } as const,
+                name: 'required',
+                displayName: 'Required',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:required',
                 uniqueFieldId: 'supabase_automation_matrix:arg:required',
@@ -4997,6 +5169,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'default',
                     custom: 'default',
                 } as const,
+                name: 'default',
+                displayName: 'Default',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:default',
                 uniqueFieldId: 'supabase_automation_matrix:arg:default',
@@ -5059,6 +5233,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'dataType',
                     custom: 'dataType',
                 } as const,
+                name: 'dataType',
+                displayName: 'Data Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:data_type',
                 uniqueFieldId: 'supabase_automation_matrix:arg:dataType',
@@ -5150,6 +5326,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'ready',
                     custom: 'ready',
                 } as const,
+                name: 'ready',
+                displayName: 'Ready',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:ready',
                 uniqueFieldId: 'supabase_automation_matrix:arg:ready',
@@ -5212,6 +5390,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'registeredFunction',
                     custom: 'registeredFunction',
                 } as const,
+                name: 'registeredFunction',
+                displayName: 'Registered Function',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:arg:registered_function',
                 uniqueFieldId: 'supabase_automation_matrix:arg:registeredFunction',
@@ -5277,6 +5457,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:registered_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:id',
+                name: 'registeredFunctionReference',
+                displayName: 'Registered Function Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5314,6 +5496,7 @@ export const initialAutomationTableSchema = {
     automationBoundaryBroker: {
         schemaType: 'table' as const,
         entityName: 'automationBoundaryBroker',
+        displayName: 'Automation Boundary Broker',
         uniqueTableId: 'supabase_automation_matrix:public:automation_boundary_broker',
         uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
         primaryKey: 'id',
@@ -5362,6 +5545,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:id',
@@ -5424,6 +5609,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'matrix',
                     custom: 'matrix',
                 } as const,
+                name: 'matrix',
+                displayName: 'Matrix',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:matrix',
                 uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:matrix',
@@ -5487,6 +5674,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'broker',
                     custom: 'broker',
                 } as const,
+                name: 'broker',
+                displayName: 'Broker',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:broker',
                 uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:broker',
@@ -5550,6 +5739,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sparkSource',
                     custom: 'sparkSource',
                 } as const,
+                name: 'sparkSource',
+                displayName: 'Spark Source',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:spark_source',
                 uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:sparkSource',
@@ -5651,6 +5842,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'beaconDestination',
                     custom: 'beaconDestination',
                 } as const,
+                name: 'beaconDestination',
+                displayName: 'Beacon Destination',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:beacon_destination',
                 uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:beaconDestination',
@@ -5736,6 +5929,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:broker:id',
+                name: 'brokerReference',
+                displayName: 'Broker Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5768,6 +5963,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:automation_matrix:id',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:id',
+                name: 'automationMatrixReference',
+                displayName: 'Automation Matrix Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -5806,6 +6003,7 @@ export const initialAutomationTableSchema = {
     automationMatrix: {
         schemaType: 'table' as const,
         entityName: 'automationMatrix',
+        displayName: 'Automation Matrix',
         uniqueTableId: 'supabase_automation_matrix:public:automation_matrix',
         uniqueEntityId: 'supabase_automation_matrix:automationMatrix',
         primaryKey: 'id',
@@ -5854,6 +6052,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:id',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:id',
@@ -5916,6 +6116,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:name',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:name',
@@ -5978,6 +6180,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:description',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:description',
@@ -6040,6 +6244,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'averageSeconds',
                     custom: 'averageSeconds',
                 } as const,
+                name: 'averageSeconds',
+                displayName: 'Average Seconds',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:average_seconds',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:averageSeconds',
@@ -6102,6 +6308,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'isAutomated',
                     custom: 'isAutomated',
                 } as const,
+                name: 'isAutomated',
+                displayName: 'Is Automated',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:is_automated',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:isAutomated',
@@ -6164,6 +6372,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'cognitionMatrices',
                     custom: 'cognitionMatrices',
                 } as const,
+                name: 'cognitionMatrices',
+                displayName: 'Cognition Matrices',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:cognition_matrices',
                 uniqueFieldId: 'supabase_automation_matrix:automationMatrix:cognitionMatrices',
@@ -6263,6 +6473,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:action',
                 uniqueEntityId: 'supabase_automation_matrix:action',
+                name: 'actionInverse',
+                displayName: 'Action Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6294,6 +6506,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:automation_boundary_broker',
                 uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
+                name: 'automationBoundaryBrokerInverse',
+                displayName: 'Automation Boundary Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -6331,6 +6545,7 @@ export const initialAutomationTableSchema = {
     broker: {
         schemaType: 'table' as const,
         entityName: 'broker',
+        displayName: 'Broker',
         uniqueTableId: 'supabase_automation_matrix:public:broker',
         uniqueEntityId: 'supabase_automation_matrix:broker',
         primaryKey: 'id',
@@ -6379,6 +6594,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:broker:id',
@@ -6441,6 +6658,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:name',
                 uniqueFieldId: 'supabase_automation_matrix:broker:name',
@@ -6503,6 +6722,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'value',
                     custom: 'value',
                 } as const,
+                name: 'value',
+                displayName: 'Value',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:value',
                 uniqueFieldId: 'supabase_automation_matrix:broker:value',
@@ -6565,6 +6786,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'dataType',
                     custom: 'dataType',
                 } as const,
+                name: 'dataType',
+                displayName: 'Data Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:data_type',
                 uniqueFieldId: 'supabase_automation_matrix:broker:dataType',
@@ -6656,6 +6879,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'ready',
                     custom: 'ready',
                 } as const,
+                name: 'ready',
+                displayName: 'Ready',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:ready',
                 uniqueFieldId: 'supabase_automation_matrix:broker:ready',
@@ -6718,6 +6943,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultSource',
                     custom: 'defaultSource',
                 } as const,
+                name: 'defaultSource',
+                displayName: 'Default Source',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:default_source',
                 uniqueFieldId: 'supabase_automation_matrix:broker:defaultSource',
@@ -6819,6 +7046,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'displayName',
                     custom: 'displayName',
                 } as const,
+                name: 'displayName',
+                displayName: 'Display Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:display_name',
                 uniqueFieldId: 'supabase_automation_matrix:broker:displayName',
@@ -6881,6 +7110,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:description',
                 uniqueFieldId: 'supabase_automation_matrix:broker:description',
@@ -6943,6 +7174,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'tooltip',
                     custom: 'tooltip',
                 } as const,
+                name: 'tooltip',
+                displayName: 'Tooltip',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:tooltip',
                 uniqueFieldId: 'supabase_automation_matrix:broker:tooltip',
@@ -7005,6 +7238,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'validationRules',
                     custom: 'validationRules',
                 } as const,
+                name: 'validationRules',
+                displayName: 'Validation Rules',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:validation_rules',
                 uniqueFieldId: 'supabase_automation_matrix:broker:validationRules',
@@ -7067,6 +7302,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sampleEntries',
                     custom: 'sampleEntries',
                 } as const,
+                name: 'sampleEntries',
+                displayName: 'Sample Entries',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:sample_entries',
                 uniqueFieldId: 'supabase_automation_matrix:broker:sampleEntries',
@@ -7129,6 +7366,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'customSourceComponent',
                     custom: 'customSourceComponent',
                 } as const,
+                name: 'customSourceComponent',
+                displayName: 'Custom Source Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:custom_source_component',
                 uniqueFieldId: 'supabase_automation_matrix:broker:customSourceComponent',
@@ -7192,6 +7431,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'additionalParams',
                     custom: 'additionalParams',
                 } as const,
+                name: 'additionalParams',
+                displayName: 'Additional Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:additional_params',
                 uniqueFieldId: 'supabase_automation_matrix:broker:additionalParams',
@@ -7254,6 +7495,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'otherSourceParams',
                     custom: 'otherSourceParams',
                 } as const,
+                name: 'otherSourceParams',
+                displayName: 'Other Source Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:other_source_params',
                 uniqueFieldId: 'supabase_automation_matrix:broker:otherSourceParams',
@@ -7316,6 +7559,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultDestination',
                     custom: 'defaultDestination',
                 } as const,
+                name: 'defaultDestination',
+                displayName: 'Default Destination',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:default_destination',
                 uniqueFieldId: 'supabase_automation_matrix:broker:defaultDestination',
@@ -7399,6 +7644,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'outputComponent',
                     custom: 'outputComponent',
                 } as const,
+                name: 'outputComponent',
+                displayName: 'Output Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:output_component',
                 uniqueFieldId: 'supabase_automation_matrix:broker:outputComponent',
@@ -7861,6 +8108,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'tags',
                     custom: 'tags',
                 } as const,
+                name: 'tags',
+                displayName: 'Tags',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:tags',
                 uniqueFieldId: 'supabase_automation_matrix:broker:tags',
@@ -7923,6 +8172,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'stringValue',
                     custom: 'stringValue',
                 } as const,
+                name: 'stringValue',
+                displayName: 'String Value',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:broker:string_value',
                 uniqueFieldId: 'supabase_automation_matrix:broker:stringValue',
@@ -7987,6 +8238,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:data_input_component:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:id',
+                name: 'dataInputComponentReference',
+                displayName: 'Data Input Component Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8019,6 +8272,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_broker',
                 uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
+                name: 'recipeBrokerInverse',
+                displayName: 'Recipe Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8050,6 +8305,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:registered_function',
                 uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
+                name: 'registeredFunctionInverse',
+                displayName: 'Registered Function Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8081,6 +8338,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:automation_boundary_broker',
                 uniqueEntityId: 'supabase_automation_matrix:automationBoundaryBroker',
+                name: 'automationBoundaryBrokerInverse',
+                displayName: 'Automation Boundary Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -8126,6 +8385,7 @@ export const initialAutomationTableSchema = {
     bucketStructures: {
         schemaType: 'table' as const,
         entityName: 'bucketStructures',
+        displayName: 'Bucket Structures',
         uniqueTableId: 'supabase_automation_matrix:public:bucket_structures',
         uniqueEntityId: 'supabase_automation_matrix:bucketStructures',
         primaryKey: 'bucketId',
@@ -8174,6 +8434,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'bucketId',
                     custom: 'bucketId',
                 } as const,
+                name: 'bucketId',
+                displayName: 'Bucket Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:bucket_structures:bucket_id',
                 uniqueFieldId: 'supabase_automation_matrix:bucketStructures:bucketId',
@@ -8236,6 +8498,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'structure',
                     custom: 'structure',
                 } as const,
+                name: 'structure',
+                displayName: 'Structure',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:bucket_structures:structure',
                 uniqueFieldId: 'supabase_automation_matrix:bucketStructures:structure',
@@ -8298,6 +8562,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'lastUpdated',
                     custom: 'lastUpdated',
                 } as const,
+                name: 'lastUpdated',
+                displayName: 'Last Updated',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:bucket_structures:last_updated',
                 uniqueFieldId: 'supabase_automation_matrix:bucketStructures:lastUpdated',
@@ -8365,6 +8631,7 @@ export const initialAutomationTableSchema = {
     bucketTreeStructures: {
         schemaType: 'table' as const,
         entityName: 'bucketTreeStructures',
+        displayName: 'Bucket Tree Structures',
         uniqueTableId: 'supabase_automation_matrix:public:bucket_tree_structures',
         uniqueEntityId: 'supabase_automation_matrix:bucketTreeStructures',
         primaryKey: 'bucketId',
@@ -8413,6 +8680,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'bucketId',
                     custom: 'bucketId',
                 } as const,
+                name: 'bucketId',
+                displayName: 'Bucket Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:bucket_tree_structures:bucket_id',
                 uniqueFieldId: 'supabase_automation_matrix:bucketTreeStructures:bucketId',
@@ -8475,6 +8744,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'treeStructure',
                     custom: 'treeStructure',
                 } as const,
+                name: 'treeStructure',
+                displayName: 'Tree Structure',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:bucket_tree_structures:tree_structure',
                 uniqueFieldId: 'supabase_automation_matrix:bucketTreeStructures:treeStructure',
@@ -8537,6 +8808,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'lastUpdated',
                     custom: 'lastUpdated',
                 } as const,
+                name: 'lastUpdated',
+                displayName: 'Last Updated',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:bucket_tree_structures:last_updated',
                 uniqueFieldId: 'supabase_automation_matrix:bucketTreeStructures:lastUpdated',
@@ -8604,6 +8877,7 @@ export const initialAutomationTableSchema = {
     dataBroker: {
         schemaType: 'table' as const,
         entityName: 'dataBroker',
+        displayName: 'Data Broker',
         uniqueTableId: 'supabase_automation_matrix:public:data_broker',
         uniqueEntityId: 'supabase_automation_matrix:dataBroker',
         primaryKey: 'id',
@@ -8652,6 +8926,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:id',
@@ -8714,6 +8990,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_broker:name',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:name',
@@ -8776,6 +9054,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'dataType',
                     custom: 'dataType',
                 } as const,
+                name: 'dataType',
+                displayName: 'Data Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_broker:data_type',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:dataType',
@@ -8867,6 +9147,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultValue',
                     custom: 'defaultValue',
                 } as const,
+                name: 'defaultValue',
+                displayName: 'Default Value',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_broker:default_value',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:defaultValue',
@@ -8929,6 +9211,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultComponent',
                     custom: 'defaultComponent',
                 } as const,
+                name: 'defaultComponent',
+                displayName: 'Default Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_broker:default_component',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:defaultComponent',
@@ -8992,6 +9276,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'color',
                     custom: 'color',
                 } as const,
+                name: 'color',
+                displayName: 'Color',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_broker:color',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:color',
@@ -9192,6 +9478,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:data_input_component:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:id',
+                name: 'dataInputComponentReference',
+                displayName: 'Data Input Component Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9224,6 +9512,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:message_broker',
                 uniqueEntityId: 'supabase_automation_matrix:messageBroker',
+                name: 'messageBrokerInverse',
+                displayName: 'Message Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -9261,6 +9551,7 @@ export const initialAutomationTableSchema = {
     dataInputComponent: {
         schemaType: 'table' as const,
         entityName: 'dataInputComponent',
+        displayName: 'Data Input Component',
         uniqueTableId: 'supabase_automation_matrix:public:data_input_component',
         uniqueEntityId: 'supabase_automation_matrix:dataInputComponent',
         primaryKey: 'id',
@@ -9309,6 +9600,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:id',
@@ -9371,6 +9664,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'options',
                     custom: 'options',
                 } as const,
+                name: 'options',
+                displayName: 'Options',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:options',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:options',
@@ -9433,6 +9728,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'includeOther',
                     custom: 'includeOther',
                 } as const,
+                name: 'includeOther',
+                displayName: 'Include Other',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:include_other',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:includeOther',
@@ -9495,6 +9792,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'min',
                     custom: 'min',
                 } as const,
+                name: 'min',
+                displayName: 'Min',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:min',
@@ -9557,6 +9856,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'max',
                     custom: 'max',
                 } as const,
+                name: 'max',
+                displayName: 'Max',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:max',
@@ -9619,6 +9920,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'step',
                     custom: 'step',
                 } as const,
+                name: 'step',
+                displayName: 'Step',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:step',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:step',
@@ -9681,6 +9984,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'minRows',
                     custom: 'minRows',
                 } as const,
+                name: 'minRows',
+                displayName: 'Min Rows',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min_rows',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:minRows',
@@ -9743,6 +10048,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'maxRows',
                     custom: 'maxRows',
                 } as const,
+                name: 'maxRows',
+                displayName: 'Max Rows',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max_rows',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:maxRows',
@@ -9805,6 +10112,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'acceptableFiletypes',
                     custom: 'acceptableFiletypes',
                 } as const,
+                name: 'acceptableFiletypes',
+                displayName: 'Acceptable Filetypes',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:acceptable_filetypes',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:acceptableFiletypes',
@@ -9867,6 +10176,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'src',
                     custom: 'src',
                 } as const,
+                name: 'src',
+                displayName: 'Src',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:src',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:src',
@@ -9929,6 +10240,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'classes',
                     custom: 'classes',
                 } as const,
+                name: 'classes',
+                displayName: 'Classes',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:classes',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:classes',
@@ -9991,6 +10304,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'colorOverrides',
                     custom: 'colorOverrides',
                 } as const,
+                name: 'colorOverrides',
+                displayName: 'Color Overrides',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:color_overrides',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:colorOverrides',
@@ -10053,6 +10368,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'additionalParams',
                     custom: 'additionalParams',
                 } as const,
+                name: 'additionalParams',
+                displayName: 'Additional Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:additional_params',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:additionalParams',
@@ -10115,6 +10432,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'subComponent',
                     custom: 'subComponent',
                 } as const,
+                name: 'subComponent',
+                displayName: 'Sub Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:sub_component',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:subComponent',
@@ -10177,6 +10496,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'component',
                     custom: 'component',
                 } as const,
+                name: 'component',
+                displayName: 'Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:component',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:component',
@@ -10417,6 +10738,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:name',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:name',
@@ -10481,6 +10804,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:message_broker',
                 uniqueEntityId: 'supabase_automation_matrix:messageBroker',
+                name: 'messageBrokerInverse',
+                displayName: 'Message Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10512,6 +10837,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:broker',
                 uniqueEntityId: 'supabase_automation_matrix:broker',
+                name: 'brokerInverse',
+                displayName: 'Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10543,6 +10870,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:data_broker',
                 uniqueEntityId: 'supabase_automation_matrix:dataBroker',
+                name: 'dataBrokerInverse',
+                displayName: 'Data Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -10581,6 +10910,7 @@ export const initialAutomationTableSchema = {
     dataOutputComponent: {
         schemaType: 'table' as const,
         entityName: 'dataOutputComponent',
+        displayName: 'Data Output Component',
         uniqueTableId: 'supabase_automation_matrix:public:data_output_component',
         uniqueEntityId: 'supabase_automation_matrix:dataOutputComponent',
         primaryKey: 'id',
@@ -10629,6 +10959,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:id',
@@ -10691,6 +11023,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'componentType',
                     custom: 'componentType',
                 } as const,
+                name: 'componentType',
+                displayName: 'Component Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:component_type',
                 uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:componentType',
@@ -11153,6 +11487,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'uiComponent',
                     custom: 'uiComponent',
                 } as const,
+                name: 'uiComponent',
+                displayName: 'Ui Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:ui_component',
                 uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:uiComponent',
@@ -11215,6 +11551,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'props',
                     custom: 'props',
                 } as const,
+                name: 'props',
+                displayName: 'Props',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:props',
                 uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:props',
@@ -11277,6 +11615,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'additionalParams',
                     custom: 'additionalParams',
                 } as const,
+                name: 'additionalParams',
+                displayName: 'Additional Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:additional_params',
                 uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:additionalParams',
@@ -11344,6 +11684,7 @@ export const initialAutomationTableSchema = {
     displayOption: {
         schemaType: 'table' as const,
         entityName: 'displayOption',
+        displayName: 'Display Option',
         uniqueTableId: 'supabase_automation_matrix:public:display_option',
         uniqueEntityId: 'supabase_automation_matrix:displayOption',
         primaryKey: 'id',
@@ -11392,6 +11733,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:display_option:id',
                 uniqueFieldId: 'supabase_automation_matrix:displayOption:id',
@@ -11454,6 +11797,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:display_option:name',
                 uniqueFieldId: 'supabase_automation_matrix:displayOption:name',
@@ -11516,6 +11861,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultParams',
                     custom: 'defaultParams',
                 } as const,
+                name: 'defaultParams',
+                displayName: 'Default Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:display_option:default_params',
                 uniqueFieldId: 'supabase_automation_matrix:displayOption:defaultParams',
@@ -11578,6 +11925,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'customizableParams',
                     custom: 'customizableParams',
                 } as const,
+                name: 'customizableParams',
+                displayName: 'Customizable Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:display_option:customizable_params',
                 uniqueFieldId: 'supabase_automation_matrix:displayOption:customizableParams',
@@ -11640,6 +11989,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'additionalParams',
                     custom: 'additionalParams',
                 } as const,
+                name: 'additionalParams',
+                displayName: 'Additional Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:display_option:additional_params',
                 uniqueFieldId: 'supabase_automation_matrix:displayOption:additionalParams',
@@ -11704,6 +12055,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_display',
                 uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
+                name: 'recipeDisplayInverse',
+                displayName: 'Recipe Display Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -11738,6 +12091,7 @@ export const initialAutomationTableSchema = {
     emails: {
         schemaType: 'table' as const,
         entityName: 'emails',
+        displayName: 'Emails',
         uniqueTableId: 'supabase_automation_matrix:public:emails',
         uniqueEntityId: 'supabase_automation_matrix:emails',
         primaryKey: 'id',
@@ -11786,6 +12140,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:id',
                 uniqueFieldId: 'supabase_automation_matrix:emails:id',
@@ -11848,6 +12204,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sender',
                     custom: 'sender',
                 } as const,
+                name: 'sender',
+                displayName: 'Sender',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:sender',
                 uniqueFieldId: 'supabase_automation_matrix:emails:sender',
@@ -11910,6 +12268,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipient',
                     custom: 'recipient',
                 } as const,
+                name: 'recipient',
+                displayName: 'Recipient',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:recipient',
                 uniqueFieldId: 'supabase_automation_matrix:emails:recipient',
@@ -11972,6 +12332,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'subject',
                     custom: 'subject',
                 } as const,
+                name: 'subject',
+                displayName: 'Subject',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:subject',
                 uniqueFieldId: 'supabase_automation_matrix:emails:subject',
@@ -12034,6 +12396,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'body',
                     custom: 'body',
                 } as const,
+                name: 'body',
+                displayName: 'Body',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:body',
                 uniqueFieldId: 'supabase_automation_matrix:emails:body',
@@ -12096,6 +12460,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'timestamp',
                     custom: 'timestamp',
                 } as const,
+                name: 'timestamp',
+                displayName: 'Timestamp',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:timestamp',
                 uniqueFieldId: 'supabase_automation_matrix:emails:timestamp',
@@ -12158,6 +12524,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'isRead',
                     custom: 'isRead',
                 } as const,
+                name: 'isRead',
+                displayName: 'Is Read',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:emails:is_read',
                 uniqueFieldId: 'supabase_automation_matrix:emails:isRead',
@@ -12225,6 +12593,7 @@ export const initialAutomationTableSchema = {
     extractor: {
         schemaType: 'table' as const,
         entityName: 'extractor',
+        displayName: 'Extractor',
         uniqueTableId: 'supabase_automation_matrix:public:extractor',
         uniqueEntityId: 'supabase_automation_matrix:extractor',
         primaryKey: 'id',
@@ -12273,6 +12642,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:extractor:id',
                 uniqueFieldId: 'supabase_automation_matrix:extractor:id',
@@ -12335,6 +12706,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:extractor:name',
                 uniqueFieldId: 'supabase_automation_matrix:extractor:name',
@@ -12397,6 +12770,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'outputType',
                     custom: 'outputType',
                 } as const,
+                name: 'outputType',
+                displayName: 'Output Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:extractor:output_type',
                 uniqueFieldId: 'supabase_automation_matrix:extractor:outputType',
@@ -12488,6 +12863,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultIdentifier',
                     custom: 'defaultIdentifier',
                 } as const,
+                name: 'defaultIdentifier',
+                displayName: 'Default Identifier',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:extractor:default_identifier',
                 uniqueFieldId: 'supabase_automation_matrix:extractor:defaultIdentifier',
@@ -12550,6 +12927,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultIndex',
                     custom: 'defaultIndex',
                 } as const,
+                name: 'defaultIndex',
+                displayName: 'Default Index',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:extractor:default_index',
                 uniqueFieldId: 'supabase_automation_matrix:extractor:defaultIndex',
@@ -12617,6 +12996,7 @@ export const initialAutomationTableSchema = {
     fileStructure: {
         schemaType: 'table' as const,
         entityName: 'fileStructure',
+        displayName: 'File Structure',
         uniqueTableId: 'supabase_automation_matrix:public:file_structure',
         uniqueEntityId: 'supabase_automation_matrix:fileStructure',
         primaryKey: 'id',
@@ -12665,6 +13045,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:id',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:id',
@@ -12727,6 +13109,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'bucketId',
                     custom: 'bucketId',
                 } as const,
+                name: 'bucketId',
+                displayName: 'Bucket Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:bucket_id',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:bucketId',
@@ -12789,6 +13173,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'path',
                     custom: 'path',
                 } as const,
+                name: 'path',
+                displayName: 'Path',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:path',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:path',
@@ -12851,6 +13237,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'isFolder',
                     custom: 'isFolder',
                 } as const,
+                name: 'isFolder',
+                displayName: 'Is Folder',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:is_folder',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:isFolder',
@@ -12913,6 +13301,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'fileId',
                     custom: 'fileId',
                 } as const,
+                name: 'fileId',
+                displayName: 'File Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:file_id',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:fileId',
@@ -12975,6 +13365,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'parentPath',
                     custom: 'parentPath',
                 } as const,
+                name: 'parentPath',
+                displayName: 'Parent Path',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:parent_path',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:parentPath',
@@ -13037,6 +13429,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:name',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:name',
@@ -13099,6 +13493,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'metadata',
                     custom: 'metadata',
                 } as const,
+                name: 'metadata',
+                displayName: 'Metadata',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:metadata',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:metadata',
@@ -13161,6 +13557,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:createdAt',
@@ -13223,6 +13621,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'updatedAt',
                     custom: 'updatedAt',
                 } as const,
+                name: 'updatedAt',
+                displayName: 'Updated At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:file_structure:updated_at',
                 uniqueFieldId: 'supabase_automation_matrix:fileStructure:updatedAt',
@@ -13290,6 +13690,7 @@ export const initialAutomationTableSchema = {
     flashcardData: {
         schemaType: 'table' as const,
         entityName: 'flashcardData',
+        displayName: 'Flashcard Data',
         uniqueTableId: 'supabase_automation_matrix:public:flashcard_data',
         uniqueEntityId: 'supabase_automation_matrix:flashcardData',
         primaryKey: 'id',
@@ -13338,6 +13739,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:id',
@@ -13400,6 +13803,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'userId',
                     custom: 'userId',
                 } as const,
+                name: 'userId',
+                displayName: 'User Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:user_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:userId',
@@ -13463,6 +13868,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'topic',
                     custom: 'topic',
                 } as const,
+                name: 'topic',
+                displayName: 'Topic',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:topic',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:topic',
@@ -13525,6 +13932,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'lesson',
                     custom: 'lesson',
                 } as const,
+                name: 'lesson',
+                displayName: 'Lesson',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:lesson',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:lesson',
@@ -13587,6 +13996,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'difficulty',
                     custom: 'difficulty',
                 } as const,
+                name: 'difficulty',
+                displayName: 'Difficulty',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:difficulty',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:difficulty',
@@ -13649,6 +14060,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'front',
                     custom: 'front',
                 } as const,
+                name: 'front',
+                displayName: 'Front',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:front',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:front',
@@ -13711,6 +14124,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'back',
                     custom: 'back',
                 } as const,
+                name: 'back',
+                displayName: 'Back',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:back',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:back',
@@ -13773,6 +14188,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'example',
                     custom: 'example',
                 } as const,
+                name: 'example',
+                displayName: 'Example',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:example',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:example',
@@ -13835,6 +14252,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'detailedExplanation',
                     custom: 'detailedExplanation',
                 } as const,
+                name: 'detailedExplanation',
+                displayName: 'Detailed Explanation',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:detailed_explanation',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:detailedExplanation',
@@ -13897,6 +14316,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'audioExplanation',
                     custom: 'audioExplanation',
                 } as const,
+                name: 'audioExplanation',
+                displayName: 'Audio Explanation',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:audio_explanation',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:audioExplanation',
@@ -13959,6 +14380,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'personalNotes',
                     custom: 'personalNotes',
                 } as const,
+                name: 'personalNotes',
+                displayName: 'Personal Notes',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:personal_notes',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:personalNotes',
@@ -14021,6 +14444,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'isDeleted',
                     custom: 'isDeleted',
                 } as const,
+                name: 'isDeleted',
+                displayName: 'Is Deleted',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:is_deleted',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:isDeleted',
@@ -14083,6 +14508,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'public',
                     custom: 'public',
                 } as const,
+                name: 'public',
+                displayName: 'Public',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:public',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:public',
@@ -14145,6 +14572,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sharedWith',
                     custom: 'sharedWith',
                 } as const,
+                name: 'sharedWith',
+                displayName: 'Shared With',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:shared_with',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:sharedWith',
@@ -14208,6 +14637,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:createdAt',
@@ -14270,6 +14701,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'updatedAt',
                     custom: 'updatedAt',
                 } as const,
+                name: 'updatedAt',
+                displayName: 'Updated At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:updated_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:updatedAt',
@@ -14334,6 +14767,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:flashcard_history',
                 uniqueEntityId: 'supabase_automation_matrix:flashcardHistory',
+                name: 'flashcardHistoryInverse',
+                displayName: 'Flashcard History Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -14365,6 +14800,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:flashcard_set_relations',
                 uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
+                name: 'flashcardSetRelationsInverse',
+                displayName: 'Flashcard Set Relations Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -14396,6 +14833,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:flashcard_images',
                 uniqueEntityId: 'supabase_automation_matrix:flashcardImages',
+                name: 'flashcardImagesInverse',
+                displayName: 'Flashcard Images Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -14440,6 +14879,7 @@ export const initialAutomationTableSchema = {
     flashcardHistory: {
         schemaType: 'table' as const,
         entityName: 'flashcardHistory',
+        displayName: 'Flashcard History',
         uniqueTableId: 'supabase_automation_matrix:public:flashcard_history',
         uniqueEntityId: 'supabase_automation_matrix:flashcardHistory',
         primaryKey: 'id',
@@ -14488,6 +14928,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:id',
@@ -14550,6 +14992,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'flashcardId',
                     custom: 'flashcardId',
                 } as const,
+                name: 'flashcardId',
+                displayName: 'Flashcard Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:flashcard_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:flashcardId',
@@ -14613,6 +15057,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'userId',
                     custom: 'userId',
                 } as const,
+                name: 'userId',
+                displayName: 'User Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:user_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:userId',
@@ -14676,6 +15122,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'reviewCount',
                     custom: 'reviewCount',
                 } as const,
+                name: 'reviewCount',
+                displayName: 'Review Count',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:review_count',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:reviewCount',
@@ -14738,6 +15186,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'correctCount',
                     custom: 'correctCount',
                 } as const,
+                name: 'correctCount',
+                displayName: 'Correct Count',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:correct_count',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:correctCount',
@@ -14800,6 +15250,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'incorrectCount',
                     custom: 'incorrectCount',
                 } as const,
+                name: 'incorrectCount',
+                displayName: 'Incorrect Count',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:incorrect_count',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:incorrectCount',
@@ -14862,6 +15314,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:createdAt',
@@ -14924,6 +15378,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'updatedAt',
                     custom: 'updatedAt',
                 } as const,
+                name: 'updatedAt',
+                displayName: 'Updated At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:updated_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:updatedAt',
@@ -14988,6 +15444,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:flashcard_data:id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:id',
+                name: 'flashcardDataReference',
+                displayName: 'Flashcard Data Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -15023,6 +15481,7 @@ export const initialAutomationTableSchema = {
     flashcardImages: {
         schemaType: 'table' as const,
         entityName: 'flashcardImages',
+        displayName: 'Flashcard Images',
         uniqueTableId: 'supabase_automation_matrix:public:flashcard_images',
         uniqueEntityId: 'supabase_automation_matrix:flashcardImages',
         primaryKey: 'id',
@@ -15071,6 +15530,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:id',
@@ -15133,6 +15594,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'flashcardId',
                     custom: 'flashcardId',
                 } as const,
+                name: 'flashcardId',
+                displayName: 'Flashcard Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:flashcard_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:flashcardId',
@@ -15196,6 +15659,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'filePath',
                     custom: 'filePath',
                 } as const,
+                name: 'filePath',
+                displayName: 'File Path',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:file_path',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:filePath',
@@ -15258,6 +15723,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'fileName',
                     custom: 'fileName',
                 } as const,
+                name: 'fileName',
+                displayName: 'File Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:file_name',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:fileName',
@@ -15320,6 +15787,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'mimeType',
                     custom: 'mimeType',
                 } as const,
+                name: 'mimeType',
+                displayName: 'Mime Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:mime_type',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:mimeType',
@@ -15382,6 +15851,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'size',
                     custom: 'size',
                 } as const,
+                name: 'size',
+                displayName: 'Size',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:size',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:size',
@@ -15444,6 +15915,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardImages:createdAt',
@@ -15508,6 +15981,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:flashcard_data:id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:id',
+                name: 'flashcardDataReference',
+                displayName: 'Flashcard Data Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -15543,6 +16018,7 @@ export const initialAutomationTableSchema = {
     flashcardSetRelations: {
         schemaType: 'table' as const,
         entityName: 'flashcardSetRelations',
+        displayName: 'Flashcard Set Relations',
         uniqueTableId: 'supabase_automation_matrix:public:flashcard_set_relations',
         uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
         primaryKey: 'flashcardId, setId',
@@ -15592,6 +16068,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'flashcardId',
                     custom: 'flashcardId',
                 } as const,
+                name: 'flashcardId',
+                displayName: 'Flashcard Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:flashcard_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:flashcardId',
@@ -15655,6 +16133,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'setId',
                     custom: 'setId',
                 } as const,
+                name: 'setId',
+                displayName: 'Set Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:set_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:setId',
@@ -15718,6 +16198,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'order',
                     custom: 'order',
                 } as const,
+                name: 'order',
+                displayName: 'Order',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:order',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:order',
@@ -15782,6 +16264,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:flashcard_data:flashcardId, setId',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardData:flashcardIdSetId',
+                name: 'flashcardDataReference',
+                displayName: 'Flashcard Data Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -15814,6 +16298,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:flashcard_sets:flashcardId, setId',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:flashcardIdSetId',
+                name: 'flashcardSetsReference',
+                displayName: 'Flashcard Sets Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -15852,6 +16338,7 @@ export const initialAutomationTableSchema = {
     flashcardSets: {
         schemaType: 'table' as const,
         entityName: 'flashcardSets',
+        displayName: 'Flashcard Sets',
         uniqueTableId: 'supabase_automation_matrix:public:flashcard_sets',
         uniqueEntityId: 'supabase_automation_matrix:flashcardSets',
         primaryKey: 'setId',
@@ -15900,6 +16387,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'setId',
                     custom: 'setId',
                 } as const,
+                name: 'setId',
+                displayName: 'Set Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:set_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:setId',
@@ -15962,6 +16451,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'userId',
                     custom: 'userId',
                 } as const,
+                name: 'userId',
+                displayName: 'User Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:user_id',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:userId',
@@ -16025,6 +16516,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:name',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:name',
@@ -16087,6 +16580,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:createdAt',
@@ -16149,6 +16644,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'updatedAt',
                     custom: 'updatedAt',
                 } as const,
+                name: 'updatedAt',
+                displayName: 'Updated At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:updated_at',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:updatedAt',
@@ -16211,6 +16708,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sharedWith',
                     custom: 'sharedWith',
                 } as const,
+                name: 'sharedWith',
+                displayName: 'Shared With',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:shared_with',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:sharedWith',
@@ -16274,6 +16773,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'public',
                     custom: 'public',
                 } as const,
+                name: 'public',
+                displayName: 'Public',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:public',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:public',
@@ -16336,6 +16837,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'topic',
                     custom: 'topic',
                 } as const,
+                name: 'topic',
+                displayName: 'Topic',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:topic',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:topic',
@@ -16398,6 +16901,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'lesson',
                     custom: 'lesson',
                 } as const,
+                name: 'lesson',
+                displayName: 'Lesson',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:lesson',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:lesson',
@@ -16460,6 +16965,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'difficulty',
                     custom: 'difficulty',
                 } as const,
+                name: 'difficulty',
+                displayName: 'Difficulty',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:difficulty',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:difficulty',
@@ -16522,6 +17029,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'audioOverview',
                     custom: 'audioOverview',
                 } as const,
+                name: 'audioOverview',
+                displayName: 'Audio Overview',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:audio_overview',
                 uniqueFieldId: 'supabase_automation_matrix:flashcardSets:audioOverview',
@@ -16586,6 +17095,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:flashcard_set_relations',
                 uniqueEntityId: 'supabase_automation_matrix:flashcardSetRelations',
+                name: 'flashcardSetRelationsInverse',
+                displayName: 'Flashcard Set Relations Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -16622,6 +17133,7 @@ export const initialAutomationTableSchema = {
     messageBroker: {
         schemaType: 'table' as const,
         entityName: 'messageBroker',
+        displayName: 'Message Broker',
         uniqueTableId: 'supabase_automation_matrix:public:message_broker',
         uniqueEntityId: 'supabase_automation_matrix:messageBroker',
         primaryKey: 'id',
@@ -16670,6 +17182,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:messageBroker:id',
@@ -16732,6 +17246,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'messageId',
                     custom: 'messageId',
                 } as const,
+                name: 'messageId',
+                displayName: 'Message Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_broker:message_id',
                 uniqueFieldId: 'supabase_automation_matrix:messageBroker:messageId',
@@ -16795,6 +17311,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'brokerId',
                     custom: 'brokerId',
                 } as const,
+                name: 'brokerId',
+                displayName: 'Broker Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_broker:broker_id',
                 uniqueFieldId: 'supabase_automation_matrix:messageBroker:brokerId',
@@ -16858,6 +17376,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultValue',
                     custom: 'defaultValue',
                 } as const,
+                name: 'defaultValue',
+                displayName: 'Default Value',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_broker:default_value',
                 uniqueFieldId: 'supabase_automation_matrix:messageBroker:defaultValue',
@@ -16920,6 +17440,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultComponent',
                     custom: 'defaultComponent',
                 } as const,
+                name: 'defaultComponent',
+                displayName: 'Default Component',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_broker:default_component',
                 uniqueFieldId: 'supabase_automation_matrix:messageBroker:defaultComponent',
@@ -16985,6 +17507,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:data_broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataBroker:id',
+                name: 'dataBrokerReference',
+                displayName: 'Data Broker Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17017,6 +17541,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:data_input_component:id',
                 uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:id',
+                name: 'dataInputComponentReference',
+                displayName: 'Data Input Component Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17049,6 +17575,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:message_template:id',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:id',
+                name: 'messageTemplateReference',
+                displayName: 'Message Template Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17088,6 +17616,7 @@ export const initialAutomationTableSchema = {
     messageTemplate: {
         schemaType: 'table' as const,
         entityName: 'messageTemplate',
+        displayName: 'Message Template',
         uniqueTableId: 'supabase_automation_matrix:public:message_template',
         uniqueEntityId: 'supabase_automation_matrix:messageTemplate',
         primaryKey: 'id',
@@ -17136,6 +17665,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_template:id',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:id',
@@ -17198,6 +17729,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'role',
                     custom: 'role',
                 } as const,
+                name: 'role',
+                displayName: 'Role',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_template:role',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:role',
@@ -17273,6 +17806,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'type',
                     custom: 'type',
                 } as const,
+                name: 'type',
+                displayName: 'Type',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_template:type',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:type',
@@ -17356,6 +17891,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_template:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:createdAt',
@@ -17418,6 +17955,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'content',
                     custom: 'content',
                 } as const,
+                name: 'content',
+                displayName: 'Content',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:message_template:content',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:content',
@@ -17482,6 +18021,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:message_broker',
                 uniqueEntityId: 'supabase_automation_matrix:messageBroker',
+                name: 'messageBrokerInverse',
+                displayName: 'Message Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17513,6 +18054,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_message',
                 uniqueEntityId: 'supabase_automation_matrix:recipeMessage',
+                name: 'recipeMessageInverse',
+                displayName: 'Recipe Message Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17550,6 +18093,7 @@ export const initialAutomationTableSchema = {
     processor: {
         schemaType: 'table' as const,
         entityName: 'processor',
+        displayName: 'Processor',
         uniqueTableId: 'supabase_automation_matrix:public:processor',
         uniqueEntityId: 'supabase_automation_matrix:processor',
         primaryKey: 'id',
@@ -17598,6 +18142,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:processor:id',
                 uniqueFieldId: 'supabase_automation_matrix:processor:id',
@@ -17660,6 +18206,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:processor:name',
                 uniqueFieldId: 'supabase_automation_matrix:processor:name',
@@ -17722,6 +18270,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'dependsDefault',
                     custom: 'dependsDefault',
                 } as const,
+                name: 'dependsDefault',
+                displayName: 'Depends Default',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:processor:depends_default',
                 uniqueFieldId: 'supabase_automation_matrix:processor:dependsDefault',
@@ -17785,6 +18335,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'defaultExtractors',
                     custom: 'defaultExtractors',
                 } as const,
+                name: 'defaultExtractors',
+                displayName: 'Default Extractors',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:processor:default_extractors',
                 uniqueFieldId: 'supabase_automation_matrix:processor:defaultExtractors',
@@ -17847,6 +18399,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'params',
                     custom: 'params',
                 } as const,
+                name: 'params',
+                displayName: 'Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:processor:params',
                 uniqueFieldId: 'supabase_automation_matrix:processor:params',
@@ -17911,6 +18465,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:processor:id',
                 uniqueFieldId: 'supabase_automation_matrix:processor:id',
+                name: 'processorReference',
+                displayName: 'Processor Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17943,6 +18499,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_processor',
                 uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
+                name: 'recipeProcessorInverse',
+                displayName: 'Recipe Processor Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -17980,6 +18538,7 @@ export const initialAutomationTableSchema = {
     recipe: {
         schemaType: 'table' as const,
         entityName: 'recipe',
+        displayName: 'Recipe',
         uniqueTableId: 'supabase_automation_matrix:public:recipe',
         uniqueEntityId: 'supabase_automation_matrix:recipe',
         primaryKey: 'id',
@@ -18028,6 +18587,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
@@ -18090,6 +18651,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:name',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:name',
@@ -18152,6 +18715,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:description',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:description',
@@ -18214,6 +18779,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'tags',
                     custom: 'tags',
                 } as const,
+                name: 'tags',
+                displayName: 'Tags',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:tags',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:tags',
@@ -18276,6 +18843,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sampleOutput',
                     custom: 'sampleOutput',
                 } as const,
+                name: 'sampleOutput',
+                displayName: 'Sample Output',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:sample_output',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:sampleOutput',
@@ -18338,6 +18907,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'isPublic',
                     custom: 'isPublic',
                 } as const,
+                name: 'isPublic',
+                displayName: 'Is Public',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:is_public',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:isPublic',
@@ -18400,6 +18971,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'status',
                     custom: 'status',
                 } as const,
+                name: 'status',
+                displayName: 'Status',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:status',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:status',
@@ -18487,6 +19060,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'version',
                     custom: 'version',
                 } as const,
+                name: 'version',
+                displayName: 'Version',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:version',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:version',
@@ -18549,6 +19124,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'messages',
                     custom: 'messages',
                 } as const,
+                name: 'messages',
+                displayName: 'Messages',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:messages',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:messages',
@@ -18612,6 +19189,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'postResultOptions',
                     custom: 'postResultOptions',
                 } as const,
+                name: 'postResultOptions',
+                displayName: 'Post Result Options',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe:post_result_options',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:postResultOptions',
@@ -18676,6 +19255,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:ai_agent',
                 uniqueEntityId: 'supabase_automation_matrix:aiAgent',
+                name: 'aiAgentInverse',
+                displayName: 'Ai Agent Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18707,6 +19288,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_display',
                 uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
+                name: 'recipeDisplayInverse',
+                displayName: 'Recipe Display Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18738,6 +19321,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_processor',
                 uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
+                name: 'recipeProcessorInverse',
+                displayName: 'Recipe Processor Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18769,6 +19354,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_model',
                 uniqueEntityId: 'supabase_automation_matrix:recipeModel',
+                name: 'recipeModelInverse',
+                displayName: 'Recipe Model Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18800,6 +19387,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_broker',
                 uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
+                name: 'recipeBrokerInverse',
+                displayName: 'Recipe Broker Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18831,6 +19420,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_tool',
                 uniqueEntityId: 'supabase_automation_matrix:recipeTool',
+                name: 'recipeToolInverse',
+                displayName: 'Recipe Tool Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18862,6 +19453,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_function',
                 uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
+                name: 'recipeFunctionInverse',
+                displayName: 'Recipe Function Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18893,6 +19486,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_message',
                 uniqueEntityId: 'supabase_automation_matrix:recipeMessage',
+                name: 'recipeMessageInverse',
+                displayName: 'Recipe Message Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -18936,6 +19531,7 @@ export const initialAutomationTableSchema = {
     recipeBroker: {
         schemaType: 'table' as const,
         entityName: 'recipeBroker',
+        displayName: 'Recipe Broker',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_broker',
         uniqueEntityId: 'supabase_automation_matrix:recipeBroker',
         primaryKey: 'id',
@@ -18984,6 +19580,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeBroker:id',
@@ -19046,6 +19644,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipe',
                     custom: 'recipe',
                 } as const,
+                name: 'recipe',
+                displayName: 'Recipe',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:recipe',
                 uniqueFieldId: 'supabase_automation_matrix:recipeBroker:recipe',
@@ -19109,6 +19709,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'broker',
                     custom: 'broker',
                 } as const,
+                name: 'broker',
+                displayName: 'Broker',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:broker',
                 uniqueFieldId: 'supabase_automation_matrix:recipeBroker:broker',
@@ -19172,6 +19774,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'brokerRole',
                     custom: 'brokerRole',
                 } as const,
+                name: 'brokerRole',
+                displayName: 'Broker Role',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:broker_role',
                 uniqueFieldId: 'supabase_automation_matrix:recipeBroker:brokerRole',
@@ -19243,6 +19847,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'required',
                     custom: 'required',
                 } as const,
+                name: 'required',
+                displayName: 'Required',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:required',
                 uniqueFieldId: 'supabase_automation_matrix:recipeBroker:required',
@@ -19307,6 +19913,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:broker:id',
+                name: 'brokerReference',
+                displayName: 'Broker Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -19339,6 +19947,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -19377,6 +19987,7 @@ export const initialAutomationTableSchema = {
     recipeDisplay: {
         schemaType: 'table' as const,
         entityName: 'recipeDisplay',
+        displayName: 'Recipe Display',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_display',
         uniqueEntityId: 'supabase_automation_matrix:recipeDisplay',
         primaryKey: 'id',
@@ -19425,6 +20036,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:id',
@@ -19487,6 +20100,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipe',
                     custom: 'recipe',
                 } as const,
+                name: 'recipe',
+                displayName: 'Recipe',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:recipe',
                 uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:recipe',
@@ -19550,6 +20165,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'display',
                     custom: 'display',
                 } as const,
+                name: 'display',
+                displayName: 'Display',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:display',
                 uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:display',
@@ -19613,6 +20230,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'priority',
                     custom: 'priority',
                 } as const,
+                name: 'priority',
+                displayName: 'Priority',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:priority',
                 uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:priority',
@@ -19675,6 +20294,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'displaySettings',
                     custom: 'displaySettings',
                 } as const,
+                name: 'displaySettings',
+                displayName: 'Display Settings',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:display_settings',
                 uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:displaySettings',
@@ -19739,6 +20360,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:display_option:id',
                 uniqueFieldId: 'supabase_automation_matrix:displayOption:id',
+                name: 'displayOptionReference',
+                displayName: 'Display Option Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -19771,6 +20394,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -19809,6 +20434,7 @@ export const initialAutomationTableSchema = {
     recipeFunction: {
         schemaType: 'table' as const,
         entityName: 'recipeFunction',
+        displayName: 'Recipe Function',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_function',
         uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
         primaryKey: 'id',
@@ -19857,6 +20483,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeFunction:id',
@@ -19919,6 +20547,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipe',
                     custom: 'recipe',
                 } as const,
+                name: 'recipe',
+                displayName: 'Recipe',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:recipe',
                 uniqueFieldId: 'supabase_automation_matrix:recipeFunction:recipe',
@@ -19982,6 +20612,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'function',
                     custom: 'function',
                 } as const,
+                name: 'function',
+                displayName: 'Function',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:function',
                 uniqueFieldId: 'supabase_automation_matrix:recipeFunction:function',
@@ -20045,6 +20677,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'role',
                     custom: 'role',
                 } as const,
+                name: 'role',
+                displayName: 'Role',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:role',
                 uniqueFieldId: 'supabase_automation_matrix:recipeFunction:role',
@@ -20142,6 +20776,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'params',
                     custom: 'params',
                 } as const,
+                name: 'params',
+                displayName: 'Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:params',
                 uniqueFieldId: 'supabase_automation_matrix:recipeFunction:params',
@@ -20206,6 +20842,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:system_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:id',
+                name: 'systemFunctionReference',
+                displayName: 'System Function Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -20238,6 +20876,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -20276,6 +20916,7 @@ export const initialAutomationTableSchema = {
     recipeMessage: {
         schemaType: 'table' as const,
         entityName: 'recipeMessage',
+        displayName: 'Recipe Message',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_message',
         uniqueEntityId: 'supabase_automation_matrix:recipeMessage',
         primaryKey: 'id',
@@ -20324,6 +20965,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeMessage:id',
@@ -20386,12 +21029,14 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'messageId',
                     custom: 'messageId',
                 } as const,
+                name: 'messageId',
+                displayName: 'Message Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:message_id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeMessage:messageId',
 
                 dataType: 'uuid' as const,
-                isRequired: false,
+                isRequired: true,
                 maxLength: null,
                 isArray: false,
                 defaultValue: '' as const,
@@ -20424,7 +21069,7 @@ export const initialAutomationTableSchema = {
                     step: 'default',
                     numberType: 'default',
                     options: 'default',
-                    required: false,
+                    required: true,
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -20434,7 +21079,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_message',
                 foreignKeyReference: { table: 'message_template', column: 'id', entity: 'messageTemplate', field: 'id' },
                 description:
-                    '"Message Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a messageTemplate.',
+                    '"Message Id" field for recipeMessage. This is a required field. Your entry must be an uuid data type. This must be a unique value. This field is a reference to a messageTemplate.',
             },
             recipeId: {
                 fieldNameFormats: {
@@ -20449,12 +21094,14 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipeId',
                     custom: 'recipeId',
                 } as const,
+                name: 'recipeId',
+                displayName: 'Recipe Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:recipe_id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeMessage:recipeId',
 
                 dataType: 'uuid' as const,
-                isRequired: false,
+                isRequired: true,
                 maxLength: null,
                 isArray: false,
                 defaultValue: '' as const,
@@ -20487,7 +21134,7 @@ export const initialAutomationTableSchema = {
                     step: 'default',
                     numberType: 'default',
                     options: 'default',
-                    required: false,
+                    required: true,
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -20497,7 +21144,7 @@ export const initialAutomationTableSchema = {
                 databaseTable: 'recipe_message',
                 foreignKeyReference: { table: 'recipe', column: 'id', entity: 'recipe', field: 'id' },
                 description:
-                    '"Recipe Id" field for recipeMessage. This is an optional field. Your entry must be an uuid data type. This field is a reference to a recipe.',
+                    '"Recipe Id" field for recipeMessage. This is a required field. Your entry must be an uuid data type. This must be a unique value. This field is a reference to a recipe.',
             },
             order: {
                 fieldNameFormats: {
@@ -20512,15 +21159,17 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'order',
                     custom: 'order',
                 } as const,
+                name: 'order',
+                displayName: 'Order',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:order',
                 uniqueFieldId: 'supabase_automation_matrix:recipeMessage:order',
 
                 dataType: 'number' as const,
-                isRequired: false,
+                isRequired: true,
                 maxLength: null,
                 isArray: false,
-                defaultValue: '' as const,
+                defaultValue: '1' as const,
                 isPrimaryKey: false,
                 isDisplayField: false,
                 defaultGeneratorFunction: '',
@@ -20550,7 +21199,7 @@ export const initialAutomationTableSchema = {
                     step: 'default',
                     numberType: 'smallint',
                     options: 'default',
-                    required: false,
+                    required: true,
                 },
                 structure: 'single' as const,
                 isNative: true,
@@ -20559,7 +21208,7 @@ export const initialAutomationTableSchema = {
                 entityName: 'recipeMessage',
                 databaseTable: 'recipe_message',
                 foreignKeyReference: null,
-                description: '"Order" field for recipeMessage. This is an optional field. Your entry must be an number data type.',
+                description: '"Order" field for recipeMessage. This is a required field. Your entry must be an number data type.',
             },
             messageTemplateReference: {
                 fieldNameFormats: {
@@ -20576,6 +21225,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:message_template:id',
                 uniqueFieldId: 'supabase_automation_matrix:messageTemplate:id',
+                name: 'messageTemplateReference',
+                displayName: 'Message Template Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -20608,6 +21259,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -20646,6 +21299,7 @@ export const initialAutomationTableSchema = {
     recipeModel: {
         schemaType: 'table' as const,
         entityName: 'recipeModel',
+        displayName: 'Recipe Model',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_model',
         uniqueEntityId: 'supabase_automation_matrix:recipeModel',
         primaryKey: 'id',
@@ -20694,6 +21348,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeModel:id',
@@ -20756,6 +21412,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipe',
                     custom: 'recipe',
                 } as const,
+                name: 'recipe',
+                displayName: 'Recipe',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:recipe',
                 uniqueFieldId: 'supabase_automation_matrix:recipeModel:recipe',
@@ -20819,6 +21477,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'aiModel',
                     custom: 'aiModel',
                 } as const,
+                name: 'aiModel',
+                displayName: 'Ai Model',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:ai_model',
                 uniqueFieldId: 'supabase_automation_matrix:recipeModel:aiModel',
@@ -20882,6 +21542,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'role',
                     custom: 'role',
                 } as const,
+                name: 'role',
+                displayName: 'Role',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:role',
                 uniqueFieldId: 'supabase_automation_matrix:recipeModel:role',
@@ -20957,6 +21619,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'priority',
                     custom: 'priority',
                 } as const,
+                name: 'priority',
+                displayName: 'Priority',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:priority',
                 uniqueFieldId: 'supabase_automation_matrix:recipeModel:priority',
@@ -21021,6 +21685,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:ai_model:id',
                 uniqueFieldId: 'supabase_automation_matrix:aiModel:id',
+                name: 'aiModelReference',
+                displayName: 'Ai Model Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -21053,6 +21719,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -21091,6 +21759,7 @@ export const initialAutomationTableSchema = {
     recipeProcessor: {
         schemaType: 'table' as const,
         entityName: 'recipeProcessor',
+        displayName: 'Recipe Processor',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_processor',
         uniqueEntityId: 'supabase_automation_matrix:recipeProcessor',
         primaryKey: 'id',
@@ -21139,6 +21808,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:id',
@@ -21201,6 +21872,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipe',
                     custom: 'recipe',
                 } as const,
+                name: 'recipe',
+                displayName: 'Recipe',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:recipe',
                 uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:recipe',
@@ -21264,6 +21937,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'processor',
                     custom: 'processor',
                 } as const,
+                name: 'processor',
+                displayName: 'Processor',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:processor',
                 uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:processor',
@@ -21327,6 +22002,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'params',
                     custom: 'params',
                 } as const,
+                name: 'params',
+                displayName: 'Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:params',
                 uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:params',
@@ -21391,6 +22068,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:processor:id',
                 uniqueFieldId: 'supabase_automation_matrix:processor:id',
+                name: 'processorReference',
+                displayName: 'Processor Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -21423,6 +22102,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -21461,6 +22142,7 @@ export const initialAutomationTableSchema = {
     recipeTool: {
         schemaType: 'table' as const,
         entityName: 'recipeTool',
+        displayName: 'Recipe Tool',
         uniqueTableId: 'supabase_automation_matrix:public:recipe_tool',
         uniqueEntityId: 'supabase_automation_matrix:recipeTool',
         primaryKey: 'id',
@@ -21509,6 +22191,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipeTool:id',
@@ -21571,6 +22255,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'recipe',
                     custom: 'recipe',
                 } as const,
+                name: 'recipe',
+                displayName: 'Recipe',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:recipe',
                 uniqueFieldId: 'supabase_automation_matrix:recipeTool:recipe',
@@ -21634,6 +22320,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'tool',
                     custom: 'tool',
                 } as const,
+                name: 'tool',
+                displayName: 'Tool',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:tool',
                 uniqueFieldId: 'supabase_automation_matrix:recipeTool:tool',
@@ -21697,6 +22385,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'params',
                     custom: 'params',
                 } as const,
+                name: 'params',
+                displayName: 'Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:params',
                 uniqueFieldId: 'supabase_automation_matrix:recipeTool:params',
@@ -21761,6 +22451,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:recipe:id',
                 uniqueFieldId: 'supabase_automation_matrix:recipe:id',
+                name: 'recipeReference',
+                displayName: 'Recipe Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -21793,6 +22485,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:tool:id',
                 uniqueFieldId: 'supabase_automation_matrix:tool:id',
+                name: 'toolReference',
+                displayName: 'Tool Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -21831,6 +22525,7 @@ export const initialAutomationTableSchema = {
     registeredFunction: {
         schemaType: 'table' as const,
         entityName: 'registeredFunction',
+        displayName: 'Registered Function',
         uniqueTableId: 'supabase_automation_matrix:public:registered_function',
         uniqueEntityId: 'supabase_automation_matrix:registeredFunction',
         primaryKey: 'id',
@@ -21879,6 +22574,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:registered_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:id',
@@ -21941,6 +22638,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:registered_function:name',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:name',
@@ -22003,6 +22702,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'modulePath',
                     custom: 'modulePath',
                 } as const,
+                name: 'modulePath',
+                displayName: 'Module Path',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:registered_function:module_path',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:modulePath',
@@ -22065,6 +22766,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'className',
                     custom: 'className',
                 } as const,
+                name: 'className',
+                displayName: 'Class Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:registered_function:class_name',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:className',
@@ -22127,6 +22830,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:registered_function:description',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:description',
@@ -22189,6 +22894,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'returnBroker',
                     custom: 'returnBroker',
                 } as const,
+                name: 'returnBroker',
+                displayName: 'Return Broker',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:registered_function:return_broker',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:returnBroker',
@@ -22254,6 +22961,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:broker:id',
                 uniqueFieldId: 'supabase_automation_matrix:broker:id',
+                name: 'brokerReference',
+                displayName: 'Broker Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -22286,6 +22995,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:system_function',
                 uniqueEntityId: 'supabase_automation_matrix:systemFunction',
+                name: 'systemFunctionInverse',
+                displayName: 'System Function Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -22317,6 +23028,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:arg',
                 uniqueEntityId: 'supabase_automation_matrix:arg',
+                name: 'argInverse',
+                displayName: 'Arg Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -22355,6 +23068,7 @@ export const initialAutomationTableSchema = {
     systemFunction: {
         schemaType: 'table' as const,
         entityName: 'systemFunction',
+        displayName: 'System Function',
         uniqueTableId: 'supabase_automation_matrix:public:system_function',
         uniqueEntityId: 'supabase_automation_matrix:systemFunction',
         primaryKey: 'id',
@@ -22403,6 +23117,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:id',
@@ -22465,6 +23181,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:name',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:name',
@@ -22527,6 +23245,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:description',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:description',
@@ -22589,6 +23309,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'sample',
                     custom: 'sample',
                 } as const,
+                name: 'sample',
+                displayName: 'Sample',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:sample',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:sample',
@@ -22651,6 +23373,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'inputParams',
                     custom: 'inputParams',
                 } as const,
+                name: 'inputParams',
+                displayName: 'Input Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:input_params',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:inputParams',
@@ -22713,6 +23437,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'outputOptions',
                     custom: 'outputOptions',
                 } as const,
+                name: 'outputOptions',
+                displayName: 'Output Options',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:output_options',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:outputOptions',
@@ -22775,6 +23501,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'rfId',
                     custom: 'rfId',
                 } as const,
+                name: 'rfId',
+                displayName: 'Rf Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:system_function:rf_id',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:rfId',
@@ -22840,6 +23568,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:registered_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:registeredFunction:id',
+                name: 'registeredFunctionReference',
+                displayName: 'Registered Function Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -22872,6 +23602,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:tool',
                 uniqueEntityId: 'supabase_automation_matrix:tool',
+                name: 'toolInverse',
+                displayName: 'Tool Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -22903,6 +23635,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_function',
                 uniqueEntityId: 'supabase_automation_matrix:recipeFunction',
+                name: 'recipeFunctionInverse',
+                displayName: 'Recipe Function Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -22941,6 +23675,7 @@ export const initialAutomationTableSchema = {
     tool: {
         schemaType: 'table' as const,
         entityName: 'tool',
+        displayName: 'Tool',
         uniqueTableId: 'supabase_automation_matrix:public:tool',
         uniqueEntityId: 'supabase_automation_matrix:tool',
         primaryKey: 'id',
@@ -22989,6 +23724,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:id',
                 uniqueFieldId: 'supabase_automation_matrix:tool:id',
@@ -23051,6 +23788,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:name',
                 uniqueFieldId: 'supabase_automation_matrix:tool:name',
@@ -23113,6 +23852,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'source',
                     custom: 'source',
                 } as const,
+                name: 'source',
+                displayName: 'Source',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:source',
                 uniqueFieldId: 'supabase_automation_matrix:tool:source',
@@ -23175,6 +23916,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'description',
                     custom: 'description',
                 } as const,
+                name: 'description',
+                displayName: 'Description',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:description',
                 uniqueFieldId: 'supabase_automation_matrix:tool:description',
@@ -23237,6 +23980,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'parameters',
                     custom: 'parameters',
                 } as const,
+                name: 'parameters',
+                displayName: 'Parameters',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:parameters',
                 uniqueFieldId: 'supabase_automation_matrix:tool:parameters',
@@ -23299,6 +24044,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'requiredArgs',
                     custom: 'requiredArgs',
                 } as const,
+                name: 'requiredArgs',
+                displayName: 'Required Args',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:required_args',
                 uniqueFieldId: 'supabase_automation_matrix:tool:requiredArgs',
@@ -23361,6 +24108,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'systemFunction',
                     custom: 'systemFunction',
                 } as const,
+                name: 'systemFunction',
+                displayName: 'System Function',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:system_function',
                 uniqueFieldId: 'supabase_automation_matrix:tool:systemFunction',
@@ -23424,6 +24173,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'additionalParams',
                     custom: 'additionalParams',
                 } as const,
+                name: 'additionalParams',
+                displayName: 'Additional Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:tool:additional_params',
                 uniqueFieldId: 'supabase_automation_matrix:tool:additionalParams',
@@ -23488,6 +24239,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueColumnId: 'supabase_automation_matrix:system_function:id',
                 uniqueFieldId: 'supabase_automation_matrix:systemFunction:id',
+                name: 'systemFunctionReference',
+                displayName: 'System Function Reference',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -23520,6 +24273,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:recipe_tool',
                 uniqueEntityId: 'supabase_automation_matrix:recipeTool',
+                name: 'recipeToolInverse',
+                displayName: 'Recipe Tool Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -23557,6 +24312,7 @@ export const initialAutomationTableSchema = {
     transformer: {
         schemaType: 'table' as const,
         entityName: 'transformer',
+        displayName: 'Transformer',
         uniqueTableId: 'supabase_automation_matrix:public:transformer',
         uniqueEntityId: 'supabase_automation_matrix:transformer',
         primaryKey: 'id',
@@ -23605,6 +24361,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'id',
                     custom: 'id',
                 } as const,
+                name: 'id',
+                displayName: 'Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:transformer:id',
                 uniqueFieldId: 'supabase_automation_matrix:transformer:id',
@@ -23667,6 +24425,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'name',
                     custom: 'name',
                 } as const,
+                name: 'name',
+                displayName: 'Name',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:transformer:name',
                 uniqueFieldId: 'supabase_automation_matrix:transformer:name',
@@ -23729,6 +24489,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'inputParams',
                     custom: 'inputParams',
                 } as const,
+                name: 'inputParams',
+                displayName: 'Input Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:transformer:input_params',
                 uniqueFieldId: 'supabase_automation_matrix:transformer:inputParams',
@@ -23791,6 +24553,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'outputParams',
                     custom: 'outputParams',
                 } as const,
+                name: 'outputParams',
+                displayName: 'Output Params',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:transformer:output_params',
                 uniqueFieldId: 'supabase_automation_matrix:transformer:outputParams',
@@ -23855,6 +24619,8 @@ export const initialAutomationTableSchema = {
                 } as const,
                 uniqueTableId: 'supabase_automation_matrix:action',
                 uniqueEntityId: 'supabase_automation_matrix:action',
+                name: 'actionInverse',
+                displayName: 'Action Inverse',
                 dataType: 'object' as const,
                 isRequired: false,
                 maxLength: null,
@@ -23889,6 +24655,7 @@ export const initialAutomationTableSchema = {
     userPreferences: {
         schemaType: 'table' as const,
         entityName: 'userPreferences',
+        displayName: 'User Preferences',
         uniqueTableId: 'supabase_automation_matrix:public:user_preferences',
         uniqueEntityId: 'supabase_automation_matrix:userPreferences',
         primaryKey: 'userId',
@@ -23937,6 +24704,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'userId',
                     custom: 'userId',
                 } as const,
+                name: 'userId',
+                displayName: 'User Id',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:user_id',
                 uniqueFieldId: 'supabase_automation_matrix:userPreferences:userId',
@@ -24000,6 +24769,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'preferences',
                     custom: 'preferences',
                 } as const,
+                name: 'preferences',
+                displayName: 'Preferences',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:preferences',
                 uniqueFieldId: 'supabase_automation_matrix:userPreferences:preferences',
@@ -24062,6 +24833,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'createdAt',
                     custom: 'createdAt',
                 } as const,
+                name: 'createdAt',
+                displayName: 'Created At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:created_at',
                 uniqueFieldId: 'supabase_automation_matrix:userPreferences:createdAt',
@@ -24124,6 +24897,8 @@ export const initialAutomationTableSchema = {
                     GraphQL: 'updatedAt',
                     custom: 'updatedAt',
                 } as const,
+                name: 'updatedAt',
+                displayName: 'Updated At',
 
                 uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:updated_at',
                 uniqueFieldId: 'supabase_automation_matrix:userPreferences:updatedAt',
@@ -24197,9 +24972,22 @@ export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 export type InitialTableSchema = {
     schemaType: 'table';
     entityName: string;
+    displayName: string;
     uniqueTableId: string;
     uniqueEntityId: string;
-    primaryKey: string;
+    primaryKey: string[];
+    primaryKeyMetadata: {
+        type: 'single' | 'composite';
+        fields: string[];
+        database_fields: string[];
+        where_template: Record<string, any>;
+    };
+    displayFieldMetadata: {
+        fieldName: string;
+        databaseFieldName: string;
+    };
+    defaultFetchStrategy: FetchStrategy;
+    componentProps: Record<string, any>;
     entityNameFormats: {
         [key in NameFormat]?: string;
     };
@@ -24229,8 +25017,6 @@ export type InitialTableSchema = {
             description: string;
         };
     };
-    defaultFetchStrategy: FetchStrategy;
-    componentProps: Record<string, any>;
     relationships: Array<{
         relationshipType: 'foreignKey' | 'inverseForeignKey' | 'manyToMany';
         column: string;

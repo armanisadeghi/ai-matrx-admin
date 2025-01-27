@@ -1,7 +1,7 @@
 import {AllEntityFieldKeys, AnyEntityDatabaseTable, EntityKeys, Relationship} from "@/types/entityTypes";
+import React from 'react';
 import {DisplayFieldMetadata, PrimaryKeyMetadata} from "@/lib/redux/entity/types/stateTypes";
 import {TargetAndTransition, VariantLabels} from "framer-motion";
-import {TransitionProps} from "@vue/runtime-dom";
 import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
 import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 
@@ -33,7 +33,7 @@ interface EntityMetadata {
     primaryKeyMetadata: PrimaryKeyMetadata;
     displayFieldMetadata: DisplayFieldMetadata;
     displayField?: string;
-    fields: EntityStateField[];
+    entityFields: Record<string, EntityStateField>;
     relationships: Relationship[];
 }
 
@@ -53,7 +53,7 @@ interface AnimationProps {
     initial?: VariantLabels | TargetAndTransition
     animate?: VariantLabels | TargetAndTransition
     exit?: VariantLabels | TargetAndTransition
-    transition?: TransitionProps
+    transition?: any
     animationPreset?: 'fadeIn' | 'slideIn' | 'scale' | 'none'
     animationDelay?: number
     animationDuration?: number
@@ -73,7 +73,7 @@ interface DynamicComponentProps extends
     EventHandlerProps {
     children?: React.ReactNode
     ref?: React.Ref<any>
-    as?: keyof JSX.IntrinsicElements | React.ComponentType<any>
+    as?: keyof React.ComponentType<any>
     data?: any
     loading?: boolean
     error?: string

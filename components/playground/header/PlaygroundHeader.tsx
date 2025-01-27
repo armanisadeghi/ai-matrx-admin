@@ -5,6 +5,7 @@ import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import PlaygroundHeaderLeft from "./PlaygroundHeaderLeft";
 import PlaygroundHeaderCenter from "./PlaygroundHeaderCenter";
 import PlaygroundHeaderRight from "./PlaygroundHeaderRight";
+import { DoubleJoinedActiveParentProcessingHook } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
 
 interface PlaygroundHeaderProps {
   initialSettings?: {
@@ -15,12 +16,14 @@ interface PlaygroundHeaderProps {
   onToggleSettings?: () => void;
   onShowCode?: () => void;
   currentMode?: string;
+  onNewRecipe?: () => void;
   onModeChange?: (mode: string) => void;
   onVersionChange?: (version: number) => void;
   onPlay?: () => void;
   isLeftCollapsed?: boolean;
   isRightCollapsed?: boolean;
   fullScreenToggleButton?: React.ReactNode;
+  doubleParentActiveRecipeHook: DoubleJoinedActiveParentProcessingHook;
 }
 
 const PlaygroundHeader = ({
@@ -30,11 +33,13 @@ const PlaygroundHeader = ({
   onShowCode = () => {},
   currentMode = "prompt",
   onModeChange = () => {},
+  onNewRecipe = () => {},
   onVersionChange = () => {},
   onPlay = () => {},
   isLeftCollapsed,
   isRightCollapsed,
   fullScreenToggleButton,
+  doubleParentActiveRecipeHook,
 }: PlaygroundHeaderProps) => {
 
   return (
@@ -51,11 +56,13 @@ const PlaygroundHeader = ({
         </div>
 
         {/* Center section - single row, no wrap, items centered */}
-        <div className="w-4/6 flex justify-center items-center whitespace-nowrap overflow-hidden">
+        <div className="w-4/6 flex justify-start items-center whitespace-nowrap overflow-hidden">
           <PlaygroundHeaderCenter
             initialSettings={initialSettings}
             currentMode={currentMode}
             onModeChange={onModeChange}
+            onNewRecipe={onNewRecipe}
+            doubleParentActiveRecipeHook={doubleParentActiveRecipeHook}
           />
         </div>
 
@@ -67,6 +74,7 @@ const PlaygroundHeader = ({
             onShowCode={onShowCode}
             onPlay={onPlay}
             fullScreenToggleButton={fullScreenToggleButton}
+            doubleParentActiveRecipeHook={doubleParentActiveRecipeHook}
           />
         </div>
       </div>

@@ -9,7 +9,6 @@ import { ProcessedRecipeMessages } from './types';
 import DebugPanel from './AdminToolbar';
 import { BrokerMetaData, ChipData } from '@/features/rich-text-editor/types/editor.types';
 import useChipHandlers from '../hooks/useChipHandlers';
-import { useRelatedDataBrokers } from '../hooks/useMessageBrokers';
 import { TextPlaceholderEffect } from './TextPlaceholderEffect';
 import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
 
@@ -63,20 +62,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const [debugVisible, setDebugVisible] = useState(false);
     const { actions: messageActions } = useEntityTools('messageTemplate');
     const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu, addDialogHandler } = useChipHandlers(messageRecordId);
-    const brokerHook = useRelatedDataBrokers(messageRecordId);
-    const { addBroker, messageBrokerIsLoading } = brokerHook;
-
-    useEffect(() => {
-        if (messageBrokerIsLoading) {
-            setInitialRenderHold(true);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!messageBrokerIsLoading && initialRenderHold) {
-            setInitialRenderHold(false);
-        }
-    }, [messageBrokerIsLoading, initialRenderHold]);
 
     useEffect(() => {
         setIsEditorHidden(isCollapsed);
@@ -103,8 +88,8 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 
     const handleSave = useCallback(() => {
         console.log('Saving message:', messageRecordId);
-        if (isSaving || initialRenderHold || messageBrokerIsLoading) {
-            console.log('Skipping save:', isSaving, initialRenderHold, messageBrokerIsLoading);
+        if (isSaving || initialRenderHold) {
+            console.log('Skipping save:', isSaving, initialRenderHold);
             return;
         }
         const processedContent = context.getTextWithChipsReplaced(messageRecordId);
@@ -253,7 +238,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                         onBlur={handleBlur}
                         chipHandlers={{
                             onClick: handleChipClick,
-                            onDoubleClick: addDialogHandler,
+                            onDoubleClick: handleChipDoubleClick,
                             onMouseEnter: handleChipMouseEnter,
                             onMouseLeave: handleChipMouseLeave,
                             onContextMenu: handleChipContextMenu,
@@ -270,7 +255,3 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 MessageEditor.displayName = 'MessageEditor';
 
 export default MessageEditor;
-function extractBrokerMetadata(chip: HTMLElement): any {
-    throw new Error('Function not implemented.');
-}
-

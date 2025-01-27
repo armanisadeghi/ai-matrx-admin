@@ -104,7 +104,7 @@ export const recipeMessageDef = createRelationshipDefinition({
     orderField: 'order',
 });
 
-const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
+export const RELATIONSHIP_INPUTS: Record<string, RelationshipDefinitionInput> = {
     recipeMessage: {
         relationshipKey: 'recipeMessage',
         parent: 'recipe',

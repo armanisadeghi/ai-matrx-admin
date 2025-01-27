@@ -1,6 +1,6 @@
 // lib/redux/entity/types.ts
 
-import { DataStructure, FieldDataOptionsType } from '@/types/AutomationSchemaTypes';
+import { DataStructure, FetchStrategy, FieldDataOptionsType } from '@/types/AutomationSchemaTypes';
 
 import {
     EntityKeys,
@@ -25,7 +25,7 @@ export type OperationCallback<T = void> = {
     onError?: (error: ErrorResult) => void;
 };
 
-type PrimaryKeyType = 'single' | 'composite' | 'none';
+export type PrimaryKeyType = 'single' | 'composite' | 'none';
 
 export interface PrimaryKeyMetadata {
     type: PrimaryKeyType;
@@ -110,12 +110,15 @@ type argInverseField = EntityFieldWithValue<'registeredFunction'>['argInverse'];
 
 export interface EntityMetadata {
     entityName: EntityKeys;
+    uniqueTableId: string;
+    uniqueEntityId: string;
     displayName: string;
+    defaultFetchStrategy: FetchStrategy;
     schemaType: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
     displayFieldMetadata: DisplayFieldMetadata;
     displayField?: string;
-    fields: EntityStateField[];
+    entityFields: Record<AllEntityFieldKeys, EntityStateField>;
     relationships: Relationship[];
 }
 
