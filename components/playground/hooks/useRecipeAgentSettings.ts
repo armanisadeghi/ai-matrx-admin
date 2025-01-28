@@ -43,24 +43,26 @@ type AiAgentData = {
 
 export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessingHook) {
     const dispatch = useAppDispatch();
-    const { actions: aiSettingsActions, selectors: aiSettingsSelectors } = useEntityTools('aiSettings');
-    const { actions: aiAgentActions, selectors: aiAgentSelectors } = useEntityTools('aiAgent');
-
     const {
-        mapper: settingsMapper,
-        JoiningEntityRecords: aiAgents,
+        joiningEntity: aiAgents,
         joiningMatrxIds: agentMatrxIds,
         childIds: settingsIds,
         childMatrxIds: settingsMatrxIds,
-        childRecords: coreSettings,
-        processedChildRecords: processedSettings,
+        unprocessedChildRecords: coreSettings,
+        childRecords: processedSettings,
         parentId: recipePkId,
         parentMatrxid: recipeMatrxId,
         deleteChildAndJoin: deleteSettings,
         createRelatedRecords: createRecipeSettingsAgent,
         isLoading: aiSettingsIsLoading,
         loadingState: aiSettingsLoadingState,
+        joinTools: aiAgentsTools,
+        childTools: aiSettingsTools,
     } = recipeSettingsHook;
+
+    const { actions: aiSettingsActions, selectors: aiSettingsSelectors } = aiSettingsTools;
+    const { actions: aiAgentActions, selectors: aiAgentSelectors } = aiAgentsTools;
+
 
 
     const handleError = useCallback((error: Error) => {
@@ -122,7 +124,6 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
     );
 
     return {
-        settingsMapper,
         aiAgents,
         agentMatrxIds,
         settingsIds,
@@ -135,6 +136,8 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
         createNewSettingsData,
         aiSettingsIsLoading,
         aiSettingsLoadingState,
+        aiSettingsTools,
+        aiAgentsTools,
     };
 }
 

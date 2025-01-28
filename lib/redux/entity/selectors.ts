@@ -872,35 +872,33 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (unsavedRecords, recordId) => unsavedRecords[recordId]
     );
 
-    const selectAllEffectiveRecords = createSelector([selectAllRecords, selectUnsavedRecords], (records, unsavedRecords) => {
-        // If both are undefined/null, return an empty object to maintain type consistency
-        return {
-            ...(records ?? {}),
-            ...(unsavedRecords ?? {}),
-        };
-    });
-
-    const selectAllEffectiveRecordsWithKeys = createSelector(
+    const selectAllEffectiveRecords = createSelector(
         [selectAllRecords, selectUnsavedRecords],
-        (records, unsavedRecords): EntityDataWithKey<EntityKeys>[] => {
-            // If both are undefined/null, return empty array
-            if (!records && !unsavedRecords) {
-                return [];
-            }
+        (records, unsavedRecords): Record<string, EntityDataWithKey<EntityKeys>> => {
+            const mergedRecords = {
+                ...(records ?? {}),
+                ...(unsavedRecords ?? {}),
+            };
 
-            const enhancedRecords = Object.entries(records || {}).map(([recordKey, record]) => ({
-                ...record,
-                matrxRecordId: recordKey,
-            }));
-
-            const enhancedUnsavedRecords = Object.entries(unsavedRecords || {}).map(([recordKey, record]) => ({
-                ...record,
-                matrxRecordId: recordKey,
-            }));
-
-            return [...enhancedRecords, ...enhancedUnsavedRecords];
+            return Object.fromEntries(
+                Object.entries(mergedRecords).map(([recordKey, record]) => [
+                    recordKey,
+                    {
+                        ...record,
+                        matrxRecordId: recordKey,
+                    },
+                ])
+            );
         }
     );
+
+    // Then this can be simplified to just convert the object to array
+    const selectAllEffectiveRecordsWithKeys = createSelector([selectAllEffectiveRecords], (effectiveRecords): EntityDataWithKey<EntityKeys>[] => {
+        if (!effectiveRecords) {
+            return [];
+        }
+        return Object.values(effectiveRecords);
+    });
 
     const selectEnhancedRecords = createSelector(
         [selectQuickReference, selectAllEffectiveRecordsWithKeys],

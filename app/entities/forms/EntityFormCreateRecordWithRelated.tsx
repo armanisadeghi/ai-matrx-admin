@@ -7,7 +7,7 @@ import FieldSelectionControls from './form-helpers/FieldSelectionControls';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
 import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';
 import { Button } from '@/components/ui';
 
@@ -30,11 +30,12 @@ const EntityFormCreateRecordWithRelated = <TEntity extends EntityKeys>({
     onCreateSuccess,
     onCreateError,
 }: EntityFormCreateRecordWithRelatedProps) => {
+    const dispatch = useAppDispatch();
     const [previousActiveRecordId, setPreviousActiveRecordId] = React.useState<MatrxRecordId | null>(null);
     const [isRecordCreated, setIsRecordCreated] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity as TEntity | null;
-    const { actions, selectors, dispatch, store } = useEntityTools(entityKey);
+    const { actions, selectors, store } = useEntityTools(entityKey);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
 
     useEffect(() => {

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useEntityToasts, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityKeys } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { v4 as uuidv4 } from 'uuid';
@@ -136,7 +136,9 @@ export const useCoordinatedCreate = <T extends Record<string, any>>({ joiningEnt
 
 // Only wrap with 'data' at the final step where it's required
 export const useDirectCreateRecord = <T extends Record<string, any>>({ entityKey, onSuccess, onError }: UseDirectCreateRecordOptions) => {
-    const { actions, dispatch, store, selectors } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+
+    const { actions, store, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
 
     return useCallback(
@@ -195,7 +197,8 @@ interface UseDirectCreateRecordOptions {
 }
 
 export const useDirectCreateRecordWithTemp = <T extends Record<string, any>>({ entityKey, onSuccess, onError }: UseDirectCreateRecordOptions) => {
-    const { actions, dispatch, store, selectors } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { actions, store, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
 
     return useCallback(

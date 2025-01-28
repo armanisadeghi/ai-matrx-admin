@@ -1,7 +1,7 @@
 'use client';
 
 import { EntityRecordMap } from '@/lib/redux/entity/types/stateTypes';
-import { toPkValue, toMatrxIdFromValueBatch } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { toPkValue, toMatrxIdFromValueBatch, toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityKeys, MatrxRecordId, EntityAnyFieldKey } from '@/types';
 import { entityFieldNameGroups } from './fieldsDataUtil';
 import { RelationshipDefinition } from '@/types/relationshipTypes';
@@ -52,6 +52,7 @@ export class RelationshipMapper {
     private data: any[];
     private parentEntity: EntityKeys | null = null;
     private parentId: string | number | null = null;
+    private parentMatrxId: MatrxRecordId | null = null;
 
     constructor(entityName: EntityKeys) {
         this.definition = RELATIONSHIP_DEFINITIONS[entityName];
@@ -64,6 +65,7 @@ export class RelationshipMapper {
             data: this.data,
             parentEntity: this.parentEntity,
             parentId: this.parentId,
+            parentMatrxId: this.parentMatrxId,
         };
     }
 
@@ -80,16 +82,46 @@ export class RelationshipMapper {
         this.parentEntity = entityName;
     }
 
-    setParentId(id: string | null) {
-        this.parentId = id;
+    setParentId(internalId: string | null) {
+        this.parentId = internalId;
+        this.parentMatrxId = internalId ? toMatrxIdFromValue(this.parentEntity!, [internalId]) : null;
     }
 
     setParentRecordId(matrxRecordId: string | null) {
+        this.parentMatrxId = matrxRecordId;
         this.parentId = matrxRecordId ? toPkValue(matrxRecordId) : null;
     }
 
     setData(data: any[] | EntityRecordMap<EntityKeys> | null) {
         this.data = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+    }
+
+    setUniqueData(data: any[] | EntityRecordMap<EntityKeys> | null) {
+        // First convert to array if needed
+        const dataArray = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+        
+        // Check if records have matrxRecordId or id
+        const hasMatrxIds = dataArray.length > 0 && 'matrxRecordId' in dataArray[0];
+        const hasIds = dataArray.length > 0 && 'id' in dataArray[0];
+    
+        if (hasMatrxIds) {
+            // Deduplicate based on matrxRecordId
+            this.data = Array.from(
+                new Map(
+                    dataArray.map(record => [record.matrxRecordId, record])
+                ).values()
+            );
+        } else if (hasIds) {
+            // Fallback to using 'id' field
+            this.data = Array.from(
+                new Map(
+                    dataArray.map(record => [record.id, record])
+                ).values()
+            );
+        } else {
+            // No unique identifier available, just set the data as is
+            this.data = dataArray;
+        }
     }
 
     private getEntityConfig(entityName: EntityKeys) {

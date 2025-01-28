@@ -272,7 +272,7 @@ export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefi
 }
 
 
-type ProcessJoinedDataOptions = {
+export type ProcessJoinedDataOptions = {
     childRecords: EntityDataWithKey<EntityKeys>[];
     joiningRecords: EntityDataWithKey<EntityKeys>[];
     relationshipDefinition: SimpleRelDef;

@@ -54,7 +54,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const dispatch = useAppDispatch();
     const context = useEditorContext();
     const { updateRecord } = useUpdateRecord('messageTemplate');
-    const [initialRenderHold, setInitialRenderHold] = useState(true);
+    const [initialRenderHold, setInitialRenderHold] = useState(false);
 
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedContent, setLastSavedContent] = useState('');
@@ -238,7 +238,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                         onBlur={handleBlur}
                         chipHandlers={{
                             onClick: handleChipClick,
-                            onDoubleClick: handleChipDoubleClick,
+                            onDoubleClick: addDialogHandler,
                             onMouseEnter: handleChipMouseEnter,
                             onMouseLeave: handleChipMouseLeave,
                             onContextMenu: handleChipContextMenu,

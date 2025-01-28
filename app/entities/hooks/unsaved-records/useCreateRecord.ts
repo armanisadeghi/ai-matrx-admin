@@ -1,5 +1,5 @@
 // useCreateRecord.ts
-import { useEntityToasts, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback, useState } from 'react';
@@ -20,42 +20,45 @@ interface CreateRecordWithCallbackResult extends CreateRecordBaseResult {
 
 type UseCreateRecordResult = CreateRecordBaseResult | CreateRecordWithCallbackResult;
 
-export const useCreateRecord = (
-    entityKey: EntityKeys,
-    options?: UseCreateRecordOptions
-): UseCreateRecordResult => {
-    const { actions, dispatch, selectors, store } = useEntityTools(entityKey);
+export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecordOptions): UseCreateRecordResult => {
+    const dispatch = useAppDispatch();
+    const { actions, selectors, store } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
     const [currentCallbackId, setCurrentCallbackId] = useState<string | null>(null);
 
-    const createRecord = useCallback((matrxRecordId: MatrxRecordId): Promise<void> => {
-        return new Promise<void>((resolve) => {
-            const createPayload = selectors.selectCreatePayload(store.getState(), matrxRecordId);
-            dispatch(actions.addPendingOperation(matrxRecordId));
+    const createRecord = useCallback(
+        (matrxRecordId: MatrxRecordId): Promise<void> => {
+            return new Promise<void>((resolve) => {
+                const createPayload = selectors.selectCreatePayload(store.getState(), matrxRecordId);
+                dispatch(actions.addPendingOperation(matrxRecordId));
 
-            const callbackId = callbackManager.register(({ success, error }) => {
-                dispatch(actions.removePendingOperation(matrxRecordId));
-                if (success) {
-                    entityToasts.handleCreateSuccess();
-                    options?.onSuccess?.();
-                } else {
-                    entityToasts.handleError(error, 'create');
-                    options?.onError?.(error);
+                const callbackId = callbackManager.register(({ success, error }) => {
+                    dispatch(actions.removePendingOperation(matrxRecordId));
+                    if (success) {
+                        entityToasts.handleCreateSuccess();
+                        options?.onSuccess?.();
+                    } else {
+                        entityToasts.handleError(error, 'create');
+                        options?.onError?.(error);
+                    }
+                    resolve();
+                });
+
+                // Store callbackId if requested
+                if (options?.returnCallbackId) {
+                    setCurrentCallbackId(callbackId);
                 }
-                resolve();
+
+                dispatch(
+                    actions.createRecord({
+                        ...createPayload,
+                        callbackId,
+                    })
+                );
             });
-
-            // Store callbackId if requested
-            if (options?.returnCallbackId) {
-                setCurrentCallbackId(callbackId);
-            }
-
-            dispatch(actions.createRecord({
-                ...createPayload,
-                callbackId
-            }));
-        });
-    }, [dispatch, actions, selectors, entityToasts, store, entityKey, options]);
+        },
+        [dispatch, actions, selectors, entityToasts, store, entityKey, options]
+    );
 
     // Return different shapes based on options
     if (options?.returnCallbackId) {

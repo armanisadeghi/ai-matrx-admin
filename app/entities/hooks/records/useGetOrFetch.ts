@@ -3,14 +3,15 @@ import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { useEffect } from 'react';
 
-export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[]) {
+export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[], shouldProcess = true) {
     const dispatch = useAppDispatch();
     const { selectors, actions } = useEntityTools(entityName);
+    // console.log('===============>>> Get or fetch called with:', entityName, shouldProcess, matrxRecordIds);
 
     const recordsWithKeys = useAppSelector((state) => selectors.selectRecordsWithKeys(state, matrxRecordIds)) as EntityDataWithKey<EntityKeys>[];
 
     useEffect(() => {
-        if (matrxRecordIds) {
+        if (matrxRecordIds && shouldProcess) {
             dispatch(
                 actions.getOrFetchSelectedRecords({
                     matrxRecordIds,
@@ -18,7 +19,7 @@ export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: Mat
                 })
             );
         }
-    }, [dispatch, actions, entityName, matrxRecordIds]);
+    }, [dispatch, actions, entityName, matrxRecordIds, shouldProcess]);
 
     return recordsWithKeys;
 }
@@ -48,5 +49,3 @@ export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId }: Use
 
     return recordWithKey;
 }
-
-

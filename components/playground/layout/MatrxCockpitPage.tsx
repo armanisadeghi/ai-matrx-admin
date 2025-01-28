@@ -29,7 +29,7 @@ export default function MatrxCockpitPage() {
     const recipeMessageDef = getStandardRelationship('recipeMessage');
     const recipeSettingsDef = getStandardRelationship('aiAgent');
 
-    const doubleParentActiveRecipeHook = useDoubleJoinedActiveParentProcessing(recipeMessageDef, recipeSettingsDef);
+    const doubleParentActiveRecipeHook = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
 
     const {
         activeParentMatrxId: activeRecipeId,

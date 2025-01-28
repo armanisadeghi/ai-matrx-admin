@@ -23,7 +23,7 @@ function MessagesContainer({ playgroundControls }: MessagesContainerProps) {
 
     const log = debugFor("messageTemplate", 'MessagesContainer');
     useRenderCount('useRelFetchProcessing');
-    log('Got Messages', messages, true, true);    
+    log('Got Messages', messages, false, false);    
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());

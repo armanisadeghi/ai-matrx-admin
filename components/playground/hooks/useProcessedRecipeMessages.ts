@@ -13,6 +13,7 @@ import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { getNewMatrxRecordIdsFromMessages } from '@/features/rich-text-editor/utils/patternUtils';
 import { getOrFetchSelectedRecordsThunk, RecordResult } from '@/lib/redux/entity/thunks';
 import { RelationshipProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { useDebounce } from '@uidotdev/usehooks';
 
 type CoreMessage = {
     id?: string;
@@ -29,7 +30,7 @@ export type NewMessageEntry = {
     order?: number;
     id?: string;
     createdAt?: Date;
-}
+};
 
 export type AddMessagePayload = {
     child: CoreMessage;
@@ -42,6 +43,7 @@ export type RecipeMessageHook = ExpandRecursively<
         childRecords: MessageTemplateRecordWithKey[];
     }
 >;
+
 
 export const validateProcessedMessages = (processedMessages: MessageTemplateProcessed[]): NewMessageEntry[] => {
     const missingMessages: NewMessageEntry[] = [];
@@ -60,19 +62,15 @@ export const validateProcessedMessages = (processedMessages: MessageTemplateProc
 };
 
 export function useProcessedRecipeMessages(recipeMessagesProcessingHook: RelationshipProcessingHook) {
-    const [lastUniqueBrokers, setLastUniqueBrokers] = useState<string[]>([]);
     const [validateMessages, setValidateMessages] = useState<boolean>(false);
 
-    const dispatch = useAppDispatch();
-    const { actions: brokerActions } = useEntityTools('dataBroker');
     const {
-        mapper: messageMapper,
-        JoiningEntityRecords: recipeMessages,
+        joinRecords: recipeMessages,
         joiningMatrxIds: recipeMessageMatrxIds,
         childIds: messageIds,
         childMatrxIds: messageMatrxIds,
+        unprocessedChildRecords,
         childRecords,
-        processedChildRecords,
         parentId: recipePkId,
         parentMatrxid: recipeMatrxId,
         deleteChildAndJoin: deleteMessage,
@@ -82,72 +80,17 @@ export function useProcessedRecipeMessages(recipeMessagesProcessingHook: Relatio
         triggerProcessing,
     } = recipeMessagesProcessingHook;
 
-    const coreMessages = childRecords as MessageTemplateRecordWithKey[];
-    const processedMessages = processedChildRecords as MessageTemplateProcessed[];
+    const coreMessages = unprocessedChildRecords as MessageTemplateRecordWithKey[];
+    const shouldValidate = useDebounce(!recipeMessageIsLoading && coreMessages.length > 0 && coreMessages.length < 3 && !validateMessages, 200);
 
-    useEffect(() => {
-        setLastUniqueBrokers([]);
-    }, [recipePkId]);
+    const processedMessages = childRecords as MessageTemplateProcessed[];
 
-    useEffect(() => {
-        if (!recipeMessageIsLoading && processedMessages.length > 0 && processedMessages.length < 3 && !validateMessages) {
-            setValidateMessages(true);
-        }
-    }, [recipeMessageIsLoading, processedMessages, validateMessages]);
-
-    const uniqueEncodedBrokers = React.useMemo(() => {
-        if (recipeMessageIsLoading) return lastUniqueBrokers;
-        const newUniqueBrokers = getNewMatrxRecordIdsFromMessages(coreMessages, lastUniqueBrokers);
-        if (newUniqueBrokers.length > 0) {
-            console.log('-useProcessedRecipeMessages New unique brokers from ENCODED TEXT:', newUniqueBrokers);
-        }
-        setLastUniqueBrokers(newUniqueBrokers);
-        return newUniqueBrokers;
-    }, [coreMessages, recipeMessageIsLoading, lastUniqueBrokers]);
-
-    useEffect(() => {
-        if (uniqueEncodedBrokers.length > 0) {
-            dispatch(
-                getOrFetchSelectedRecordsThunk({
-                    entityKey: 'dataBroker',
-                    actions: brokerActions,
-                    payload: {
-                        matrxRecordIds: uniqueEncodedBrokers,
-                        fetchMode: 'fkIfk',
-                    },
-                })
-            )
-                .unwrap() // This extracts the actual payload from the AsyncThunk result
-                .then((results: RecordResult<any>[]) => {
-                    const fetchedBrokers = results.filter((result) => result.data);
-                    console.log(
-                        'Fetched brokers:',
-                        fetchedBrokers.map((b) => b.data.name)
-                    );
-                    const missingBrokers = results.filter((result) => !result.data);
-                    console.log(
-                        'Missing brokers:',
-                        missingBrokers.map((b) => b.recordId)
-                    );
-
-                    if (missingBrokers.length > 0) {
-                        console.log(
-                            'Some brokers could not be fetched:',
-                            missingBrokers.map((b) => b.recordId)
-                        );
-                    }
-                })
-                .catch((error) => {
-                    console.error('Failed to fetch brokers:', error);
-                });
-        }
-    }, [dispatch, brokerActions, uniqueEncodedBrokers]);
 
     const { handleDragDrop } = useMessageReordering(processedMessages, () => triggerProcessing());
 
     const addMessage = useCallback(
         (newMessage: NewMessageEntry, onComplete?: (success: boolean) => void) => {
-            const nextOrder = newMessage.order? newMessage.order : processedMessages.length + 1;
+            const nextOrder = newMessage.order ? newMessage.order : processedMessages.length + 1;
             createMessage(
                 {
                     child: newMessage,
@@ -190,7 +133,6 @@ export function useProcessedRecipeMessages(recipeMessagesProcessingHook: Relatio
     return {
         recipeMatrxId,
         recipePkId,
-        messageMapper,
         messages: processedMessages,
         messageMatrxIds,
         messageIds,
