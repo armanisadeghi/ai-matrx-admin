@@ -1,12 +1,5 @@
 // lib/redux/entity/hooks/coreHooks.ts
-import {
-    AllEntityFieldKeys,
-    AllEntityNameVariations,
-    AnyEntityDatabaseTable,
-    EntityKeys,
-    ForeignKeyReference,
-    TypeBrand,
-} from '@/types/entityTypes';
+import { FieldKeys, AllEntityNameVariations, AnyEntityDatabaseTable, EntityKeys, ForeignKeyReference, TypeBrand } from '@/types/entityTypes';
 import {
     FieldDataOptionsType,
     DataStructure,
@@ -18,6 +11,12 @@ import {
     EntityDatabaseTable,
     NameFormat,
     UnifiedSchemaCache,
+    PrettyEntityName,
+    PrettyFieldName,
+    BackendEntityName,
+    DatabaseEntityName,
+    BackendFieldName,
+    DatabaseFieldName,
 } from '@/types';
 import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
@@ -44,7 +43,7 @@ type ComponentProps = {
 };
 
 interface EntityStateField {
-    fieldName: AllEntityFieldKeys;
+    fieldName: FieldKeys;
     fieldNameFormats: Record<string, AllEntityNameVariations>;
     uniqueColumnId: string;
     uniqueFieldId: string;
@@ -76,13 +75,13 @@ type PrimaryKeyType = 'single' | 'composite' | 'none';
 
 interface PrimaryKeyMetadata {
     type: PrimaryKeyType;
-    fields: AllEntityFieldKeys[];
+    fields: FieldKeys[];
     database_fields: string[];
     where_template: Record<string, null>;
 }
 
 interface DisplayFieldMetadata {
-    fieldName: AllEntityFieldKeys | null;
+    fieldName: FieldKeys | null;
     databaseFieldName: string | null;
 }
 
@@ -141,9 +140,9 @@ interface UnifiedSchemaCacheLocal {
     entityNameToDatabase: Record<EntityKeys, string>;
     entityNameToBackend: Record<EntityKeys, string>;
     entityNametoPretty: Record<EntityKeys, string>;
-    fieldNameToDatabase: Record<EntityKeys, Record<string, string>>;
-    fieldNameToBackend: Record<EntityKeys, Record<string, string>>;
-    fieldNameToPretty: Record<EntityKeys, Record<string, string>>;
+    fieldNameToDatabase: Record<EntityKeys, Record<FieldKeys, string>>;
+    fieldNameToBackend: Record<EntityKeys, Record<FieldKeys, string>>;
+    fieldNameToPretty: Record<EntityKeys, Record<FieldKeys, PrettyFieldName<EntityKeys, FieldKeys>>>;
     fullEntityRelationships?: Record<EntityKeys, FullEntityRelationships>;
 }
 
@@ -187,7 +186,7 @@ export const toEntityKey = (entityName: AllEntityNameVariations): EntityKeys => 
     return mapping[entityName];
 };
 
-export const toCanonicalField = (entityName: AllEntityNameVariations, fieldName: AllEntityFieldVariations<EntityKeys>): AllEntityFieldKeys => {
+export const toCanonicalField = (entityName: AllEntityNameVariations, fieldName: AllEntityFieldVariations<EntityKeys>): FieldKeys => {
     const canonicalEntity = toEntityKey(entityName);
     const fieldMappings = getFieldNameToCanonical()[canonicalEntity];
     return fieldMappings[fieldName];
@@ -198,47 +197,52 @@ export const formatEntityName = (entityKey: EntityKeys, format: NameFormat): All
     return formats[format];
 };
 
-export const formatFieldName = (entityKey: EntityKeys, fieldKey: AllEntityFieldKeys, format: NameFormat): AllEntityFieldVariations<EntityKeys> => {
+export const formatFieldName = (entityKey: EntityKeys, fieldKey: FieldKeys, format: NameFormat): AllEntityFieldVariations<EntityKeys> => {
     const formats = getFieldNameFormats()[entityKey][fieldKey];
     return formats[format];
 };
 
-export const toDbEntityName = (entityKey: EntityKeys): EntityDatabaseTable<EntityKeys> => {
+export const toDbEntityName = (entityKey: EntityKeys): DatabaseEntityName<EntityKeys> => {
     const mapping = getEntityNameToDatabase();
     return mapping[entityKey];
 };
 
-export const toBackendEntityName = (entityKey: EntityKeys): string => {
+export const toBackendEntityName = (entityKey: EntityKeys): BackendEntityName<EntityKeys> => {
     const mapping = getEntityNameToBackend();
     return mapping[entityKey];
 };
 
-export const toDbFieldName = (entityKey: EntityKeys, fieldKey: AllEntityFieldKeys): string => {
+export const toDbFieldName = (entityKey: EntityKeys, fieldKey: FieldKeys): DatabaseFieldName<EntityKeys, FieldKeys> => {
     const mapping = getFieldNameToDatabase()[entityKey];
     return mapping[fieldKey];
 };
 
-export const toBackendFieldName = (entityKey: EntityKeys, fieldKey: AllEntityFieldKeys): string => {
+export const toBackendFieldName = (entityKey: EntityKeys, fieldKey: FieldKeys): BackendFieldName<EntityKeys, FieldKeys> => {
     const mapping = getFieldNameToBackend()[entityKey];
     return mapping[fieldKey];
 };
 
-export const toPrettyEntityName = (entityKey: EntityKeys): string => {
+export const toPrettyEntityName = (entityKey: EntityKeys): PrettyEntityName<EntityKeys> => {
     const mapping = getEntityNametoPretty();
     return mapping[entityKey];
 };
 
-export const toPrettyFieldName = (entityKey: EntityKeys, fieldKey: AllEntityFieldKeys): string => {
+export const toPrettyFieldName = (entityKey: EntityKeys, fieldKey: FieldKeys): PrettyFieldName<EntityKeys, FieldKeys> => {
     const mapping = getFieldNameToPretty()[entityKey];
     return mapping[fieldKey];
 };
 
-export interface SelectOption {
-    value: string;
-    label: string;
+export interface EntitySelectOption {
+    value: EntityKeys;
+    label: PrettyEntityName<EntityKeys>;
 }
 
-export const getEntitySelectOptions = (): SelectOption[] => {
+export interface FieldSelectOption {
+    value: FieldKeys;
+    label: PrettyFieldName<EntityKeys, FieldKeys>;
+}
+
+export const getEntitySelectOptions = (): EntitySelectOption[] => {
     const entityKeys = getEntityNames() as EntityKeys[];
     return entityKeys.map((entityKey) => ({
         value: entityKey,
@@ -246,11 +250,11 @@ export const getEntitySelectOptions = (): SelectOption[] => {
     }));
 };
 
-export const getFieldSelectOptions = (entityKey: EntityKeys): SelectOption[] => {
+export const getFieldSelectOptions = (entityKey: EntityKeys): FieldSelectOption[] => {
     const fieldMappings = getFieldNameToCanonical()[entityKey];
-    const fieldKeys = Object.values(fieldMappings);
+    const fieldKeys = Object.values(fieldMappings) as FieldKeys[];
     return fieldKeys.map((fieldKey) => ({
-        value: fieldKey as AllEntityFieldKeys,
-        label: toPrettyFieldName(entityKey, fieldKey as AllEntityFieldKeys),
+        value: fieldKey as FieldKeys,
+        label: toPrettyFieldName(entityKey, fieldKey) as PrettyFieldName<EntityKeys, FieldKeys>,
     }));
 };

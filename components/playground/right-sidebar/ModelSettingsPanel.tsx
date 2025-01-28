@@ -43,7 +43,6 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
     const recipeAgentSettingsHook = useRecipeAgentSettings(recipeAgentProcessingHook)
 
     const {
-        settingsMapper,
         aiAgents,
         agentMatrxIds,
         settingsIds,
@@ -131,6 +130,22 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
         setActiveTab(tabId);
     };
 
+    const handleNewSettings = async () => {
+        const settingsData = {
+            id: uuidv4(),
+            presetName: 'New Settings',
+        };
+        const agentData = {
+            id: uuidv4(),
+            name: 'New Agent',
+        };
+
+
+
+        await createNewSettingsData(settingsData, agentData);
+        setTempRecords({});
+    }
+
     const activeSlot = settingsSlots.find((s) => s.tabId === activeTab);
 
     return (
@@ -187,6 +202,7 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                         size='icon'
                         className='h-9 w-9'
                         disabled={settingsSlots.filter((s) => s.type === 'existing' || s.recordId).length >= MAX_SETTINGS}
+                        onClick={handleNewSettings}
                     >
                         <SquarePlus size={16} />
                     </Button>

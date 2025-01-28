@@ -136,6 +136,10 @@
     "name": "tailwind-test"
   },
   {
+    "path": "/tests/use-hooks-tests",
+    "name": "use-hooks-tests"
+  },
+  {
     "path": "/tests/windows",
     "name": "windows"
   }

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { EntityData, MatrxRecordId } from '@/types';
 import { RelationshipProcessingHook, useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useAppDispatch } from '@/lib/redux';
 import { processReturnResults } from '@/app/entities/hooks/crud/useDirectRelCreate';
 
 type AiSettingsData = {

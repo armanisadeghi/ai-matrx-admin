@@ -3,6 +3,7 @@ import {
     ensureValidContainer,
     getEditorElement,
     getSelectedText,
+    getSelectedTextOrRange,
     insertWithRangeMethod,
     insertWithStructurePreservation,
     positionCursorAfterChip,
@@ -43,109 +44,105 @@ export const useChipCreation = (
         });
     }, [mode, getEditor]);
 
-    const insertChip = useCallback(async () => {
-        const editor = getEditor();
-        const selection = window.getSelection();
+    // const insertChip = useCallback(async () => {
+    //     console.error('insertChip Activated');
 
-        if (!editor || !selection) return;
+    //     const editor = getEditor();
+    //     const selection = window.getSelection();
 
-        const currentRange = ensureValidContainer(editor, selection);
+    //     if (!editor || !selection) return;
 
-        try {
-            const { matrxRecordId, brokerMetadata, messageBrokerRecord } = await context.chips.createNewChipData(editorId);
+    //     const currentRange = ensureValidContainer(editor, selection);
 
-            const { insertionWrapper, anchorNode } = createChipStructure(brokerMetadata, setDraggedChip, chipHandlers);
+    //     try {
+    //         const { matrxRecordId, brokerMetadata, messageBrokerRecord } = await context.chips.createNewChipData(editorId);
 
-            // Handle container setup
-            let container = currentRange.commonAncestorContainer;
-            if (container.nodeType === Node.TEXT_NODE) {
-                container = container.parentNode;
-            }
+    //         const { insertionWrapper, anchorNode } = createChipStructure(brokerMetadata, setDraggedChip, chipHandlers);
 
-            if (container === editor) {
-                const span = document.createElement('span');
-                span.appendChild(document.createTextNode('\u200B'));
+    //         // Handle container setup
+    //         let container = currentRange.commonAncestorContainer;
+    //         if (container.nodeType === Node.TEXT_NODE) {
+    //             container = container.parentNode;
+    //         }
 
-                if (currentRange.startContainer === editor) {
-                    editor.insertBefore(span, editor.firstChild);
-                } else {
-                    editor.appendChild(span);
-                }
+    //         if (container === editor) {
+    //             const span = document.createElement('span');
+    //             span.appendChild(document.createTextNode('\u200B'));
 
-                container = span;
-                currentRange.selectNode(span);
-            }
+    //             if (currentRange.startContainer === editor) {
+    //                 editor.insertBefore(span, editor.firstChild);
+    //             } else {
+    //                 editor.appendChild(span);
+    //             }
 
-            const parent = currentRange.endContainer.parentNode;
+    //             container = span;
+    //             currentRange.selectNode(span);
+    //         }
 
-            // Try structure-preserving insertion first, fall back to range method if needed
-            const structurePreserved = insertWithStructurePreservation(insertionWrapper, currentRange, parent, container);
+    //         const parent = currentRange.endContainer.parentNode;
 
-            if (!structurePreserved) {
-                insertWithRangeMethod(insertionWrapper, currentRange);
-            }
+    //         // Try structure-preserving insertion first, fall back to range method if needed
+    //         const structurePreserved = insertWithStructurePreservation(insertionWrapper, currentRange, parent, container);
 
-            // Position cursor and handle post-insertion tasks
-            positionCursorAfterChip(anchorNode, selection);
+    //         if (!structurePreserved) {
+    //             insertWithRangeMethod(insertionWrapper, currentRange);
+    //         }
 
-            updatePlainTextContent();
-            chipHandlers?.onNewChip?.(brokerMetadata);
-        } catch (error) {
-            console.error('Failed to insert chip:', error);
-        }
-    }, [editorId, context, setDraggedChip, updatePlainTextContent, getEditor]);
+    //         // Position cursor and handle post-insertion tasks
+    //         positionCursorAfterChip(anchorNode, selection);
 
-    const convertSelectionToChip = useCallback(async () => {
+    //         updatePlainTextContent();
+    //         chipHandlers?.onNewChip?.(brokerMetadata);
+    //     } catch (error) {
+    //         console.error('Failed to insert chip:', error);
+    //     }
+    // }, [editorId, context, setDraggedChip, updatePlainTextContent, getEditor]);
+
+    // const convertSelectionToChip = useCallback(async () => {
+    //     const editor = getEditor();
+    //     if (!editor) return false;
+
+    //     try {
+    //         const { text, range } = getSelectedText();
+    //         if (!range) return insertChip();
+
+    //         const { matrxRecordId, brokerMetadata, messageBrokerRecord } = await context.chips.createNewChipData(editorId, {
+    //             defaultValue: text,
+    //         });
+
+    //         // Create and insert the chip structure
+    //         const { insertionWrapper, anchorNode } = createChipStructure(brokerMetadata, setDraggedChip, chipHandlers);
+
+    //         range.deleteContents();
+    //         range.insertNode(insertionWrapper);
+
+    //         const selection = window.getSelection();
+    //         if (selection) {
+    //             positionCursorAfterChip(anchorNode, selection);
+    //         }
+
+    //         updatePlainTextContent();
+    //         chipHandlers?.onNewChip?.(brokerMetadata);
+    //         return true;
+    //     } catch (error) {
+    //         console.error('Failed to convert selection to chip:', error);
+    //         return false;
+    //     }
+    // }, [editorId, context.chips, setDraggedChip, updatePlainTextContent, getEditor, chipHandlers, insertChip]);
+
+    const createEnhancedChip = useCallback(async () => {
         const editor = getEditor();
         if (!editor) return false;
 
         try {
-            const { text, range } = getSelectedText();
-            if (!range) return insertChip();
-
-            const { matrxRecordId, brokerMetadata, messageBrokerRecord } = await context.chips.createNewChipData(editorId, {
-                defaultValue: text,
-            });
-
-            // Create and insert the chip structure
-            const { insertionWrapper, anchorNode } = createChipStructure(brokerMetadata, setDraggedChip, chipHandlers);
-
-            range.deleteContents();
-            range.insertNode(insertionWrapper);
-
-            const selection = window.getSelection();
-            if (selection) {
-                positionCursorAfterChip(anchorNode, selection);
-            }
-
-            updatePlainTextContent();
-            chipHandlers?.onNewChip?.(brokerMetadata);
-            return true;
-        } catch (error) {
-            console.error('Failed to convert selection to chip:', error);
-            return false;
-        }
-    }, [editorId, context.chips, setDraggedChip, updatePlainTextContent, getEditor, chipHandlers, insertChip]);
-
-    const convertToEnhancedChip = useCallback(async () => {
-        const editor = getEditor();
-        if (!editor) return false;
-
-        try {
-            const { text, range } = getSelectedText();
-            if (!range) return insertChip();
+            const { text, range } = getSelectedTextOrRange(editorId);
+            if (!range) console.error('No range found and Armani deleted the other method!');
 
             const { matrxRecordId, brokerMetadata } = await context.chips.createNewChipData(editorId, {
                 defaultValue: text,
             });
 
             const { insertionWrapper, anchorNode } = createEnhancedChipStructure(brokerMetadata, setDraggedChip, chipHandlers, mode);
-            // const { insertionWrapper, anchorNode, chipCleanup } = createEnhancedChipStructure(brokerMetadata, setDraggedChip, chipHandlers, mode);
-
-            // if (chipCleanup) {
-            //     cleanupFunctions.current.set(matrxRecordId, chipCleanup);
-            // }
-
             range.deleteContents();
             range.insertNode(insertionWrapper);
 
@@ -164,8 +161,6 @@ export const useChipCreation = (
     }, [editorId, mode, context.chips, setDraggedChip, updatePlainTextContent, getEditor, chipHandlers]);
 
     return {
-        insertChip,
-        convertSelectionToChip,
-        convertToEnhancedChip,
+        createEnhancedChip,
     };
 };

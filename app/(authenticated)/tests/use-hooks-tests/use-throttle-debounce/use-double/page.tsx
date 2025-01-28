@@ -12,12 +12,14 @@ import { EntityDebugCard } from './EntityDebugComponents';
 
 // Improved loading indicator with better visual feedback
 const LoadingIndicator = ({ label, isLoading }) => (
-    <div className={`p-4 rounded-lg ${isLoading ? 'bg-primary/10' : 'bg-muted'} transition-colors duration-200`}>
+    <div className={`p-4 rounded-lg min-w-[250px] ${
+        isLoading 
+            ? 'bg-primary text-primary-foreground' 
+            : 'bg-muted text-muted-foreground'
+    }`}>
         <div className="flex items-center justify-between">
             <span className="font-medium">{label}</span>
-            <span className={`text-sm ${isLoading ? 'text-primary' : 'text-muted-foreground'}`}>
-                {isLoading ? 'Loading...' : 'Ready'}
-            </span>
+            <span className="text-sm">{isLoading.toString()}</span>
         </div>
     </div>
 );
@@ -68,7 +70,7 @@ export default function EnhancedJoinRecordsTest() {
     // Helper function to combine and process records
     const getCombinedRecords = () => {
         if (!firstProcessedChildRecords || !secondProcessedChildRecords) return null;
-        
+
         return {
             firstRelationship: {
                 records: firstProcessedChildRecords,
@@ -84,33 +86,45 @@ export default function EnhancedJoinRecordsTest() {
     const combinedRecords = getCombinedRecords();
 
     return (
-        <div className="w-full p-2 space-y-4">
+        <div className='w-full p-2 space-y-4'>
             <Card>
                 <CardHeader>
                     <CardTitle>Relationship Configuration</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                        <Select value={firstRelKey} onValueChange={setFirstRelkey}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="First relationship" />
+                <CardContent className='space-y-4'>
+                    <div className='flex items-center space-x-4'>
+                        <Select
+                            value={firstRelKey}
+                            onValueChange={setFirstRelkey}
+                        >
+                            <SelectTrigger className='w-48'>
+                                <SelectValue placeholder='First relationship' />
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.keys(RELATIONSHIP_INPUTS).map((key) => (
-                                    <SelectItem key={key} value={key}>
+                                    <SelectItem
+                                        key={key}
+                                        value={key}
+                                    >
                                         {key}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        
-                        <Select value={secondRelKey} onValueChange={setSecondRelKey}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Second relationship" />
+
+                        <Select
+                            value={secondRelKey}
+                            onValueChange={setSecondRelKey}
+                        >
+                            <SelectTrigger className='w-48'>
+                                <SelectValue placeholder='Second relationship' />
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.keys(RELATIONSHIP_INPUTS).map((key) => (
-                                    <SelectItem key={key} value={key}>
+                                    <SelectItem
+                                        key={key}
+                                        value={key}
+                                    >
                                         {key}
                                     </SelectItem>
                                 ))}
@@ -120,39 +134,59 @@ export default function EnhancedJoinRecordsTest() {
                         <CopyInput
                             value={pendingParentId}
                             onChange={(e) => setPendingParentId(e.target.value)}
-                            placeholder="Parent ID"
-                            className="flex-1 min-w-[325px]"
+                            placeholder='Parent ID'
+                            className='flex-1 min-w-[325px]'
                         />
-                        <Button
-                            onClick={handleLoadParent}
-                        >
-                            {isLoading ? 'Loading...' : 'Load'}
-                        </Button>
-                    </div>
-                    
-                    <div className="flex space-x-4">
-                        <LoadingIndicator label="First Relationship" isLoading={firstIsLoading} />
-                        <LoadingIndicator label="Second Relationship" isLoading={secondIsLoading} />
+                        <Button onClick={handleLoadParent}>{isLoading ? 'Loading...' : 'Load'}</Button>
+
+                        <LoadingIndicator
+                            label='First Relationship'
+                            isLoading={firstIsLoading}
+                        />
+                        <LoadingIndicator
+                            label='Second Relationship'
+                            isLoading={secondIsLoading}
+                        />
                     </div>
 
                     <DataItem
-                        label="Active Parent ID"
+                        label='Active Parent ID'
                         value={activeParentId || 'None'}
                     />
                 </CardContent>
             </Card>
-
-            <div className="grid grid-cols-4 gap-4">
+            {combinedRecords && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Combined Records Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className='grid grid-cols-2 gap-4'>
+                            <div>
+                                <h3 className='font-medium mb-2'>{firstRelKey}</h3>
+                                <p>Records: {Object.keys(combinedRecords.firstRelationship.records).length}</p>
+                                <p>Entity: {firstChildEntity}</p>
+                            </div>
+                            <div>
+                                <h3 className='font-medium mb-2'>{secondRelKey}</h3>
+                                <p>Records: {Object.keys(combinedRecords.secondRelationship.records).length}</p>
+                                <p>Entity: {secondChildEntity}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+            <div className='grid grid-cols-4 gap-4'>
                 {/* First Relationship */}
                 <EntityDebugCard
-                    title="First Join"
+                    title='First Join'
                     entity={firstJoiningEntity}
                     ids={firstJoinIds}
                     matrxIds={firstJoiningMatrxIds}
                     records={firstJoinRecords}
                 />
                 <EntityDebugCard
-                    title="First Processed"
+                    title='First Processed'
                     entity={firstChildEntity}
                     ids={firstChildIds}
                     matrxIds={firstChildMatrxIds}
@@ -161,42 +195,20 @@ export default function EnhancedJoinRecordsTest() {
 
                 {/* Second Relationship */}
                 <EntityDebugCard
-                    title="Second Join"
+                    title='Second Join'
                     entity={secondJoiningEntity}
                     ids={secondJoinIds}
                     matrxIds={secondJoiningMatrxIds}
                     records={secondJoinRecords}
                 />
                 <EntityDebugCard
-                    title="Second Processed"
+                    title='Second Processed'
                     entity={secondChildEntity}
                     ids={secondChildIds}
                     matrxIds={secondChildMatrxIds}
                     records={secondProcessedChildRecords}
                 />
             </div>
-
-            {combinedRecords && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Combined Records Overview</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <h3 className="font-medium mb-2">{firstRelKey}</h3>
-                                <p>Records: {Object.keys(combinedRecords.firstRelationship.records).length}</p>
-                                <p>Entity: {firstChildEntity}</p>
-                            </div>
-                            <div>
-                                <h3 className="font-medium mb-2">{secondRelKey}</h3>
-                                <p>Records: {Object.keys(combinedRecords.secondRelationship.records).length}</p>
-                                <p>Entity: {secondChildEntity}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
         </div>
     );
 }

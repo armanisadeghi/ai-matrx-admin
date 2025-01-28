@@ -144,6 +144,17 @@ export const getSelectedText = (): { text: string; range: Range | null } => {
 };
 
 
+export const getSelectedTextOrRange = (editorId: string): { text: string; range: Range } => {
+    const editor = getEditorElement(editorId);
+    if (!editor) throw new Error('Editor not found');
+    
+    const selection = window.getSelection();
+    if (!selection) throw new Error('Selection not available');
+    
+    const range = ensureValidContainer(editor, selection);
+    const text = range.toString().trim();
+    return { text, range };
+};
 
 export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Range) {
     range.deleteContents();

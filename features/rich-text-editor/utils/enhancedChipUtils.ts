@@ -66,7 +66,7 @@ export interface ChipHandlers {
     onDragStart?: (event: MouseEvent) => void;
     onDragEnd?: (event: MouseEvent) => void;
     onClick?: (event: MouseEvent) => void;
-    onDoubleClick?: (event: MouseEvent, metadata: BrokerMetaData) => void;  // Updated to include metadata
+    onDoubleClick?: (event: MouseEvent, metadata: BrokerMetaData) => void;
     onMouseEnter?: (event: MouseEvent) => void;
     onMouseLeave?: (event: MouseEvent) => void;
     onContextMenu?: (event: MouseEvent) => void;
@@ -81,7 +81,7 @@ type ChipHandlerOptions = {
 
 const EVENT_MAPPINGS = {
     click: 'onClick',
-    dblclick: 'onDoubleClick',
+    openChipDialog: 'onDoubleClick',
     mouseenter: 'onMouseEnter',
     mouseleave: 'onMouseLeave',
     contextmenu: 'onContextMenu',
@@ -221,10 +221,9 @@ export const createEnhancedChipStructure = (
 
     // Add other handlers to container
     if (handlers.onClick) chipContainer.addEventListener('click', handlers.onClick);
-    if (handlers.onDoubleClick) chipContainer.addEventListener('dblclick', (event: MouseEvent) => handlers.onDoubleClick!(event, brokerMetadata));
+    if (handlers.onDoubleClick) chipContainer.addEventListener('openChipDialog', (event: MouseEvent) => handlers.onDoubleClick!(event, brokerMetadata));
     if (handlers.onMouseEnter) chipContainer.addEventListener('mouseenter', handlers.onMouseEnter);
     if (handlers.onMouseLeave) chipContainer.addEventListener('mouseleave', handlers.onMouseLeave);
-    if (handlers.onContextMenu) chipContainer.addEventListener('contextmenu', handlers.onContextMenu);
 
     // Add trailing space and anchor wrappers
     const trailingSpaceWrapper = document.createElement('span');

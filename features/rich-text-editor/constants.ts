@@ -5,11 +5,6 @@ import { ContentMode } from './types/editor.types';
 export const CHIP_BASE_CLASS = 'inline-flex items-center align-middle px-2 py-1 mx-1 rounded-md cursor-move min-h-[24px] min-w-[128px]';
 
 export const TAILWIND_COLORS = [
-    'slate',
-    'gray',
-    'zinc',
-    'neutral',
-    'stone',
     'red',
     'orange',
     'amber',
@@ -32,12 +27,6 @@ export const TAILWIND_COLORS = [
 export type TailwindColor = (typeof TAILWIND_COLORS)[number];
 
 export const COLOR_STYLES: Record<TailwindColor, string> = {
-    slate: 'bg-slate-300 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-400 dark:hover:bg-slate-700 transition-colors duration-200',
-    gray: 'bg-gray-300 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors duration-200',
-    zinc: 'bg-zinc-300 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-400 dark:hover:bg-zinc-700 transition-colors duration-200',
-    neutral:
-        'bg-neutral-300 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-400 dark:hover:bg-neutral-700 transition-colors duration-200',
-    stone: 'bg-stone-300 dark:bg-stone-800 text-stone-900 dark:text-stone-100 hover:bg-stone-400 dark:hover:bg-stone-700 transition-colors duration-200',
     red: 'bg-red-300 dark:bg-red-800 text-red-900 dark:text-red-100 hover:bg-red-400 dark:hover:bg-red-700 transition-colors duration-200',
     orange: 'bg-orange-300 dark:bg-orange-800 text-orange-900 dark:text-orange-100 hover:bg-orange-400 dark:hover:bg-orange-700 transition-colors duration-200',
     amber: 'bg-amber-300 dark:bg-amber-800 text-amber-900 dark:text-amber-100 hover:bg-amber-400 dark:hover:bg-amber-700 transition-colors duration-200',

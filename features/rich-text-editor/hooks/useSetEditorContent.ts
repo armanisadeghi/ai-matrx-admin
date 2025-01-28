@@ -5,7 +5,6 @@ import { getEditorElement } from '../utils/editorUtils';
 import { createChipLine, createEmptyLine, createTextOnlyLine, processContentLines } from '../utils/setEditorUtils';
 import { useEditorContext } from '../provider/provider';
 import { createChipStructure } from '../utils/createChipUtil';
-import { createEnhancedChipStructure } from '../utils/enhancedChipUtils';
 
 export const useSetEditorContent = (editorId: string, useEditor: EditorHookResult) => {
     const context = useEditorContext();
@@ -54,58 +53,23 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
                     lastModeRef.current = context.getTextWithChipsReplaced(editorId);
                 }
 
-                // const currentMode = context.getContentMode(editorId);
-                const currentMode = context.getContentMode(editorId);
-                const currentContent = context.getContentByCurrentMode(editorId);
-
-                console.log('Setting editor content for current mode and content', currentMode, content);
 
                 editor.innerHTML = '';
 
-                if (currentMode === 'encodeChips') {
-                    const processedLines = processContentLines(content);
-                    const lineElements = processedLines.map((line) => {
-                        if (line.isEmpty) {
-                            return createEmptyLine(line.isFirstLine);
-                        }
-                        if (line.segments.length === 1 && line.segments[0].type === 'text') {
-                            return createTextOnlyLine(line.segments[0].content, line.isFirstLine);
-                        }
-                        return createChipLine(line.segments, line.isFirstLine, (metadata) =>
-                            createChipStructure(metadata, useEditor.setDraggedChip, useEditor.chipHandlers)
-                        );
-                    });
+                const processedLines = processContentLines(content);
+                const lineElements = processedLines.map((line) => {
+                    if (line.isEmpty) {
+                        return createEmptyLine(line.isFirstLine);
+                    }
+                    if (line.segments.length === 1 && line.segments[0].type === 'text') {
+                        return createTextOnlyLine(line.segments[0].content, line.isFirstLine);
+                    }
+                    return createChipLine(line.segments, line.isFirstLine, (metadata) =>
+                        createChipStructure(metadata, useEditor.setDraggedChip, useEditor.chipHandlers)
+                    );
+                });
 
-                    lineElements.forEach((element) => editor.appendChild(element));
-                } else {
-
-                    const processedLines = processContentLines(content);
-                    const lineElements = processedLines.map((line) => {
-                        if (line.isEmpty) {
-                            return createEmptyLine(line.isFirstLine);
-                        }
-                        if (line.segments.length === 1 && line.segments[0].type === 'text') {
-                            return createTextOnlyLine(line.segments[0].content, line.isFirstLine);
-                        }
-                        return createChipLine(line.segments, line.isFirstLine, (metadata) =>
-                            createEnhancedChipStructure(metadata, useEditor.setDraggedChip, useEditor.chipHandlers, currentMode)
-                        );
-                    });
-
-                    lineElements.forEach((element) => editor.appendChild(element));
-
-
-
-
-
-
-
-                    // const lines = currentContent.split('\n');
-                    // lines.forEach((line, index) => {
-                    //     const element = createTextOnlyLine(line, index === 0);
-                    //     editor.appendChild(element);
-                    // });
-                }
+                lineElements.forEach((element) => editor.appendChild(element));
 
                 const selection = window.getSelection();
                 if (selection && editor.lastChild) {

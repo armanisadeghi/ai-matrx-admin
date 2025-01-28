@@ -6,8 +6,6 @@ import { useEffect } from 'react';
 export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[], shouldProcess = true) {
     const dispatch = useAppDispatch();
     const { selectors, actions } = useEntityTools(entityName);
-    // console.log('===============>>> Get or fetch called with:', entityName, shouldProcess, matrxRecordIds);
-
     const recordsWithKeys = useAppSelector((state) => selectors.selectRecordsWithKeys(state, matrxRecordIds)) as EntityDataWithKey<EntityKeys>[];
 
     useEffect(() => {

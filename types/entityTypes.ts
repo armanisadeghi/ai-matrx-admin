@@ -32,6 +32,12 @@ export type AllEntityFieldKeys = AutomationSchema[EntityKeys] extends infer TFie
         : never
     : never;
 
+export type FieldKeys = AutomationSchema[EntityKeys] extends infer TField
+    ? TField extends { entityFields: any }
+        ? keyof TField['entityFields']
+        : never
+    : never;
+
 export type EntityFieldKeys<TEntity extends keyof AutomationSchema> = AutomationSchema[TEntity] extends infer TField
     ? TField extends { entityFields: any }
         ? keyof TField['entityFields']
@@ -530,8 +536,12 @@ type EntityDataDraft<TEntity extends EntityKeys> = Draft<
 >;
 
 export type PrettyEntityName<TEntity extends EntityKeys> = EntityNameFormat<TEntity, 'pretty'>;
+export type BackendEntityName<TEntity extends EntityKeys> = EntityNameFormat<TEntity, 'backend'>;
+export type DatabaseEntityName<TEntity extends EntityKeys> = EntityNameFormat<TEntity, 'database'>;
 
 export type PrettyFieldName<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>> = FieldNameFormat<TEntity, TField, 'pretty'>;
+export type BackendFieldName<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>> = FieldNameFormat<TEntity, TField, 'backend'>;
+export type DatabaseFieldName<TEntity extends EntityKeys, TField extends EntityFieldKeys<TEntity>> = FieldNameFormat<TEntity, TField, 'database'>;
 
 export type EntityPrettyFields<TEntity extends EntityKeys> = {
     [TField in EntityFieldKeys<TEntity>]: PrettyFieldName<TEntity, TField>;

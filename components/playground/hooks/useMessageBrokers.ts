@@ -14,13 +14,12 @@ export interface AddBrokerPayload {
 
 export function useMessageBrokers(messageBrokerHook: RelationshipProcessingHook) {
     const {
-        mapper: messageMapper,
-        JoiningEntityRecords: messageBrokers,
+        joinRecords: messageBrokers,
         joiningMatrxIds: messageBrokerMatrxIds,
         childIds: dataBrokerIds,
         childMatrxIds: dataBrokerMatrxIds,
-        childRecords: coreDataBrokers,
-        processedChildRecords: processedDataBrokers,
+        unprocessedChildRecords: coreDataBrokers,
+        childRecords: processedDataBrokers,
         parentId: messagePkId,
         parentMatrxid: messageMatrxId,
         deleteChildAndJoin: deleteDataBroker,
@@ -74,7 +73,6 @@ export function useMessageBrokers(messageBrokerHook: RelationshipProcessingHook)
     );
 
     return {
-        messageMapper,
         messageBrokers,
         messageBrokerMatrxIds,
         dataBrokerIds,

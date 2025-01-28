@@ -48,8 +48,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
         // Internal methods
         updateEncodedText,
         // Ref methods
-        insertChip,
-        convertToEnhancedChip,
+        createEnhancedChip,
         applyStyle,
         getText,
         focus,
@@ -63,8 +62,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
         getText,
         updateEncodedText,
         applyStyle,
-        insertChip,
-        convertToEnhancedChip,
+        createEnhancedChip,
         focus,
         setContent,
         // Add new ref methods
@@ -141,24 +139,28 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
         };
     }, [componentId, initialContent, updateEncodedText]);
 
-    // useEffect(() => {
-    //     const handleChipDialog = (e: CustomEvent) => {
-    //         setDialogState({
-    //             isOpen: true,
-    //             selectedChip: e.detail.metadata,
-    //         });
-    //     };
+    useEffect(() => {
+        // Add debug logging
+        console.log('Setting up openChipDialog listener');
 
-    //     dialogEventListenerRef.current = handleChipDialog as EventListener;
-    //     document.addEventListener('openChipDialog', dialogEventListenerRef.current);
+        const handleChipDialog = (e: CustomEvent) => {
+            console.log('Dialog handler triggered from useEffect'); // Debug log
+            setDialogState({
+                isOpen: true,
+                selectedChip: e.detail.metadata,
+            });
+        };
 
-    //     return () => {
-    //         if (dialogEventListenerRef.current) {
-    //             document.removeEventListener('openChipDialog', dialogEventListenerRef.current);
-    //         }
-    //     };
-    // }, []);
+        dialogEventListenerRef.current = handleChipDialog as EventListener;
+        document.addEventListener('openChipDialog', dialogEventListenerRef.current);
 
+        return () => {
+            console.log('Cleaning up openChipDialog listener'); // Debug log
+            if (dialogEventListenerRef.current) {
+                document.removeEventListener('openChipDialog', dialogEventListenerRef.current);
+            }
+        };
+    }, []);
     // Handle content changes
     useEffect(() => {
         onChange?.(providerContent);
@@ -187,11 +189,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
     };
 
     const handleNewChip = () => {
-        if (selectionState.hasSelection) {
-            convertToEnhancedChip();
-        } else {
-            insertChip();
-        }
+        createEnhancedChip();
     };
 
     const handleBlurInternal = useCallback(() => {

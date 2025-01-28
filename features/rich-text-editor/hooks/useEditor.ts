@@ -40,12 +40,10 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers, onChange
         updateEncodedText,
     });
 
-    const { insertChip, convertSelectionToChip, convertToEnhancedChip } = useChipCreation(editorId, chipHandlers, setDraggedChip, context, updateEncodedText);
+    const { createEnhancedChip } = useChipCreation(editorId, chipHandlers, setDraggedChip, context, updateEncodedText);
 
     return {
-        insertChip,
-        convertSelectionToChip,
-        convertToEnhancedChip,
+        createEnhancedChip,
         applyStyle: handleStyleChange,
         getText,
         updateEncodedText,

@@ -14,7 +14,6 @@ import AddTemplateMessages from '@/components/playground/header/AddTemplateMessa
 import { useDispatch } from 'react-redux';
 import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './constants';
-import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useDoubleJoinedActiveParentProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { PlaygroundControls } from '../types';
 
@@ -26,8 +25,6 @@ export default function MatrxCockpitPage() {
     const [currentMode, setCurrentMode] = useState('recipe');
     const [recipeVersion, setRecipeVersion] = useState(1);
     const [showPlayground, setShowPlayground] = useState(false);
-    const recipeMessageDef = getStandardRelationship('recipeMessage');
-    const recipeSettingsDef = getStandardRelationship('aiAgent');
 
     const doubleParentActiveRecipeHook = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
 
