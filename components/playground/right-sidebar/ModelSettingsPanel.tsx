@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlaygroundResources from './PlaygroundResources';
 import MetricsCard from './MetricsCard';
@@ -9,27 +9,33 @@ import DynamicPromptSettings from './settings/DynamicPromptSettings';
 import { Button } from '@/components/ui';
 import { Save, SquarePlus } from 'lucide-react';
 import { PlaygroundPanelProps } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { debugFor } from '@/utils/simple-debugger';
 import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useRecipeAgentSettings } from '../hooks/useRecipeAgentSettings';
 
-const MAX_SETTINGS = 4;
 const log = debugFor('aiSettings', 'ModelSettingsPanel');
 
 const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls }) => {
-
     const dispatch = useAppDispatch();
     const [ref, { width }] = useMeasure<HTMLDivElement>();
-    const [activeTab, setActiveTab] = useState('model1');
     const [isNarrow, setIsNarrow] = useState(false);
-    const [tempRecords, setTempRecords] = useState<Record<string, string>>({});
-
-    const { actions, selectors, store } = useEntityTools('aiSettings');
+    const { actions, selectors } = useEntityTools('aiSettings');
 
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
 
-    log('Got Operation Mode', operationMode, true, true);
+    const { doubleParentActiveRecipeHook } = playgroundControls;
+    const { activeParentMatrxId: activeRecipeId, secondRelHook: recipeAgentProcessingHook } = doubleParentActiveRecipeHook || {};
+
+    const recipeAgentSettingsHook = useRecipeAgentSettings(recipeAgentProcessingHook);
+
+    const {
+        generateTabs,
+        createNewSettingsData,
+        aiSettingsIsLoading
+    } = recipeAgentSettingsHook;
+
+    const tabs = generateTabs();
+    const [activeTab, setActiveTab] = useState(() => tabs[0]?.tabId || 'set1');
 
     useEffect(() => {
         if (operationMode === 'view') {
@@ -37,116 +43,37 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
         }
     }, [operationMode, dispatch, actions]);
 
-    const { doubleParentActiveRecipeHook } = playgroundControls;
-    const { activeParentMatrxId: activeRecipeId, secondRelHook: recipeAgentProcessingHook } = doubleParentActiveRecipeHook || {};
-
-    const recipeAgentSettingsHook = useRecipeAgentSettings(recipeAgentProcessingHook)
-
-    const {
-        aiAgents,
-        agentMatrxIds,
-        settingsIds,
-        settingsMatrxIds,
-        coreSettings,
-        processedSettings,
-        recipePkId,
-        recipeMatrxId,
-        deleteSettings,
-        createNewSettingsData,
-        aiSettingsIsLoading,
-        aiSettingsLoadingState,
-    } = recipeAgentSettingsHook;
-    
-    log('Got Settings IDs', settingsMatrxIds, true, true);
-
     useEffect(() => {
         setIsNarrow(width < 175);
     }, [width]);
 
-    const settingsSlots = useMemo(() => {
-        // Ensure we have valid arrays/objects
-        const safeMatrxIds = Array.isArray(settingsMatrxIds) ? settingsMatrxIds : [];
-        const existingCount = safeMatrxIds.length;
-
-        return Array.from({ length: MAX_SETTINGS }, (_, i) => {
-            // Get the existing ID if there is one
-            const existingId = safeMatrxIds[i];
-            const tempId = tempRecords[`model${i + 1}`];
-
-            // For empty state (no settings)
-            if (existingCount === 0) {
-                return {
-                    index: i + 1,
-                    tabId: `model${i + 1}`,
-                    type: i === 0 ? 'add-enabled' : 'add-disabled',
-                    recordId: tempId || null,
-                };
-            }
-
-            // For existing settings
-            if (existingId) {
-                return {
-                    index: i + 1,
-                    tabId: `model${i + 1}`,
-                    type: 'existing',
-                    recordId: existingId,
-                };
-            }
-
-            // For the next available slot
-            if (i === existingCount) {
-                return {
-                    index: i + 1,
-                    tabId: `model${i + 1}`,
-                    type: 'add-enabled',
-                    recordId: tempId || null,
-                };
-            }
-
-            // For future slots
-            return {
-                index: i + 1,
-                tabId: `model${i + 1}`,
-                type: 'add-disabled',
-                recordId: null,
-            };
-        });
-    }, [settingsMatrxIds, tempRecords]);
-
     const handleTabChange = (tabId: string) => {
-        const slot = settingsSlots.find((s) => s.tabId === tabId);
-
-        if (!slot || slot.type === 'add-disabled') return;
-
-        if (slot.type === 'add-enabled' && !slot.recordId) {
-            // Create a new temp record for this slot
-            const tempId = `new-record-${uuidv4()}`;
-            setTempRecords((prev) => ({
-                ...prev,
-                [tabId]: tempId,
-            }));
+        const tab = tabs.find(t => t.tabId === tabId);
+        if (!tab?.isDisables) {
+            setActiveTab(tabId);
         }
-
-        setActiveTab(tabId);
     };
 
     const handleNewSettings = async () => {
-        const settingsData = {
-            id: uuidv4(),
-            presetName: 'New Settings',
-        };
-        const agentData = {
-            id: uuidv4(),
-            name: 'New Agent',
-        };
+        const clickedTab = tabs.find(tab => tab.label === 'Add' && !tab.isDisables);
+        if (clickedTab) {
+            const settingsData = {
+                id: clickedTab.id,
+                presetName: clickedTab.presetName
+            };
+            const agentData = {
+                id: clickedTab.id,
+                name: `Agent for ${clickedTab.presetName}`
+            };
+            
+            // Update the active tab to the one being created
+            setActiveTab(clickedTab.tabId);
+            
+            await createNewSettingsData(settingsData, agentData);
+        }
+    };
 
-
-
-        await createNewSettingsData(settingsData, agentData);
-        setTempRecords({});
-    }
-
-    const activeSlot = settingsSlots.find((s) => s.tabId === activeTab);
+    const activeSlot = tabs.find(tab => tab.tabId === activeTab);
 
     return (
         <div
@@ -159,11 +86,11 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                 className='w-full rounded-none'
             >
                 <TabsList className='w-full grid grid-cols-4 rounded-none bg-elevation2 p-0.5 gap-px'>
-                    {settingsSlots.map((slot) => (
+                    {tabs.map((tab) => (
                         <TabsTrigger
-                            key={slot.tabId}
-                            value={slot.tabId}
-                            disabled={slot.type === 'add-disabled'}
+                            key={tab.tabId}
+                            value={tab.tabId}
+                            disabled={tab.isDisables}
                             className={`
                                 text-sm font-medium rounded-none px-1 py-1.5 
                                 data-[state=active]:bg-primary 
@@ -171,17 +98,14 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                                 border-r border-border/30 last:border-r-0 
                                 transition-colors hover:bg-muted/50 
                                 data-[state=active]:shadow-sm
-                                ${slot.type.startsWith('add') ? 'text-muted-foreground' : ''}
-                                ${slot.type === 'add-disabled' ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${tab.label === 'Add' ? 'text-muted-foreground' : ''}
                             `}
                         >
                             {isNarrow
-                                ? slot.type === 'existing' || slot.recordId
-                                    ? `S${slot.index}`
-                                    : '+'
-                                : slot.type === 'existing' || slot.recordId
-                                ? `Set ${slot.index}`
-                                : 'Add'}
+                                ? tab.label === 'Add'
+                                    ? '+'
+                                    : tab.label.replace('set ', 'S')
+                                : tab.label}
                         </TabsTrigger>
                     ))}
                 </TabsList>
@@ -193,7 +117,7 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                         variant='outline'
                         size='icon'
                         className='h-9 w-9'
-                        disabled={!activeSlot?.recordId}
+                        disabled={!activeSlot || activeSlot.label === 'Add'}
                     >
                         <Save size={16} />
                     </Button>
@@ -201,18 +125,18 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                         variant='outline'
                         size='icon'
                         className='h-9 w-9'
-                        disabled={settingsSlots.filter((s) => s.type === 'existing' || s.recordId).length >= MAX_SETTINGS}
+                        disabled={!tabs.some(tab => tab.label === 'Add' && !tab.isDisables)}
                         onClick={handleNewSettings}
                     >
                         <SquarePlus size={16} />
                     </Button>
                 </div>
-                {activeSlot?.recordId && (
+                {activeSlot && activeSlot.label !== 'Add' && (
                     <DynamicPromptSettings
                         playgroundControls={playgroundControls}
                         recipeAgentSettingsHook={recipeAgentSettingsHook}
-                        settingsSetNumber={activeSlot.index}
-                        key={activeSlot.recordId}
+                        settingsSetNumber={parseInt(activeSlot.tabId)}
+                        key={activeSlot.id}
                     />
                 )}
             </div>

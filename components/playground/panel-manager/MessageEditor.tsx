@@ -92,7 +92,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
             console.log('Skipping save:', isSaving, initialRenderHold);
             return;
         }
-        const processedContent = context.getTextWithChipsReplaced(messageRecordId);
+        const processedContent = context.getEncodedText(messageRecordId);
         if (processedContent === lastSavedContent) {
             return;
         }
@@ -136,6 +136,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 
 
     const handleBlur = useCallback(() => {
+        console.log('Editor blurred:', messageRecordId);
         handleSave();
     }, [handleSave]);
 

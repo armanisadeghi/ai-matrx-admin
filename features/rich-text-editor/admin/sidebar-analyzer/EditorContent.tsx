@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { useEditorContext } from '../../provider/new/EditorProvider';
+
 import { Switch } from '@/components/ui';
+import { useEditorContext } from '../../provider/provider';
 
 
 const EditorContent = ({ editorId }: { editorId: string }) => {
@@ -25,7 +26,7 @@ const EditorContent = ({ editorId }: { editorId: string }) => {
             </div>
             <Textarea 
                 readOnly
-                value={context.getTextWithChipsReplaced(editorId, showTokenIds)}
+                value={context.getEncodedText(editorId)}
                 className="min-h-[100px] font-mono"
             />
             <div className="space-y-1">

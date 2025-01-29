@@ -1,37 +1,33 @@
 // File: useSetEditorContent.ts
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { EditorHookResult } from './useEditor';
-import { getEditorElement } from '../utils/editorUtils';
 import { createChipLine, createEmptyLine, createTextOnlyLine, processContentLines } from '../utils/setEditorUtils';
 import { useEditorContext } from '../provider/provider';
 import { createChipStructure } from '../utils/createChipUtil';
+import { createEnhancedChipStructure } from '../utils/enhancedChipUtils';
+import { getAllMatrxRecordIds } from '../utils/patternUtils';
 
 export const useSetEditorContent = (editorId: string, useEditor: EditorHookResult) => {
     const context = useEditorContext();
-    const getEditor = useCallback(() => getEditorElement(editorId), [editorId]);
     const [isProcessing, setIsProcessing] = useState(false);
     const editorRef = useRef<HTMLElement | null>(null);
     const lastModeRef = useRef<string | null>(null);
     const initialContentSetRef = useRef(false);
 
     useEffect(() => {
-        // const currentMode = context.getContentMode(editorId);
         const currentMode = context.getContentMode(editorId);
 
         if (!initialContentSetRef.current || lastModeRef.current === currentMode || isProcessing) {
             return;
         }
 
-        // const content = context.getContentByCurrentMode(editorId);
-        const content = context.getTextWithChipsReplaced(editorId);
-        
+        const content = context.getEncodedText(editorId);
+
         if (content) {
             lastModeRef.current = currentMode;
             setContent(content);
         }
-    }, 
-    // [context.getContentMode(editorId)]);
-    [context.getTextWithChipsReplaced(editorId)]);
+    }, [context.getEncodedText(editorId)]);
 
     const setContent = useCallback(
         async (content: string) => {
@@ -41,7 +37,7 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
 
             setIsProcessing(true);
             try {
-                const editor = getEditor();
+                const editor = document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement | null;
                 if (!editor) {
                     throw new Error('Editor element not found');
                 }
@@ -49,14 +45,18 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
 
                 if (!initialContentSetRef.current) {
                     initialContentSetRef.current = true;
-                    // lastModeRef.current = context.getContentMode(editorId);
-                    lastModeRef.current = context.getTextWithChipsReplaced(editorId);
+                    lastModeRef.current = context.getEncodedText(editorId);
                 }
-
 
                 editor.innerHTML = '';
 
+                const neededBrokers = getAllMatrxRecordIds(content);
+                if (neededBrokers.length > 0) {
+                    context.chips.getOrFetchAllBrokers(editorId, neededBrokers);
+                }
+
                 const processedLines = processContentLines(content);
+                
                 const lineElements = processedLines.map((line) => {
                     if (line.isEmpty) {
                         return createEmptyLine(line.isFirstLine);
@@ -65,7 +65,7 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
                         return createTextOnlyLine(line.segments[0].content, line.isFirstLine);
                     }
                     return createChipLine(line.segments, line.isFirstLine, (metadata) =>
-                        createChipStructure(metadata, useEditor.setDraggedChip, useEditor.chipHandlers)
+                        createEnhancedChipStructure(metadata, useEditor.setDraggedChip, useEditor.chipHandlers)
                     );
                 });
 
@@ -89,7 +89,7 @@ export const useSetEditorContent = (editorId: string, useEditor: EditorHookResul
                 setIsProcessing(false);
             }
         },
-        [editorId, getEditor, useEditor, context]
+        [editorId, useEditor, context]
     );
 
     return {

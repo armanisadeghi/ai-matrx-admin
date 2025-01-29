@@ -40,7 +40,6 @@ const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: Unifi
 
     const { deleteRecord: removeRelationship } = useDeleteRecord('messageBroker');
 
-
     useEffect(() => {
         if (isLoading) {
             setCanProcess(false);
@@ -54,22 +53,33 @@ const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: Unifi
         return () => clearTimeout(timer);
     }, [isLoading]);
 
+    // Create a Set of selected broker IDs for O(1) lookup
+    const selectedBrokerIds = useMemo(() => {
+        return new Set(selectedBrokers.map((broker) => broker.recordKey));
+    }, [selectedBrokers]);
 
     // Get unmatched chips (excluding those that are already displayed in broker cards)
     const unmatchedChips = useMemo(() => {
-        const allChips = context.chips.getAllChipData() || [];
+        const allChips = context.getAllChips();
         return allChips.filter((chip) => {
-            if (chip.brokerId && selectedBrokers[chip.brokerId]) return false;
+            if (!chip.brokerId) return true;
 
-            if (chip.brokerId && enhancedRecords[chip.brokerId]) {
-                if (enhancedRecords[chip.brokerId].needsFetch) {
+            // Check if this broker is already selected
+            if (selectedBrokerIds.has(chip.brokerId)) return false;
+
+            // Find the broker in enhanced records
+            const brokerRecord = enhancedRecords.find((record) => record.recordKey === chip.brokerId);
+
+            if (brokerRecord) {
+                if (brokerRecord.needsFetch) {
                     getOrFetchRecord(chip.brokerId);
                 }
                 return false;
             }
+
             return true;
         });
-    }, [context, selectedBrokers]);
+    }, [context, selectedBrokerIds, enhancedRecords, getOrFetchRecord]);
 
     const handleRemove = useCallback(
         (recordId: MatrxRecordId) => {
@@ -89,9 +99,8 @@ const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: Unifi
         [context]
     );
 
-
     return (
-        <div className='w-full space-y-2'>
+        <div className='w-full'>
             {selectedBrokers.map(({ recordKey, data }) => (
                 <BrokerDisplayCard
                     key={recordKey}

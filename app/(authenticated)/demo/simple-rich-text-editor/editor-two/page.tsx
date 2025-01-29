@@ -28,7 +28,7 @@ const RichTextEditor = () => {
     };
 
     const handleChipClick = (chipId) => {
-        console.log('Chip clicked:', chipId);
+        console.log('RichTextEditor Chip clicked:', chipId);
         // Add your chip click handling logic here
     };
 

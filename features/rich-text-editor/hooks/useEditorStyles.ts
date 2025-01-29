@@ -7,8 +7,8 @@ import { getEditorElement } from '../utils/editorUtils';
 
 export const useEditorStyles = (
     editorId: string,
-    { updateEncodedText }: {
-        updateEncodedText: () => void;
+    { updateContentAndMetadata }: {
+        updateContentAndMetadata: () => void;
     }
 ) => {
     const context = useEditorContext();
@@ -20,9 +20,9 @@ export const useEditorStyles = (
             
             applyTextStyle(style);
             editor.focus();
-            updateEncodedText();
+            updateContentAndMetadata();
         },
-        [editorId, updateEncodedText]
+        [editorId, updateContentAndMetadata]
     );
 
     return {

@@ -77,9 +77,9 @@ export const isValidDropTarget = (node: Node, editorRef: HTMLDivElement): boolea
 export const useDragAndDrop = (
     editorId: string,
     {
-        updateEncodedText,
+        updateContentAndMetadata,
     }: {
-        updateEncodedText: () => void;
+        updateContentAndMetadata: () => void;
     }
 ) => {
     const [draggedChip, setDraggedChip] = useState<HTMLElement | null>(null);
@@ -127,10 +127,10 @@ export const useDragAndDrop = (
             selection?.removeAllRanges();
             selection?.addRange(newRange);
 
-            updateEncodedText();
+            updateContentAndMetadata();
             setDraggedChip(null);
         },
-        [draggedChip, editorId, updateEncodedText]
+        [draggedChip, editorId, updateContentAndMetadata]
     );
 
     return {

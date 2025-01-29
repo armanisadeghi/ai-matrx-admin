@@ -1,23 +1,48 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrokerMetaData, ChipData, EditorState } from '@/features/rich-text-editor/types/editor.types';
+import { BrokerMetaData, ChipData, ContentMode, EditorState } from '@/features/rich-text-editor/types/editor.types';
 import { MatrxRecordId } from '@/types';
 import { EditorLineInfo, getEditorLineInfo } from '@/features/rich-text-editor/utils/new-test-util';
 import CompactTable from '@/components/matrx/CompactTable';
-
 import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
-import { getProcessedMetadataFromText } from '@/features/rich-text-editor/utils/patternUtils';
+import { getAllMetadata } from '@/features/rich-text-editor/utils/patternUtils';
 
 interface DebugPanelProps {
     editorId: MatrxRecordId;
     message: any;
 }
 
+interface FlatEditorState {
+    contentCharCount: number;
+    initialized: boolean;
+    contentMode: ContentMode;
+    chipDataCount: number;
+    metadataCount: number;
+    layoutPosition: string | number | null;
+    layoutIsVisible: boolean | null;
+    layoutType: string | null;
+}
+
+export const flattenEditorState = (state: EditorState): FlatEditorState => {
+    return {
+        contentCharCount: state.content.length,
+        initialized: state.initialized,
+        contentMode: state.contentMode,
+        chipDataCount: state.chipData.length,
+        metadataCount: state.metadata?.length ?? 0,
+        layoutPosition: state.layout?.position ?? null,
+        layoutIsVisible: state.layout?.isVisible ?? null,
+        layoutType: state.layout?.type ?? null,
+    };
+};
+
+
 const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
     const [activeView, setActiveView] = useState<'editor' | 'text' | 'editorState' | 'chips' | 'patterns' | 'brokers' | 'message'>('editor');
     const [editorInfo, setEditorInfo] = useState<EditorLineInfo>({} as EditorLineInfo);
     const [patternMatches, setPatternMatches] = useState<any[]>([]);
     const [brokerMetaData, setBrokerMetaData] = useState<BrokerMetaData[]>([]);
-    const [editorState, setEditorState] = useState<EditorState>({} as EditorState);
+    const [chipData, setChipData] = useState<ChipData[]>([]);
+    const [editorState, setEditorState] = useState<FlatEditorState >({} as FlatEditorState);
     const context = useEditorContext();
     const content = context.getContent(editorId);
 
@@ -27,7 +52,7 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
     }, [editorId]);
 
     const refreshPatternMatches = useCallback(() => {
-        const matches = getProcessedMetadataFromText(content || '');
+        const matches = getAllMetadata(content || '');
         setPatternMatches(matches);
     }, [content]);
 
@@ -36,10 +61,18 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
         setBrokerMetaData(brokers || []);
     }, [context, editorId]);
 
+    const refreshChips = useCallback(() => {
+        const chips = context.getChipData(editorId);
+        setChipData(chips || []);
+    }, [context, editorId]);
+
     const refreshEditorState = useCallback(() => {
         const currentState = context.getEditorState(editorId);
-        setEditorState(currentState);
+        const flatState = flattenEditorState(currentState);
+        setEditorState(flatState);
     }, [context, editorId]);
+    
+    
     // Set up interval refresh when editor tab is active
     useEffect(() => {
         if (activeView === 'editor') {
@@ -64,6 +97,12 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
             refreshBrokerMetaData();
         }
     }, [activeView, refreshBrokerMetaData]);
+
+    useEffect(() => {
+        if (activeView === 'chips') {
+            refreshChips();
+        }
+    }, [activeView, refreshChips]);
 
     useEffect(() => {
         if (activeView === 'editorState') {
@@ -93,7 +132,6 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
                 return (
                     <CompactTable
                         data={editorState}
-                        columns={5}
                     />
                 );
 
@@ -106,34 +144,20 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
                 );
             case 'chips':
                 return (
-                    <div className='w-full'>
-                        <div className='text-xs font-medium mb-1'>Chips:</div>
-                        <div className='flex flex-wrap gap-1'>
-                            {brokerMetaData?.map((broker: BrokerMetaData) => (
-                                <span
-                                    key={broker.id}
-                                    className='px-2 py-0.5 rounded text-xs inline-flex items-center'
-                                    style={{ backgroundColor: broker.color || '#e2e8f0' }}
-                                >
-                                    {broker.name}
-                                    {broker.status === 'disconnected' && <span className='ml-1 text-red-500'>[disconnected]</span>}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
+                    <CompactTable
+                        data={chipData}
+                    />
                 );
             case 'patterns':
                 return (
                     <CompactTable
                         data={patternMatches}
-                        columns={4}
                     />
                 );
             case 'brokers':
                 return (
                     <CompactTable
                         data={brokerMetaData}
-                        columns={8}
                     />
                 );
             case 'message':
@@ -141,11 +165,8 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ editorId, message }) => {
                     <CompactTable
                         data={[
                             {
-                                id: message.id,
                                 matrxRecordId: message.matrxRecordId,
                                 order: message.order,
-                                recipeId: message.recipeId,
-                                parentMatrxId: message.parentMatrxId,
                                 role: message.role,
                                 type: message.type,
                                 content: message.content,

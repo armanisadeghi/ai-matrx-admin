@@ -1,15 +1,14 @@
 // hooks/useEditorChips.ts
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChipData, ChipRequestOptions, EditorState, BrokerMetaData } from '../../types/editor.types';
 import { generateChipLabel } from '../../utils/generateBrokerName';
 import { chipSyncManager } from '../../utils/ChipUpdater';
-import { DataBrokerData, MatrxRecordId, MessageBrokerData } from '@/types';
-import { ColorManagement } from '../../hooks/useColorManagement';
+import { DataBrokerData, DataBrokerRecordWithKey, MatrxRecordId, MessageBrokerData } from '@/types';
 import { EditorStates } from '../provider';
 import { RelationshipCreateResult, useRelationshipDirectCreate } from '@/app/entities/hooks/crud/useDirectRelCreate';
-import { getRandomColor } from '../../utils/colorUitls';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { useGetOrFetchRecord, useGetorFetchRecords } from '@/app/entities/hooks/records/useGetOrFetch';
 
 export const sanitizeId = (id?: string): string | undefined => {
     if (!id) return id;
@@ -19,16 +18,22 @@ export const sanitizeId = (id?: string): string | undefined => {
     return match ? match[0] : id;
 };
 
-export const makeBrokerMetadata = (requestOptions: ChipRequestOptions = {}): BrokerMetaData => {
+export const makeBrokerMetadata = (requestOptions: ChipRequestOptions = {}, nextColor: string): BrokerMetaData => {
     const sanitizedId = sanitizeId(requestOptions.id);
+    const idToUse = sanitizedId ?? uuidv4();
+    const recordKey = requestOptions.matrxRecordId ?? `id:${idToUse}`;
+    const name = requestOptions.name ?? generateChipLabel(requestOptions.defaultValue ?? '');
+    const defaultValue = requestOptions.defaultValue ?? '';
+    const defaultComponent = requestOptions.defaultComponent;
+    const dataType = requestOptions.dataType ?? 'str';
     return {
-        id: sanitizedId ?? uuidv4(),
-        name: requestOptions.name ?? generateChipLabel(requestOptions.defaultValue ?? ''),
-        defaultValue: requestOptions.defaultValue ?? '',
-        color: requestOptions.color ?? getRandomColor(),
-        matrxRecordId: requestOptions.brokerId ?? `id:${sanitizeId(requestOptions.id)}`,
-        defaultComponent: requestOptions.defaultComponent,
-        dataType: requestOptions.dataType ?? 'str',
+        id: idToUse,
+        name: name,
+        defaultValue: defaultValue,
+        color: nextColor,
+        matrxRecordId: recordKey,
+        defaultComponent: defaultComponent,
+        dataType: dataType,
     };
 };
 
@@ -37,20 +42,20 @@ export const brokerFromMetadata = (metadata: BrokerMetaData): DataBrokerData => 
     name: metadata.name || 'New Broker',
     defaultValue: metadata.defaultValue || '',
     color: metadata.color as DataBrokerData['color'],
-    defaultComponent: metadata.defaultComponent || '',
+    defaultComponent: metadata.defaultComponent,
     dataType: metadata.dataType as DataBrokerData['dataType'],
 });
 
-const processReturnResults = (results: RelationshipCreateResult[]) => {
+const processReturnResults = (results: RelationshipCreateResult[], nextColor: string) => {
     const brokerRecord = results[0].childRecord.data as DataBrokerData;
     const messageBrokerRecord = results[0].joinRecord.data as MessageBrokerData;
     const matrxRecordId = results[0].childMatrxRecordId;
-    
+
     const brokerMetadata = {
         id: brokerRecord.id,
         name: brokerRecord.name,
         defaultValue: brokerRecord.defaultValue || brokerRecord.name,
-        color: brokerRecord.color || getRandomColor(),
+        color: brokerRecord.color || nextColor,
         matrxRecordId,
         defaultComponent: brokerRecord.defaultComponent || '',
         dataType: brokerRecord.dataType || 'str',
@@ -60,29 +65,180 @@ const processReturnResults = (results: RelationshipCreateResult[]) => {
     return { matrxRecordId, brokerMetadata, messageBrokerRecord };
 };
 
+const processBrokerRecordData = (brokerRecord: DataBrokerRecordWithKey, nextColor: string): BrokerMetaData => {
+    return {
+        id: brokerRecord.id,
+        name: brokerRecord.name,
+        defaultValue: brokerRecord.defaultValue,
+        color: brokerRecord.color || nextColor,
+        matrxRecordId: brokerRecord.matrxRecordId,
+        defaultComponent: brokerRecord.defaultComponent,
+        dataType: brokerRecord.dataType,
+        status: 'active',
+    };
+};
+
 export const useProviderChips = (
     editors: EditorStates,
-    messagesLoading: boolean,
     setEditors: (updater: (prev: EditorStates) => EditorStates) => void,
     getEditorState: (editorId: string) => EditorState,
     updateEditorState: (editorId: string, updates: Partial<EditorState>) => void,
-    colors: ColorManagement
+    getNextColor: () => string,
+    releaseColor: (color: string) => void
 ) => {
     const dispatch = useAppDispatch();
     const createRelatedRecords = useRelationshipDirectCreate('messageBroker', 'dataBroker');
-    const { actions } = useEntityTools('dataBroker');
+    const { actions, selectors } = useEntityTools('dataBroker');
+    interface PendingRecord {
+        recordId: string;
+        editorId: string;
+    }
+    const [pendingRecords, setPendingRecords] = useState<PendingRecord[]>([]);
+
+    const recordIdsToFetch = Array.from(new Set(pendingRecords.map((pr) => pr.recordId)));
+    const records = useGetorFetchRecords('dataBroker', recordIdsToFetch, true);
+
+    const addChipDataFromMetadata = useCallback(
+        (editorId: string, metadata: BrokerMetaData) => {
+            console.log('addChipDataFromMetadata With:', editorId, metadata);
+            const chipData: ChipData = {
+                id: metadata.matrxRecordId,
+                label: metadata.name,
+                color: metadata.color,
+                stringValue: metadata.defaultValue,
+                brokerId: metadata.matrxRecordId,
+                editorId: editorId,
+            };
+
+            setEditors((prev) => {
+                const current = prev.get(editorId);
+                if (!current) return prev;
+
+                const next = new Map(prev);
+                const existingChipIndex = current.chipData.findIndex((c) => c.id === chipData.id);
+
+                if (existingChipIndex !== -1) {
+                    // Update existing chip
+                    const updatedChipData = [...current.chipData];
+                    // If color is changing, release the old one
+                    if (updatedChipData[existingChipIndex].color !== chipData.color) {
+                        releaseColor(updatedChipData[existingChipIndex].color);
+                    }
+                    updatedChipData[existingChipIndex] = chipData;
+                    next.set(editorId, {
+                        ...current,
+                        chipData: updatedChipData,
+                    });
+                } else {
+                    // Add new chip
+                    next.set(editorId, {
+                        ...current,
+                        chipData: [...current.chipData, chipData],
+                    });
+                }
+                return next;
+            });
+
+            // Remove from pending records
+            setPendingRecords((prev) => prev.filter((pr) => !(pr.recordId === metadata.matrxRecordId && pr.editorId === editorId)));
+        },
+        [setEditors, releaseColor]
+    );
+
+    useEffect(() => {
+        if (!records) return;
+
+        records.forEach((record: DataBrokerRecordWithKey) => {
+            if (!record) return;
+
+            // Find all editors waiting for this record
+            const editorsForRecord = pendingRecords.filter((pr) => pr.recordId === record.matrxRecordId).map((pr) => pr.editorId);
+
+            // Process for each editor that requested this record
+            editorsForRecord.forEach((editorId) => {
+                dispatch(actions.addToSelection(record.matrxRecordId));
+                const processedRecord = processBrokerRecordData(record, getNextColor());
+                addChipDataFromMetadata(editorId, processedRecord);
+            });
+        });
+    }, [records, dispatch, addChipDataFromMetadata, pendingRecords]);
+
+    const getOrFetchAllBrokers = useCallback(
+        (editorId: string, recordIds: MatrxRecordId[]) => {
+            console.log('createNewChipData With:', editorId, recordIds);
+
+            // Filter out records that are already pending for this editor
+            const newRecordIds = recordIds.filter((id) => !pendingRecords.some((pr) => pr.recordId === id && pr.editorId === editorId));
+
+            // Add new records to pending set
+            setPendingRecords((prev) => [
+                ...prev,
+                ...newRecordIds.map((recordId) => ({
+                    recordId,
+                    editorId,
+                })),
+            ]);
+        },
+        [pendingRecords]
+    );
 
     const handleError = useCallback((error: Error) => {
         console.error('Failed to create related records:', error);
     }, []);
+
+    const addChipData = useCallback((editorId: string, data: ChipData) => {
+        console.log('addChipData With:', editorId, data);
+        setEditors((prev) => {
+            const current = prev.get(editorId);
+            if (!current) return prev;
+
+            const next = new Map(prev);
+            next.set(editorId, {
+                ...current,
+                chipData: [...current.chipData, data],
+            });
+            return next;
+        });
+    }, []);
+
+    const updateChipData = useCallback(
+        (chipId: string, updates: Partial<ChipData>) => {
+            console.log('updateChipData With:', chipId, updates);
+            setEditors((prev) => {
+                const next = new Map(prev);
+
+                prev.forEach((state, editorId) => {
+                    const chip = state.chipData.find((c) => c.id === chipId);
+                    if (chip) {
+                        // If color is being updated, handle color management
+                        if (updates.color && updates.color !== chip.color) {
+                            releaseColor(chip.color);
+                        }
+
+                        const updatedState = {
+                            ...state,
+                            chipData: state.chipData.map((c) => (c.id === chipId ? { ...c, ...updates } : c)),
+                        };
+                        next.set(editorId, updatedState);
+                        chipSyncManager.syncStateToDOM(editorId, chipId, updates);
+                    }
+                });
+
+                return next;
+            });
+        },
+        [releaseColor]
+    );
 
     const createNewChipData = useCallback(
         async (
             editorId: string,
             requestOptions: ChipRequestOptions = {}
         ): Promise<{ matrxRecordId: MatrxRecordId; brokerMetadata: BrokerMetaData; messageBrokerRecord: MessageBrokerData }> => {
+            console.log('createNewChipData With:', editorId, requestOptions);
+            const nextColor = getNextColor();
 
-            const initialBrokerMetadata = makeBrokerMetadata(requestOptions);
+            const initialBrokerMetadata = makeBrokerMetadata(requestOptions, nextColor);
             const brokerData = brokerFromMetadata(initialBrokerMetadata);
 
             try {
@@ -99,7 +255,7 @@ export const useProviderChips = (
                     throw new Error('Failed to create related records: No result returned');
                 }
 
-                const { matrxRecordId, brokerMetadata, messageBrokerRecord } = processReturnResults([result]);
+                const { matrxRecordId, brokerMetadata, messageBrokerRecord } = processReturnResults([result], nextColor);
 
                 dispatch(actions.addToSelection(matrxRecordId));
 
@@ -124,27 +280,15 @@ export const useProviderChips = (
 
     const setChipData = useCallback(
         (editorId: string, data: ChipData[]) => {
+            console.log('setChipData With:', editorId, data);
             updateEditorState(editorId, { chipData: data });
         },
         [updateEditorState]
     );
 
     // Used Exclusiely by the Editor to crate a new chip
-    const addChipData = useCallback((editorId: string, data: ChipData) => {
-        setEditors((prev) => {
-            const current = prev.get(editorId);
-            if (!current) return prev;
-
-            const next = new Map(prev);
-            next.set(editorId, {
-                ...current,
-                chipData: [...current.chipData, data],
-            });
-            return next;
-        });
-    }, []);
-
     const addBrokerMetadata = useCallback((editorId: string, data: BrokerMetaData) => {
+        console.log('addBrokerMetadata With:', editorId, data);
         setEditors((prev) => {
             const current = prev.get(editorId);
             if (!current) return prev;
@@ -158,28 +302,16 @@ export const useProviderChips = (
         });
     }, []);
 
-    const addChipDataFromMetadata = useCallback(
-        (editorId: string, metadata: BrokerMetaData) => {
-            const chipData: ChipData = {
-                id: metadata.matrxRecordId,
-                label: metadata.name,
-                color: metadata.color,
-                brokerId: metadata.matrxRecordId,
-            };
-            addChipData(editorId, chipData);
-        },
-        [addChipData]
-    );
-
     const removeChipData = useCallback(
         (editorId: string, chipId: string) => {
+            console.log('removeChipData With:', editorId, chipId);
             setEditors((prev) => {
                 const current = prev.get(editorId);
                 if (!current) return prev;
 
                 const chip = current.chipData.find((c) => c.id === chipId);
                 if (chip) {
-                    colors.releaseColor(chip.color);
+                    releaseColor(chip.color);
                 }
 
                 const next = new Map(prev);
@@ -192,38 +324,11 @@ export const useProviderChips = (
 
             chipSyncManager.deleteChip(editorId, chipId);
         },
-        [colors]
-    );
-
-    const updateChipData = useCallback(
-        (chipId: string, updates: Partial<ChipData>) => {
-            setEditors((prev) => {
-                const next = new Map(prev);
-
-                prev.forEach((state, editorId) => {
-                    const chip = state.chipData.find((c) => c.id === chipId);
-                    if (chip) {
-                        // If color is being updated, handle color management
-                        if (updates.color && updates.color !== chip.color) {
-                            colors.releaseColor(chip.color);
-                        }
-
-                        const updatedState = {
-                            ...state,
-                            chipData: state.chipData.map((c) => (c.id === chipId ? { ...c, ...updates } : c)),
-                        };
-                        next.set(editorId, updatedState);
-                        chipSyncManager.syncStateToDOM(editorId, chipId, updates);
-                    }
-                });
-
-                return next;
-            });
-        },
-        [colors]
+        [releaseColor]
     );
 
     const syncChipToBroker = useCallback(async (chipId: string, brokerId: MatrxRecordId) => {
+        console.log('syncChipToBroker With:', chipId, brokerId);
         return new Promise<void>((resolve) => {
             const observer = new MutationObserver((mutations, obs) => {
                 obs.disconnect();
@@ -272,6 +377,7 @@ export const useProviderChips = (
     }, []);
 
     const getAllChipData = useCallback(() => {
+        console.log('getAllChipData');
         const allChips: Array<ChipData> = [];
         editors.forEach((state, editorId) => {
             state.chipData.forEach((chip) => {
@@ -283,6 +389,7 @@ export const useProviderChips = (
 
     const getChipsForBroker = useCallback(
         (searchId: string) => {
+            console.log('getChipsForBroker With:', searchId);
             const normalizedId = searchId.startsWith('id:') ? searchId.slice(3) : searchId;
 
             const allChips: Array<ChipData> = [];
@@ -305,6 +412,7 @@ export const useProviderChips = (
         removeChipData,
         updateChipData,
         syncChipToBroker,
+        getOrFetchAllBrokers,
     };
 };
 

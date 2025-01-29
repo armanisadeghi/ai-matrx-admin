@@ -5,8 +5,8 @@ import { TailwindColor } from '../constants';
 
 export interface LayoutMetadata {
     position: string | number;
-    type?: string;
     isVisible: boolean;
+    type?: string;
 }
 
 export interface ContentMetadata {
@@ -16,7 +16,7 @@ export interface ContentMetadata {
     version: string;
 }
 
-export type MatrxStatus = 'new' | 'active' | 'disconnected' | 'deleted' | string;
+export type MatrxStatus = 'new' | 'active' | 'disconnected' | 'deleted' | 'fetched' | string;
 
 export interface BrokerMetaData {
     matrxRecordId?: string;
@@ -34,12 +34,12 @@ export type ContentMode = 'encodeChips' | 'encodeVisible' | 'name' | 'defaultVal
 
 export interface EditorState {
     content: string;
+    initialized: boolean;
     contentMode: ContentMode;
     chipData: ChipData[];
     metadata?: BrokerMetaData[];
     layout?: LayoutMetadata;
 }
-
 
 // Base Types
 export interface ChipRequestOptions {

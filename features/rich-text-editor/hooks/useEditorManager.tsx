@@ -28,7 +28,7 @@ export const useEditorManager = () => {
             id,
             state: context.getEditorState(id),
             layout: context.layout.getEditorLayout(id),
-            isRegistered: context.registry.isEditorRegistered(id),
+            isRegistered: context.isEditorRegistered(id),
         }));
     }, [context, editorIds]);
 
@@ -68,7 +68,7 @@ export const useEditorManager = () => {
         updateChipData: context.chips.updateChipData,
         removeChipData: context.chips.removeChipData,
         getEditorLayout: context.layout.getEditorLayout,
-        isEditorRegistered: context.registry.isEditorRegistered,
+        isEditorRegistered: context.isEditorRegistered,
     };
 };
 

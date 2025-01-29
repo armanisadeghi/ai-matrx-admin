@@ -1,5 +1,3 @@
-import { ChipData, ChipRequestOptions } from "../types/editor.types";
-
 // utils/brokerNameUtils.ts
 function generateNewBroker() {
     const randomNumber = Math.floor(Math.random() * 900) + 100;

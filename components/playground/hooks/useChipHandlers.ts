@@ -32,7 +32,7 @@ export function useChipHandlers(messageId: MatrxRecordId) {
         // Add the test attribute to the clicked chip
         chip.setAttribute('data-test-clicked', 'true');
 
-        console.log('Chip clicked:', chipId);
+        console.log('useChipHandlers Chip clicked:', chipId);
     }, []);
 
     const addDialogHandler = (event: MouseEvent, metadata: BrokerMetaData) => {

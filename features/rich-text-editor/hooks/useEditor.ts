@@ -24,7 +24,7 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers, onChange
         }
     }, [getEditorElement]);
 
-    const updateEncodedText = useCallback(() => {
+    const updateContentAndMetadata = useCallback(() => {
         const editor = getEditorElement();
         if (!editor) return;
         const text = extractEncodedTextFromDom(editor);
@@ -33,20 +33,20 @@ export const useEditor = (editorId: string, chipHandlers: ChipHandlers, onChange
     }, [getEditorElement, editorId]);
 
     const { handleDragOver, handleDrop, setDraggedChip } = useDragAndDrop(editorId, {
-        updateEncodedText,
+        updateContentAndMetadata,
     });
 
     const { handleStyleChange } = useEditorStyles(editorId, {
-        updateEncodedText,
+        updateContentAndMetadata,
     });
 
-    const { createEnhancedChip } = useChipCreation(editorId, chipHandlers, setDraggedChip, context, updateEncodedText);
+    const { createEnhancedChip } = useChipCreation(editorId, chipHandlers, setDraggedChip, context, updateContentAndMetadata);
 
     return {
         createEnhancedChip,
         applyStyle: handleStyleChange,
         getText,
-        updateEncodedText,
+        updateContentAndMetadata,
         getEditorElement,
         focus,
         setDraggedChip,

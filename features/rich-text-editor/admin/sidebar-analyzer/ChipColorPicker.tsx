@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { TailwindColor } from '../../constants';
 import { getAllColorOptions } from '../../utils/colorUitls';
+import MatrxColorSelectFloatingLabel from '@/components/matrx/MatrxColorSelectFloatingLabel';
 
 
 interface ColorPickerProps {
@@ -18,7 +19,7 @@ interface ColorPickerProps {
   className?: string;
 }
 
-const ChipColorPicker = ({ value, onValueChange, className }: ColorPickerProps) => {
+const ChipColorPickerBasic = ({ value, onValueChange, className }: ColorPickerProps) => {
   const colorOptions = getAllColorOptions();
 
   return (
@@ -48,5 +49,27 @@ const ChipColorPicker = ({ value, onValueChange, className }: ColorPickerProps) 
     </Select>
   );
 };
+
+const ChipColorPicker = ({ value, onValueChange, className }: ColorPickerProps) => {
+  const rawColorOptions = getAllColorOptions();
+  
+  // Transform the color options to match ColorSelect's expected format
+  const colorOptions = rawColorOptions.map(({ color, className }) => ({
+    value: color,
+    label: color.charAt(0).toUpperCase() + color.slice(1), // Capitalize the color name
+    colorClass: className
+  }));
+
+  return (
+    <MatrxColorSelectFloatingLabel
+      options={colorOptions}
+      value={value || ''}
+      onChange={(newValue) => onValueChange?.(newValue as TailwindColor)}
+      className={className}
+      placeholder="Select color"
+    />
+  );
+};
+
 
 export default ChipColorPicker;

@@ -61,8 +61,8 @@
 //             if (!context.registry.isEditorRegistered(id)) return;
 
 //             const state = context.getEditorState(id);
-//             const processedContent = context.getTextWithChipsReplaced(id, true);
-//             const rawContent = context.getTextWithChipsReplaced(id, false);
+//             const processedContent = context.getEncodedText(id, true);
+//             const rawContent = context.getEncodedText(id, false);
 
 //             const currentState = JSON.stringify({
 //                 content: rawContent,
@@ -130,7 +130,7 @@
 //     }, [context, id, lastEditorState, lastChipState, onMessageUpdate, onChipUpdate, updateMessageContent]);
 
 //     const saveContent = useCallback(() => {
-//         const processedContent = context.getTextWithChipsReplaced(id, true);
+//         const processedContent = context.getEncodedText(id, true);
 //         dispatch(actions.updateUnsavedField({
 //             recordId,
 //             field: 'content',

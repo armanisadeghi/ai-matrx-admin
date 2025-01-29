@@ -141,11 +141,12 @@ export const getMetadataFromText = (text: string): MatrxMetadata[] => {
     return matches.map(parseMatrxMetadata);
 };
 
-export const getProcessedMetadataFromText = (text: string): MatrxMetadata[] => {
-    // Step 1: Extract metadata using the existing function
-    const rawMetadata = getMetadataFromText(text);
+export const getAllMetadata = (text?: string): MatrxMetadata[] => {
+    if (!text) {
+        return [];
+    }
 
-    // Step 2: Define the consistent structure for metadata keys
+    const rawMetadata = getMetadataFromText(text);
     const defaultMetadataKeys: MatrxMetadata = {
         matrxRecordId: '',
         id: '',
@@ -157,15 +158,15 @@ export const getProcessedMetadataFromText = (text: string): MatrxMetadata[] => {
         dataType: '',
     };
 
-    // Step 3: Map raw metadata to the consistent structure
     return rawMetadata.map((metadata) => ({
         ...defaultMetadataKeys,
         ...metadata,
     }));
 };
 
+
 export const getAllMatrxRecordIds = (text: string): string[] =>
-    getProcessedMetadataFromText(text)
+    getAllMetadata(text)
         .map((metadata) => metadata.matrxRecordId)
         .filter((id): id is string => Boolean(id));
 

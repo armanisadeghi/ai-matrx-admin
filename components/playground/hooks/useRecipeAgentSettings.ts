@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
-import { EntityData, MatrxRecordId } from '@/types';
+import { AiSettingsProcessed, EntityData, MatrxRecordId } from '@/types';
 import { RelationshipProcessingHook, useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch } from '@/lib/redux';
 import { processReturnResults } from '@/app/entities/hooks/crud/useDirectRelCreate';
+import { v4 as uuidv4 } from 'uuid';
 
 type AiSettingsData = {
     id: string;
@@ -49,7 +50,7 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
         childIds: settingsIds,
         childMatrxIds: settingsMatrxIds,
         unprocessedChildRecords: coreSettings,
-        childRecords: processedSettings,
+        childRecords,
         parentId: recipePkId,
         parentMatrxid: recipeMatrxId,
         deleteChildAndJoin: deleteSettings,
@@ -60,10 +61,61 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
         childTools: aiSettingsTools,
     } = recipeSettingsHook;
 
+    const processedSettings = childRecords as AiSettingsProcessed[];
+
     const { actions: aiSettingsActions, selectors: aiSettingsSelectors } = aiSettingsTools;
     const { actions: aiAgentActions, selectors: aiAgentSelectors } = aiAgentsTools;
 
+    const recordTab = (record: AiSettingsProcessed, position: number): any => {
+        return {
+            tabId: `set${position}`,
+            label: `Set ${position}`,
+            isDisables: false,
+            id: record.id,
+            matrxRecordId: record.matrxRecordId,
+            presetName: record.presetName,
+        };
+    };
 
+    const firstPlaceholder = (position: number): any => {
+        const tempId = uuidv4();
+        return {
+            tabId: `set${position}`,
+            label: `Add`,
+            isDisables: false,
+            id: tempId,
+            matrxRecordId: `id:${tempId}`,
+            presetName: `New Settings ${position}`,
+        };
+    };
+
+    const AdditionalPlaceholder = (position: number): any => {
+        const tempId = uuidv4();
+        return {
+            tabId: `set${position}`,
+            label: `Add`,
+            isDisables: true,
+            id: tempId,
+            matrxRecordId: `id:${tempId}`,
+            presetName: `New Settings ${position}`,
+        };
+    };
+
+    const generateTabs = () => {
+        const tabs = [];
+        const recordCount = processedSettings.length;
+        for (let i = 0; i < Math.min(recordCount, 4); i++) {
+            tabs.push(recordTab(processedSettings[i], i + 1));
+        }
+        if (recordCount < 4) {
+            tabs.push(firstPlaceholder(recordCount + 1));
+            for (let i = recordCount + 2; i <= 4; i++) {
+                tabs.push(AdditionalPlaceholder(i));
+            }
+        }
+
+        return tabs;
+    };
 
     const handleError = useCallback((error: Error) => {
         console.error('Error creating settings and agent:', error);
@@ -130,6 +182,7 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
         settingsMatrxIds,
         coreSettings,
         processedSettings,
+        generateTabs,
         recipePkId,
         recipeMatrxId,
         deleteSettings,

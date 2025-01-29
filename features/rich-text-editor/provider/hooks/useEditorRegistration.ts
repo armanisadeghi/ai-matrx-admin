@@ -1,6 +1,6 @@
 // import { useRef, useCallback } from 'react';
 // import { EditorState, LayoutMetadata } from '../../types/editor.types';
-// import { getProcessedMetadataFromText } from '../../utils/patternUtils';
+// import { getAllMetadata } from '../../utils/patternUtils';
 // import { EditorStates } from '../provider';
 
 // const initialState: EditorState = {
@@ -17,7 +17,7 @@
 // export const getInitialState = (initialContent: string): EditorState => ({
 //     ...initialState,
 //     content: initialContent,
-//     metadata: getProcessedMetadataFromText(initialContent),
+//     metadata: getAllMetadata(initialContent),
 // });
 
 // export const useEditorRegistration = (

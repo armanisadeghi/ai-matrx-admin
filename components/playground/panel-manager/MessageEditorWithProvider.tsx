@@ -91,8 +91,8 @@
 
 //         const interval = setInterval(() => {
 //             const currentState = context.getEditorState(messageRecordId);
-//             const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
-//             const rawContent = context.getTextWithChipsReplaced(messageRecordId, false);
+//             const processedContent = context.getEncodedText(messageRecordId, true);
+//             const rawContent = context.getEncodedText(messageRecordId, false);
 
 //             if (!isEqual(currentState, lastEditorState)) {
 //                 const messageData: MessageData = {
@@ -158,7 +158,7 @@
 //     const handleSave = useCallback(() => {
 //         if (isSaving) return;
 
-//         const processedContent = context.getTextWithChipsReplaced(messageRecordId, true);
+//         const processedContent = context.getEncodedText(messageRecordId, true);
 //         // Skip if content hasn't changed
 //         if (processedContent === lastSavedContent) {
 //             return;

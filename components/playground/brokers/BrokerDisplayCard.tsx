@@ -11,15 +11,10 @@ import { ChipData } from '@/features/rich-text-editor/types/editor.types';
 import { TailwindColor } from '@/features/rich-text-editor/constants';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import ChipColorPicker from '@/features/rich-text-editor/admin/sidebar-analyzer/ChipColorPicker';
-import { EnhancedRecord, QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
+import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
-import { DataBrokerData } from './BrokerRecordsSimple';
 import { updateChipMetadata } from '@/features/rich-text-editor/utils/enhancedChipUtils';
 
-interface EnhancedBrokerRecord extends EnhancedRecord {
-    chips?: ChipData[];
-}
 
 interface BrokerDisplayCardProps {
     recordId: MatrxRecordId | null;
@@ -32,58 +27,14 @@ interface BrokerDisplayCardProps {
 }
 
 const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDelete, onChipUpdate, brokerOptions }: BrokerDisplayCardProps) => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
 
-    // Initialize color from first chip or default to teal
     const [color, setColor] = useState<TailwindColor>(() => {
+        if (!chips) return 'teal';
         return (chips[0]?.color as TailwindColor) || 'teal';
     });
 
     const isBrokerCard = Boolean(recordId && record);
-    const hasChips = chips.length > 0;
-    const isConnected = isBrokerCard && hasChips;
-
-    // Update function to ensure all chip fields are properly synced
-    const updateChips = useCallback(
-        (updates: Partial<ChipData>) => {
-            if (!hasChips || !onChipUpdate) return;
-
-            chips.forEach((chip) => {
-                onChipUpdate(chip.id, {
-                    ...updates,
-                    editorId: chip.editorId,
-                });
-            });
-        },
-        [chips, onChipUpdate, hasChips]
-    );
-
-    // Handle updates from the broker form
-    const handleBrokerFieldChange = useCallback(
-        (field: string, value: any) => {
-            if (!hasChips || !onChipUpdate) return;
-            console.log('== -- === -- - field', field, 'value', value);
-
-            // Sync relevant broker fields to all associated chips
-            switch (field) {
-                case 'name':
-                    updateChips({
-                        label: value,
-                        brokerId: recordId || undefined, // Ensure brokerId is synced
-                    });
-                    break;
-                case 'defaultValue':
-                    updateChips({
-                        stringValue: value,
-                        brokerId: recordId || undefined,
-                    });
-                    break;
-                default:
-                    break;
-            }
-        },
-        [updateChips, recordId]
-    );
 
     // Handle updates from the broker form
     const handleBrokerFieldUpdate= useCallback(
@@ -95,7 +46,6 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
         },
         [recordId]
     );
-    // Handle orphan chip updates
     const handleOrphanChipUpdate = useCallback(
         (field: string, value: any) => {
             if (!chips[0] || !onChipUpdate) return;
@@ -127,7 +77,6 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                             stringValue: record?.defaultValue || chip.stringValue, // Use broker's default value if available
                         });
                     } else {
-                        // If broker is deselected, maintain chip as orphan
                         onChipUpdate(chip.id, {
                             brokerId: undefined,
                             editorId: chip.editorId,
@@ -157,7 +106,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                     record={record}
                     chips={chips}
                     color={color}
-                    isConnected={isConnected}
+                    isConnected={isBrokerCard}
                     isOpen={isOpen}
                     onToggle={() => setIsOpen(!isOpen)}
                     onDelete={recordId && onDelete ? () => onDelete(recordId) : undefined}
@@ -209,18 +158,6 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                                         </div>
                                     </>
                                 )}
-
-                                {/* Color picker is always visible */}
-                                <div className='space-y-2'>
-                                    <label className='text-sm text-muted-foreground'>Color</label>
-                                    <ChipColorPicker
-                                        value={color}
-                                        onValueChange={(newColor) => {
-                                            setColor(newColor);
-                                            updateChips({ color: newColor });
-                                        }}
-                                    />
-                                </div>
                             </CardContent>
                         </motion.div>
                     )}
