@@ -1,6 +1,6 @@
 import { getNewMatrxRecordIdsFromMessages } from '@/features/rich-text-editor/utils/patternUtils';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
-import { getOrFetchSelectedRecordsThunk, RecordResult } from '@/lib/redux/entity/thunks';
+import { getOrFetchSelectedRecordsThunk } from '@/lib/redux/entity/thunks';
 import { MessageTemplateRecordWithKey } from '@/types';
 import React, { useEffect, useState } from 'react';
 

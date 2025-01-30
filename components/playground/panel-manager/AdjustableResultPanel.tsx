@@ -15,12 +15,14 @@ interface AdjustableResultPanelProps {
   id: string;
   order: number;
   number: number;
+  label: string;
 }
 
 export function AdjustableResultPanel({
   id,
   order,
   number,
+  label,
 }: AdjustableResultPanelProps) {
   const panelRef = useRef<ImperativePanelHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -39,7 +41,7 @@ export function AdjustableResultPanel({
     return (
       <div className="h-6 flex-none border bg-background relative">
         <span className="text-sm text-muted-foreground px-1">
-          RESULT {number}
+          {label}
         </span>
         <Button
           variant="ghost"
@@ -74,7 +76,7 @@ export function AdjustableResultPanel({
           </Button>
           <div className="h-full flex flex-col">
             <div className="text-sm text-muted-foreground px-1">
-              RESULT {number}
+            {label}
             </div>
             <div className="flex-1 p-2">
               <MarkdownRenderer

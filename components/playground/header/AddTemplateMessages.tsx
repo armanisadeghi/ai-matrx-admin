@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAddMessage } from '@/components/playground/hooks/messages/useAddMessage';
-import { defaultSystemMessage, defaultUserMessage } from '@/components/playground/constants/prompts';
+import { DEFAULT_MESSAGES } from '@/components/playground/constants/prompts';
 
 interface AddTemplateMessagesProps {
     onSuccess?: () => void;
@@ -17,8 +17,8 @@ const AddTemplateMessages: React.FC<AddTemplateMessagesProps> = ({ onSuccess, on
     const handleAddTemplateMessages = async () => {
         setIsCreating(true);
         try {
-            await addMessage(defaultSystemMessage);
-            await addMessage(defaultUserMessage);
+            await addMessage(DEFAULT_MESSAGES.SYSTEM);
+            await addMessage(DEFAULT_MESSAGES.USER);
             setIsCompleted(true);
             onSuccess?.();
         } catch (error) {

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { AiSettingsProcessed, EntityData, MatrxRecordId } from '@/types';
+import { AiAgentDataOptional, AiSettingsProcessed, EntityData, MatrxRecordId } from '@/types';
 import { RelationshipProcessingHook, useRelFetchProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getStandardRelationship } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch } from '@/lib/redux';
@@ -42,6 +42,18 @@ type AiAgentData = {
     recipeReference?: EntityData<'recipe'>[];
 };
 
+export type RecordTabData = {
+    tabId: number;
+    label: string;
+    resultLabel: string;
+    isDisables: boolean;
+    isRecord: boolean;
+    id: string;
+    matrxRecordId: MatrxRecordId;
+    presetName: string;
+};
+
+
 export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessingHook) {
     const dispatch = useAppDispatch();
     const {
@@ -66,42 +78,49 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
     const { actions: aiSettingsActions, selectors: aiSettingsSelectors } = aiSettingsTools;
     const { actions: aiAgentActions, selectors: aiAgentSelectors } = aiAgentsTools;
 
-    const recordTab = (record: AiSettingsProcessed, position: number): any => {
+
+    const recordTab = (record: AiSettingsProcessed, position: number): RecordTabData => {
         return {
-            tabId: `set${position}`,
+            tabId: position,
             label: `Set ${position}`,
+            resultLabel: `RESULT ${position}`,
             isDisables: false,
+            isRecord: true,
             id: record.id,
             matrxRecordId: record.matrxRecordId,
             presetName: record.presetName,
         };
     };
 
-    const firstPlaceholder = (position: number): any => {
+    const firstPlaceholder = (position: number): RecordTabData => {
         const tempId = uuidv4();
         return {
-            tabId: `set${position}`,
+            tabId: position,
             label: `Add`,
+            resultLabel: `RESULT ${position}`,
             isDisables: false,
+            isRecord: false,
             id: tempId,
             matrxRecordId: `id:${tempId}`,
             presetName: `New Settings ${position}`,
         };
     };
 
-    const AdditionalPlaceholder = (position: number): any => {
+    const AdditionalPlaceholder = (position: number): RecordTabData => {
         const tempId = uuidv4();
         return {
-            tabId: `set${position}`,
+            tabId: position,
             label: `Add`,
+            resultLabel: `RESULT ${position}`,
             isDisables: true,
+            isRecord: false,
             id: tempId,
             matrxRecordId: `id:${tempId}`,
             presetName: `New Settings ${position}`,
         };
     };
 
-    const generateTabs = () => {
+    const generateTabs = (): RecordTabData[] => {
         const tabs = [];
         const recordCount = processedSettings.length;
         for (let i = 0; i < Math.min(recordCount, 4); i++) {
@@ -124,7 +143,7 @@ export function useRecipeAgentSettings(recipeSettingsHook: RelationshipProcessin
     const createNewSettingsData = useCallback(
         async (
             settingsData: AiSettingsData,
-            agentData: AiAgentData,
+            agentData: AiAgentDataOptional,
             filter?: boolean
         ): Promise<{
             aiSettingsRecord: AiSettingsData;

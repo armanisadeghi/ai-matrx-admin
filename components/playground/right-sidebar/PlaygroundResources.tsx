@@ -4,8 +4,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChevronRight, Globe, Files, Github, GraduationCap } from 'lucide-react';
+import { PlaygroundControls } from '../types';
+import { UseRecipeAgentSettingsHook } from '../hooks/useRecipeAgentSettings';
 
-const PlaygroundResources = () => {
+interface DynamicPromptSettingsProps {
+    playgroundControls: PlaygroundControls;
+    recipeAgentSettingsHook: UseRecipeAgentSettingsHook;
+    settingsSetNumber: number;
+}
+
+const PlaygroundResources = ({ playgroundControls, recipeAgentSettingsHook, settingsSetNumber }: DynamicPromptSettingsProps) => {
   return (
     <Card className="bg-elevation1 p-2 rounded-none border-t border-b">
       <h4 className="text-sm font-medium mb-2">Resources</h4>

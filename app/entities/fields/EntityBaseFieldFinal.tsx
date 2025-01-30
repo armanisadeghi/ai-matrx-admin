@@ -18,9 +18,18 @@ export interface EntityBaseFieldFinalProps {
     unifiedLayoutProps?: UnifiedLayoutProps;
     className?: string;
     onFieldChange?: (fieldName: string, value: unknown) => void;
+    forceEnable?: boolean; // New optional prop
 }
 
-const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutProps, className, onFieldChange }: EntityBaseFieldFinalProps) => {
+const EntityBaseFieldFinal = ({ 
+    entityKey, 
+    fieldName, 
+    recordId, 
+    unifiedLayoutProps, 
+    className, 
+    onFieldChange,
+    forceEnable // New prop with implicit undefined default
+}: EntityBaseFieldFinalProps) => {
     const dispatch = useAppDispatch();
     const { store, actions, selectors } = useEntityTools(entityKey);
 
@@ -57,6 +66,7 @@ const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutPro
                     <FieldDisableLogic
                         entityStatus={entityStatus}
                         operationMode={operationMode}
+                        forceEnable={forceEnable} // Pass through the forceEnable prop
                     >
                         {(isDisabled) => (
                             <FormFieldMotionWrapperFinal

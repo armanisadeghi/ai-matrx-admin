@@ -206,7 +206,16 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     action: PayloadAction<GetOrFetchSelectedRecordsPayload>,
     unifiedDatabaseObject?: UnifiedDatabaseObject
 ) {
-    if (action.payload.matrxRecordIds.length === 0 || action.payload.matrxRecordIds.every((id) => id === null)) {
+    const validRecordIds = action.payload.matrxRecordIds.filter((recordId): recordId is NonNullable<typeof recordId> => recordId !== null);
+    
+    // Update the payload with filtered IDs
+    const filteredPayload = {
+        ...action.payload,
+        matrxRecordIds: validRecordIds
+    };
+
+    // Early return if no valid IDs exist
+    if (validRecordIds.length === 0) {
         return;
     }
 
@@ -220,20 +229,19 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     yield call(setLoading, state, 'GET_OR_FETCH_RECORDS');
 
     try {
-        entityLogger.log('debug', 'Starting', action.payload);
+        entityLogger.log('info', 'Starting', filteredPayload);
 
         const { existingRecords, recordIdsNotInState, primaryKeysToFetch } = yield select(
-            entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
+            entitySelectors.selectRecordsForFetching(validRecordIds)
         );
-
-        entityLogger.log('debug', '-Existing records', existingRecords);
-        entityLogger.log('debug', '-Record IDs not in state', recordIdsNotInState);
-        entityLogger.log('debug', '-Primary keys to fetch', primaryKeysToFetch);
+        entityLogger.log('info', '-Existing records', existingRecords);
+        entityLogger.log('info', '-Record IDs not in state', recordIdsNotInState);
+        entityLogger.log('info', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
-            entityLogger.log('debug', '-Existing records', existingRecords);
-            entityLogger.log('debug', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
-            entityLogger.log('debug', 'Dispatching addToSelection action');
+            entityLogger.log('info', '-Existing records', existingRecords);
+            entityLogger.log('info', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
+            entityLogger.log('info', 'Dispatching addToSelection action');
 
             yield put(actions.addToSelection(recordId));
         }

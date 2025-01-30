@@ -5,7 +5,7 @@ import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import PlaygroundHeaderLeft from "./PlaygroundHeaderLeft";
 import PlaygroundHeaderCenter from "./PlaygroundHeaderCenter";
 import PlaygroundHeaderRight from "./PlaygroundHeaderRight";
-import { DoubleJoinedActiveParentProcessingHook } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
+import { UseAiCockpitHook } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
 
 interface PlaygroundHeaderProps {
   initialSettings?: {
@@ -23,7 +23,7 @@ interface PlaygroundHeaderProps {
   isLeftCollapsed?: boolean;
   isRightCollapsed?: boolean;
   fullScreenToggleButton?: React.ReactNode;
-  doubleParentActiveRecipeHook: DoubleJoinedActiveParentProcessingHook;
+  aiCockpitHook: UseAiCockpitHook;
 }
 
 const PlaygroundHeader = ({
@@ -39,7 +39,7 @@ const PlaygroundHeader = ({
   isLeftCollapsed,
   isRightCollapsed,
   fullScreenToggleButton,
-  doubleParentActiveRecipeHook,
+  aiCockpitHook,
 }: PlaygroundHeaderProps) => {
 
   return (
@@ -62,7 +62,7 @@ const PlaygroundHeader = ({
             currentMode={currentMode}
             onModeChange={onModeChange}
             onNewRecipe={onNewRecipe}
-            doubleParentActiveRecipeHook={doubleParentActiveRecipeHook}
+            aiCockpitHook={aiCockpitHook}
           />
         </div>
 
@@ -74,7 +74,7 @@ const PlaygroundHeader = ({
             onShowCode={onShowCode}
             onPlay={onPlay}
             fullScreenToggleButton={fullScreenToggleButton}
-            doubleParentActiveRecipeHook={doubleParentActiveRecipeHook}
+            aiCockpitHook={aiCockpitHook}
           />
         </div>
       </div>

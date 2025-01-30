@@ -1,4 +1,4 @@
-import { DoubleJoinedActiveParentProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { type FC } from 'react';
 
 export interface PlaygroundControls {
@@ -17,7 +17,7 @@ export interface PlaygroundControls {
     onOpenLeftPanel: () => void;
     onOpenRightPanel: () => void;
     fullScreenToggleButton: React.ReactNode;
-    doubleParentActiveRecipeHook: DoubleJoinedActiveParentProcessingHook;
+    aiCockpitHook: UseAiCockpitHook;
 }
 
 export interface PlaygroundPanelProps {

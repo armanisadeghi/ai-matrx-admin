@@ -7,6 +7,7 @@ import CollapsibleSidebarPanel from './CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/panel-manager/ResultPanelManager';
 import MessagesContainer from '../panel-manager/MessagesContainer';
 import { PlaygroundPanelComponent, PlaygroundControls } from '../types';
+import { useAiCockpit } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 
 interface DynamicPlaygroundPanelsProps {
     leftComponent: PlaygroundPanelComponent;
@@ -17,7 +18,6 @@ interface DynamicPlaygroundPanelsProps {
     onRightResize?: (size: number) => void;
     initialLeftSize?: number;
     initialRightSize?: number;
-    initialPanelCount?: number;
     className?: string;
     playgroundControls: PlaygroundControls;
 }
@@ -33,7 +33,6 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
             onRightResize,
             initialLeftSize = 15,
             initialRightSize = 15,
-            initialPanelCount = 2,
             className = '',
             playgroundControls,
         },
@@ -46,16 +45,16 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
         const [showMessages, setShowMessages] = useState(false);
         const [showProcessing, setShowProcessing] = useState(false);
 
-        const { doubleParentActiveRecipeHook } = playgroundControls;
-
-        const { activeParentMatrxId: activeRecipeId, firstRelHook: recipeMessagesProcessingHook, secondRelHook: recipeAgentProcessingHook } = doubleParentActiveRecipeHook;
-        const { childRecords: messages } = recipeMessagesProcessingHook;
+        const { activeRecipeMatrxId, activeRecipeId, messages, deleteMessage, addMessage, handleDragDrop, processedSettings, generateTabs, createNewSettingsData, recipeAgentSettingsHook, recipeMessageHook } = useAiCockpit();
 
         useEffect(() => {
-            if (activeRecipeId && messages.length > 1) {
+            if (activeRecipeMatrxId) {
                 setShowMessages(true);
+                setShowSettings(true);
+                setShowProcessing(true);
+                setShowBrokers(true);
             }
-        }, [activeRecipeId, messages.length]);
+        }, [activeRecipeMatrxId]);
 
         // Expose panel refs to parent
         React.useImperativeHandle(ref, () => ({
@@ -98,7 +97,6 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
                         playgroundControls={playgroundControls}
                     />
                     <Panel defaultSize={55}>
-                        {/* <EditorContainer /> */}
                         {showMessages && (
                             <MessagesContainer
                                 playgroundControls={playgroundControls}
@@ -106,9 +104,8 @@ const DynamicPlaygroundPanels = forwardRef<{ leftPanel: ImperativePanelHandle | 
                         )}
                     </Panel>
                     <PanelResizeHandle />
-                    <Panel defaultSize={15}>
+                    <Panel defaultSize={11}>
                         <ResultPanelManager 
-                        initialPanels={initialPanelCount} 
                         playgroundControls={playgroundControls}
                         />
                     </Panel>

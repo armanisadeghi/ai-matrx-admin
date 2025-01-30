@@ -1,74 +1,76 @@
 import * as React from 'react';
-import { FetchMode, GetOrFetchSelectedRecordsPayload, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
+import { FetchMode, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
+import { SelectionMode } from '@/lib/redux/entity/types/stateTypes';
+import { useGetOrFetchRecord } from './records/useGetOrFetch';
+import { useDebounce } from '@uidotdev/usehooks';
 
-export function useFetchQuickRefSingleMode<TEntity extends EntityKeys>(entityKey: TEntity) {
+export function useSelectActiveRecord(
+    entityKey: EntityKeys,
+    initialRecordKey: MatrxRecordId = '',
+    initialFetchMode: FetchMode = 'native',
+    initialSelectionmode: SelectionMode = 'single'
+) {
     const dispatch = useAppDispatch();
-    const { store, actions, selectors } = useEntityTools(entityKey);
-    const [fetchMode, setFetchMode] = React.useState<FetchMode>('native');
-
+    const { actions, selectors } = useEntityTools(entityKey);
+    const [fetchMode, setFetchMode] = React.useState<FetchMode>(initialFetchMode);
+    const [selectionMode, setSelectionMode] = React.useState<SelectionMode>(initialSelectionmode);
+    const [selectedRecordKey, setSelectedRecordKey] = React.useState<MatrxRecordId>(initialRecordKey);
+    
     const loadingState = useAppSelector(selectors.selectLoadingState);
     const isQuickReferenceFetchComplete = useAppSelector(selectors.selectIsQuickReferenceFetchComplete);
-    const activeRecord = useAppSelector(selectors.selectActiveRecord);
-    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
-
-    const fetchPayload: GetOrFetchSelectedRecordsPayload = React.useMemo(() => ({
-        matrxRecordIds: [activeRecordId],
-        fetchMode,
-    }), [activeRecordId, fetchMode]);
-
-    // Initial fetch and mode setup
+    const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
+    
+    // Fetch quick reference data on mount
     React.useEffect(() => {
         if (!loadingState.loading && !isQuickReferenceFetchComplete) {
-            dispatch(actions.setSelectionMode('single'));
+            dispatch(actions.setSelectionMode(selectionMode));
             dispatch(
                 actions.fetchQuickReference({
                     maxRecords: entityDefaultSettings.maxQuickReferenceRecords,
                 })
             );
         }
-    }, [dispatch, actions, loadingState.loading, isQuickReferenceFetchComplete]);
+    }, [dispatch, actions, loadingState.loading, isQuickReferenceFetchComplete, selectionMode]);
 
-    // Fetch selected records when active record changes
+    const selectedRecordWithkey = useGetOrFetchRecord({
+        entityName: entityKey,
+        matrxRecordId: selectedRecordKey,
+        shouldProcess: Boolean(selectedRecordKey),
+    });
+
+    const activeRecordkey = useDebounce(selectedRecordKey, 1000);
+
     React.useEffect(() => {
-        if (activeRecordId) {
-            dispatch(actions.getOrFetchSelectedRecords(fetchPayload));
+        console.log("useEffect recordkey", activeRecordkey);
+        if (activeRecordkey) {
+            dispatch(actions.setActiveRecord(activeRecordkey));
         }
-    }, [dispatch, actions, fetchPayload]);
+    }, [dispatch, actions, activeRecordkey]);
 
-    const setActiveByRecordKey = React.useCallback((recordKey: MatrxRecordId) => {
-        dispatch(actions.setActiveRecord(recordKey));
-    }, [dispatch, actions]);
 
-    const setActiveBySimpleKey = React.useCallback((simpleKey: string) => {
-        const recordKey = useAppSelector(state => selectors.selectMatrxRecordIdBySimpleKey(state, simpleKey));
-        dispatch(actions.setActiveRecord(recordKey));
-    }, [dispatch, actions, selectors]);
-
-    const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
-
-    return React.useMemo(() => ({ 
-        quickReferenceRecords, 
-        loadingState, 
-        activeRecord,
-        activeRecordId,
-        setActiveByRecordKey,
-        setActiveBySimpleKey,
-        fetchMode,
-        setFetchMode,
-        getRecordIdByRecord 
-    }), [
-        quickReferenceRecords, 
-        loadingState, 
-        activeRecord,
-        activeRecordId,
-        setActiveByRecordKey,
-        setActiveBySimpleKey,
-        fetchMode,
-        getRecordIdByRecord
-    ]);
+    return React.useMemo(
+        () => ({
+            quickReferenceRecords,
+            activeRecordkey,
+            loadingState,
+            fetchMode,
+            setFetchMode,
+            getRecordIdByRecord,
+            setSelectionMode,
+            setSelectedRecordKey,
+        }),
+        [
+            quickReferenceRecords,
+            activeRecordkey,
+            loadingState,
+            fetchMode,
+            setSelectionMode,
+            setSelectedRecordKey
+        ]
+    );
 }
 
-export type useFetchQuickRefSingleModeReturn = ReturnType<typeof useFetchQuickRefSingleMode>;
+export type UseSelectActiveRecordHook = ReturnType<typeof useSelectActiveRecord>;

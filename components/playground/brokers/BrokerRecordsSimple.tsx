@@ -2,7 +2,7 @@
 
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { DataBrokerDataOptional, EntityKeys, MatrxRecordId, MessageBrokerDataOptional } from '@/types';
+import { EntityKeys, MatrxRecordId, MessageBrokerDataOptional } from '@/types';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
 import { ChipData } from '@/features/rich-text-editor/types/editor.types';
@@ -11,6 +11,8 @@ import { useEnhancedFetch } from '@/app/entities/hooks/useEntityFetch';
 import { useDeleteRecord } from '@/app/entities/hooks/crud/useDeleteRecord';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import ChipDisplay from './dev/ChipDisplay';
+import _ from 'lodash';
+import BrokerLoadingState from './BrokerLoadingState';
 
 export type DataBrokerData = {
     id: string;
@@ -53,32 +55,42 @@ const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: Unifi
         return () => clearTimeout(timer);
     }, [isLoading]);
 
-    // Create a Set of selected broker IDs for O(1) lookup
-    const selectedBrokerIds = useMemo(() => {
-        return new Set(selectedBrokers.map((broker) => broker.recordKey));
+    // Deduplicate selected brokers based on recordKey
+    const uniqueSelectedBrokers = useMemo(() => {
+        const brokerMap = new Map();
+        selectedBrokers.forEach(broker => {
+            if (!brokerMap.has(broker.recordKey)) {
+                brokerMap.set(broker.recordKey, broker);
+            }
+        });
+        return Array.from(brokerMap.values());
     }, [selectedBrokers]);
 
-    // Get unmatched chips (excluding those that are already displayed in broker cards)
+    // Create a Set of selected broker IDs for O(1) lookup
+    const selectedBrokerIds = useMemo(() => {
+        return new Set(uniqueSelectedBrokers.map(broker => broker.recordKey));
+    }, [uniqueSelectedBrokers]);
+
+    // Get unmatched chips with deduplication
     const unmatchedChips = useMemo(() => {
         const allChips = context.getAllChips();
-        return allChips.filter((chip) => {
-            if (!chip.brokerId) return true;
+        const chipMap = new Map();
 
-            // Check if this broker is already selected
-            if (selectedBrokerIds.has(chip.brokerId)) return false;
+        allChips.forEach(chip => {
+            const shouldInclude = !chip.brokerId || (!selectedBrokerIds.has(chip.brokerId) &&
+                !enhancedRecords.some(record => record.recordKey === chip.brokerId && !record.needsFetch));
 
-            // Find the broker in enhanced records
-            const brokerRecord = enhancedRecords.find((record) => record.recordKey === chip.brokerId);
-
-            if (brokerRecord) {
-                if (brokerRecord.needsFetch) {
+            if (shouldInclude && !chipMap.has(chip.id)) {
+                chipMap.set(chip.id, chip);
+                
+                // Trigger fetch for unknown broker IDs
+                if (chip.brokerId && !enhancedRecords.some(record => record.recordKey === chip.brokerId)) {
                     getOrFetchRecord(chip.brokerId);
                 }
-                return false;
             }
-
-            return true;
         });
+
+        return Array.from(chipMap.values());
     }, [context, selectedBrokerIds, enhancedRecords, getOrFetchRecord]);
 
     const handleRemove = useCallback(
@@ -99,9 +111,13 @@ const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: Unifi
         [context]
     );
 
+    if (isLoading || !canProcess) {
+        return <BrokerLoadingState />;
+    }
+
     return (
         <div className='w-full'>
-            {selectedBrokers.map(({ recordKey, data }) => (
+            {uniqueSelectedBrokers.map(({ recordKey, data }) => (
                 <BrokerDisplayCard
                     key={recordKey}
                     recordId={recordKey}

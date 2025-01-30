@@ -1,4 +1,4 @@
-import { useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback, useState } from 'react';
@@ -13,6 +13,7 @@ export const useSequentialDelete = (
     secondEntityKey: EntityKeys,
     onComplete?: (success: boolean) => void
 ): UseSequentialDeleteResult => {
+    const dispatch = useAppDispatch();
     const [isDeleting, setIsDeleting] = useState(false);
     const firstEntity = useEntityTools(firstEntityKey);
     const secondEntity = useEntityTools(secondEntityKey);
@@ -21,14 +22,14 @@ export const useSequentialDelete = (
         (firstRecordId: MatrxRecordId, secondRecordId: MatrxRecordId) => {
             setIsDeleting(true);
 
-            firstEntity.dispatch(firstEntity.actions.addPendingOperation(firstRecordId));
+            dispatch(firstEntity.actions.addPendingOperation(firstRecordId));
 
-            firstEntity.dispatch(
+            dispatch(
                 firstEntity.actions.deleteRecord({
                     matrxRecordId: firstRecordId,
                     callbackId: callbackManager.register((firstSuccess: boolean) => {
 
-                        firstEntity.dispatch(firstEntity.actions.removePendingOperation(firstRecordId));
+                        dispatch(firstEntity.actions.removePendingOperation(firstRecordId));
 
                         if (!firstSuccess) {
                             setIsDeleting(false);
@@ -36,13 +37,13 @@ export const useSequentialDelete = (
                             return;
                         }
 
-                        secondEntity.dispatch(secondEntity.actions.addPendingOperation(secondRecordId));
+                        dispatch(secondEntity.actions.addPendingOperation(secondRecordId));
 
-                        secondEntity.dispatch(
+                        dispatch(
                             secondEntity.actions.deleteRecord({
                                 matrxRecordId: secondRecordId,
                                 callbackId: callbackManager.register((secondSuccess: boolean) => {
-                                    secondEntity.dispatch(secondEntity.actions.removePendingOperation(secondRecordId));
+                                    dispatch(secondEntity.actions.removePendingOperation(secondRecordId));
 
                                     setIsDeleting(false);
                                     onComplete?.(secondSuccess);
@@ -53,7 +54,7 @@ export const useSequentialDelete = (
                 })
             );
         },
-        [firstEntity.dispatch, firstEntity.actions, secondEntity.dispatch, secondEntity.actions, onComplete]
+        [dispatch, firstEntity.actions, secondEntity.actions, onComplete]
     );
 
     return { deleteRecords, isDeleting };

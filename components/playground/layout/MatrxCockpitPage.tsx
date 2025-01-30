@@ -14,7 +14,7 @@ import AddTemplateMessages from '@/components/playground/header/AddTemplateMessa
 import { useDispatch } from 'react-redux';
 import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './constants';
-import { useDoubleJoinedActiveParentProcessing } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { useAiCockpit } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { PlaygroundControls } from '../types';
 
 export default function MatrxCockpitPage() {
@@ -26,17 +26,21 @@ export default function MatrxCockpitPage() {
     const [recipeVersion, setRecipeVersion] = useState(1);
     const [showPlayground, setShowPlayground] = useState(false);
 
-    const doubleParentActiveRecipeHook = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
+    const aiCockpitHook = useAiCockpit();
 
     const {
-        activeParentMatrxId: activeRecipeId,
-        activeParentId,
-        firstRelHook: processedRecipeMessagesHook,
-        secondRelHook: processedRecipeAgentHook,
-    } = doubleParentActiveRecipeHook;
-
-    const { childRecords: messages } = processedRecipeMessagesHook;
-
+        activeRecipeMatrxId,
+        activeRecipeId,
+        messages,
+        deleteMessage,
+        addMessage,
+        handleDragDrop,
+        processedSettings,
+        generateTabs,
+        createNewSettingsData,
+        recipeAgentSettingsHook,
+        recipeMessageHook,
+    } = aiCockpitHook;
 
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
@@ -151,7 +155,7 @@ export default function MatrxCockpitPage() {
         onOpenLeftPanel,
         onOpenRightPanel,
         fullScreenToggleButton,
-        doubleParentActiveRecipeHook,
+        aiCockpitHook,
     };
 
     return (
@@ -167,7 +171,6 @@ export default function MatrxCockpitPage() {
                     rightComponent={ModelSettingsPanel}
                     onLeftCollapsedChange={setIsLeftCollapsed}
                     onRightCollapsedChange={setIsRightCollapsed}
-                    initialPanelCount={2}
                     playgroundControls={playgroundControls}
                 />
             ) : (

@@ -18,4 +18,5 @@ export interface SmartButtonProps {
     loading?: boolean;
     showConfirmation?: boolean;
     unifiedLayoutProps?: UnifiedLayoutProps;
+    forceEnable?: boolean;
 }

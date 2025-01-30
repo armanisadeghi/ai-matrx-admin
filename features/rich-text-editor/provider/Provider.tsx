@@ -101,7 +101,8 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const getEditorState = useCallback(
         (editorId: string) => {
             if (!registeredEditors.current.has(editorId)) {
-                throw new Error(`Attempting to access unregistered editor: ${editorId}`);
+                console.warn(`Editor state not found for unregistered editor: ${editorId}`);
+                return initialState;
             }
             const state = editors.get(editorId);
             if (!state) {

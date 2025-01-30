@@ -3,8 +3,16 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { BarChart2, Clock, Zap, Cpu } from 'lucide-react';
+import { PlaygroundControls } from '../types';
+import { UseRecipeAgentSettingsHook } from '../hooks/useRecipeAgentSettings';
 
-const MetricsCard = () => {
+interface DynamicPromptSettingsProps {
+    playgroundControls: PlaygroundControls;
+    recipeAgentSettingsHook: UseRecipeAgentSettingsHook;
+    settingsSetNumber: number;
+}
+
+const MetricsCard = ({ playgroundControls, recipeAgentSettingsHook, settingsSetNumber }: DynamicPromptSettingsProps) => {
   return (
     <Card className="bg-elevation2 p-2 rounded-none mb-0 mt-2">
       <div className="grid grid-cols-2 gap-2">

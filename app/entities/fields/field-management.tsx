@@ -16,12 +16,19 @@ export const FieldDisableLogic = React.memo(
         children,
         entityStatus,
         operationMode,
+        forceEnable = false,
     }: {
         children: (isDisabled: boolean) => React.ReactNode;
         entityStatus: EntityStatus;
         operationMode: EntityOperationMode | undefined;
+        forceEnable?: boolean;
     }) => {
         const isDisabled = useMemo(() => {
+            // If forceEnable is true, always return false (not disabled)
+            if (forceEnable) {
+                return false;
+            }
+
             if (entityStatus === 'loading' || entityStatus === 'error') {
                 return true;
             }
@@ -36,7 +43,7 @@ export const FieldDisableLogic = React.memo(
                 default:
                     return true;
             }
-        }, [entityStatus, operationMode]);
+        }, [entityStatus, operationMode, forceEnable]);
 
         return <>{children(isDisabled)}</>;
     }

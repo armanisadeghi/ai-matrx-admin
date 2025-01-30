@@ -6,14 +6,43 @@ import PlaygroundResources from './PlaygroundResources';
 import MetricsCard from './MetricsCard';
 import { useMeasure } from '@uidotdev/usehooks';
 import DynamicPromptSettings from './settings/DynamicPromptSettings';
-import { Button } from '@/components/ui';
-import { Save, SquarePlus } from 'lucide-react';
 import { PlaygroundPanelProps } from '../types';
-import { debugFor } from '@/utils/simple-debugger';
 import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { useRecipeAgentSettings } from '../hooks/useRecipeAgentSettings';
+import { RecordTabData, UseRecipeAgentSettingsHook } from '../hooks/useRecipeAgentSettings';
+import NewSettingsCard from './settings/NewSettingsCard';
 
-const log = debugFor('aiSettings', 'ModelSettingsPanel');
+const RecordContent: React.FC<{
+    tab: RecordTabData;
+    playgroundControls: PlaygroundPanelProps['playgroundControls'];
+    recipeAgentSettingsHook: UseRecipeAgentSettingsHook;
+}> = ({ tab, playgroundControls, recipeAgentSettingsHook }) => (
+    <div className='flex flex-col h-full'>
+        {/* Scrollable section for settings */}
+        <div className='flex-1 overflow-auto'>
+            <div className='space-y-4 p-2'>
+                <DynamicPromptSettings
+                    playgroundControls={playgroundControls}
+                    recipeAgentSettingsHook={recipeAgentSettingsHook}
+                    settingsSetNumber={tab.tabId}
+                />
+            </div>
+        </div>
+        {/* Fixed bottom section */}
+        <div className='mt-auto border-t border-border/30'>
+            <PlaygroundResources
+                playgroundControls={playgroundControls}
+                recipeAgentSettingsHook={recipeAgentSettingsHook}
+                settingsSetNumber={tab.tabId}
+            />
+            <MetricsCard 
+                playgroundControls={playgroundControls}
+                recipeAgentSettingsHook={recipeAgentSettingsHook}
+                settingsSetNumber={tab.tabId}
+            />
+        </div>
+    </div>
+);
+
 
 const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls }) => {
     const dispatch = useAppDispatch();
@@ -23,19 +52,10 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
 
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
 
-    const { doubleParentActiveRecipeHook } = playgroundControls;
-    const { activeParentMatrxId: activeRecipeId, secondRelHook: recipeAgentProcessingHook } = doubleParentActiveRecipeHook || {};
-
-    const recipeAgentSettingsHook = useRecipeAgentSettings(recipeAgentProcessingHook);
-
-    const {
-        generateTabs,
-        createNewSettingsData,
-        aiSettingsIsLoading
-    } = recipeAgentSettingsHook;
+    const { generateTabs, createNewSettingsData, recipeAgentSettingsHook } = playgroundControls.aiCockpitHook
 
     const tabs = generateTabs();
-    const [activeTab, setActiveTab] = useState(() => tabs[0]?.tabId || 'set1');
+    const [activeTab, setActiveTab] = useState<number>(1);
 
     useEffect(() => {
         if (operationMode === 'view') {
@@ -48,27 +68,25 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
     }, [width]);
 
     const handleTabChange = (tabId: string) => {
-        const tab = tabs.find(t => t.tabId === tabId);
+        const numericTabId = parseInt(tabId);
+        const tab = tabs.find((t) => t.tabId === numericTabId);
         if (!tab?.isDisables) {
-            setActiveTab(tabId);
+            setActiveTab(numericTabId);
         }
     };
 
     const handleNewSettings = async () => {
-        const clickedTab = tabs.find(tab => tab.label === 'Add' && !tab.isDisables);
+        const clickedTab = tabs.find(tab => !tab.isDisables && !tab.isRecord);
         if (clickedTab) {
             const settingsData = {
                 id: clickedTab.id,
-                presetName: clickedTab.presetName
+                presetName: clickedTab.presetName,
             };
             const agentData = {
-                id: clickedTab.id,
-                name: `Agent for ${clickedTab.presetName}`
+                name: `Agent for ${clickedTab.presetName}`,
             };
             
-            // Update the active tab to the one being created
             setActiveTab(clickedTab.tabId);
-            
             await createNewSettingsData(settingsData, agentData);
         }
     };
@@ -76,12 +94,9 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
     const activeSlot = tabs.find(tab => tab.tabId === activeTab);
 
     return (
-        <div
-            className='h-full flex flex-col bg-background'
-            ref={ref}
-        >
+        <div className='h-full flex flex-col bg-background' ref={ref}>
             <Tabs
-                value={activeTab}
+                value={activeTab.toString()}
                 onValueChange={handleTabChange}
                 className='w-full rounded-none'
             >
@@ -89,7 +104,7 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                     {tabs.map((tab) => (
                         <TabsTrigger
                             key={tab.tabId}
-                            value={tab.tabId}
+                            value={tab.tabId.toString()}
                             disabled={tab.isDisables}
                             className={`
                                 text-sm font-medium rounded-none px-1 py-1.5 
@@ -98,52 +113,35 @@ const ModelSettingsPanel: React.FC<PlaygroundPanelProps> = ({ playgroundControls
                                 border-r border-border/30 last:border-r-0 
                                 transition-colors hover:bg-muted/50 
                                 data-[state=active]:shadow-sm
-                                ${tab.label === 'Add' ? 'text-muted-foreground' : ''}
+                                ${!tab.isRecord ? 'text-muted-foreground' : ''}
                             `}
                         >
-                            {isNarrow
-                                ? tab.label === 'Add'
-                                    ? '+'
-                                    : tab.label.replace('set ', 'S')
-                                : tab.label}
+                            {isNarrow ? 
+                                (tab.isRecord ? `S${tab.tabId}` : '+') : 
+                                tab.label
+                            }
                         </TabsTrigger>
                     ))}
                 </TabsList>
             </Tabs>
 
-            <div className='p-2 space-y-4'>
-                <div className='flex gap-2 items-center'>
-                    <Button
-                        variant='outline'
-                        size='icon'
-                        className='h-9 w-9'
-                        disabled={!activeSlot || activeSlot.label === 'Add'}
-                    >
-                        <Save size={16} />
-                    </Button>
-                    <Button
-                        variant='outline'
-                        size='icon'
-                        className='h-9 w-9'
-                        disabled={!tabs.some(tab => tab.label === 'Add' && !tab.isDisables)}
-                        onClick={handleNewSettings}
-                    >
-                        <SquarePlus size={16} />
-                    </Button>
-                </div>
-                {activeSlot && activeSlot.label !== 'Add' && (
-                    <DynamicPromptSettings
-                        playgroundControls={playgroundControls}
-                        recipeAgentSettingsHook={recipeAgentSettingsHook}
-                        settingsSetNumber={parseInt(activeSlot.tabId)}
-                        key={activeSlot.id}
-                    />
+            <div className='p-2 flex-1'>
+                {activeSlot && (
+                    activeSlot.isRecord ? (
+                        <RecordContent
+                            key={activeSlot.id}
+                            tab={activeSlot}
+                            playgroundControls={playgroundControls}
+                            recipeAgentSettingsHook={recipeAgentSettingsHook}
+                        />
+                    ) : (
+                        <NewSettingsCard
+                            key={activeSlot.id}
+                            onCreateNew={handleNewSettings}
+                            isDisabled={activeSlot.isDisables}
+                        />
+                    )
                 )}
-            </div>
-
-            <div className='mt-auto'>
-                <PlaygroundResources />
-                <MetricsCard />
             </div>
         </div>
     );

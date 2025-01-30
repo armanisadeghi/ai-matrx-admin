@@ -39,16 +39,6 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ recordId, record, c
     const missingChipsClass = 'h-4 w-4 transition-all duration-300 text-orange-600 dark:text-orange-500 drop-shadow-[0_0_3px_rgba(16,185,129,0.3)] group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
     const isDisconnectedClass = 'h-4 w-4 text-muted-foreground/50 transition-all duration-300';
 
-
-    const getIconClasses = (isConnected: boolean) => {
-        if (isConnected) {
-            return cn(
-                'h-4 w-4 transition-all duration-300 text-emerald-600 dark:text-emerald-500 drop-shadow-[0_0_3px_rgba(16,185,129,0.3)] group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
-            );
-        }
-        return 'h-4 w-4 text-muted-foreground/50 transition-all duration-300';
-    };
-
     return (
         <div
             className='group flex items-center gap-2 p-2 cursor-pointer hover:bg-elevation3/50 transition-colors'

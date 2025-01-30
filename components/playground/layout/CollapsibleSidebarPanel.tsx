@@ -23,7 +23,7 @@ const CollapsibleSidebarPanel = forwardRef<ImperativePanelHandle, CollapsibleSid
     (
         {
             // Panel props
-            defaultSize = 15,
+            defaultSize = 17,
             minSize = 8,
             maxSize = 40,
             collapsible = true,

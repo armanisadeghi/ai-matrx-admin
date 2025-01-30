@@ -7,6 +7,8 @@ import { getStandardRelationship, KnownRelDef, SimpleRelDef } from './definition
 import _ from 'lodash';
 import { useRelationshipDirectCreate } from '../crud/useDirectRelCreate';
 import { useStableRelationships } from './new/useStableRelationships';
+import { useRecipeAgentSettings } from '@/components/playground/hooks/useRecipeAgentSettings';
+import { useProcessedRecipeMessages } from '@/components/playground/hooks/useProcessedRecipeMessages';
 
 export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const {
@@ -43,10 +45,7 @@ export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: M
         triggerProcessing,
     } = useStableRelationships(relDefSimple, anyParentId);
 
-
     const isLoading = isJoinLoading || isChildLoading;
-
-
 
     const { deleteRecords, isDeleting } = useSequentialDelete(childEntity, joiningEntity);
 
@@ -156,7 +155,7 @@ export function useDoubleJoinedActiveParentProcessing(firstRelKey: KnownRelDef, 
     const selectors = createEntitySelectors(firstRelDef.parent.name);
     const activeParentMatrxId = useAppSelector(selectors.selectActiveRecordId);
     const activeParentId = toPkValue(activeParentMatrxId);
-    
+
     const firstRelHook = useRelFetchProcessing(firstRelDef, activeParentId);
     const secondRelHook = useRelFetchProcessing(secondRelDef, activeParentId);
 
@@ -169,7 +168,7 @@ export function useDoubleStableRelationships(firstRelKey: KnownRelDef, secondRel
     const firstRelDef = getStandardRelationship(firstRelKey);
     const secondRelDef = getStandardRelationship(secondRelKey);
     const selectors = createEntitySelectors(firstRelDef.parent.name);
-    
+
     const firstRelHook = useRelFetchProcessing(firstRelDef, anyParentId);
     const secondRelHook = useRelFetchProcessing(secondRelDef, anyParentId);
 
@@ -177,3 +176,15 @@ export function useDoubleStableRelationships(firstRelKey: KnownRelDef, secondRel
 }
 
 export type UseDoubleStableRelationshipHook = ReturnType<typeof useDoubleJoinedActiveParentProcessing>;
+
+export function useAiCockpit() {
+    const { activeParentMatrxId: activeRecipeMatrxId, activeParentId: activeRecipeId, firstRelHook, secondRelHook } = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
+    const recipeMessageHook = useProcessedRecipeMessages(firstRelHook);
+    const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
+    const recipeAgentSettingsHook = useRecipeAgentSettings(secondRelHook);
+    const { generateTabs, createNewSettingsData, processedSettings } = recipeAgentSettingsHook;
+
+    return { activeRecipeMatrxId, activeRecipeId, messages, deleteMessage, addMessage, handleDragDrop, processedSettings, generateTabs, createNewSettingsData, recipeAgentSettingsHook, recipeMessageHook };
+}
+
+export type UseAiCockpitHook = ReturnType<typeof useAiCockpit>;

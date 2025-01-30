@@ -10,7 +10,8 @@ export const SmartSaveButton = memo((
     {
         entityKey,
         size = 'default',
-        hideText = false
+        hideText = false,
+        forceEnable
     }: SmartButtonProps) => {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
@@ -47,7 +48,8 @@ export const SmartSaveButton = memo((
                 size={size}
                 variant="default"
                 loading={isLoading}
-            >
+                forceEnable={forceEnable}
+                >
                 <Save className="h-4 w-4"/>
                 {!hideText && "Save"}
             </SmartButtonBase>

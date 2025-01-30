@@ -13,6 +13,7 @@ export const SmartAdvancedButton = ({
     recordId,
     size = 'default',
     unifiedLayoutProps,
+    forceEnable,
 }: SmartButtonProps) => {
     const [sheetStates, setSheetStates] = useState<Record<string, boolean>>({});
 
@@ -33,7 +34,8 @@ export const SmartAdvancedButton = ({
                 disabled={isDisabled}
                 size={size}
                 variant='outline'
-            >
+                forceEnable={forceEnable}
+                >
                 <Settings className='h-4 w-4' />
                 Advanced
             </SmartButtonBase>

@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { GripVertical } from 'lucide-react';
 import { DropZone } from './DropZone';
-import ManagedMessageEditor from '@/components/playground/panel-manager/MessageEditorWithProvider';
 import { useMessageTemplatesWithNew } from '@/components/playground/hooks/dev/useMessageWithNew';
 import { ProcessedRecipeMessages } from '@/components/playground/panel-manager/types';
 
@@ -15,7 +14,7 @@ const INITIAL_PANELS: ProcessedRecipeMessages[] = [
         role: 'system',
         type: 'text',
         content: '',
-        order: 0,
+        order: 1,
     },
     {
         id: 'user-1',
@@ -23,7 +22,7 @@ const INITIAL_PANELS: ProcessedRecipeMessages[] = [
         role: 'user',
         type: 'text',
         content: '',
-        order: 1,
+        order: 2,
     },
 ];
 

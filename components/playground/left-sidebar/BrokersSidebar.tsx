@@ -60,7 +60,6 @@ const BrokerSidebar: React.FC<PlaygroundPanelProps> = ({ playgroundControls }) =
             <ScrollArea className="flex-1 scrollbar-none">
                 <AnimatePresence>
                     <BrokerRecordsSimple
-                        key={activeRecipeId}
                         unifiedLayoutProps={layoutProps}
                     />
                 </AnimatePresence>

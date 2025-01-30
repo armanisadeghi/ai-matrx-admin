@@ -2,26 +2,15 @@ import React from 'react';
 import { SmartCrudButtons } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions';
 import { ComponentDensity, ComponentSize, EntityKeys, MatrxRecordId } from '@/types';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { CrudButtonOptions, CrudLayout } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper';
 
 
-interface EntityFormFooterProps {
+export interface EntityFormFooterProps {
     entityKey: EntityKeys;
     recordId: MatrxRecordId;
     density: ComponentDensity;
-    crudOptions: {
-        allowCreate?: boolean;
-        allowEdit?: boolean;
-        allowDelete?: boolean;
-        allowRefresh?: boolean;
-        allowAdvanced?: boolean;
-        showConfirmation?: boolean;
-    };
-    crudLayout: {
-        buttonsPosition?: 'top' | 'bottom' | 'left' | 'right';
-        buttonLayout?: 'row' | 'column';
-        buttonSize?: ComponentSize;
-        buttonSpacing?: ComponentDensity;
-    };
+    crudOptions: CrudButtonOptions;
+    crudLayout: CrudLayout;
     unifiedLayoutProps: UnifiedLayoutProps;
     customButtons?: string[];
 }
@@ -36,6 +25,7 @@ const EntityFormFooter = ({
         allowDelete: true,
         allowAdvanced: true,
         allowRefresh: true,
+        forceEnable: false,
     },
     crudLayout = {
         buttonLayout: 'row',

@@ -12,25 +12,31 @@ import { ComponentDensity, ComponentSize } from '@/types/componentConfigTypes';
 import { UnifiedLayoutProps } from '../../types';
 import SmartAdvancedButton from './core-buttons/SmartAdvancedButton';
 
+
+export type CrudButtonOptions = {
+    allowCreate?: boolean;
+    allowEdit?: boolean;
+    allowDelete?: boolean;
+    allowRefresh?: boolean;
+    allowAdvanced?: boolean;
+    showConfirmation?: boolean;
+    forceEnable?: boolean;
+};
+
+export type CrudLayout = {
+    buttonsPosition?: 'top' | 'bottom' | 'left' | 'right';
+    buttonLayout?: 'row' | 'column';
+    buttonSize?: ComponentSize;
+    buttonSpacing?: ComponentDensity;
+};
+
+
 export interface SmartCrudWrapperProps {
     entityKey: EntityKeys;
     recordId?: MatrxRecordId;
     children?: ReactNode;
-    options?: {
-        allowCreate?: boolean;
-        allowEdit?: boolean;
-        allowCancel?: boolean;
-        allowDelete?: boolean;
-        allowRefresh?: boolean;
-        allowAdvanced?: boolean;
-        showConfirmation?: boolean;
-    };
-    layout?: {
-        buttonsPosition?: 'top' | 'bottom' | 'left' | 'right';
-        buttonLayout?: 'row' | 'column';
-        buttonSize?: ComponentSize;
-        buttonSpacing?: ComponentDensity;
-    };
+    options?: CrudButtonOptions;
+    layout?: CrudLayout;
     className?: string;
     unifiedLayoutProps?: UnifiedLayoutProps;
 }
@@ -43,6 +49,7 @@ const defaultOptions = {
     allowRefresh: true,
     allowAdvanced: true,
     showConfirmation: true,
+    forceEnable: false,
 };
 
 const defaultLayout = {
@@ -73,6 +80,7 @@ export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layou
                     recordId={recordId}
                     size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
+                    forceEnable={mergedOptions.forceEnable}
                 />
             )}
             {mergedOptions.allowEdit && (
@@ -82,14 +90,16 @@ export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layou
                         recordId={recordId}
                         size={hideText ? 'icon' : mergedLayout.buttonSize}
                         hideText={hideText}
-                    />
+                        forceEnable={mergedOptions.forceEnable}
+                        />
                     <SmartSaveButton
                         entityKey={entityKey}
                         recordId={recordId}
                         size={hideText ? 'icon' : mergedLayout.buttonSize}
                         hideText={hideText}
                         showConfirmation={mergedOptions.showConfirmation}
-                    />
+                        forceEnable={mergedOptions.forceEnable}
+                        />
                 </>
             )}
             {mergedOptions.allowCancel && (
@@ -98,6 +108,7 @@ export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layou
                     recordId={recordId}
                     size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
+                    forceEnable={mergedOptions.forceEnable}
                 />
             )}
             {mergedOptions.allowDelete && (
@@ -106,6 +117,7 @@ export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layou
                     recordId={recordId}
                     size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
+                    forceEnable={mergedOptions.forceEnable}
                 />
             )}
             {mergedOptions.allowRefresh && (
@@ -114,6 +126,7 @@ export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layou
                     recordId={recordId}
                     size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
+                    forceEnable={mergedOptions.forceEnable}
                 />
             )}
             {mergedOptions.allowAdvanced && (
@@ -123,6 +136,7 @@ export const SmartCrudWrapper = ({ entityKey, recordId, children, options, layou
                     size={hideText ? 'icon' : mergedLayout.buttonSize}
                     hideText={hideText}
                     unifiedLayoutProps={unifiedLayoutProps}
+                    forceEnable={mergedOptions.forceEnable}
                 />
             )}
         </>

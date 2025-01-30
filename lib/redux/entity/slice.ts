@@ -319,7 +319,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 state.selection.activeRecord = action.payload;
 
                 if (!state.selection.selectedRecords.includes(action.payload)) {
-                    console.log('Adding Active Record to Selection: ', action.payload);
                     addRecordToSelection(state, entityKey, action.payload);
                 }
             },

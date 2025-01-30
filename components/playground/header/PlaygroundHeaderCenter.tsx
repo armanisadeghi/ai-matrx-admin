@@ -3,15 +3,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, History } from 'lucide-react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger } from '@/components/ui/select';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import PlaygroundHistoryDialog from './PlaygroundHistoryDialog';
 import PlaygroundNavContainer from './PlaygroundNavContainer';
 import { usePreferenceValue } from '@/hooks/user-preferences/usePreferenceValue';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { getSimplifiedLayoutProps } from '@/app/entities/layout/configs';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
-import { DoubleJoinedActiveParentProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 
 interface PlaygroundHeaderCenterProps {
     initialSettings?: {
@@ -22,7 +19,7 @@ interface PlaygroundHeaderCenterProps {
     onModeChange?: (mode: string) => void;
     onVersionChange?: (version: number) => void;
     onNewRecipe?: () => void;
-    doubleParentActiveRecipeHook: DoubleJoinedActiveParentProcessingHook;
+    aiCockpitHook: UseAiCockpitHook;
 }
 
 const PlaygroundHeaderCenter = ({
@@ -31,7 +28,7 @@ const PlaygroundHeaderCenter = ({
     onModeChange = () => {},
     onVersionChange = () => {},
     onNewRecipe = () => {},
-    doubleParentActiveRecipeHook,
+    aiCockpitHook,
 }: PlaygroundHeaderCenterProps) => {
     const [lastUsedRecipe, setLastUsedRecipe] = usePreferenceValue('playground', 'lastRecipeId');
     const [version, setVersion] = useState(initialSettings?.version ?? 1);

@@ -33,7 +33,7 @@ export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({
   // Fetch quick references
   useFetchQuickRef(entityKey);
 
-  const { handleRecordSelect, quickReferenceRecords, setFetchMode } =
+  const { activeRecordId, handleRecordSelect, quickReferenceRecords, setFetchMode } =
     useSelectQuickRef(entityKey);
 
   // Set fetch mode when it changes
@@ -64,6 +64,11 @@ export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({
       handleRecordSelect(newRecordKey);
     }
   };
+
+  useEffect(() => {
+  if (!activeRecordId) return;
+    setSelectedRecordKey(activeRecordId);
+  }, [activeRecordId]);
 
   return (
     <select

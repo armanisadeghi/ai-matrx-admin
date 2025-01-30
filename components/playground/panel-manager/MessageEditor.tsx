@@ -3,7 +3,7 @@ import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
 import { Card } from '@/components/ui';
-import { MatrxRecordId } from '@/types';
+import { MatrxRecordId, MessageTemplateProcessed } from '@/types';
 import MessageToolbar from './MessageToolbar';
 import { ProcessedRecipeMessages } from './types';
 import DebugPanel from './AdminToolbar';
@@ -23,7 +23,7 @@ interface ChipChangeData {
 
 interface MessageEditorProps {
     messageRecordId: MatrxRecordId;
-    message: ProcessedRecipeMessages;
+    message: MessageTemplateProcessed;
     isCollapsed: boolean;
     className?: string;
     onCollapse?: () => void;

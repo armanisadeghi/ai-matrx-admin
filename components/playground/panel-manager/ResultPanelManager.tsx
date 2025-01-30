@@ -1,89 +1,64 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Panel, PanelGroup } from 'react-resizable-panels';
-import { Button, Card } from '@/components/ui';
-import { Plus } from 'lucide-react';
+import React from 'react';
+import { PanelGroup } from 'react-resizable-panels';
 import { AdjustableResultPanel } from './AdjustableResultPanel';
 import { PlaygroundControls } from '../types';
+import { MessageSquare, FileText, Code2, FormInput, Image, Sparkles } from 'lucide-react';
+import MultiSwitchToggle from '@/components/matrx/MultiSwitchToggle';
 
 interface ResultPanelManagerProps {
-    initialPanels?: number;
-    onAddSection?: () => void;
     playgroundControls: PlaygroundControls;
 }
 
-type Section = {
-    id: string;
-    number: number;
-};
+const responseFormats = [
+    { icon: <MessageSquare size={14} />, label: 'Text', value: 'text' },
+    { icon: <FileText size={14} />, label: 'Markdown', value: 'markdown' },
+    { icon: <Code2 size={14} />, label: 'Code', value: 'code' },
+    { icon: <FormInput size={14} />, label: 'Form', value: 'form' },
+    { icon: <Image size={14} />, label: 'Image', value: 'image' },
+    { icon: <Sparkles size={14} />, label: 'Dynamic', value: 'dynamic' },
+];
 
-export function ResultPanelManager({ initialPanels = 2, onAddSection, playgroundControls }: ResultPanelManagerProps) {
-    const {
-        onToggleBrokers,
-        onToggleSettings,
-        onShowCode,
-        onNewRecipe,
-        currentMode,
-        onModeChange,
-        version,
-        onVersionChange,
-        onPlay,
-        isLeftCollapsed,
-        isRightCollapsed,
-        onOpenLeftPanel,
-        onOpenRightPanel,
-        fullScreenToggleButton,
-        doubleParentActiveRecipeHook,
-    } = playgroundControls;
+export function ResultPanelManager({ playgroundControls }: ResultPanelManagerProps) {
+    const { generateTabs } = playgroundControls.aiCockpitHook;
+    const tabs = generateTabs();
 
-    const [sections, setSections] = useState<Section[]>(
-        Array.from({ length: initialPanels }, (_, i) => ({
-            id: `result-${i + 1}`,
-            number: i + 1,
-        }))
-    );
+    const recordTabs = tabs.filter((tab) => tab.isRecord);
 
-    const addSection = () => {
-        const newNumber = sections.length + 1;
-        const newId = `result-${newNumber}`;
-
-        setSections([
-            ...sections,
-            {
-                id: newId,
-                number: newNumber,
-            },
-        ]);
-
-        if (onAddSection) {
-            onAddSection();
-        }
+    const handleResponseFormatChange = (format: string) => {
+        // Handle format change
     };
 
     return (
-        <PanelGroup
-            direction='vertical'
-            className='h-full'
-        >
-            {sections.map((section, index) => (
-                <AdjustableResultPanel
-                    key={section.id}
-                    id={section.id}
-                    order={index + 1}
-                    number={section.number}
-                />
-            ))}
-
-            <Button
-                variant='ghost'
-                className='w-full mt-2'
-                onClick={addSection}
+        <div className='h-full flex flex-col'>
+            <PanelGroup
+                direction='vertical'
+                className='flex-1'
             >
-                <Plus className='h-4 w-4 mr-2' />
-                Add Result
-            </Button>
-        </PanelGroup>
+                {recordTabs.map((tab) => (
+                    <AdjustableResultPanel
+                        key={tab.id}
+                        id={`result-${tab.id}`}
+                        order={tab.tabId}
+                        number={tab.tabId}
+                        label={tab.resultLabel}
+                    />
+                ))}
+            </PanelGroup>
+
+            {/* Container to match previous button height */}
+            <div>
+                <MultiSwitchToggle
+                    variant='geometric'
+                    width='w-28'
+                    height='h-10'
+                    disabled={false}
+                    states={responseFormats}
+                    onChange={handleResponseFormatChange}
+                />
+            </div>
+        </div>
     );
 }
 

@@ -7,9 +7,10 @@ import { Plus } from 'lucide-react';
 import { MatrxRecordId } from '@/types';
 import ConfirmationDialog, { DialogType } from './ConfirmationDialog';
 import MessageEditor from './MessageEditor';
-import { NewMessageEntry, useProcessedRecipeMessages } from '../hooks/useProcessedRecipeMessages';
-import { debugFor, useRenderCount } from '@/utils/simple-debugger';
 import { PlaygroundControls } from '../types';
+import { generateMessage } from '../constants/prompts';
+import { AddMessagePayload } from '../hooks/messages/useAddMessage';
+import EmptyMessagesCard from './EmptyMessagesCard';
 
 
 interface MessagesContainerProps {
@@ -17,14 +18,7 @@ interface MessagesContainerProps {
 }
 
 function MessagesContainer({ playgroundControls }: MessagesContainerProps) {
-    const recipeMessagesProcessingHook = playgroundControls.doubleParentActiveRecipeHook.firstRelHook;
-    const recipeMessageHook = useProcessedRecipeMessages(recipeMessagesProcessingHook);;
-    const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
-
-    const log = debugFor("messageTemplate", 'MessagesContainer');
-    useRenderCount('useRelFetchProcessing');
-    log('Got Messages', messages, false, false);    
-
+    const { messages, deleteMessage, addMessage, handleDragDrop } = playgroundControls.aiCockpitHook;
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
     const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
@@ -35,20 +29,27 @@ function MessagesContainer({ playgroundControls }: MessagesContainerProps) {
     const [activeEditorId, setActiveEditorId] = useState<MatrxRecordId | null>(null);
 
     const addNewSection = useCallback(() => {
-        const lastSection = messages[messages.length - 1];
-        const lastRole = lastSection?.role || 'system';
-        const nextRole = lastRole === 'user' ? 'assistant' : 'user';
-
-        const newSection: NewMessageEntry = {
-            role: nextRole,
-            type: 'text',
-            content: 'test message',
-            order: messages.length,
+        const getNextRole = (currentRole: AddMessagePayload['role']): AddMessagePayload['role'] => {
+            switch (currentRole) {
+                case 'system':
+                    return 'user';
+                case 'user':
+                    return 'assistant';
+                case 'assistant':
+                    return 'user';
+                default:
+                    return 'system';
+            }
         };
-
-        addMessage(newSection);
+    
+        const lastSection = messages[messages.length - 1];
+        const lastRole = lastSection?.role;
+        const nextRole = lastRole ? getNextRole(lastRole) : 'system';
+        
+        const newMessage = generateMessage(nextRole, messages.length);
+        addMessage(newMessage);
     }, [messages, addMessage]);
-
+    
     const registerPanelRef = (messageRecordId: MatrxRecordId, ref: ImperativePanelHandle | null) => {
         if (ref) {
             panelRefs.current.set(messageRecordId, ref);
@@ -125,57 +126,69 @@ function MessagesContainer({ playgroundControls }: MessagesContainerProps) {
     };
 
     return (
-        <>
+        <div className="h-full relative">
             <PanelGroup
-                id='(messages-panel-group)'
+                id='messages-panel-group'
                 direction='vertical'
                 className='h-full'
                 ref={panelGroupRef}
             >
-                {(messages.length ? messages : [
-                    { id: 'system-1', role: 'system', order: 0 },
-                    { id: 'user-1', role: 'user', order: 1 }
-                ]).map((message, index, array) => {
-                    const isLastPanel = index === array.length - 1;
-                    const remainingSize = 100 - (array.length - 1) * 10;
-                    const isCollapsed = collapsedPanels.has(message.matrxRecordId);
+                {messages.length > 0 ? (
+                    <>
+                        {messages.map((message, index, array) => {
+                            const isLastPanel = index === array.length - 1;
+                            const remainingSize = 100 - (array.length - 1) * 10;
+                            const isCollapsed = collapsedPanels.has(message.matrxRecordId);
 
-                    return (
-                        <React.Fragment key={message.id}>
-                            <Panel
-                                ref={(ref: ImperativePanelHandle | null) => registerPanelRef(message.matrxRecordId, ref)}
-                                id={message.matrxRecordId}
-                                defaultSize={isLastPanel ? remainingSize : 10}
-                                minSize={10}
-                                maxSize={100}
-                                collapsible={true}
-                                collapsedSize={3}
-                                onCollapse={() => handlePanelCollapse(message.matrxRecordId)}
-                                onExpand={() => handlePanelExpand(message.matrxRecordId)}
-                                order={index + 1}
-                            >
-                                <MessageEditor
-                                    messageRecordId={message.matrxRecordId}
-                                    message={message}
-                                    deleteMessage={deleteMessage}
-                                    isCollapsed={isCollapsed}
-                                    onToggleEditor={() => toggleEditor(message.matrxRecordId)}
-                                    onDragDrop={handleDragDrop}
-                                />
-                            </Panel>
-                            {!isLastPanel && <PanelResizeHandle />}
-                        </React.Fragment>
-                    );
-                })}
-
-                <Button
-                    variant='ghost'
-                    className='w-full mt-2'
-                    onClick={addNewSection}
-                >
-                    <Plus className='h-4 w-4 mr-2' />
-                    Add {messages[messages.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
-                </Button>
+                            return (
+                                <React.Fragment key={message.id}>
+                                    <Panel
+                                        ref={(ref: ImperativePanelHandle | null) => 
+                                            registerPanelRef(message.matrxRecordId, ref)}
+                                        id={message.matrxRecordId}
+                                        defaultSize={isLastPanel ? remainingSize : 10}
+                                        minSize={10}
+                                        maxSize={100}
+                                        collapsible={true}
+                                        collapsedSize={3}
+                                        onCollapse={() => handlePanelCollapse(message.matrxRecordId)}
+                                        onExpand={() => handlePanelExpand(message.matrxRecordId)}
+                                        order={index + 1}
+                                    >
+                                        <MessageEditor
+                                            messageRecordId={message.matrxRecordId}
+                                            message={message}
+                                            deleteMessage={deleteMessage}
+                                            isCollapsed={isCollapsed}
+                                            onToggleEditor={() => toggleEditor(message.matrxRecordId)}
+                                            onDragDrop={handleDragDrop}
+                                        />
+                                    </Panel>
+                                    {!isLastPanel && <PanelResizeHandle />}
+                                </React.Fragment>
+                            );
+                        })}
+                        <Button
+                            variant='ghost'
+                            className='w-full mt-2'
+                            onClick={addNewSection}
+                        >
+                            <Plus className='h-4 w-4 mr-2' />
+                            Add {messages[messages.length - 1]?.role === 'user' ? 'Assistant' : 'User'} Message
+                        </Button>
+                    </>
+                ) : (
+                    <Panel defaultSize={100}>
+                        <EmptyMessagesCard 
+                            onSuccess={() => {
+                                // The hook will handle the message addition
+                            }}
+                            onError={(error) => {
+                                console.error('Error adding template messages:', error);
+                            }}
+                        />
+                    </Panel>
+                )}
             </PanelGroup>
 
             <ConfirmationDialog
@@ -184,8 +197,7 @@ function MessagesContainer({ playgroundControls }: MessagesContainerProps) {
                 onConfirm={handleDialogConfirm}
                 type={dialogType}
             />
-        </>
+        </div>
     );
 }
-
 export default MessagesContainer;

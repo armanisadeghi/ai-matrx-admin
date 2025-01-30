@@ -10,17 +10,21 @@ export const SmartButtonBase = memo((
         variant = 'default',
         size = 'default',
         loading = false,
+        forceEnable = false,
     }: SmartButtonProps) => {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        onClick(e);
+        onClick?.(e);
     };
+
+    // Override disabled state if forceEnable is true
+    const finalDisabled = forceEnable ? false : disabled;
 
     return (
         <LoadingButton
             onClick={handleClick}
-            disabled={disabled}
+            disabled={finalDisabled}
             variant={variant}
             size={size}
             isLoading={loading}

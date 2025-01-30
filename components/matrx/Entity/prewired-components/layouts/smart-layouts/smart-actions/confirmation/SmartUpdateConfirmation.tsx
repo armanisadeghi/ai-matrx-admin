@@ -21,7 +21,9 @@ export const SmartUpdateConfirmation = ({
 }: SmartUpdateConfirmationProps) => {
     const { selectors } = useEntityTools(entityKey);
     const comparison = useAppSelector(selectors.selectChangeComparison);
-    const { updateRecord } = useUpdateRecord(entityKey, () => onOpenChange(false));
+    const { updateRecord } = useUpdateRecord(entityKey, {
+        onComplete: () => onOpenChange(false)
+    });
 
     const handleConfirm = useCallback(() => {
         if (!comparison.matrxRecordId) return;

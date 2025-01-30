@@ -148,7 +148,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                     yield call(withConversion, handleFetchMetrics, entityKey, actions, action);
                     setCache(actions.fetchMetrics.type, action.payload);
                 }),
-                takeEvery(actions.getOrFetchSelectedRecords.type, function* (action: SagaAction<GetOrFetchSelectedRecordsPayload>) {
+                takeLatest(actions.getOrFetchSelectedRecords.type, function* (action: SagaAction<GetOrFetchSelectedRecordsPayload>) {
                     sagaLogger.log('debug', 'Handling getOrFetchSelectedRecords', action.payload);
                     if (shouldSkip(actions.getOrFetchSelectedRecords.type, action.payload)) return;
                     yield call(handleGetOrFetchSelectedRecords, entityKey, actions, action);

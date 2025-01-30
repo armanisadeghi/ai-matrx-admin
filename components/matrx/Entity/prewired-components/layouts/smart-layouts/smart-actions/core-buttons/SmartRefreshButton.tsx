@@ -11,7 +11,8 @@ export interface SmartRefreshButtonProps extends SmartButtonProps {
 export const SmartRefreshButton = ({
     entityKey,
     size = 'default',
-    hideText = false
+    hideText = false,
+    forceEnable,
 }: SmartRefreshButtonProps) => {
     const dispatch = useAppDispatch();
     const {actions} = React.useMemo(() => getEntitySlice(entityKey), [entityKey]);
@@ -31,6 +32,7 @@ export const SmartRefreshButton = ({
             onClick={handleClick}
             size={size}
             variant="outline"
+            forceEnable={forceEnable}
         >
             <RotateCw className="h-4 w-4" />
             {!hideText && "Refresh"}
