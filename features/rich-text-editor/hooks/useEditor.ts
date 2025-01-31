@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { extractEncodedTextFromDom } from '../utils/editorUtils';
-import { useEditorContext } from '../provider/provider';
+import { useEditorContext } from '../../../providers/rich-text-editor/Provider';
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
 import { useChipCreation } from './useChipCreation';
-import { ChipHandlers } from '../utils/createChipUtil';
+import { ChipHandlers } from '../utils/enhancedChipUtils';
 
 export const useEditor = (editorId: string, chipHandlers: ChipHandlers, onChange?: (text: string) => void) => {
     const context = useEditorContext();

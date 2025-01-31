@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import ColorSelection from './ColorSelection';
 import { ChipData, ChipRequestOptions, ColorOption, EditorState } from '../types';
 import { EditorHookResult } from '../hooks/useEditor';
-import { EditorContextValue } from '../provider/new/EditorProvider';
+import { EditorContextValue } from '../_dev/new/EditorProvider';
 
 interface ChipSelectionContentProps {
     editorId: string;

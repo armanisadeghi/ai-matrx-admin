@@ -1,92 +1,169 @@
 'use client';
 
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
-import { useQuickRef } from '@/app/entities/hooks/useQuickRef';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { useEditorContext } from '@/features/rich-text-editor/provider/new/EditorProvider';
-import { ChipData } from '@/features/rich-text-editor/types/editor.types';
-import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
-import ChipDisplay from './ChipDisplay';
-import BrokerDisplayCard from './BrokerDisplayCard';
+import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { useEnhancedFetch, useEntityFetch } from '@/app/entities/hooks/useEntityFetch';
+import BrokerDisplayCard from '../BrokerDisplayCard';
+import { EnhancedRecord } from '@/lib/redux/entity/types/stateTypes';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
+
+interface ChipData {
+    id: string;
+    label: string;
+    color?: string;
+    stringValue?: string;
+    brokerId?: MatrxRecordId;
+    editorId?: MatrxRecordId;
+}
+interface DisplayCard {
+    id: string;
+    brokerId?: MatrxRecordId;
+    brokerRecord?: any;
+    chips: ChipData[];
+}
+
+interface EnhancedBrokerRecord extends EnhancedRecord {
+    chips?: ChipData[];
+}
+
+interface currentChips {
+    withBrokerId: ChipData[];
+    withoutBrokerId: ChipData[];
+}
 
 const BrokerRecords = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
+    const dispatch = useAppDispatch();
     const entityName = 'dataBroker' as EntityKeys;
-    const { selectors } = useEntityTools(entityName);
-    const selectedRecords = useAppSelector(selectors.selectSelectedRecordsWithKey);
+    const { selectors, actions } = useEntityTools(entityName);
+
+    const [loadingHold, setLoadingHold] = useState(true);
+    const [currentChips, setCurrentChips] = useState<currentChips>({ withBrokerId: [], withoutBrokerId: [] });
+    const [chipsNeedProcessing, setChipsNeedProcessing] = useState(false);
+
+    const [currentBroker, setCurrentBroker] = useState<EnhancedBrokerRecord[]>(null);
+    const selectedRecords = useAppSelector(selectors.selectSelectedEnhancedRecords);
     const context = useEditorContext();
-    const { handleToggleSelection, setSelectionMode } = useQuickRef(entityName);
-    const { quickReferenceRecords } = useFetchQuickRef('dataBroker');
-
-    // Memoize broker references for quick lookup
-    const brokerMap = useMemo(() => {
-        return quickReferenceRecords?.reduce((acc, broker) => {
-            acc[broker.recordKey] = broker;
-            return acc;
-        }, {} as Record<string, typeof quickReferenceRecords[0]>) || {};
-    }, [quickReferenceRecords]);
-
-    // Get unmatched chips (excluding those that are already displayed in broker cards)
-    const unmatchedChips = useMemo(() => {
-        const allChips = context.chips.getAllChipData() || [];
-        return allChips.filter(chip => {
-            if (!chip.editorId) return false;
-            // Filter out chips that are already matched with displayed brokers
-            if (chip.brokerId && selectedRecords[chip.brokerId]) return false;
-            return true;
-        });
-    }, [context, selectedRecords]);
+    const messagesLoading = context.messagesLoading;
+    const { quickReferences, isLoading: quickRefLoading, getOrFetchRecord, enhancedRecords } = useEnhancedFetch(entityName);
+    const isLoading = quickRefLoading || messagesLoading;
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setSelectionMode('multiple');
-        }, 0);
-        return () => clearTimeout(timeoutId);
-    }, []);
+        dispatch(actions.setSelectionMode('multiple'));
+    }, [dispatch, actions]);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setLoadingHold(isLoading);
+        }, 200);
+
+        return () => clearTimeout(timeout);
+    }, [isLoading]);
+
+    const availableChips = context.chips.getAllChipData();
+
+    const processChips = useCallback(() => {
+        if (!chipsNeedProcessing) return;
+        const chipsWithBrokerId = availableChips.filter((chip) => chip.brokerId && chip.brokerId !== 'disconnected');
+        const chipsWithoutBrokerId = availableChips.filter((chip) => !chip.brokerId || chip.brokerId === 'disconnected');
+
+        setCurrentChips({
+            withBrokerId: chipsWithBrokerId,
+            withoutBrokerId: chipsWithoutBrokerId,
+        });
+        setChipsNeedProcessing(false);
+        processEnhancedRecords();
+    }, [availableChips]);
+
+    useEffect(() => {
+        if (!isLoading && !loadingHold) {
+            setLoadingHold(true);
+            setChipsNeedProcessing(true);
+            processChips();
+        }
+    }, [isLoading, availableChips]);
+
+    const processEnhancedRecords = useCallback(() => {
+        const updatedBrokers: EnhancedBrokerRecord[] = [...(currentBroker || [])]; // Start with the existing brokers
+
+        // Process chips with brokerId
+        currentChips.withBrokerId.forEach((chip) => {
+            const matchingRecord = enhancedRecords.find((record) => record.recordKey === chip.brokerId);
+
+            if (matchingRecord) {
+                if (matchingRecord.needsFetch) {
+                    // Fetch the record if required
+                    getOrFetchRecord(matchingRecord.recordKey);
+                } else {
+                    // Check if the broker already exists in the updated list
+                    const existingBroker = updatedBrokers.find((broker) => broker.recordKey === matchingRecord.recordKey);
+
+                    if (existingBroker) {
+                        // Append the chip to the existing broker's chips
+                        existingBroker.chips = [...(existingBroker.chips || []), chip];
+                    } else {
+                        // Add a new broker with the chip
+                        updatedBrokers.push({
+                            ...matchingRecord,
+                            chips: [chip],
+                        });
+                    }
+                }
+            }
+        });
+
+        // Process selectedRecords to add any missing brokers without chips
+        selectedRecords.forEach((record) => {
+            const existingBroker = updatedBrokers.find((broker) => broker.recordKey === record.recordKey);
+
+            if (!existingBroker) {
+                // Add the record without any chips
+                updatedBrokers.push({
+                    ...record,
+                    chips: [], // No chips for selectedRecords
+                });
+            }
+        });
+
+        // Update the state with the new broker list
+        setCurrentBroker(updatedBrokers);
+        setLoadingHold(false);
+    }, [currentChips.withBrokerId, enhancedRecords, selectedRecords, currentBroker, getOrFetchRecord]);
 
     const handleRemove = useCallback(
         (recordId: MatrxRecordId) => {
-            handleToggleSelection(recordId);
+            dispatch(actions.removeFromSelection(recordId));
         },
-        [handleToggleSelection]
+        [dispatch, actions]
     );
 
     const handleChipUpdate = useCallback(
         (chipId: string, updates: Partial<ChipData>) => {
+            console.log('-------------Updating chip:', chipId, updates);
             context.chips.updateChipData(chipId, updates);
         },
         [context]
     );
 
-    const selectedBrokers = useMemo(() => 
-        Object.entries(selectedRecords).map(([recordId, record]) => ({
-            recordId,
-            record,
-        })),
-        [selectedRecords]
-    );
-
     return (
-        <div className="w-full space-y-2">
-            {selectedBrokers.map(({ recordId, record }) => (
-                <BrokerDisplayCard
-                    key={recordId}
-                    recordId={recordId}
-                    record={record}
-                    unifiedLayoutProps={unifiedLayoutProps}
-                    onDelete={handleRemove}
-                />
-            ))}
-            
-            {unmatchedChips.map(chip => (
-                <ChipDisplay
-                    key={chip.id}
-                    chip={chip}
-                    brokers={quickReferenceRecords || []}
-                    onUpdate={handleChipUpdate}
-                />
-            ))}
+        <div className='w-full space-y-2'>
+            {currentBroker && currentBroker.length > 0 ? (
+                currentBroker.map((card) => (
+                    <BrokerDisplayCard
+                        key={card.recordKey}
+                        recordId={card.recordKey}
+                        record={card.data}
+                        chips={card.chips || []} // Ensure chips is an array
+                        unifiedLayoutProps={unifiedLayoutProps}
+                        onDelete={handleRemove}
+                        onChipUpdate={handleChipUpdate}
+                        brokerOptions={quickReferences || []}
+                    />
+                ))
+            ) : (
+                <p className='text-gray-500'>No brokers available.</p>
+            )}
         </div>
     );
 };

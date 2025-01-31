@@ -1,8 +1,8 @@
 import { cn } from '@/utils';
-import { COLOR_STYLES, getColorClassesForMode, MODE_CLASSES, TAILWIND_COLORS, TailwindColor } from '../constants';
-import { BrokerMetaData, ContentMode } from '../types/editor.types';
+import { getColorClassesForMode, MODE_CLASSES, TAILWIND_COLORS, TailwindColor } from '@/constants/rich-text-constants';
+import { BrokerMetaData, ContentMode } from '@/types/editor.types';
 import { ChipMenuContextValue } from '../components/ChipContextMenu';
-import { encodeMatrxMetadata, parseMatrxMetadata } from './patternUtils';
+import { encodeMatrxMetadata } from './patternUtils';
 
 const getDisplayContent = (brokerMetadata: BrokerMetaData, mode: ContentMode): string => {
     switch (mode) {

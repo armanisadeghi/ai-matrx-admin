@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
 import { Switch } from '@/components/ui';
-import { useEditorContext } from '../../provider/provider';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 
 const EditorContent = ({ editorId }: { editorId: string }) => {

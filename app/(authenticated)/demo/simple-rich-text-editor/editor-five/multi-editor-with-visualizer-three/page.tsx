@@ -4,7 +4,7 @@ import React from 'react';
 import { PanelGroup, PanelResizeHandle, Panel } from 'react-resizable-panels';
 import MultiEditorPage from './MultiEditorPage';
 import EditorStateVisualizer from '@/features/rich-text-editor/admin/sidebar-analyzer/EditorStateVisualizer';
-import MessagesContainer from '@/components/playground/panel-manager/MessagesContainer';
+import MessagesContainer from '@/components/playground/messages/MessagesContainer';
 import EditorDebugMonitor from './EditorDebugMonitor';
 
 export default function Page() {

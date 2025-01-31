@@ -1,11 +1,9 @@
-import { BrokerMetaData, ChipData, ChipRequestOptions, TextStyle } from '../types/editor.types';
-
+import { BrokerMetaData, ChipData, ChipRequestOptions, TextStyle } from '../../../types/editor.types';
 
 // Helper to get editor element by ID
 export const getEditorElement = (editorId: string): HTMLDivElement | null => {
     return document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement | null;
 };
-
 
 const formatChipMetadata = (element: Element): string => {
     const metadata: BrokerMetaData = {
@@ -16,7 +14,7 @@ const formatChipMetadata = (element: Element): string => {
         color: element.getAttribute('data-chip-color') || '',
         status: element.getAttribute('data-chip-status') || '',
         defaultComponent: element.getAttribute('data-chip-defaultComponent') || '',
-        dataType: element.getAttribute('data-chip-dataType') || ''
+        dataType: element.getAttribute('data-chip-dataType') || '',
     };
 
     // Build the metadata string in the required format
@@ -26,17 +24,15 @@ const formatChipMetadata = (element: Element): string => {
         `name:"${metadata.name}"`,
         `defaultValue:"${metadata.defaultValue}"`,
         `color:"${metadata.color}"`,
-        `status:"${metadata.status}"`
-    ].filter(part => !part.endsWith('""') && !part.endsWith(':'));
+        `status:"${metadata.status}"`,
+    ].filter((part) => !part.endsWith('""') && !part.endsWith(':'));
 
     return `{${parts.join('|')}}!`;
 };
 
-
-
 export const extractEncodedTextFromDom = (editor: HTMLDivElement): string => {
     let text = '';
-    
+
     // Handle deeply nested elements recursively if needed
     const processNestedElement = (element: Element): string => {
         if (element.hasAttribute('data-chip-id')) {
@@ -88,9 +84,6 @@ export const extractEncodedTextFromDom = (editor: HTMLDivElement): string => {
         .trim();
 };
 
-
-
-
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
     if (!editor.firstChild) {
         const initialSpan = document.createElement('span');
@@ -132,7 +125,6 @@ export const ensureValidContainer = (editor: HTMLDivElement, selection: Selectio
     return range;
 };
 
-
 export const getSelectedText = (): { text: string; range: Range | null } => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
@@ -143,14 +135,13 @@ export const getSelectedText = (): { text: string; range: Range | null } => {
     return { text, range };
 };
 
-
 export const getSelectedTextOrRange = (editorId: string): { text: string; range: Range } => {
     const editor = getEditorElement(editorId);
     if (!editor) throw new Error('Editor not found');
-    
+
     const selection = window.getSelection();
     if (!selection) throw new Error('Selection not available');
-    
+
     const range = ensureValidContainer(editor, selection);
     const text = range.toString().trim();
     return { text, range };
@@ -160,8 +151,6 @@ export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Rang
     range.deleteContents();
     range.insertNode(insertionWrapper);
 }
-
-
 
 export function insertWithStructurePreservation(insertionWrapper: HTMLElement, currentRange: Range, parent: Node | null | undefined, container: Node): boolean {
     try {
@@ -195,7 +184,6 @@ export function insertWithStructurePreservation(insertionWrapper: HTMLElement, c
     }
 }
 
-
 export function positionCursorAfterChip(anchorNode: Text, selection: Selection) {
     const finalRange = document.createRange();
     finalRange.setStart(anchorNode, 0);
@@ -203,15 +191,6 @@ export function positionCursorAfterChip(anchorNode: Text, selection: Selection) 
     selection.removeAllRanges();
     selection.addRange(finalRange);
 }
-
-
-
-
-
-
-
-
-
 
 const safeInsertBefore = (parent: Node | null | undefined, newNode: Node, referenceNode: Node | null | undefined): void => {
     if (!parent) return;
@@ -225,12 +204,9 @@ const safeInsertBefore = (parent: Node | null | undefined, newNode: Node, refere
     parent.insertBefore(newNode, referenceNode);
 };
 
-
-
 export const applyTextStyle = (style: TextStyle): void => {
     document.execCommand(style.command, false, style.value || null);
 };
-
 
 export const getCursorRange = (): Range | null => {
     const selection = window.getSelection();
@@ -242,11 +218,7 @@ export const isValidChipText = (text: string): boolean => {
     return text.length > 0 && text.length <= 1000;
 };
 
-
-
-
 export const DEBUG_MODE = false;
-
 
 export const setupEditorAttributes = (editor: HTMLDivElement, componentId: string) => {
     editor.setAttribute('role', 'textbox');

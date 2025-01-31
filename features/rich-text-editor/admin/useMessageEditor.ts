@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useEditorContext } from '../provider/provider';
+import { useEditorContext } from '../../../providers/rich-text-editor/Provider';
 
 
 interface UseMessageEditorProps {

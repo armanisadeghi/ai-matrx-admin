@@ -65,11 +65,15 @@ export type AutomationTableName =
     | 'aiProvider'
     | 'aiSettings'
     | 'arg'
+    | 'audioLabel'
+    | 'audioRecording'
+    | 'audioRecordingUsers'
     | 'automationBoundaryBroker'
     | 'automationMatrix'
     | 'broker'
     | 'bucketStructures'
     | 'bucketTreeStructures'
+    | 'compiledRecipe'
     | 'dataBroker'
     | 'dataInputComponent'
     | 'dataOutputComponent'
@@ -169,6 +173,27 @@ export type ArgRecordWithKey = Expand<EntityDataWithKey<'arg'>>;
 export type ArgProcessed = Expand<ProcessedEntityData<'arg'>>;
 export type ArgData = Expand<EntityDataMixed<'arg'>>;
 
+export type AudioLabelType = AutomationEntity<'audioLabel'>;
+export type AudioLabelDataRequired = Expand<EntityData<'audioLabel'>>;
+export type AudioLabelDataOptional = Expand<EntityDataOptional<'audioLabel'>>;
+export type AudioLabelRecordWithKey = Expand<EntityDataWithKey<'audioLabel'>>;
+export type AudioLabelProcessed = Expand<ProcessedEntityData<'audioLabel'>>;
+export type AudioLabelData = Expand<EntityDataMixed<'audioLabel'>>;
+
+export type AudioRecordingType = AutomationEntity<'audioRecording'>;
+export type AudioRecordingDataRequired = Expand<EntityData<'audioRecording'>>;
+export type AudioRecordingDataOptional = Expand<EntityDataOptional<'audioRecording'>>;
+export type AudioRecordingRecordWithKey = Expand<EntityDataWithKey<'audioRecording'>>;
+export type AudioRecordingProcessed = Expand<ProcessedEntityData<'audioRecording'>>;
+export type AudioRecordingData = Expand<EntityDataMixed<'audioRecording'>>;
+
+export type AudioRecordingUsersType = AutomationEntity<'audioRecordingUsers'>;
+export type AudioRecordingUsersDataRequired = Expand<EntityData<'audioRecordingUsers'>>;
+export type AudioRecordingUsersDataOptional = Expand<EntityDataOptional<'audioRecordingUsers'>>;
+export type AudioRecordingUsersRecordWithKey = Expand<EntityDataWithKey<'audioRecordingUsers'>>;
+export type AudioRecordingUsersProcessed = Expand<ProcessedEntityData<'audioRecordingUsers'>>;
+export type AudioRecordingUsersData = Expand<EntityDataMixed<'audioRecordingUsers'>>;
+
 export type AutomationBoundaryBrokerType = AutomationEntity<'automationBoundaryBroker'>;
 export type AutomationBoundaryBrokerDataRequired = Expand<EntityData<'automationBoundaryBroker'>>;
 export type AutomationBoundaryBrokerDataOptional = Expand<EntityDataOptional<'automationBoundaryBroker'>>;
@@ -203,6 +228,13 @@ export type BucketTreeStructuresDataOptional = Expand<EntityDataOptional<'bucket
 export type BucketTreeStructuresRecordWithKey = Expand<EntityDataWithKey<'bucketTreeStructures'>>;
 export type BucketTreeStructuresProcessed = Expand<ProcessedEntityData<'bucketTreeStructures'>>;
 export type BucketTreeStructuresData = Expand<EntityDataMixed<'bucketTreeStructures'>>;
+
+export type CompiledRecipeType = AutomationEntity<'compiledRecipe'>;
+export type CompiledRecipeDataRequired = Expand<EntityData<'compiledRecipe'>>;
+export type CompiledRecipeDataOptional = Expand<EntityDataOptional<'compiledRecipe'>>;
+export type CompiledRecipeRecordWithKey = Expand<EntityDataWithKey<'compiledRecipe'>>;
+export type CompiledRecipeProcessed = Expand<ProcessedEntityData<'compiledRecipe'>>;
+export type CompiledRecipeData = Expand<EntityDataMixed<'compiledRecipe'>>;
 
 export type DataBrokerType = AutomationEntity<'dataBroker'>;
 export type DataBrokerDataRequired = Expand<EntityData<'dataBroker'>>;

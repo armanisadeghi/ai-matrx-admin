@@ -25,7 +25,7 @@ import { FileSystemDialogs } from '@/providers/dialogs/modules/filesystem';
 import { FileSystemProvider } from '@/lib/redux/fileSystem/Provider';
 import { ChipMenuProvider } from '@/features/rich-text-editor/components/ChipContextMenu';
 import { PreferenceSyncProvider } from '@/providers/usePreferenceSync';
-import { EditorProvider } from '@/features/rich-text-editor/provider/provider';
+import { EditorProvider } from '@/providers/rich-text-editor/Provider';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
 

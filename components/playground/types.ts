@@ -1,7 +1,7 @@
 import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { type FC } from 'react';
 
-export interface PlaygroundControls {
+export interface CockpitControls {
     onToggleBrokers: () => void;
     onToggleSettings: () => void;
     onShowCode: () => void;
@@ -11,7 +11,7 @@ export interface PlaygroundControls {
     version: number;
     onVersionChange: (version: number) => void;
     onPlay: () => void;
-    // Panel states
+
     isLeftCollapsed: boolean;
     isRightCollapsed: boolean;
     onOpenLeftPanel: () => void;
@@ -20,13 +20,8 @@ export interface PlaygroundControls {
     aiCockpitHook: UseAiCockpitHook;
 }
 
-export interface PlaygroundPanelProps {
-    playgroundControls: PlaygroundControls;
+export interface CockpitPanelProps {
+    playgroundControls: CockpitControls;
 }
 
-export type PlaygroundPanelComponent = FC<PlaygroundPanelProps>;
-
-export interface DynamicPromptSettingsProps {
-    playgroundControls: PlaygroundControls;
-    settingsSetNumber: number;
-}
+export type CockpitPanelComponent = FC<CockpitPanelProps>;

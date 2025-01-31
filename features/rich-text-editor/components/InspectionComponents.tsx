@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect } from 'react';
 import { Copy } from 'lucide-react';
-import { cleanHTML, formatHTML, structureHTML } from '../utils/htmlFormatter';
+import { cleanHTML, formatHTML, structureHTML } from '../admin/htmlFormatter';
 
 type ViewMode = 'original' | 'cleaned' | 'structured' | 'formatted';
 

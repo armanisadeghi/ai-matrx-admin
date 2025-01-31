@@ -7,8 +7,8 @@ import { getStandardRelationship, KnownRelDef, SimpleRelDef } from './definition
 import _ from 'lodash';
 import { useRelationshipDirectCreate } from '../crud/useDirectRelCreate';
 import { useStableRelationships } from './new/useStableRelationships';
-import { useRecipeAgentSettings } from '@/components/playground/hooks/useRecipeAgentSettings';
-import { useProcessedRecipeMessages } from '@/components/playground/hooks/useProcessedRecipeMessages';
+import { useRecipeAgentSettings } from '@/hooks/aiCockpit/useRecipeAgentSettings';
+import { useProcessedRecipeMessages } from '@/hooks/aiCockpit/useProcessedRecipeMessages';
 
 export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const {
@@ -184,7 +184,14 @@ export function useAiCockpit() {
     const recipeAgentSettingsHook = useRecipeAgentSettings(secondRelHook);
     const { generateTabs, createNewSettingsData, processedSettings } = recipeAgentSettingsHook;
 
-    return { activeRecipeMatrxId, activeRecipeId, messages, deleteMessage, addMessage, handleDragDrop, processedSettings, generateTabs, createNewSettingsData, recipeAgentSettingsHook, recipeMessageHook };
+    const tools = {
+        recipe: firstRelHook.parentTools,
+        message: firstRelHook.childTools,
+        settings: secondRelHook.childTools,
+        agent: secondRelHook.joinTools
+    };
+
+    return { activeRecipeMatrxId, activeRecipeId, messages, deleteMessage, addMessage, handleDragDrop, processedSettings, generateTabs, createNewSettingsData, recipeAgentSettingsHook, recipeMessageHook, tools };
 }
 
 export type UseAiCockpitHook = ReturnType<typeof useAiCockpit>;

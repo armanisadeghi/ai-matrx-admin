@@ -5,7 +5,7 @@ import { GripVertical } from 'lucide-react';
 import { DropZone } from './DropZone';
 import ManagedMessageEditor from '@/components/playground/panel-manager/MessageEditorWithProvider';
 import { useMessageTemplatesWithNew } from '@/components/playground/hooks/dev/useMessageWithNew';
-import { ProcessedRecipeMessages } from '@/components/playground/panel-manager/types';
+import { ProcessedRecipeMessages } from '@/components/playground/messages/types';
 
 const MultiEditorPage = () => {
     const recipeMessageHook = useMessageTemplatesWithNew();

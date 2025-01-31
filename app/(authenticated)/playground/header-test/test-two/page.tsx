@@ -3,7 +3,7 @@
 import { getSimplifiedLayoutProps } from '@/app/entities/layout/configs';
 import EntityCreateRecordSheet from '@/app/entities/layout/EntityCreateRecordSheet';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import AddTemplateMessages from '@/components/playground/header/AddTemplateMessages';
+import AddTemplateMessages from '@/components/playground/messages/AddTemplateMessages';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 

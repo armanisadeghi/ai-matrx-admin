@@ -7,7 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 import { MatrxJsonToCollapsible } from "@/components/matrx/matrx-collapsible";
 import dynamic from 'next/dynamic';
 import EditorAnalyzerView from './EditorAnalyzerView';
-import { useEditorContext } from '../../provider/provider';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 const EnhancedJsonViewerGroup = dynamic(() => 
     import('@/components/ui/JsonComponents/JsonViewerComponent').then(mod => mod.EnhancedJsonViewerGroup), 

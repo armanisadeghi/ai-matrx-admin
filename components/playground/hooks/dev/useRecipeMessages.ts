@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ExpandRecursively, MessageTemplateDataOptional, MessageTemplateProcessed, MessageTemplateRecordWithKey, RecipeMessageRecordWithKey } from '@/types';
 import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
-import { useMessageReordering } from '../messages/useMessageReordering';
+import { useMessageReordering } from '../../../../hooks/aiCockpit/useMessageReordering';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { recipeMessageDef } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';

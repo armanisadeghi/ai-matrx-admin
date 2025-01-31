@@ -98,7 +98,6 @@ export const parseMatrxMetadata = (content: string): MatrxMetadata => {
     return metadata;
 };
 
-
 export const transformMatrxText = (text: string, mode: DisplayMode): string => {
     MATRX_PATTERN.lastIndex = 0;
 
@@ -164,72 +163,88 @@ export const getAllMetadata = (text?: string): MatrxMetadata[] => {
     }));
 };
 
-
 export const getAllMatrxRecordIds = (text: string): string[] =>
     getAllMetadata(text)
         .map((metadata) => metadata.matrxRecordId)
         .filter((id): id is string => Boolean(id));
 
-interface message {
+interface Message {
     content: string;
     [key: string]: any;
 }
 
-export const getAllMatrxRecordIdsFromMessages = (messages: MessageTemplateRecordWithKey[]): string[] => {
+export const getAllMatrxRecordIdsFromMessages = (messages: Message[]): string[] => {
     return messages
         .map((message) => message.content || '') // Extract 'content', default to empty string
         .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
         .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
 };
 
-export const getNewMatrxRecordIdsFromMessages = (
-    messages: MessageTemplateRecordWithKey[],
-    currentIds: string[]
-): string[] => {
+export const getNewMatrxRecordIdsFromMessages = (messages: Message[], currentIds: string[]): string[] => {
     const allIdsFromMessages = messages
         .map((message) => message.content || '') // Extract 'content', default to empty string
         .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
         .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
-        return allIdsFromMessages.filter(id => !currentIds.includes(id));
+    return allIdsFromMessages.filter((id) => !currentIds.includes(id));
 };
+
+
+export const getMetadataFromAllMessages = (messages: Message[]): MatrxMetadata[] => {
+    return messages
+        .map(message => message.content || '')
+        .flatMap(getAllMetadata);
+};
+
+export const getUniqueMetadataFromAllMessages = (messages: Message[]): MatrxMetadata[] => {
+    const allMetadata = getMetadataFromAllMessages(messages);
+    const uniqueMetadataMap = new Map(
+        allMetadata.map(metadata => [metadata.id, metadata])
+    );
+    
+    return Array.from(uniqueMetadataMap.values());
+};
+
+
+
+
 
 export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
     const parts: string[] = [];
-    
+
     // Handle required fields first
     if (metadata.matrxRecordId) {
         parts.push(`matrxRecordId:${metadata.matrxRecordId}`);
     }
-    
+
     if (metadata.id) {
         parts.push(`id:${metadata.id}`);
     }
-    
+
     // Handle optional fields with quotes for values that might contain special characters
     if (metadata.name !== undefined) {
         parts.push(`name:"${metadata.name}"`);
     }
-    
+
     if (metadata.defaultValue !== undefined) {
         parts.push(`defaultValue:"${metadata.defaultValue}"`);
     }
-    
+
     if (metadata.color !== undefined) {
         parts.push(`color:"${metadata.color}"`);
     }
-    
+
     if (metadata.status !== undefined) {
         parts.push(`status:"${metadata.status}"`);
     }
-    
+
     if (metadata.defaultComponent !== undefined && metadata.defaultComponent !== '') {
         parts.push(`defaultComponent:"${metadata.defaultComponent}"`);
     }
-    
+
     if (metadata.dataType !== undefined && metadata.dataType !== '') {
         parts.push(`dataType:"${metadata.dataType}"`);
     }
-    
+
     return `{${parts.join('|')}}!`;
 };
 

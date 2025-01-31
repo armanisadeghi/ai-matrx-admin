@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TailwindColor } from '../../constants';
+import { TailwindColor } from '@/constants/rich-text-constants';
 import { getAllColorOptions } from '../../utils/colorUitls';
 import MatrxColorSelectFloatingLabel from '@/components/matrx/MatrxColorSelectFloatingLabel';
 

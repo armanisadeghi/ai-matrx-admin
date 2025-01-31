@@ -4,8 +4,8 @@ import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEn
 import { processJoinedData, RelationshipDefinition } from '@/app/entities/hooks/relationships/utils';
 import { useActiveJoinedRecords } from '@/app/entities/hooks/relationships/useActiveJoinedRecords';
 import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships/useJoinedRecords';
-import { ProcessedRecipeMessages } from '../../panel-manager/types';
-import { useMessageReordering } from '../messages/useMessageReordering';
+import { ProcessedRecipeMessages } from '../../messages/types';
+import { useMessageReordering } from '../../../../hooks/aiCockpit/useMessageReordering';
 
 export const messageRelationshipDefinition: RelationshipDefinition = {
     parentEntity: {

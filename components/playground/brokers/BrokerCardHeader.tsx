@@ -3,8 +3,8 @@ import { Button } from '@/components/ui';
 import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown, Frown } from 'lucide-react';
 import { cn } from '@/utils';
 import { MatrxRecordId } from '@/types';
-import { TailwindColor, COLOR_STYLES } from '@/features/rich-text-editor/constants';
-import { ChipData } from '@/features/rich-text-editor/types/editor.types';
+import { TailwindColor, COLOR_STYLES } from '@/constants/rich-text-constants';
+import { ChipData } from '@/types/editor.types';
 import { findChipsByBrokerIdGlobal } from '@/features/rich-text-editor/utils/chipFilnder';
 
 interface BrokerRecord {

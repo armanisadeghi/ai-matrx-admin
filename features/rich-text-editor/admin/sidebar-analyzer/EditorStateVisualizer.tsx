@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useEditorManager } from '../../hooks/useEditorManager';
+import { useEditorManager } from '../useEditorManager';
 import { EditorStats } from './EditorStats';
 import EditorContent from './EditorContent';
 import ChipTabs from './ChipDetails';

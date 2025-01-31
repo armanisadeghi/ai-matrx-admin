@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
+import { EditorWithProviders } from '@/providers/rich-text-editor/withManagedEditor';
 import { GripVertical } from 'lucide-react';
 import { DropZone } from './DropZone';
 import { useMessageTemplatesWithNew } from '@/components/playground/hooks/dev/useMessageWithNew';
-import { ProcessedRecipeMessages } from '@/components/playground/panel-manager/types';
+import { ProcessedRecipeMessages } from '@/components/playground/messages/types';
 
 const INITIAL_PANELS: ProcessedRecipeMessages[] = [
     {

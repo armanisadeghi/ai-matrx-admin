@@ -4,12 +4,12 @@ import { useRefManager } from '@/lib/refs';
 import React, { useRef, useEffect, useState } from 'react';
 import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
 import Toolbar from '@/features/rich-text-editor/components/Toolbar';
-import { TextStyle } from '@/features/rich-text-editor/types/editor.types';
+import { TextStyle } from '@/types/editor.types';
 import ChipSearchUtility from '@/features/rich-text-editor/components/ChipSearchUtility';
 import { DebugStats } from '@/components/debug/debug-stats';
 import { InspectHtmlUtil } from '@/features/rich-text-editor/components/InspectionComponents';
 import { useMeasure } from "@uidotdev/usehooks";
-import { EditorWithProviders } from '@/features/rich-text-editor/provider/withManagedEditor';
+import { EditorWithProviders } from '@/providers/rich-text-editor/withManagedEditor';
 
 interface EditorTestPageProps {
     editorId: string;

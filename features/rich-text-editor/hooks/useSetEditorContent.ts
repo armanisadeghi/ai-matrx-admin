@@ -2,8 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { EditorHookResult } from './useEditor';
 import { createChipLine, createEmptyLine, createTextOnlyLine, processContentLines } from '../utils/setEditorUtils';
-import { useEditorContext } from '../provider/provider';
-import { createChipStructure } from '../utils/createChipUtil';
+import { useEditorContext } from '../../../providers/rich-text-editor/Provider';
 import { createEnhancedChipStructure } from '../utils/enhancedChipUtils';
 import { getAllMatrxRecordIds } from '../utils/patternUtils';
 

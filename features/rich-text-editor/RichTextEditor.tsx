@@ -7,11 +7,11 @@ import { WithRefsProps, withRefs } from '@/lib/refs';
 import { setupEditorAttributes } from './utils/editorUtils';
 import { getEditorSelection, SelectionState } from './utils/selectionUtils';
 import { useSetEditorContent } from './hooks/useSetEditorContent';
-import { useEditorContext } from './provider/provider';
-import { ChipHandlers } from './utils/createChipUtil';
-import { BrokerMetaData } from './types/editor.types';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
+import { BrokerMetaData } from '@/types/editor.types';
 import MetadataDialog from './components/MetadataDialog';
 import _ from 'lodash';
+import { ChipHandlers } from './utils/enhancedChipUtils';
 
 export interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;

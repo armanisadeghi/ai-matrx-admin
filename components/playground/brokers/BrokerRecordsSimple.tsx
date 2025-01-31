@@ -4,13 +4,13 @@ import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId, MessageBrokerDataOptional } from '@/types';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { useEditorContext } from '@/features/rich-text-editor/provider/provider';
-import { ChipData } from '@/features/rich-text-editor/types/editor.types';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
+import { ChipData } from '@/types/editor.types';
 import BrokerDisplayCard from './BrokerDisplayCard';
 import { useEnhancedFetch } from '@/app/entities/hooks/useEntityFetch';
 import { useDeleteRecord } from '@/app/entities/hooks/crud/useDeleteRecord';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import ChipDisplay from './dev/ChipDisplay';
+import ChipDisplay from './ChipDisplay';
 import _ from 'lodash';
 import BrokerLoadingState from './BrokerLoadingState';
 

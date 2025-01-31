@@ -4,8 +4,8 @@ import {
     getSelectedTextOrRange,
     positionCursorAfterChip,
 } from '../utils/editorUtils';
-import { EditorContextValue } from '../provider/provider';
-import { ChipHandlers } from '../utils/createChipUtil';
+import { EditorContextValue } from '../../../providers/rich-text-editor/Provider';
+import { ChipHandlers } from '../_dev/createChipUtil';
 import { createEnhancedChipStructure, updateChipMode } from '../utils/enhancedChipUtils';
 
 export const useChipCreation = (

@@ -3,7 +3,6 @@
 import { EntityRecordMap } from '@/lib/redux/entity/types/stateTypes';
 import { toPkValue, toMatrxIdFromValueBatch, toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityKeys, MatrxRecordId, EntityAnyFieldKey } from '@/types';
-import { entityFieldNameGroups } from './fieldsDataUtil';
 import { RelationshipDefinition } from '@/types/relationshipTypes';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -24,6 +23,7 @@ import {
     recipeToolRelationshipDefinition,
     RELATIONSHIP_DEFINITIONS,
 } from './relationshipData';
+import { entityFieldNameGroups } from '@/utils/schema/entityFieldNameGroups';
 
 const sampleConfig = {
     definition: 'recipeMessage',

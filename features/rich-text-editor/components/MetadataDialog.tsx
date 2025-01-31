@@ -8,7 +8,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Info, Database, Palette, Settings, Hash, Box } from 'lucide-react';
-import { BrokerMetaData } from '../types/editor.types';
+import { BrokerMetaData } from '../../../types/editor.types';
 
 interface MetadataDialogProps {
   isOpen: boolean;

@@ -1,8 +1,8 @@
 // page.tsx
 'use client';
 
-import { useManagedEditor } from "@/features/rich-text-editor/hooks/useManagedEditor";
-import { EditorWithProviders } from "@/features/rich-text-editor/provider/withManagedEditor";
+import { useManagedEditor } from "@/features/rich-text-editor/_dev/useManagedEditor";
+import { EditorWithProviders } from "@/providers/rich-text-editor/withManagedEditor";
 
 const EditorController = () => {
     const editor = useManagedEditor('main-editor');

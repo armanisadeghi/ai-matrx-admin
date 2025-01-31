@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ArmaniCollapsibleGroup } from '@/components/matrx/matrx-collapsible';
-import { MatrxMetricRow, MatrxRecordList } from '@/components/matrx/matrx-record-list';
+import { MatrxRecordList } from '@/components/matrx/matrx-record-list';
 
 const EditorAnalyzerView = ({ 
     editorId,

@@ -2,8 +2,8 @@ import React from 'react';
 import { Button } from '@/components/ui';
 import { X, ArrowUpRight, Database, CloudOff, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/utils';
-import { ChipData } from '@/features/rich-text-editor/types/editor.types';
-import { TailwindColor } from '@/features/rich-text-editor/constants';
+import { ChipData } from '@/types/editor.types';
+import { TailwindColor } from '@/constants/rich-text-constants';
 
 interface ChipHeaderProps {
     chip: ChipData;

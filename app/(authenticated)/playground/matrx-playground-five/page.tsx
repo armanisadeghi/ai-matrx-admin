@@ -1,8 +1,8 @@
 'use client';
 
 
-import MatrxCockpitPage from '@/components/playground/layout/MatrxCockpitPage';
+import AiCockpitPage from '@/components/playground/AiCockpitPage';
 
 export default function page() {
-    return <MatrxCockpitPage />;
+    return <AiCockpitPage />;
 }

@@ -15,7 +15,7 @@
                     "foreign_table": "ai_endpoint",
                     "foreign_entity": "aiEndpoint",
                     "column": "ai_endpoint_id",
-                    "fieldName": "ai_endpoint_id",
+                    "fieldName": "aiEndpointId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -25,7 +25,7 @@
                     "foreign_table": "ai_model",
                     "foreign_entity": "aiModel",
                     "column": "ai_model_id",
-                    "fieldName": "ai_model_id",
+                    "fieldName": "aiModelId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -51,11 +51,37 @@
                     "foreign_table": "flashcard_data",
                     "foreign_entity": "flashcardData",
                     "column": "flashcard_id",
-                    "fieldName": "flashcard_id",
+                    "fieldName": "flashcardId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
                     "constraint_name": "flashcard_history_flashcard_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "compiledRecipe": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": ["recipe"],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "compiledRecipe",
+            "table_name": "compiled_recipe",
+            "foreignKeys": {
+                "recipe": {
+                    "foreign_table": "recipe",
+                    "foreign_entity": "recipe",
+                    "column": "recipe_id",
+                    "fieldName": "recipeId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-one",
+                    "constraint_name": "compiled_recipe_recipe_id_fkey"
                 }
             },
             "referencedBy": {}
@@ -77,9 +103,9 @@
                 "flashcardSetRelations": {
                     "foreign_table": "flashcard_set_relations",
                     "foreign_entity": "flashcardSetRelations",
-                    "field": "set_id",
+                    "field": "setId",
                     "column": "set_id",
-                    "foreign_field": "set_id",
+                    "foreign_field": "setId",
                     "foreign_column": "set_id",
                     "constraint_name": "flashcard_set_relations_set_id_fkey"
                 }
@@ -117,7 +143,7 @@
                     "foreign_table": "flashcard_data",
                     "foreign_entity": "flashcardData",
                     "column": "flashcard_id",
-                    "fieldName": "flashcard_id",
+                    "fieldName": "flashcardId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -127,8 +153,8 @@
                     "foreign_table": "flashcard_sets",
                     "foreign_entity": "flashcardSets",
                     "column": "set_id",
-                    "fieldName": "set_id",
-                    "foreign_field": "set_id",
+                    "fieldName": "setId",
+                    "foreign_field": "setId",
                     "foreign_column": "set_id",
                     "relationship_type": "many-to-many",
                     "constraint_name": "flashcard_set_relations_set_id_fkey"
@@ -153,7 +179,7 @@
                     "foreign_table": "flashcard_data",
                     "foreign_entity": "flashcardData",
                     "column": "flashcard_id",
-                    "fieldName": "flashcard_id",
+                    "fieldName": "flashcardId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -179,7 +205,7 @@
                     "foreign_table": "ai_settings",
                     "foreign_entity": "aiSettings",
                     "column": "ai_settings_id",
-                    "fieldName": "ai_settings_id",
+                    "fieldName": "aiSettingsId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -189,7 +215,7 @@
                     "foreign_table": "recipe",
                     "foreign_entity": "recipe",
                     "column": "recipe_id",
-                    "fieldName": "recipe_id",
+                    "fieldName": "recipeId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -215,7 +241,7 @@
                     "foreign_table": "ai_endpoint",
                     "foreign_entity": "aiEndpoint",
                     "column": "ai_endpoint",
-                    "fieldName": "ai_endpoint",
+                    "fieldName": "aiEndpoint",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -225,7 +251,7 @@
                     "foreign_table": "ai_model",
                     "foreign_entity": "aiModel",
                     "column": "ai_model",
-                    "fieldName": "ai_model",
+                    "fieldName": "aiModel",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -235,7 +261,7 @@
                     "foreign_table": "ai_provider",
                     "foreign_entity": "aiProvider",
                     "column": "ai_provider",
-                    "fieldName": "ai_provider",
+                    "fieldName": "aiProvider",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -246,13 +272,39 @@
                 "aiAgent": {
                     "foreign_table": "ai_agent",
                     "foreign_entity": "aiAgent",
-                    "field": "ai_settings_id",
+                    "field": "aiSettingsId",
                     "column": "ai_settings_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "ai_agent_ai_settings_id_fkey"
                 }
             }
+        }
+    },
+    "audioRecording": {
+        "selfReferential": [],
+        "manyToMany": ["audioLabel"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "audioRecording",
+            "table_name": "audio_recording",
+            "foreignKeys": {
+                "audioLabel": {
+                    "foreign_table": "audio_label",
+                    "foreign_entity": "audioLabel",
+                    "column": "label",
+                    "fieldName": "label",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "audio_recording_label_fkey"
+                }
+            },
+            "referencedBy": {}
         }
     },
     "messageTemplate": {
@@ -271,7 +323,7 @@
                 "messageBroker": {
                     "foreign_table": "message_broker",
                     "foreign_entity": "messageBroker",
-                    "field": "message_id",
+                    "field": "messageId",
                     "column": "message_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -280,7 +332,7 @@
                 "recipeMessage": {
                     "foreign_table": "recipe_message",
                     "foreign_entity": "recipeMessage",
-                    "field": "message_id",
+                    "field": "messageId",
                     "column": "message_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -305,7 +357,7 @@
                 "flashcardHistory": {
                     "foreign_table": "flashcard_history",
                     "foreign_entity": "flashcardHistory",
-                    "field": "flashcard_id",
+                    "field": "flashcardId",
                     "column": "flashcard_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -314,7 +366,7 @@
                 "flashcardSetRelations": {
                     "foreign_table": "flashcard_set_relations",
                     "foreign_entity": "flashcardSetRelations",
-                    "field": "flashcard_id",
+                    "field": "flashcardId",
                     "column": "flashcard_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -323,13 +375,28 @@
                 "flashcardImages": {
                     "foreign_table": "flashcard_images",
                     "foreign_entity": "flashcardImages",
-                    "field": "flashcard_id",
+                    "field": "flashcardId",
                     "column": "flashcard_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "flashcard_images_flashcard_id_fkey"
                 }
             }
+        }
+    },
+    "audioRecordingUsers": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "audioRecordingUsers",
+            "table_name": "audio_recording_users",
+            "foreignKeys": {},
+            "referencedBy": {}
         }
     },
     "recipeDisplay": {
@@ -420,7 +487,7 @@
                 "aiSettings": {
                     "foreign_table": "ai_settings",
                     "foreign_entity": "aiSettings",
-                    "field": "ai_provider",
+                    "field": "aiProvider",
                     "column": "ai_provider",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -429,7 +496,7 @@
                 "aiModel": {
                     "foreign_table": "ai_model",
                     "foreign_entity": "aiModel",
-                    "field": "model_provider",
+                    "field": "modelProvider",
                     "column": "model_provider",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -454,7 +521,7 @@
                     "foreign_table": "data_broker",
                     "foreign_entity": "dataBroker",
                     "column": "broker_id",
-                    "fieldName": "broker_id",
+                    "fieldName": "brokerId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -464,7 +531,7 @@
                     "foreign_table": "data_input_component",
                     "foreign_entity": "dataInputComponent",
                     "column": "default_component",
-                    "fieldName": "default_component",
+                    "fieldName": "defaultComponent",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -474,7 +541,7 @@
                     "foreign_table": "message_template",
                     "foreign_entity": "messageTemplate",
                     "column": "message_id",
-                    "fieldName": "message_id",
+                    "fieldName": "messageId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -482,6 +549,31 @@
                 }
             },
             "referencedBy": {}
+        }
+    },
+    "audioLabel": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["audioRecording"],
+        "relationshipDetails": {
+            "entityName": "audioLabel",
+            "table_name": "audio_label",
+            "foreignKeys": {},
+            "referencedBy": {
+                "audioRecording": {
+                    "foreign_table": "audio_recording",
+                    "foreign_entity": "audioRecording",
+                    "field": "label",
+                    "column": "label",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "audio_recording_label_fkey"
+                }
+            }
         }
     },
     "aiEndpoint": {
@@ -500,7 +592,7 @@
                 "aiModelEndpoint": {
                     "foreign_table": "ai_model_endpoint",
                     "foreign_entity": "aiModelEndpoint",
-                    "field": "ai_endpoint_id",
+                    "field": "aiEndpointId",
                     "column": "ai_endpoint_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -509,7 +601,7 @@
                 "aiSettings": {
                     "foreign_table": "ai_settings",
                     "foreign_entity": "aiSettings",
-                    "field": "ai_endpoint",
+                    "field": "aiEndpoint",
                     "column": "ai_endpoint",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -570,7 +662,7 @@
                     "foreign_table": "ai_provider",
                     "foreign_entity": "aiProvider",
                     "column": "model_provider",
-                    "fieldName": "model_provider",
+                    "fieldName": "modelProvider",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -581,7 +673,7 @@
                 "aiModelEndpoint": {
                     "foreign_table": "ai_model_endpoint",
                     "foreign_entity": "aiModelEndpoint",
-                    "field": "ai_model_id",
+                    "field": "aiModelId",
                     "column": "ai_model_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -590,7 +682,7 @@
                 "aiSettings": {
                     "foreign_table": "ai_settings",
                     "foreign_entity": "aiSettings",
-                    "field": "ai_model",
+                    "field": "aiModel",
                     "column": "ai_model",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -599,7 +691,7 @@
                 "recipeModel": {
                     "foreign_table": "recipe_model",
                     "foreign_entity": "recipeModel",
-                    "field": "ai_model",
+                    "field": "aiModel",
                     "column": "ai_model",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -673,7 +765,7 @@
                 "messageBroker": {
                     "foreign_table": "message_broker",
                     "foreign_entity": "messageBroker",
-                    "field": "default_component",
+                    "field": "defaultComponent",
                     "column": "default_component",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -682,7 +774,7 @@
                 "broker": {
                     "foreign_table": "broker",
                     "foreign_entity": "broker",
-                    "field": "custom_source_component",
+                    "field": "customSourceComponent",
                     "column": "custom_source_component",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -691,7 +783,7 @@
                 "dataBroker": {
                     "foreign_table": "data_broker",
                     "foreign_entity": "dataBroker",
-                    "field": "default_component",
+                    "field": "defaultComponent",
                     "column": "default_component",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -737,16 +829,35 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["aiAgent", "recipeDisplay", "recipeProcessor", "recipeModel", "recipeBroker", "recipeTool", "recipeFunction", "recipeMessage"],
+        "inverseReferences": [
+            "compiledRecipe",
+            "aiAgent",
+            "recipeDisplay",
+            "recipeProcessor",
+            "recipeModel",
+            "recipeBroker",
+            "recipeTool",
+            "recipeFunction",
+            "recipeMessage"
+        ],
         "relationshipDetails": {
             "entityName": "recipe",
             "table_name": "recipe",
             "foreignKeys": {},
             "referencedBy": {
+                "compiledRecipe": {
+                    "foreign_table": "compiled_recipe",
+                    "foreign_entity": "compiledRecipe",
+                    "field": "recipeId",
+                    "column": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "compiled_recipe_recipe_id_fkey"
+                },
                 "aiAgent": {
                     "foreign_table": "ai_agent",
                     "foreign_entity": "aiAgent",
-                    "field": "recipe_id",
+                    "field": "recipeId",
                     "column": "recipe_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -809,7 +920,7 @@
                 "recipeMessage": {
                     "foreign_table": "recipe_message",
                     "foreign_entity": "recipeMessage",
-                    "field": "recipe_id",
+                    "field": "recipeId",
                     "column": "recipe_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -870,7 +981,7 @@
                     "foreign_table": "ai_model",
                     "foreign_entity": "aiModel",
                     "column": "ai_model",
-                    "fieldName": "ai_model",
+                    "fieldName": "aiModel",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
@@ -906,7 +1017,7 @@
                     "foreign_table": "registered_function",
                     "foreign_entity": "registeredFunction",
                     "column": "rf_id",
-                    "fieldName": "rf_id",
+                    "fieldName": "rfId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -917,7 +1028,7 @@
                 "tool": {
                     "foreign_table": "tool",
                     "foreign_entity": "tool",
-                    "field": "system_function",
+                    "field": "systemFunction",
                     "column": "system_function",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -951,7 +1062,7 @@
                     "foreign_table": "system_function",
                     "foreign_entity": "systemFunction",
                     "column": "system_function",
-                    "fieldName": "system_function",
+                    "fieldName": "systemFunction",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -1002,7 +1113,7 @@
                     "foreign_table": "broker",
                     "foreign_entity": "broker",
                     "column": "return_broker",
-                    "fieldName": "return_broker",
+                    "fieldName": "returnBroker",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -1013,7 +1124,7 @@
                 "systemFunction": {
                     "foreign_table": "system_function",
                     "foreign_entity": "systemFunction",
-                    "field": "rf_id",
+                    "field": "rfId",
                     "column": "rf_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -1022,7 +1133,7 @@
                 "arg": {
                     "foreign_table": "arg",
                     "foreign_entity": "arg",
-                    "field": "registered_function",
+                    "field": "registeredFunction",
                     "column": "registered_function",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -1047,7 +1158,7 @@
                     "foreign_table": "registered_function",
                     "foreign_entity": "registeredFunction",
                     "column": "registered_function",
-                    "fieldName": "registered_function",
+                    "fieldName": "registeredFunction",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -1109,7 +1220,7 @@
                     "foreign_table": "data_input_component",
                     "foreign_entity": "dataInputComponent",
                     "column": "custom_source_component",
-                    "fieldName": "custom_source_component",
+                    "fieldName": "customSourceComponent",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -1129,7 +1240,7 @@
                 "registeredFunction": {
                     "foreign_table": "registered_function",
                     "foreign_entity": "registeredFunction",
-                    "field": "return_broker",
+                    "field": "returnBroker",
                     "column": "return_broker",
                     "foreign_field": "id",
                     "foreign_column": "id",
@@ -1188,7 +1299,7 @@
                     "foreign_table": "self_reference",
                     "foreign_entity": "self_reference",
                     "column": "depends_default",
-                    "fieldName": "depends_default",
+                    "fieldName": "dependsDefault",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "self-referential",
@@ -1335,42 +1446,6 @@
             "referencedBy": {}
         }
     },
-    "recipeMessage": {
-        "selfReferential": [],
-        "manyToMany": ["messageTemplate", "recipe"],
-        "oneToOne": [],
-        "manyToOne": [],
-        "oneToMany": [],
-        "undefined": [],
-        "inverseReferences": [],
-        "relationshipDetails": {
-            "entityName": "recipeMessage",
-            "table_name": "recipe_message",
-            "foreignKeys": {
-                "messageTemplate": {
-                    "foreign_table": "message_template",
-                    "foreign_entity": "messageTemplate",
-                    "column": "message_id",
-                    "fieldName": "message_id",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "relationship_type": "many-to-many",
-                    "constraint_name": "recipe_message_message_id_fkey"
-                },
-                "recipe": {
-                    "foreign_table": "recipe",
-                    "foreign_entity": "recipe",
-                    "column": "recipe_id",
-                    "fieldName": "recipe_id",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "relationship_type": "many-to-many",
-                    "constraint_name": "recipe_message_recipe_id_fkey"
-                }
-            },
-            "referencedBy": {}
-        }
-    },
     "dataBroker": {
         "selfReferential": [],
         "manyToMany": [],
@@ -1387,7 +1462,7 @@
                     "foreign_table": "data_input_component",
                     "foreign_entity": "dataInputComponent",
                     "column": "default_component",
-                    "fieldName": "default_component",
+                    "fieldName": "defaultComponent",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-one",
@@ -1398,13 +1473,49 @@
                 "messageBroker": {
                     "foreign_table": "message_broker",
                     "foreign_entity": "messageBroker",
-                    "field": "broker_id",
+                    "field": "brokerId",
                     "column": "broker_id",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "message_broker_broker_id_fkey"
                 }
             }
+        }
+    },
+    "recipeMessage": {
+        "selfReferential": [],
+        "manyToMany": ["messageTemplate", "recipe"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "recipeMessage",
+            "table_name": "recipe_message",
+            "foreignKeys": {
+                "messageTemplate": {
+                    "foreign_table": "message_template",
+                    "foreign_entity": "messageTemplate",
+                    "column": "message_id",
+                    "fieldName": "messageId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "recipe_message_message_id_fkey"
+                },
+                "recipe": {
+                    "foreign_table": "recipe",
+                    "foreign_entity": "recipe",
+                    "column": "recipe_id",
+                    "fieldName": "recipeId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "recipe_message_recipe_id_fkey"
+                }
+            },
+            "referencedBy": {}
         }
     }
 }
