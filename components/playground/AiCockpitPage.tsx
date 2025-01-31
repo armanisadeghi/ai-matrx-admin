@@ -28,7 +28,7 @@ export default function AiCockpitPage() {
 
     const aiCockpitHook = useAiCockpit();
 
-    const { activeRecipeId, messages } = aiCockpitHook;
+    const { activeRecipeId, messages, onPlay } = aiCockpitHook;
 
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
@@ -113,10 +113,6 @@ export default function AiCockpitPage() {
         console.log('Show code clicked');
     };
 
-    const handlePlay = () => {
-        console.log('Play clicked');
-    };
-
     const handleToggleBrokers = () => {
         const newSize = isLeftCollapsed ? (isFullscreen ? 11 : 15) : 0;
         panelsRef.current?.leftPanel?.resize(newSize);
@@ -135,6 +131,12 @@ export default function AiCockpitPage() {
         console.log(`Version changed to: ${version}`);
         setRecipeVersion(version);
     };
+
+    const handlePlay = useCallback(() => {
+        Promise.resolve().then(() => {
+            onPlay();
+        });
+    }, [onPlay]);
 
     const playgroundControls: CockpitControls = {
         onToggleBrokers: handleToggleBrokers,

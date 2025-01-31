@@ -23,11 +23,17 @@ const responseFormats = [
 ];
 
 export function ResultPanelManager({ cockpitControls: playgroundControls }: ResultPanelManagerProps) {
-    const { generateTabs } = playgroundControls.aiCockpitHook;
+    const { generateTabs, socketHook } = playgroundControls.aiCockpitHook;
     const tabs = generateTabs();
     const [currentView, setCurrentView] = useState('text');
 
     const recordTabs = tabs.filter((tab) => tab.isRecord);
+
+    const {
+        streamingResponses,
+        responseRef,
+        isResponseActive,
+    } = socketHook;
 
     const handleResponseFormatChange = (format: string) => {
         setCurrentView(format);
@@ -42,19 +48,19 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                     direction='vertical'
                     className='flex-1'
                 >
-                    {recordTabs.map((tab) => (
+                    {recordTabs.map((tab, index) => (
                         <ResultPanel
                             key={tab.id}
                             id={`result-${tab.id}`}
                             order={tab.tabId}
                             number={tab.tabId}
                             label={tab.resultLabel}
+                            streamingText={streamingResponses[index] || ''}
                         />
                     ))}
                 </PanelGroup>
             )}
 
-            {/* Container to match previous button height */}
             <div>
                 <MultiSwitchToggle
                     variant='geometric'

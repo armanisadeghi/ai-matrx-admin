@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Dialog, DialogContent, DialogTitle } from '@/components/ui';
 import { CockpitControls } from '../types';
-import { useRecipeCompiler } from '../hooks/recipes/useCompileRecipe';
 import { RefreshCw, Copy, Maximize2 } from 'lucide-react';
 
 interface CompiledRecipeDisplayProps {
@@ -29,27 +28,25 @@ const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => 
 );
 
 export function CompiledRecipeDisplay({ cockpitControls }: CompiledRecipeDisplayProps) {
-    const { recipeRecord, compileRecipe } = useRecipeCompiler({ aiCockpitHook: cockpitControls.aiCockpitHook });
-    const [compiledContent, setCompiledContent] = useState<any>(null);
+    const { recipeRecord, compiledData, recompileRecipe } = cockpitControls.aiCockpitHook;
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const compiledRecipe = compiledData?.recipe;
 
     useEffect(() => {
-        const result = compileRecipe();
-        setCompiledContent(result);
+        recompileRecipe();
     }, []);
 
     const handleCompile = () => {
-        const result = compileRecipe();
-        setCompiledContent(result);
+        recompileRecipe();
     };
 
     const handleCopy = async () => {
-        if (compiledContent) {
-            await navigator.clipboard.writeText(JSON.stringify(compiledContent, null, 2));
+        if (compiledRecipe) {
+            await navigator.clipboard.writeText(JSON.stringify(compiledRecipe, null, 2));
         }
     };
 
-    const formattedContent = compiledContent ? JSON.stringify(compiledContent, null, 2) : 'Click compile to view recipe';
+    const formattedContent = compiledRecipe ? JSON.stringify(compiledRecipe, null, 2) : 'Click compile to view recipe';
 
     return (
         <>

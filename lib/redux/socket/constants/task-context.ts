@@ -33,6 +33,7 @@ export const SERVICE_EVENTS = {
     'RecipeService': [
         'simple_recipe',
         'batch_recipe',
+        'add_recipe',
     ],
     'ScrapeService': [
         'scrape_single',

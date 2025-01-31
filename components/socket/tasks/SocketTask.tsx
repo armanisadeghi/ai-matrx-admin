@@ -13,13 +13,13 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
 } from '@/components/ui';
-import {SquarePlus, Trash2} from 'lucide-react';
-import {SocketTask} from '@/lib/redux/socket/hooks/useRecipeSocket';
-import {RECIPE_DATABASE} from '@/lib/redux/socket/constants/recipe-data';
-import {RecipeBrokerDisplay} from '../recipes/RecipeBrokerDisplay';
-import {RecipeOverrides} from '../recipes/RecipeOverrides';
+import { SquarePlus, Trash2 } from 'lucide-react';
+import { SocketTask } from '@/lib/redux/socket/hooks/useRecipeSocket';
+import { RECIPE_DATABASE } from '@/lib/redux/socket/constants/recipe-data';
+import { RecipeBrokerDisplay } from '../recipes/RecipeBrokerDisplay';
+import { RecipeOverrides } from '../recipes/RecipeOverrides';
 
 interface SocketTaskComponentProps {
     task: SocketTask;
@@ -31,45 +31,40 @@ interface SocketTaskComponentProps {
     updateBroker: (taskIndex: number, brokerId: string, field: string, value: any) => void;
 }
 
-export function SocketTaskComponent(
-    {
-        task,
-        taskIndex,
-        removeTask,
-        updateTask,
-        loadRecipeData,
-        updateTaskData,
-        updateBroker
-    }: SocketTaskComponentProps) {
+export function SocketTaskComponent({ task, taskIndex, removeTask, updateTask, loadRecipeData, updateTaskData, updateBroker }: SocketTaskComponentProps) {
     return (
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion
+            type='single'
+            collapsible
+            className='w-full'
+        >
             <AccordionItem value={`task-${taskIndex}`}>
-                <AccordionTrigger
-                    rightElements={
+                <div className='flex items-center justify-between'>
+                    <AccordionTrigger className='flex-1'>Task {task.index + 1}</AccordionTrigger>
+                    <div className='pr-4'>
                         <Button
-                            variant="destructive"
-                            size="sm"
+                            variant='destructive'
+                            size='sm'
                             onClick={(e) => {
                                 e.stopPropagation();
                                 removeTask(taskIndex);
                             }}
-                            className="h-6 w-6 p-0"
+                            className='h-6 w-6 p-0'
                         >
-                            <Trash2 className="h-3 w-3"/>
+                            <Trash2 className='h-3 w-3' />
                         </Button>
-                    }
-                >
-                    Task {task.index + 1}
-                </AccordionTrigger>
+                    </div>
+                </div>
                 <AccordionContent>
-                    <div className="space-y-4 pt-2">
-                        <div className="grid grid-cols-2 gap-4">
+                    {/* Rest of the content remains the same */}
+                    <div className='space-y-4 pt-2'>
+                        <div className='grid grid-cols-2 gap-4'>
                             <div>
                                 <Label>Task Type</Label>
                                 <Input
                                     value={task.task}
                                     onChange={(e) => updateTask(taskIndex, 'task', e.target.value)}
-                                    className="mt-1"
+                                    className='mt-1'
                                 />
                             </div>
                             <div>
@@ -79,15 +74,16 @@ export function SocketTaskComponent(
                                     onValueChange={(value) => loadRecipeData(taskIndex, value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a recipe..."/>
+                                        <SelectValue placeholder='Select a recipe...' />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {Object.entries(RECIPE_DATABASE)
-                                            .sort(([, recipeA], [, recipeB]) =>
-                                                (recipeA.name || '').localeCompare(recipeB.name || '')
-                                            )
+                                            .sort(([, recipeA], [, recipeB]) => (recipeA.name || '').localeCompare(recipeB.name || ''))
                                             .map(([id, recipe]) => (
-                                                <SelectItem key={id} value={id}>
+                                                <SelectItem
+                                                    key={id}
+                                                    value={id}
+                                                >
                                                     {recipe.name || id}
                                                 </SelectItem>
                                             ))}
@@ -115,4 +111,3 @@ export function SocketTaskComponent(
         </Accordion>
     );
 }
-

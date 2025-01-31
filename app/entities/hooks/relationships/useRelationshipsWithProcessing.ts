@@ -1,6 +1,6 @@
 import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
 import { getStandardRelationship, KnownRelDef, SimpleRelDef } from './definitionConversionUtil';
@@ -9,6 +9,8 @@ import { useRelationshipDirectCreate } from '../crud/useDirectRelCreate';
 import { useStableRelationships } from './new/useStableRelationships';
 import { useRecipeAgentSettings } from '@/hooks/aiCockpit/useRecipeAgentSettings';
 import { useProcessedRecipeMessages } from '@/hooks/aiCockpit/useProcessedRecipeMessages';
+import { BrokerValue, CompiledRecipe, RecipeOverrides, RecipeTaskData, useRecipeCompiler } from '@/components/playground/hooks/recipes/useCompileRecipe';
+import { useCockpitSocket } from '@/lib/redux/socket/hooks/useCockpitRecipe';
 
 export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const {
@@ -178,20 +180,98 @@ export function useDoubleStableRelationships(firstRelKey: KnownRelDef, secondRel
 export type UseDoubleStableRelationshipHook = ReturnType<typeof useDoubleJoinedActiveParentProcessing>;
 
 export function useAiCockpit() {
-    const { activeParentMatrxId: activeRecipeMatrxId, activeParentId: activeRecipeId, firstRelHook, secondRelHook } = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
+    const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
+    const [taskBrokers, setTaskBrokers] = useState<BrokerValue[]>([]);
+    const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverrides[]>([]);
+    const [recipeTaskData, setRecipeTaskData] = useState<RecipeTaskData[]>([]);
+
+    const {
+        activeParentMatrxId: activeRecipeMatrxId,
+        activeParentId: activeRecipeId,
+        firstRelHook,
+        secondRelHook,
+    } = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
     const recipeMessageHook = useProcessedRecipeMessages(firstRelHook);
     const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
     const recipeAgentSettingsHook = useRecipeAgentSettings(secondRelHook);
     const { generateTabs, createNewSettingsData, processedSettings } = recipeAgentSettingsHook;
 
+    const { recipeRecord, compileRecipe } = useRecipeCompiler({
+        activeRecipeMatrxId,
+        activeRecipeId,
+        messages,
+        processedSettings,
+        recipeSelectors: firstRelHook.parentTools.selectors,
+    });
+
+    const recompileRecipe = () => {
+        const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList } = compileRecipe();
+        setCompiledRecipe(result);
+        setTaskBrokers(recipeTaskBrokers);
+        setRecipeOverrides(recipeOverrides);
+        setRecipeTaskData(recipeTaskDataList);
+    };
+
+    const getCompiledData = useCallback(() => {
+        const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList } = compileRecipe();
+        setCompiledRecipe(result);
+        setTaskBrokers(recipeTaskBrokers);
+        setRecipeOverrides(recipeOverrides);
+        setRecipeTaskData(recipeTaskDataList);
+
+        return {
+            recipeId: activeRecipeId,
+            recipe: result,
+            brokers: recipeTaskBrokers,
+            overrides: recipeOverrides,
+            tasks: recipeTaskDataList,
+        };
+    }, [activeRecipeId, compileRecipe]);
+
+    useEffect(() => {
+        recompileRecipe();
+    }, []);
+
+    const compiledData = {
+        recipeId: activeRecipeId,
+        recipe: compiledRecipe,
+        brokers: taskBrokers,
+        overrides: recipeOverrides,
+        tasks: recipeTaskData,
+    };
+
+    const socketHook = useCockpitSocket(getCompiledData);
+
+    const handlePlay = useCallback(() => {
+        socketHook.handleSend();
+    }, [socketHook]);
+
     const tools = {
         recipe: firstRelHook.parentTools,
         message: firstRelHook.childTools,
         settings: secondRelHook.childTools,
-        agent: secondRelHook.joinTools
+        agent: secondRelHook.joinTools,
     };
 
-    return { activeRecipeMatrxId, activeRecipeId, messages, deleteMessage, addMessage, handleDragDrop, processedSettings, generateTabs, createNewSettingsData, recipeAgentSettingsHook, recipeMessageHook, tools };
+    return {
+        activeRecipeMatrxId,
+        activeRecipeId,
+        messages,
+        deleteMessage,
+        addMessage,
+        handleDragDrop,
+        processedSettings,
+        generateTabs,
+        createNewSettingsData,
+        recipeAgentSettingsHook,
+        recipeMessageHook,
+        socketHook,
+        recipeRecord,
+        compiledData,
+        recompileRecipe,
+        onPlay: handlePlay,
+        tools,
+    };
 }
 
 export type UseAiCockpitHook = ReturnType<typeof useAiCockpit>;
