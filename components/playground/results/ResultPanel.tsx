@@ -4,7 +4,8 @@ import React, { useRef, useState } from 'react';
 import { ImperativePanelHandle, Panel, PanelResizeHandle } from 'react-resizable-panels';
 import { Button, Card } from '@/components/ui';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
-import { Expand, Minimize2 } from 'lucide-react';
+import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
+import { Eye, Code, FileText, Copy } from 'lucide-react';
 
 interface ResultPanelProps {
     id: string;
@@ -12,12 +13,19 @@ interface ResultPanelProps {
     number: number;
     label: string;
     streamingText: string;
+    onDelete?: (id: string) => void;
+    onDragDrop?: (draggedId: string, targetId: string) => void;
+    onLabelChange?: (id: string, newLabel: string) => void;
+    debug?: boolean;
+    onDebugClick?: (id: string) => void;
 }
 
-export function ResultPanel({ id, order, number, label, streamingText }: ResultPanelProps) {
+export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
     const panelRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [previousSize, setPreviousSize] = useState(50);
+    const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed'>('rendered');
+    const [showCopySuccess, setShowCopySuccess] = useState(false);
 
     const toggleCollapse = () => {
         if (isCollapsed) {
@@ -28,18 +36,74 @@ export function ResultPanel({ id, order, number, label, streamingText }: ResultP
         }
     };
 
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(streamingText);
+            setShowCopySuccess(true);
+            setTimeout(() => setShowCopySuccess(false), 1500);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
+
+    const customActions: ToolbarAction[] = [
+        {
+            label: showCopySuccess ? 'Copied!' : 'Copy',
+            icon: <Copy className='h-4 w-4' />,
+            onClick: handleCopy,
+        },
+        {
+            label: 'View Rendered',
+            icon: <Eye className='h-4 w-4' />,
+            onClick: () => setViewMode('rendered'),
+        },
+        {
+            label: 'View Raw',
+            icon: <Code className='h-4 w-4' />,
+            onClick: () => setViewMode('raw'),
+        },
+        {
+            label: 'View Processed',
+            icon: <FileText className='h-4 w-4' />,
+            onClick: () => setViewMode('processed'),
+        },
+    ];
+
+    const renderContent = () => {
+        switch (viewMode) {
+            case 'raw':
+            case 'processed':
+                return <pre className='p-4 whitespace-pre-wrap font-mono text-sm'>{streamingText}</pre>;
+            case 'rendered':
+            default:
+                return (
+                    <div className='flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin'>
+                        <MarkdownRenderer
+                            content={streamingText}
+                            type='message'
+                            role='assistant'
+                            fontSize={18}
+                        />
+                    </div>
+                );
+        }
+    };
+
     if (isCollapsed) {
         return (
-            <div className='h-6 flex-none border bg-background relative'>
-                <span className='text-sm text-muted-foreground px-1'>{label}</span>
-                <Button
-                    variant='ghost'
-                    size='sm'
-                    className='absolute top-0 right-0 h-6 w-6 p-0 z-10'
-                    onClick={toggleCollapse}
-                >
-                    <Expand className='h-2 w-2 text-gray-500' />
-                </Button>
+            <div className='h-6 flex-none border bg-background'>
+                <DraggableToolbar
+                    id={id}
+                    currentLabel={label}
+                    isCollapsed={isCollapsed}
+                    onLabelChange={onLabelChange}
+                    onToggleCollapse={toggleCollapse}
+                    onDragDrop={onDragDrop}
+                    onDelete={onDelete}
+                    actions={customActions}
+                    debug={debug}
+                    onDebugClick={onDebugClick}
+                />
             </div>
         );
     }
@@ -54,25 +118,21 @@ export function ResultPanel({ id, order, number, label, streamingText }: ResultP
                 minSize={10}
                 maxSize={75}
             >
-                <Card className='h-full p-0 overflow-hidden bg-background relative'>
-                    <Button
-                        variant='ghost'
-                        size='sm'
-                        className='absolute top-0 right-0 h-6 w-6 p-0 z-10'
-                        onClick={toggleCollapse}
-                    >
-                        <Minimize2 className='h-4 w-4 text-gray-500' />
-                    </Button>
+                <Card className='h-full p-0 overflow-hidden bg-background'>
                     <div className='h-full flex flex-col'>
-                        <div className='text-sm text-muted-foreground px-1'>{label}</div>
-                        <div className='flex-1 p-2'>
-                            <MarkdownRenderer
-                                content={streamingText}
-                                type='message'
-                                role='assistant'
-                                fontSize={12}
-                            />
-                        </div>
+                        <DraggableToolbar
+                            id={id}
+                            currentLabel={label}
+                            isCollapsed={isCollapsed}
+                            onLabelChange={onLabelChange}
+                            onToggleCollapse={toggleCollapse}
+                            onDragDrop={onDragDrop}
+                            onDelete={onDelete}
+                            actions={customActions}
+                            debug={debug}
+                            onDebugClick={onDebugClick}
+                        />
+                        {renderContent()}
                     </div>
                 </Card>
             </Panel>
@@ -80,3 +140,5 @@ export function ResultPanel({ id, order, number, label, streamingText }: ResultP
         </>
     );
 }
+
+export default ResultPanel;

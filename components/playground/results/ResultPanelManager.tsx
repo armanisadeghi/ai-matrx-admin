@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import { PanelGroup } from 'react-resizable-panels';
-import { ResultPanel } from './ResultPanel';
-import { CockpitControls } from '../types';
 import { MessageSquare, FileText, Code2, FormInput, Image, Sparkles, FileCode } from 'lucide-react';
 import MultiSwitchToggle from '@/components/matrx/MultiSwitchToggle';
 import { CompiledRecipeDisplay } from './CompiledRecipeDisplay';
+import { ResultPanel } from './ResultPanel';
+import { CockpitControls } from '../types';
 
 interface ResultPanelManagerProps {
     cockpitControls: CockpitControls;
@@ -24,16 +24,17 @@ const responseFormats = [
 
 export function ResultPanelManager({ cockpitControls: playgroundControls }: ResultPanelManagerProps) {
     const { generateTabs, socketHook } = playgroundControls.aiCockpitHook;
+    const { deleteSettings } = playgroundControls.aiCockpitHook.recipeAgentSettingsHook;
     const tabs = generateTabs();
     const [currentView, setCurrentView] = useState('text');
-
-    const recordTabs = tabs.filter((tab) => tab.isRecord);
 
     const {
         streamingResponses,
         responseRef,
         isResponseActive,
     } = socketHook;
+
+    const recordTabs = tabs.filter((tab) => tab.isRecord);
 
     const handleResponseFormatChange = (format: string) => {
         setCurrentView(format);
@@ -56,6 +57,9 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                             number={tab.tabId}
                             label={tab.resultLabel}
                             streamingText={streamingResponses[index] || ''}
+                            onDelete={deleteSettings}
+                            debug={process.env.NODE_ENV === 'development'}
+                            onDebugClick={(id) => console.log('Debug clicked:', id)}
                         />
                     ))}
                 </PanelGroup>

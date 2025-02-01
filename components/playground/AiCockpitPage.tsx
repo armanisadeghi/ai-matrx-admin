@@ -17,11 +17,21 @@ import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { CockpitControls } from './types';
 
+
+interface PanelRefs {
+    leftPanel: ImperativePanelHandle | null;
+    messagesPanel: ImperativePanelHandle | null;
+    resultsPanel: ImperativePanelHandle | null;
+    rightPanel: ImperativePanelHandle | null;
+}
+
+
 export default function AiCockpitPage() {
     const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+
     const [currentMode, setCurrentMode] = useState('recipe');
     const [recipeVersion, setRecipeVersion] = useState(1);
     const [showPlayground, setShowPlayground] = useState(false);
@@ -40,10 +50,12 @@ export default function AiCockpitPage() {
         }
     }, [activeRecipeId]);
 
-    const panelsRef = useRef<{
-        leftPanel: ImperativePanelHandle | null;
-        rightPanel: ImperativePanelHandle | null;
-    }>(null);
+    const panelsRef = useRef<PanelRefs>({
+        leftPanel: null,
+        messagesPanel: null,
+        resultsPanel: null,
+        rightPanel: null
+    });
 
     useLayoutEffect(() => {
         const handleFullscreenChange = () => {
@@ -114,12 +126,12 @@ export default function AiCockpitPage() {
     };
 
     const handleToggleBrokers = () => {
-        const newSize = isLeftCollapsed ? (isFullscreen ? 11 : 15) : 0;
+        const newSize = isLeftCollapsed ? (isFullscreen ? 15 : 18) : 0;
         panelsRef.current?.leftPanel?.resize(newSize);
     };
 
     const handleToggleSettings = () => {
-        const newSize = isRightCollapsed ? (isFullscreen ? 11 : 15) : 0;
+        const newSize = isRightCollapsed ? (isFullscreen ? 15 : 18) : 0;
         panelsRef.current?.rightPanel?.resize(newSize);
     };
 
@@ -135,8 +147,19 @@ export default function AiCockpitPage() {
     const handlePlay = useCallback(() => {
         Promise.resolve().then(() => {
             onPlay();
+        }).then(() => {
+            if (panelsRef.current.leftPanel) {
+                panelsRef.current.leftPanel.resize(0);
+            }
+            if (panelsRef.current.messagesPanel) {
+                panelsRef.current.messagesPanel.resize(20);
+            }
+            if (panelsRef.current.rightPanel) {
+                panelsRef.current.rightPanel.resize(0);
+            }
         });
     }, [onPlay]);
+
 
     const playgroundControls: CockpitControls = {
         onToggleBrokers: handleToggleBrokers,

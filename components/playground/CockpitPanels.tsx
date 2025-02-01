@@ -9,7 +9,6 @@ import MessagesContainer from './messages/MessagesContainer';
 import { CockpitPanelComponent, CockpitControls } from './types';
 import { useAiCockpit } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import CompiledRecipeDisplay from './results/CompiledRecipeDisplay';
-import DynamicMessagesContainer from './messages/dynamic/container';
 
 interface CockpitPanelsProps {
     leftComponent: CockpitPanelComponent;
@@ -41,25 +40,17 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
         ref
     ) => {
         const leftPanelRef = useRef<ImperativePanelHandle>(null);
+        const messagesPanelRef = useRef<ImperativePanelHandle>(null);
+        const resultsPanelRef = useRef<ImperativePanelHandle>(null);
         const rightPanelRef = useRef<ImperativePanelHandle>(null);
+
+
         const [showBrokers, setShowBrokers] = useState(false);
         const [showSettings, setShowSettings] = useState(false);
         const [showMessages, setShowMessages] = useState(false);
         const [showResults, setShowResults] = useState(false);
 
-        const {
-            activeRecipeMatrxId,
-            activeRecipeId,
-            messages,
-            deleteMessage,
-            addMessage,
-            handleDragDrop,
-            processedSettings,
-            generateTabs,
-            createNewSettingsData,
-            recipeAgentSettingsHook,
-            recipeMessageHook,
-        } = useAiCockpit();
+        const { activeRecipeMatrxId } = useAiCockpit();
 
         useEffect(() => {
             if (activeRecipeMatrxId) {
@@ -70,10 +61,11 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
             }
         }, [activeRecipeMatrxId]);
 
-        // Expose panel refs to parent
         React.useImperativeHandle(ref, () => ({
             leftPanel: leftPanelRef.current,
-            rightPanel: rightPanelRef.current,
+            messagesPanel: messagesPanelRef.current,
+            resultsPanel: resultsPanelRef.current,
+            rightPanel: rightPanelRef.current
         }));
 
         const onLeftPanelChange = () => {
@@ -111,10 +103,10 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
                         cockpitControls={cockpitControls}
                     />
                     {/* <Panel defaultSize={55}>{showMessages && <DynamicMessagesContainer cockpitControls={cockpitControls} />}</Panel> */}
-                    <Panel defaultSize={55}>{showMessages && <MessagesContainer cockpitControls={cockpitControls} />}</Panel>
+                    <Panel ref={messagesPanelRef} defaultSize={55}>{showMessages && <MessagesContainer cockpitControls={cockpitControls} />}</Panel>
                     <PanelResizeHandle />
-                    <Panel defaultSize={11}>
-                        {showResults ? <ResultPanelManager cockpitControls={cockpitControls} /> : <CompiledRecipeDisplay cockpitControls={cockpitControls}/>}
+                    <Panel ref={resultsPanelRef} defaultSize={15}>
+                        {showResults ? <ResultPanelManager cockpitControls={cockpitControls} /> : <CompiledRecipeDisplay cockpitControls={cockpitControls} />}
                     </Panel>{' '}
                     <CollapsibleSidebarPanel
                         ref={rightPanelRef}

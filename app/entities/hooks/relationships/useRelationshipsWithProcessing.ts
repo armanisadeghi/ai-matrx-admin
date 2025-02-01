@@ -212,21 +212,10 @@ export function useAiCockpit() {
         setRecipeTaskData(recipeTaskDataList);
     };
 
-    const getCompiledData = useCallback(() => {
-        const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList } = compileRecipe();
-        setCompiledRecipe(result);
-        setTaskBrokers(recipeTaskBrokers);
-        setRecipeOverrides(recipeOverrides);
-        setRecipeTaskData(recipeTaskDataList);
-
-        return {
-            recipeId: activeRecipeId,
-            recipe: result,
-            brokers: recipeTaskBrokers,
-            overrides: recipeOverrides,
-            tasks: recipeTaskDataList,
-        };
-    }, [activeRecipeId, compileRecipe]);
+    const getLatestTasks = useCallback(() => {
+        const { recipeTaskDataList } = compileRecipe();
+        return recipeTaskDataList;
+    }, [compileRecipe]);
 
     useEffect(() => {
         recompileRecipe();
@@ -240,7 +229,7 @@ export function useAiCockpit() {
         tasks: recipeTaskData,
     };
 
-    const socketHook = useCockpitSocket(getCompiledData);
+    const socketHook = useCockpitSocket(getLatestTasks);
 
     const handlePlay = useCallback(() => {
         socketHook.handleSend();
