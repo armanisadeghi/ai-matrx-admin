@@ -29,7 +29,19 @@ import { EditorProvider } from '@/providers/rich-text-editor/Provider';
 
 const allowedBuckets = ['userContent', 'Audio', 'Images', 'Documents', 'Code', 'any-file'] as const;
 
+let globalUserId: string | null = null;
+
+export const setGlobalUserId = (id: string) => {
+    globalUserId = id;
+    console.log('globalUserId:', globalUserId);
+};
+
+export const getGlobalUserId = () => globalUserId;
+
+
 export function Providers({ children, initialReduxState }: { children: React.ReactNode; initialReduxState?: InitialReduxState }) {
+
+    setGlobalUserId(initialReduxState.user.id)
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <RecoilRoot>

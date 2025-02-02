@@ -106,5 +106,10 @@ export const useEntityData = (entityKey: EntityKeys) => {
         matrxIdToPks,
         pkValuesToMatrxId,
         FetchStrategy,
+        activeRecordId,
+        activeRecord,
+        selectedRecords,
+        selectedRecordIds,
+        effectiveRecords,
     };
 };

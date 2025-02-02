@@ -63,9 +63,9 @@
     },
     "compiledRecipe": {
         "selfReferential": [],
-        "manyToMany": [],
+        "manyToMany": ["recipe"],
         "oneToOne": [],
-        "manyToOne": ["recipe"],
+        "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
         "inverseReferences": [],
@@ -80,7 +80,7 @@
                     "fieldName": "recipeId",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "relationship_type": "many-to-one",
+                    "relationship_type": "many-to-many",
                     "constraint_name": "compiled_recipe_recipe_id_fkey"
                 }
             },

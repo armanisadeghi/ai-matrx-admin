@@ -48,7 +48,6 @@ const PlaygroundHeader = ({
         {/* Left section - single row, no wrap, items centered */}
         <div className="w-1/6 flex justify-start items-center whitespace-nowrap overflow-hidden">
           <PlaygroundHeaderLeft
-            initialSettings={initialSettings}
             isLeftCollapsed={isLeftCollapsed}
             onToggleBrokers={onToggleBrokers}
             onVersionChange={onVersionChange}
@@ -58,7 +57,6 @@ const PlaygroundHeader = ({
         {/* Center section - single row, no wrap, items centered */}
         <div className="w-4/6 flex justify-start items-center whitespace-nowrap overflow-hidden">
           <PlaygroundHeaderCenter
-            initialSettings={initialSettings}
             currentMode={currentMode}
             onModeChange={onModeChange}
             onNewRecipe={onNewRecipe}

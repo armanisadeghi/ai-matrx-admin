@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, History } from 'lucide-react';
+import { Plus, History, Save } from 'lucide-react';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import PlaygroundHistoryDialog from './PlaygroundHistoryDialog';
 import PlaygroundNavContainer from './PlaygroundNavContainer';
@@ -11,10 +11,6 @@ import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatin
 import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 
 interface PlaygroundHeaderCenterProps {
-    initialSettings?: {
-        recipe?: QuickReferenceRecord;
-        version?: number;
-    };
     currentMode?: string;
     onModeChange?: (mode: string) => void;
     onVersionChange?: (version: number) => void;
@@ -23,7 +19,6 @@ interface PlaygroundHeaderCenterProps {
 }
 
 const PlaygroundHeaderCenter = ({
-    initialSettings = {},
     currentMode,
     onModeChange = () => {},
     onVersionChange = () => {},
@@ -31,13 +26,22 @@ const PlaygroundHeaderCenter = ({
     aiCockpitHook,
 }: PlaygroundHeaderCenterProps) => {
     const [lastUsedRecipe, setLastUsedRecipe] = usePreferenceValue('playground', 'lastRecipeId');
-    const [version, setVersion] = useState(initialSettings?.version ?? 1);
+    const { saveCompiledRecipe, recipeVersion, activeRecipeMatrxId } = aiCockpitHook;
+    const [version, setVersion] = useState(recipeVersion);
+
+    useEffect(() => {
+        setVersion(recipeVersion-1);
+    }, [recipeVersion]);
 
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const handleRecipeChange = (record: QuickReferenceRecord) => {
         setLastUsedRecipe(record.recordKey);
     };
+
+    const handleSaveCompiledRecipe = () => {
+        saveCompiledRecipe();
+    }
 
     const handleVersionChange = (newVersion: number) => {
         setVersion(newVersion);
@@ -85,6 +89,16 @@ const PlaygroundHeaderCenter = ({
                         ))}
                     </select>
                     <div className='flex items-center gap-2'>
+                        <Button
+                            variant='ghost'
+                            size='md'
+                            className='bg-elevation2 h-8 w-8 px-2 shrink-0'
+                            disabled={!activeRecipeMatrxId}
+                            onClick={handleSaveCompiledRecipe}
+                        >
+                            <Save size={12} />
+                        </Button>
+
                         <Button
                             variant='ghost'
                             size='md'

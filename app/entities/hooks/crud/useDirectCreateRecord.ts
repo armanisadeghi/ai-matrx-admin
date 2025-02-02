@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
-import { createRecordKey, useAppDispatch, useAppSelector, useEntityToasts, useEntityTools } from '@/lib/redux';
+import { createRecordKey, useAppDispatch, useAppSelector, useEntityData, useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
-import { callbackManager } from '@/utils/callbackManager';
 import { v4 as uuidv4 } from 'uuid';
 import { useCallbackManager } from '@/hooks/useCallbackManager';
 import { useDispatch } from 'react-redux';
@@ -13,13 +12,9 @@ interface UseDirectCreateRecordOptions {
     showToast?: boolean;
 }
 
-export const useDirectCreateRecord = ({ 
-    entityKey, 
-    onSuccess, 
-    onError,
-    showToast = true 
-}: UseDirectCreateRecordOptions) => {
-    const { actions, dispatch, selectors } = useEntityTools(entityKey);
+export const useDirectCreateRecord = ({ entityKey, onSuccess, onError, showToast = true }: UseDirectCreateRecordOptions) => {
+    const dispatch = useDispatch();
+    const { actions, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
     const createCallback = useCallbackManager();
     const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
@@ -36,7 +31,7 @@ export const useDirectCreateRecord = ({
 
                 const dataWithId = {
                     ...data,
-                    [primaryKeyField]: recordId
+                    [primaryKeyField]: recordId,
                 };
 
                 const matrxRecordId = createRecordKey(primaryKeyMetadata, dataWithId);
@@ -66,19 +61,9 @@ export const useDirectCreateRecord = ({
                 throw error;
             }
         },
-        [
-            dispatch,
-            actions,
-            primaryKeyMetadata,
-            createCallback,
-            entityToasts,
-            onSuccess,
-            onError,
-            showToast
-        ]
+        [dispatch, actions, primaryKeyMetadata, createCallback, entityToasts, onSuccess, onError, showToast]
     );
 };
-
 
 interface CreateRecordResult {
     matrxRecordId: MatrxRecordId;
@@ -92,13 +77,9 @@ interface UseCreateAndGetIdOptions {
     showToast?: boolean;
 }
 
-export const useCreateAndGetId = ({ 
-    entityKey, 
-    onSuccess, 
-    onError,
-    showToast = true 
-}: UseCreateAndGetIdOptions) => {
-    const { actions, dispatch, selectors } = useEntityTools(entityKey);
+export const useCreateAndGetId = ({ entityKey, onSuccess, onError, showToast = true }: UseCreateAndGetIdOptions) => {
+    const dispatch = useDispatch();
+    const { actions, selectors } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
     const createCallback = useCallbackManager();
     const primaryKeyMetadata = useAppSelector(selectors.selectPrimaryKeyMetadata);
@@ -115,7 +96,7 @@ export const useCreateAndGetId = ({
 
                 const dataWithId = {
                     ...data,
-                    [primaryKeyField]: coreId
+                    [primaryKeyField]: coreId,
                 };
 
                 const matrxRecordId = createRecordKey(primaryKeyMetadata, dataWithId);
@@ -145,19 +126,9 @@ export const useCreateAndGetId = ({
                 throw error;
             }
         },
-        [
-            dispatch,
-            actions,
-            primaryKeyMetadata,
-            createCallback,
-            entityToasts,
-            onSuccess,
-            onError,
-            showToast
-        ]
+        [dispatch, actions, primaryKeyMetadata, createCallback, entityToasts, onSuccess, onError, showToast]
     );
 };
-
 
 interface CreateWithIdOptions {
     entityKey: EntityKeys;
@@ -211,3 +182,50 @@ export const useCreateWithId = ({ entityKey, onSuccess, onError, showToast = tru
     );
 };
 
+
+export const useCreateRecord = ({ entityKey, onSuccess, onError, showToast = true }: UseDirectCreateRecordOptions) => {
+    const dispatch = useDispatch();
+    const { actions, firstPkField, pkValueToMatrxId } = useEntityData(entityKey);
+    const entityToasts = useEntityToasts(entityKey);
+    const createCallback = useCallbackManager();
+
+    return useCallback(
+        async ({ data }: { data: Record<string, unknown> }) => {
+            try {
+                const newId = uuidv4();
+                const dataWithId = {
+                    ...data,
+                    [firstPkField]: newId,
+                };
+
+                const matrxRecordId = pkValueToMatrxId(newId);
+                const callbackPromise = createCallback() as CustomPromise;
+
+                dispatch(
+                    actions.directCreateRecord({
+                        matrxRecordId,
+                        data: dataWithId,
+                        callbackId: callbackPromise.callbackId,
+                    })
+                );
+
+                const { result } = await callbackPromise;
+
+                if (showToast) {
+                    entityToasts.handleCreateSuccess();
+                }
+
+                onSuccess?.(result);
+
+                return { result };
+            } catch (error) {
+                if (showToast) {
+                    entityToasts.handleError(error as Error, 'create');
+                }
+                onError?.(error as Error);
+                throw error;
+            }
+        },
+        [createCallback, entityToasts, onSuccess, onError, showToast]
+    );
+};

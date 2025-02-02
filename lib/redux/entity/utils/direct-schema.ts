@@ -22,6 +22,8 @@ import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';
 import { EntityMetadata } from '../types/stateTypes';
+import { getGlobalUserId } from '@/app/Providers';
+
 
 type ComponentProps = {
     subComponent: 'default' | string;
@@ -171,7 +173,6 @@ const ENTITY_METADATA = new Map();
 export const getEntityMetadata = (entityKey: EntityKeys) => {
     const schema = getSchema();
     if (!ENTITY_METADATA.has(entityKey)) {
-        console.log('FIRST LOOKUP', entityKey);
         const metadata = schema[entityKey];
         if (metadata) {
             ENTITY_METADATA.set(entityKey, metadata);
@@ -180,6 +181,7 @@ export const getEntityMetadata = (entityKey: EntityKeys) => {
     const result = ENTITY_METADATA.get(entityKey);
     return result as EntityMetadata;
 };
+
 
 export const toEntityKey = (entityName: AllEntityNameVariations): EntityKeys => {
     const mapping = getEntityNameToCanonical();
@@ -257,4 +259,25 @@ export const getFieldSelectOptions = (entityKey: EntityKeys): FieldSelectOption[
         value: fieldKey as FieldKeys,
         label: toPrettyFieldName(entityKey, fieldKey) as PrettyFieldName<EntityKeys, FieldKeys>,
     }));
+};
+
+export const hasUserIdField = (entityKey: EntityKeys): boolean => {
+    const metadata = getEntityMetadata(entityKey);
+    if (!metadata) return false;
+    const fieldKeys = Object.keys(metadata.entityFields);
+    return fieldKeys.includes('userId');
+};
+
+export const addUserIdToData = (entityKey: EntityKeys, data: any) => {
+    const hasUserId = hasUserIdField(entityKey);
+    console.log('hasUserId', hasUserId);
+    const userId = getGlobalUserId();
+    console.log('userId', userId);
+    
+    if (hasUserId && userId && !data['user_id']) {
+        console.log('adding userId to data', { ...data, user_id: userId });
+        return { ...data, user_id: userId };
+    }
+    
+    return data;
 };

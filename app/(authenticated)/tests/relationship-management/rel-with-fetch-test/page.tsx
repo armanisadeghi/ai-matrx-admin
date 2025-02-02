@@ -57,7 +57,41 @@ export default function RelationshipTester() {
     // Get current definition
     const currentDefinition = useMemo(() => availableDefinitions.find((def) => def.key === selectedKey)?.definition, [selectedKey, availableDefinitions]);
 
-    const { mapper, childRecords, processedChildRecords, parentMatrxid, deleteChildAndJoin, createRelatedRecords, isLoading, loadingState } =
+    const {
+        // Entity names
+        parentEntity,
+        joiningEntity,
+        childEntity,
+
+        // Entity tools
+        parentTools,
+        joinTools,
+        childTools,
+
+        // Parent data
+        parentId,
+        parentRecords,
+        parentMatrxid,
+
+        // Join/Relationship data
+        joinIds,
+        joinRecords,
+        joiningMatrxIds,
+
+        // Child data
+        childIds,
+        childMatrxIds,
+        unprocessedChildRecords,
+        childRecords,
+
+        // Loading state
+        isLoading,
+        loadingState,
+
+        deleteChildAndJoin,
+        createRelatedRecords,
+        triggerProcessing,
+    } =
         useRelFetchProcessing(currentDefinition!, activeParentId);
 
     const handleDefinitionChange = (key: string) => {
@@ -238,7 +272,7 @@ export default function RelationshipTester() {
                                     <SelectValue placeholder='Select child record' />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {processedChildRecords.map((record) => (
+                                    {childRecords.map((record) => (
                                         <SelectItem
                                             key={record.matrxRecordId}
                                             value={record.matrxRecordId}
@@ -253,7 +287,7 @@ export default function RelationshipTester() {
                 </Card>
                 {/* Child Records Column */}
                 <ChildRecordsCard
-                    childRecords={processedChildRecords}
+                    childRecords={childRecords}
                     isLoading={isLoading}
                     loadingState={loadingState}
                 />
@@ -263,9 +297,9 @@ export default function RelationshipTester() {
                         <CardTitle>Mapper State</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className='max-h-[900px] overflow-y-auto'>
+                        {/* <div className='max-h-[900px] overflow-y-auto'>
                             <pre className='bg-muted p-2 rounded-md text-xs'>{JSON.stringify(mapper.getState(), null, 2)}</pre>
-                        </div>
+                        </div> */}
                     </CardContent>
                 </Card>
             </div>

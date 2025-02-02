@@ -2,6 +2,7 @@
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 // Updated to handle any type of value
 type FieldValue = string | number | boolean | null | Record<string, unknown> | unknown;
@@ -13,7 +14,8 @@ interface UseUpdateFieldsResult {
 }
 
 export const useUpdateFields = (entityKey: EntityKeys): UseUpdateFieldsResult => {
-    const { actions, dispatch, selectors } = useEntityTools(entityKey);
+    const dispatch = useDispatch();
+    const { actions, selectors } = useEntityTools(entityKey);
     const fieldSchema = useAppSelector(selectors.selectFieldInfo);
 
     const updateField = useCallback(

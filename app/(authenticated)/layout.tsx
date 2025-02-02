@@ -12,6 +12,7 @@ import {InitialReduxState} from "@/types/reduxTypes";
 import {ClientDebugWrapper} from '@/components/admin/ClientDebugWrapper';
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import {headers} from 'next/headers';
+import { setGlobalUserId } from '@/lib/globalState';
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -43,6 +44,10 @@ export default async function AuthenticatedLayout(
     }
 
     const userData = mapUserData(user);
+    console.log('layout has userData:', userData);
+    console.log('Settigs global user id:', userData.id);
+    setGlobalUserId(userData.id);
+
     const testDirectories = await getTestDirectories();
 
     const {data: preferences, error} = await supabase

@@ -11,6 +11,7 @@ import { useRecipeAgentSettings } from '@/hooks/aiCockpit/useRecipeAgentSettings
 import { useProcessedRecipeMessages } from '@/hooks/aiCockpit/useProcessedRecipeMessages';
 import { BrokerValue, CompiledRecipe, RecipeOverrides, RecipeTaskData, useRecipeCompiler } from '@/components/playground/hooks/recipes/useCompileRecipe';
 import { useCockpitSocket } from '@/lib/redux/socket/hooks/useCockpitRecipe';
+import { useCreateRecord } from '../crud/useDirectCreateRecord';
 
 export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const {
@@ -181,6 +182,8 @@ export type UseDoubleStableRelationshipHook = ReturnType<typeof useDoubleJoinedA
 
 export function useAiCockpit() {
     const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
+    const [recipeVersion, setRecipeVersion] = useState(1);
+
     const [taskBrokers, setTaskBrokers] = useState<BrokerValue[]>([]);
     const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverrides[]>([]);
     const [recipeTaskData, setRecipeTaskData] = useState<RecipeTaskData[]>([]);
@@ -203,6 +206,25 @@ export function useAiCockpit() {
         processedSettings,
         recipeSelectors: firstRelHook.parentTools.selectors,
     });
+
+    const createCompiledRecord = useCreateRecord({
+        entityKey: 'compiledRecipe' as EntityKeys
+    });
+    
+    const saveCompiledRecipe = async () => {
+        const { compiledRecipe: result } = compileRecipe();
+        
+        await createCompiledRecord({ 
+            data: {
+                recipeId: activeRecipeId,
+                compiledRecipe: result,
+                version: recipeVersion
+            }
+        });
+        
+        setCompiledRecipe(result);
+        setRecipeVersion(prev => prev + 1);
+    };
 
     const recompileRecipe = () => {
         const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList } = compileRecipe();
@@ -259,6 +281,8 @@ export function useAiCockpit() {
         compiledData,
         recompileRecipe,
         onPlay: handlePlay,
+        recipeVersion,
+        saveCompiledRecipe,
         tools,
     };
 }
